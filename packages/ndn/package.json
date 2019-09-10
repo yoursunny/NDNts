@@ -1,0 +1,22 @@
+{
+  "name": "ndn",
+  "version": "0.0.0",
+  "description": "Named Data Networking",
+  "keywords": [
+    "NDN"
+  ],
+  "author": "Junxiao Shi <git@mail1.yoursunny.com>",
+  "license": "CC-PDDC",
+  "main": "lib/index.js",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yoursunny/ndn-ts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yoursunny/ndn-ts/issues"
+  }
+}
