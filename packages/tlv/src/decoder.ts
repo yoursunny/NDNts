@@ -10,6 +10,29 @@ export class Decoder {
     this.offset = 0;
   }
 
+  /**
+   * Read TLV-TYPE.
+   */
+  public readType(): number|undefined {
+    return this.readVarNum();
+  }
+
+  /**
+   * Read TLV-LENGTH and TLV-VALUE.
+   * @returns TLV-VALUE
+   */
+  public readValue(): Uint8Array|undefined {
+    const length = this.readVarNum();
+    if (typeof length === "undefined") {
+      return undefined;
+    }
+    this.offset += length;
+    if (this.offset > this.input.length) {
+      return undefined;
+    }
+    return this.input.subarray(this.offset - length, this.offset);
+  }
+
   private readVarNum(): number|undefined {
     if (this.offset >= this.input.length) {
       return undefined;
@@ -38,28 +61,5 @@ export class Decoder {
         this.offset += 1;
         return this.input[this.offset - 1];
     }
-  }
-
-  /**
-   * Read TLV-TYPE.
-   */
-  public readType(): number|undefined {
-    return this.readVarNum();
-  }
-
-  /**
-   * Read TLV-LENGTH and TLV-VALUE.
-   * @returns TLV-VALUE
-   */
-  public readValue(): Uint8Array|undefined {
-    const length = this.readVarNum();
-    if (typeof length === "undefined") {
-      return undefined;
-    }
-    this.offset += length;
-    if (this.offset > this.input.length) {
-      return undefined;
-    }
-    return this.input.subarray(this.offset - length, this.offset);
   }
 }

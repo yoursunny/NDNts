@@ -4,8 +4,8 @@ module.exports = {
 
   moduleFileExtensions: ['ts', 'js'],
 
-  testRegex: '/tests/.*\.(ts|js)',
+  testRegex: '/tests/.*\\.(ts|js)',
   testPathIgnorePatterns: [
-    '/node_modules/'
+    '/node_modules/',
   ],
 };
