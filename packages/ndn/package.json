@@ -3,20 +3,19 @@
   "version": "0.0.20190909",
   "description": "Named Data Networking",
   "keywords": [
-    "NDN"
+    "NDN",
+    "Named Data Networking"
   ],
-  "author": "Junxiao Shi <git@mail1.yoursunny.com>",
-  "license": "CC-PDDC",
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "MIT",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "files": [
-    "lib",
-    "src"
+    "lib"
   ],
+  "homepage": "https://yoursunny.com/p/ndn-ts/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yoursunny/ndn-ts.git"
-  },
-  "bugs": {
-    "url": "https://github.com/yoursunny/ndn-ts/issues"
   }
 }

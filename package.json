@@ -2,8 +2,9 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "build": "lerna exec tsc",
-    "publish": "lerna exec tsc && lerna publish --no-push"
+    "build": "lerna exec -- tsc -d",
+    "build2": "npm run build && lerna exec -- tsc --removeComments true",
+    "publish": "npm run build2 && lerna publish --no-push"
   },
   "devDependencies": {
     "@types/node": "^12.7.4",
