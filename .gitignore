@@ -1,4 +1,5 @@
-.vscode
+.vscode/
+coverage/
 node_modules/
 packages/*/lib
 lerna-debug.log

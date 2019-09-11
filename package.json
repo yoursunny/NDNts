@@ -4,11 +4,17 @@
   "scripts": {
     "build": "lerna exec -- tsc -d",
     "build2": "npm run build && lerna exec -- tsc --removeComments true",
-    "publish": "npm run build2 && lerna publish --no-push"
+    "clean": "lerna exec -- rm -rf lib/",
+    "publish": "npm run build2 && lerna publish --no-push",
+    "test": "jest",
+    "testcover": "jest --coverage"
   },
   "devDependencies": {
+    "@types/jest": "^24.0.18",
     "@types/node": "^12.7.4",
+    "jest": "^24.9.0",
     "lerna": "^3.16.4",
+    "ts-jest": "^24.0.2",
     "ts-lint": "^4.5.1",
     "typescript": "^3.6.2"
   }

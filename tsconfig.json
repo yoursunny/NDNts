@@ -8,9 +8,14 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "strict": true,
-    "target": "es6"
+    "target": "es6",
+    "types": [
+      "node",
+      "jest"
+    ]
   },
   "exclude": [
-    "node_modules"
+    "**/node_modules",
+    "**/tests"
   ]
 }
