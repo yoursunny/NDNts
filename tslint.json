@@ -5,7 +5,10 @@
   ],
   "jsRules": {},
   "rules": {
-    "object-literal-sort-keys": [true, "match-declaration-order"]
+    "no-shadowed-variable": false,
+    "object-literal-sort-keys": [true, "match-declaration-order"],
+    "unified-signatures": false,
+    "variable-name": [true, "ban-keywords", "check-format", "allow-trailing-underscore"]
   },
   "rulesDirectory": []
 }

@@ -1,8 +1,9 @@
 import { Tlv } from "@ndn/tlv";
+import { TT } from "@ndn/tt-base";
 import printf = require("printf");
 
 function checkType(n: number) {
-  if (n < Component.TYPE_MIN || n > Component.TYPE_MAX) {
+  if (n < 0x01 || n > 0xFFFF) {
     throw new Error("Component TLV-TYPE out of range");
   }
 }
@@ -20,42 +21,63 @@ const UNESCAPED = (() => {
  * Name component.
  */
 export class Component extends Tlv {
-  public static readonly TYPE_MIN = 0x01;
-  public static readonly TYPE_MAX = 0xFFFF;
+  /**
+   * Parse from string.
+   * @param s URI representation.
+   * @todo handle ImplicitSha256DigestComponent and ParametersSha256DigestComponent.
+   */
+  public static from(s: string): Component {
+    let [sType, sValue] = s.split("=", 2);
+    let type = TT.GenericNameComponent;
+    if (typeof sValue !== "undefined") {
+      type = parseInt(sType, 10);
+    } else {
+      [sType, sValue] = ["", sType];
+    }
+    if (/^\.*$/.test(sValue)) {
+      sValue = sValue.substr(3);
+    }
+    const value = new TextEncoder().encode(decodeURIComponent(sValue));
+    return new Component(type, new Uint8Array(value));
+  }
+
+  /**
+   * Create empty GenericNameComponent.
+   */
+  constructor();
 
   /**
    * Decode name component.
    * @param wire wire encoding.
    */
-  constructor(wire?: Uint8Array) {
-    super(wire);
-    wire && checkType(this.m_type);
-  }
+  constructor(wire: Uint8Array);
 
-  public get type(): number {
-    return this.m_type;
-  }
+  /**
+   * Create name component with TLV-TYPE and TLV-VALUE.
+   */
+  constructor(type: number, value?: Uint8Array);
 
-  public set type(n: number) {
-    checkType(n);
-    this.m_type = n;
-  }
-
-  public get value(): Uint8Array {
-    return this.m_value;
-  }
-
-  public set value(v: Uint8Array) {
-    this.m_value = v;
+  /**
+   * Constructor invalid name component, or decode name component.
+   * @param wire wire encoding.
+   */
+  constructor(arg1?, arg2?) {
+    if (typeof arg1 === "undefined") {
+      super(TT.GenericNameComponent);
+    } else {
+      super(arg1, arg2);
+    }
+    checkType(this.type_);
   }
 
   /**
    * Get URI string.
+   * @todo handle ImplicitSha256DigestComponent and ParametersSha256DigestComponent.
    */
   public toString(): string {
     let hasNonPeriods = false;
-    let b = this.m_type == 0x08 ? "" : printf("%d=", this.m_type);
-    b = this.m_value.reduce<string>((b, ch) => {
+    let b = this.type_ === TT.GenericNameComponent ? "" : printf("%d=", this.type_);
+    b = this.value_.reduce<string>((b, ch) => {
       hasNonPeriods = hasNonPeriods || ch !== 0x2E;
       if (UNESCAPED[ch]) {
         return b + String.fromCharCode(ch);

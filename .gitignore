@@ -1,6 +1,7 @@
 .vscode/
 coverage/
 node_modules/
-packages/*/lib
+packages/*/lib/
+packages/*/package-lock.json
 lerna-debug.log
 npm-debug.log

@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/name",
+  "name": "@ndn/tt-base",
   "version": "0.0.0",
-  "description": "NDN Name",
+  "description": "NDN Basic TLV-TYPE Numbers",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -17,10 +17,5 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yoursunny/ndn-ts.git"
-  },
-  "dependencies": {
-    "@ndn/tlv": "file:../tlv",
-    "@ndn/tt-base": "file:../tt-base",
-    "printf": "^0.5.2"
   }
 }
