@@ -1,4 +1,4 @@
-import { Decoder } from "../src/decoder";
+import { Decoder } from "../src";
 
 test("simple decode", () => {
   const decoder = new Decoder(new Uint8Array([
@@ -16,13 +16,13 @@ test("simple decode", () => {
 
 test("error on incomplete VAR-NUMBER", () => {
   let decoder = new Decoder(new Uint8Array([]));
-  expect(decoder.readType()).toBeUndefined();
+  expect(() => { decoder.readType() }).toThrow();
 
   decoder = new Decoder(new Uint8Array([0xFD, 0x01]));
-  expect(decoder.readType()).toBeUndefined();
+  expect(() => { decoder.readType() }).toThrow();
 
   decoder = new Decoder(new Uint8Array([0xFE, 0x00, 0x01, 0x02]));
-  expect(decoder.readType()).toBeUndefined();
+  expect(() => { decoder.readType() }).toThrow();
 });
 
 test("error on VAR-NUMBER-9", () => {
@@ -30,7 +30,7 @@ test("error on VAR-NUMBER-9", () => {
     0x01, 0xFF, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01, 0xA0
   ]));
   expect(decoder.readType()).toBe(0x01);
-  expect(decoder.readValue()).toBeUndefined();
+  expect(() => { decoder.readValue() }).toThrow();
 });
 
 test("error on incomplete TLV-VALUE", () => {
@@ -38,5 +38,5 @@ test("error on incomplete TLV-VALUE", () => {
     0x01, 0x05, 0xA0, 0xA1, 0xA2
   ]));
   expect(decoder.readType()).toBe(0x01);
-  expect(decoder.readValue()).toBeUndefined();
+  expect(() => { decoder.readValue() }).toThrow();
 });

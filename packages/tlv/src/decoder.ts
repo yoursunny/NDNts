@@ -13,22 +13,26 @@ export class Decoder {
   /**
    * Read TLV-TYPE.
    */
-  public readType(): number|undefined {
-    return this.readVarNum();
+  public readType(): number {
+    const n = this.readVarNum();
+    if (typeof n === "undefined") {
+      throw new Error("TLV-VALUE is missing");
+    }
+    return n;
   }
 
   /**
    * Read TLV-LENGTH and TLV-VALUE.
    * @returns TLV-VALUE
    */
-  public readValue(): Uint8Array|undefined {
+  public readValue(): Uint8Array {
     const length = this.readVarNum();
     if (typeof length === "undefined") {
-      return undefined;
+      throw new Error("TLV-LENGTH is missing");
     }
     this.offset += length;
     if (this.offset > this.input.length) {
-      return undefined;
+      throw new Error("TLV-VALUE is incomplete");
     }
     return this.input.subarray(this.offset - length, this.offset);
   }
