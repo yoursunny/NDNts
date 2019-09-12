@@ -5,10 +5,12 @@
   ],
   "jsRules": {},
   "rules": {
+    "interface-name": [true, "never-prefix"],
+    "max-classes-per-file": false,
     "no-shadowed-variable": false,
     "object-literal-sort-keys": [true, "match-declaration-order"],
     "unified-signatures": false,
-    "variable-name": [true, "ban-keywords", "check-format", "allow-trailing-underscore"]
+    "variable-name": [true, "check-format", "allow-pascal-case", "allow-trailing-underscore"]
   },
   "rulesDirectory": []
 }

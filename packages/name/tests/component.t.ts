@@ -47,6 +47,10 @@ test("from URI", () => {
   comp = Component.from(".....");
   expect(comp.type).toBe(0x08);
   expect(comp.value).toEqual(new Uint8Array([0x2E, 0x2E]));
+
+  comp = Component.from("36=%0f%a0");
+  expect(comp.type).toBe(0x24);
+  expect(comp.value).toEqual(new Uint8Array([0x0F, 0xA0]));
 });
 
 test("compare", () => {
@@ -58,4 +62,6 @@ test("compare", () => {
   expect(comp.compare("240=AA")).toBe(ComponentCompareResult.GT);
   expect(comp.compare("240=A")).toBe(ComponentCompareResult.GT);
   expect(comp.compare("239=AB")).toBe(ComponentCompareResult.GT);
+  expect(comp.equals("240=AB")).toBeTruthy();
+  expect(comp.equals("240=AC")).toBeFalsy();
 });

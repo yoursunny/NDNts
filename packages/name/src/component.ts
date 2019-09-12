@@ -2,6 +2,8 @@ import { Decodable, Tlv } from "@ndn/tlv";
 import { TT } from "@ndn/tt-base";
 import printf = require("printf");
 
+import { NamingConventionBase } from "./convention";
+
 function checkType(n: number) {
   if (n < 0x01 || n > 0xFFFF) {
     throw new Error("Component TLV-TYPE out of range");
@@ -55,8 +57,19 @@ export class Component extends Tlv {
     if (/^\.*$/.test(sValue)) {
       sValue = sValue.substr(3);
     }
-    const value = new TextEncoder().encode(decodeURIComponent(sValue));
-    return new Component(type, new Uint8Array(value));
+    const value = new Uint8Array(sValue.length);
+    let length = 0;
+    for (let i = 0; i < sValue.length;) {
+      let ch = sValue.charCodeAt(i);
+      if (ch === 0x25) { // '%'
+        ch = parseInt(sValue.substr(i + 1, 2), 16);
+        i += 3;
+      } else {
+        ++i;
+      }
+      value[length++] = ch;
+    }
+    return new Component(type, value.subarray(0, length));
   }
 
   /**
@@ -105,6 +118,13 @@ export class Component extends Tlv {
   }
 
   /**
+   * Determine if component follows a naming convention.
+   */
+  public is(convention: NamingConventionBase): boolean {
+    return convention.match(this);
+  }
+
+  /**
    * Compare with other component.
    */
   public compare(other: ComponentLike): ComponentCompareResult {
@@ -129,5 +149,12 @@ export class Component extends Tlv {
       return ComponentCompareResult.GT;
     }
     return ComponentCompareResult.EQUAL;
+  }
+
+  /**
+   * Determine if this name component equals other.
+   */
+  public equals(other: ComponentLike): boolean {
+    return this.compare(other) === ComponentCompareResult.EQUAL;
   }
 }

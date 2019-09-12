@@ -10,7 +10,8 @@ module.exports = {
   ],
 
   coveragePathIgnorePatterns: [
-    '/node_modules/',
     '/lib/',
+    '/node_modules/',
+    '/src/expect/',
   ],
 };

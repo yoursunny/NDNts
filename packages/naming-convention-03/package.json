@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/name",
+  "name": "@ndn/naming-convention-03",
   "version": "0.0.0",
-  "description": "NDN Name",
+  "description": "NDN Naming Convention v0.3",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -19,14 +19,7 @@
     "url": "git+https://github.com/yoursunny/ndn-ts.git"
   },
   "dependencies": {
-    "@ndn/tlv": "file:../tlv",
-    "@ndn/tt-base": "file:../tt-base",
-    "printf": "^0.5.2"
-  },
-  "devDependencies": {
-    "@types/printf": "^0.2.1"
-  },
-  "peerDependencies": {
-    "expect": "*"
+    "@ndn/name": "file:../name",
+    "@ndn/tlv": "file:../tlv"
   }
 }

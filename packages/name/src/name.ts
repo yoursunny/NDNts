@@ -2,6 +2,7 @@ import { Decodable, Decoder, isDecodable } from "@ndn/tlv";
 import { TT } from "@ndn/tt-base";
 
 import { Component, ComponentCompareResult, ComponentLike } from "./component";
+import { isNamingConvention, NamingConvention } from "./convention";
 
 export type NameLike = Name | string;
 
@@ -108,9 +109,21 @@ export class Name {
   }
 
   /**
+   * Append a component from naming convention.
+   */
+  public append<T>(convention: NamingConvention<T>, v: T): Name;
+
+  /**
    * Append suffix with one or more components.
    */
-  public append(...suffix: ComponentLike[]): Name {
+  public append(...suffix: ComponentLike[]): Name;
+
+  public append(...args) {
+    if (isNamingConvention(args[0])) {
+      const convention = args[0];
+      return this.append(convention.create(args[1]));
+    }
+    const suffix = args as ComponentLike[];
     return new Name(this.comps_.concat(suffix.map(Component.from)));
   }
 
