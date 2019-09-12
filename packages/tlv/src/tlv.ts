@@ -1,4 +1,4 @@
-import { Decoder } from "./decoder";
+import { Decodable, Decoder, isDecodable } from "./decoder";
 
 export class Tlv {
   protected type_: number;
@@ -13,7 +13,7 @@ export class Tlv {
    * Decode TLV.
    * @param wire wire encoding.
    */
-  constructor(wire: Uint8Array);
+  constructor(wire: Decodable);
 
   /**
    * Create TLV with TLV-TYPE and TLV-VALUE.
@@ -21,8 +21,8 @@ export class Tlv {
   constructor(type: number, value?: Uint8Array);
 
   constructor(arg1?, arg2?) {
-    if (arg1 instanceof Uint8Array) {
-      const decoder = new Decoder(arg1);
+    if (isDecodable(arg1)) {
+      const decoder = Decoder.from(arg1);
       this.type_ = decoder.readType();
       this.value_ = decoder.readValue();
     } else if (typeof arg1 === "number") {
@@ -36,6 +36,10 @@ export class Tlv {
 
   public get type(): number {
     return this.type_;
+  }
+
+  public get length(): number {
+    return this.value_.length;
   }
 
   public get value(): Uint8Array {

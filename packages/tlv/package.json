@@ -17,5 +17,11 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yoursunny/ndn-ts.git"
+  },
+  "dependencies": {
+    "printf": "^0.5.2"
+  },
+  "devDependencies": {
+    "@types/printf": "^0.2.1"
   }
 }

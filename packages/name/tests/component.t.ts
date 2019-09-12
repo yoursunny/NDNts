@@ -1,4 +1,4 @@
-import { Component } from "../src";
+import { Component, ComponentCompareResult } from "../src";
 
 test("simple decode", () => {
   let comp = new Component();
@@ -47,4 +47,15 @@ test("from URI", () => {
   comp = Component.from(".....");
   expect(comp.type).toBe(0x08);
   expect(comp.value).toEqual(new Uint8Array([0x2E, 0x2E]));
+});
+
+test("compare", () => {
+  const comp = new Component(0xF0, new Uint8Array([0x41, 0x42]));
+  expect(comp.compare("241=AB")).toBe(ComponentCompareResult.LT);
+  expect(comp.compare("240=ABC")).toBe(ComponentCompareResult.LT);
+  expect(comp.compare("240=AC")).toBe(ComponentCompareResult.LT);
+  expect(comp.compare("240=AB")).toBe(ComponentCompareResult.EQUAL);
+  expect(comp.compare("240=AA")).toBe(ComponentCompareResult.GT);
+  expect(comp.compare("240=A")).toBe(ComponentCompareResult.GT);
+  expect(comp.compare("239=AB")).toBe(ComponentCompareResult.GT);
 });

@@ -1,17 +1,54 @@
-import { Decoder } from "../src";
+import { Decoder, isDecodable } from "../src";
 
-test("simple decode", () => {
+test("simple", () => {
   const decoder = new Decoder(new Uint8Array([
     0x01, 0x00,
     0xFD, 0x04, 0x09, 0x02, 0xB0, 0xB1,
-    0xFE, 0x00, 0x02, 0x04, 0x09, 0x03, 0xC0, 0xC1, 0xC2,
+    0xFE, 0x00, 0x02, 0x04, 0x09, 0x03, 0xC0, 0x01, 0xC2,
   ]));
   expect(decoder.readType()).toBe(0x01);
   expect(decoder.readValue()).toEqual(new Uint8Array([]));
   expect(decoder.readType()).toBe(0x0409);
   expect(decoder.readValue()).toEqual(new Uint8Array([0xB0, 0xB1]));
   expect(decoder.readType()).toBe(0x00020409);
-  expect(decoder.readValue()).toEqual(new Uint8Array([0xC0, 0xC1, 0xC2]));
+  const vDecoder = decoder.createValueDecoder();
+  expect(vDecoder.readType()).toBe(0xC0);
+  expect(vDecoder.readValue()).toEqual(new Uint8Array([0xC2]));
+  expect(vDecoder.eof).toBeTruthy();
+  expect(decoder.eof).toBeTruthy();
+});
+
+test("from", () => {
+  const decoder = new Decoder(new Uint8Array());
+  expect(isDecodable(decoder)).toBeTruthy();
+  expect(Decoder.from(decoder)).toBe(decoder);
+
+  const wire = new Uint8Array();
+  expect(isDecodable(wire)).toBeTruthy();
+  expect(Decoder.from(wire)).toBeInstanceOf(Decoder);
+
+  const notDecodable = {};
+  expect(isDecodable(notDecodable)).toBeFalsy();
+});
+
+test("readTypeExpect", () => {
+  let decoder = new Decoder(new Uint8Array([0x01, 0x00]));
+  expect(decoder.readTypeExpect(0x01, 0x02)).toBe(0x01);
+
+  decoder = new Decoder(new Uint8Array([0x01, 0x00]));
+  expect(() => { decoder.readTypeExpect(0x03, 0x04); }).toThrow();
+
+  decoder = new Decoder(new Uint8Array([0xFD, 0x01, 0x02, 0x00]));
+  let accept = jest.fn();
+  accept.mockReturnValue(true);
+  expect(decoder.readTypeExpect(accept)).toBe(0x0102);
+  expect(accept).toHaveBeenCalledWith(0x0102);
+
+  decoder = new Decoder(new Uint8Array([0xFD, 0x01, 0x03, 0x00]));
+  accept = jest.fn();
+  accept.mockReturnValue(false);
+  expect(() => { decoder.readTypeExpect(accept, "XXXX"); }).toThrow(/XXXX/);
+  expect(accept).toHaveBeenCalledWith(0x0103);
 });
 
 test("error on incomplete VAR-NUMBER", () => {

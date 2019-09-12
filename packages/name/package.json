@@ -22,5 +22,8 @@
     "@ndn/tlv": "file:../tlv",
     "@ndn/tt-base": "file:../tt-base",
     "printf": "^0.5.2"
+  },
+  "devDependencies": {
+    "@types/printf": "^0.2.1"
   }
 }

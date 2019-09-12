@@ -1,4 +1,4 @@
-import { Tlv } from "@ndn/tlv";
+import { Decodable, Tlv } from "@ndn/tlv";
 import { TT } from "@ndn/tt-base";
 import printf = require("printf");
 
@@ -17,16 +17,34 @@ const UNESCAPED = (() => {
   return m;
 })();
 
+export type ComponentLike = Component | string;
+
+/**
+ * Component compare result.
+ */
+export enum ComponentCompareResult {
+  /** lhs is less than rhs */
+  LT = -2,
+  /** lhs and rhs are equal */
+  EQUAL = 0,
+  /** lhs is greater than rhs */
+  GT = 2,
+}
+
 /**
  * Name component.
+ * This type is immutable.
  */
 export class Component extends Tlv {
   /**
-   * Parse from string.
-   * @param s URI representation.
+   * Return Component instance, or parse from URI representation.
    * @todo handle ImplicitSha256DigestComponent and ParametersSha256DigestComponent.
    */
-  public static from(s: string): Component {
+  public static from(input: ComponentLike): Component {
+    if (input instanceof Component) {
+      return input;
+    }
+    const s = input as string;
     let [sType, sValue] = s.split("=", 2);
     let type = TT.GenericNameComponent;
     if (typeof sValue !== "undefined") {
@@ -50,17 +68,13 @@ export class Component extends Tlv {
    * Decode name component.
    * @param wire wire encoding.
    */
-  constructor(wire: Uint8Array);
+  constructor(wire: Decodable);
 
   /**
    * Create name component with TLV-TYPE and TLV-VALUE.
    */
   constructor(type: number, value?: Uint8Array);
 
-  /**
-   * Constructor invalid name component, or decode name component.
-   * @param wire wire encoding.
-   */
   constructor(arg1?, arg2?) {
     if (typeof arg1 === "undefined") {
       super(TT.GenericNameComponent);
@@ -88,5 +102,32 @@ export class Component extends Tlv {
       b += "...";
     }
     return b;
+  }
+
+  /**
+   * Compare with other component.
+   */
+  public compare(other: ComponentLike): ComponentCompareResult {
+    const rhs = Component.from(other);
+    if (this.type < rhs.type) {
+      return ComponentCompareResult.LT;
+    }
+    if (this.type > rhs.type) {
+      return ComponentCompareResult.GT;
+    }
+    if (this.length < rhs.length) {
+      return ComponentCompareResult.LT;
+    }
+    if (this.length > rhs.length) {
+      return ComponentCompareResult.GT;
+    }
+    const cmp = Buffer.compare(this.value, rhs.value);
+    if (cmp < 0) {
+      return ComponentCompareResult.LT;
+    }
+    if (cmp > 0) {
+      return ComponentCompareResult.GT;
+    }
+    return ComponentCompareResult.EQUAL;
   }
 }
