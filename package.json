@@ -2,10 +2,10 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist && lerna exec -- npm link",
+    "bootstrap": "lerna bootstrap --hoist && ts-node --skip-project -O {\\\"target\\\":\\\"ES2019\\\"} mk/create-local-links.ts",
     "build": "lerna exec -- tsc -d",
     "build2": "npm run build && lerna exec -- tsc --removeComments true",
-    "clean": "lerna exec -- rm -rf lib/",
+    "clean": "rm -rf packages/*/lib/ packages/*/node_modules/",
     "cover": "jest --coverage",
     "lint": "tslint --fix -p .",
     "publish": "npm run build2 && lerna publish --no-push",
@@ -13,10 +13,13 @@
   },
   "devDependencies": {
     "@types/jest": "^24.0.18",
+    "@types/mkdirp": "^0.5.2",
     "@types/node": "^12.7.4",
     "jest": "^24.9.0",
     "lerna": "^3.16.4",
+    "mkdirp": "^0.5.1",
     "ts-jest": "^24.0.2",
+    "ts-node": "^8.3.0",
     "tslint": "^5.20.0",
     "typescript": "~3.6.2"
   }
