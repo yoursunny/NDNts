@@ -1,6 +1,7 @@
 import { Decodable, Decoder, isDecodable } from "./decoder";
+import { Encodable, Encoder } from "./encoder";
 
-export class Tlv {
+export class Tlv implements Encodable {
   protected type_: number;
   protected value_: Uint8Array;
 
@@ -44,5 +45,11 @@ export class Tlv {
 
   public get value(): Uint8Array {
     return this.value_;
+  }
+
+  public encodeTo(encoder: Encoder) {
+    const room = encoder.prepend(this.length);
+    Buffer.from(this.value_.buffer, this.value_.byteOffset, this.value_.byteLength).copy(room);
+    encoder.prependTypeLength(this.type, this.length);
   }
 }

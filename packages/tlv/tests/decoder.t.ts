@@ -1,4 +1,5 @@
 import { Decoder, isDecodable } from "../src";
+import "../src/expect";
 
 test("simple", () => {
   const decoder = new Decoder(new Uint8Array([
@@ -7,13 +8,13 @@ test("simple", () => {
     0xFE, 0x00, 0x02, 0x04, 0x09, 0x03, 0xC0, 0x01, 0xC2,
   ]));
   expect(decoder.readType()).toBe(0x01);
-  expect(decoder.readValue()).toEqual(new Uint8Array([]));
+  expect(decoder.readValue()).toEqualUint8Array([]);
   expect(decoder.readType()).toBe(0x0409);
-  expect(decoder.readValue()).toEqual(new Uint8Array([0xB0, 0xB1]));
+  expect(decoder.readValue()).toEqualUint8Array([0xB0, 0xB1]);
   expect(decoder.readType()).toBe(0x00020409);
   const vDecoder = decoder.createValueDecoder();
   expect(vDecoder.readType()).toBe(0xC0);
-  expect(vDecoder.readValue()).toEqual(new Uint8Array([0xC2]));
+  expect(vDecoder.readValue()).toEqualUint8Array([0xC2]);
   expect(vDecoder.eof).toBeTruthy();
   expect(decoder.eof).toBeTruthy();
 });

@@ -4,9 +4,7 @@ import { Component, ComponentLike } from "..";
 
 expect.extend({
   toEqualComponent(received, comp: ComponentLike) {
-    if (!(received instanceof Component)) {
-      throw new Error(`${received} must be instanceof Component`);
-    }
+    expect(received).toBeInstanceOf(Component);
     if (received.equals(comp)) {
       return {
         message: () => `expected ${received} not to equal ${Component.from(comp).toString()}`,

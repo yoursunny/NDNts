@@ -1,41 +1,66 @@
-export const NNI = {
-  encode: (n: number): Uint8Array => {
-    let b;
-    if (n <= 0xFF) {
-      b = new Uint8Array([n]);
-    } else if (n <= 0xFFFF) {
-      b = new Uint8Array(2);
-      new DataView(b.buffer).setUint16(0, n, false);
-    } else if (n <= 0xFFFFFFFF) {
-      b = new Uint8Array(4);
-      new DataView(b.buffer).setUint32(0, n, false);
-    } else if (n <= Number.MAX_SAFE_INTEGER) {
-      b = new Uint8Array(8);
-      const dv = new DataView(b.buffer);
-      dv.setUint32(0, n / 0x100000000, false);
-      dv.setUint32(4, n % 0x100000000, false);
-    } else {
-      throw new Error("number is too large");
-    }
-    return b;
-  },
+import { Encodable, Encoder } from "./encoder";
 
-  decode: (b: Uint8Array): number => {
-    const dv = new DataView(b.buffer);
-    switch (b.length) {
-      case 1:
-        return dv.getUint8(0);
-      case 2:
-        return dv.getUint16(0, false);
-      case 4:
-        return dv.getUint32(0, false);
-      case 8:
-        const n = dv.getUint32(0, false) * 0x100000000 + dv.getUint32(4, false);
-        if (n > Number.MAX_SAFE_INTEGER) {
-          throw new Error("number is too large");
-        }
-        return n;
+class NNIClass extends Number implements Encodable {
+  constructor(n: number) {
+    super(n);
+  }
+
+  public encodeTo(encoder: Encoder) {
+    const n = Number(this);
+    if (n <= 0xFF) {
+      const b = encoder.prepend(1);
+      b[0] = n;
+    } else if (n <= 0xFFFF) {
+      const b = encoder.prepend(2);
+      b.writeUInt16BE(n, 0);
+    } else if (n <= 0xFFFFFFFF) {
+      const b = encoder.prepend(4);
+      b.writeUInt32BE(n, 0);
+    } else if (Number.isSafeInteger(n)) {
+      const b = encoder.prepend(8);
+      b.writeUInt32BE(n / 0x100000000, 0);
+      b.writeUInt32BE(n % 0x100000000, 4);
+    } else {
+      throw new Error("integer is too large");
     }
-    throw new Error("invalid TLV-LENGTH");
-  },
+  }
+}
+
+/**
+ * Create Encodable from non-negative integer.
+ */
+export function NNI(n: number): NNIClass {
+  return new NNIClass(n);
+}
+
+export interface NNI {
+  /** Encode non-negative integer. */
+  encode(n: number): Uint8Array;
+  /** Decode non-negative integer. */
+  decode(b: Uint8Array): number;
+}
+
+NNI.encode = (n: number): Uint8Array => {
+  const encoder = new Encoder(8);
+  NNI(n).encodeTo(encoder);
+  return encoder.output;
+};
+
+NNI.decode = (b: Uint8Array): number => {
+  const buf = Buffer.from(b.buffer, b.byteOffset, b.byteLength);
+  switch (b.length) {
+    case 1:
+      return buf[0];
+    case 2:
+      return buf.readUInt16BE(0);
+    case 4:
+      return buf.readUInt32BE(0);
+    case 8:
+      const n = buf.readUInt32BE(0) * 0x100000000 + buf.readUInt32BE(4);
+      if (!Number.isSafeInteger(n)) {
+        throw new Error("integer is too large");
+      }
+      return n;
+  }
+  throw new Error("invalid TLV-LENGTH");
 };

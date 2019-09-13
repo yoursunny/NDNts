@@ -1,4 +1,4 @@
-import { Decodable, Decoder, isDecodable } from "@ndn/tlv";
+import { Decodable, Decoder, Encodable, Encoder, isDecodable } from "@ndn/tlv";
 import { TT } from "@ndn/tt-base";
 
 import { Component, ComponentCompareResult, ComponentLike } from "./component";
@@ -26,7 +26,7 @@ export enum NameCompareResult {
  * Name.
  * This type is immutable.
  */
-export class Name {
+export class Name implements Encodable {
   private comps_: Component[];
 
   /**
@@ -161,5 +161,13 @@ export class Name {
   public isPrefixOf(other: NameLike): boolean {
     const cmp = this.compare(other);
     return cmp === NameCompareResult.EQUAL || cmp === NameCompareResult.LPREFIX;
+  }
+
+  public encodeTo(encoder: Encoder) {
+    encoder.beginValue();
+    for (let i = this.comps_.length - 1; i >= 0; --i) {
+      this.comps_[i].encodeTo(encoder);
+    }
+    encoder.endValue(TT.Name);
   }
 }

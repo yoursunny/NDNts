@@ -13,7 +13,7 @@ export function isDecodable(obj: any): boolean {
 }
 
 /**
- * Streaming TLV decoder.
+ * TLV decoder.
  */
 export class Decoder {
 

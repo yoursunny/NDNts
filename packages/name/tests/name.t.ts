@@ -1,3 +1,5 @@
+import "@ndn/tlv/lib/expect"
+
 import { Name, Component, NameCompareResult } from "../src";
 
 test("simple", () => {
@@ -64,4 +66,13 @@ test("compare", () => {
   expect(name.isPrefixOf("/A/B")).toBeTruthy();
   expect(name.isPrefixOf("/A")).toBeFalsy();
   expect(name.isPrefixOf("/A/A")).toBeFalsy();
+});
+
+test("encode", () => {
+  const name = new Name("/A/B");
+  expect(name).toEncodeAs([
+    0x07, 0x06,
+    0x08, 0x01, 0x41,
+    0x08, 0x01, 0x42,
+  ])
 });

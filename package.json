@@ -5,7 +5,7 @@
     "bootstrap": "lerna bootstrap --hoist && ts-node --skip-project -O {\\\"target\\\":\\\"ES2019\\\"} mk/create-local-links.ts",
     "build": "lerna exec -- tsc -d",
     "build2": "npm run build && lerna exec -- tsc --removeComments true",
-    "clean": "rm -rf packages/*/lib/ packages/*/node_modules/",
+    "clean": "rm -rf packages/*/lib/",
     "cover": "jest --coverage",
     "lint": "tslint --fix -p .",
     "publish": "npm run build2 && lerna publish --no-push",
