@@ -1,5 +1,9 @@
 import printf = require("printf");
 
+export interface Decodable<R> {
+  decodeFrom(decoder: Decoder): R;
+}
+
 /**
  * TLV decoder.
  */
@@ -87,6 +91,13 @@ export class Decoder {
     return new Decoder(this.readValue());
   }
 
+  /**
+   * Read a Decodable object.
+   */
+  public decode<R>(d: Decodable<R>): R {
+    return d.decodeFrom(this);
+  }
+
   private readVarNum(): number|undefined {
     if (this.eof) {
       return undefined;
@@ -118,6 +129,7 @@ export class Decoder {
   }
 }
 
+/* istanbul ignore next */
 export namespace Decoder {
   /**
    * Types acceptable to Decoder.from().

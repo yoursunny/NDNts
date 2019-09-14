@@ -1,17 +1,19 @@
 import "@ndn/tlv/lib/expect"
 
 import { Name, Component, NameCompareResult } from "../src";
+import { Decoder } from "@ndn/tlv";
 
 test("simple", () => {
   let name = new Name();
   expect(name.size).toBe(0);
   expect(name.toString()).toBe("/");
 
-  name = new Name(new Uint8Array([
+  const decoder = new Decoder(new Uint8Array([
     0x07, 0x07,
     0x08, 0x01, 0x41,
     0xF0, 0x02, 0x42, 0x43
   ]));
+  name = decoder.decode(Name);
   expect(name.size).toBe(2);
   expect(name.get(0)).toEqual(Component.from("A"));
   expect(name.get(1)).toEqual(Component.from("240=BC"));

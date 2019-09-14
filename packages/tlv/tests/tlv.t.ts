@@ -1,4 +1,4 @@
-import { Tlv, Encoder } from "../src";
+import { Tlv, Encoder, Decoder } from "../src";
 import "../src/expect";
 
 test("simple", () => {
@@ -12,7 +12,8 @@ test("simple", () => {
   expect(tlv.length).toBe(0);
   expect(tlv.value).toEqualUint8Array([]);
 
-  tlv = new Tlv(new Uint8Array([0x02, 0x00]))
+  const decoder = new Decoder(new Uint8Array([0x02, 0x00]));
+  tlv = decoder.decode(Tlv);
   expect(tlv.type).toBe(0x02);
   expect(tlv.length).toBe(0);
   expect(tlv.value).toEqualUint8Array([]);

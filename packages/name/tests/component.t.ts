@@ -1,6 +1,7 @@
 import "@ndn/tlv/lib/expect";
 
 import { Component, ComponentCompareResult } from "../src";
+import { Decoder } from "@ndn/tlv";
 
 test("simple decode", () => {
   let comp = new Component();
@@ -8,7 +9,8 @@ test("simple decode", () => {
   expect(comp.value).toEqualUint8Array([]);
   expect(comp.toString()).toEqual("...")
 
-  comp = new Component(new Uint8Array([0xF0, 0x03, 0x41, 0x01, 0xA0]));
+  const decoder = new Decoder(new Uint8Array([0xF0, 0x03, 0x41, 0x01, 0xA0]));
+  comp = decoder.decode(Component);
   expect(comp.type).toBe(0xF0);
   expect(comp.value).toEqualUint8Array([0x41, 0x01, 0xA0]);
   expect(comp.toString()).toEqual("240=A%01%a0")
@@ -20,21 +22,13 @@ test("simple decode", () => {
 });
 
 test("error on decode TLV-TYPE out of range", () => {
-  expect(() => {
-    new Component(0x00);
-  }).toThrow();
+  expect(() => { new Component(0x00); }).toThrow();
+  expect(() => { new Component(0x10000); }).toThrow();
 
-  expect(() => {
-    new Component(0x10000);
-  }).toThrow();
-
-  expect(() => {
-    new Component(new Uint8Array([0x00, 0x01, 0x41]));
-  }).toThrow();
-
-  expect(() => {
-    new Component(new Uint8Array([0xFE, 0x00, 0x01, 0x00, 0x00, 0x01, 0x41]));
-  }).toThrow();
+  let decoder = new Decoder(new Uint8Array([0x00, 0x01, 0x41]));
+  expect(() => { decoder.decode(Component); }).toThrow();
+  decoder = new Decoder(new Uint8Array([0xFE, 0x00, 0x01, 0x00, 0x00, 0x01, 0x41]));
+  expect(() => { decoder.decode(Component); }).toThrow();
 });
 
 test("from URI", () => {

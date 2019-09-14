@@ -38,6 +38,12 @@ export enum ComponentCompareResult {
  * This type is immutable.
  */
 export class Component extends Tlv {
+  public static decodeFrom(decoder: Decoder): Component {
+    const comp = Tlv.decodeFromImpl(decoder, new Component());
+    checkType(comp.type_);
+    return comp;
+  }
+
   /**
    * Return Component instance, or parse from URI representation.
    * @todo handle ImplicitSha256DigestComponent and ParametersSha256DigestComponent.
@@ -76,12 +82,6 @@ export class Component extends Tlv {
    * Create empty GenericNameComponent.
    */
   constructor();
-
-  /**
-   * Decode name component.
-   * @param wire wire encoding.
-   */
-  constructor(wire: Decoder.Input);
 
   /**
    * Create name component with TLV-TYPE and TLV-VALUE.

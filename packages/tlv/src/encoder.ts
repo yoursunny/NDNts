@@ -137,6 +137,3 @@ export class Encoder {
     this.off_ += sizeofExts;
   }
 }
-
-export namespace Encoder {
-}

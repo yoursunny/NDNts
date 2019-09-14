@@ -27,6 +27,16 @@ export enum NameCompareResult {
  * This type is immutable.
  */
 export class Name {
+  public static decodeFrom(decoder: Decoder): Name {
+    const self = new Name();
+    decoder.readTypeExpect(TT.Name);
+    const vDecoder = decoder.createValueDecoder();
+    while (!vDecoder.eof) {
+      self.comps_.push(vDecoder.decode(Component));
+    }
+    return self;
+  }
+
   private comps_: Component[];
 
   /**
@@ -39,12 +49,6 @@ export class Name {
    */
   constructor(comps: ComponentLike[]);
 
-  /**
-   * Decode name.
-   * @param wire wire encoding.
-   */
-  constructor(wire: Decoder.Input);
-
   constructor(arg1?) {
     this.comps_ = [];
     if (arg1 instanceof Name) {
@@ -53,13 +57,6 @@ export class Name {
       this.comps_ = arg1.replace(/^(?:ndn)?\//, "").split("/").map(Component.from);
     } else if (Array.isArray(arg1)) {
       this.comps_ = arg1.map(Component.from);
-    } else if (Decoder.isInput(arg1)) {
-      const decoder = Decoder.from(arg1);
-      decoder.readTypeExpect(TT.Name);
-      const vDecoder = decoder.createValueDecoder();
-      while (!vDecoder.eof) {
-        this.comps_.push(new Component(vDecoder));
-      }
     }
   }
 
