@@ -139,7 +139,7 @@ export namespace Decoder {
   /**
    * Test whether obj is Decoder.Input.
    */
-  export function isInput(obj: any): boolean {
+  export function isInput(obj: any): obj is Input {
     return obj instanceof Decoder || obj instanceof Uint8Array;
   }
 

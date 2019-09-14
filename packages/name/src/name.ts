@@ -2,25 +2,9 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import { TT } from "@ndn/tt-base";
 
 import { Component, ComponentCompareResult, ComponentLike } from "./component";
-import { isNamingConvention, NamingConvention } from "./convention";
+import { NamingConvention } from "./convention";
 
 export type NameLike = Name | string;
-
-/**
- * Name compare result.
- */
-export enum NameCompareResult {
-  /** lhs is less than, but not a prefix of rhs */
-  LT = ComponentCompareResult.LT,
-  /** lhs is a prefix of rhs */
-  LPREFIX = -1,
-  /** lhs and rhs are equal */
-  EQUAL = ComponentCompareResult.EQUAL,
-  /** rhs is a prefix of lhs */
-  RPREFIX = 1,
-  /** rhs is less than, but not a prefix of lhs */
-  GT = ComponentCompareResult.GT,
-}
 
 /**
  * Name.
@@ -116,7 +100,7 @@ export class Name {
   public append(...suffix: ComponentLike[]): Name;
 
   public append(...args) {
-    if (isNamingConvention(args[0])) {
+    if (NamingConvention.isNamingConvention(args[0])) {
       const convention = args[0];
       return this.append(convention.create(args[1]));
     }
@@ -127,29 +111,29 @@ export class Name {
   /**
    * Compare with other name.
    */
-  public compare(other: NameLike): NameCompareResult {
+  public compare(other: NameLike): Name.CompareResult {
     const rhs = new Name(other);
     const commonSize = Math.min(this.size, rhs.size);
     for (let i = 0; i < commonSize; ++i) {
       const cmp = this.comps_[i].compare(rhs.comps_[i]);
       if (cmp !== ComponentCompareResult.EQUAL) {
-        return cmp as unknown as NameCompareResult;
+        return cmp as unknown as Name.CompareResult;
       }
     }
     if (this.size > commonSize) {
-      return NameCompareResult.RPREFIX;
+      return Name.CompareResult.RPREFIX;
     }
     if (rhs.size > commonSize) {
-      return NameCompareResult.LPREFIX;
+      return Name.CompareResult.LPREFIX;
     }
-    return NameCompareResult.EQUAL;
+    return Name.CompareResult.EQUAL;
   }
 
   /**
    * Determine if this name equals other.
    */
   public equals(other: NameLike): boolean {
-    return this.compare(other) === NameCompareResult.EQUAL;
+    return this.compare(other) === Name.CompareResult.EQUAL;
   }
 
   /**
@@ -157,10 +141,33 @@ export class Name {
    */
   public isPrefixOf(other: NameLike): boolean {
     const cmp = this.compare(other);
-    return cmp === NameCompareResult.EQUAL || cmp === NameCompareResult.LPREFIX;
+    return cmp === Name.CompareResult.EQUAL || cmp === Name.CompareResult.LPREFIX;
   }
 
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv.apply(encoder, ([TT.Name] as any).concat(this.comps_));
+  }
+}
+
+/* istanbul ignore next */
+export namespace Name {
+  export function isNameLike(obj: any): obj is NameLike {
+    return obj instanceof Name || typeof obj === "string";
+  }
+
+  /**
+   * Name compare result.
+   */
+  export enum CompareResult {
+    /** lhs is less than, but not a prefix of rhs */
+    LT = ComponentCompareResult.LT,
+    /** lhs is a prefix of rhs */
+    LPREFIX = -1,
+    /** lhs and rhs are equal */
+    EQUAL = ComponentCompareResult.EQUAL,
+    /** rhs is a prefix of lhs */
+    RPREFIX = 1,
+    /** rhs is less than, but not a prefix of lhs */
+    GT = ComponentCompareResult.GT,
   }
 }

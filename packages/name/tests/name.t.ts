@@ -1,6 +1,6 @@
 import "@ndn/tlv/lib/expect"
 
-import { Name, Component, NameCompareResult } from "../src";
+import { Name, Component } from "../src";
 import { Decoder } from "@ndn/tlv";
 
 test("simple", () => {
@@ -51,11 +51,11 @@ test("modify", () => {
 
 test("compare", () => {
   const name = new Name("/A/B");
-  expect(name.compare("/A/C")).toBe(NameCompareResult.LT);
-  expect(name.compare("/A/B/C")).toBe(NameCompareResult.LPREFIX);
-  expect(name.compare("/A/B")).toBe(NameCompareResult.EQUAL);
-  expect(name.compare("/A")).toBe(NameCompareResult.RPREFIX);
-  expect(name.compare("/A/A")).toBe(NameCompareResult.GT);
+  expect(name.compare("/A/C")).toBe(Name.CompareResult.LT);
+  expect(name.compare("/A/B/C")).toBe(Name.CompareResult.LPREFIX);
+  expect(name.compare("/A/B")).toBe(Name.CompareResult.EQUAL);
+  expect(name.compare("/A")).toBe(Name.CompareResult.RPREFIX);
+  expect(name.compare("/A/A")).toBe(Name.CompareResult.GT);
 
   expect(name.equals("/A/C")).toBeFalsy();
   expect(name.equals("/A/B/C")).toBeFalsy();
@@ -77,4 +77,10 @@ test("encode", () => {
     0x08, 0x01, 0x41,
     0x08, 0x01, 0x42,
   ])
+});
+
+test("NameLike", () => {
+  expect(Name.isNameLike(new Name())).toBeTruthy();
+  expect(Name.isNameLike("/")).toBeTruthy();
+  expect(Name.isNameLike({})).toBeFalsy();
 });

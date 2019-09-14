@@ -9,9 +9,11 @@ export interface NamingConvention<T> extends NamingConventionBase {
   parse(comp: Component): T;
 }
 
-export function isNamingConvention(obj) {
-  return typeof obj === "object" &&
-         typeof obj.match === "function" &&
-         typeof obj.create === "function" &&
-         typeof obj.parse === "function";
+export namespace NamingConvention {
+  export function isNamingConvention<R>(obj: any): obj is NamingConvention<R> {
+    return typeof obj === "object" &&
+          typeof obj.match === "function" &&
+          typeof obj.create === "function" &&
+          typeof obj.parse === "function";
+  }
 }
