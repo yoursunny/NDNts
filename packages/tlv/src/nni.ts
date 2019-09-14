@@ -1,6 +1,6 @@
-import { Encodable, Encoder } from "./encoder";
+import { Encoder } from "./encoder";
 
-class NNIClass extends Number implements Encodable {
+class NNIClass extends Number {
   constructor(n: number) {
     super(n);
   }
@@ -8,16 +8,16 @@ class NNIClass extends Number implements Encodable {
   public encodeTo(encoder: Encoder) {
     const n = Number(this);
     if (n <= 0xFF) {
-      const b = encoder.prepend(1);
+      const b = encoder.prependRoom(1);
       b[0] = n;
     } else if (n <= 0xFFFF) {
-      const b = encoder.prepend(2);
+      const b = encoder.prependRoom(2);
       b.writeUInt16BE(n, 0);
     } else if (n <= 0xFFFFFFFF) {
-      const b = encoder.prepend(4);
+      const b = encoder.prependRoom(4);
       b.writeUInt32BE(n, 0);
     } else if (Number.isSafeInteger(n)) {
-      const b = encoder.prepend(8);
+      const b = encoder.prependRoom(8);
       b.writeUInt32BE(n / 0x100000000, 0);
       b.writeUInt32BE(n % 0x100000000, 4);
     } else {

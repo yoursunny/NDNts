@@ -1,4 +1,4 @@
-import { Decoder, isDecodable } from "../src";
+import { Decoder } from "../src";
 import "../src/expect";
 
 test("simple", () => {
@@ -21,15 +21,15 @@ test("simple", () => {
 
 test("from", () => {
   const decoder = new Decoder(new Uint8Array());
-  expect(isDecodable(decoder)).toBeTruthy();
+  expect(Decoder.isInput(decoder)).toBeTruthy();
   expect(Decoder.from(decoder)).toBe(decoder);
 
   const wire = new Uint8Array();
-  expect(isDecodable(wire)).toBeTruthy();
+  expect(Decoder.isInput(wire)).toBeTruthy();
   expect(Decoder.from(wire)).toBeInstanceOf(Decoder);
 
-  const notDecodable = {};
-  expect(isDecodable(notDecodable)).toBeFalsy();
+  expect(Decoder.isInput({})).toBeFalsy();
+  expect(() => { Decoder.from({} as any); }).toThrow();
 });
 
 test("readTypeExpect", () => {

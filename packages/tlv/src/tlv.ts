@@ -1,7 +1,7 @@
-import { Decodable, Decoder, isDecodable } from "./decoder";
-import { Encodable, Encoder } from "./encoder";
+import { Decoder } from "./decoder";
+import { Encoder } from "./encoder";
 
-export class Tlv implements Encodable {
+export class Tlv {
   protected type_: number;
   protected value_: Uint8Array;
 
@@ -14,7 +14,7 @@ export class Tlv implements Encodable {
    * Decode TLV.
    * @param wire wire encoding.
    */
-  constructor(wire: Decodable);
+  constructor(wire: Decoder.Input);
 
   /**
    * Create TLV with TLV-TYPE and TLV-VALUE.
@@ -22,7 +22,7 @@ export class Tlv implements Encodable {
   constructor(type: number, value?: Uint8Array);
 
   constructor(arg1?, arg2?) {
-    if (isDecodable(arg1)) {
+    if (Decoder.isInput(arg1)) {
       const decoder = Decoder.from(arg1);
       this.type_ = decoder.readType();
       this.value_ = decoder.readValue();
@@ -48,8 +48,6 @@ export class Tlv implements Encodable {
   }
 
   public encodeTo(encoder: Encoder) {
-    const room = encoder.prepend(this.length);
-    Buffer.from(this.value_.buffer, this.value_.byteOffset, this.value_.byteLength).copy(room);
-    encoder.prependTypeLength(this.type, this.length);
+    encoder.prependTlv(this.type_, this.value_);
   }
 }

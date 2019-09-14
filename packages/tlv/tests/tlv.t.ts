@@ -24,10 +24,13 @@ test("simple", () => {
 });
 
 test("encode", () => {
-  const tlv = new Tlv(0x00FF, new Uint8Array([0xA0]));
   const encoder = new Encoder();
-  encoder.encode(tlv);
+  encoder.encode(new Tlv(0x00FF, new Uint8Array([0xA0])));
+  encoder.encode(new Tlv(0x01, Buffer.from([0xB0, 0xB1])));
   const output = encoder.output;
-  expect(output).toHaveLength(5);
-  expect(output).toEqualUint8Array([0xFD, 0x00, 0xFF, 0x01, 0xA0]);
+  expect(output).toHaveLength(9);
+  expect(output).toEqualUint8Array([
+    0x01, 0x02, 0xB0, 0xB1,
+    0xFD, 0x00, 0xFF, 0x01, 0xA0,
+  ]);
 });

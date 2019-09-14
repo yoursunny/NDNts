@@ -1,22 +1,9 @@
 import printf = require("printf");
 
 /**
- * Types acceptable to Decoder.create().
- */
-export type Decodable = Decoder | Uint8Array;
-
-/**
- * Test whether obj is Decodable.
- */
-export function isDecodable(obj: any): boolean {
-  return obj instanceof Decoder || obj instanceof Uint8Array;
-}
-
-/**
  * TLV decoder.
  */
 export class Decoder {
-
   /**
    * Determine whether end of input has been reached.
    */
@@ -24,15 +11,6 @@ export class Decoder {
     return this.offset_ >= this.input_.length;
   }
 
-  /**
-   * Construct from Decodable if it's not a Decoder.
-   */
-  public static from(input: Decodable): Decoder {
-    if (input instanceof Decoder) {
-      return input;
-    }
-    return new Decoder(input);
-  }
   private input_: Uint8Array;
   private offset_: number;
 
@@ -137,5 +115,32 @@ export class Decoder {
         this.offset_ += 1;
         return this.input_[this.offset_ - 1];
     }
+  }
+}
+
+export namespace Decoder {
+  /**
+   * Types acceptable to Decoder.from().
+   */
+  export type Input = Decoder | Uint8Array;
+
+  /**
+   * Test whether obj is Decoder.Input.
+   */
+  export function isInput(obj: any): boolean {
+    return obj instanceof Decoder || obj instanceof Uint8Array;
+  }
+
+  /**
+   * Construct from Decoder.Input, or return existing Decoder.
+   */
+  export function from(obj: Input): Decoder {
+    if (obj instanceof Decoder) {
+      return obj;
+    }
+    if (obj instanceof Uint8Array) {
+      return new Decoder(obj);
+    }
+    throw new Error("Decoder.from: obj is not Decoder.Input");
   }
 }

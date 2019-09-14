@@ -1,4 +1,4 @@
-import { Decodable, Tlv } from "@ndn/tlv";
+import { Decoder, Tlv } from "@ndn/tlv";
 import { TT } from "@ndn/tt-base";
 import printf = require("printf");
 
@@ -81,7 +81,7 @@ export class Component extends Tlv {
    * Decode name component.
    * @param wire wire encoding.
    */
-  constructor(wire: Decodable);
+  constructor(wire: Decoder.Input);
 
   /**
    * Create name component with TLV-TYPE and TLV-VALUE.

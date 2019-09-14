@@ -1,11 +1,22 @@
 /**
  * An object that knows how to prepend itself to an Encoder.
  */
-export interface Encodable {
+interface EncodableObj {
   encodeTo(encoder: Encoder);
 }
 
-const BUF_EXTENSION = Buffer.alloc(10240);
+/**
+ * An encodable TLV structure.
+ *
+ * First item is a number for TLV-TYPE.
+ * Subsequent items are Encodables for TLV-VALUE.
+ */
+type EncodableTlv = [number, ...any[]];
+
+/**
+ * An object acceptable to Encoder.encode().
+ */
+export type Encodable = ArrayBufferView | EncodableObj | EncodableTlv;
 
 function sizeofVarNum(n: number): number {
   if (n < 0xFD) {
@@ -33,13 +44,22 @@ function writeVarNum(room: Buffer, off: number, n: number) {
   }
 }
 
+const BUF_INIT_SIZE = 10240;
+const BUF_EXTENSION = Buffer.alloc(10240);
+
 /**
  * TLV encoder that accepts objects in reverse order.
  */
 export class Encoder {
   private buf_: ArrayBuffer;
   private off_: number;
-  private valueEnds_: number[];
+
+  /**
+   * Return encoding output size.
+   */
+  public get size(): number {
+    return this.buf_.byteLength - this.off_;
+  }
 
   /**
    * Obtain encoding output.
@@ -48,10 +68,9 @@ export class Encoder {
     return new Uint8Array(this.buf_, this.off_);
   }
 
-  constructor(initSize: number = 10240) {
+  constructor(initSize: number = BUF_INIT_SIZE) {
     this.buf_ = new ArrayBuffer(initSize);
     this.off_ = initSize;
-    this.valueEnds_ = [];
   }
 
   /**
@@ -59,7 +78,7 @@ export class Encoder {
    * @param sizeofObject object size.
    * @returns room to write object.
    */
-  public prepend(sizeofObject: number): Buffer {
+  public prependRoom(sizeofObject: number): Buffer {
     if (this.off_ < sizeofObject) {
       this.extend(sizeofObject);
     }
@@ -73,27 +92,20 @@ export class Encoder {
   public prependTypeLength(tlvType: number, tlvLength: number) {
     const sizeofT = sizeofVarNum(tlvType);
     const sizeofL = sizeofVarNum(tlvLength);
-    const room = this.prepend(sizeofT + sizeofL);
+    const room = this.prependRoom(sizeofT + sizeofL);
     writeVarNum(room, 0, tlvType);
     writeVarNum(room, sizeofT, tlvLength);
   }
 
   /**
-   * Begin writing TLV-VALUE.
+   * Prepend TLV structure.
+   * @param tlvType TLV-TYPE number.
+   * @param tlvValue TLV-VALUE objects.
    */
-  public beginValue() {
-    this.valueEnds_.push(this.off_);
-  }
-
-  /**
-   * Prepend TLV-TYPE and TLV-LENGTH upon finishing TLV-VALUE.
-   */
-  public endValue(tlvType: number) {
-    const endOffset = this.valueEnds_.pop();
-    if (typeof endOffset === "undefined") {
-      throw new Error("no TLV-VALUE is being written");
-    }
-    const tlvLength = endOffset - this.off_;
+  public prependTlv(tlvType: number, ...tlvValue: Encodable[]) {
+    const sizeBefore = this.size;
+    tlvValue.reverse().forEach(this.encode, this);
+    const tlvLength = this.size - sizeBefore;
     this.prependTypeLength(tlvType, tlvLength);
   }
 
@@ -101,7 +113,17 @@ export class Encoder {
    * Prepend an Encodable object.
    */
   public encode(obj: Encodable) {
-    obj.encodeTo(this);
+    if (ArrayBuffer.isView(obj)) {
+      const dst = this.prependRoom(obj.byteLength);
+      const src = Buffer.isBuffer(obj) ? obj : Buffer.from(obj.buffer, obj.byteOffset, obj.byteLength);
+      src.copy(dst);
+    } else if (typeof obj === "object" && typeof (obj as EncodableObj).encodeTo === "function") {
+      (obj as EncodableObj).encodeTo(this);
+    } else if (Array.isArray(obj) && typeof obj[0] === "number") {
+      this.prependTlv.apply(this, obj);
+    } else {
+      throw new Error("Buffer.encode: obj is not Encodable");
+    }
   }
 
   private extend(sizeofRoom: number) {
@@ -113,6 +135,8 @@ export class Encoder {
     }
     this.buf_ = Buffer.concat(list, sizeofExts + this.buf_.byteLength).buffer;
     this.off_ += sizeofExts;
-    this.valueEnds_ = this.valueEnds_.map((off) => sizeofExts + off);
   }
+}
+
+export namespace Encoder {
 }

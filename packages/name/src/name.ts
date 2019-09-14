@@ -1,4 +1,4 @@
-import { Decodable, Decoder, Encodable, Encoder, isDecodable } from "@ndn/tlv";
+import { Decoder, Encoder } from "@ndn/tlv";
 import { TT } from "@ndn/tt-base";
 
 import { Component, ComponentCompareResult, ComponentLike } from "./component";
@@ -26,7 +26,7 @@ export enum NameCompareResult {
  * Name.
  * This type is immutable.
  */
-export class Name implements Encodable {
+export class Name {
   private comps_: Component[];
 
   /**
@@ -43,7 +43,7 @@ export class Name implements Encodable {
    * Decode name.
    * @param wire wire encoding.
    */
-  constructor(wire: Decodable);
+  constructor(wire: Decoder.Input);
 
   constructor(arg1?) {
     this.comps_ = [];
@@ -53,7 +53,7 @@ export class Name implements Encodable {
       this.comps_ = arg1.replace(/^(?:ndn)?\//, "").split("/").map(Component.from);
     } else if (Array.isArray(arg1)) {
       this.comps_ = arg1.map(Component.from);
-    } else if (isDecodable(arg1)) {
+    } else if (Decoder.isInput(arg1)) {
       const decoder = Decoder.from(arg1);
       decoder.readTypeExpect(TT.Name);
       const vDecoder = decoder.createValueDecoder();
@@ -164,10 +164,6 @@ export class Name implements Encodable {
   }
 
   public encodeTo(encoder: Encoder) {
-    encoder.beginValue();
-    for (let i = this.comps_.length - 1; i >= 0; --i) {
-      this.comps_[i].encodeTo(encoder);
-    }
-    encoder.endValue(TT.Name);
+    encoder.prependTlv.apply(encoder, ([TT.Name] as any).concat(this.comps_));
   }
 }
