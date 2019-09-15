@@ -44,6 +44,14 @@ test("prependTlv", () => {
     0xFD, 0x01, 0x00, 0x02, 0xB0, 0xB1,
     0x01, 0x02, 0xA0, 0xA1,
   ]);
+  expect(encoder).toEncodeAs(({ type, length, value }) => {
+    expect(type).toBe(0x10000);
+    expect(length).toBe(10);
+    expect(value).toMatchTlv(
+      ({ type }) => { expect(type).toBe(0x0100); },
+      ({ type }) => { expect(type).toBe(0x01); },
+    );
+  });
 });
 
 test("error on VAR-NUMBER-9", () => {

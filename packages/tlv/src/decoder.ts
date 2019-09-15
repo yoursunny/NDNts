@@ -17,6 +17,10 @@ class DecodedTlv {
     return this.buf.subarray(this.offsetV);
   }
 
+  public get tlv(): Uint8Array {
+    return this.buf;
+  }
+
   public get decoder(): Decoder {
     return new Decoder(this.buf);
   }
@@ -135,6 +139,7 @@ export namespace Decoder {
     readonly type: number;
     readonly length: number;
     readonly value: Uint8Array;
+    readonly tlv: Uint8Array;
     readonly decoder: Decoder;
     readonly vd: Decoder;
   }

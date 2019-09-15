@@ -33,6 +33,7 @@ export class Interest {
     Interest.EVD.decode(self, decoder);
     return self;
   }
+
   private static readonly EVD = new EvDecoder<Interest>(TT.Interest, [
     { tt: TT.Name, cb: (self, { decoder }) => { self.name_ = decoder.decode(Name); } },
     { tt: TT.CanBePrefix, cb: (self) => { self.canBePrefix_ = true; } },

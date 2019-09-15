@@ -1,5 +1,6 @@
 import expect = require("expect");
 
+import { Decoder } from "../decoder";
 import { Encoder } from "../encoder";
 
 type Uint8ArrayExpect = Uint8Array|Array<number|undefined>;
@@ -25,27 +26,56 @@ function toEqualUint8Array(received: Uint8Array, expected: Uint8ArrayExpect) {
   };
 }
 
-expect.extend({
-  toEqualUint8Array,
+type TlvMatcher = (tlv: Decoder.Tlv) => any;
 
-  toEncodeAs(received, expected: Uint8ArrayExpect) {
-    let output;
-    if (received instanceof Encoder) {
-      output = received.output;
-    } else {
-      const encoder = new Encoder();
-      encoder.encode(received);
-      output = encoder.output;
-    }
-    return toEqualUint8Array(output, expected);
-  },
+function toMatchTlv(received, ...checks: TlvMatcher[]) {
+  const decoder = new Decoder(received as Uint8Array);
+  checks.forEach((check) => {
+    check(decoder.read());
+  });
+  if (decoder.eof) {
+    return {
+      message: `expected ${received} not to match TLV`,
+      pass: true,
+    };
+  }
+  return {
+    message: `expected ${received} to match TLV`,
+    pass: false,
+  };
+}
+
+function toEncodeAs(...args) {
+  const received = args[0];
+  let encoder: Encoder;
+  if (received instanceof Encoder) {
+    encoder = received;
+  } else {
+    encoder = new Encoder();
+    encoder.encode(received);
+  }
+  const output = encoder.output;
+
+  if (args.length === 2 && (args[1] instanceof Uint8Array || Array.isArray(args[1]))) {
+    return toEqualUint8Array(output, args[1]);
+  }
+  args[0] = output;
+  return toMatchTlv.apply(undefined, args as any);
+}
+
+expect.extend({
+  toEncodeAs,
+  toEqualUint8Array,
+  toMatchTlv,
 });
 
 declare global {
   namespace jest {
     interface Matchers<R> {
-      toEqualUint8Array(a: Uint8ArrayExpect): R;
-      toEncodeAs(a: Uint8ArrayExpect): R;
+      toEqualUint8Array(expected: Uint8ArrayExpect): R;
+      toMatchTlv(...checks: TlvMatcher[]): R;
+      toEncodeAs(expected: Uint8ArrayExpect): R;
+      toEncodeAs(...checks: TlvMatcher[]): R;
     }
   }
 }

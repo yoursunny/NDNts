@@ -4,7 +4,7 @@ import "@ndn/tlv/lib/expect";
 import { Interest } from "../src";
 import { Name } from "@ndn/name";
 
-test("ctor", () => {
+test("encode", () => {
   expect(() => { new Interest({} as any); }).toThrow();
 
   let interest = new Interest("/A");

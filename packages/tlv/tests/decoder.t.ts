@@ -9,9 +9,11 @@ test("simple", () => {
   ]));
 
   {
-    let { type, value } = decoder.read();
+    let { type, length, value, tlv } = decoder.read();
     expect(type).toBe(0x01);
+    expect(length).toBe(0);
     expect(value).toEqualUint8Array([]);
+    expect(tlv).toEqualUint8Array([0x01, 0x00]);
   }
 
   {
