@@ -1,7 +1,7 @@
 import { Decoder, Encoder } from "@ndn/tlv";
 import { TT } from "@ndn/tt-base";
 
-import { Component, ComponentCompareResult, ComponentLike } from "./component";
+import { Component, ComponentLike } from "./component";
 import { NamingConvention } from "./convention";
 
 export type NameLike = Name | string;
@@ -13,8 +13,7 @@ export type NameLike = Name | string;
 export class Name {
   public static decodeFrom(decoder: Decoder): Name {
     const self = new Name();
-    decoder.readTypeExpect(TT.Name);
-    const vd = decoder.createValueDecoder();
+    const { vd } = decoder.read();
     while (!vd.eof) {
       self.comps_.push(vd.decode(Component));
     }
@@ -116,7 +115,7 @@ export class Name {
     const commonSize = Math.min(this.size, rhs.size);
     for (let i = 0; i < commonSize; ++i) {
       const cmp = this.comps_[i].compare(rhs.comps_[i]);
-      if (cmp !== ComponentCompareResult.EQUAL) {
+      if (cmp !== Component.CompareResult.EQUAL) {
         return cmp as unknown as Name.CompareResult;
       }
     }
@@ -149,7 +148,6 @@ export class Name {
   }
 }
 
-/* istanbul ignore next */
 export namespace Name {
   export function isNameLike(obj: any): obj is NameLike {
     return obj instanceof Name || typeof obj === "string";
@@ -160,14 +158,14 @@ export namespace Name {
    */
   export enum CompareResult {
     /** lhs is less than, but not a prefix of rhs */
-    LT = ComponentCompareResult.LT,
+    LT = Component.CompareResult.LT,
     /** lhs is a prefix of rhs */
     LPREFIX = -1,
     /** lhs and rhs are equal */
-    EQUAL = ComponentCompareResult.EQUAL,
+    EQUAL = Component.CompareResult.EQUAL,
     /** rhs is a prefix of lhs */
     RPREFIX = 1,
     /** rhs is less than, but not a prefix of lhs */
-    GT = ComponentCompareResult.GT,
+    GT = Component.CompareResult.GT,
   }
 }

@@ -1,4 +1,4 @@
-import { Decoder, Tlv } from "@ndn/tlv";
+import { Decoder, Encoder } from "@ndn/tlv";
 import { TT } from "@ndn/tt-base";
 import printf = require("printf");
 
@@ -22,33 +22,35 @@ const UNESCAPED = (() => {
 export type ComponentLike = Component | string;
 
 /**
- * Component compare result.
- */
-export enum ComponentCompareResult {
-  /** lhs is less than rhs */
-  LT = -2,
-  /** lhs and rhs are equal */
-  EQUAL = 0,
-  /** lhs is greater than rhs */
-  GT = 2,
-}
-
-/**
  * Name component.
  * This type is immutable.
  */
-export class Component extends Tlv {
-  public static decodeFrom(decoder: Decoder): Component {
-    const comp = Tlv.decodeFromImpl(decoder, new Component());
-    checkType(comp.type_);
-    return comp;
+export class Component {
+  public get type(): number {
+    return this.type_;
   }
 
-  /**
-   * Return Component instance, or parse from URI representation.
-   * @todo handle ImplicitSha256DigestComponent and ParametersSha256DigestComponent.
-   */
+  public get length(): number {
+    return this.value_.length;
+  }
+
+  public get value(): Uint8Array {
+    return this.value_;
+  }
+
+  /** TLV-VALUE interpreted as UTF-8 string. */
+  public get text(): string {
+    return new TextDecoder().decode(this.value_);
+  }
+
+  public static decodeFrom(decoder: Decoder): Component {
+    const { type, value } = decoder.read();
+    return new Component(type, value);
+  }
+
+  /** Parse from URI representation, or return existing Component. */
   public static from(input: ComponentLike): Component {
+    // TODO handle ImplicitSha256DigestComponent and ParametersSha256DigestComponent
     if (input instanceof Component) {
       return input;
     }
@@ -78,30 +80,30 @@ export class Component extends Tlv {
     return new Component(type, value.subarray(0, length));
   }
 
-  /**
-   * Create empty GenericNameComponent.
-   */
-  constructor();
+  private type_: number;
+  private value_: Uint8Array;
 
   /**
-   * Create name component with TLV-TYPE and TLV-VALUE.
+   * Construct name component.
+   * @param type TLV-TYPE.
+   * @param value TLV-VALUE; if specified as string, it's encoded as UTF-8 but not interpreted
+   *              as URI representation. Use from() to interpret URI.
    */
-  constructor(type: number, value?: Uint8Array);
-
-  constructor(arg1?, arg2?) {
-    if (typeof arg1 === "undefined") {
-      super(TT.GenericNameComponent);
+  constructor(type: number = TT.GenericNameComponent, value?: Uint8Array|string) {
+    checkType(type);
+    this.type_ = type;
+    if (value instanceof Uint8Array) {
+      this.value_ = value;
+    } else if (typeof value === "string") {
+      this.value_ = new TextEncoder().encode(value);
     } else {
-      super(arg1, arg2);
+      this.value_ = new Uint8Array();
     }
-    checkType(this.type_);
   }
 
-  /**
-   * Get URI string.
-   * @todo handle ImplicitSha256DigestComponent and ParametersSha256DigestComponent.
-   */
+  /** Get URI string. */
   public toString(): string {
+    // TODO handle ImplicitSha256DigestComponent and ParametersSha256DigestComponent
     let hasNonPeriods = false;
     let b = this.type_ === TT.GenericNameComponent ? "" : printf("%d=", this.type_);
     b = this.value_.reduce<string>((b, ch) => {
@@ -117,44 +119,48 @@ export class Component extends Tlv {
     return b;
   }
 
-  /**
-   * Determine if component follows a naming convention.
-   */
+  public encodeTo(encoder: Encoder) {
+    encoder.prependTlv(this.type_, this.value_);
+  }
+
+  /** Determine if component follows a naming convention. */
   public is(convention: NamingConventionBase): boolean {
     return convention.match(this);
   }
 
-  /**
-   * Compare with other component.
-   */
-  public compare(other: ComponentLike): ComponentCompareResult {
-    const rhs = Component.from(other);
-    if (this.type < rhs.type) {
-      return ComponentCompareResult.LT;
-    }
-    if (this.type > rhs.type) {
-      return ComponentCompareResult.GT;
-    }
-    if (this.length < rhs.length) {
-      return ComponentCompareResult.LT;
-    }
-    if (this.length > rhs.length) {
-      return ComponentCompareResult.GT;
-    }
-    const cmp = Buffer.compare(this.value, rhs.value);
-    if (cmp < 0) {
-      return ComponentCompareResult.LT;
-    }
-    if (cmp > 0) {
-      return ComponentCompareResult.GT;
-    }
-    return ComponentCompareResult.EQUAL;
+  /** Compare this component with other. */
+  public compare(other: ComponentLike): Component.CompareResult {
+    return Component.compare(this, other);
   }
 
-  /**
-   * Determine if this name component equals other.
-   */
+  /** Determine if this component equals other. */
   public equals(other: ComponentLike): boolean {
-    return this.compare(other) === ComponentCompareResult.EQUAL;
+    return this.compare(other) === Component.CompareResult.EQUAL;
+  }
+}
+
+export namespace Component {
+  /** Component compare result. */
+  export enum CompareResult {
+    /** lhs is less than rhs */
+    LT = -2,
+    /** lhs and rhs are equal */
+    EQUAL = 0,
+    /** lhs is greater than rhs */
+    GT = 2,
+  }
+
+  function toCompareResult(diff: number): CompareResult {
+    return diff === 0 ? CompareResult.EQUAL :
+           diff < 0 ? CompareResult.LT : CompareResult.GT;
+  }
+
+  /** Compare two components. */
+  export function compare(lhs: ComponentLike, rhs: ComponentLike): CompareResult {
+    const l = Component.from(lhs);
+    const r = Component.from(rhs);
+    return toCompareResult(l.type - r.type) ||
+           toCompareResult(l.length - r.length) ||
+           toCompareResult(Buffer.compare(l.value, r.value));
   }
 }

@@ -16,12 +16,15 @@ export class EvDecoder<T> {
   }
 
   public decode(target: T, decoder: Decoder) {
-    decoder.readTypeExpect(this.tlvType);
-    const vd = decoder.createValueDecoder();
+    const { type, vd } = decoder.read();
+    if (type !== this.tlvType) {
+      throw new Error(printf("want TLV-TYPE %02X but got %02X", this.tlvType, type));
+    }
+
     let currentIndex = 0;
     let currentOccurs = 0;
     while (!vd.eof) {
-      const tlv = vd.readTlv();
+      const tlv = vd.read();
       const tt = tlv.type;
       const i: number|undefined = this.ttIndex[tt];
       if (typeof i === "undefined") {

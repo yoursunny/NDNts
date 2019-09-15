@@ -12,17 +12,27 @@ class EvdTestTarget {
   }
 };
 
+class A1 {
+  public static decodeFrom(decoder: Decoder): A1 {
+    const { type, length, value } = decoder.read();
+    expect(type).toBe(0xA1);
+    expect(length).toBe(1);
+    expect(value).toEqualUint8Array([0x10]);
+    return new A1();
+  }
+}
+
 test("simple", () => {
   const evd = new EvDecoder<EvdTestTarget>(0xA0, [
-    { tt: 0xA1, cb: (self) => { ++self.a1; } },
+    { tt: 0xA1, cb: (self, { decoder }) => { ++self.a1; decoder.decode(A1); } },
     { tt: 0xA4, cb: (self) => { ++self.a4; } },
     { tt: 0xA6, cb: (self) => { ++self.a6; }, repeatable: true },
     { tt: 0xA9, cb: (self) => { ++self.a9; } },
   ]);
 
   let decoder = new Decoder(new Uint8Array([
-    0xA0, 0x0A,
-    0xA1, 0x00,
+    0xA0, 0x0B,
+    0xA1, 0x01, 0x10,
     0xA4, 0x00,
     0xA6, 0x00,
     0xA6, 0x00,
@@ -55,8 +65,8 @@ test("simple", () => {
   expect(() => { evd.decode(target, decoder); }).toThrow();
 
   decoder = new Decoder(new Uint8Array([
-    0xA0, 0x04,
-    0xA1, 0x00,
+    0xA0, 0x05,
+    0xA1, 0x01, 0x10,
     0xA1, 0x00, // cannot repeat
   ]));
   target = new EvdTestTarget();
@@ -79,4 +89,8 @@ test("simple", () => {
   target = new EvdTestTarget();
   evd.decode(target, decoder);
   expect(target.sum()).toBe(11);
+
+  decoder = new Decoder(new Uint8Array([0xAF, 0x00]));
+  target = new EvdTestTarget();
+  expect(() => { evd.decode(target, decoder); }).toThrow();
 });

@@ -79,7 +79,6 @@ export class Interest {
   }
 }
 
-/* istanbul ignore next */
 export namespace Interest {
   export const CanBePrefix = Symbol("CanBePrefix");
   export const MustBeFresh = Symbol("MustBeFresh");

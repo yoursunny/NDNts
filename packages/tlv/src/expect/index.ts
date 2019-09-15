@@ -3,7 +3,6 @@ import expect = require("expect");
 import { Encoder } from "../encoder";
 
 function toEqualUint8Array(received, a: ArrayLike<number>) {
-  expect(received).toBeInstanceOf(Uint8Array);
   const expected = new Uint8Array(a);
   if (Buffer.compare(received as Uint8Array, expected) === 0) {
     return {

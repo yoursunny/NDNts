@@ -16,11 +16,11 @@ class TypedString extends Typed implements NamingConvention<string> {
   }
 
   public create(v: string): Component {
-    return new Component(this.tt, new TextEncoder().encode(v));
+    return new Component(this.tt, v);
   }
 
   public parse(comp: Component): string {
-    return new TextDecoder().decode(comp.value);
+    return comp.text;
   }
 }
 
