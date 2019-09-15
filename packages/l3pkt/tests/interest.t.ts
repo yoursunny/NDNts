@@ -12,8 +12,9 @@ test("ctor", () => {
   expect(interest.canBePrefix).toBeFalsy();
   expect(interest.mustBeFresh).toBeFalsy();
   expect(interest).toEncodeAs([
-    0x05, 0x05,
+    0x05, 0x0B,
     0x07, 0x03, 0x08, 0x01, 0x41,
+    0x0A, 0x04, undefined, undefined, undefined, undefined,
   ]);
 
   interest = new Interest("/B", Interest.CanBePrefix, Interest.MustBeFresh);
@@ -21,18 +22,20 @@ test("ctor", () => {
   expect(interest.canBePrefix).toBeTruthy();
   expect(interest.mustBeFresh).toBeTruthy();
   expect(interest).toEncodeAs([
-    0x05, 0x09,
+    0x05, 0x0F,
     0x07, 0x03, 0x08, 0x01, 0x42,
     0x21, 0x00,
     0x12, 0x00,
+    0x0A, 0x04, undefined, undefined, undefined, undefined,
   ]);
 
   interest.name = new Name("C");
   interest.canBePrefix = false;
   interest.mustBeFresh = false;
   expect(interest).toEncodeAs([
-    0x05, 0x05,
+    0x05, 0x0B,
     0x07, 0x03, 0x08, 0x01, 0x43,
+    0x0A, 0x04, undefined, undefined, undefined, undefined,
   ]);
 });
 

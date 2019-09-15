@@ -71,10 +71,14 @@ export class Interest {
   }
 
   public encodeTo(encoder: Encoder) {
+    const nonce = Buffer.alloc(4);
+    nonce.writeUInt32LE(Math.random() * 0x100000000, 0);
+
     encoder.prependTlv(TT.Interest,
       this.name_,
       this.canBePrefix_ ? [TT.CanBePrefix] : undefined,
       this.mustBeFresh_ ? [TT.MustBeFresh] : undefined,
+      [TT.Nonce, nonce],
     );
   }
 }
