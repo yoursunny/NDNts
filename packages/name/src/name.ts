@@ -14,9 +14,9 @@ export class Name {
   public static decodeFrom(decoder: Decoder): Name {
     const self = new Name();
     decoder.readTypeExpect(TT.Name);
-    const vDecoder = decoder.createValueDecoder();
-    while (!vDecoder.eof) {
-      self.comps_.push(vDecoder.decode(Component));
+    const vd = decoder.createValueDecoder();
+    while (!vd.eof) {
+      self.comps_.push(vd.decode(Component));
     }
     return self;
   }

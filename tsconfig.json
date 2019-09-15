@@ -9,7 +9,7 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "strict": true,
-    "target": "es6",
+    "target": "es2019",
     "types": [
       "node",
       "jest"

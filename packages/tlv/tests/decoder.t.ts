@@ -12,10 +12,10 @@ test("simple", () => {
   expect(decoder.readType()).toBe(0x0409);
   expect(decoder.readValue()).toEqualUint8Array([0xB0, 0xB1]);
   expect(decoder.readType()).toBe(0x00020409);
-  const vDecoder = decoder.createValueDecoder();
-  expect(vDecoder.readType()).toBe(0xC0);
-  expect(vDecoder.readValue()).toEqualUint8Array([0xC2]);
-  expect(vDecoder.eof).toBeTruthy();
+  const vd = decoder.createValueDecoder();
+  expect(vd.readType()).toBe(0xC0);
+  expect(vd.readValue()).toEqualUint8Array([0xC2]);
+  expect(vd.eof).toBeTruthy();
   expect(decoder.eof).toBeTruthy();
 });
 

@@ -16,7 +16,7 @@ type EncodableTlv = [number, ...any[]];
 /**
  * An object acceptable to Encoder.encode().
  */
-export type Encodable = ArrayBufferView | EncodableObj | EncodableTlv;
+export type Encodable = ArrayBufferView | undefined | EncodableObj | EncodableTlv;
 
 function sizeofVarNum(n: number): number {
   if (n < 0xFD) {
@@ -121,7 +121,7 @@ export class Encoder {
       (obj as EncodableObj).encodeTo(this);
     } else if (Array.isArray(obj) && typeof obj[0] === "number") {
       this.prependTlv.apply(this, obj);
-    } else {
+    } else if (typeof obj !== "undefined") {
       throw new Error("Buffer.encode: obj is not Encodable");
     }
   }

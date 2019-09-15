@@ -1,0 +1,26 @@
+{
+  "name": "@ndn/l3pkt",
+  "version": "0.0.0",
+  "description": "NDN Network Layer Packets",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "homepage": "https://yoursunny.com/p/ndn-ts/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yoursunny/ndn-ts.git"
+  },
+  "dependencies": {
+    "@ndn/name": "file:../name",
+    "@ndn/tlv": "file:../tlv",
+    "@ndn/tt-base": "file:../tt-base"
+  }
+}

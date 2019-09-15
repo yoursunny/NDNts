@@ -2,7 +2,7 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist && ts-node --skip-project -O {\\\"target\\\":\\\"ES2019\\\"} mk/create-local-links.ts",
+    "bootstrap": "lerna bootstrap --hoist && ts-node mk/create-local-links.ts",
     "build": "lerna exec -- tsc -d",
     "build2": "npm run build && lerna exec -- tsc --removeComments true",
     "clean": "rm -rf packages/*/lib/",

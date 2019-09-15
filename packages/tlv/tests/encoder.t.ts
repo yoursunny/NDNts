@@ -36,6 +36,7 @@ test("prependTlv", () => {
   const encoder = new Encoder(5);
   encoder.prependTlv(0x10000,
     [0x0100, new Uint8Array([0xB0, 0xB1])],
+    undefined,
     [0x01, new Uint8Array([0xA0, 0xA1])],
   );
   expect(encoder).toEncodeAs([
