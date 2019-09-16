@@ -137,3 +137,11 @@ export class Encoder {
     this.off_ += sizeofExts;
   }
 }
+
+export namespace Encoder {
+  export function encode(obj: Encodable, initBufSize: number = BUF_INIT_SIZE) {
+    const encoder = new Encoder(initBufSize);
+    encoder.encode(obj);
+    return encoder.output;
+  }
+}

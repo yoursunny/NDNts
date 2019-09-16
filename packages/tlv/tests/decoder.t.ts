@@ -2,18 +2,19 @@ import { Decoder } from "../src";
 import "../src/expect";
 
 test("simple", () => {
-  const decoder = new Decoder(new Uint8Array([
+  const decoder = new Decoder(Buffer.from([
     0x01, 0x00,
     0xFD, 0x04, 0x09, 0x02, 0xB0, 0xB1,
     0xFE, 0x00, 0x02, 0x04, 0x09, 0x03, 0xC0, 0x01, 0xC2,
   ]));
 
   {
-    let { type, length, value, tlv } = decoder.read();
+    let { type, length, value, tlv, size } = decoder.read();
     expect(type).toBe(0x01);
     expect(length).toBe(0);
     expect(value).toEqualUint8Array([]);
     expect(tlv).toEqualUint8Array([0x01, 0x00]);
+    expect(size).toBe(2);
   }
 
   {

@@ -1,0 +1,31 @@
+{
+  "name": "@ndn/face",
+  "version": "0.0.0",
+  "description": "NDN Face",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "homepage": "https://yoursunny.com/p/ndn-ts/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yoursunny/ndn-ts.git"
+  },
+  "dependencies": {
+    "@ndn/l3pkt": "file:../l3pkt",
+    "@ndn/tlv": "file:../tlv",
+    "@ndn/tt-base": "file:../tt-base",
+    "readable-stream": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/readable-stream": "^2.3.4",
+    "stream-mock": "^2.0.5"
+  }
+}

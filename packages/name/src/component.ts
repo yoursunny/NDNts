@@ -11,7 +11,7 @@ function checkType(n: number) {
 }
 
 const UNESCAPED = (() => {
-  const s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._~";
+  const s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
   const m = {};
   for (let i = 0; i < s.length; ++i) {
     m[s.charCodeAt(i)] = true;

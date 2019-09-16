@@ -47,14 +47,12 @@ function toMatchTlv(received, ...checks: TlvMatcher[]) {
 
 function toEncodeAs(...args) {
   const received = args[0];
-  let encoder: Encoder;
+  let output: Uint8Array;
   if (received instanceof Encoder) {
-    encoder = received;
+    output = received.output;
   } else {
-    encoder = new Encoder();
-    encoder.encode(received);
+    output = Encoder.encode(received);
   }
-  const output = encoder.output;
 
   if (args.length === 2 && (args[1] instanceof Uint8Array || Array.isArray(args[1]))) {
     return toEqualUint8Array(output, args[1]);

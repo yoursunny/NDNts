@@ -10,7 +10,7 @@ class DecodedTlv {
   }
 
   public get length(): number {
-    return this.buf.byteLength - this.offsetV;
+    return this.buf.length - this.offsetV;
   }
 
   public get value(): Uint8Array {
@@ -19,6 +19,10 @@ class DecodedTlv {
 
   public get tlv(): Uint8Array {
     return this.buf;
+  }
+
+  public get size(): number {
+    return this.buf.length;
   }
 
   public get decoder(): Decoder {
@@ -43,6 +47,9 @@ export class Decoder {
   private offset: number = 0;
 
   constructor(private input: Uint8Array) {
+    if (Buffer.isBuffer(input)) {
+      this.input = new Uint8Array(input.buffer, input.byteOffset, input.byteLength);
+    }
   }
 
   /** Read TLV structure. */
@@ -140,6 +147,7 @@ export namespace Decoder {
     readonly length: number;
     readonly value: Uint8Array;
     readonly tlv: Uint8Array;
+    readonly size: number;
     readonly decoder: Decoder;
     readonly vd: Decoder;
   }
