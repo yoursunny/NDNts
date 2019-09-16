@@ -22,7 +22,8 @@
     "@ndn/l3pkt": "file:../l3pkt",
     "@ndn/tlv": "file:../tlv",
     "@ndn/tt-base": "file:../tt-base",
-    "readable-stream": "^3.4.0"
+    "readable-stream": "^3.4.0",
+    "simplesignal": "4.0.2"
   },
   "devDependencies": {
     "@types/readable-stream": "^2.3.4",

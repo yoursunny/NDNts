@@ -4,7 +4,7 @@ module.exports = {
 
   moduleFileExtensions: ['ts', 'js'],
 
-  testRegex: '/tests/.*\\.(ts|js)',
+  testRegex: '/tests/.*\\.t\\.ts',
   testPathIgnorePatterns: [
     '/node_modules/',
   ],

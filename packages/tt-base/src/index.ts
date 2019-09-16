@@ -31,3 +31,17 @@ export enum TT {
   SigTime = 0x28,
   SigSeqNum = 0x2A,
 }
+
+export namespace TT {
+  export function toString(tt: number): string {
+    let s = TT[tt];
+    if (s) {
+      return s;
+    }
+    s = tt.toString(16).toUpperCase();
+    if (s.length === 1 || s.length === 3) {
+      return "0x0" + s;
+    }
+    return "0x" + s;
+  }
+}

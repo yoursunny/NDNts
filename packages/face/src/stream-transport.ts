@@ -1,5 +1,5 @@
 import { Decoder } from "@ndn/tlv";
-import { PassThrough, Transform } from "readable-stream";
+import { Transform } from "readable-stream";
 
 import { Transport } from "./transport";
 
@@ -46,32 +46,17 @@ class StreamRx extends Transform {
   }
 }
 
-class StreamTx extends PassThrough {
-  constructor() {
-    super({
-      readableObjectMode: false,
-      writableObjectMode: true,
-    });
-  }
-}
-
-export class StreamTransport extends Transport<StreamRx, StreamTx> {
+/** Stream-oriented transport. */
+export class StreamTransport extends Transport<StreamRx, NodeJS.WritableStream> {
   constructor(rx: NodeJS.ReadableStream, tx: NodeJS.WritableStream);
 
   constructor(rxtx: NodeJS.ReadableStream & NodeJS.WritableStream);
 
   constructor(arg1, arg2?) {
-    super(new StreamRx(), new StreamTx());
     let rx: NodeJS.ReadableStream;
     let tx: NodeJS.WritableStream;
-    if (arg2) {
-      rx = arg1;
-      tx = arg2;
-    } else {
-      rx = arg1;
-      tx = arg1;
-    }
+    [rx, tx] = arg2 ? [arg1, arg2] : [arg1, arg1];
+    super(new StreamRx(), tx);
     rx.pipe(this.rx);
-    this.tx.pipe(tx);
   }
 }

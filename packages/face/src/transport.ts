@@ -1,7 +1,5 @@
-import { Readable, Writable } from "readable-stream";
-
-export class Transport<RX extends NodeJS.ReadableStream = Readable,
-                       TX extends NodeJS.WritableStream = Writable> {
+export class Transport<RX extends NodeJS.ReadableStream = NodeJS.ReadableStream,
+                       TX extends NodeJS.WritableStream = NodeJS.WritableStream> {
   public get rx(): RX {
     return this.rx_;
   }
