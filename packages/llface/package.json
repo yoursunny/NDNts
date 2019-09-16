@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/face",
+  "name": "@ndn/llface",
   "version": "0.0.0",
-  "description": "NDN Face",
+  "description": "NDN Low-Level Face",
   "keywords": [
     "NDN",
     "Named Data Networking"

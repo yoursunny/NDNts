@@ -20,9 +20,10 @@ class DatagramRx extends Transform {
 }
 
 /** Datagram-oriented transport. */
-export class DatagramTransport extends Transport<DatagramRx, NodeJS.WritableStream> {
-  constructor(rx: NodeJS.ReadableStream, tx: NodeJS.WritableStream) {
-    super(new DatagramRx(), tx);
+export class DatagramTransport implements Transport {
+  public readonly rx = new DatagramRx();
+
+  constructor(rx: NodeJS.ReadableStream, public readonly tx: NodeJS.WritableStream) {
     rx.pipe(this.rx);
   }
 }

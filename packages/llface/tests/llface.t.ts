@@ -2,15 +2,19 @@ import { Interest, Data } from "@ndn/l3pkt";
 import { PassThrough } from "readable-stream";
 import { ObjectReadableMock, ObjectWritableMock } from "stream-mock";
 
-import { Face, DatagramTransport } from "../src";
+import { LLFace, DatagramTransport } from "../src";
 
 test("simple", done => {
   expect.hasAssertions();
 
   const connAB = new PassThrough({ objectMode: true });
   const connBA = new PassThrough({ objectMode: true });
-  const faceA = new Face(new DatagramTransport(connBA, connAB));
-  const faceB = new Face(new DatagramTransport(connAB, connBA));
+  const faceA = new LLFace(new DatagramTransport(connBA, connAB));
+  const faceB = new LLFace(new DatagramTransport(connAB, connBA));
+
+  process.nextTick(() => {
+    faceA.sendInterest(new Interest("/A"));
+  });
 
   faceB.recvInterest.add((interest) => {
     expect(interest.name.toString()).toBe("/A");
@@ -24,8 +28,6 @@ test("simple", done => {
     expect(data.content).toHaveLength(2);
     done();
   });
-
-  faceA.sendInterest(new Interest("/A"));
 });
 
 test("error on unknown TLV-TYPE", done => {
@@ -34,7 +36,7 @@ test("error on unknown TLV-TYPE", done => {
   const rxRemote = new ObjectReadableMock([
     Buffer.from([0xF0, 0x00]),
   ]);
-  const face = new Face(new DatagramTransport(rxRemote, new ObjectWritableMock()));
+  const face = new LLFace(new DatagramTransport(rxRemote, new ObjectWritableMock()));
 
   face.rxError.add((error) => {
     expect(error).toBeInstanceOf(Error);

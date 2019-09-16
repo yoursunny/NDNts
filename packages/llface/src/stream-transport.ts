@@ -47,7 +47,10 @@ class StreamRx extends Transform {
 }
 
 /** Stream-oriented transport. */
-export class StreamTransport extends Transport<StreamRx, NodeJS.WritableStream> {
+export class StreamTransport implements Transport {
+  public readonly rx = new StreamRx();
+  public readonly tx: NodeJS.WritableStream;
+
   constructor(rx: NodeJS.ReadableStream, tx: NodeJS.WritableStream);
 
   constructor(rxtx: NodeJS.ReadableStream & NodeJS.WritableStream);
@@ -56,7 +59,7 @@ export class StreamTransport extends Transport<StreamRx, NodeJS.WritableStream> 
     let rx: NodeJS.ReadableStream;
     let tx: NodeJS.WritableStream;
     [rx, tx] = arg2 ? [arg1, arg2] : [arg1, arg1];
-    super(new StreamRx(), tx);
     rx.pipe(this.rx);
+    this.tx = tx;
   }
 }

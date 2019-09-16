@@ -6,8 +6,8 @@ import SimpleSignal from "simplesignal";
 import { Writable } from "readable-stream";
 import { Transport } from "./transport";
 
-/** Layer-3 face for sending and receiving L3 packets. */
-export class Face {
+/** Low-level face for sending and receiving L3 packets. */
+export class LLFace {
   /** Emitted when an Interest arrives. */
   public recvInterest = new SimpleSignal<(interest: Interest) => any>();
   /** Emitted when a Data arrives. */
