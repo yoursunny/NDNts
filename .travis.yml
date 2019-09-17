@@ -1,0 +1,21 @@
+---
+dist: bionic
+
+language: node_js
+node_js: 12
+
+cache:
+  directories:
+    - $HOME/.pnpm-store
+
+install:
+  - npm install -g pnpm
+
+before_script:
+  - npm run bootstrap
+
+script:
+  - npm run lint
+  - npm run build
+  - npm run test
+  - npm run cover
