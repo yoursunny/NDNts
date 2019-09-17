@@ -1,9 +1,10 @@
 import { Decoder } from "@ndn/tlv";
-import { Transform } from "readable-stream";
+import * as stream from "readable-stream";
 
+import { BaseTransport } from "./base-transport";
 import { Transport } from "./transport";
 
-class DatagramRx extends Transform {
+class DatagramRx extends stream.Transform {
   constructor() {
     super({ objectMode: true });
   }
@@ -20,10 +21,13 @@ class DatagramRx extends Transform {
 }
 
 /** Datagram-oriented transport. */
-export class DatagramTransport implements Transport {
-  public readonly rx = new DatagramRx();
+export class DatagramTransport extends BaseTransport<DatagramRx> implements Transport {
+  constructor(conn: NodeJS.ReadWriteStream) {
+    super(new DatagramRx(), conn);
+    stream.pipeline(conn, this.rx, this.handlePipelineError);
+  }
 
-  constructor(rx: NodeJS.ReadableStream, public readonly tx: NodeJS.WritableStream) {
-    rx.pipe(this.rx);
+  public async close(): Promise<void> {
+    return this.closeImpl(() => { this.rx.destroy(); });
   }
 }

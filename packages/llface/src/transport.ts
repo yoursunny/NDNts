@@ -1,3 +1,5 @@
+import SimpleSignal from "simplesignal";
+
 /**
  * Low-level transport.
  *
@@ -17,4 +19,14 @@ export interface Transport {
    * Writable side of this stream operates in object mode. Each object is an Uint8Array.
    */
   readonly tx: NodeJS.WritableStream;
+
+  /** Signal when the transport is closed, possibly due to error. */
+  readonly onEnd: Omit<SimpleSignal<Transport.EndCallback>, "dispatch">;
+
+  /** Request to close the transport. */
+  close(): Promise<void>;
+}
+
+export namespace Transport {
+  export type EndCallback = (error?: Error) => any;
 }

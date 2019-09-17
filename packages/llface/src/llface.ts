@@ -1,9 +1,9 @@
 import { Data, Interest } from "@ndn/l3pkt";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { TT } from "@ndn/tt-base";
+import * as stream from "readable-stream";
 import SimpleSignal from "simplesignal";
 
-import { Writable } from "readable-stream";
 import { Transport } from "./transport";
 
 /** Low-level face for sending and receiving L3 packets. */
@@ -15,11 +15,15 @@ export class LLFace {
   /** Emitted when RX error occurs. */
   public rxError = new SimpleSignal<(error: Error) => any>();
 
-  constructor(private transport: Transport) {
-    transport.rx.pipe(new Writable({
-      objectMode: true,
-      write: this.rxWrite,
-    }));
+  constructor(public readonly transport: Transport) {
+    stream.pipeline(
+      transport.rx,
+      new stream.Writable({
+        objectMode: true,
+        write: this.rxWrite,
+      }),
+      () => { this.rxError.dispatch(new Error("Transport closed")); },
+    );
   }
 
   /** Transmit an Interest. */
@@ -30,6 +34,10 @@ export class LLFace {
   /** Transmit a Data. */
   public sendData(data: Data) {
     this.transport.tx.write(Encoder.encode(data));
+  }
+
+  public close(): Promise<void> {
+    return this.transport.close();
   }
 
   private rxWrite = ({ type, decoder }: Decoder.Tlv, encoding,

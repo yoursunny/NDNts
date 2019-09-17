@@ -1,9 +1,10 @@
 import { Decoder } from "@ndn/tlv";
-import { Transform } from "readable-stream";
+import * as stream from "readable-stream";
 
+import { BaseTransport } from "./base-transport";
 import { Transport } from "./transport";
 
-class StreamRx extends Transform {
+class StreamRx extends stream.Transform {
   private buf: Buffer = Buffer.alloc(0);
 
   constructor() {
@@ -47,19 +48,13 @@ class StreamRx extends Transform {
 }
 
 /** Stream-oriented transport. */
-export class StreamTransport implements Transport {
-  public readonly rx = new StreamRx();
-  public readonly tx: NodeJS.WritableStream;
+export class StreamTransport extends BaseTransport<StreamRx> implements Transport {
+  constructor(conn: NodeJS.ReadWriteStream) {
+    super(new StreamRx(), conn);
+    stream.pipeline(conn, this.rx, this.handlePipelineError);
+  }
 
-  constructor(rx: NodeJS.ReadableStream, tx: NodeJS.WritableStream);
-
-  constructor(rxtx: NodeJS.ReadableStream & NodeJS.WritableStream);
-
-  constructor(arg1, arg2?) {
-    let rx: NodeJS.ReadableStream;
-    let tx: NodeJS.WritableStream;
-    [rx, tx] = arg2 ? [arg1, arg2] : [arg1, arg1];
-    rx.pipe(this.rx);
-    this.tx = tx;
+  public async close(): Promise<void> {
+    return this.closeImpl(() => { this.rx.destroy(); });
   }
 }
