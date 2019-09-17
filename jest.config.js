@@ -3,6 +3,10 @@ module.exports = {
   testEnvironment: 'node',
 
   moduleFileExtensions: ['ts', 'js'],
+  moduleNameMapper: {
+    '^@ndn/([^/]*)$': '<rootDir>/packages/$1/src',
+    '^@ndn/([^/]*)/test-fixture$': '<rootDir>/packages/$1/test-fixture',
+  },
 
   testRegex: '/tests/.*\\.t\\.ts',
   testPathIgnorePatterns: [
@@ -12,7 +16,6 @@ module.exports = {
   coveragePathIgnorePatterns: [
     '/lib/',
     '/node_modules/',
-    '/src/expect/',
     '/test-fixture/',
   ],
 };
