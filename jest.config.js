@@ -13,5 +13,6 @@ module.exports = {
     '/lib/',
     '/node_modules/',
     '/src/expect/',
+    '/test-fixture/',
   ],
 };

@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/llface",
+  "name": "@ndn/node-transport",
   "version": "0.0.0",
-  "description": "NDN Low-Level Face",
+  "description": "NDN Low-Level Transports for Node.js",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -19,18 +19,10 @@
     "url": "git+https://github.com/yoursunny/ndn-ts.git"
   },
   "dependencies": {
-    "@ndn/l3pkt": "file:../l3pkt",
-    "@ndn/tlv": "file:../tlv",
-    "@ndn/tt-base": "file:../tt-base",
-    "readable-stream": "^3.4.0",
-    "simplesignal": "4.0.2"
+    "@ndn/llface": "file:../llface"
   },
   "devDependencies": {
-    "@types/duplexify": "^3.6.0",
-    "@types/readable-stream": "^2.3.4",
-    "delay": "^4.3.0",
-    "duplexify": "^4.1.1",
-    "remote-controlled-promise": "^0.0.4",
-    "stream-mock": "^2.0.5"
+    "@ndn/l3pkt": "file:../l3pkt",
+    "remote-controlled-promise": "^0.0.4"
   }
 }

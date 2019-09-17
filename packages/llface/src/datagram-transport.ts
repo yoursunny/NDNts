@@ -28,6 +28,6 @@ export class DatagramTransport extends BaseTransport<DatagramRx> implements Tran
   }
 
   public async close(): Promise<void> {
-    return this.closeImpl(() => { this.rx.destroy(); });
+    return this.closeImpl(() => { this.tx.end(); });
   }
 }

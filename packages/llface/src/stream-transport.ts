@@ -55,6 +55,6 @@ export class StreamTransport extends BaseTransport<StreamRx> implements Transpor
   }
 
   public async close(): Promise<void> {
-    return this.closeImpl(() => { this.rx.destroy(); });
+    return this.closeImpl(() => { this.tx.end(); });
   }
 }
