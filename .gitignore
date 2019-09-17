@@ -2,6 +2,6 @@
 coverage/
 node_modules/
 packages/*/lib/
-packages/*/package-lock.json
 lerna-debug.log
 npm-debug.log
+pnpm-debug.log
