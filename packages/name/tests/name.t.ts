@@ -1,7 +1,7 @@
-import "@ndn/tlv/lib/expect"
-
-import { Name, Component } from "../src";
 import { Decoder } from "@ndn/tlv";
+import "@ndn/tlv/lib/expect";
+
+import { Component, Name } from "../src";
 
 test("simple", () => {
   let name = new Name();
@@ -11,7 +11,7 @@ test("simple", () => {
   const decoder = new Decoder(new Uint8Array([
     0x07, 0x07,
     0x08, 0x01, 0x41,
-    0xF0, 0x02, 0x42, 0x43
+    0xF0, 0x02, 0x42, 0x43,
   ]));
   name = decoder.decode(Name);
   expect(name.size).toBe(2);
@@ -34,10 +34,10 @@ test("get at", () => {
 
   expect(name.at(0)).toEqual(comp0);
   expect(name.at(1)).toEqual(comp1);
-  expect(() => { name.at(2); }).toThrow();
+  expect(() => name.at(2)).toThrow();
   expect(name.at(-1)).toEqual(comp1);
   expect(name.at(-2)).toEqual(comp0);
-  expect(() => { name.at(-3); }).toThrow();
+  expect(() => name.at(-3)).toThrow();
 });
 
 test("modify", () => {
@@ -45,7 +45,7 @@ test("modify", () => {
   expect(new Name(name).toString()).toBe("/A/B/C");
   expect(name.slice(1).toString()).toBe("/B/C");
   expect(name.getPrefix(-1).toString()).toBe("/A/B");
-  expect(name.append("D", "E").toString()).toBe("/A/B/C/D/E")
+  expect(name.append("D", "E").toString()).toBe("/A/B/C/D/E");
   expect(name.toString()).toBe("/A/B/C"); // immutable
 });
 
@@ -76,7 +76,7 @@ test("encode", () => {
     0x07, 0x06,
     0x08, 0x01, 0x41,
     0x08, 0x01, 0x42,
-  ])
+  ]);
 });
 
 test("NameLike", () => {

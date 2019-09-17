@@ -56,10 +56,10 @@ test("prependTlv", () => {
 
 test("error on VAR-NUMBER-9", () => {
   const encoder = new Encoder();
-  expect(() => { encoder.prependTypeLength(0x01, 0x100000000); }).toThrow();
+  expect(() => encoder.prependTypeLength(0x01, 0x100000000)).toThrow();
 });
 
 test("error on not Encodable", () => {
   const encoder = new Encoder();
-  expect(() => { encoder.encode({} as any); }).toThrow();
+  expect(() => encoder.encode({} as any)).toThrow();
 });

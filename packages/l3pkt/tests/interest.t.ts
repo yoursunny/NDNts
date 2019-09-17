@@ -1,11 +1,11 @@
+import { Name } from "@ndn/name";
 import { Decoder } from "@ndn/tlv";
 import "@ndn/tlv/lib/expect";
 
 import { Interest } from "../src";
-import { Name } from "@ndn/name";
 
 test("encode", () => {
-  expect(() => { new Interest({} as any); }).toThrow();
+  expect(() => new Interest({} as any)).toThrow();
 
   let interest = new Interest("/A");
   expect(interest.name.toString()).toEqual("/A");

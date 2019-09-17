@@ -1,12 +1,12 @@
+import { Name } from "@ndn/name";
 import { Decoder, NNI } from "@ndn/tlv";
 import "@ndn/tlv/lib/expect";
-
-import { Data } from "../src";
-import { Name } from "@ndn/name";
 import { TT } from "@ndn/tt-base";
 
+import { Data } from "../src";
+
 test("encode", () => {
-  expect(() => { new Data({} as any); }).toThrow();
+  expect(() => new Data({} as any)).toThrow();
 
   let data = new Data("/A");
   expect(data.name.toString()).toEqual("/A");
@@ -36,7 +36,7 @@ test("encode", () => {
           ({ type, value }) => {
             expect(type).toBe(TT.FreshnessPeriod);
             expect(NNI.decode(value)).toBe(2500);
-          }
+          },
         );
       },
       ({ type, length }) => {
