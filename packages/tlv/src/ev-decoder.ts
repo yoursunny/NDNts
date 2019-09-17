@@ -1,4 +1,4 @@
-import printf = require("printf");
+import printf from "printf";
 import { Decoder } from "./decoder";
 
 function isCritical(tt: number): boolean {

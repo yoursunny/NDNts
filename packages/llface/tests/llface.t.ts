@@ -1,4 +1,4 @@
-import duplexify = require("duplexify");
+import duplexify from "duplexify";
 import { ObjectReadableMock, ObjectWritableMock } from "stream-mock";
 
 import { DatagramTransport, LLFace } from "../src";

@@ -1,10 +1,9 @@
-import expect = require("expect");
+import expect from "expect";
 
 import { Component, ComponentLike } from "../src";
 
 expect.extend({
   toEqualComponent(received, comp: ComponentLike) {
-    expect(received).toBeInstanceOf(Component);
     if (received.equals(comp)) {
       return {
         message: () => `expected ${received} not to equal ${Component.from(comp).toString()}`,

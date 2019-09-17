@@ -1,4 +1,4 @@
-import duplexify = require("duplexify");
+import duplexify from "duplexify";
 import { PassThrough } from "readable-stream";
 
 import { DatagramTransport } from "../src";

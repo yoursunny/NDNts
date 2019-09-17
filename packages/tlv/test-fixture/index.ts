@@ -1,4 +1,4 @@
-import expect = require("expect");
+import expect from "expect";
 
 import { Decoder } from "../src/decoder";
 import { Encoder } from "../src/encoder";

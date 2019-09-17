@@ -1,6 +1,6 @@
 import { Decoder, Encoder } from "@ndn/tlv";
 import { TT } from "@ndn/tt-base";
-import printf = require("printf");
+import printf from "printf";
 
 import { NamingConventionBase } from "./convention";
 

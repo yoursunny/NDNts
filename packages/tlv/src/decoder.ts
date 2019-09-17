@@ -1,4 +1,4 @@
-import printf = require("printf");
+import printf from "printf";
 
 export interface Decodable<R> {
   decodeFrom(decoder: Decoder): R;

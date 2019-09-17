@@ -1,4 +1,4 @@
-import duplexify = require("duplexify");
+import duplexify from "duplexify";
 import { Transform } from "readable-stream";
 import { BufferReadableMock, BufferWritableMock, ObjectWritableMock } from "stream-mock";
 
