@@ -13,7 +13,11 @@ fs.readdirSync("packages", { withFileTypes: true })
   if (!direct.isDirectory()) {
     return;
   }
-  const { name, private } = require(path.join("..", "packages", direct.name, "package.json"));
+  const packageJsonPath = path.join("packages", direct.name, "package.json");
+  if (!fs.existsSync(packageJsonPath)) {
+    return;
+  }
+  const { name, private } = JSON.parse(fs.readFileSync(packageJsonPath));
   if (!!private || !name) {
     return;
   }

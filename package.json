@@ -2,7 +2,7 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "bootstrap": "npm run bootstrap1 && lerna bootstrap --hoist",
+    "bootstrap": "node mk/create-@ndn-symlink.js && npm run bootstrap1 && lerna bootstrap --hoist",
     "bootstrap1": "node mk/update-tsconfig-paths.js",
     "build": "lerna exec -- tsc -d",
     "build2": "npm run build && lerna exec -- tsc --removeComments true",
