@@ -1,5 +1,5 @@
 import { Decoder, EvDecoder, NNI } from "../src";
-import "../src/expect";
+import "../test-fixture";
 
 class EvdTestTarget {
   public a1 = 0;

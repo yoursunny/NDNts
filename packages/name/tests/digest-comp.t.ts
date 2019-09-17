@@ -1,5 +1,5 @@
 import { ImplicitDigest, Name, ParamsDigest } from "../src";
-import "../src/expect";
+import "../test-fixture";
 
 test("ImplicitDigest", () => {
   const digest = new Uint8Array(32);

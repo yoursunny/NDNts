@@ -1,5 +1,5 @@
 import { Component, Name } from "@ndn/name";
-import "@ndn/name/lib/expect";
+import "@ndn/name/test-fixture";
 import { NNI } from "@ndn/tlv";
 
 import { ByteOffset, Keyword, Segment, SequenceNum, Timestamp, Version } from "../src";

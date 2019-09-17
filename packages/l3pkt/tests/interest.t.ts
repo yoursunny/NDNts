@@ -1,6 +1,6 @@
 import { Name } from "@ndn/name";
 import { Decoder } from "@ndn/tlv";
-import "@ndn/tlv/lib/expect";
+import "@ndn/tlv/test-fixture";
 
 import { Interest } from "../src";
 

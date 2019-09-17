@@ -1,5 +1,5 @@
 import { Decoder } from "../src";
-import "../src/expect";
+import "../test-fixture";
 
 test("simple", () => {
   const decoder = new Decoder(Buffer.from([

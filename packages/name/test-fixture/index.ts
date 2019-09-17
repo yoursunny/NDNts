@@ -1,6 +1,6 @@
 import expect = require("expect");
 
-import { Component, ComponentLike } from "..";
+import { Component, ComponentLike } from "../src";
 
 expect.extend({
   toEqualComponent(received, comp: ComponentLike) {

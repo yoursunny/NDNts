@@ -1,5 +1,5 @@
 import { NNI } from "../src";
-import "../src/expect";
+import "../test-fixture";
 
 test("instance", () => {
   const nni = NNI(0xA0A1);

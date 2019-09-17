@@ -1,7 +1,7 @@
 import expect = require("expect");
 
-import { Decoder } from "../decoder";
-import { Encoder } from "../encoder";
+import { Decoder } from "../src/decoder";
+import { Encoder } from "../src/encoder";
 
 type Uint8ArrayExpect = Uint8Array|Array<number|undefined>;
 
