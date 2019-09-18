@@ -41,5 +41,6 @@ export async function testTransport(transportA: Transport, transportB: Transport
   });
 
   await done.promise;
+  expect(Object.keys(namesB).length).toBeGreaterThanOrEqual(Math.ceil(count * threshold));
   expect(Object.keys(namesA).length).toBeGreaterThanOrEqual(Math.ceil(count * threshold));
 }
