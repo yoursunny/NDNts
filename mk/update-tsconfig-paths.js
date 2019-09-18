@@ -2,8 +2,9 @@ const fs = require("fs");
 const path = require("path");
 
 const tsconfig = {
+  extends: "./mk/tsconfig.build.json",
   compilerOptions: {
-    baseUrl: "..",
+    baseUrl: ".",
     paths: {},
   },
 };
@@ -25,4 +26,5 @@ fs.readdirSync("packages", { withFileTypes: true })
   tsconfig.compilerOptions.paths[`${name}/test-fixture`] = [path.join("packages", direct.name, "test-fixture")];
 });
 
-fs.writeFileSync("mk/tsconfig-paths.json", JSON.stringify(tsconfig, undefined, 2));
+fs.writeFileSync(path.resolve(__dirname, "..", "tsconfig.json"),
+                 JSON.stringify(tsconfig, undefined, 2));

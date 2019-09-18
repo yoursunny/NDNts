@@ -5,3 +5,4 @@ packages/*/lib/
 lerna-debug.log
 npm-debug.log
 pnpm-debug.log
+/tsconfig.json

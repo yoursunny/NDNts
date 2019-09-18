@@ -3,8 +3,8 @@
   "private": true,
   "scripts": {
     "bootstrap": "node mk/update-tsconfig-paths.js && pnpm install -r",
-    "build": "lerna exec -- tsc -d",
-    "build2": "npm run build && lerna exec -- tsc --removeComments true",
+    "build": "lerna exec -- tsc -p tsconfig.build.json",
+    "build2": "lerna exec -- tsc -p tsconfig.build.json -d && lerna exec -- tsc -p tsconfig.build.json --removeComments true",
     "clean": "rm -rf packages/*/lib/",
     "cover": "jest --coverage",
     "lint": "tslint --fix -p .",

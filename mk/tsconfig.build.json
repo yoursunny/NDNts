@@ -1,5 +1,4 @@
 {
-  "extends": "./mk/tsconfig-paths.json",
   "compilerOptions": {
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
