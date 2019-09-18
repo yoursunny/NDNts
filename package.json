@@ -2,14 +2,16 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "bootstrap": "node mk/update-tsconfig-paths.js && pnpm install -r",
-    "build": "lerna exec -- tsc -p tsconfig.build.json",
-    "build2": "lerna exec -- tsc -p tsconfig.build.json -d && lerna exec -- tsc -p tsconfig.build.json --removeComments true",
+    "bootstrap": "npx pnpm install -r && node mk/update-tsconfig-paths.js",
+    "build": "pnpm recursive exec --filter ./packages -- tsc -p tsconfig.build.json",
     "clean": "rm -rf packages/*/lib/",
     "cover": "jest --coverage",
     "lint": "tslint --fix -p .",
     "preinstall": "node mk/only-allow-pnpm.js",
-    "publish": "npm run build2 && lerna publish --no-push",
+    "prod-build": "npm run prod-build-d && npm run prod-build-js",
+    "prod-build-d": "pnpm recursive exec --filter ./packages -- tsc -p tsconfig.build.json -d",
+    "prod-build-js": "pnpm recursive exec --filter ./packages -- tsc -p tsconfig.build.json --removeComments true",
+    "publish": "npm run prod-build && lerna publish --no-push",
     "test": "jest"
   },
   "devDependencies": {
