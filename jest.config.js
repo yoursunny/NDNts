@@ -18,4 +18,10 @@ module.exports = {
     '/node_modules/',
     '/test-fixture/',
   ],
+
+  globals: {
+    'ts-jest': {
+      packageJson: '<rootDir>/package.json',
+    },
+  },
 };
