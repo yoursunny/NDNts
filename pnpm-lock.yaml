@@ -4,6 +4,7 @@ devDependencies:
   expect: 24.9.0
   jest: 24.9.0
   lerna: 3.16.4
+  pnpm: 3.8.1
   ts-jest: 24.1.0_jest@24.9.0
   tslint: 5.20.0_typescript@3.6.3
   typescript: 3.6.3
@@ -5135,6 +5136,13 @@ packages:
     dev: true
     resolution:
       integrity: sha512-2qHaIQr2VLRFoxe2nASzsV6ef4yOOH+Fi9FBOVH6cqeSgUnoyySPZkxzLuzd+RYOQTRpROA0ztTMqxROKSb/nA==
+  /pnpm/3.8.1:
+    dev: true
+    engines:
+      node: '>=8.15'
+    hasBin: true
+    resolution:
+      integrity: sha512-uINy/U+TNvUHInG1l0/NrgDosUtafn9BrHjP5+v+ojpw+zb/lgXjkQmMHB4461LKezlNoBb7+0JOrNnm5JhZFg==
   /posix-character-classes/0.1.1:
     dev: true
     engines:
@@ -6691,6 +6699,7 @@ specifiers:
   expect: ^24.9.0
   jest: ^24.9.0
   lerna: ^3.16.4
+  pnpm: ^3.8.1
   ts-jest: ^24.0.2
   tslint: ^5.20.0
   typescript: ~3.6.2
