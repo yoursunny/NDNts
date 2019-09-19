@@ -8,7 +8,7 @@ cache:
   directories:
     - $HOME/.pnpm-store
 
-before_script:
+install:
   - npm run bootstrap
 
 script:
