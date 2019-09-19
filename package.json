@@ -1,5 +1,5 @@
 {
-  "name": "root",
+  "name": "@ndn/root",
   "private": true,
   "scripts": {
     "bootstrap": "npx pnpm install -r && node mk/update-tsconfig-paths.js",
@@ -22,7 +22,11 @@
     "lerna": "^3.16.4",
     "pnpm": "^3.8.1",
     "ts-jest": "^24.0.2",
+    "ts-loader": "^6.1.0",
     "tslint": "^5.20.0",
-    "typescript": "~3.6.2"
+    "tsconfig-paths-webpack-plugin": "^3.2.0",
+    "typescript": "~3.6.2",
+    "webpack": "^4.40.2",
+    "webpack-cli": "^3.3.6"
   }
 }

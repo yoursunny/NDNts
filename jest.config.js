@@ -1,11 +1,13 @@
+const path = require("path");
+
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
 
   moduleFileExtensions: ['ts', 'js'],
   moduleNameMapper: {
-    '^@ndn/([^/]*)$': '<rootDir>/packages/$1/src',
-    '^@ndn/([^/]*)/test-fixture$': '<rootDir>/packages/$1/test-fixture',
+    '^@ndn/([^/]*)$': path.join(__dirname, "packages/$1/src"),
+    '^@ndn/([^/]*)/test-fixture$': path.join(__dirname, "packages/$1/test-fixture"),
   },
 
   testRegex: '/tests/.*\\.t\\.ts',

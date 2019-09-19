@@ -1,4 +1,4 @@
-import { testTransport } from "@ndn/llface/test-fixture";
+import * as TestTransport from "@ndn/llface/test-fixture/transport";
 import * as net from "net";
 import * as rPromise from "remote-controlled-promise";
 
@@ -20,5 +20,5 @@ test("TCP", async () => {
   });
   const [transportA, transportB] = await Promise.all([transportAp.promise, transportBp.promise]);
 
-  await testTransport(transportA, transportB);
+  TestTransport.check(await TestTransport.execute(transportA, transportB));
 });

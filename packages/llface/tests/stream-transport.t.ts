@@ -3,7 +3,7 @@ import { Transform } from "readable-stream";
 import { BufferReadableMock, BufferWritableMock, ObjectWritableMock } from "stream-mock";
 
 import { StreamTransport } from "../src";
-import { testTransport } from "../test-fixture";
+import * as TestTransport from "../test-fixture/transport";
 
 class BufferBreaker extends Transform {
   private buf = Buffer.alloc(0);
@@ -28,7 +28,7 @@ test("simple", async () => {
   const connBA = new BufferBreaker();
   const tA = new StreamTransport(duplexify.obj(connAB, connBA));
   const tB = new StreamTransport(duplexify.obj(connBA, connAB));
-  await testTransport(tA, tB);
+  TestTransport.check(await TestTransport.execute(tA, tB));
 });
 
 test("error on receive incomplete", (done) => {

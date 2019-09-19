@@ -1,13 +1,11 @@
 import { Interest } from "@ndn/l3pkt";
 import { LLFace } from "@ndn/llface";
-import { testTransport } from "@ndn/llface/test-fixture";
-import * as http from "http";
-import * as net from "net";
+import * as TestTransport from "@ndn/llface/test-fixture/transport";
 import * as rPromise from "remote-controlled-promise";
-import WebSocketStream from "websocket-stream";
 import * as echoServer from "websocket-stream/echo-server";
 
 import { WsTransport } from "../src";
+import { WsServerPair } from "../test-fixture";
 
 const ECHO_SERVER = echoServer.url;
 
@@ -33,34 +31,15 @@ test("echo", async () => {
 });
 
 test("pair", async () => {
-  const transportsP = rPromise.create<[WsTransport, WsTransport]>();
-
-  let firstServerStream: WebSocketStream.WebSocketDuplex|undefined;
-  const server = http.createServer();
-  const wss = WebSocketStream.createServer(
-    { server, perMessageDeflate: false },
-    ((stream: WebSocketStream.WebSocketDuplex) => {
-      if (!firstServerStream) {
-        firstServerStream = stream;
-        return;
-      }
-      firstServerStream.pipe(stream);
-      stream.pipe(firstServerStream);
-    }) as any);
-  server.listen(0, "127.0.0.1", async () => {
-    const { port } = server.address() as net.AddressInfo;
-    const uri = `ws://127.0.0.1:${port}`;
-    transportsP.resolve(await Promise.all([
-      WsTransport.connect(uri),
-      WsTransport.connect(uri),
-    ]));
-  });
-
-  const [transportA, transportB] = await transportsP.promise;
+  const wssPair = new WsServerPair();
+  const uri = await wssPair.listen();
+  const [transportA, transportB] = await Promise.all([
+    WsTransport.connect(uri),
+    WsTransport.connect(uri),
+  ]);
   expect(transportA).toBeInstanceOf(WsTransport);
   expect(transportB).toBeInstanceOf(WsTransport);
-  await testTransport(transportA, transportB);
-
-  wss.close();
-  server.close();
+  await wssPair.waitPaired();
+  TestTransport.check(await TestTransport.execute(transportA, transportB));
+  await wssPair.close();
 });
