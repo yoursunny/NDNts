@@ -24,6 +24,7 @@
     "@ndn/tlv": "file:../tlv",
     "@ndn/tt-base": "file:../tt-base",
     "readable-stream": "^3.4.0",
+    "remote-controlled-promise": "^0.0.4",
     "strict-event-emitter-types": "^2.0.0"
   },
   "devDependencies": {
@@ -31,7 +32,6 @@
     "@types/readable-stream": "^2.3.4",
     "delay": "^4.3.0",
     "duplexify": "^4.1.1",
-    "remote-controlled-promise": "^0.0.4",
     "stream-mock": "^2.0.5"
   }
 }

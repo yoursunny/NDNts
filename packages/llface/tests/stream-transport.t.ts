@@ -1,5 +1,6 @@
 import duplexify from "duplexify";
-import { Transform } from "readable-stream";
+import { Readable, Transform } from "readable-stream";
+import * as rPromise from "remote-controlled-promise";
 import { BufferReadableMock, BufferWritableMock, ObjectWritableMock } from "stream-mock";
 
 import { StreamTransport } from "../src";
@@ -31,16 +32,30 @@ test("simple", async () => {
   TestTransport.check(await TestTransport.execute(tA, tB));
 });
 
-test("error on receive incomplete", (done) => {
-  expect.hasAssertions();
-
+test("error on receive incomplete", async () => {
   const rxRemote = new BufferReadableMock([0xF1]);
   const rxLocal = new ObjectWritableMock();
   const transport = new StreamTransport(duplexify(new BufferWritableMock(), rxRemote));
-  transport.rx.on("error", async (error: Error) => {
-    expect(error.message).toEqual(expect.stringContaining("incomplete"));
-    await expect(transport.close()).resolves.toBeUndefined();
-    done();
-  });
+  const endErrorP = rPromise.create<Error|undefined>();
+  transport.on("end", (error) => endErrorP.resolve(error));
   transport.rx.pipe(rxLocal);
+
+  const endError = await endErrorP.promise;
+  expect(endError).not.toBeUndefined();
+  expect(endError!.message).toMatch(/incomplete/);
+  await transport.close();
+});
+
+test("RX error during closing", async () => {
+  const rxRemote = new Readable();
+  const transport = new StreamTransport(duplexify(new BufferWritableMock(), rxRemote));
+  const endErrorP = rPromise.create<Error|undefined>();
+  transport.on("end", (error) => endErrorP.resolve(error));
+  transport.rx.pipe(transport.tx);
+
+  const closing = transport.close();
+  rxRemote.emit("error", new Error("mock RX error"));
+
+  await closing;
+  await expect(endErrorP.promise).resolves.toBeUndefined();
 });
