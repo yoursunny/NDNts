@@ -12,7 +12,8 @@
     "target": "es2019",
     "types": [
       "node",
-      "jest"
+      "jest",
+      "jest-environment-puppeteer"
     ]
   },
   "exclude": [

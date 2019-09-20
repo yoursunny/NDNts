@@ -1,10 +1,7 @@
 const parent = require("../../jest.config.js");
+const puppeteerPreset = require("jest-puppeteer/jest-preset.json");
 
-module.exports = Object.assign({}, parent, {
-  testEnvironment: "jest-environment-selenium",
-  setupFilesAfterEnv: [
-    "jest-environment-selenium/dist/setup.js",
-  ],
+const config = Object.assign({}, parent, puppeteerPreset);
+config.testPathIgnorePatterns = config.testPathIgnorePatterns.filter(x => !/integ/.test(x));
 
-  testRegex: '.*\\.t\\.ts',
-});
+module.exports = config;

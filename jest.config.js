@@ -13,6 +13,7 @@ module.exports = {
   testRegex: '/tests/.*\\.t\\.ts',
   testPathIgnorePatterns: [
     '/node_modules/',
+    '/integ/',
   ],
 
   coveragePathIgnorePatterns: [
