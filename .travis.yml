@@ -5,14 +5,17 @@ language: node_js
 node_js: 12
 
 cache:
+  npm: false
   directories:
     - $HOME/.pnpm-store
 
 install:
+  - npm install -g coveralls
+
+before_script:
   - npm run bootstrap
 
 script:
   - npm run lint
-  - npm run build
-  - npm run test
-  - npm run cover
+  - npm run prod-build
+  - npm run cover && coveralls < ./coverage/lcov.info
