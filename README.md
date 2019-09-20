@@ -1,1 +1,3 @@
-# yoursunny's Named Data Networking (NDN) Library for TypeScript
+# NDNts: Named Data Networking in TypeScript
+
+[NDNts homepage](https://yoursunny.com/p/NDNts/)

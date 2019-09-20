@@ -1,6 +1,6 @@
 {
   "name": "@ndn/browser-tests",
-  "description": "NDN browser based tests",
+  "description": "NDNts: browser based tests",
   "private": true,
   "scripts": {
     "serve": "sh -c ../../node_modules/.bin/webpack-dev-server",

@@ -1,7 +1,7 @@
 {
   "name": "@ndn/l3pkt",
   "version": "0.0.0",
-  "description": "NDN Network Layer Packets",
+  "description": "NDNts: Network Layer Packets",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -13,10 +13,11 @@
   "files": [
     "lib"
   ],
-  "homepage": "https://yoursunny.com/p/ndn-ts/",
+  "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yoursunny/ndn-ts.git"
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/l3pkt"
   },
   "dependencies": {
     "@ndn/name": "file:../name",

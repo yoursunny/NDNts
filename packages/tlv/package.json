@@ -1,7 +1,7 @@
 {
   "name": "@ndn/tlv",
   "version": "0.0.0",
-  "description": "NDN TLV",
+  "description": "NDNts: TLV",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -13,10 +13,11 @@
   "files": [
     "lib"
   ],
-  "homepage": "https://yoursunny.com/p/ndn-ts/",
+  "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yoursunny/ndn-ts.git"
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/tlv"
   },
   "dependencies": {
     "printf": "^0.5.2"

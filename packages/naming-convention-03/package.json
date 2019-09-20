@@ -1,7 +1,7 @@
 {
   "name": "@ndn/naming-convention-03",
   "version": "0.0.0",
-  "description": "NDN Naming Convention v0.3",
+  "description": "NDNts: Naming Convention v0.3",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -13,10 +13,11 @@
   "files": [
     "lib"
   ],
-  "homepage": "https://yoursunny.com/p/ndn-ts/",
+  "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yoursunny/ndn-ts.git"
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/naming-convention-03"
   },
   "dependencies": {
     "@ndn/name": "file:../name",
