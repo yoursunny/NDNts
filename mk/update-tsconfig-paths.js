@@ -22,8 +22,7 @@ fs.readdirSync("packages", { withFileTypes: true })
   if (!!private || !name) {
     return;
   }
-  tsconfig.compilerOptions.paths[name] = [path.join("packages", direct.name, "src")];
-  tsconfig.compilerOptions.paths[`${name}/test-fixture`] = [path.join("packages", direct.name, "test-fixture")];
+  tsconfig.compilerOptions.paths[name] = [path.join("packages", direct.name)];
 });
 
 fs.writeFileSync(path.resolve(__dirname, "..", "tsconfig.json"),

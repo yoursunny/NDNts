@@ -8,8 +8,7 @@
   ],
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "MIT",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "src/index.ts",
   "files": [
     "lib"
   ],
@@ -19,8 +18,12 @@
     "url": "https://github.com/yoursunny/NDNts.git",
     "directory": "packages/naming-convention-03"
   },
+  "publishConfig": {
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts"
+  },
   "dependencies": {
-    "@ndn/name": "file:../name",
-    "@ndn/tlv": "file:../tlv"
+    "@ndn/name": "workspace:*",
+    "@ndn/tlv": "workspace:*"
   }
 }

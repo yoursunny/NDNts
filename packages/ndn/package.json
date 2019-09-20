@@ -8,8 +8,7 @@
   ],
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "MIT",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "src/index.ts",
   "files": [
     "lib"
   ],
@@ -18,5 +17,9 @@
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
     "directory": "packages/ndn"
+  },
+  "publishConfig": {
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts"
   }
 }

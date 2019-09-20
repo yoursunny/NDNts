@@ -8,8 +8,7 @@
   ],
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "MIT",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "src/index.ts",
   "files": [
     "lib"
   ],
@@ -19,14 +18,18 @@
     "url": "https://github.com/yoursunny/NDNts.git",
     "directory": "packages/ws-transport"
   },
+  "publishConfig": {
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts"
+  },
   "dependencies": {
-    "@ndn/llface": "file:../llface",
+    "@ndn/llface": "workspace:*",
     "websocket-stream": "^5.5.0"
   },
   "devDependencies": {
     "@types/readable-stream": "^2.3.4",
     "@types/ws": "^6.0.3",
-    "@ndn/l3pkt": "file:../l3pkt",
+    "@ndn/l3pkt": "workspace:*",
     "remote-controlled-promise": "^0.0.4"
   }
 }

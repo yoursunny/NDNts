@@ -8,8 +8,7 @@
   ],
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "MIT",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "src/index.ts",
   "files": [
     "lib"
   ],
@@ -18,6 +17,10 @@
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
     "directory": "packages/tlv"
+  },
+  "publishConfig": {
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts"
   },
   "dependencies": {
     "printf": "^0.5.2"

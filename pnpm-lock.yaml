@@ -63,8 +63,8 @@ importers:
     devDependencies:
       file-matcher: 1.3.0
     specifiers:
-      '@ndn/llface': 'file:../../packages/llface'
-      '@ndn/ws-transport': 'file:../../packages/ws-transport'
+      '@ndn/llface': 'workspace:*'
+      '@ndn/ws-transport': 'workspace:*'
       file-matcher: ^1.3.0
   packages/l3pkt:
     dependencies:
@@ -72,27 +72,27 @@ importers:
       '@ndn/tlv': 'link:../tlv'
       '@ndn/tt-base': 'link:../tt-base'
     specifiers:
-      '@ndn/name': 'file:../name'
-      '@ndn/tlv': 'file:../tlv'
-      '@ndn/tt-base': 'file:../tt-base'
+      '@ndn/name': 'workspace:*'
+      '@ndn/tlv': 'workspace:*'
+      '@ndn/tt-base': 'workspace:*'
   packages/llface:
     dependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
       '@ndn/tlv': 'link:../tlv'
       '@ndn/tt-base': 'link:../tt-base'
       readable-stream: 3.4.0
+      remote-controlled-promise: 0.0.4
       strict-event-emitter-types: 2.0.0
     devDependencies:
       '@types/duplexify': 3.6.0
       '@types/readable-stream': 2.3.4
       delay: 4.3.0
       duplexify: 4.1.1
-      remote-controlled-promise: 0.0.4
       stream-mock: 2.0.5
     specifiers:
-      '@ndn/l3pkt': 'file:../l3pkt'
-      '@ndn/tlv': 'file:../tlv'
-      '@ndn/tt-base': 'file:../tt-base'
+      '@ndn/l3pkt': 'workspace:*'
+      '@ndn/tlv': 'workspace:*'
+      '@ndn/tt-base': 'workspace:*'
       '@types/duplexify': ^3.6.0
       '@types/readable-stream': ^2.3.4
       delay: ^4.3.0
@@ -109,8 +109,8 @@ importers:
     devDependencies:
       '@types/printf': 0.2.1
     specifiers:
-      '@ndn/tlv': 'file:../tlv'
-      '@ndn/tt-base': 'file:../tt-base'
+      '@ndn/tlv': 'workspace:*'
+      '@ndn/tt-base': 'workspace:*'
       '@types/printf': ^0.2.1
       printf: ^0.5.2
   packages/naming-convention-03:
@@ -118,8 +118,8 @@ importers:
       '@ndn/name': 'link:../name'
       '@ndn/tlv': 'link:../tlv'
     specifiers:
-      '@ndn/name': 'file:../name'
-      '@ndn/tlv': 'file:../tlv'
+      '@ndn/name': 'workspace:*'
+      '@ndn/tlv': 'workspace:*'
   packages/ndn:
     specifiers: {}
   packages/node-transport:
@@ -129,8 +129,8 @@ importers:
       '@ndn/l3pkt': 'link:../l3pkt'
       remote-controlled-promise: 0.0.4
     specifiers:
-      '@ndn/l3pkt': 'file:../l3pkt'
-      '@ndn/llface': 'file:../llface'
+      '@ndn/l3pkt': 'workspace:*'
+      '@ndn/llface': 'workspace:*'
       remote-controlled-promise: ^0.0.4
   packages/tlv:
     dependencies:
@@ -152,8 +152,8 @@ importers:
       '@types/ws': 6.0.3
       remote-controlled-promise: 0.0.4
     specifiers:
-      '@ndn/l3pkt': 'file:../l3pkt'
-      '@ndn/llface': 'file:../llface'
+      '@ndn/l3pkt': 'workspace:*'
+      '@ndn/llface': 'workspace:*'
       '@types/readable-stream': ^2.3.4
       '@types/ws': ^6.0.3
       remote-controlled-promise: ^0.0.4
@@ -1522,7 +1522,6 @@ packages:
     resolution:
       integrity: sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
   /@types/node/10.14.18:
-    dev: true
     resolution:
       integrity: sha512-ryO3Q3++yZC/+b8j8BdKd/dn9JlzlHBPdm80656xwYUdmPkpTGTjkAdt6BByiNupGPE8w0FhBgvYy/fX9hRNGQ==
   /@types/node/12.7.5:
@@ -7732,7 +7731,6 @@ packages:
     dependencies:
       '@types/node': 10.14.18
       tslib: 1.10.0
-    dev: true
     engines:
       node: '>= 8.9.0'
     resolution:
@@ -8945,7 +8943,6 @@ packages:
     resolution:
       integrity: sha512-dRcuzokWhajtZWkQsDVKbWyY+jgcLC5sqJhg2PSgf4ZkH2aHPvaOY8YWGhmjb68b5qqTfasSsDO9k7RUiEmZAw==
   /tslib/1.10.0:
-    dev: true
     resolution:
       integrity: sha512-qOebF53frne81cf0S9B41ByenJ3/IuH8yJKngAX35CmiZySA0khhkovshKK+jGCaMnVomla7gVlIcc3EvKPbTQ==
   /tslint/5.20.0_typescript@3.6.3:
