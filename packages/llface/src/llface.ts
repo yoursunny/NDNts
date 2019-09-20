@@ -1,28 +1,36 @@
 import { Data, Interest } from "@ndn/l3pkt";
-import { Decoder, Encoder } from "@ndn/tlv";
+import { Decoder, Encoder, toHex } from "@ndn/tlv";
 import { TT } from "@ndn/tt-base";
-import * as stream from "readable-stream";
-import SimpleSignal from "simplesignal";
+import { EventEmitter } from "events";
+import { pipeline, Writable } from "readable-stream";
+import { StrictEventEmitter } from "strict-event-emitter-types";
 
 import { Transport } from "./transport";
 
-/** Low-level face for sending and receiving L3 packets. */
-export class LLFace {
+interface Events {
   /** Emitted when an Interest arrives. */
-  public recvInterest = new SimpleSignal<(interest: Interest) => any>();
+  interest: Interest;
   /** Emitted when a Data arrives. */
-  public recvData = new SimpleSignal<(data: Data) => any>();
-  /** Emitted when RX error occurs. */
-  public rxError = new SimpleSignal<(error: Error) => any>();
+  data: Data;
+  /** Emitted upon end of RX stream. */
+  end: Error|undefined;
+  /** Emitted upon RX decoding error. */
+  rxerror: LLFace.DecodeError;
+}
 
+type Emitter = StrictEventEmitter<EventEmitter, Events>;
+
+/** Low-level face for sending and receiving L3 packets. */
+export class LLFace extends (EventEmitter as new() => Emitter) {
   constructor(public readonly transport: Transport) {
-    stream.pipeline(
+    super();
+    pipeline(
       transport.rx,
-      new stream.Writable({
+      new Writable({
         objectMode: true,
         write: this.rxWrite,
       }),
-      () => { this.rxError.dispatch(new Error("Transport closed")); },
+      (error) => this.emit("end", error || undefined),
     );
   }
 
@@ -40,24 +48,32 @@ export class LLFace {
     return this.transport.close();
   }
 
-  private rxWrite = ({ type, decoder }: Decoder.Tlv, encoding,
+  private rxWrite = ({ type, decoder, tlv }: Decoder.Tlv, encoding,
                      callback: (error?: Error) => any): void => {
     try {
       switch (type) {
         case TT.Interest:
           const interest = decoder.decode(Interest);
-          this.recvInterest.dispatch(interest);
+          this.emit("interest", interest);
           break;
         case TT.Data:
           const data = decoder.decode(Data);
-          this.recvData.dispatch(data);
+          this.emit("data", data);
           break;
         default:
           throw new Error(`TLV-TYPE ${TT.toString(type)} cannot appear at top level`);
       }
     } catch (err) {
-      this.rxError.dispatch(err);
+      this.emit("rxerror", new LLFace.DecodeError(err, tlv));
     }
     callback();
+  }
+}
+
+export namespace LLFace {
+  export class DecodeError extends Error {
+    constructor(inner: Error, public packet: Uint8Array) {
+      super(`${inner.message} ${toHex(packet)}`);
+    }
   }
 }

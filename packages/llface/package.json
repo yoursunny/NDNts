@@ -24,7 +24,7 @@
     "@ndn/tlv": "file:../tlv",
     "@ndn/tt-base": "file:../tt-base",
     "readable-stream": "^3.4.0",
-    "simplesignal": "4.0.2"
+    "strict-event-emitter-types": "^2.0.0"
   },
   "devDependencies": {
     "@types/duplexify": "^3.6.0",

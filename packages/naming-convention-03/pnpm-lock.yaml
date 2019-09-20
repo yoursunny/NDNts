@@ -1,7 +1,0 @@
-dependencies:
-  '@ndn/name': 'link:../name'
-  '@ndn/tlv': 'link:../tlv'
-lockfileVersion: 5.1
-specifiers:
-  '@ndn/name': 'file:../name'
-  '@ndn/tlv': 'file:../tlv'

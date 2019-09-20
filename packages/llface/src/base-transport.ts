@@ -1,19 +1,22 @@
-import SimpleSignal from "simplesignal";
+import { EventEmitter } from "events";
 
-import { Transport } from "./transport";
+import { TransportEmitter } from "./transport-events";
 
 export abstract class BaseTransport<Rx extends NodeJS.ReadableStream,
-                                    Tx extends NodeJS.WritableStream = NodeJS.WritableStream> {
-  public readonly onEnd = new SimpleSignal<Transport.EndCallback>();
+                                    Tx extends NodeJS.WritableStream = NodeJS.WritableStream>
+       extends (EventEmitter as new() => TransportEmitter) {
   protected closed = false;
 
   protected constructor(public readonly rx: Rx, public readonly tx: Tx) {
+    super();
   }
 
   protected handlePipelineError = (error?: Error|null) => {
+    if (this.closed) {
+      return;
+    }
     this.closed = true;
-    this.onEnd.dispatch(error);
-    this.onEnd.removeAll();
+    this.emit("end", error || undefined);
   }
 
   protected async closeImpl(disconnect: () => any): Promise<void> {
@@ -21,7 +24,7 @@ export abstract class BaseTransport<Rx extends NodeJS.ReadableStream,
       return;
     }
     return new Promise<void>((resolve) => {
-      this.onEnd.add(() => { resolve(); });
+      this.once("end", () => { resolve(); });
       disconnect();
     });
   }

@@ -1,11 +1,11 @@
-import SimpleSignal from "simplesignal";
+import { TransportEmitter } from "./transport-events";
 
 /**
  * Low-level transport.
  *
  * The transport understands NDN TLV structures, but does not otherwise concern with packet format.
  */
-export interface Transport {
+export interface Transport extends TransportEmitter {
   /**
    * RX stream for incoming packets.
    *
@@ -20,13 +20,6 @@ export interface Transport {
    */
   readonly tx: NodeJS.WritableStream;
 
-  /** Signal when the transport is closed, possibly due to error. */
-  readonly onEnd: Omit<SimpleSignal<Transport.EndCallback>, "dispatch">;
-
   /** Request to close the transport. */
   close(): Promise<void>;
-}
-
-export namespace Transport {
-  export type EndCallback = (error?: Error) => any;
 }

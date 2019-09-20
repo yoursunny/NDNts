@@ -81,7 +81,7 @@ importers:
       '@ndn/tlv': 'link:../tlv'
       '@ndn/tt-base': 'link:../tt-base'
       readable-stream: 3.4.0
-      simplesignal: 4.0.2
+      strict-event-emitter-types: 2.0.0
     devDependencies:
       '@types/duplexify': 3.6.0
       '@types/readable-stream': 2.3.4
@@ -99,8 +99,8 @@ importers:
       duplexify: ^4.1.1
       readable-stream: ^3.4.0
       remote-controlled-promise: ^0.0.4
-      simplesignal: 4.0.2
       stream-mock: ^2.0.5
+      strict-event-emitter-types: ^2.0.0
   packages/name:
     dependencies:
       '@ndn/tlv': 'link:../tlv'
@@ -8152,10 +8152,6 @@ packages:
     dev: true
     resolution:
       integrity: sha1-tf3AjxKH6hF4Yo5BXiUTK3NkbG0=
-  /simplesignal/4.0.2:
-    dev: false
-    resolution:
-      integrity: sha512-BWxSR1RDbCeMH2kH/26KrDur1mHW+WvKtt41U8wpDPadaVQpdYAopp/HXyoBWktnPDlrD2/Xos8Ba8JTSZKhbg==
   /sisteransi/1.0.3:
     dev: true
     resolution:
@@ -8459,6 +8455,10 @@ packages:
   /stream-shift/1.0.0:
     resolution:
       integrity: sha1-1cdSgl5TZ+eG944Y5EXqIjoVWVI=
+  /strict-event-emitter-types/2.0.0:
+    dev: false
+    resolution:
+      integrity: sha512-Nk/brWYpD85WlOgzw5h173aci0Teyv8YdIAEtV+N88nDB0dLlazZyJMIsN6eo1/AR61l+p6CJTG1JIyFaoNEEA==
   /string-length/2.0.0:
     dependencies:
       astral-regex: 1.0.0
