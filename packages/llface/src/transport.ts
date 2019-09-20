@@ -1,11 +1,11 @@
-import { TransportEmitter } from "./transport-events";
+import { Emitter } from "./transport-events";
 
 /**
  * Low-level transport.
  *
  * The transport understands NDN TLV structures, but does not otherwise concern with packet format.
  */
-export interface Transport extends TransportEmitter {
+export interface Transport extends Emitter {
   /**
    * RX stream for incoming packets.
    *

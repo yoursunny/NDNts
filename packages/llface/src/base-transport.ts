@@ -1,11 +1,11 @@
 import { EventEmitter } from "events";
 import * as rPromise from "remote-controlled-promise";
 
-import { TransportEmitter } from "./transport-events";
+import { Emitter } from "./transport-events";
 
 export abstract class BaseTransport<Rx extends NodeJS.ReadableStream,
                                     Tx extends NodeJS.WritableStream = NodeJS.WritableStream>
-       extends (EventEmitter as new() => TransportEmitter) {
+       extends (EventEmitter as new() => Emitter) {
   protected closing: rPromise.ControlledPromise<void>|undefined;
 
   protected constructor(public readonly rx: Rx, public readonly tx: Tx) {
