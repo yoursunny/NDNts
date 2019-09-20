@@ -30,3 +30,12 @@ test("decode", () => {
   expect(() => NNI.decode(new Uint8Array([0x01, 0x00, 0x00]))).toThrow();
   expect(() => NNI.decode(new Uint8Array([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]))).toThrow(/large/);
 });
+
+test("constrain", () => {
+  expect(NNI.constrain(0, "XXXX")).toBe(0);
+  expect(NNI.constrain(Number.MAX_SAFE_INTEGER, "XXXX")).toBe(Number.MAX_SAFE_INTEGER);
+  expect(() => NNI.constrain(-1, "XXXX")).toThrow(/XXXX/);
+  expect(() => NNI.constrain(Number.MAX_VALUE, "XXXX")).toThrow(/XXXX/);
+  expect(NNI.constrain(8, "XXXX", 8)).toBe(8);
+  expect(() => NNI.constrain(9, "XXXX", 8)).toThrow(/XXXX/);
+});

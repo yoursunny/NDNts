@@ -9,6 +9,7 @@ interface EncodableObj {
  * An encodable TLV structure.
  *
  * First item is a number for TLV-TYPE.
+ * Optional second item could be OmitEmpty to omit the TLV if TLV-VALUE is empty.
  * Subsequent items are Encodables for TLV-VALUE.
  */
 type EncodableTlv = [number, ...any[]];
@@ -102,11 +103,22 @@ export class Encoder {
    * @param tlvType TLV-TYPE number.
    * @param tlvValue TLV-VALUE objects.
    */
-  public prependTlv(tlvType: number, ...tlvValue: Encodable[]) {
+  public prependTlv(tlvType: number, ...tlvValue: Array<Encodable|typeof Encoder.OmitEmpty>) {
     const sizeBefore = this.size;
-    tlvValue.reverse().forEach(this.encode, this);
+    let hasOmitEmpty = false;
+    for (let i = tlvValue.length - 1; i >= 0; --i) {
+      const obj = tlvValue[i];
+      if (obj === Encoder.OmitEmpty) {
+        hasOmitEmpty = true;
+      } else {
+        this.encode(obj);
+      }
+    }
+
     const tlvLength = this.size - sizeBefore;
-    this.prependTypeLength(tlvType, tlvLength);
+    if (tlvLength > 0 || !hasOmitEmpty) {
+      this.prependTypeLength(tlvType, tlvLength);
+    }
   }
 
   /**
@@ -139,6 +151,8 @@ export class Encoder {
 }
 
 export namespace Encoder {
+  export const OmitEmpty = Symbol("OmitEmpty");
+
   export function encode(obj: Encodable, initBufSize: number = BUF_INIT_SIZE) {
     const encoder = new Encoder(initBufSize);
     encoder.encode(obj);

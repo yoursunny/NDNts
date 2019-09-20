@@ -33,34 +33,40 @@ export function NNI(n: number): NNIClass {
   return new NNIClass(n);
 }
 
-export interface NNI {
+export namespace NNI {
   /** Encode non-negative integer. */
-  encode(n: number): Uint8Array;
-  /** Decode non-negative integer. */
-  decode(b: Uint8Array): number;
-}
-
-NNI.encode = (n: number): Uint8Array => {
-  const encoder = new Encoder(8);
-  NNI(n).encodeTo(encoder);
-  return encoder.output;
-};
-
-NNI.decode = (b: Uint8Array): number => {
-  const buf = Buffer.from(b.buffer, b.byteOffset, b.byteLength);
-  switch (b.length) {
-    case 1:
-      return buf[0];
-    case 2:
-      return buf.readUInt16BE(0);
-    case 4:
-      return buf.readUInt32BE(0);
-    case 8:
-      const n = buf.readUInt32BE(0) * 0x100000000 + buf.readUInt32BE(4);
-      if (!Number.isSafeInteger(n)) {
-        throw new Error("integer is too large");
-      }
-      return n;
+  export function encode(n: number): Uint8Array {
+    const encoder = new Encoder(8);
+    NNI(n).encodeTo(encoder);
+    return encoder.output;
   }
-  throw new Error("invalid TLV-LENGTH");
-};
+
+  /** Decode non-negative integer. */
+  export function decode(b: Uint8Array): number {
+    const buf = Buffer.from(b.buffer, b.byteOffset, b.byteLength);
+    switch (b.length) {
+      case 1:
+        return buf[0];
+      case 2:
+        return buf.readUInt16BE(0);
+      case 4:
+        return buf.readUInt32BE(0);
+      case 8:
+        const n = buf.readUInt32BE(0) * 0x100000000 + buf.readUInt32BE(4);
+        if (!Number.isSafeInteger(n)) {
+          throw new Error("integer is too large");
+        }
+        return n;
+    }
+    throw new Error("invalid TLV-LENGTH");
+  }
+
+  /** Error if n exceeds [min,max] range. */
+  export function constrain(n: number, typeName: string,
+                            max: number = Number.MAX_SAFE_INTEGER, min: number = 0): number {
+    if (n >= min && n <= max) {
+      return n;
+    }
+    throw new RangeError(`${n} is out of ${typeName} valid range`);
+  }
+}

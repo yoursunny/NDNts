@@ -19,7 +19,7 @@ export class EvDecoder<T> {
   }
 
   /** Decode TLV element. */
-  public decode(target: T, decoder: Decoder) {
+  public decode(target: T, decoder: Decoder): T {
     const { type, vd } = decoder.read();
     if (type !== this.tlvType) {
       throw new Error(printf("want TLV-TYPE %02X but got %02X", this.tlvType, type));
@@ -54,6 +54,8 @@ export class EvDecoder<T> {
 
       rule.cb(target, tlv);
     }
+
+    return target;
   }
 
   private handleUnrecognized(tt: number, reason: string) {
