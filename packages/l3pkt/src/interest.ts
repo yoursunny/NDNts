@@ -1,6 +1,7 @@
 import { Name, NameLike } from "@ndn/name";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
-import { TT } from "@ndn/tt-base";
+
+import { TT } from "./an";
 
 /** Interest packet. */
 export class Interest {

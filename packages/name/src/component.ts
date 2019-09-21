@@ -1,7 +1,7 @@
 import { Decoder, Encoder } from "@ndn/tlv";
-import { TT } from "@ndn/tt-base";
 import printf from "printf";
 
+import { TT } from "./an";
 import { NamingConventionBase } from "./convention";
 
 function checkType(n: number) {

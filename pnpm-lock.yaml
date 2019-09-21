@@ -70,16 +70,13 @@ importers:
     dependencies:
       '@ndn/name': 'link:../name'
       '@ndn/tlv': 'link:../tlv'
-      '@ndn/tt-base': 'link:../tt-base'
     specifiers:
       '@ndn/name': 'workspace:*'
       '@ndn/tlv': 'workspace:*'
-      '@ndn/tt-base': 'workspace:*'
   packages/llface:
     dependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
       '@ndn/tlv': 'link:../tlv'
-      '@ndn/tt-base': 'link:../tt-base'
       readable-stream: 3.4.0
       remote-controlled-promise: 0.0.4
       strict-event-emitter-types: 2.0.0
@@ -92,7 +89,6 @@ importers:
     specifiers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/tlv': 'workspace:*'
-      '@ndn/tt-base': 'workspace:*'
       '@types/duplexify': ^3.6.0
       '@types/readable-stream': ^2.3.4
       delay: ^4.3.0
@@ -104,13 +100,11 @@ importers:
   packages/name:
     dependencies:
       '@ndn/tlv': 'link:../tlv'
-      '@ndn/tt-base': 'link:../tt-base'
       printf: 0.5.2
     devDependencies:
       '@types/printf': 0.2.1
     specifiers:
       '@ndn/tlv': 'workspace:*'
-      '@ndn/tt-base': 'workspace:*'
       '@types/printf': ^0.2.1
       printf: ^0.5.2
   packages/naming-convention-03:
@@ -140,8 +134,6 @@ importers:
     specifiers:
       '@types/printf': ^0.2.1
       printf: ^0.5.2
-  packages/tt-base:
-    specifiers: {}
   packages/ws-transport:
     dependencies:
       '@ndn/llface': 'link:../llface'

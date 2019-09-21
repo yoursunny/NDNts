@@ -1,9 +1,8 @@
 import { Component, Name } from "@ndn/name";
 import { Decoder, NNI } from "@ndn/tlv";
 import "@ndn/tlv/test-fixture";
-import { TT } from "@ndn/tt-base";
 
-import { Data } from "../src";
+import { Data, TT } from "../src";
 
 test("encode", () => {
   expect(() => new Data({} as any)).toThrow();

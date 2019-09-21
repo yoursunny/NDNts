@@ -1,6 +1,6 @@
 import { Decoder, Encoder } from "@ndn/tlv";
-import { TT } from "@ndn/tt-base";
 
+import { TT } from "./an";
 import { Component, ComponentLike } from "./component";
 import { NamingConvention } from "./convention";
 

@@ -1,6 +1,7 @@
 import { Component, Name, NameLike } from "@ndn/name";
 import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
-import { TT } from "@ndn/tt-base";
+
+import { TT } from "./an";
 
 const FAKESIG = new Uint8Array([
   TT.DSigInfo, 0x03,

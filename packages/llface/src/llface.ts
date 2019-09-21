@@ -1,6 +1,5 @@
-import { Data, Interest } from "@ndn/l3pkt";
-import { Decoder, Encoder, toHex } from "@ndn/tlv";
-import { TT } from "@ndn/tt-base";
+import { Data, Interest, TT } from "@ndn/l3pkt";
+import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
 import { EventEmitter } from "events";
 import { pipeline, Writable } from "readable-stream";
 import { StrictEventEmitter } from "strict-event-emitter-types";
@@ -61,7 +60,7 @@ export class LLFace extends (EventEmitter as new() => Emitter) {
           this.emit("data", data);
           break;
         default:
-          throw new Error(`TLV-TYPE ${TT.toString(type)} cannot appear at top level`);
+          throw new Error(`TLV-TYPE ${printTT(type)} cannot appear at top level`);
       }
     } catch (err) {
       this.emit("rxerror", new LLFace.DecodeError(err, tlv));

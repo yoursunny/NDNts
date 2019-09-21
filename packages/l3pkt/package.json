@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@ndn/name": "workspace:*",
-    "@ndn/tlv": "workspace:*",
-    "@ndn/tt-base": "workspace:*"
+    "@ndn/tlv": "workspace:*"
   }
 }

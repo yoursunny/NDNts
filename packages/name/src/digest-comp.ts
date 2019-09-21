@@ -1,5 +1,4 @@
-import { TT } from "@ndn/tt-base";
-
+import { TT } from "./an";
 import { Component } from "./component";
 import { NamingConvention } from "./convention";
 

@@ -25,7 +25,6 @@
   "dependencies": {
     "@ndn/l3pkt": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@ndn/tt-base": "workspace:*",
     "readable-stream": "^3.4.0",
     "remote-controlled-promise": "^0.0.4",
     "strict-event-emitter-types": "^2.0.0"
