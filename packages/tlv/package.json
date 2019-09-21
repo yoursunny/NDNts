@@ -12,6 +12,7 @@
   "files": [
     "lib"
   ],
+  "sideEffects": [],
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",

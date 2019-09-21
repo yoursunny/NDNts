@@ -12,6 +12,9 @@
   "files": [
     "lib"
   ],
+  "sideEffects": [
+    "test-fixture/**"
+  ],
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
