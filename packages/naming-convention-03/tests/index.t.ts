@@ -1,6 +1,6 @@
 import { Component, Name } from "@ndn/name";
 import "@ndn/name/test-fixture";
-import { NNI } from "@ndn/tlv";
+import { Encoder, NNI } from "@ndn/tlv";
 
 import { ByteOffset, Keyword, Segment, SequenceNum, Timestamp, Version } from "../src";
 
@@ -39,7 +39,7 @@ test("Timestamp", () => {
   expect(Timestamp.parse(name.at(0))).toEqual(new Date(540167400000));
 
   expect(() => {
-    Timestamp.parse(new Component(0x24, NNI.encode(5001)), true);
+    Timestamp.parse(new Component(0x24, Encoder.encode(NNI(5001), 8)), true);
   }).toThrow();
 });
 

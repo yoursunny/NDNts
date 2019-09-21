@@ -1,5 +1,5 @@
 import { Component, NamingConvention } from "@ndn/name";
-import { NNI } from "@ndn/tlv";
+import { Encoder, NNI } from "@ndn/tlv";
 
 abstract class Typed {
   constructor(protected tt: number) {
@@ -30,7 +30,7 @@ class TypedNumber extends Typed implements NamingConvention<number> {
   }
 
   public create(v: number): Component {
-    return new Component(this.tt, NNI.encode(v));
+    return new Component(this.tt, Encoder.encode(NNI(v), 8));
   }
 
   public parse(comp: Component): number {
