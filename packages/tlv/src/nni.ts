@@ -1,76 +1,94 @@
 import { Encodable, Encoder } from "./encoder";
 
-class VarEncodable {
+class NNI0 {
+  public static decode(value: Uint8Array): number {
+    const dv = Encoder.asDataView(value);
+    switch (dv.byteLength) {
+      case 1:
+        return dv.getUint8(0);
+      case 2:
+        return dv.getUint16(0);
+      case 4:
+        return dv.getUint32(0);
+      case 8:
+        const n = dv.getUint32(0) * 0x100000000 + dv.getUint32(4);
+        if (!Number.isSafeInteger(n)) {
+          throw new Error("integer is too large");
+        }
+        return n;
+    }
+    throw new Error("invalid TLV-LENGTH");
+  }
+
   constructor(private n: number) {
   }
 
   public encodeTo(encoder: Encoder) {
     if (this.n <= 0xFF) {
-      const b = encoder.prependRoom(1);
-      b[0] = this.n;
+      encoder.prependRoom(1)[0] = this.n;
     } else if (this.n <= 0xFFFF) {
-      const b = encoder.prependRoom(2);
-      b.writeUInt16BE(this.n, 0);
+      Encoder.asDataView(encoder.prependRoom(2)).setUint16(0, this.n);
     } else if (this.n <= 0xFFFFFFFF) {
-      const b = encoder.prependRoom(4);
-      b.writeUInt32BE(this.n, 0);
+      Encoder.asDataView(encoder.prependRoom(4)).setUint32(0, this.n);
     } else if (Number.isSafeInteger(this.n)) {
-      const b = encoder.prependRoom(8);
-      b.writeUInt32BE(this.n / 0x100000000, 0);
-      b.writeUInt32BE(this.n % 0x100000000, 4);
+      const dv = Encoder.asDataView(encoder.prependRoom(8));
+      dv.setUint32(0, this.n / 0x100000000);
+      dv.setUint32(4, this.n % 0x100000000);
     } else {
       throw new Error("integer is too large");
     }
   }
 }
 
-function varDecode(buf: Buffer): number {
-  switch (buf.length) {
-    case 1:
-      return buf[0];
-    case 2:
-      return buf.readUInt16BE(0);
-    case 4:
-      return buf.readUInt32BE(0);
-    case 8:
-      const n = buf.readUInt32BE(0) * 0x100000000 + buf.readUInt32BE(4);
-      if (!Number.isSafeInteger(n)) {
-        throw new Error("integer is too large");
-      }
-      return n;
+class NNI1 {
+  public static decode(value: Uint8Array): number {
+    if (value.byteLength !== 1) {
+      throw new Error("invalid TLV-LENGTH");
+    }
+    return value[0];
   }
-  throw new Error("invalid TLV-LENGTH");
-}
 
-class FixedEncodable {
-  constructor(private n: number, private len: number) {
+  constructor(private n: number) {
   }
 
   public encodeTo(encoder: Encoder) {
-    const room = encoder.prependRoom(this.len);
-    room.writeUIntBE(this.n, 0, this.len);
+    encoder.prependRoom(1)[0] = this.n;
   }
 }
 
-function fixedDecode(buf: Buffer, len: number): number {
-  if (buf.length !== len) {
-    throw new Error("invalid TLV-LENGTH");
+class NNI4 {
+  public static decode(value: Uint8Array): number {
+    if (value.byteLength !== 4) {
+      throw new Error("invalid TLV-LENGTH");
+    }
+    return Encoder.asDataView(value).getUint32(0);
   }
-  return buf.readUIntBE(0, len);
+
+  constructor(private n: number) {
+  }
+
+  public encodeTo(encoder: Encoder) {
+    Encoder.asDataView(encoder.prependRoom(4)).setUint32(0, this.n);
+  }
 }
 
-/**
- * Create Encodable from non-negative integer.
- */
-export function NNI(n: number, len?: number): Encodable {
-  return len ? new FixedEncodable(n, len) : new VarEncodable(n);
+type Len = 1|4;
+
+const NniClass = {
+  0: NNI0,
+  1: NNI1,
+  4: NNI4,
+};
+
+/** Create Encodable from non-negative integer. */
+export function NNI(n: number, len?: Len): Encodable {
+  return new NniClass[len || 0](n);
 }
 
 export namespace NNI {
   /** Decode non-negative integer. */
-  export function decode(b: Uint8Array, len?: number): number {
-    const buf = Buffer.from(b.buffer, b.byteOffset, b.byteLength);
-    return len ? fixedDecode(buf, len) : varDecode(buf);
+  export function decode(value: Uint8Array, len?: Len): number {
+    return NniClass[len || 0].decode(value);
   }
 
   /** Error if n exceeds [min,max] range. */

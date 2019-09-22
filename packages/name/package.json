@@ -26,6 +26,10 @@
     "types": "lib/index.d.ts"
   },
   "dependencies": {
-    "@ndn/tlv": "workspace:*"
+    "@ndn/tlv": "workspace:*",
+    "buffer-compare": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/buffer-compare": "^0.0.30"
   }
 }

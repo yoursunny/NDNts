@@ -1,3 +1,5 @@
+import isBuffer from "is-buffer";
+
 export interface Decodable<R> {
   decodeFrom(decoder: Decoder): R;
 }
@@ -45,7 +47,7 @@ export class Decoder {
   private offset: number = 0;
 
   constructor(private input: Uint8Array) {
-    if (Buffer.isBuffer(input)) {
+    if (isBuffer(input)) {
       this.input = new Uint8Array(input.buffer, input.byteOffset, input.byteLength);
     }
   }

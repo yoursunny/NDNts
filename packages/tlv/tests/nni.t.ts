@@ -1,7 +1,7 @@
 import { Encoder, NNI } from "../src";
 import "../test-fixture";
 
-test("varEncode", () => {
+test("encode variable size", () => {
   expect(NNI(0x00)).toEncodeAs([0x00]);
   expect(NNI(0xFF)).toEncodeAs([0xFF]);
   expect(NNI(0x0100)).toEncodeAs([0x01, 0x00]);
@@ -12,16 +12,12 @@ test("varEncode", () => {
   expect(() => Encoder.encode(NNI(Number.MAX_VALUE))).toThrow();
 });
 
-test("fixedEncode", () => {
+test("encode fixed size", () => {
   expect(NNI(0x01, 1)).toEncodeAs([0x01]);
-  expect(NNI(0x02, 2)).toEncodeAs([0x00, 0x02]);
-  expect(NNI(0x03, 3)).toEncodeAs([0x00, 0x00, 0x03]);
   expect(NNI(0x04, 4)).toEncodeAs([0x00, 0x00, 0x00, 0x04]);
-  expect(NNI(0x05, 5)).toEncodeAs([0x00, 0x00, 0x00, 0x00, 0x05]);
-  expect(NNI(0x06, 6)).toEncodeAs([0x00, 0x00, 0x00, 0x00, 0x00, 0x06]);
 });
 
-test("varDecode", () => {
+test("decode variable size", () => {
   expect(NNI.decode(new Uint8Array([0x00]))).toBe(0x00);
   expect(NNI.decode(new Uint8Array([0xFF]))).toBe(0xFF);
   expect(NNI.decode(new Uint8Array([0x01, 0x00]))).toBe(0x0100);
@@ -34,10 +30,12 @@ test("varDecode", () => {
   expect(() => NNI.decode(new Uint8Array([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]))).toThrow(/large/);
 });
 
-test("fixedDecode", () => {
+test("decode fixed size", () => {
   expect(NNI.decode(new Uint8Array([0x01]), 1)).toBe(0x01);
-  expect(NNI.decode(new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x06]), 6)).toBe(0x06);
-  expect(() => NNI.decode(new Uint8Array([0x00, 0x00, 0x03]), 2)).toThrow();
+  expect(() => NNI.decode(new Uint8Array([0x00, 0x00, 0x03]), 1)).toThrow();
+
+  expect(NNI.decode(new Uint8Array([0x00, 0x00, 0x00, 0x04]), 4)).toBe(0x04);
+  expect(() => NNI.decode(new Uint8Array([0x00, 0x00, 0x03]), 4)).toThrow();
 });
 
 test("constrain", () => {

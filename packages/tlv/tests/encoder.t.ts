@@ -10,9 +10,10 @@ test("prependRoom", () => {
   expect(output.byteLength).toBe(0);
 
   let room = encoder.prependRoom(4);
-  expect(room).toBeInstanceOf(Buffer);
+  expect(room).toBeInstanceOf(Uint8Array);
+  expect(room).not.toBeInstanceOf(Buffer);
   expect(room).toHaveLength(4);
-  room.writeUInt32BE(0xA0A1A2A3, 0);
+  Encoder.asDataView(room).setUint32(0, 0xA0A1A2A3);
 
   output = encoder.output;
   expect(output).toHaveLength(4);
@@ -22,7 +23,7 @@ test("prependRoom", () => {
 
   room = encoder.prependRoom(5);
   expect(room).toHaveLength(5);
-  room.writeUInt32BE(0xB0B1B2B3, 1);
+  Encoder.asDataView(room).setUint32(1, 0xB0B1B2B3);
   room[0] = 0xC0;
 
   output = encoder.output;

@@ -1,4 +1,5 @@
 import { Decoder, Encoder } from "@ndn/tlv";
+import bufferCompare from "buffer-compare";
 
 import { TT } from "./an";
 import { NamingConventionBase } from "./convention";
@@ -155,6 +156,6 @@ export namespace Component {
     const r = Component.from(rhs);
     return toCompareResult(l.type - r.type) ||
            toCompareResult(l.length - r.length) ||
-           toCompareResult(Buffer.compare(l.value, r.value));
+           toCompareResult(bufferCompare<Uint8Array>(l.value, r.value));
   }
 }

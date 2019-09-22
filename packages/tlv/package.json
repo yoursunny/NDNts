@@ -22,5 +22,11 @@
   "publishConfig": {
     "main": "lib/index.js",
     "types": "lib/index.d.ts"
+  },
+  "dependencies": {
+    "is-buffer": "^2.0.3"
+  },
+  "devDependencies": {
+    "@types/is-buffer": "^2.0.0"
   }
 }

@@ -33,45 +33,45 @@ function sizeofVarNum(n: number): number {
   throw new Error("VAR-NUMBER is too large");
 }
 
-function writeVarNum(room: Buffer, off: number, n: number) {
+function writeVarNum(room: Uint8Array, off: number, n: number) {
   if (n < 0xFD) {
     room[off++] = n;
   } else if (n <= 0xFFFF) {
     room[off++] = 0xFD;
-    room.writeUInt16BE(n, 1);
+    Encoder.asDataView(room).setUint16(off, n);
   } else {
     room[off++] = 0xFE;
-    room.writeUInt32BE(n, 1);
+    Encoder.asDataView(room).setUint32(off, n);
   }
 }
 
-const BUF_INIT_SIZE = 10240;
-const BUF_EXTENSION = Buffer.alloc(10240);
+const BUF_INIT_SIZE = 2048;
+const BUF_GROW_SIZE = 2048;
 
 /**
  * TLV encoder that accepts objects in reverse order.
  */
 export class Encoder {
-  private buf_: ArrayBuffer;
-  private off_: number;
+  private buf: ArrayBuffer;
+  private off: number;
 
   /**
    * Return encoding output size.
    */
   public get size(): number {
-    return this.buf_.byteLength - this.off_;
+    return this.buf.byteLength - this.off;
   }
 
   /**
    * Obtain encoding output.
    */
   public get output(): Uint8Array {
-    return new Uint8Array(this.buf_, this.off_);
+    return new Uint8Array(this.buf, this.off);
   }
 
   constructor(initSize: number = BUF_INIT_SIZE) {
-    this.buf_ = new ArrayBuffer(initSize);
-    this.off_ = initSize;
+    this.buf = new ArrayBuffer(initSize);
+    this.off = initSize;
   }
 
   /**
@@ -79,12 +79,12 @@ export class Encoder {
    * @param sizeofObject object size.
    * @returns room to write object.
    */
-  public prependRoom(sizeofObject: number): Buffer {
-    if (this.off_ < sizeofObject) {
-      this.extend(sizeofObject);
+  public prependRoom(sizeofObject: number): Uint8Array {
+    if (this.off < sizeofObject) {
+      this.grow(sizeofObject);
     }
-    this.off_ -= sizeofObject;
-    return Buffer.from(this.buf_, this.off_, sizeofObject);
+    this.off -= sizeofObject;
+    return new Uint8Array(this.buf, this.off, sizeofObject);
   }
 
   /**
@@ -127,30 +127,30 @@ export class Encoder {
   public encode(obj: Encodable) {
     if (ArrayBuffer.isView(obj)) {
       const dst = this.prependRoom(obj.byteLength);
-      const src = Buffer.isBuffer(obj) ? obj : Buffer.from(obj.buffer, obj.byteOffset, obj.byteLength);
-      src.copy(dst);
+      dst.set(obj as Uint8Array);
     } else if (typeof obj === "object" && typeof (obj as EncodableObj).encodeTo === "function") {
       (obj as EncodableObj).encodeTo(this);
     } else if (Array.isArray(obj) && typeof obj[0] === "number") {
       this.prependTlv.apply(this, obj);
     } else if (typeof obj !== "undefined") {
-      throw new Error("Buffer.encode: obj is not Encodable");
+      throw new Error("Encoder.encode: obj is not Encodable");
     }
   }
 
-  private extend(sizeofRoom: number) {
-    const nExts = Math.ceil((sizeofRoom - this.off_) / BUF_EXTENSION.length);
-    const sizeofExts = nExts * BUF_EXTENSION.length;
-    const list = [Buffer.from(this.buf_)];
-    for (let i = 0; i < nExts; ++i) {
-      list.unshift(BUF_EXTENSION);
-    }
-    this.buf_ = Buffer.concat(list, sizeofExts + this.buf_.byteLength).buffer;
-    this.off_ += sizeofExts;
+  private grow(sizeofRoom: number) {
+    const sizeofGrow = BUF_GROW_SIZE + sizeofRoom;
+    const buf = new ArrayBuffer(sizeofGrow + this.size);
+    new Uint8Array(buf, sizeofGrow).set(this.output);
+    this.buf = buf;
+    this.off = sizeofGrow;
   }
 }
 
 export namespace Encoder {
+  export function asDataView(a: Uint8Array): DataView {
+    return new DataView(a.buffer, a.byteOffset, a.byteLength);
+  }
+
   export const OmitEmpty = Symbol("OmitEmpty");
 
   export function encode(obj: Encodable, initBufSize: number = BUF_INIT_SIZE) {
