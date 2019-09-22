@@ -17,7 +17,7 @@ type EncodableTlv = [number, ...any[]];
 /**
  * An object acceptable to Encoder.encode().
  */
-export type Encodable = ArrayBufferView | undefined | EncodableObj | EncodableTlv;
+export type Encodable = Uint8Array | undefined | EncodableObj | EncodableTlv;
 
 function sizeofVarNum(n: number): number {
   if (n < 0xFD) {
@@ -87,9 +87,7 @@ export class Encoder {
     return new Uint8Array(this.buf, this.off, sizeofObject);
   }
 
-  /**
-   * Prepend TLV-TYPE and TLV-LENGTH.
-   */
+  /** Prepend TLV-TYPE and TLV-LENGTH. */
   public prependTypeLength(tlvType: number, tlvLength: number) {
     const sizeofT = sizeofVarNum(tlvType);
     const sizeofL = sizeofVarNum(tlvLength);
@@ -98,22 +96,32 @@ export class Encoder {
     writeVarNum(room, sizeofT, tlvLength);
   }
 
+  /** Prepend TLV-VALUE. */
+  public prependValue(...tlvValue: Encodable[]) {
+    for (let i = tlvValue.length - 1; i >= 0; --i) {
+      this.encode(tlvValue[i]);
+    }
+  }
+
   /**
    * Prepend TLV structure.
    * @param tlvType TLV-TYPE number.
+   * @param omitEmpty omit TLV altogether if set to Encoder.OmitEmpty
    * @param tlvValue TLV-VALUE objects.
    */
-  public prependTlv(tlvType: number, ...tlvValue: Array<Encodable|typeof Encoder.OmitEmpty>) {
-    const sizeBefore = this.size;
+  public prependTlv(tlvType: number, omitEmpty?: typeof Encoder.OmitEmpty|Encodable,
+                    ...tlvValue: Encodable[]) {
     let hasOmitEmpty = false;
-    for (let i = tlvValue.length - 1; i >= 0; --i) {
-      const obj = tlvValue[i];
-      if (obj === Encoder.OmitEmpty) {
+    if (omitEmpty) {
+      if (omitEmpty === Encoder.OmitEmpty) {
         hasOmitEmpty = true;
       } else {
-        this.encode(obj);
+        tlvValue.unshift(omitEmpty);
       }
     }
+
+    const sizeBefore = this.size;
+    this.prependValue(...tlvValue);
 
     const tlvLength = this.size - sizeBefore;
     if (tlvLength > 0 || !hasOmitEmpty) {
@@ -121,9 +129,7 @@ export class Encoder {
     }
   }
 
-  /**
-   * Prepend an Encodable object.
-   */
+  /** Prepend an Encodable object. */
   public encode(obj: Encodable) {
     if (ArrayBuffer.isView(obj)) {
       const dst = this.prependRoom(obj.byteLength);
@@ -131,7 +137,7 @@ export class Encoder {
     } else if (typeof obj === "object" && typeof (obj as EncodableObj).encodeTo === "function") {
       (obj as EncodableObj).encodeTo(this);
     } else if (Array.isArray(obj) && typeof obj[0] === "number") {
-      this.prependTlv.apply(this, obj);
+      this.prependTlv(...obj);
     } else if (typeof obj !== "undefined") {
       throw new Error("Encoder.encode: obj is not Encodable");
     }

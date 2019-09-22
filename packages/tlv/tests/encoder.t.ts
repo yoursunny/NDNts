@@ -39,18 +39,21 @@ test("prependTlv", () => {
     [0x0100, new Uint8Array([0xB0, 0xB1])],
     [0x01, Buffer.from([0xA0, 0xA1])],
     [0x02, Encoder.OmitEmpty, new Uint8Array(), undefined],
+    [0x03],
   );
   expect(encoder).toEncodeAs([
-    0xFE, 0x00, 0x01, 0x00, 0x00, 0x0A,
+    0xFE, 0x00, 0x01, 0x00, 0x00, 0x0C,
     0xFD, 0x01, 0x00, 0x02, 0xB0, 0xB1,
     0x01, 0x02, 0xA0, 0xA1,
+    0x03, 0x00,
   ]);
   expect(encoder).toEncodeAs(({ type, length, value }) => {
     expect(type).toBe(0x10000);
-    expect(length).toBe(10);
+    expect(length).toBe(12);
     expect(value).toMatchTlv(
       ({ type }) => { expect(type).toBe(0x0100); },
       ({ type }) => { expect(type).toBe(0x01); },
+      ({ type }) => { expect(type).toBe(0x03); },
     );
   });
 });
