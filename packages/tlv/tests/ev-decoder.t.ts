@@ -116,6 +116,10 @@ test("decode bad TLV-TYPE", () => {
   expect(() => EVD.decode(target, decoder)).toThrow();
 });
 
+test("add duplicate", () => {
+  expect(() => EVD.add(0xA1, () => undefined)).toThrow(); // duplicate rule
+});
+
 test("setUnknown", () => {
   const cb = jest.fn<boolean, [EvdTestTarget, Decoder.Tlv, number]>(
              (self, { type }, order) => {

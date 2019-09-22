@@ -59,6 +59,9 @@ export class EvDecoder<T> {
    */
   public add(tt: number, cb: ElementCallback<T>|EvDecoder<T>,
              options?: RuleOptions<T>): EvDecoder<T> {
+    if (typeof this.rules[tt] !== "undefined") {
+      throw new Error(`TLV-TYPE ${printTT(tt)} already has a rule`);
+    }
     if (cb instanceof EvDecoder) {
       cb = nest(cb);
     }
@@ -74,7 +77,7 @@ export class EvDecoder<T> {
   }
 
   /** Decode to target object. */
-  public decode(target: T, decoder: Decoder): T {
+  public decode<R extends T = T>(target: R, decoder: Decoder): R {
     const { type, vd } = decoder.read();
     if (this.topTT.length && !this.topTT.includes(type)) {
       throw new Error(`TLV-TYPE ${printTT(type)} is not ${this.typeName}`);

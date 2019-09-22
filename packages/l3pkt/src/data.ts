@@ -1,43 +1,35 @@
 import { Component, Name, NameLike } from "@ndn/name";
 import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
-import { TT } from "./an";
+import { SigType, TT } from "./an";
+import { DSigInfo } from "./sig-info";
 
-const FAKESIG = new Uint8Array([
-  TT.DSigInfo, 0x03,
-  TT.SigType, 0x01, 0x00,
-  TT.DSigValue, 0x20,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-]);
+const FAKE_SIGINFO = (() => {
+  const sigInfo = new DSigInfo();
+  sigInfo.type = SigType.Sha256;
+  return sigInfo;
+})();
+const FAKE_SIGVALUE = new Uint8Array(32);
 
 const EVD = new EvDecoder<Data>("Data", TT.Data)
-.add(TT.Name, (self, { decoder }) => { self.name = decoder.decode(Name); })
+.add(TT.Name, (self, { decoder }) => self.name = decoder.decode(Name))
 .add(TT.MetaInfo,
   new EvDecoder<Data>("MetaInfo")
-  .add(TT.ContentType, (self, { value }) => { self.contentType = NNI.decode(value); })
-  .add(TT.FreshnessPeriod, (self, { value }) => { self.freshnessPeriod = NNI.decode(value); })
-  .add(TT.FinalBlockId, (self, { vd }) => { self.finalBlockId = Component.decodeFrom(vd); }),
+  .add(TT.ContentType, (self, { value }) => self.contentType = NNI.decode(value))
+  .add(TT.FreshnessPeriod, (self, { value }) => self.freshnessPeriod = NNI.decode(value))
+  .add(TT.FinalBlockId, (self, { vd }) => self.finalBlockId = vd.decode(Component)),
 )
-.add(TT.Content, (self, { value }) => { self.content = value; })
-.add(TT.DSigInfo, () => undefined)
-.add(TT.DSigValue, () => undefined);
+.add(TT.Content, (self, { value }) => self.content = value)
+.add(TT.DSigInfo, (self, { decoder }) => self.sigInfo = decoder.decode(DSigInfo))
+.add(TT.DSigValue, (self, { value }) => self.sigValue = value);
 
 /** Data packet. */
 export class Data {
-  public get name() { return this.name_; }
-  public set name(v) { this.name_ = v; }
-
   public get contentType() { return this.contentType_; }
   public set contentType(v) { this.contentType_ = NNI.constrain(v, "ContentType"); }
 
   public get freshnessPeriod() { return this.freshnessPeriod_; }
   public set freshnessPeriod(v) { this.freshnessPeriod_ = NNI.constrain(v, "FreshnessPeriod"); }
-
-  public get finalBlockId() { return this.finalBlockId_; }
-  public set finalBlockId(v) { this.finalBlockId_ = v; }
 
   public get isFinalBlock(): boolean {
     return !!this.finalBlockId &&
@@ -56,18 +48,18 @@ export class Data {
     this.finalBlockId = this.name.at(-1);
   }
 
-  public get content() { return this.content_; }
-  public set content(v) { this.content_ = v; }
-
   public static decodeFrom(decoder: Decoder): Data {
     return EVD.decode(new Data(), decoder);
   }
 
-  private name_: Name = new Name();
+  public name: Name = new Name();
+  public finalBlockId: Component|undefined;
+  public content: Uint8Array = new Uint8Array();
+  public sigInfo: DSigInfo = FAKE_SIGINFO;
+  public sigValue: Uint8Array = FAKE_SIGVALUE;
+
   private contentType_: number = 0;
   private freshnessPeriod_: number = 0;
-  private finalBlockId_: Component|undefined;
-  private content_: Uint8Array = new Uint8Array();
 
   /**
    * Construct from flexible arguments.
@@ -110,7 +102,8 @@ export class Data {
         this.finalBlockId ? [TT.FinalBlockId, this.finalBlockId] : undefined,
       ],
       this.content.byteLength > 0 ? [TT.Content, this.content] : undefined,
-      FAKESIG,
+      this.sigInfo,
+      [TT.DSigValue, this.sigValue],
     );
   }
 }

@@ -30,3 +30,12 @@ export class TlvTypes extends nameTT {
 }
 
 export const TT = new TlvTypes();
+
+export class SigTypes {
+  public readonly Sha256 = 0x00;
+  public readonly Sha256WithRsa = 0x01;
+  public readonly Sha256WithEcdsa = 0x03;
+  public readonly HmacWithSha256 = 0x04;
+}
+
+export const SigType = new SigTypes();
