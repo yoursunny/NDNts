@@ -13,17 +13,17 @@ const FAKESIG = new Uint8Array([
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 ]);
 
-const EVD = new EvDecoder<Data>(TT.Data, [
-  { tt: TT.Name, cb: (self, { decoder }) => { self.name = decoder.decode(Name); } },
-  { tt: TT.MetaInfo, cb: EvDecoder.Nest(new EvDecoder<Data>(TT.MetaInfo, [
-    { tt: TT.ContentType, cb: (self, { value }) => { self.contentType = NNI.decode(value); } },
-    { tt: TT.FreshnessPeriod, cb: (self, { value }) => { self.freshnessPeriod = NNI.decode(value); } },
-    { tt: TT.FinalBlockId, cb: (self, { vd }) => { self.finalBlockId = Component.decodeFrom(vd); } },
-  ])) },
-  { tt: TT.Content, cb: (self, { value }) => { self.content = value; } },
-  { tt: TT.DSigInfo, cb: () => undefined },
-  { tt: TT.DSigValue, cb: () => undefined },
-]);
+const EVD = new EvDecoder<Data>("Data", TT.Data)
+.add(TT.Name, (self, { decoder }) => { self.name = decoder.decode(Name); })
+.add(TT.MetaInfo,
+  new EvDecoder<Data>("MetaInfo")
+  .add(TT.ContentType, (self, { value }) => { self.contentType = NNI.decode(value); })
+  .add(TT.FreshnessPeriod, (self, { value }) => { self.freshnessPeriod = NNI.decode(value); })
+  .add(TT.FinalBlockId, (self, { vd }) => { self.finalBlockId = Component.decodeFrom(vd); }),
+)
+.add(TT.Content, (self, { value }) => { self.content = value; })
+.add(TT.DSigInfo, () => undefined)
+.add(TT.DSigValue, () => undefined);
 
 /** Data packet. */
 export class Data {

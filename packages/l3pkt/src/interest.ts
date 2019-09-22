@@ -6,16 +6,15 @@ import { TT } from "./an";
 const LIFETIME_DEFAULT = 4000;
 const HOPLIMIT_MAX = 255;
 
-const EVD = new EvDecoder<Interest>(TT.Interest, [
-  { tt: TT.Name, cb: (self, { decoder }) => { self.name = decoder.decode(Name); } },
-  { tt: TT.CanBePrefix, cb: (self) => { self.canBePrefix = true; } },
-  { tt: TT.MustBeFresh, cb: (self) => { self.mustBeFresh = true; } },
-  // TODO ForwardingHint
-  { tt: TT.Nonce, cb: (self, { value }) => { self.nonce = NNI.decode(value, 4); } },
-  { tt: TT.InterestLifetime, cb: (self, { value }) => { self.lifetime = NNI.decode(value); } },
-  { tt: TT.HopLimit, cb: (self, { value }) => { self.hopLimit = NNI.decode(value, 1); } },
-  // TODO AppParameters, ISigInfo, ISigValue
-]);
+const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
+.add(TT.Name, (self, { decoder }) => { self.name = decoder.decode(Name); })
+.add(TT.CanBePrefix, (self) => { self.canBePrefix = true; })
+.add(TT.MustBeFresh, (self) => { self.mustBeFresh = true; })
+// TODO ForwardingHint
+.add(TT.Nonce, (self, { value }) => { self.nonce = NNI.decode(value, 4); })
+.add(TT.InterestLifetime, (self, { value }) => { self.lifetime = NNI.decode(value); })
+.add(TT.HopLimit, (self, { value }) => { self.hopLimit = NNI.decode(value, 1); });
+// TODO AppParameters, ISigInfo, ISigValue
 
 /** Interest packet. */
 export class Interest {
