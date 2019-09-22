@@ -54,6 +54,7 @@ export class Interest {
    * Construct from flexible arguments.
    *
    * Arguments can include, in any order:
+   * - Interest to copy from
    * - Name or name URI
    * - Interest.CanBePrefix
    * - Interest.MustBeFresh
@@ -61,7 +62,7 @@ export class Interest {
    * - Interest.Lifetime(v)
    * - Interest.HopLimit(v)
    */
-  constructor(...args: Interest.CtorArg[]) {
+  constructor(...args: Array<Interest | Interest.CtorArg>) {
     args.forEach((arg) => {
       if (Name.isNameLike(arg)) {
         this.name = new Name(arg);
@@ -75,6 +76,8 @@ export class Interest {
         this.lifetime = arg.v;
       } else if (arg instanceof HopLimitTag) {
         this.hopLimit = arg.v;
+      } else if (arg instanceof Interest) {
+        Object.assign(this, arg);
       } else {
         throw new Error("unknown Interest constructor argument");
       }

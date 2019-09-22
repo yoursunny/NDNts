@@ -49,6 +49,7 @@ test("encode", () => {
   interest.nonce = undefined;
   interest.lifetime = 4000;
   interest.hopLimit = 255;
+  interest = new Interest(interest);
   expect(interest).toEncodeAs([
     0x05, 0x0B,
     0x07, 0x03, 0x08, 0x01, 0x43,

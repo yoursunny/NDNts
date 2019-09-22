@@ -73,13 +73,14 @@ export class Data {
    * Construct from flexible arguments.
    *
    * Arguments can include:
+   * - Data to copy from
    * - Name or name URI
    * - Data.ContentType(v)
    * - Data.FreshnessPeriod(v)
    * - Data.FinalBlock (must appear after Name)
    * - Uint8Array as Content
    */
-  constructor(...args: Data.CtorArg[]) {
+  constructor(...args: Array<Data | Data.CtorArg>) {
     args.forEach((arg) => {
       if (Name.isNameLike(arg)) {
         this.name = new Name(arg);
@@ -91,6 +92,8 @@ export class Data {
         this.freshnessPeriod = arg.v;
       } else if (arg === Data.FinalBlock) {
         this.isFinalBlock = true;
+      } else if (arg instanceof Data) {
+        Object.assign(this, arg);
       } else {
         throw new Error("unknown Data constructor argument");
       }

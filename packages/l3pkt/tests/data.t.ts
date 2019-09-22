@@ -72,6 +72,7 @@ test("encode", () => {
   data.freshnessPeriod = 0;
   data.isFinalBlock = false;
   data.content = new Uint8Array([0xC2, 0xC3]);
+  data = new Data(data);
   expect(data).toEncodeAs(({ type, value }) => {
     expect(type).toBe(TT.Data);
     expect(value).toMatchTlv(
