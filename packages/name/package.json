@@ -26,10 +26,6 @@
     "types": "lib/index.d.ts"
   },
   "dependencies": {
-    "@ndn/tlv": "workspace:*",
-    "printf": "^0.5.2"
-  },
-  "devDependencies": {
-    "@types/printf": "^0.2.1"
+    "@ndn/tlv": "workspace:*"
   }
 }

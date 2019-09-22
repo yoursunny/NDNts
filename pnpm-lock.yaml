@@ -100,13 +100,8 @@ importers:
   packages/name:
     dependencies:
       '@ndn/tlv': 'link:../tlv'
-      printf: 0.5.2
-    devDependencies:
-      '@types/printf': 0.2.1
     specifiers:
       '@ndn/tlv': 'workspace:*'
-      '@types/printf': ^0.2.1
-      printf: ^0.5.2
   packages/naming-convention-03:
     dependencies:
       '@ndn/name': 'link:../name'
@@ -127,13 +122,7 @@ importers:
       '@ndn/llface': 'workspace:*'
       remote-controlled-promise: ^0.0.4
   packages/tlv:
-    dependencies:
-      printf: 0.5.2
-    devDependencies:
-      '@types/printf': 0.2.1
-    specifiers:
-      '@types/printf': ^0.2.1
-      printf: ^0.5.2
+    specifiers: {}
   packages/ws-transport:
     dependencies:
       '@ndn/llface': 'link:../llface'
@@ -1520,12 +1509,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-9fq4jZVhPNW8r+UYKnxF1e2HkDWOWKM5bC2/7c9wPV835I0aOrVbS/Hw/pWPk2uKrNXQqg9Z959Kz+IYDd5p3w==
-  /@types/printf/0.2.1:
-    dependencies:
-      '@types/node': 12.7.5
-    dev: true
-    resolution:
-      integrity: sha512-NOwxJwi4sZ9tdFgD7aucc9T9XLgCdCOiRZ6owMBoPfX0I+qVykXktvshWKD04GV8GrFvwC63Gn/AOKXINr/9cg==
   /@types/puppeteer/1.19.1:
     dependencies:
       '@types/node': 12.7.5
@@ -7329,12 +7312,6 @@ packages:
       node: '>= 6'
     resolution:
       integrity: sha512-00ZMZUiHaJrNfk33guavqgvfJS30sLYf0f8+Srklv0AMPodGGHcoHgksZ3OThYnIvOd+8yMCn0YiEOogjlgsnA==
-  /printf/0.5.2:
-    dev: false
-    engines:
-      node: '>= 0.9.0'
-    resolution:
-      integrity: sha512-Hn0UuWqTRd94HiCJoiCNGZTnSyXJdIF3t4/4I293hezIzyH4pQ3ai4TlH/SmRCiMvR5aNMxSYWshjQWWW6J8MQ==
   /process-nextick-args/2.0.1:
     resolution:
       integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==

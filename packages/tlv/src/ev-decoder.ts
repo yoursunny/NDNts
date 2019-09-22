@@ -1,5 +1,5 @@
-import printf from "printf";
 import { Decoder } from "./decoder";
+import { printTT } from "./string";
 
 function isCritical(tt: number): boolean {
   return tt <= 0x1F || tt % 2 === 1;
@@ -22,7 +22,7 @@ export class EvDecoder<T> {
   public decode(target: T, decoder: Decoder): T {
     const { type, vd } = decoder.read();
     if (type !== this.tlvType) {
-      throw new Error(printf("want TLV-TYPE %02X but got %02X", this.tlvType, type));
+      throw new Error(`want TLV-TYPE ${printTT(this.tlvType)} but got ${printTT(type)}`);
     }
 
     let currentIndex = 0;
@@ -48,8 +48,7 @@ export class EvDecoder<T> {
       }
       ++currentOccurs;
       if (!rule.repeatable && currentOccurs > 1) {
-        throw new Error(printf("TLV-TYPE %02X cannot repeat in %02X",
-                               tt, this.tlvType));
+        throw new Error(`TLV-TYPE ${printTT(tt)} cannot repeat in ${printTT(this.tlvType)}`);
       }
 
       rule.cb(target, tlv);
@@ -62,7 +61,7 @@ export class EvDecoder<T> {
     if (!isCritical(tt)) {
       return;
     }
-    throw new Error(printf("TLV-TYPE %02X is %s in %02X", tt, reason, this.tlvType));
+    throw new Error(`TLV-TYPE ${printTT(tt)} is ${reason} in ${printTT(this.tlvType)}`);
   }
 }
 

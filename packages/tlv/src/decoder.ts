@@ -1,5 +1,3 @@
-import printf from "printf";
-
 export interface Decodable<R> {
   decodeFrom(decoder: Decoder): R;
 }
@@ -100,7 +98,7 @@ export class Decoder {
   private readType(): number {
     const n = this.readVarNum();
     if (typeof n === "undefined") {
-      throw new Error(printf("TLV-TYPE is missing near offset %d", this.offset));
+      throw new Error(`TLV-TYPE is missing near offset ${this.offset}`);
     }
     return n;
   }
@@ -108,7 +106,7 @@ export class Decoder {
   private readLength(): number {
     const n = this.readVarNum();
     if (typeof n === "undefined") {
-      throw new Error(printf("TLV-LENGTH is missing near offset %d", this.offset));
+      throw new Error(`TLV-LENGTH is missing near offset ${this.offset}`);
     }
     return n;
   }
@@ -116,7 +114,7 @@ export class Decoder {
   private skipValue(length: number) {
     this.offset += length;
     if (this.offset > this.input.length) {
-      throw new Error(printf("TLV-VALUE is incomplete near offset %d", this.offset));
+      throw new Error(`TLV-VALUE is incomplete near offset ${this.offset}`);
     }
   }
 }

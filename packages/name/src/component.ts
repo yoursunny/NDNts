@@ -1,5 +1,4 @@
 import { Decoder, Encoder } from "@ndn/tlv";
-import printf from "printf";
 
 import { TT } from "./an";
 import { NamingConventionBase } from "./convention";
@@ -10,14 +9,17 @@ function checkType(n: number) {
   }
 }
 
-const UNESCAPED = (() => {
-  const s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
-  const m = {};
-  for (let i = 0; i < s.length; ++i) {
-    m[s.charCodeAt(i)] = true;
+const CHAR_ENCODE = (() => {
+  const UNESCAPED = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+  const a = new Array<string>(256);
+  for (let ch = 0x00; ch <= 0xFF; ++ch) {
+    const s = String.fromCharCode(ch);
+    a[ch] = UNESCAPED.includes(s) ? s : `%${ch.toString(16).padStart(2, "0")}`;
   }
-  return m;
+  return a;
 })();
+const CHARCODE_PERCENT = "%".charCodeAt(0);
+const CHARCODE_PERIOD = ".".charCodeAt(0);
 
 export type ComponentLike = Component | string;
 
@@ -26,21 +28,13 @@ export type ComponentLike = Component | string;
  * This type is immutable.
  */
 export class Component {
-  public get type(): number {
-    return this.type_;
-  }
-
   public get length(): number {
-    return this.value_.length;
-  }
-
-  public get value(): Uint8Array {
-    return this.value_;
+    return this.value.length;
   }
 
   /** TLV-VALUE interpreted as UTF-8 string. */
   public get text(): string {
-    return new TextDecoder().decode(this.value_);
+    return new TextDecoder().decode(this.value);
   }
 
   public static decodeFrom(decoder: Decoder): Component {
@@ -54,6 +48,7 @@ export class Component {
     if (input instanceof Component) {
       return input;
     }
+
     const s = input as string;
     let [sType, sValue] = s.split("=", 2);
     let type = TT.GenericNameComponent;
@@ -65,11 +60,12 @@ export class Component {
     if (/^\.*$/.test(sValue)) {
       sValue = sValue.substr(3);
     }
+
     const value = new Uint8Array(sValue.length);
     let length = 0;
     for (let i = 0; i < sValue.length;) {
       let ch = sValue.charCodeAt(i);
-      if (ch === 0x25) { // '%'
+      if (ch === CHARCODE_PERCENT) {
         ch = parseInt(sValue.substr(i + 1, 2), 16);
         i += 3;
       } else {
@@ -80,8 +76,7 @@ export class Component {
     return new Component(type, value.subarray(0, length));
   }
 
-  private type_: number;
-  private value_: Uint8Array;
+  public readonly value: Uint8Array;
 
   /**
    * Construct name component.
@@ -89,15 +84,14 @@ export class Component {
    * @param value TLV-VALUE; if specified as string, it's encoded as UTF-8 but not interpreted
    *              as URI representation. Use from() to interpret URI.
    */
-  constructor(type: number = TT.GenericNameComponent, value?: Uint8Array|string) {
+  constructor(public readonly type: number = TT.GenericNameComponent, value?: Uint8Array|string) {
     checkType(type);
-    this.type_ = type;
     if (value instanceof Uint8Array) {
-      this.value_ = value;
+      this.value = value;
     } else if (typeof value === "string") {
-      this.value_ = new TextEncoder().encode(value);
+      this.value = new TextEncoder().encode(value);
     } else {
-      this.value_ = new Uint8Array();
+      this.value = new Uint8Array();
     }
   }
 
@@ -105,14 +99,14 @@ export class Component {
   public toString(): string {
     // TODO handle ImplicitSha256DigestComponent and ParametersSha256DigestComponent
     let hasNonPeriods = false;
-    let b = this.type_ === TT.GenericNameComponent ? "" : printf("%d=", this.type_);
-    b = this.value_.reduce<string>((b, ch) => {
-      hasNonPeriods = hasNonPeriods || ch !== 0x2E;
-      if (UNESCAPED[ch]) {
-        return b + String.fromCharCode(ch);
-      }
-      return b + printf("%%%02x", ch);
-    }, b);
+    let b = "";
+    if (this.type !== TT.GenericNameComponent) {
+      b = `${this.type}=`;
+    }
+    this.value.forEach((ch) => {
+      hasNonPeriods = hasNonPeriods || ch !== CHARCODE_PERIOD;
+      b += CHAR_ENCODE[ch];
+    });
     if (!hasNonPeriods) {
       b += "...";
     }
@@ -120,7 +114,7 @@ export class Component {
   }
 
   public encodeTo(encoder: Encoder) {
-    encoder.prependTlv(this.type_, this.value_);
+    encoder.prependTlv(this.type, this.value);
   }
 
   /** Determine if component follows a naming convention. */

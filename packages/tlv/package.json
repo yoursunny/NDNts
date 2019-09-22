@@ -22,11 +22,5 @@
   "publishConfig": {
     "main": "lib/index.js",
     "types": "lib/index.d.ts"
-  },
-  "dependencies": {
-    "printf": "^0.5.2"
-  },
-  "devDependencies": {
-    "@types/printf": "^0.2.1"
   }
 }
