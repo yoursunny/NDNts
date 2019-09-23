@@ -5,35 +5,40 @@ export interface Decodable<R> {
 }
 
 class DecodedTlv {
-  public get type(): number {
-    return this.type_;
-  }
-
   public get length(): number {
-    return this.buf.length - this.offsetV;
+    return this.offsetE - this.offsetV;
   }
 
   public get value(): Uint8Array {
-    return this.buf.subarray(this.offsetV);
+    return this.buf.subarray(this.offsetV, this.offsetE);
   }
 
   public get tlv(): Uint8Array {
-    return this.buf;
+    return this.buf.subarray(this.offsetT, this.offsetE);
   }
 
   public get size(): number {
-    return this.buf.length;
+    return this.offsetE - this.offsetT;
   }
 
   public get decoder(): Decoder {
-    return new Decoder(this.buf);
+    return new Decoder(this.tlv);
   }
 
   public get vd(): Decoder {
     return new Decoder(this.value);
   }
 
-  constructor(private type_: number, private offsetV: number, private buf: Uint8Array) {
+  public get before(): Uint8Array {
+    return this.buf.subarray(0, this.offsetT);
+  }
+
+  public get after(): Uint8Array {
+    return this.buf.subarray(this.offsetE);
+  }
+
+  constructor(public readonly type: number, private buf: Uint8Array,
+              private offsetT: number, private offsetV: number, private offsetE: number) {
   }
 }
 
@@ -54,12 +59,13 @@ export class Decoder {
 
   /** Read TLV structure. */
   public read(): Decoder.Tlv {
-    const offset0 = this.offset;
+    const offsetT = this.offset;
     const type = this.readType();
     const length = this.readLength();
-    const offset1 = this.offset;
+    const offsetV = this.offset;
     this.skipValue(length);
-    return new DecodedTlv(type, offset1 - offset0, this.input.subarray(offset0, this.offset));
+    const offsetE = this.offset;
+    return new DecodedTlv(type, this.input, offsetT, offsetV, offsetE);
   }
 
   /** Read a Decodable object. */
@@ -143,12 +149,23 @@ export namespace Decoder {
 
   /** Decoded TLV. */
   export interface Tlv {
+    /** TLV-TYPE */
     readonly type: number;
+    /** TLV-LENGTH */
     readonly length: number;
+    /** TLV-VALUE */
     readonly value: Uint8Array;
+    /** TLV buffer */
     readonly tlv: Uint8Array;
+    /** sizeof tlv */
     readonly size: number;
+    /** TLV as decoder */
     readonly decoder: Decoder;
+    /** TLV-VALUE as decoder */
     readonly vd: Decoder;
+    /** siblings before this TLV */
+    readonly before: Uint8Array;
+    /** siblings after this TLV */
+    readonly after: Uint8Array;
   }
 }

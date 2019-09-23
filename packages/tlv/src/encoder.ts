@@ -1,7 +1,7 @@
 /**
  * An object that knows how to prepend itself to an Encoder.
  */
-interface EncodableObj {
+export interface EncodableObj {
   encodeTo(encoder: Encoder);
 }
 
@@ -130,14 +130,18 @@ export class Encoder {
   }
 
   /** Prepend an Encodable object. */
-  public encode(obj: Encodable) {
+  public encode(obj: Encodable|Encodable[]) {
     if (ArrayBuffer.isView(obj)) {
       const dst = this.prependRoom(obj.byteLength);
       dst.set(obj as Uint8Array);
     } else if (typeof obj === "object" && typeof (obj as EncodableObj).encodeTo === "function") {
       (obj as EncodableObj).encodeTo(this);
-    } else if (Array.isArray(obj) && typeof obj[0] === "number") {
-      this.prependTlv(...obj);
+    } else if (Array.isArray(obj)) {
+      if (typeof obj[0] === "number") {
+        this.prependTlv(...(obj as EncodableTlv));
+      } else {
+        this.prependValue(...(obj as Encodable[]));
+      }
     } else if (typeof obj !== "undefined") {
       throw new Error("Encoder.encode: obj is not Encodable");
     }
@@ -159,7 +163,7 @@ export namespace Encoder {
 
   export const OmitEmpty = Symbol("OmitEmpty");
 
-  export function encode(obj: Encodable, initBufSize: number = BUF_INIT_SIZE) {
+  export function encode(obj: Encodable|Encodable[], initBufSize: number = BUF_INIT_SIZE) {
     const encoder = new Encoder(initBufSize);
     encoder.encode(obj);
     return encoder.output;

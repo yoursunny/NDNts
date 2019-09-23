@@ -70,9 +70,12 @@ importers:
     dependencies:
       '@ndn/name': 'link:../name'
       '@ndn/tlv': 'link:../tlv'
+    devDependencies:
+      delay: 4.3.0
     specifiers:
       '@ndn/name': 'workspace:*'
       '@ndn/tlv': 'workspace:*'
+      delay: ^4.3.0
   packages/llface:
     dependencies:
       '@ndn/l3pkt': 'link:../l3pkt'

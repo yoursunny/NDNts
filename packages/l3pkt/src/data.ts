@@ -1,7 +1,8 @@
 import { Component, Name, NameLike } from "@ndn/name";
-import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { Decoder, Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
 import { SigType, TT } from "./an";
+import { LLSign } from "./llsign";
 import { DSigInfo } from "./sig-info";
 
 const FAKE_SIGINFO = (() => {
@@ -21,7 +22,8 @@ const EVD = new EvDecoder<Data>("Data", TT.Data)
 )
 .add(TT.Content, (self, { value }) => self.content = value)
 .add(TT.DSigInfo, (self, { decoder }) => self.sigInfo = decoder.decode(DSigInfo))
-.add(TT.DSigValue, (self, { value }) => self.sigValue = value);
+.add(TT.DSigValue, (self, { value, before }) =>
+                   [self.sigValue, self[LLSign.SIGNED]] = [value, before]);
 
 /** Data packet. */
 export class Data {
@@ -53,10 +55,11 @@ export class Data {
   }
 
   public name: Name = new Name();
-  public finalBlockId: Component|undefined;
+  public finalBlockId?: Component;
   public content: Uint8Array = new Uint8Array();
   public sigInfo: DSigInfo = FAKE_SIGINFO;
   public sigValue: Uint8Array = FAKE_SIGVALUE;
+  public [LLSign.SIGNED]?: Uint8Array;
 
   private contentType_: number = 0;
   private freshnessPeriod_: number = 0;
@@ -94,6 +97,17 @@ export class Data {
 
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(TT.Data,
+      ...this.getSignedPortion(),
+      [TT.DSigValue, this.sigValue],
+    );
+  }
+
+  public [LLSign.GetSignedPortion]() {
+    return this.getSignedPortion();
+  }
+
+  private getSignedPortion(): Encodable[] {
+    return [
       this.name,
       [
         TT.MetaInfo, Encoder.OmitEmpty,
@@ -103,8 +117,7 @@ export class Data {
       ],
       this.content.byteLength > 0 ? [TT.Content, this.content] : undefined,
       this.sigInfo,
-      [TT.DSigValue, this.sigValue],
-    );
+    ];
   }
 }
 
