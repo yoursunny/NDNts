@@ -9,26 +9,32 @@ test("simple", () => {
   ]));
 
   {
-    const { type, length, value, tlv, size } = decoder.read();
+    const { type, length, value, tlv, size, before, after } = decoder.read();
     expect(type).toBe(0x01);
     expect(length).toBe(0);
     expect(value).toEqualUint8Array([]);
     expect(tlv).toEqualUint8Array([0x01, 0x00]);
     expect(size).toBe(2);
+    expect(before).toHaveLength(0);
+    expect(after).toHaveLength(15);
   }
 
   {
-    const { type, value } = decoder.read();
+    const { type, value, before, after } = decoder.read();
     expect(type).toBe(0x0409);
     expect(value).toEqualUint8Array([0xB0, 0xB1]);
+    expect(before).toHaveLength(2);
+    expect(after).toHaveLength(9);
   }
 
   {
     const { type, vd } = decoder.read();
     expect(type).toBe(0x00020409);
-    const { type: type1, value } = vd.read();
+    const { type: type1, value, before, after } = vd.read();
     expect(type1).toBe(0xC0);
     expect(value).toEqualUint8Array([0xC2]);
+    expect(before).toHaveLength(0);
+    expect(after).toHaveLength(0);
     expect(vd.eof).toBeTruthy();
   }
 

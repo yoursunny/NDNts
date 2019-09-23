@@ -58,6 +58,14 @@ test("prependTlv", () => {
   });
 });
 
+test("encode Encodable[]", () => {
+  expect(Encoder.encode([
+    undefined,
+    new Uint8Array([0xF0]),
+    [0x02, new Uint8Array([0x20, 0x21, 0x22])],
+  ])).toEqualUint8Array([0xF0, 0x02, 0x03, 0x20, 0x21, 0x22]);
+});
+
 test("error on VAR-NUMBER-9", () => {
   const encoder = new Encoder();
   expect(() => encoder.prependTypeLength(0x01, 0x100000000)).toThrow();
