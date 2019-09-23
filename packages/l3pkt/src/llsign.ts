@@ -1,12 +1,3 @@
-import { Encodable, Encoder } from "@ndn/tlv";
-
-interface StoredSig {
-  /** Signed portion, saved during decoding or signing. */
-  [LLSign.SIGNED]?: Uint8Array;
-  /** TLV-VALUE of SignatureValue. */
-  sigValue: Uint8Array;
-}
-
 /**
  * Low-level signing function.
  * This function only concerns about crypto, not naming or policy.
@@ -15,19 +6,42 @@ interface StoredSig {
 export type LLSign = (input: Uint8Array) => Promise<Uint8Array>;
 
 export namespace LLSign {
-  export const SIGNED = Symbol("LLSign.SIGNED");
-  export const GetSignedPortion = Symbol("LLSign.GetSignedPortion");
+  export const PENDING = Symbol("LLSign.PENDING");
+  export const PROCESS = Symbol("LLSign.PROCESS");
 
-  export type Signable = StoredSig & {
-    /** Retrieve portion of packet to be covered by signature. */
-    [GetSignedPortion]: () => Encodable|Encodable[];
-  };
+  export interface Signable {
+    /** Pending signing operation to be processed prior to encoding. */
+    [PENDING]?: LLSign;
+    /** Process pending signing operation. */
+    [PROCESS](): Promise<void>;
+  }
 
-  /** Call signing function and store signature. */
-  export async function call(sign: LLSign, obj: Signable): Promise<void> {
-    const input = Encoder.encode(obj[GetSignedPortion]());
-    obj.sigValue = await sign(input);
-    obj[SIGNED] = input;
+  /**
+   * Throw an error if there is a pending signing operation.
+   * This should be invoked in full packet encoding function.
+   */
+  export function encodeErrorIfPending(obj: Signable) {
+    if (typeof obj[PENDING] !== "undefined") {
+      throw new Error("cannot encode due to pending signing operation");
+    }
+  }
+
+  /**
+   * Process pending signing operation, if any.
+   * @param obj packet object that implements signable interface.
+   * @param getSignedPortion callback to obtain signed portion.
+   * @param setSigValue callback to store signature; if returning Promise, it will be await-ed.
+   */
+  export async function processImpl(obj: Signable, getSignedPortion: () => Uint8Array,
+                                    setSigValue: (sig: Uint8Array) => any): Promise<void> {
+    const sign = obj[PENDING];
+    if (typeof sign === "undefined") {
+      return;
+    }
+    const input = getSignedPortion();
+    const sig = await sign(input);
+    obj[PENDING] = undefined;
+    await Promise.resolve(setSigValue(sig));
   }
 }
 
@@ -40,17 +54,27 @@ export namespace LLSign {
 export type LLVerify = (input: Uint8Array, sig: Uint8Array) => Promise<void>;
 
 export namespace LLVerify {
-  export type Verifiable = Readonly<StoredSig>;
+  export const SIGNED = Symbol("LLVerify.SIGNED");
+  export const VERIFY = Symbol("LLVerify.VERIFY");
 
-  /** Call verification function on existing signed portion and signature. */
-  export async function call(verify: LLVerify, obj: Verifiable): Promise<void> {
-    const input = obj[LLSign.SIGNED];
-    if (typeof input === "undefined") {
-      return Promise.reject(new Error("signed portion is empty"));
-    }
-    return verify(input, obj.sigValue);
+  export interface Verifiable {
+    /** Signed portion stored during decoding. */
+    [SIGNED]?: Uint8Array;
+    /** Verify packet using given verification function. */
+    [VERIFY](verify: LLVerify): Promise<void>;
   }
 
-  /** An error to indicate signature is incorrect. */
-  export const BAD_SIG = new Error("incorrect signature value");
+  /** Store signed portion during decoding. */
+  export function saveSignedPortion(obj: Verifiable, signed: Uint8Array) {
+    obj[SIGNED] = signed;
+  }
+
+  /** Perform verification. */
+  export function verifyImpl(obj: Verifiable, sig: Uint8Array, verify: LLVerify): Promise<void> {
+    const signed = obj[LLVerify.SIGNED];
+    if (typeof signed === "undefined") {
+      return Promise.reject(new Error("signed portion is empty"));
+    }
+    return verify(signed, sig);
+  }
 }

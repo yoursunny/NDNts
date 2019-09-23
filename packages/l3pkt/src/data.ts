@@ -2,7 +2,7 @@ import { Component, Name, NameLike } from "@ndn/name";
 import { Decoder, Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
 import { SigType, TT } from "./an";
-import { LLSign } from "./llsign";
+import { LLSign, LLVerify } from "./llsign";
 import { DSigInfo } from "./sig-info";
 
 const FAKE_SIGINFO = (() => {
@@ -22,8 +22,10 @@ const EVD = new EvDecoder<Data>("Data", TT.Data)
 )
 .add(TT.Content, (self, { value }) => self.content = value)
 .add(TT.DSigInfo, (self, { decoder }) => self.sigInfo = decoder.decode(DSigInfo))
-.add(TT.DSigValue, (self, { value, before }) =>
-                   [self.sigValue, self[LLSign.SIGNED]] = [value, before]);
+.add(TT.DSigValue, (self, { value, before }) => {
+  self.sigValue = value;
+  LLVerify.saveSignedPortion(self, before);
+});
 
 /** Data packet. */
 export class Data {
@@ -59,7 +61,8 @@ export class Data {
   public content: Uint8Array = new Uint8Array();
   public sigInfo: DSigInfo = FAKE_SIGINFO;
   public sigValue: Uint8Array = FAKE_SIGVALUE;
-  public [LLSign.SIGNED]?: Uint8Array;
+  public [LLSign.PENDING]?: LLSign;
+  public [LLVerify.SIGNED]?: Uint8Array;
 
   private contentType_: number = 0;
   private freshnessPeriod_: number = 0;
@@ -96,14 +99,21 @@ export class Data {
   }
 
   public encodeTo(encoder: Encoder) {
+    LLSign.encodeErrorIfPending(this);
     encoder.prependTlv(TT.Data,
       ...this.getSignedPortion(),
       [TT.DSigValue, this.sigValue],
     );
   }
 
-  public [LLSign.GetSignedPortion]() {
-    return this.getSignedPortion();
+  public [LLSign.PROCESS](): Promise<void> {
+    return LLSign.processImpl(this,
+      () => Encoder.encode(this.getSignedPortion()),
+      (sig) => this.sigValue = sig);
+  }
+
+  public [LLVerify.VERIFY](verify: LLVerify): Promise<void> {
+    return LLVerify.verifyImpl(this, this.sigValue, verify);
   }
 
   private getSignedPortion(): Encodable[] {

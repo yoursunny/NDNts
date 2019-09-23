@@ -10,7 +10,7 @@ class TestAlgo {
   }
 
   public sign = async (input: Uint8Array): Promise<Uint8Array> => {
-    await delay(10);
+    await delay(5);
     if (this.wantSignError) {
       throw new Error("mock-signing-error");
     }
@@ -18,10 +18,10 @@ class TestAlgo {
   }
 
   public verify = async (input: Uint8Array, sig: Uint8Array): Promise<void> => {
-    await delay(10);
+    await delay(5);
     // warning: this is insecure comparison, for test case only
     if (Buffer.compare(sig, this.computeSignature(input)) !== 0) {
-      throw LLVerify.BAD_SIG;
+      throw new Error("incorrect signature value");
     }
   }
 
@@ -48,19 +48,29 @@ const TABLE = [
 
 test.each(TABLE)("sign %#", async ({ cls }) => {
   const obj = new cls();
-  await expect(LLVerify.call(ALGO0.verify, obj)).rejects.toThrow(/empty/);
+  await expect(obj[LLSign.PROCESS]()).resolves.toBeUndefined(); // noop
 
-  await expect(LLSign.call(ALGO1.sign, obj)).rejects.toThrow(/mock-signing-error/);
+  obj[LLSign.PENDING] = ALGO1.sign;
+  expect(() => Encoder.encode(obj)).toThrow(/pending/);
+  await expect(obj[LLSign.PROCESS]()).rejects.toThrow(/mock-signing-error/);
+  expect(obj[LLSign.PENDING]).not.toBeUndefined();
 
-  await expect(LLSign.call(ALGO0.sign, obj)).resolves.toBeUndefined();
-  await expect(LLVerify.call(ALGO0.verify, obj)).resolves.toBeUndefined();
-
-  await expect(LLVerify.call(ALGO1.verify, obj)).rejects.toThrow(/incorrect/);
+  obj[LLSign.PENDING] = ALGO0.sign;
+  await expect(obj[LLSign.PROCESS]()).resolves.toBeUndefined();
+  expect(obj[LLSign.PENDING]).toBeUndefined();
+  expect(Encoder.encode(obj)).not.toBeUndefined();
 });
 
 test.each(TABLE)("verify %#", async ({ cls }) => {
-  const obj = new cls(new Name("/A"));
-  await LLSign.call(ALGO0.sign, obj);
-  const decoded = new Decoder(Encoder.encode(obj)).decode(cls);
-  await expect(LLVerify.call(ALGO0.verify, decoded)).resolves.toBeUndefined();
+  const src = new cls(new Name("/A"));
+  src[LLSign.PENDING] = ALGO0.sign;
+  await src[LLSign.PROCESS]();
+
+  const obj = new Decoder(Encoder.encode(src)).decode(cls);
+  expect(obj[LLVerify.SIGNED]).not.toBeUndefined();
+  await expect(obj[LLVerify.VERIFY](ALGO0.verify)).resolves.toBeUndefined();
+  await expect(obj[LLVerify.VERIFY](ALGO1.verify)).rejects.toThrow(/incorrect/);
+
+  const empty = new cls(); // no signed portion
+  await expect(empty[LLVerify.VERIFY](ALGO0.verify)).rejects.toThrow(/empty/);
 });
