@@ -57,7 +57,7 @@ test("encode", () => {
   ]);
 });
 
-test("decode", () => {
+test("decode", async () => {
   let decoder = new Decoder(new Uint8Array([
     0x05, 0x05,
     0x07, 0x03, 0x08, 0x01, 0x41,
@@ -87,6 +87,9 @@ test("decode", () => {
   expect(interest.appParameters).toBeUndefined();
   expect(interest.sigInfo).toBeUndefined();
   expect(interest.sigValue).toBeUndefined();
+
+  // noop for non parameterized Interest
+  await expect(interest.validateParamsDigest()).resolves.toBeUndefined();
 });
 
 async function encodeWithLLSign(interest: Interest): Promise<Uint8Array> {
@@ -114,20 +117,13 @@ test("encode parameterized", async () => {
 
   // append ParamsDigest
   interest = new Interest(new Name("/A"), new Uint8Array([0xC0, 0xC1]));
-  await expect(encodeWithLLSign(interest)).resolves.toEncodeAs(({ value }) => {
-    expect(value).toMatchTlv(
-      ({ decoder }) => {
-        const name = decoder.decode(Name);
-        expect(name.size).toBe(2);
-        expect(name.at(1).is(ParamsDigest)).toBeTruthy();
-      },
-      ({ type }) => expect(type).toBe(TT.Nonce),
-      ({ type, value }) => {
-        expect(type).toBe(TT.AppParameters);
-        expect(value).toEqualUint8Array([0xC0, 0xC1]);
-      },
-    );
-  });
+  await interest.updateParamsDigest();
+  expect(interest.name.size).toBe(2);
+  expect(interest.name.at(1).is(ParamsDigest)).toBeTruthy();
+  expect(Encoder.encode(interest)).toBeInstanceOf(Uint8Array);
+
+  // cannot validate unless Interest comes from decoding
+  await expect(interest.validateParamsDigest()).rejects.toThrow(/empty/);
 });
 
 test("decode parameterized", async () => {
@@ -147,11 +143,11 @@ test("decode parameterized", async () => {
   expect(interest.name.size).toBe(2);
   expect(interest.appParameters).not.toBeUndefined();
 
-  decoder = new Decoder(Encoder.encode([
-    TT.Interest,
-    new Name("/A").append(ParamsDigest, new Uint8Array(32)).append("C"),
-    [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
-  ]));
+  const wire = await encodeWithLLSign(new Interest(
+    new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"),
+    new Uint8Array([0xC0, 0xC1]),
+  ));
+  decoder = new Decoder(wire);
   interest = decoder.decode(Interest);
   expect(interest.name.size).toBe(3);
   expect(interest.appParameters).not.toBeUndefined();
@@ -159,6 +155,13 @@ test("decode parameterized", async () => {
   const verify = jest.fn();
   await expect(interest[LLVerify.VERIFY](verify)).resolves.toBeUndefined();
   expect(verify).not.toHaveBeenCalled();
+
+  await expect(interest.validateParamsDigest()).resolves.toBeUndefined();
+
+  decoder = new Decoder(wire);
+  interest = decoder.decode(Interest);
+  interest.name = interest.name.replaceAt(1, ParamsDigest.create(new Uint8Array(32)));
+  await expect(interest.validateParamsDigest()).rejects.toThrow(/incorrect/);
 });
 
 test("encode signed", async () => {

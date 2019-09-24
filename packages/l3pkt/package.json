@@ -12,6 +12,10 @@
   "files": [
     "lib"
   ],
+  "browser": {
+    "./lib/sha256.js": "./lib/sha256-browser.js",
+    "./src/sha256.ts": "./src/sha256-browser.ts"
+  },
   "sideEffects": [],
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {

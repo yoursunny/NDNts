@@ -3,16 +3,13 @@ import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
 import { TT } from "./an";
 import { LLSign, LLVerify } from "./llsign";
+import { sha256 } from "./sha256";
 import { ISigInfo } from "./sig-info";
 
 const LIFETIME_DEFAULT = 4000;
 const HOPLIMIT_MAX = 255;
-const FAKE_PARAMS_DIGEST = new Uint8Array((function*() {
-  for (let i = 0; i < 32; i += 2) {
-    yield 0xBE;
-    yield 0xEF;
-  }
-})());
+const DecodeParams = Symbol("Interest.DecodeParams");
+const DigestValidated = Symbol("Interest.DigestValidated");
 
 const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
 .add(TT.Name, (self, { decoder }) => self.name = decoder.decode(Name))
@@ -22,22 +19,25 @@ const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
 .add(TT.Nonce, (self, { value }) => self.nonce = NNI.decode(value, 4))
 .add(TT.InterestLifetime, (self, { value }) => self.lifetime = NNI.decode(value))
 .add(TT.HopLimit, (self, { value }) => self.hopLimit = NNI.decode(value, 1))
-.add(TT.AppParameters, (self, { value, tlv }) => {
-  if (ParamsDigest.findIn(self.name) < 0) {
+.add(TT.AppParameters, (self, { value, tlv, after }) => {
+  if (ParamsDigest.findIn(self.name, false) < 0) {
     throw new Error("ParamsDigest missing in parameterized Interest");
   }
   self.appParameters = value;
-  self[LLVerify.SIGNED] = tlv;
+  self[DecodeParams] = new Uint8Array(tlv.buffer, tlv.byteOffset,
+                                              tlv.byteLength + after.byteLength);
 })
 .add(TT.ISigInfo, (self, { decoder }) => self.sigInfo = decoder.decode(ISigInfo))
 .add(TT.ISigValue, (self, { value, tlv }) => {
   if (!ParamsDigest.match(self.name.at(-1))) {
     throw new Error("ParamsDigest missing or out of place in signed Interest");
   }
-  const appParametersTlv = self[LLVerify.SIGNED];
-  if (typeof appParametersTlv === "undefined") {
+
+  const params = self[DecodeParams];
+  if (!(params instanceof Uint8Array)) {
     throw new Error("AppParameters missing in signed Interest");
   }
+
   if (typeof self.sigInfo === "undefined") {
     throw new Error("ISigInfo missing in signed Interest");
   }
@@ -45,8 +45,7 @@ const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
   self.sigValue = value;
   self[LLVerify.SIGNED] = Encoder.encode([
     self.name.getPrefix(-1).valueOnly,
-    new Uint8Array(appParametersTlv.buffer, appParametersTlv.byteOffset,
-                   tlv.byteOffset - appParametersTlv.byteOffset),
+    new Uint8Array(tlv.buffer, params.byteOffset, tlv.byteOffset - params.byteOffset),
   ]);
 });
 
@@ -73,6 +72,13 @@ export class Interest {
   public sigValue?: Uint8Array;
   public [LLSign.PENDING]?: LLSign;
   public [LLVerify.SIGNED]?: Uint8Array;
+
+  /**
+   * Portion covered by ParamsDigest.
+   * This is set to Uint8Array during decoding, when AppParameters is present.
+   * 'DigestValidated' indicates ParamsDigest has been validated.
+   */
+  public [DecodeParams]?: Uint8Array|typeof DigestValidated;
 
   private nonce_: number|undefined;
   private lifetime_: number = LIFETIME_DEFAULT;
@@ -139,6 +145,21 @@ export class Interest {
     );
   }
 
+  public async updateParamsDigest(): Promise<void> {
+    let pdIndex = ParamsDigest.findIn(this.name);
+    if (pdIndex < 0) {
+      pdIndex = this.appendParamsDigestPlaceholder();
+    }
+
+    const params = Encoder.encode([
+      [TT.AppParameters, this.appParameters],
+      this.sigInfo,
+      [TT.ISigValue, Encoder.OmitEmpty, this.sigValue],
+    ]);
+    const d = await sha256(params);
+    this.name = this.name.replaceAt(pdIndex, ParamsDigest.create(d));
+  }
+
   public [LLSign.PROCESS](): Promise<void> {
     this.insertParamsDigest();
     return LLSign.processImpl(this,
@@ -153,11 +174,34 @@ export class Interest {
       });
   }
 
-  public [LLVerify.VERIFY](verify: LLVerify): Promise<void> {
-    if (!this.sigValue) {
-      return Promise.resolve();
+  public async validateParamsDigest(): Promise<void> {
+    if (typeof this.appParameters === "undefined") {
+      return;
     }
-    return LLVerify.verifyImpl(this, this.sigValue, verify);
+
+    const params = this[DecodeParams];
+    if (params === DigestValidated) {
+      return;
+    }
+    if (typeof params === "undefined") {
+      throw new Error("parameters portion is empty");
+    }
+
+    const pdComp = this.name.at(ParamsDigest.findIn(this.name, false));
+    const d = await sha256(params);
+    // This is not a constant-time comparison. It's for integrity purpose only.
+    if (!pdComp.equals(ParamsDigest.create(d))) {
+      throw new Error("incorrect ParamsDigest");
+    }
+    this[DecodeParams] = DigestValidated;
+  }
+
+  public async [LLVerify.VERIFY](verify: LLVerify): Promise<void> {
+    await this.validateParamsDigest();
+    if (!this.sigValue) {
+      return;
+    }
+    await LLVerify.verifyImpl(this, this.sigValue, verify);
   }
 
   private insertParamsDigest() {
@@ -165,42 +209,31 @@ export class Interest {
       throw new Error("Interest name is empty");
     }
 
-    let pdIndex = ParamsDigest.findIn(this.name);
-    let pdAppendPlaceholder = false;
+    const pdIndex = ParamsDigest.findIn(this.name);
     if (this.sigInfo) {
-      if (pdIndex < 0) {
-        pdAppendPlaceholder = true;
-      } else if (pdIndex !== this.name.size - 1) {
+      if (pdIndex >= 0 && pdIndex !== this.name.size - 1) {
         throw new Error("ParamsDigest out of place for signed Interest");
       }
-
-      if (!this.appParameters) {
-        this.appParameters = new Uint8Array();
-      }
-    } else if (this.appParameters) {
-      if (pdIndex < 0) {
-        pdAppendPlaceholder = true;
-      }
-    } else if (pdIndex >= 0) {
-      this.appParameters = new Uint8Array();
-    } else {
+    }
+    if (this.sigInfo || pdIndex >= 0) {
+      this.appParameters = this.appParameters || new Uint8Array();
+    }
+    if (!this.appParameters) {
       return; // not a parameterized or signed Interest
     }
 
-    if (pdAppendPlaceholder) {
-      pdIndex = this.name.size;
-      this.name = this.name.append(ParamsDigest.PLACEHOLDER);
+    if (pdIndex < 0) {
+      this.appendParamsDigestPlaceholder();
     }
-
-    if (ParamsDigest.isPlaceholder(this.name.at(pdIndex)) && !this[LLSign.PENDING]) {
+    if ((pdIndex < 0 || ParamsDigest.isPlaceholder(this.name.at(pdIndex))) && !this[LLSign.PENDING]) {
+      // insert noop signing operation to trigger digest update
       this[LLSign.PENDING] = () => Promise.resolve(new Uint8Array());
     }
   }
 
-  private async updateParamsDigest(): Promise<void> {
-    const pdIndex = ParamsDigest.findIn(this.name);
-    const newDigest = FAKE_PARAMS_DIGEST; // TODO compute digest
-    this.name = this.name.replaceAt(pdIndex, ParamsDigest.create(newDigest));
+  private appendParamsDigestPlaceholder(): number {
+    this.name = this.name.append(ParamsDigest.PLACEHOLDER);
+    return this.name.size - 1;
   }
 }
 
