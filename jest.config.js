@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node',
+  testEnvironment: './mk/jest-env/node',
 
   moduleFileExtensions: ['ts', 'js'],
   moduleNameMapper: {
