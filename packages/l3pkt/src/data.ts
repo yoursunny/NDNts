@@ -24,7 +24,7 @@ const EVD = new EvDecoder<Data>("Data", TT.Data)
 .add(TT.DSigInfo, (self, { decoder }) => self.sigInfo = decoder.decode(DSigInfo))
 .add(TT.DSigValue, (self, { value, before }) => {
   self.sigValue = value;
-  LLVerify.saveSignedPortion(self, before);
+  self[LLVerify.SIGNED] = before;
 });
 
 /** Data packet. */

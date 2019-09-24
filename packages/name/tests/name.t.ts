@@ -46,6 +46,8 @@ test("modify", () => {
   expect(name.slice(1).toString()).toBe("/B/C");
   expect(name.getPrefix(-1).toString()).toBe("/A/B");
   expect(name.append("D", "E").toString()).toBe("/A/B/C/D/E");
+  expect(name.replaceAt(1, "BB").toString()).toBe("/A/BB/C");
+  expect(name.replaceAt(-1, "CC").toString()).toBe("/A/B/CC");
   expect(name.toString()).toBe("/A/B/C"); // immutable
 });
 
@@ -74,6 +76,14 @@ test("encode", () => {
   const name = new Name("/A/B");
   expect(name).toEncodeAs([
     0x07, 0x06,
+    0x08, 0x01, 0x41,
+    0x08, 0x01, 0x42,
+  ]);
+});
+
+test("encode valueOnly", () => {
+  const name = new Name("/A/B");
+  expect(name.valueOnly).toEncodeAs([
     0x08, 0x01, 0x41,
     0x08, 0x01, 0x42,
   ]);

@@ -1,22 +1,39 @@
-import { ImplicitDigest, Name, ParamsDigest } from "../src";
+import { ImplicitDigest, Name, NamingConvention, ParamsDigest, TT } from "../src";
 import "../test-fixture";
 
-test("ImplicitDigest", () => {
+interface Row {
+  compType: NamingConvention<Uint8Array>;
+  tt: number;
+}
+
+const TABLE = [
+  { compType: ImplicitDigest, tt: TT.ImplicitSha256DigestComponent },
+  { compType: ParamsDigest, tt: TT.ParametersSha256DigestComponent },
+] as Row[];
+
+test.each(TABLE)("DigestComp %#", ({ compType, tt }) => {
   const digest = new Uint8Array(32);
   digest[1] = 0xAA;
-  const name = new Name().append(ImplicitDigest, digest);
-  expect(name.at(0)).toEqualComponent("1=%00%aa" + "%00".repeat(30));
-  expect(name.at(0).is(ImplicitDigest)).toBeTruthy();
-  expect(ImplicitDigest.parse(name.at(0))).toEqual(digest);
-  expect(() => ImplicitDigest.create(new Uint8Array(7))).toThrow();
+  const name = new Name().append(compType, digest);
+  expect(name.at(0)).toEqualComponent(`${tt}=%00%aa${"%00".repeat(30)}`);
+  expect(name.at(0).is(compType)).toBeTruthy();
+  expect(compType.parse(name.at(0))).toEqual(digest);
+  expect(() => compType.create(new Uint8Array(7))).toThrow();
 });
 
-test("ParamsDigest", () => {
-  const digest = new Uint8Array(32);
-  digest[1] = 0xAA;
-  const name = new Name().append(ParamsDigest, digest);
-  expect(name.at(0)).toEqualComponent("2=%00%aa" + "%00".repeat(30));
-  expect(name.at(0).is(ParamsDigest)).toBeTruthy();
-  expect(ParamsDigest.parse(name.at(0))).toEqual(digest);
-  expect(() => ParamsDigest.create(new Uint8Array(7))).toThrow();
+test("ParamsDigest placeholder", () => {
+  let name = new Name("/A/B/C");
+  expect(ParamsDigest.findIn(name)).toBeLessThan(0);
+  expect(ParamsDigest.findIn(name, false)).toBeLessThan(0);
+  expect(ParamsDigest.isPlaceholder(name.at(1))).toBeFalsy();
+
+  name = name.replaceAt(1, ParamsDigest.PLACEHOLDER);
+  expect(ParamsDigest.findIn(name)).toBe(1);
+  expect(ParamsDigest.findIn(name, false)).toBeLessThan(0);
+  expect(ParamsDigest.isPlaceholder(name.at(1))).toBeTruthy();
+
+  name = name.replaceAt(1, ParamsDigest.create(new Uint8Array(32)));
+  expect(ParamsDigest.findIn(name)).toBe(1);
+  expect(ParamsDigest.findIn(name, false)).toBe(1);
+  expect(ParamsDigest.isPlaceholder(name.at(1))).toBeFalsy();
 });

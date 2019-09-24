@@ -12,7 +12,7 @@ export interface EncodableObj {
  * Optional second item could be OmitEmpty to omit the TLV if TLV-VALUE is empty.
  * Subsequent items are Encodables for TLV-VALUE.
  */
-type EncodableTlv = [number, ...any[]];
+export type EncodableTlv = [number, ...any[]];
 
 /**
  * An object acceptable to Encoder.encode().

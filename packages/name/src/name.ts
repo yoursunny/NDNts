@@ -1,4 +1,4 @@
-import { Decoder, Encoder } from "@ndn/tlv";
+import { Decoder, Encodable, Encoder } from "@ndn/tlv";
 
 import { TT } from "./an";
 import { Component, ComponentLike } from "./component";
@@ -20,16 +20,23 @@ export class Name {
     return self;
   }
 
+  public get comps() { return this.comps_; }
+
+  /** Obtain an Encodable for TLV-VALUE only. */
+  public get valueOnly(): Encodable {
+    return {
+      encodeTo: (encoder: Encoder) => {
+        encoder.prependValue(...this.comps_);
+      },
+    };
+  }
+
   private comps_: Component[];
 
-  /**
-   * Create empty name, or copy from other name, or parse from URI.
-   */
+  /** Create empty name, or copy from other name, or parse from URI. */
   constructor(input?: NameLike);
 
-  /**
-   * Create from components.
-   */
+  /** Create from components. */
   constructor(comps: ComponentLike[]);
 
   constructor(arg1?) {
@@ -47,9 +54,7 @@ export class Name {
     return this.comps_.length;
   }
 
-  /**
-   * Retrieve i-th component.
-   */
+  /** Retrieve i-th component. */
   public get(i: number): Component|undefined {
     i = i < 0 ? i + this.size : i;
     return this.comps_[i];
@@ -67,35 +72,25 @@ export class Name {
     return comp;
   }
 
-  /**
-   * Get URI string.
-   */
+  /** Get URI string. */
   public toString(): string {
     return "/" + this.comps_.map((comp) => comp.toString()).join("/");
   }
 
-  /**
-   * Get sub name [begin, end).
-   */
+  /** Get sub name [begin, end). */
   public slice(begin?: number, end?: number): Name {
     return new Name(this.comps_.slice(begin, end));
   }
 
-  /**
-   * Get prefix of n components.
-   */
+  /** Get prefix of n components. */
   public getPrefix(n: number): Name {
     return this.slice(0, n);
   }
 
-  /**
-   * Append a component from naming convention.
-   */
+  /** Append a component from naming convention. */
   public append<T>(convention: NamingConvention<T>, v: T): Name;
 
-  /**
-   * Append suffix with one or more components.
-   */
+  /** Append suffix with one or more components. */
   public append(...suffix: ComponentLike[]): Name;
 
   public append(...args) {
@@ -107,9 +102,14 @@ export class Name {
     return new Name(this.comps_.concat(suffix.map(Component.from)));
   }
 
-  /**
-   * Compare with other name.
-   */
+  /** Return a copy of Name with a component replaced. */
+  public replaceAt(i: number, comp: ComponentLike): Name {
+    const copy = new Name(this);
+    copy.comps.splice(i, 1, Component.from(comp));
+    return copy;
+  }
+
+  /** Compare with other name. */
   public compare(other: NameLike): Name.CompareResult {
     const rhs = new Name(other);
     const commonSize = Math.min(this.size, rhs.size);
@@ -128,16 +128,12 @@ export class Name {
     return Name.CompareResult.EQUAL;
   }
 
-  /**
-   * Determine if this name equals other.
-   */
+  /** Determine if this name equals other. */
   public equals(other: NameLike): boolean {
     return this.compare(other) === Name.CompareResult.EQUAL;
   }
 
-  /**
-   * Determine if this name is a prefix of other.
-   */
+  /** Determine if this name is a prefix of other. */
   public isPrefixOf(other: NameLike): boolean {
     const cmp = this.compare(other);
     return cmp === Name.CompareResult.EQUAL || cmp === Name.CompareResult.LPREFIX;

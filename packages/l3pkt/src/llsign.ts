@@ -64,11 +64,6 @@ export namespace LLVerify {
     [VERIFY](verify: LLVerify): Promise<void>;
   }
 
-  /** Store signed portion during decoding. */
-  export function saveSignedPortion(obj: Verifiable, signed: Uint8Array) {
-    obj[SIGNED] = signed;
-  }
-
   /** Perform verification. */
   export function verifyImpl(obj: Verifiable, sig: Uint8Array, verify: LLVerify): Promise<void> {
     const signed = obj[LLVerify.SIGNED];

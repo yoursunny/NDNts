@@ -1,8 +1,8 @@
-import { Name } from "@ndn/name";
+import { Name, ParamsDigest } from "@ndn/name";
 import { Decoder, Encoder } from "@ndn/tlv";
 import "@ndn/tlv/test-fixture";
 
-import { Interest } from "../src";
+import { Interest, ISigInfo, LLSign, LLVerify, SigType, TT } from "../src";
 
 test("encode", () => {
   expect(() => new Interest({} as any)).toThrow();
@@ -76,7 +76,6 @@ test("decode", () => {
     0x0A, 0x04, 0xA0, 0xA1, 0xA2, 0xA3,
     0x0C, 0x02, 0x76, 0xA1,
     0x22, 0x01, 0xDC,
-    // TODO AppParameters, ISigInfo, ISigValue
   ]));
   interest = decoder.decode(Interest);
   expect(interest.name.toString()).toBe("/A");
@@ -85,4 +84,131 @@ test("decode", () => {
   expect(interest.nonce).toBe(0xA0A1A2A3);
   expect(interest.lifetime).toBe(30369);
   expect(interest.hopLimit).toBe(220);
+  expect(interest.appParameters).toBeUndefined();
+  expect(interest.sigInfo).toBeUndefined();
+  expect(interest.sigValue).toBeUndefined();
+});
+
+async function encodeWithLLSign(interest: Interest): Promise<Uint8Array> {
+  await interest[LLSign.PROCESS]();
+  return Encoder.encode(interest);
+}
+
+test("encode parameterized", async () => {
+  // insert empty AppParameters
+  let interest = new Interest(new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"));
+  await expect(encodeWithLLSign(interest)).resolves.toEncodeAs(({ value }) => {
+    expect(value).toMatchTlv(
+      ({ decoder }) => {
+        const name = decoder.decode(Name);
+        expect(name.size).toBe(3);
+        expect(name.at(1).is(ParamsDigest)).toBeTruthy();
+      },
+      ({ type }) => expect(type).toBe(TT.Nonce),
+      ({ type, length }) => {
+        expect(type).toBe(TT.AppParameters);
+        expect(length).toBe(0);
+      },
+    );
+  });
+
+  // append ParamsDigest
+  interest = new Interest(new Name("/A"), new Uint8Array([0xC0, 0xC1]));
+  await expect(encodeWithLLSign(interest)).resolves.toEncodeAs(({ value }) => {
+    expect(value).toMatchTlv(
+      ({ decoder }) => {
+        const name = decoder.decode(Name);
+        expect(name.size).toBe(2);
+        expect(name.at(1).is(ParamsDigest)).toBeTruthy();
+      },
+      ({ type }) => expect(type).toBe(TT.Nonce),
+      ({ type, value }) => {
+        expect(type).toBe(TT.AppParameters);
+        expect(value).toEqualUint8Array([0xC0, 0xC1]);
+      },
+    );
+  });
+});
+
+test("decode parameterized", async () => {
+  let decoder = new Decoder(Encoder.encode([
+    TT.Interest,
+    new Name("/A"),
+    [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
+  ]));
+  expect(() => decoder.decode(Interest)).toThrow(/missing/);
+
+  decoder = new Decoder(Encoder.encode([
+    TT.Interest,
+    new Name("/A").append(ParamsDigest, new Uint8Array(32)),
+    [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
+  ]));
+  let interest = decoder.decode(Interest);
+  expect(interest.name.size).toBe(2);
+  expect(interest.appParameters).not.toBeUndefined();
+
+  decoder = new Decoder(Encoder.encode([
+    TT.Interest,
+    new Name("/A").append(ParamsDigest, new Uint8Array(32)).append("C"),
+    [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
+  ]));
+  interest = decoder.decode(Interest);
+  expect(interest.name.size).toBe(3);
+  expect(interest.appParameters).not.toBeUndefined();
+
+  const verify = jest.fn();
+  await expect(interest[LLVerify.VERIFY](verify)).resolves.toBeUndefined();
+  expect(verify).not.toHaveBeenCalled();
+});
+
+test("encode signed", async () => {
+  // error on out of place ParamsDigest
+  const interest = new Interest(new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"));
+  interest.sigInfo = new ISigInfo();
+  interest.sigInfo.type = SigType.Sha256;
+  await expect(encodeWithLLSign(interest)).rejects.toThrow(/out of place/);
+
+  // other tests in llsign.t.ts
+});
+
+test("decode signed", () => {
+  let decoder = new Decoder(Encoder.encode([
+    TT.Interest,
+    new Name("/A").append(ParamsDigest, new Uint8Array(32)),
+    [TT.ISigValue, new Uint8Array(4)],
+  ]));
+  expect(() => decoder.decode(Interest)).toThrow(/missing/);
+
+  decoder = new Decoder(Encoder.encode([
+    TT.Interest,
+    new Name("/A").append(ParamsDigest, new Uint8Array(32)),
+    [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
+    [TT.ISigValue, new Uint8Array(4)],
+  ]));
+  expect(() => decoder.decode(Interest)).toThrow(/missing/);
+
+  const si = new ISigInfo();
+  si.type = SigType.Sha256;
+
+  decoder = new Decoder(Encoder.encode([
+    TT.Interest,
+    new Name("/A").append(ParamsDigest, new Uint8Array(32)).append("C"),
+    [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
+    si,
+    [TT.ISigValue, new Uint8Array(4)],
+  ]));
+  expect(() => decoder.decode(Interest)).toThrow(/out of place/);
+
+  decoder = new Decoder(Encoder.encode([
+    TT.Interest,
+    new Name("/A").append(ParamsDigest, new Uint8Array(32)),
+    [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
+    si,
+    [TT.ISigValue, new Uint8Array(4)],
+  ]));
+  const interest = decoder.decode(Interest);
+  expect(interest.name.size).toBe(2);
+  expect(interest.appParameters).not.toBeUndefined();
+  expect(interest.sigInfo).not.toBeUndefined();
+  expect(interest.sigValue).not.toBeUndefined();
 });
