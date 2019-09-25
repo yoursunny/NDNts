@@ -12,12 +12,12 @@ export type NameLike = Name | string;
  */
 export class Name {
   public static decodeFrom(decoder: Decoder): Name {
-    const self = new Name();
+    const t = new Name();
     const { vd } = decoder.read();
     while (!vd.eof) {
-      self.comps_.push(vd.decode(Component));
+      t.comps_.push(vd.decode(Component));
     }
-    return self;
+    return t;
   }
 
   public get comps() { return this.comps_; }

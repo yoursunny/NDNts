@@ -12,39 +12,39 @@ const DecodeParams = Symbol("Interest.DecodeParams");
 const DigestValidated = Symbol("Interest.DigestValidated");
 
 const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
-.add(TT.Name, (self, { decoder }) => self.name = decoder.decode(Name))
-.add(TT.CanBePrefix, (self) => self.canBePrefix = true)
-.add(TT.MustBeFresh, (self) => self.mustBeFresh = true)
+.add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
+.add(TT.CanBePrefix, (t) => t.canBePrefix = true)
+.add(TT.MustBeFresh, (t) => t.mustBeFresh = true)
 // TODO ForwardingHint
-.add(TT.Nonce, (self, { value }) => self.nonce = NNI.decode(value, 4))
-.add(TT.InterestLifetime, (self, { value }) => self.lifetime = NNI.decode(value))
-.add(TT.HopLimit, (self, { value }) => self.hopLimit = NNI.decode(value, 1))
-.add(TT.AppParameters, (self, { value, tlv, after }) => {
-  if (ParamsDigest.findIn(self.name, false) < 0) {
+.add(TT.Nonce, (t, { value }) => t.nonce = NNI.decode(value, 4))
+.add(TT.InterestLifetime, (t, { value }) => t.lifetime = NNI.decode(value))
+.add(TT.HopLimit, (t, { value }) => t.hopLimit = NNI.decode(value, 1))
+.add(TT.AppParameters, (t, { value, tlv, after }) => {
+  if (ParamsDigest.findIn(t.name, false) < 0) {
     throw new Error("ParamsDigest missing in parameterized Interest");
   }
-  self.appParameters = value;
-  self[DecodeParams] = new Uint8Array(tlv.buffer, tlv.byteOffset,
+  t.appParameters = value;
+  t[DecodeParams] = new Uint8Array(tlv.buffer, tlv.byteOffset,
                                               tlv.byteLength + after.byteLength);
 })
-.add(TT.ISigInfo, (self, { decoder }) => self.sigInfo = decoder.decode(ISigInfo))
-.add(TT.ISigValue, (self, { value, tlv }) => {
-  if (!ParamsDigest.match(self.name.at(-1))) {
+.add(TT.ISigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(ISigInfo))
+.add(TT.ISigValue, (t, { value, tlv }) => {
+  if (!ParamsDigest.match(t.name.at(-1))) {
     throw new Error("ParamsDigest missing or out of place in signed Interest");
   }
 
-  const params = self[DecodeParams];
+  const params = t[DecodeParams];
   if (!(params instanceof Uint8Array)) {
     throw new Error("AppParameters missing in signed Interest");
   }
 
-  if (typeof self.sigInfo === "undefined") {
+  if (typeof t.sigInfo === "undefined") {
     throw new Error("ISigInfo missing in signed Interest");
   }
 
-  self.sigValue = value;
-  self[LLVerify.SIGNED] = Encoder.encode([
-    self.name.getPrefix(-1).valueOnly,
+  t.sigValue = value;
+  t[LLVerify.SIGNED] = Encoder.encode([
+    t.name.getPrefix(-1).valueOnly,
     new Uint8Array(tlv.buffer, params.byteOffset, tlv.byteOffset - params.byteOffset),
   ]);
 });

@@ -25,13 +25,13 @@ class A1 {
 }
 
 const EVD = new EvDecoder<EvdTestTarget>("A0", 0xA0)
-.add(0xA1, (self, { decoder }) => { ++self.a1; decoder.decode(A1); })
-.add(0xA4, (self) => { ++self.a4; })
-.add(0xA6, (self) => { ++self.a6; }, { repeat: true })
-.add(0xA9, (self) => { ++self.a9; })
+.add(0xA1, (t, { decoder }) => { ++t.a1; decoder.decode(A1); })
+.add(0xA4, (t) => { ++t.a4; })
+.add(0xA6, (t) => { ++t.a6; }, { repeat: true })
+.add(0xA9, (t) => { ++t.a9; })
 .add(0xC0,
   new EvDecoder<EvdTestTarget>("C0")
-  .add(0xC1, (self, { value }) => { self.c1 = NNI.decode(value); }),
+  .add(0xC1, (t, { value }) => { t.c1 = NNI.decode(value); }),
 );
 
 test("decode normal", () => {
@@ -122,16 +122,16 @@ test("add duplicate", () => {
 
 test("setUnknown", () => {
   const cb = jest.fn<boolean, [EvdTestTarget, Decoder.Tlv, number]>(
-             (self, { type }, order) => {
+             (t, { type }, order) => {
                if (type === 0xA1) {
-                 ++self.a1;
+                 ++t.a1;
                  return true;
                }
                return false;
              });
 
   const evd = new EvDecoder<EvdTestTarget>("A0AA", [0xA0, 0xAA])
-  .add(0xA4, (self) => { ++self.a4; }, { order: 7 })
+  .add(0xA4, (t) => { ++t.a4; }, { order: 7 })
   .setUnknown(cb);
 
   const decoder = new Decoder(new Uint8Array([

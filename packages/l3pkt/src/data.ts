@@ -13,18 +13,18 @@ const FAKE_SIGINFO = (() => {
 const FAKE_SIGVALUE = new Uint8Array(32);
 
 const EVD = new EvDecoder<Data>("Data", TT.Data)
-.add(TT.Name, (self, { decoder }) => self.name = decoder.decode(Name))
+.add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
 .add(TT.MetaInfo,
   new EvDecoder<Data>("MetaInfo")
-  .add(TT.ContentType, (self, { value }) => self.contentType = NNI.decode(value))
-  .add(TT.FreshnessPeriod, (self, { value }) => self.freshnessPeriod = NNI.decode(value))
-  .add(TT.FinalBlockId, (self, { vd }) => self.finalBlockId = vd.decode(Component)),
+  .add(TT.ContentType, (t, { value }) => t.contentType = NNI.decode(value))
+  .add(TT.FreshnessPeriod, (t, { value }) => t.freshnessPeriod = NNI.decode(value))
+  .add(TT.FinalBlockId, (t, { vd }) => t.finalBlockId = vd.decode(Component)),
 )
-.add(TT.Content, (self, { value }) => self.content = value)
-.add(TT.DSigInfo, (self, { decoder }) => self.sigInfo = decoder.decode(DSigInfo))
-.add(TT.DSigValue, (self, { value, before }) => {
-  self.sigValue = value;
-  self[LLVerify.SIGNED] = before;
+.add(TT.Content, (t, { value }) => t.content = value)
+.add(TT.DSigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(DSigInfo))
+.add(TT.DSigValue, (t, { value, before }) => {
+  t.sigValue = value;
+  t[LLVerify.SIGNED] = before;
 });
 
 /** Data packet. */

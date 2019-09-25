@@ -13,15 +13,15 @@ export class KeyDigest {
 }
 
 const EVD = new EvDecoder<SigInfo>("SigInfo", [TT.ISigInfo, TT.DSigInfo])
-.add(TT.SigType, (self, { value }) => self.type = NNI.decode(value))
+.add(TT.SigType, (t, { value }) => t.type = NNI.decode(value))
 .add(TT.KeyLocator,
   new EvDecoder<SigInfo>("KeyLocator")
-  .add(TT.Name, (self, { decoder }) => self.keyLocator = decoder.decode(Name), { order: 0 })
-  .add(TT.KeyDigest, (self, { value }) => self.keyLocator = new KeyDigest(value), { order: 0 }),
+  .add(TT.Name, (t, { decoder }) => t.keyLocator = decoder.decode(Name), { order: 0 })
+  .add(TT.KeyDigest, (t, { value }) => t.keyLocator = new KeyDigest(value), { order: 0 }),
 )
-.add(TT.SigNonce, (self, { value }) => self.nonce = NNI.decode(value, 4))
-.add(TT.SigTime, (self, { value }) => self.time = new Date(NNI.decode(value)))
-.add(TT.SigSeqNum, (self, { value }) => self.seqNum = NNI.decode(value));
+.add(TT.SigNonce, (t, { value }) => t.nonce = NNI.decode(value, 4))
+.add(TT.SigTime, (t, { value }) => t.time = new Date(NNI.decode(value)))
+.add(TT.SigSeqNum, (t, { value }) => t.seqNum = NNI.decode(value));
 
 export abstract class SigInfo {
   public type?: number;

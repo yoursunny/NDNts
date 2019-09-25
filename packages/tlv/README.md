@@ -1,4 +1,4 @@
-# @ndn/naming-convention-03
+# @ndn/tlv
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
@@ -6,10 +6,10 @@ This package implements Type-Length-Value structure encoder and decoder as speci
 It has full support for TLV evolvability guidelines.
 
 ```ts
-import { Encoder, Decoder, NNI } from "@ndn/tlv";
+import { Encoder, Decoder, EvDecoder, NNI } from "@ndn/tlv";
 
 // other imports for examples
-import { Name } from "@ndn/name";
+import { Name, TT as nameTT } from "@ndn/name";
 import { strict as assert } from "assert";
 ```
 
@@ -42,9 +42,9 @@ assert.deepEqual(encoder.output,
                  new Uint8Array([0xB0, 0x07, 0xC0, 0xC1, 0x07, 0x03, 0x08, 0x01, 0x41]));
 ```
 
-## Streaming Decoder
+## Decoder
 
-The **Decoder** is a basic streaming decoder.
+The **Decoder** is a basic sequential decoder.
 
 ```ts
 // Read Type-Length-Value manually:
@@ -64,8 +64,69 @@ assert(name instanceof Name);
 assert.equal(name.toString(), "/A");
 ```
 
-## Evolvability Aware Decoder
+## EvDecoder
 
-The **EvDecoder** is a powerful decoder that can follow TLV evolvability guidelines.
-It's mainly used to implement decoding functions of TLV objects, such as `Interest.decodeFrom`.
-Look for these implementations on how it can be used.
+The **EvDecoder** is a decoder that is aware of TLV evolvability guidelines.
+It's used to implement decoding functions of TLV objects, such as `Interest.decodeFrom`.
+
+Suppose we want to decode [NLSR's LSDB Dataset](https://redmine.named-data.net/projects/nlsr/wiki/LSDB_DataSet/11):
+
+```abnf
+Adjacency = ADJACENCY-TYPE TLV-LENGTH
+              Name
+              Uri
+              Cost
+Uri = URI-TYPE TLV-LENGTH *VCHAR
+Cost = COST-TYPE TLV-LENGTH nonNegativeInteger
+
+ADJACENCY-TYPE = 0x84
+URI-TYPE = 0x8D
+COST-TYPE = 0x8C
+```
+
+```ts
+// Declare a class to represent this type.
+class Adjacency {
+  public name: Name = new Name();
+  public uri: string = "";
+  public cost: number = 0;
+}
+
+// Declare constants for TLV-TYPE numbers.
+const TT = Object.assign({
+  Adjacency: 0x84,
+  Cost: 0x8C,
+  Uri: 0x8D,
+}, nameTT);
+
+// Create the decoder.
+const EVD = new EvDecoder<Adjacency>("Adjacency", TT.Adjacency)
+.add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
+.add(TT.Uri, (t, { value }) => t.uri = new TextDecoder().decode(value))
+.add(TT.Cost, (t, { value }) => t.cost = NNI.decode(value));
+// Each rule declares a possible sub TLV.
+// They are added in the order of expected appearance.
+// The callback receives two arguments:
+// (1) the target object we are decoding into, so that EVD instances are reusable;
+// (2) a Decoder.Tlv structure, where we can selectively access just the TLV-VALUE, the whole TLV,
+//     the TLV-VALUE as a Decoder, the whole TLV as a Decoder, etc.
+
+// Suppose we receive this encoded TLV:
+const adjacencyWire = new Uint8Array([
+  0x84, 0x0D,
+  0x07, 0x03, 0x08, 0x01, 0x41, // Name
+  0x8D, 0x01, 0x42, // Uri
+  0xF0, 0x00, // unrecognized non-critical TLV-TYPE, ignored
+  0x8C, 0x01, 0x80, // Cost
+]);
+const adjacencyDecoder = new Decoder(adjacencyWire);
+
+// We can decode it with the EVD.
+const adjacency = EVD.decode(new Adjacency(), adjacencyDecoder);
+assert.equal(adjacency.name.toString(), "/A");
+assert.equal(adjacency.uri, "B");
+assert.equal(adjacency.cost, 128);
+
+// Currently, EvDecoder itself cannot enforce a certain sub TLV is present.
+// Pull Requests are welcome to add 'options.required' argument.
+```
