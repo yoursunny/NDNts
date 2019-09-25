@@ -17,5 +17,7 @@ before_script:
 
 script:
   - npm run lint
+  - npm run literate lint
   - npm run prod-build
+  - npm run literate
   - npm run cover && coveralls < ./coverage/lcov.info
