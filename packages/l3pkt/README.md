@@ -19,7 +19,7 @@ import { timingSafeEqual } from "crypto";
 
 ```ts
 // We have an Interest type, of course.
-// You can set Interest fields via constructor or setters.
+// You can set fields via constructor or setters.
 const interest = new Interest(new Name("/A"), Interest.CanBePrefix, Interest.MustBeFresh);
 interest.canBePrefix = false;
 interest.lifetime = 2000;
@@ -30,10 +30,8 @@ const interest2 = new Decoder(interestWire).decode(Interest);
 assert.equal(interest2.name.toString(), "/A");
 
 // We got a Data type, too.
-// You can set Interest fields via constructor or setters.
-const data = new Data();
-data.name = interest.name;
-data.freshnessPeriod = 5000;
+// You can set fields via constructor or setters.
+const data = new Data(interest.name, Data.FreshnessPeriod(5000));
 data.content = new TextEncoder().encode("hello NDNts");
 ```
 
@@ -60,7 +58,7 @@ const dataWire = Encoder.encode(data);
 const data2 = new Decoder(dataWire).decode(Data);
 
 // Data signature should be verified.
-// Again, this is a low-level API, so it would look hard.
+// Again, this is a low-level API, so it would look difficult.
 
 // Signed portion is already saved during decoding.
 assert(data2[LLVerify.SIGNED] instanceof Uint8Array);
@@ -71,6 +69,8 @@ await data2[LLVerify.VERIFY]((input: Uint8Array, sig: Uint8Array) => {
     timingSafeEqual(sig, expectedSignature) ? resolve() : reject();
   });
 });
+// It's very important that you do not modify the Data if you need to verify its signature.
+// Otherwise, you'll get errors or incorrect results.
 
 // Now we can access the Content.
 assert.equal(new TextDecoder().decode(data2.content), "hello NDNts");
