@@ -2,6 +2,8 @@
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
+This package implements **Interest** and **Data** types as specified in [NDN Packet Format v0.3](https://named-data.net/doc/NDN-packet-spec/0.3/).
+
 ```ts
 import { Interest, Data, LLSign, LLVerify } from "@ndn/l3pkt";
 
