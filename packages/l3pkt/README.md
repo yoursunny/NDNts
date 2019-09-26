@@ -5,7 +5,7 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 This package implements **Interest** and **Data** types as specified in [NDN Packet Format v0.3](https://named-data.net/doc/NDN-packet-spec/0.3/).
 
 ```ts
-import { Interest, Data, LLSign, LLVerify } from "@ndn/l3pkt";
+import { Interest, Data, LLSign, LLVerify, canSatisfy, canSatisfySync } from "@ndn/l3pkt";
 
 // other imports for examples
 import { ImplicitDigest, Name } from "@ndn/name";
@@ -15,7 +15,7 @@ import { timingSafeEqual } from "crypto";
 (async () => {
 ```
 
-## Layer-3 packet types: Interest and Data
+## Layer-3 Packet Types: Interest and Data
 
 ```ts
 // We have an Interest type, of course.
@@ -94,6 +94,25 @@ assert.rejects(new Data().computeImplicitDigest());
 assert.rejects(new Data().getFullName());
 // Also, if you modify the Data after encoding or decoding, you'll get incorrect results.
 // In short, only call them right after encoding or decoding.
+```
+
+## Interest-Data Matching
+
+```ts
+// To determine whether a Data satisfy an Interest, use canSatisfy or canSatisfySync.
+
+// canSatisfySync returns a boolean:
+assert.equal(canSatisfySync(interest, data), true);
+const interest3 = new Interest("/B");
+assert.equal(canSatisfySync(interest3, data), false);
+// However, it does not support implicit digest, because digest computation is async:
+const interestWithFullName = new Interest(fullName);
+assert(typeof canSatisfySync(interestWithFullName, data) === "undefined");
+
+// canSatisfy returns a Promise that resolves to boolean, which can support implicit digest.
+assert.equal(await canSatisfy(interestWithFullName, data), true);
+assert.equal(await canSatisfy(interest, data), true);
+assert.equal(await canSatisfy(interest3, data), false);
 ```
 
 ```ts
