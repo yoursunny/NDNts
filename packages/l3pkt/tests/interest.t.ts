@@ -2,7 +2,7 @@ import { Name, ParamsDigest } from "@ndn/name";
 import { Decoder, Encoder } from "@ndn/tlv";
 import "@ndn/tlv/test-fixture";
 
-import { Interest, ISigInfo, LLSign, LLVerify, SigType, TT } from "../src";
+import { Interest, LLSign, LLVerify, SigInfo, SigType, TT } from "../src";
 
 test("encode", () => {
   expect(() => new Interest({} as any)).toThrow();
@@ -167,8 +167,7 @@ test("decode parameterized", async () => {
 test("encode signed", async () => {
   // error on out of place ParamsDigest
   const interest = new Interest(new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"));
-  interest.sigInfo = new ISigInfo();
-  interest.sigInfo.type = SigType.Sha256;
+  interest.sigInfo = new SigInfo(SigType.Sha256);
   await expect(encodeWithLLSign(interest)).rejects.toThrow(/out of place/);
 
   // other tests in llsign.t.ts
@@ -190,14 +189,11 @@ test("decode signed", () => {
   ]));
   expect(() => decoder.decode(Interest)).toThrow(/missing/);
 
-  const si = new ISigInfo();
-  si.type = SigType.Sha256;
-
   decoder = new Decoder(Encoder.encode([
     TT.Interest,
     new Name("/A").append(ParamsDigest, new Uint8Array(32)).append("C"),
     [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
-    si,
+    new SigInfo(SigType.Sha256).encodeAs(TT.ISigInfo),
     [TT.ISigValue, new Uint8Array(4)],
   ]));
   expect(() => decoder.decode(Interest)).toThrow(/out of place/);
@@ -206,7 +202,7 @@ test("decode signed", () => {
     TT.Interest,
     new Name("/A").append(ParamsDigest, new Uint8Array(32)),
     [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
-    si,
+    new SigInfo(SigType.Sha256).encodeAs(TT.ISigInfo),
     [TT.ISigValue, new Uint8Array(4)],
   ]));
   const interest = decoder.decode(Interest);

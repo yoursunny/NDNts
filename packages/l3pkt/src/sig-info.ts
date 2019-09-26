@@ -1,5 +1,5 @@
-import { Name } from "@ndn/name";
-import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { Name, NameLike } from "@ndn/name";
+import { Decoder, EncodableObj, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
 import { TT } from "./an";
 
@@ -23,14 +23,49 @@ const EVD = new EvDecoder<SigInfo>("SigInfo", [TT.ISigInfo, TT.DSigInfo])
 .add(TT.SigTime, (t, { nni }) => t.time = new Date(nni))
 .add(TT.SigSeqNum, (t, { nni }) => t.seqNum = nni);
 
-export abstract class SigInfo {
+/** SignatureInfo on Interest or Data. */
+export class SigInfo {
+  public static decodeFrom(decoder: Decoder): SigInfo {
+    return EVD.decode(new SigInfo(), decoder);
+  }
+
   public type?: number;
   public keyLocator?: Name|KeyDigest;
   public nonce?: number;
   public time?: Date;
   public seqNum?: number;
 
-  protected encodeTo(encoder: Encoder, tt: number) {
+  /**
+   * Construct from flexible arguments.
+   *
+   * Arguments can include, in any order:
+   * - SigInfo to copy from
+   * - number as SigType
+   * - Name or URI or KeyDigest as KeyLocator
+   */
+  constructor(...args: Array<SigInfo | SigInfo.CtorArg>) {
+    args.forEach((arg) => {
+      if (typeof arg === "number") {
+        this.type = arg;
+      } else if (Name.isNameLike(arg)) {
+        this.keyLocator = new Name(arg);
+      } else if (arg instanceof KeyDigest) {
+        this.keyLocator = arg;
+      } else if (arg instanceof SigInfo) {
+        Object.assign(this, arg);
+      } else {
+        throw new Error("unknown SigInfo constructor argument");
+      }
+    });
+  }
+
+  public encodeAs(tt: number): EncodableObj {
+    return {
+      encodeTo: (encoder) => this.encodeTo(encoder, tt),
+    };
+  }
+
+  private encodeTo(encoder: Encoder, tt: number) {
     if (typeof this.type === "undefined") {
       throw new Error("cannot encode SigInfo without SigType");
     }
@@ -48,24 +83,6 @@ export abstract class SigInfo {
   }
 }
 
-/** Interest SignatureInfo. */
-export class ISigInfo extends SigInfo {
-  public static decodeFrom(decoder: Decoder): ISigInfo {
-    return EVD.decode(new ISigInfo(), decoder);
-  }
-
-  public encodeTo(encoder: Encoder) {
-    super.encodeTo(encoder, TT.ISigInfo);
-  }
-}
-
-/** Data SignatureInfo. */
-export class DSigInfo extends SigInfo {
-  public static decodeFrom(decoder: Decoder): DSigInfo {
-    return EVD.decode(new DSigInfo(), decoder);
-  }
-
-  public encodeTo(encoder: Encoder) {
-    super.encodeTo(encoder, TT.DSigInfo);
-  }
+export namespace SigInfo {
+  export type CtorArg = number | NameLike | KeyDigest;
 }

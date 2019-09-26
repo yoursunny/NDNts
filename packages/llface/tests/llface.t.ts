@@ -1,4 +1,4 @@
-import { Interest, ISigInfo, LLSign, SigType } from "@ndn/l3pkt";
+import { Interest, LLSign, SigInfo, SigType } from "@ndn/l3pkt";
 import delay from "delay";
 import duplexify from "duplexify";
 import * as rPromise from "remote-controlled-promise";
@@ -28,8 +28,7 @@ test("TX signing", async () => {
     return new Uint8Array([0xA0, 0xA1, 0xA2, 0xA3]);
   });
   const interest = new Interest("/A");
-  interest.sigInfo = new ISigInfo();
-  interest.sigInfo.type = SigType.Sha256;
+  interest.sigInfo = new SigInfo(SigType.Sha256);
   interest[LLSign.PENDING] = signFn;
   face.sendInterest(interest);
 
@@ -49,8 +48,7 @@ test("TX signing error", async () => {
     throw new Error("mock-signing-error");
   });
   const interest = new Interest("/A");
-  interest.sigInfo = new ISigInfo();
-  interest.sigInfo.type = SigType.Sha256;
+  interest.sigInfo = new SigInfo(SigType.Sha256);
   interest[LLSign.PENDING] = signFn;
   face.sendInterest(interest);
 

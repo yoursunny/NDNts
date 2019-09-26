@@ -5,7 +5,7 @@ import { Name } from "@ndn/name";
 import { Decodable, Decoder, Encodable, Encoder } from "@ndn/tlv";
 import "@ndn/tlv/test-fixture";
 
-import { Data, DSigInfo, Interest, ISigInfo, KeyDigest, LLSign, LLVerify, SigInfo, SigType, TT } from "../src";
+import { Data, Interest, KeyDigest, LLSign, LLVerify, SigInfo, SigType, TT } from "../src";
 
 class TestAlgo {
   constructor(private key: string, private wantSignError: boolean = false) {
@@ -38,25 +38,16 @@ class TestAlgo {
 const ALGO0 = new TestAlgo("0");
 const ALGO1 = new TestAlgo("1", true);
 
-function makeSigInfo<T extends SigInfo>(cls: (new() => T)): T {
-  const sigInfo = new cls();
-  sigInfo.type = SigType.HmacWithSha256;
-  sigInfo.keyLocator = new KeyDigest(new Uint8Array([0xA0, 0xA1]));
-  return sigInfo;
-}
-
 type Pkt = LLSign.Signable & LLVerify.Verifiable & Encodable & {sigInfo: SigInfo};
 
 interface Row {
   cls: (new(name: Name) => Pkt) & Decodable<Pkt>;
-  si: SigInfo;
   checkWire(tlv: Decoder.Tlv);
 }
 
 const TABLE = [
   {
     cls: Interest,
-    si: makeSigInfo(ISigInfo),
     checkWire({ type, value }) {
       expect(type).toBe(TT.Interest);
       expect(value).toMatchTlv(
@@ -85,7 +76,6 @@ const TABLE = [
   },
   {
     cls: Data,
-    si: makeSigInfo(DSigInfo),
     checkWire({ type, value }) {
       expect(type).toBe(TT.Data);
       expect(value).toMatchTlv(
@@ -100,9 +90,9 @@ const TABLE = [
   },
 ] as Row[];
 
-test.each(TABLE)("sign %#", async ({ cls, si }) => {
+test.each(TABLE)("sign %#", async ({ cls }) => {
   const obj = new cls(new Name("/A"));
-  obj.sigInfo = si;
+  obj.sigInfo = new SigInfo(SigType.HmacWithSha256, new KeyDigest(new Uint8Array([0xA0, 0xA1])));
   await expect(obj[LLSign.PROCESS]()).resolves.toBeUndefined(); // noop
 
   obj[LLSign.PENDING] = ALGO1.sign;
@@ -116,9 +106,9 @@ test.each(TABLE)("sign %#", async ({ cls, si }) => {
   expect(Encoder.encode(obj)).not.toBeUndefined();
 });
 
-test.each(TABLE)("verify %#", async ({ cls, si, checkWire }) => {
+test.each(TABLE)("verify %#", async ({ cls, checkWire }) => {
   const src = new cls(new Name("/A"));
-  src.sigInfo = si;
+  src.sigInfo = new SigInfo(SigType.Sha256);
   src[LLSign.PENDING] = ALGO0.sign;
   await src[LLSign.PROCESS]();
   const wire = Encoder.encode(src);

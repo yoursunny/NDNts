@@ -3,13 +3,9 @@ import { Decoder, Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
 import { SigType, TT } from "./an";
 import { LLSign, LLVerify } from "./llsign";
-import { DSigInfo } from "./sig-info";
+import { SigInfo } from "./sig-info";
 
-const FAKE_SIGINFO = (() => {
-  const sigInfo = new DSigInfo();
-  sigInfo.type = SigType.Sha256;
-  return sigInfo;
-})();
+const FAKE_SIGINFO = new SigInfo(SigType.Sha256);
 const FAKE_SIGVALUE = new Uint8Array(32);
 
 const EVD = new EvDecoder<Data>("Data", TT.Data)
@@ -21,7 +17,7 @@ const EVD = new EvDecoder<Data>("Data", TT.Data)
   .add(TT.FinalBlockId, (t, { vd }) => t.finalBlockId = vd.decode(Component)),
 )
 .add(TT.Content, (t, { value }) => t.content = value)
-.add(TT.DSigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(DSigInfo))
+.add(TT.DSigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(SigInfo))
 .add(TT.DSigValue, (t, { value, before }) => {
   t.sigValue = value;
   t[LLVerify.SIGNED] = before;
@@ -59,7 +55,7 @@ export class Data {
   public name: Name = new Name();
   public finalBlockId?: Component;
   public content: Uint8Array = new Uint8Array();
-  public sigInfo: DSigInfo = FAKE_SIGINFO;
+  public sigInfo: SigInfo = FAKE_SIGINFO;
   public sigValue: Uint8Array = FAKE_SIGVALUE;
   public [LLSign.PENDING]?: LLSign;
   public [LLVerify.SIGNED]?: Uint8Array;
@@ -126,7 +122,7 @@ export class Data {
         this.finalBlockId ? [TT.FinalBlockId, this.finalBlockId] : undefined,
       ],
       this.content.byteLength > 0 ? [TT.Content, this.content] : undefined,
-      this.sigInfo,
+      this.sigInfo.encodeAs(TT.DSigInfo),
     ];
   }
 }

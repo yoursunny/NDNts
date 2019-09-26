@@ -4,7 +4,7 @@ import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { TT } from "./an";
 import { LLSign, LLVerify } from "./llsign";
 import { sha256 } from "./sha256";
-import { ISigInfo } from "./sig-info";
+import { SigInfo } from "./sig-info";
 
 const LIFETIME_DEFAULT = 4000;
 const HOPLIMIT_MAX = 255;
@@ -25,9 +25,9 @@ const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
   }
   t.appParameters = value;
   t[DecodeParams] = new Uint8Array(tlv.buffer, tlv.byteOffset,
-                                              tlv.byteLength + after.byteLength);
+                                   tlv.byteLength + after.byteLength);
 })
-.add(TT.ISigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(ISigInfo))
+.add(TT.ISigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(SigInfo))
 .add(TT.ISigValue, (t, { value, tlv }) => {
   if (!ParamsDigest.match(t.name.at(-1))) {
     throw new Error("ParamsDigest missing or out of place in signed Interest");
@@ -68,7 +68,7 @@ export class Interest {
   public canBePrefix: boolean = false;
   public mustBeFresh: boolean = false;
   public appParameters?: Uint8Array;
-  public sigInfo?: ISigInfo;
+  public sigInfo?: SigInfo;
   public sigValue?: Uint8Array;
   public [LLSign.PENDING]?: LLSign;
   public [LLVerify.SIGNED]?: Uint8Array;
@@ -139,7 +139,8 @@ export class Interest {
         [TT.HopLimit, NNI(this.hopLimit, 1)] : undefined,
       this.appParameters ?
         [TT.AppParameters, this.appParameters] : undefined,
-      this.sigInfo,
+      this.sigInfo ?
+        this.sigInfo.encodeAs(TT.ISigInfo) : undefined,
       this.sigValue ?
         [TT.ISigValue, this.sigValue] : undefined,
     );
@@ -153,7 +154,8 @@ export class Interest {
 
     const params = Encoder.encode([
       [TT.AppParameters, this.appParameters],
-      this.sigInfo,
+      this.sigInfo ?
+          this.sigInfo.encodeAs(TT.ISigInfo) : undefined,
       [TT.ISigValue, Encoder.OmitEmpty, this.sigValue],
     ]);
     const d = await sha256(params);
@@ -166,7 +168,8 @@ export class Interest {
       () => Encoder.encode([
         this.name.getPrefix(-1).valueOnly,
         [TT.AppParameters, this.appParameters],
-        this.sigInfo,
+        this.sigInfo ?
+          this.sigInfo.encodeAs(TT.ISigInfo) : undefined,
       ]),
       (sig) => {
         this.sigValue = this.sigInfo ? sig : undefined;
