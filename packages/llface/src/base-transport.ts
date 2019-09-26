@@ -3,14 +3,8 @@ import * as rPromise from "remote-controlled-promise";
 
 import { Emitter } from "./transport-events";
 
-export abstract class BaseTransport<Rx extends NodeJS.ReadableStream,
-                                    Tx extends NodeJS.WritableStream = NodeJS.WritableStream>
-       extends (EventEmitter as new() => Emitter) {
+export abstract class BaseTransport extends (EventEmitter as new() => Emitter) {
   protected closing: rPromise.ControlledPromise<void>|undefined;
-
-  protected constructor(public readonly rx: Rx, public readonly tx: Tx) {
-    super();
-  }
 
   protected handlePipelineError = (error?: Error|null) => {
     if (this.closing) {

@@ -1,10 +1,13 @@
-import { Data, Interest, TT } from "@ndn/l3pkt";
+import { Data, Interest, LLSign, TT } from "@ndn/l3pkt";
 import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
 import { EventEmitter } from "events";
 import { pipeline, Writable } from "readable-stream";
 import { StrictEventEmitter } from "strict-event-emitter-types";
 
 import { Transport } from "./transport";
+
+/** Packet types that can be transmitted. */
+type TxPacket = Interest | Data;
 
 interface Events {
   /** Emitted when an Interest arrives. */
@@ -14,7 +17,9 @@ interface Events {
   /** Emitted upon end of RX stream. */
   end: Error|undefined;
   /** Emitted upon RX decoding error. */
-  rxerror: LLFace.DecodeError;
+  rxerror: LLFace.RxError;
+  /** Emitted upon TX preparation error. */
+  txerror: LLFace.TxError;
 }
 
 type Emitter = StrictEventEmitter<EventEmitter, Events>;
@@ -35,12 +40,12 @@ export class LLFace extends (EventEmitter as new() => Emitter) {
 
   /** Transmit an Interest. */
   public sendInterest(interest: Interest) {
-    this.transport.tx.write(Encoder.encode(interest));
+    this.txWrite(interest);
   }
 
   /** Transmit a Data. */
   public sendData(data: Data) {
-    this.transport.tx.write(Encoder.encode(data));
+    this.txWrite(data);
   }
 
   public close(): Promise<void> {
@@ -63,16 +68,28 @@ export class LLFace extends (EventEmitter as new() => Emitter) {
           throw new Error(`TLV-TYPE ${printTT(type)} cannot appear at top level`);
       }
     } catch (err) {
-      this.emit("rxerror", new LLFace.DecodeError(err, tlv));
+      this.emit("rxerror", new LLFace.RxError(err, tlv));
     }
     callback();
+  }
+
+  private txWrite(packet: TxPacket) {
+    packet[LLSign.PROCESS]()
+    .then(() => this.transport.tx.write(Encoder.encode(packet)),
+          (error) => this.emit("txerror", new LLFace.TxError(error, packet)));
   }
 }
 
 export namespace LLFace {
-  export class DecodeError extends Error {
+  export class RxError extends Error {
     constructor(inner: Error, public packet: Uint8Array) {
       super(`${inner.message} ${toHex(packet)}`);
+    }
+  }
+
+  export class TxError extends Error {
+    constructor(inner: Error, public packet: TxPacket) {
+      super(`${inner.message} ${packet.name.toString()}`);
     }
   }
 }
