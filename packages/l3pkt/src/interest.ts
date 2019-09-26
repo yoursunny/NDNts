@@ -208,13 +208,13 @@ export class Interest {
   }
 
   private insertParamsDigest() {
-    if (this.name.size < 1) {
+    if (this.name.length < 1) {
       throw new Error("Interest name is empty");
     }
 
     const pdIndex = ParamsDigest.findIn(this.name);
     if (this.sigInfo) {
-      if (pdIndex >= 0 && pdIndex !== this.name.size - 1) {
+      if (pdIndex >= 0 && pdIndex !== this.name.length - 1) {
         throw new Error("ParamsDigest out of place for signed Interest");
       }
     }
@@ -236,7 +236,7 @@ export class Interest {
 
   private appendParamsDigestPlaceholder(): number {
     this.name = this.name.append(ParamsDigest.PLACEHOLDER);
-    return this.name.size - 1;
+    return this.name.length - 1;
   }
 }
 

@@ -60,8 +60,8 @@ assert.equal(name1.toString(), "/localhost/NDNts/rocks");
 assert.equal(name2.toString(), "/A/B/C/32=metadata");
 
 // It's crucial to know how many name components you have.
-assert.equal(name1.size, 3);
-assert.equal(name2.size, 4);
+assert.equal(name1.length, 3);
+assert.equal(name2.length, 4);
 
 // You can get an individual name component.
 const name1comp1 = name1.get(1);

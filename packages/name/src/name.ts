@@ -50,13 +50,13 @@ export class Name {
     }
   }
 
-  public get size(): number {
+  public get length(): number {
     return this.comps_.length;
   }
 
   /** Retrieve i-th component. */
   public get(i: number): Component|undefined {
-    i = i < 0 ? i + this.size : i;
+    i = i < 0 ? i + this.length : i;
     return this.comps_[i];
   }
 
@@ -112,17 +112,17 @@ export class Name {
   /** Compare with other name. */
   public compare(other: NameLike): Name.CompareResult {
     const rhs = new Name(other);
-    const commonSize = Math.min(this.size, rhs.size);
+    const commonSize = Math.min(this.length, rhs.length);
     for (let i = 0; i < commonSize; ++i) {
       const cmp = this.comps_[i].compare(rhs.comps_[i]);
       if (cmp !== Component.CompareResult.EQUAL) {
         return cmp as unknown as Name.CompareResult;
       }
     }
-    if (this.size > commonSize) {
+    if (this.length > commonSize) {
       return Name.CompareResult.RPREFIX;
     }
-    if (rhs.size > commonSize) {
+    if (rhs.length > commonSize) {
       return Name.CompareResult.LPREFIX;
     }
     return Name.CompareResult.EQUAL;

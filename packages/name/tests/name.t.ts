@@ -5,7 +5,7 @@ import { Component, Name } from "../src";
 
 test("simple", () => {
   let name = new Name();
-  expect(name.size).toBe(0);
+  expect(name.length).toBe(0);
   expect(name.toString()).toBe("/");
 
   const decoder = new Decoder(new Uint8Array([
@@ -14,7 +14,7 @@ test("simple", () => {
     0xF0, 0x02, 0x42, 0x43,
   ]));
   name = decoder.decode(Name);
-  expect(name.size).toBe(2);
+  expect(name.length).toBe(2);
   expect(name.get(0)).toEqual(Component.from("A"));
   expect(name.get(1)).toEqual(Component.from("240=BC"));
   expect(name.toString()).toBe("/A/240=BC");

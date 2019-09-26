@@ -36,7 +36,7 @@ export class Data {
 
   public get isFinalBlock(): boolean {
     return !!this.finalBlockId &&
-           this.name.size > 0 &&
+           this.name.length > 0 &&
            this.finalBlockId.equals(this.name.at(-1));
   }
 
@@ -45,7 +45,7 @@ export class Data {
       this.finalBlockId = undefined;
       return;
     }
-    if (this.name.size < 1) {
+    if (this.name.length < 1) {
       throw new Error("cannot set FinalBlockId when Name is empty");
     }
     this.finalBlockId = this.name.at(-1);

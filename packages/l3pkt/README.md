@@ -85,7 +85,7 @@ assert.equal(digest.length, 32);
 
 // Full names are available, too.
 const fullName = await data2.getFullName();
-assert.equal(fullName.size, data2.name.size + 1);
+assert.equal(fullName.length, data2.name.length + 1);
 assert(fullName.at(-1).is(ImplicitDigest));
 
 // Note that these two functions are only available after encoding or decoding.

@@ -82,7 +82,7 @@ const TABLE = [
     checkWire({ type, value }) {
       expect(type).toBe(TT.Data);
       expect(value).toMatchTlv(
-        ({ decoder }) => expect(decoder.decode(Name).size).toBe(1),
+        ({ decoder }) => expect(decoder.decode(Name).length).toBe(1),
         ({ type }) => expect(type).toBe(TT.DSigInfo),
         ({ type, length }) => {
           expect(type).toBe(TT.DSigValue);
