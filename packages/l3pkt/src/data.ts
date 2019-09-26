@@ -16,8 +16,8 @@ const EVD = new EvDecoder<Data>("Data", TT.Data)
 .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
 .add(TT.MetaInfo,
   new EvDecoder<Data>("MetaInfo")
-  .add(TT.ContentType, (t, { value }) => t.contentType = NNI.decode(value))
-  .add(TT.FreshnessPeriod, (t, { value }) => t.freshnessPeriod = NNI.decode(value))
+  .add(TT.ContentType, (t, { nni }) => t.contentType = nni)
+  .add(TT.FreshnessPeriod, (t, { nni }) => t.freshnessPeriod = nni)
   .add(TT.FinalBlockId, (t, { vd }) => t.finalBlockId = vd.decode(Component)),
 )
 .add(TT.Content, (t, { value }) => t.content = value)

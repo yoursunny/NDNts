@@ -1,3 +1,5 @@
+import { NNI } from "./nni";
+
 export interface Decodable<R> {
   decodeFrom(decoder: Decoder): R;
 }
@@ -25,6 +27,10 @@ class DecodedTlv {
 
   public get vd(): Decoder {
     return new Decoder(this.value);
+  }
+
+  public get nni(): number {
+    return NNI.decode(this.value);
   }
 
   public get before(): Uint8Array {
@@ -158,6 +164,8 @@ export namespace Decoder {
     readonly decoder: Decoder;
     /** TLV-VALUE as decoder */
     readonly vd: Decoder;
+    /** TLV-VALUE as non-negative integer */
+    readonly nni: number;
     /** siblings before this TLV */
     readonly before: Uint8Array;
     /** siblings after this TLV */

@@ -1,5 +1,5 @@
 import { Component, Name } from "@ndn/name";
-import { Decoder, NNI } from "@ndn/tlv";
+import { Decoder } from "@ndn/tlv";
 import "@ndn/tlv/test-fixture";
 
 import { Data, TT } from "../src";
@@ -42,13 +42,13 @@ test("encode", () => {
       ({ type, value }) => {
         expect(type).toBe(TT.MetaInfo);
         expect(value).toMatchTlv(
-          ({ type, value }) => {
+          ({ type, nni }) => {
             expect(type).toBe(TT.ContentType);
-            expect(NNI.decode(value)).toBe(0x03);
+            expect(nni).toBe(0x03);
           },
-          ({ type, value }) => {
+          ({ type, nni }) => {
             expect(type).toBe(TT.FreshnessPeriod);
-            expect(NNI.decode(value)).toBe(2500);
+            expect(nni).toBe(2500);
           },
           ({ type, vd }) => {
             expect(type).toBe(TT.FinalBlockId);

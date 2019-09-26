@@ -1,4 +1,4 @@
-import { Decoder, EvDecoder, NNI } from "../src";
+import { Decoder, EvDecoder } from "../src";
 import "../test-fixture";
 
 class EvdTestTarget {
@@ -31,7 +31,7 @@ const EVD = new EvDecoder<EvdTestTarget>("A0", 0xA0)
 .add(0xA9, (t) => { ++t.a9; })
 .add(0xC0,
   new EvDecoder<EvdTestTarget>("C0")
-  .add(0xC1, (t, { value }) => { t.c1 = NNI.decode(value); }),
+  .add(0xC1, (t, { nni }) => { t.c1 = nni; }),
 );
 
 test("decode normal", () => {

@@ -17,7 +17,7 @@ const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
 .add(TT.MustBeFresh, (t) => t.mustBeFresh = true)
 // TODO ForwardingHint
 .add(TT.Nonce, (t, { value }) => t.nonce = NNI.decode(value, 4))
-.add(TT.InterestLifetime, (t, { value }) => t.lifetime = NNI.decode(value))
+.add(TT.InterestLifetime, (t, { nni }) => t.lifetime = nni)
 .add(TT.HopLimit, (t, { value }) => t.hopLimit = NNI.decode(value, 1))
 .add(TT.AppParameters, (t, { value, tlv, after }) => {
   if (ParamsDigest.findIn(t.name, false) < 0) {

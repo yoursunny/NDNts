@@ -103,7 +103,7 @@ const TT = Object.assign({
 const EVD = new EvDecoder<Adjacency>("Adjacency", TT.Adjacency)
 .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
 .add(TT.Uri, (t, { value }) => t.uri = new TextDecoder().decode(value))
-.add(TT.Cost, (t, { value }) => t.cost = NNI.decode(value));
+.add(TT.Cost, (t, { nni }) => t.cost = nni);
 // Each rule declares a possible sub TLV.
 // They are added in the order of expected appearance.
 // The callback receives two arguments:
