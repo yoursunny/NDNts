@@ -84,12 +84,12 @@ importers:
     dependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
       '@ndn/tlv': 'link:../tlv'
+      '@types/readable-stream': 2.3.4
       readable-stream: 3.4.0
       remote-controlled-promise: 0.0.4
       strict-event-emitter-types: 2.0.0
     devDependencies:
       '@types/duplexify': 3.6.0
-      '@types/readable-stream': 2.3.4
       delay: 4.3.0
       duplexify: 4.1.1
       stream-mock: 2.0.5
@@ -107,9 +107,8 @@ importers:
   packages/name:
     dependencies:
       '@ndn/tlv': 'link:../tlv'
-      buffer-compare: 1.1.1
-    devDependencies:
       '@types/buffer-compare': 0.0.30
+      buffer-compare: 1.1.1
     specifiers:
       '@ndn/tlv': 'workspace:*'
       '@types/buffer-compare': ^0.0.30
@@ -138,16 +137,14 @@ importers:
   packages/ws-transport:
     dependencies:
       '@ndn/llface': 'link:../llface'
+      '@types/ws': 6.0.3
       websocket-stream: 5.5.0
     devDependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
-      '@types/readable-stream': 2.3.4
-      '@types/ws': 6.0.3
       remote-controlled-promise: 0.0.4
     specifiers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/llface': 'workspace:*'
-      '@types/readable-stream': ^2.3.4
       '@types/ws': ^6.0.3
       remote-controlled-promise: ^0.0.4
       websocket-stream: ^5.5.0
@@ -1377,7 +1374,7 @@ packages:
     resolution:
       integrity: sha512-RoX2EZjMiFMjZh9lmYrwgoP9RTpAjSHiJxdp4oidAQVO02T7HER3xj9UKue5534ULWeqVEkujhWcyvUce+d68w==
   /@types/buffer-compare/0.0.30:
-    dev: true
+    dev: false
     resolution:
       integrity: sha1-5lb0jkN5pVSSHMELxyAbX15dx4k=
   /@types/clean-css/4.2.1:
@@ -1522,7 +1519,6 @@ packages:
     resolution:
       integrity: sha512-ryO3Q3++yZC/+b8j8BdKd/dn9JlzlHBPdm80656xwYUdmPkpTGTjkAdt6BByiNupGPE8w0FhBgvYy/fX9hRNGQ==
   /@types/node/12.7.5:
-    dev: true
     resolution:
       integrity: sha512-9fq4jZVhPNW8r+UYKnxF1e2HkDWOWKM5bC2/7c9wPV835I0aOrVbS/Hw/pWPk2uKrNXQqg9Z959Kz+IYDd5p3w==
   /@types/puppeteer/1.19.1:
@@ -1539,7 +1535,7 @@ packages:
     dependencies:
       '@types/node': 12.7.5
       safe-buffer: 5.2.0
-    dev: true
+    dev: false
     resolution:
       integrity: sha512-jC39XMh0smGWINz7Dmbll9FkToRTDE4lneo0Kn3101xSsCQBdMW9QyU/lw+nc/QaiPXvBsGfETQ1O9QZBddGCg==
   /@types/relateurl/0.2.28:
@@ -1603,7 +1599,7 @@ packages:
   /@types/ws/6.0.3:
     dependencies:
       '@types/node': 12.7.5
-    dev: true
+    dev: false
     resolution:
       integrity: sha512-yBTM0P05Tx9iXGq00BbJPo37ox68R5vaGTXivs6RGh/BQ6QP5zqZDGWdAO6JbRE/iR1l80xeGAwCQS2nMV9S/w==
   /@types/yargs-parser/13.1.0:

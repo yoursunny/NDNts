@@ -28,13 +28,13 @@
   "dependencies": {
     "@ndn/l3pkt": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "@types/readable-stream": "^2.3.4",
     "readable-stream": "^3.4.0",
     "remote-controlled-promise": "^0.0.4",
     "strict-event-emitter-types": "^2.0.0"
   },
   "devDependencies": {
     "@types/duplexify": "^3.6.0",
-    "@types/readable-stream": "^2.3.4",
     "delay": "^4.3.0",
     "duplexify": "^4.1.1",
     "stream-mock": "^2.0.5"

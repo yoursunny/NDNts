@@ -25,11 +25,10 @@
   },
   "dependencies": {
     "@ndn/llface": "workspace:*",
+    "@types/ws": "^6.0.3",
     "websocket-stream": "^5.5.0"
   },
   "devDependencies": {
-    "@types/readable-stream": "^2.3.4",
-    "@types/ws": "^6.0.3",
     "@ndn/l3pkt": "workspace:*",
     "remote-controlled-promise": "^0.0.4"
   }
