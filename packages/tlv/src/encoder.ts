@@ -48,30 +48,29 @@ function writeVarNum(room: Uint8Array, off: number, n: number) {
 const BUF_INIT_SIZE = 2048;
 const BUF_GROW_SIZE = 2048;
 
-/**
- * TLV encoder that accepts objects in reverse order.
- */
+/** TLV encoder that accepts objects in reverse order. */
 export class Encoder {
   private buf: ArrayBuffer;
   private off: number;
 
-  /**
-   * Return encoding output size.
-   */
+  /** Return encoding output size. */
   public get size(): number {
     return this.buf.byteLength - this.off;
   }
 
-  /**
-   * Obtain encoding output.
-   */
+  /** Obtain encoding output. */
   public get output(): Uint8Array {
-    return new Uint8Array(this.buf, this.off);
+    return this.slice();
   }
 
   constructor(initSize: number = BUF_INIT_SIZE) {
     this.buf = new ArrayBuffer(initSize);
     this.off = initSize;
+  }
+
+  /** Obtain part of encoding output. */
+  public slice(start: number = 0, length?: number) {
+    return new Uint8Array(this.buf, this.off + start, length);
   }
 
   /**
@@ -167,5 +166,16 @@ export namespace Encoder {
     const encoder = new Encoder(initBufSize);
     encoder.encode(obj);
     return encoder.output;
+  }
+
+  /** Extract the encoding output of an element while writing to a larger encoder. */
+  export function extract(obj: Encodable|Encodable[], cb: (output: Uint8Array) => any): Encodable {
+    return {
+      encodeTo(encoder) {
+        const sizeBefore = encoder.size;
+        encoder.encode(obj);
+        cb(encoder.slice(0, encoder.size - sizeBefore));
+      },
+    } as EncodableObj;
   }
 }

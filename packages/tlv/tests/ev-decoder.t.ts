@@ -2,6 +2,7 @@ import { Decoder, EvDecoder } from "../src";
 import "../test-fixture";
 
 class EvdTestTarget {
+  public top?: Decoder.Tlv;
   public a1 = 0;
   public a4 = 0;
   public a6 = 0;
@@ -25,6 +26,7 @@ class A1 {
 }
 
 const EVD = new EvDecoder<EvdTestTarget>("A0", 0xA0)
+.setTop((t, tlv) => t.top = tlv)
 .add(0xA1, (t, { decoder }) => { ++t.a1; decoder.decode(A1); })
 .add(0xA4, (t) => { ++t.a4; })
 .add(0xA6, (t) => { ++t.a6; }, { repeat: true })
@@ -46,6 +48,8 @@ test("decode normal", () => {
   ]));
   const target = new EvdTestTarget();
   EVD.decode(target, decoder);
+  expect(target.top).not.toBeUndefined();
+  expect(target.top!.type).toBe(0xA0);
   expect(target.sum()).toBe(1121);
   expect(target.c1).toBe(0x0104);
 });
@@ -114,6 +118,7 @@ test("decode bad TLV-TYPE", () => {
   const decoder = new Decoder(new Uint8Array([0xAF, 0x00]));
   const target = new EvdTestTarget();
   expect(() => EVD.decode(target, decoder)).toThrow();
+  expect(target.top).toBeUndefined();
 });
 
 test("add duplicate", () => {

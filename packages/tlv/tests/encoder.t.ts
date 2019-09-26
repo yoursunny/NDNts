@@ -58,12 +58,18 @@ test("prependTlv", () => {
   });
 });
 
-test("encode Encodable[]", () => {
+test("encode Encodable[] and extract", () => {
+  const extractCb = jest.fn<void, [Uint8Array]>();
   expect(Encoder.encode([
     undefined,
     new Uint8Array([0xF0]),
-    [0x02, new Uint8Array([0x20, 0x21, 0x22])],
+    Encoder.extract(
+      [0x02, new Uint8Array([0x20, 0x21, 0x22])],
+      extractCb,
+    ),
   ])).toEqualUint8Array([0xF0, 0x02, 0x03, 0x20, 0x21, 0x22]);
+  expect(extractCb).toBeCalledTimes(1);
+  expect(extractCb.mock.calls[0][0]).toEqualUint8Array([0x02, 0x03, 0x20, 0x21, 0x22]);
 });
 
 test("error on VAR-NUMBER-9", () => {

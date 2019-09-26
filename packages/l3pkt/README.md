@@ -8,7 +8,7 @@ This package implements **Interest** and **Data** types as specified in [NDN Pac
 import { Interest, Data, LLSign, LLVerify } from "@ndn/l3pkt";
 
 // other imports for examples
-import { Name } from "@ndn/name";
+import { ImplicitDigest, Name } from "@ndn/name";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { strict as assert } from "assert";
 import { timingSafeEqual } from "crypto";
@@ -74,6 +74,26 @@ await data2[LLVerify.VERIFY]((input: Uint8Array, sig: Uint8Array) => {
 
 // Now we can access the Content.
 assert.equal(new TextDecoder().decode(data2.content), "hello NDNts");
+```
+
+## Implicit Digest
+
+```ts
+// To obtain implicit digest, we'll have to await, because WebCrypto API is async.
+const digest = await data.computeImplicitDigest();
+assert.equal(digest.length, 32);
+
+// Full names are available, too.
+const fullName = await data2.getFullName();
+assert.equal(fullName.size, data2.name.size + 1);
+assert(fullName.at(-1).is(ImplicitDigest));
+
+// Note that these two functions are only available after encoding or decoding.
+// Calling them on a Data before encoding results in an error.
+assert.rejects(new Data().computeImplicitDigest());
+assert.rejects(new Data().getFullName());
+// Also, if you modify the Data after encoding or decoding, you'll get incorrect results.
+// In short, only call them right after encoding or decoding.
 ```
 
 ```ts

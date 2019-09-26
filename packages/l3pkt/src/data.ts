@@ -1,14 +1,17 @@
-import { Component, Name, NameLike } from "@ndn/name";
-import { Decoder, Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { Component, ImplicitDigest, Name, NameLike } from "@ndn/name";
+import { Decoder, Encodable, EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
 import { SigType, TT } from "./an";
 import { LLSign, LLVerify } from "./llsign";
+import { sha256 } from "./sha256";
 import { SigInfo } from "./sig-info";
 
 const FAKE_SIGINFO = new SigInfo(SigType.Sha256);
 const FAKE_SIGVALUE = new Uint8Array(32);
+const TOPTLV = Symbol("Data.TopTlv");
 
 const EVD = new EvDecoder<Data>("Data", TT.Data)
+.setTop((t, { tlv }) => t[TOPTLV] = tlv)
 .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
 .add(TT.MetaInfo,
   new EvDecoder<Data>("MetaInfo")
@@ -59,6 +62,7 @@ export class Data {
   public sigValue: Uint8Array = FAKE_SIGVALUE;
   public [LLSign.PENDING]?: LLSign;
   public [LLVerify.SIGNED]?: Uint8Array;
+  public [TOPTLV]?: Uint8Array; // for implicit digest
 
   private contentType_: number = 0;
   private freshnessPeriod_: number = 0;
@@ -96,10 +100,30 @@ export class Data {
 
   public encodeTo(encoder: Encoder) {
     LLSign.encodeErrorIfPending(this);
-    encoder.prependTlv(TT.Data,
-      ...this.getSignedPortion(),
-      [TT.DSigValue, this.sigValue],
-    );
+    encoder.encode(Encoder.extract(
+      [
+        TT.Data,
+        Encoder.extract(
+          this.getSignedPortion(),
+          (output) => this[LLVerify.SIGNED] = output,
+        ),
+        [TT.DSigValue, this.sigValue],
+      ] as EncodableTlv,
+      (output) => this[TOPTLV] = output,
+    ));
+  }
+
+  public async computeImplicitDigest(): Promise<Uint8Array> {
+    const topTlv = this[TOPTLV];
+    if (!topTlv) {
+      throw new Error("wire encoding is unavailable");
+    }
+    return sha256(topTlv);
+  }
+
+  public async getFullName(): Promise<Name> {
+    const digest = await this.computeImplicitDigest();
+    return this.name.append(ImplicitDigest, digest);
   }
 
   public [LLSign.PROCESS](): Promise<void> {

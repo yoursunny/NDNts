@@ -1,6 +1,7 @@
-import { Component, Name } from "@ndn/name";
-import { Decoder } from "@ndn/tlv";
+import { Component, ImplicitDigest, Name } from "@ndn/name";
+import { Decoder, Encoder } from "@ndn/tlv";
 import "@ndn/tlv/test-fixture";
+import { createHash } from "crypto";
 
 import { Data, TT } from "../src";
 
@@ -120,4 +121,17 @@ test("decode", () => {
   expect(data.finalBlockId!.toString()).toBe("1");
   expect(data.isFinalBlock).toBeFalsy();
   expect(data.content).toHaveLength(2);
+});
+
+test("ImplicitDigest", async () => {
+  let data = new Data("/A");
+  await expect(data.computeImplicitDigest()).rejects.toThrow(/unavailable/);
+
+  const wire = Encoder.encode(data);
+  const expectedDigest = createHash("sha256").update(wire).digest();
+  await expect(data.computeImplicitDigest()).resolves.toEqualUint8Array(expectedDigest);
+
+  data = new Decoder(wire).decode(Data);
+  const fullName = await data.getFullName();
+  expect(fullName.toString()).toBe(`/A/${ImplicitDigest.create(expectedDigest).toString()}`);
 });

@@ -42,12 +42,14 @@ type Pkt = LLSign.Signable & LLVerify.Verifiable & Encodable & {sigInfo: SigInfo
 
 interface Row {
   cls: (new(name: Name) => Pkt) & Decodable<Pkt>;
+  canVerifyAfterEncode: boolean;
   checkWire(tlv: Decoder.Tlv);
 }
 
 const TABLE = [
   {
     cls: Interest,
+    canVerifyAfterEncode: false,
     checkWire({ type, value }) {
       expect(type).toBe(TT.Interest);
       expect(value).toMatchTlv(
@@ -76,6 +78,7 @@ const TABLE = [
   },
   {
     cls: Data,
+    canVerifyAfterEncode: true,
     checkWire({ type, value }) {
       expect(type).toBe(TT.Data);
       expect(value).toMatchTlv(
@@ -106,13 +109,22 @@ test.each(TABLE)("sign %#", async ({ cls }) => {
   expect(Encoder.encode(obj)).not.toBeUndefined();
 });
 
-test.each(TABLE)("verify %#", async ({ cls, checkWire }) => {
+test.each(TABLE)("verify %#", async ({ cls, checkWire, canVerifyAfterEncode }) => {
   const src = new cls(new Name("/A"));
   src.sigInfo = new SigInfo(SigType.Sha256);
   src[LLSign.PENDING] = ALGO0.sign;
   await src[LLSign.PROCESS]();
   const wire = Encoder.encode(src);
   expect(wire).toMatchTlv(checkWire);
+
+  if (canVerifyAfterEncode) {
+    expect(src[LLVerify.SIGNED]).not.toBeUndefined();
+    await expect(src[LLVerify.VERIFY](ALGO0.verify)).resolves.toBeUndefined();
+    await expect(src[LLVerify.VERIFY](ALGO1.verify)).rejects.toThrow(/incorrect/);
+  } else {
+    expect(src[LLVerify.SIGNED]).toBeUndefined();
+    await expect(src[LLVerify.VERIFY](ALGO0.verify)).rejects.toThrow(/empty/);
+  }
 
   const obj = new Decoder(wire).decode(cls);
   expect(obj[LLVerify.SIGNED]).not.toBeUndefined();

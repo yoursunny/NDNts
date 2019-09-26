@@ -28,6 +28,8 @@ const AUTO_ORDER_SKIP = 100;
  */
 type UnknownElementCallback<T> = (target: T, tlv: Decoder.Tlv, order: number) => boolean;
 
+type TopElementCallback<T> = (target: T, tlv: Decoder.Tlv) => any;
+
 function nest<T>(evd: EvDecoder<T>): ElementCallback<T> {
   return (target, { decoder }) => { evd.decode(target, decoder); };
 }
@@ -58,7 +60,7 @@ export class EvDecoder<T> {
    * @param options additional rule options.
    */
   public add(tt: number, cb: ElementCallback<T>|EvDecoder<T>,
-             options?: RuleOptions<T>): EvDecoder<T> {
+             options?: RuleOptions<T>): this {
     if (typeof this.rules[tt] !== "undefined") {
       throw new Error(`TLV-TYPE ${printTT(tt)} already has a rule`);
     }
@@ -71,17 +73,25 @@ export class EvDecoder<T> {
   }
 
   /** Set callback to handle unknown elements. */
-  public setUnknown(cb: UnknownElementCallback<T>): EvDecoder<T> {
+  public setUnknown(cb: UnknownElementCallback<T>): this {
     this.unknownCb = cb;
+    return this;
+  }
+
+  /** Set callback to receive top-level TLV. */
+  public setTop(cb: TopElementCallback<T>): this {
+    this.topCb = cb;
     return this;
   }
 
   /** Decode to target object. */
   public decode<R extends T = T>(target: R, decoder: Decoder): R {
-    const { type, vd } = decoder.read();
+    const topTlv = decoder.read();
+    const { type, vd } = topTlv;
     if (this.topTT.length && !this.topTT.includes(type)) {
       throw new Error(`TLV-TYPE ${printTT(type)} is not ${this.typeName}`);
     }
+    this.topCb(target, topTlv);
 
     let currentOrder = 0;
     let currentCount = 0;
@@ -117,6 +127,7 @@ export class EvDecoder<T> {
   }
 
   private unknownCb: UnknownElementCallback<T> = () => false;
+  private topCb: TopElementCallback<T> = () => undefined;
 
   private handleUnrecognized(tt: number, reason: string) {
     if (isCritical(tt)) {
