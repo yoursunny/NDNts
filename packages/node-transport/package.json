@@ -7,7 +7,7 @@
     "Named Data Networking"
   ],
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
-  "license": "MIT",
+  "license": "ISC",
   "main": "src/index.ts",
   "files": [
     "lib"
