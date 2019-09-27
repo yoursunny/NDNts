@@ -12,7 +12,7 @@ import { Data, Interest } from "@ndn/l3pkt";
 import { LLFace } from "@ndn/llface";
 import * as rPromise from "remote-controlled-promise";
 (async () => {
-if (process.env.CI) return;
+if (process.env.CI) { return; }
 ```
 
 ## SocketTransport for TCP and Unix

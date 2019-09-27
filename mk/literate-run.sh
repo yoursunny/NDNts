@@ -12,13 +12,18 @@ fi
 
 ROOTDIR=$(pwd)
 cd $1
+if ! grep '```ts' README.md >/dev/null; then
+  exit 0
+fi
 if [ -n ''$LINT ]; then
   (
     echo '// tslint:disable no-console'
     echo '// tslint:disable-next-line ordered-imports'
     codedown ts < README.md
   ) > $ROOTDIR/mk/literate-temp.ts
+  echo literate lint $1/README.md >/dev/stderr
   tslint -p $ROOTDIR $ROOTDIR/mk/literate-temp.ts
 else
+  echo literate exec $1/README.md >/dev/stderr
   codedown ts < README.md | ts-node -r tsconfig-paths/register
 fi
