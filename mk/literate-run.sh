@@ -14,6 +14,7 @@ ROOTDIR=$(pwd)
 cd $1
 if [ -n ''$LINT ]; then
   (
+    echo '// tslint:disable no-console'
     echo '// tslint:disable-next-line ordered-imports'
     codedown ts < README.md
   ) > $ROOTDIR/mk/literate-temp.ts

@@ -63,7 +63,7 @@ faceA.on("data", (data: Data) => {
   assert.equal(data.sigValue.length, 2);
   dataArrival.resolve(undefined);
 });
-await dataArrival;
+await dataArrival.promise;
 ```
 
 ```ts

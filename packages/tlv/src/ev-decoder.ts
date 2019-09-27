@@ -34,6 +34,8 @@ function nest<T>(evd: EvDecoder<T>): ElementCallback<T> {
   return (target, { decoder }) => { evd.decode(target, decoder); };
 }
 
+type IsCriticalCallback = (tt: number) => boolean;
+
 function isCritical(tt: number): boolean {
   return tt <= 0x1F || tt % 2 === 1;
 }
@@ -43,14 +45,19 @@ export class EvDecoder<T> {
   private topTT: number[];
   private rules = {} as Record<number, Rule<T>>;
   private nextOrder = AUTO_ORDER_SKIP;
+  private isCriticalCb: IsCriticalCallback = isCritical;
+  private unknownCb: UnknownElementCallback<T>;
+  private topCb: TopElementCallback<T>;
 
   /**
-   * Constructor
+   * Constructor.
    * @param typeName type name, used in error messages.
    * @param topTT  if specified, check top-level TLV-TYPE to be in this list.
    */
   constructor(private typeName: string, topTT?: number|number[]) {
     this.topTT = !topTT ? [] : Array.isArray(topTT) ? topTT : [topTT];
+    this.unknownCb = () => false;
+    this.topCb = () => undefined;
   }
 
   /**
@@ -69,6 +76,12 @@ export class EvDecoder<T> {
     }
     this.rules[tt] = Object.assign({ cb, order: this.nextOrder, repeat: false } as Rule<T>, options);
     this.nextOrder += AUTO_ORDER_SKIP;
+    return this;
+  }
+
+  /** Set callback to determine whether TLV-TYPE is critical. */
+  public setIsCritical(cb: IsCriticalCallback): this {
+    this.isCriticalCb = cb;
     return this;
   }
 
@@ -126,11 +139,8 @@ export class EvDecoder<T> {
     return target;
   }
 
-  private unknownCb: UnknownElementCallback<T> = () => false;
-  private topCb: TopElementCallback<T> = () => undefined;
-
   private handleUnrecognized(tt: number, reason: string) {
-    if (isCritical(tt)) {
+    if (this.isCriticalCb(tt)) {
       throw new Error(`TLV-TYPE ${printTT(tt)} is ${reason} in ${this.typeName}`);
     }
   }

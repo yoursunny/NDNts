@@ -1,4 +1,5 @@
 import { Data, Interest, LLSign, TT } from "@ndn/l3pkt";
+import { LpRx } from "@ndn/lp";
 import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
 import { EventEmitter } from "events";
 import { pipeline, Writable } from "readable-stream";
@@ -30,6 +31,7 @@ export class LLFace extends (EventEmitter as new() => Emitter) {
     super();
     pipeline(
       transport.rx,
+      new LpRx(),
       new Writable({
         objectMode: true,
         write: this.rxWrite,

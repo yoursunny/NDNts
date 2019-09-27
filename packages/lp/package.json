@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/llface",
+  "name": "@ndn/lp",
   "version": "0.0.0",
-  "description": "NDNts: Low-Level Face",
+  "description": "NDNts: NDNLP",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -12,32 +12,23 @@
   "files": [
     "lib"
   ],
-  "sideEffects": [
-    "test-fixture/**"
-  ],
+  "sideEffects": [],
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/llface"
+    "directory": "packages/lp"
   },
   "publishConfig": {
     "main": "lib/index.js",
     "types": "lib/index.d.ts"
   },
   "dependencies": {
-    "@ndn/l3pkt": "workspace:*",
-    "@ndn/lp": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@types/readable-stream": "^2.3.4",
-    "readable-stream": "^3.4.0",
-    "remote-controlled-promise": "^0.0.4",
-    "strict-event-emitter-types": "^2.0.0"
+    "readable-stream": "^3.4.0"
   },
   "devDependencies": {
-    "@types/duplexify": "^3.6.0",
-    "delay": "^4.3.0",
-    "duplexify": "^4.1.1",
     "stream-mock": "^2.0.5"
   }
 }

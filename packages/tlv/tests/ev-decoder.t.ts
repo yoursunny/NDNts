@@ -125,15 +125,39 @@ test("add duplicate", () => {
   expect(() => EVD.add(0xA1, () => undefined)).toThrow(); // duplicate rule
 });
 
+test("setIsCritical", () => {
+  const cb = jest.fn((tt: number) => tt === 0xA2);
+
+  const evd = new EvDecoder<EvdTestTarget>("A0", 0xA0)
+  .setIsCritical(cb)
+  .add(0xA1, (t) => { ++t.a1; });
+
+  const decoder = new Decoder(new Uint8Array([
+    // first object
+    0xA0, 0x04,
+    0xA1, 0x00, // recognized
+    0xA3, 0x00, // non-critical in cb
+    // second object
+    0xA0, 0x04,
+    0xA1, 0x00, // recognized
+    0xA2, 0x00, // critical in cb
+  ]));
+  const target = evd.decode(new EvdTestTarget(), decoder);
+  expect(target.sum()).toBe(1000);
+  expect(cb).toHaveBeenCalledTimes(1);
+
+  expect(() => evd.decode(new EvdTestTarget(), decoder)).toThrow(/TLV-TYPE 0xA2/);
+  expect(cb).toHaveBeenCalledTimes(2);
+});
+
 test("setUnknown", () => {
-  const cb = jest.fn<boolean, [EvdTestTarget, Decoder.Tlv, number]>(
-             (t, { type }, order) => {
-               if (type === 0xA1) {
-                 ++t.a1;
-                 return true;
-               }
-               return false;
-             });
+  const cb = jest.fn((t: EvdTestTarget, { type }: Decoder.Tlv, order: number) => {
+    if (type === 0xA1) {
+      ++t.a1;
+      return true;
+    }
+    return false;
+  });
 
   const evd = new EvDecoder<EvdTestTarget>("A0AA", [0xA0, 0xAA])
   .add(0xA4, (t) => { ++t.a4; }, { order: 7 })

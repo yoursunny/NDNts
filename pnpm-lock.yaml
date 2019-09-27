@@ -83,6 +83,7 @@ importers:
   packages/llface:
     dependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
+      '@ndn/lp': 'link:../lp'
       '@ndn/tlv': 'link:../tlv'
       '@types/readable-stream': 2.3.4
       readable-stream: 3.4.0
@@ -95,6 +96,7 @@ importers:
       stream-mock: 2.0.5
     specifiers:
       '@ndn/l3pkt': 'workspace:*'
+      '@ndn/lp': 'workspace:*'
       '@ndn/tlv': 'workspace:*'
       '@types/duplexify': ^3.6.0
       '@types/readable-stream': ^2.3.4
@@ -104,6 +106,18 @@ importers:
       remote-controlled-promise: ^0.0.4
       stream-mock: ^2.0.5
       strict-event-emitter-types: ^2.0.0
+  packages/lp:
+    dependencies:
+      '@ndn/tlv': 'link:../tlv'
+      '@types/readable-stream': 2.3.4
+      readable-stream: 3.4.0
+    devDependencies:
+      stream-mock: 2.0.5
+    specifiers:
+      '@ndn/tlv': 'workspace:*'
+      '@types/readable-stream': ^2.3.4
+      readable-stream: ^3.4.0
+      stream-mock: ^2.0.5
   packages/name:
     dependencies:
       '@ndn/tlv': 'link:../tlv'
