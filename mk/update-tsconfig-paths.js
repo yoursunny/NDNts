@@ -22,7 +22,7 @@ fs.readdirSync("packages", { withFileTypes: true })
   if (!!private || !name) {
     return;
   }
-  tsconfig.compilerOptions.paths[name] = [path.join("packages", direct.name)];
+  tsconfig.compilerOptions.paths[name] = [path.posix.join("packages", direct.name)];
 });
 
 fs.writeFileSync(path.resolve(__dirname, "..", "tsconfig.json"),
