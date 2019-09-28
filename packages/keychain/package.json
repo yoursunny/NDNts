@@ -1,0 +1,40 @@
+{
+  "name": "@ndn/keychain",
+  "version": "0.0.0",
+  "description": "NDNts: Key Chain",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "main": "src/index.ts",
+  "files": [
+    "lib"
+  ],
+  "browser": {
+    "./lib/platform/index.js": "./lib/platform/browser.js",
+    "./src/platform/index.ts": "./src/platform/browser.ts"
+  },
+  "sideEffects": [],
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/key"
+  },
+  "publishConfig": {
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts"
+  },
+  "dependencies": {
+    "@ndn/l3pkt": "workspace:*",
+    "@ndn/name": "workspace:*",
+    "@peculiar/webcrypto": "^1.0.19",
+    "applymixins": "^1.1.0",
+    "idb-keyval": "^3.2.0"
+  },
+  "devDependencies": {
+    "@ndn/tlv": "workspace:*"
+  }
+}

@@ -12,6 +12,8 @@ export class KeyDigest {
   }
 }
 
+export type KeyLocator = Name|KeyDigest;
+
 const EVD = new EvDecoder<SigInfo>("SigInfo", [TT.ISigInfo, TT.DSigInfo])
 .add(TT.SigType, (t, { nni }) => t.type = nni)
 .add(TT.KeyLocator,
@@ -30,7 +32,7 @@ export class SigInfo {
   }
 
   public type?: number;
-  public keyLocator?: Name|KeyDigest;
+  public keyLocator?: KeyLocator;
   public nonce?: number;
   public time?: Date;
   public seqNum?: number;

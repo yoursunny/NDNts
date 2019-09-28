@@ -3,7 +3,7 @@ import { WsTransport } from "@ndn/ws-transport";
 
 import "./api";
 
-window.main = async (wsUri) => {
+window.testWsTransportPair = async (wsUri) => {
   const [transportA, transportB] = await Promise.all([
     WsTransport.connect(wsUri),
     WsTransport.connect(wsUri),

@@ -62,14 +62,32 @@ importers:
       webpack-dev-server: ^3.8.0
   integ/browser-tests:
     dependencies:
+      '@ndn/keychain': 'link:../../packages/keychain'
       '@ndn/llface': 'link:../../packages/llface'
       '@ndn/ws-transport': 'link:../../packages/ws-transport'
     devDependencies:
       file-matcher: 1.3.0
     specifiers:
+      '@ndn/keychain': 'workspace:*'
       '@ndn/llface': 'workspace:*'
       '@ndn/ws-transport': 'workspace:*'
       file-matcher: ^1.3.0
+  packages/keychain:
+    dependencies:
+      '@ndn/l3pkt': 'link:../l3pkt'
+      '@ndn/name': 'link:../name'
+      '@peculiar/webcrypto': 1.0.19
+      applymixins: 1.1.0
+      idb-keyval: 3.2.0
+    devDependencies:
+      '@ndn/tlv': 'link:../tlv'
+    specifiers:
+      '@ndn/l3pkt': 'workspace:*'
+      '@ndn/name': 'workspace:*'
+      '@ndn/tlv': 'workspace:*'
+      '@peculiar/webcrypto': ^1.0.19
+      applymixins: ^1.1.0
+      idb-keyval: ^3.2.0
   packages/l3pkt:
     dependencies:
       '@ndn/name': 'link:../name'
@@ -1347,6 +1365,36 @@ packages:
     dev: true
     resolution:
       integrity: sha512-IKGnX+Tvzt7XHhs8f4ajqxyJvYAMNX5nWfoJm4CQj8LZToMiaJgutf5KxxpxoC3y5w7JTJpW5rnWnF4TsIvCLA==
+  /@peculiar/asn1-schema/1.0.3:
+    dependencies:
+      asn1js: 2.0.26
+      tslib: 1.10.0
+    dev: false
+    engines:
+      node: '>=8.0.0'
+    resolution:
+      integrity: sha512-Tfgj9eNJ6cTKEtEuidKenLHMx/Q5M8KEE9hnohHqvdpqHJXWYr5RlT3GjAHPjGXy5+mr7sSfuXfzE6aAkEGN7A==
+  /@peculiar/json-schema/1.1.5:
+    dependencies:
+      tslib: 1.10.0
+    dev: false
+    engines:
+      node: '>=8.0.0'
+    resolution:
+      integrity: sha512-y5XYA3pf9+c+YKVpWnPtQbNmlNCs2ehNHyMLJvq4K5Fjwc1N64YGy7MNecKW3uYLga+sqbGTQSUdOdlnaRRbpA==
+  /@peculiar/webcrypto/1.0.19:
+    dependencies:
+      '@peculiar/asn1-schema': 1.0.3
+      '@peculiar/json-schema': 1.1.5
+      asn1js: 2.0.26
+      pvtsutils: 1.0.6
+      tslib: 1.10.0
+      webcrypto-core: 1.0.14
+    dev: false
+    engines:
+      node: '>=10.0.0'
+    resolution:
+      integrity: sha512-+lF69A18LJBLp0/gJIQatCARLah6cTUmLwY0Cdab0zsk+Z53BcpjKQyyP4LIN8oW601ZXv28mWEQ4Cm7MllF6w==
   /@types/anymatch/1.3.1:
     dev: true
     resolution:
@@ -1532,6 +1580,10 @@ packages:
   /@types/node/10.14.18:
     resolution:
       integrity: sha512-ryO3Q3++yZC/+b8j8BdKd/dn9JlzlHBPdm80656xwYUdmPkpTGTjkAdt6BByiNupGPE8w0FhBgvYy/fX9hRNGQ==
+  /@types/node/10.14.19:
+    dev: false
+    resolution:
+      integrity: sha512-j6Sqt38ssdMKutXBUuAcmWF8QtHW1Fwz/mz4Y+Wd9mzpBiVFirjpNQf363hG5itkG+yGaD+oiLyb50HxJ36l9Q==
   /@types/node/12.7.5:
     resolution:
       integrity: sha512-9fq4jZVhPNW8r+UYKnxF1e2HkDWOWKM5bC2/7c9wPV835I0aOrVbS/Hw/pWPk2uKrNXQqg9Z959Kz+IYDd5p3w==
@@ -1935,6 +1987,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-5teOsQWABXHHBFP9y3skS5P3d/WfWXpv3FUpy+LorMrNYaT9pI4oLMQX7jzQ2KklNpGpWHzdCXTDT2Y3XGlZBw==
+  /applymixins/1.1.0:
+    dev: false
+    resolution:
+      integrity: sha1-EpCytc8e21WjFVLc8ezvPto+kdA=
   /aproba/1.2.0:
     dev: true
     resolution:
@@ -2050,6 +2106,14 @@ packages:
     dev: true
     resolution:
       integrity: sha512-jxwzQpLQjSmWXgwaCZE9Nz+glAG01yF1QnWgbhGwHI5A6FRIEY6IVqtHhIepHqI7/kyEyQEagBC5mBEFlIYvdg==
+  /asn1js/2.0.26:
+    dependencies:
+      pvutils: 1.0.17
+    dev: false
+    engines:
+      node: '>=6.0.0'
+    resolution:
+      integrity: sha512-yG89F0j9B4B0MKIcFyWWxnpZPLaNTjCj4tkE3fjbAoo0qmpGw0PYYqSbX/4ebnd9Icn8ZgK4K1fvDyEtW1JYtQ==
   /assert-plus/1.0.0:
     dev: true
     engines:
@@ -4749,6 +4813,10 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==
+  /idb-keyval/3.2.0:
+    dev: false
+    resolution:
+      integrity: sha512-slx8Q6oywCCSfKgPgL0sEsXtPVnSbTLWpyiDcu6msHOyKOLari1TD1qocXVCft80umnkk3/Qqh3lwoFt8T/BPQ==
   /ieee754/1.1.13:
     dev: true
     resolution:
@@ -7500,6 +7568,19 @@ packages:
     requiresBuild: true
     resolution:
       integrity: sha512-bt48RDBy2eIwZPrkgbcwHtb51mj2nKvHOPMaSH2IsWiv7lOG9k9zhaRzpDZafrk05ajMc3cu+lSQYYOfH2DkVQ==
+  /pvtsutils/1.0.6:
+    dependencies:
+      '@types/node': 10.14.19
+      tslib: 1.10.0
+    dev: false
+    resolution:
+      integrity: sha512-0yNrOdJyLE7FZzmeEHTKanwBr5XbmDAd020cKa4ZiTYuGMBYBZmq7vHOhcOqhVllh6gghDBbaz1lnVdOqiB7cw==
+  /pvutils/1.0.17:
+    dev: false
+    engines:
+      node: '>=6.0.0'
+    resolution:
+      integrity: sha512-wLHYUQxWaXVQvKnwIDWFVKDJku9XDCvyhhxoq8dc5MFdIlRenyPI9eSfEtcvgHgD7FlvCyGAlWgOzRnZD99GZQ==
   /q/1.5.1:
     dev: true
     engines:
@@ -9303,6 +9384,13 @@ packages:
     dev: true
     resolution:
       integrity: sha1-8LDc+RW8X/FSivrbLA4XtTLaL+g=
+  /webcrypto-core/1.0.14:
+    dependencies:
+      pvtsutils: 1.0.6
+      tslib: 1.10.0
+    dev: false
+    resolution:
+      integrity: sha512-iGZQcH/o3Jv6mpvCbzan6uAcUcLTTnUCil6RVYakcNh5/QXIKRRC06EFxHru9lHgVKucZy3gG4OBiup0IsOr0g==
   /webidl-conversions/4.0.2:
     dev: true
     resolution:

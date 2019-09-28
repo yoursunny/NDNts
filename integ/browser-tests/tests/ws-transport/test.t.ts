@@ -3,7 +3,7 @@ import { WsServerPair } from "@ndn/ws-transport/test-fixture";
 
 import { getPageUri, pageInvoke } from "../../test-fixture";
 
-import { MainFunc } from "./api";
+import "./api";
 
 let wssPair: WsServerPair;
 let wsUri: string;
@@ -19,6 +19,6 @@ afterAll(async () => {
 
 test("pair", async () => {
   await page.goto(getPageUri(__dirname));
-  const result = await pageInvoke<MainFunc>(page, "main", wsUri);
+  const result = await pageInvoke<typeof window.testWsTransportPair>(page, "testWsTransportPair", wsUri);
   TestTransport.check(result);
 });
