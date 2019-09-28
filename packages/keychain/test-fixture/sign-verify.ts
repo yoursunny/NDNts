@@ -6,7 +6,7 @@ import { PrivateKey, PublicKey } from "../src";
 type Packet = Interest | Data;
 type PacketCtor = typeof Interest | typeof Data;
 
-interface Row {
+export interface Row {
   cls: PacketCtor;
 }
 

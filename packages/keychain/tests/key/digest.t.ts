@@ -8,7 +8,7 @@ test("isKey", () => {
   expect(PublicKey.isPublicKey(theDigestKey)).toBeTruthy();
 });
 
-test.each(TestSignVerify.TABLE)("simple %#", async ({ cls }) => {
+test.each(TestSignVerify.TABLE)("%p", async ({ cls }) => {
   const record = await TestSignVerify.execute(cls, theDigestKey, theDigestKey, theDigestKey, theDigestKey);
   TestSignVerify.check(record, true, true);
   expect(record.sA0.sigInfo.type).toBe(SigType.Sha256);

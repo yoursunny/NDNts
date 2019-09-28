@@ -24,9 +24,8 @@ export class DigestKey extends PublicKeyBase implements PrivateKey {
 
   protected async llVerify(input: Uint8Array, sig: Uint8Array): Promise<void> {
     const h = await crypto.subtle.digest("SHA-256", input);
-    if (!timingSafeEqual(sig, new Uint8Array(h))) {
-      throw new Error("incorrect signature");
-    }
+    const ok = timingSafeEqual(sig, new Uint8Array(h));
+    PublicKeyBase.throwOnIncorrectSig(ok);
   }
 }
 // tslint:disable-next-line no-empty-interface

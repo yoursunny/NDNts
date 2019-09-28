@@ -9,10 +9,10 @@ interface PacketWithSignature {
 type Signable = LLSign.Signable & PacketWithSignature;
 type Verifiable = LLVerify.Verifiable & Readonly<PacketWithSignature>;
 
-const KEYTAG = Symbol("KeyChain.KeyTag");
+const ISKEY = Symbol("KeyChain.IsKey");
 
 class NamedKey {
-  public [KEYTAG] = KEYTAG;
+  public [ISKEY] = ISKEY;
 
   constructor(public readonly name: Name, public readonly sigType: number,
               public readonly keyLocator: KeyLocator|undefined) {
@@ -21,7 +21,7 @@ class NamedKey {
 
 /** Determine if obj is a private/public key. */
 export function isKey(obj: any): obj is NamedKey {
-  return !!obj && obj[KEYTAG] === KEYTAG;
+  return !!obj && obj[ISKEY] === ISKEY;
 }
 
 /** Named private key. */
@@ -53,4 +53,13 @@ export abstract class PublicKeyBase extends NamedKey {
   protected abstract doMatch(si: SigInfo): boolean;
 
   protected abstract llVerify(input: Uint8Array, sig: Uint8Array): Promise<void>;
+}
+
+export namespace PublicKeyBase {
+  /** Throw "incorrect signature" error if ok=false. */
+  export function throwOnIncorrectSig(ok: boolean): void {
+    if (!ok) {
+      throw new Error("incorrect signature");
+    }
+  }
 }
