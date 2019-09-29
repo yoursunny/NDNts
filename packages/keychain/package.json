@@ -16,7 +16,9 @@
     "./lib/platform/index.js": "./lib/platform/browser.js",
     "./src/platform/index.ts": "./src/platform/browser.ts"
   },
-  "sideEffects": [],
+  "sideEffects": [
+    "**/validity-period.*"
+  ],
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",

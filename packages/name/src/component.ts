@@ -15,7 +15,7 @@ const CHAR_ENCODE = (() => {
   const a = new Array<string>(256);
   for (let ch = 0x00; ch <= 0xFF; ++ch) {
     const s = String.fromCharCode(ch);
-    a[ch] = UNESCAPED.includes(s) ? s : `%${ch.toString(16).padStart(2, "0")}`;
+    a[ch] = UNESCAPED.includes(s) ? s : `%${ch.toString(16).padStart(2, "0").toUpperCase()}`;
   }
   return a;
 })();

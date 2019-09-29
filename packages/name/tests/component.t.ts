@@ -13,7 +13,7 @@ test("decode", () => {
   comp = decoder.decode(Component);
   expect(comp.type).toBe(0xF0);
   expect(comp.value).toEqualUint8Array([0x41, 0x01, 0xA0]);
-  expect(comp.toString()).toEqual("240=A%01%a0");
+  expect(comp.toString()).toEqual("240=A%01%A0");
 
   comp = new Component(0xFFFF, new Uint8Array([0x41]));
   expect(comp.type).toBe(0xFFFF);
