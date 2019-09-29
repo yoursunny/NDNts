@@ -79,9 +79,9 @@ export async function execute(cls: PacketCtor, pvtA: PrivateKey, pubA: PublicKey
   pktMi.sigValue = (() => {
     const sig = new Uint8Array(pktMi.sigValue!.byteLength + 1);
     sig.set(pktMi.sigValue!, 0);
-    const offset = Math.floor(Math.random() * sig.byteLength);
+    const offset = 1 + Math.floor(Math.random() * sig.byteLength - 2);
     sig.copyWithin(offset + 1, offset);
-    sig[offset] = Math.random() * 0x100;
+    sig[offset] = 0xBB;
     return sig;
   })();
 
