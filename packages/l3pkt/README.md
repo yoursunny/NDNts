@@ -84,14 +84,24 @@ const digest = await data.computeImplicitDigest();
 assert.equal(digest.length, 32);
 
 // Full names are available, too.
-const fullName = await data2.getFullName();
+const fullName = await data2.computeFullName();
 assert.equal(fullName.length, data2.name.length + 1);
 assert(fullName.at(-1).is(ImplicitDigest));
 
-// Note that these two functions are only available after encoding or decoding.
+// After computation, implicit digest is cached on the Data instance,
+// so we can get them without await:
+const digest2 = data.getImplicitDigest();
+const fullName2 = data.getFullName();
+assert.equal(digest2, digest);
+assert(typeof fullName2 !== "undefined");
+assert.equal(fullName2!.toString(), fullName.toString());
+
+// Note that these functions are only available after encoding or decoding.
 // Calling them on a Data before encoding results in an error.
+assert.throws(() => new Data().getImplicitDigest());
+assert.throws(() => new Data().getFullName());
 assert.rejects(new Data().computeImplicitDigest());
-assert.rejects(new Data().getFullName());
+assert.rejects(new Data().computeFullName());
 // Also, if you modify the Data after encoding or decoding, you'll get incorrect results.
 // In short, only call them right after encoding or decoding.
 ```
@@ -106,13 +116,14 @@ assert.equal(canSatisfySync(interest, data), true);
 const interest3 = new Interest("/B");
 assert.equal(canSatisfySync(interest3, data), false);
 // However, it does not support implicit digest, because digest computation is async:
+const data3 = new Decoder(dataWire).decode(Data);
 const interestWithFullName = new Interest(fullName);
-assert(typeof canSatisfySync(interestWithFullName, data) === "undefined");
+assert(typeof canSatisfySync(interestWithFullName, data3) === "undefined");
+// Unless the Data contains cached implicit digest:
+assert.equal(canSatisfySync(interestWithFullName, data), true);
 
 // canSatisfy returns a Promise that resolves to boolean, which can support implicit digest.
-assert.equal(await canSatisfy(interestWithFullName, data), true);
-assert.equal(await canSatisfy(interest, data), true);
-assert.equal(await canSatisfy(interest3, data), false);
+assert.equal(await canSatisfy(interestWithFullName, data3), true);
 ```
 
 ```ts

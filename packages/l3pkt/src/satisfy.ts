@@ -19,7 +19,11 @@ export function canSatisfySync(interest: Interest, data: Data): boolean|undefine
 
   if (interest.name.length === data.name.length + 1 &&
       interest.name.get(-1)!.is(ImplicitDigest)) {
-    return undefined;
+    const fullName = data.getFullName();
+    if (!fullName) {
+      return undefined;
+    }
+    return interest.name.equals(fullName);
   }
 
   return false;
@@ -32,7 +36,7 @@ export function canSatisfySync(interest: Interest, data: Data): boolean|undefine
 export async function canSatisfy(interest: Interest, data: Data): Promise<boolean> {
   const result = canSatisfySync(interest, data);
   if (typeof result === "undefined") {
-    return interest.name.equals(await data.getFullName());
+    return interest.name.equals(await data.computeFullName());
   }
   return result;
 }

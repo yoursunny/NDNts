@@ -1,7 +1,7 @@
 import { Name } from "@ndn/name";
 
-import { Encoder } from "@ndn/tlv";
 import { canSatisfy, canSatisfySync, Data, Interest } from "../src";
+import { getDataFullName } from "../test-fixture";
 
 test("simple", async () => {
   const interest = new Interest("/A");
@@ -25,12 +25,11 @@ test("simple", async () => {
   expect(canSatisfySync(interest, data)).toBe(true);
   await expect(canSatisfy(interest, data)).resolves.toBe(true);
 
-  Encoder.encode(data);
-  interest.name = await data.getFullName();
+  interest.name = await getDataFullName(data);
   expect(canSatisfySync(interest, data)).toBeUndefined();
   await expect(canSatisfy(interest, data)).resolves.toBe(true);
 
   interest.canBePrefix = false;
-  expect(canSatisfySync(interest, data)).toBeUndefined();
+  expect(canSatisfySync(interest, data)).toBe(true); // digest cached on data
   await expect(canSatisfy(interest, data)).resolves.toBe(true);
 });

@@ -164,6 +164,18 @@ importers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/llface': 'workspace:*'
       remote-controlled-promise: ^0.0.4
+  packages/pit:
+    dependencies:
+      '@ndn/l3pkt': 'link:../l3pkt'
+      '@ndn/name': 'link:../name'
+      strict-event-emitter-types: 2.0.0
+    devDependencies:
+      delay: 4.3.0
+    specifiers:
+      '@ndn/l3pkt': 'workspace:*'
+      '@ndn/name': 'workspace:*'
+      delay: ^4.3.0
+      strict-event-emitter-types: ^2.0.0
   packages/tlv:
     specifiers: {}
   packages/ws-transport:

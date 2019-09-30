@@ -9,6 +9,7 @@ import { SigInfo } from "./sig-info";
 const FAKE_SIGINFO = new SigInfo(SigType.Sha256);
 const FAKE_SIGVALUE = new Uint8Array(32);
 const TOPTLV = Symbol("Data.TopTlv");
+const TOPTLV_DIGEST = Symbol("Data.TopTlvDigest");
 
 const EVD = new EvDecoder<Data>("Data", TT.Data)
 .setTop((t, { tlv }) => t[TOPTLV] = tlv)
@@ -62,7 +63,7 @@ export class Data {
   public sigValue: Uint8Array = FAKE_SIGVALUE;
   public [LLSign.PENDING]?: LLSign;
   public [LLVerify.SIGNED]?: Uint8Array;
-  public [TOPTLV]?: Uint8Array; // for implicit digest
+  public [TOPTLV]?: Uint8Array & {[TOPTLV_DIGEST]?: Uint8Array}; // for implicit digest
 
   private contentType_: number = 0;
   private freshnessPeriod_: number = 0;
@@ -113,17 +114,34 @@ export class Data {
     ));
   }
 
-  public async computeImplicitDigest(): Promise<Uint8Array> {
+  public getImplicitDigest(): Uint8Array|undefined {
     const topTlv = this[TOPTLV];
     if (!topTlv) {
       throw new Error("wire encoding is unavailable");
     }
-    return sha256(topTlv);
+    return topTlv[TOPTLV_DIGEST];
   }
 
-  public async getFullName(): Promise<Name> {
-    const digest = await this.computeImplicitDigest();
+  public async computeImplicitDigest(): Promise<Uint8Array> {
+    let digest = this.getImplicitDigest();
+    if (!digest) {
+      digest = await sha256(this[TOPTLV]!);
+      this[TOPTLV]![TOPTLV_DIGEST] = digest;
+    }
+    return digest;
+  }
+
+  public getFullName(): Name|undefined {
+    const digest = this.getImplicitDigest();
+    if (!digest) {
+      return undefined;
+    }
     return this.name.append(ImplicitDigest, digest);
+  }
+
+  public async computeFullName(): Promise<Name> {
+    await this.computeImplicitDigest();
+    return this.getFullName()!;
   }
 
   public [LLSign.PROCESS](): Promise<void> {
