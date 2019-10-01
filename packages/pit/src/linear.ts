@@ -1,4 +1,5 @@
 import { canSatisfySync, Data, Interest } from "@ndn/l3pkt";
+import assert from "minimalistic-assert";
 
 import { Pit } from "./interface";
 import { PitImpl } from "./internal";
@@ -41,8 +42,7 @@ export class LinearPit implements Pit {
 
   public [PitImpl.REMOVE](pi: PitImpl.PendingInterest) {
     const i = this.table.findIndex((item) => item === pi);
-    if (i >= 0) {
-      this.table.splice(i, 1);
-    }
+    assert(i >= 0, "PendingInterest is not in PIT");
+    this.table.splice(i, 1);
   }
 }

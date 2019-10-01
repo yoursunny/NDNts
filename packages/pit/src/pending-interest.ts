@@ -9,6 +9,8 @@ interface Events {
   data: Data;
   /** Emitted when Interest times out. */
   timeout: void;
+  /** Emitted when PendingInterest is canceled. */
+  cancel: void;
 }
 
 type Emitter = StrictEventEmitter<EventEmitter, Events>;
@@ -16,7 +18,19 @@ type Emitter = StrictEventEmitter<EventEmitter, Events>;
 const TIMEOUT = "4a96aedc-be5d-4eab-8a2b-775f13a7a982";
 
 export class PendingInterest extends (EventEmitter as new() => Emitter) {
+  public get promise(): Promise<Data> {
+    if (!this.promise_) {
+      this.promise_ = new Promise<Data>((resolve, reject) => {
+        this.on("data", resolve);
+        this.on("timeout", () => reject(new Error("Interest timeout")));
+        this.on("cancel", () => reject(new Error("PendingInterest canceled")));
+      });
+    }
+    return this.promise_;
+  }
+
   private timers: Record<string, number> = {};
+  private promise_?: Promise<Data>;
 
   constructor(private readonly table: PitImpl.Table, public readonly interest: Interest) {
     super();
@@ -51,6 +65,7 @@ export class PendingInterest extends (EventEmitter as new() => Emitter) {
   /** Indicate the requester no longer wants the Data. */
   public cancel() {
     this.clearTimers();
+    this.emit("cancel");
     this.table[PitImpl.REMOVE](this);
   }
 

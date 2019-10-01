@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/pit",
+  "name": "@ndn/endpoint",
   "version": "0.0.0",
-  "description": "NDNts: Pending Interest Table",
+  "description": "NDNts: Client Endpoint",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -19,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/pit"
+    "directory": "packages/endpoint"
   },
   "publishConfig": {
     "main": "lib/index.js",
@@ -27,13 +27,14 @@
   },
   "dependencies": {
     "@ndn/l3pkt": "workspace:*",
+    "@ndn/llface": "workspace:*",
     "@ndn/name": "workspace:*",
+    "@ndn/pit": "workspace:*",
     "minimalistic-assert": "^1.0.1",
     "strict-event-emitter-types": "^2.0.0",
     "tslib": "*"
   },
   "devDependencies": {
-    "@types/minimalistic-assert": "gist:43bd1e216cf758d29213a74d46870829",
-    "delay": "^4.3.0"
+    "@types/minimalistic-assert": "gist:43bd1e216cf758d29213a74d46870829"
   }
 }

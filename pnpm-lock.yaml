@@ -74,6 +74,26 @@ importers:
       '@ndn/ws-transport': 'workspace:*'
       file-matcher: ^1.3.0
       tslib: '*'
+  packages/endpoint:
+    dependencies:
+      '@ndn/l3pkt': 'link:../l3pkt'
+      '@ndn/llface': 'link:../llface'
+      '@ndn/name': 'link:../name'
+      '@ndn/pit': 'link:../pit'
+      minimalistic-assert: 1.0.1
+      strict-event-emitter-types: 2.0.0
+      tslib: 1.10.0
+    devDependencies:
+      '@types/minimalistic-assert': gist.github.com/43bd1e216cf758d29213a74d46870829/ba22ef002fffe76fa2b17407e15ddd1544e929f3
+    specifiers:
+      '@ndn/l3pkt': 'workspace:*'
+      '@ndn/llface': 'workspace:*'
+      '@ndn/name': 'workspace:*'
+      '@ndn/pit': 'workspace:*'
+      '@types/minimalistic-assert': 'gist:43bd1e216cf758d29213a74d46870829'
+      minimalistic-assert: ^1.0.1
+      strict-event-emitter-types: ^2.0.0
+      tslib: '*'
   packages/keychain:
     dependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
@@ -187,14 +207,18 @@ importers:
     dependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
       '@ndn/name': 'link:../name'
+      minimalistic-assert: 1.0.1
       strict-event-emitter-types: 2.0.0
       tslib: 1.10.0
     devDependencies:
+      '@types/minimalistic-assert': gist.github.com/43bd1e216cf758d29213a74d46870829/ba22ef002fffe76fa2b17407e15ddd1544e929f3
       delay: 4.3.0
     specifiers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/name': 'workspace:*'
+      '@types/minimalistic-assert': 'gist:43bd1e216cf758d29213a74d46870829'
       delay: ^4.3.0
+      minimalistic-assert: ^1.0.1
       strict-event-emitter-types: ^2.0.0
       tslib: '*'
   packages/tlv:
@@ -6487,7 +6511,6 @@ packages:
     resolution:
       integrity: sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==
   /minimalistic-assert/1.0.1:
-    dev: true
     resolution:
       integrity: sha512-UtJcAD4yEaGtjPezWuO9wC4nwUnVH/8/Im3yEHQP4b67cXlD/Qr9hdITCU1xDbSEXg2XKNaP8jsReV7vQd00/A==
   /minimalistic-crypto-utils/1.0.1:
@@ -9847,3 +9870,9 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==
+  gist.github.com/43bd1e216cf758d29213a74d46870829/ba22ef002fffe76fa2b17407e15ddd1544e929f3:
+    dev: true
+    name: '@types/minimalistic-assert'
+    resolution:
+      registry: 'http://localhost:4873/'
+      tarball: 'https://codeload.github.com/gist/43bd1e216cf758d29213a74d46870829/tar.gz/ba22ef002fffe76fa2b17407e15ddd1544e929f3'
