@@ -12,7 +12,9 @@
     "lib"
   ],
   "main": "src/index.ts",
-  "sideEffects": false,
+  "sideEffects": [
+    "./test-fixture/**"
+  ],
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",

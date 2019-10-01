@@ -16,7 +16,9 @@
     "./lib/sha256.js": "./lib/sha256-browser.js",
     "./src/sha256.ts": "./src/sha256-browser.ts"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./test-fixture/**"
+  ],
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",

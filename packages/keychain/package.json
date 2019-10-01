@@ -17,6 +17,7 @@
     "./src/platform/index.ts": "./src/platform/browser.ts"
   },
   "sideEffects": [
+    "./test-fixture/**",
     "**/validity-period.*"
   ],
   "homepage": "https://yoursunny.com/p/NDNts/",

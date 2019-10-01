@@ -13,7 +13,7 @@
   ],
   "main": "src/index.ts",
   "sideEffects": [
-    "test-fixture/**"
+    "./test-fixture/**"
   ],
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {

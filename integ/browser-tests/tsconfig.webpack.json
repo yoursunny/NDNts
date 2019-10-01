@@ -1,6 +1,8 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "module": "es6",
+    "moduleResolution": "node",
     "sourceMap": true
   },
   "include": [
