@@ -8,11 +8,11 @@
   ],
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
-  "main": "src/index.ts",
   "files": [
     "lib"
   ],
-  "sideEffects": [],
+  "main": "src/index.ts",
+  "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
@@ -26,7 +26,8 @@
   "dependencies": {
     "@ndn/tlv": "workspace:*",
     "@types/readable-stream": "^2.3.4",
-    "readable-stream": "^3.4.0"
+    "readable-stream": "^3.4.0",
+    "tslib": "*"
   },
   "devDependencies": {
     "stream-mock": "^2.0.5"

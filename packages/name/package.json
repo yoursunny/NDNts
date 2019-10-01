@@ -8,10 +8,10 @@
   ],
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
-  "main": "src/index.ts",
   "files": [
     "lib"
   ],
+  "main": "src/index.ts",
   "sideEffects": [
     "test-fixture/**"
   ],
@@ -28,6 +28,7 @@
   "dependencies": {
     "@ndn/tlv": "workspace:*",
     "@types/buffer-compare": "^0.0.30",
-    "buffer-compare": "^1.1.1"
+    "buffer-compare": "^1.1.1",
+    "tslib": "*"
   }
 }

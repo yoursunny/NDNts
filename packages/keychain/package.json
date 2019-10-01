@@ -8,10 +8,10 @@
   ],
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
-  "main": "src/index.ts",
   "files": [
     "lib"
   ],
+  "main": "src/index.ts",
   "browser": {
     "./lib/platform/index.js": "./lib/platform/browser.js",
     "./src/platform/index.ts": "./src/platform/browser.ts"
@@ -34,7 +34,8 @@
     "@ndn/name": "workspace:*",
     "@peculiar/webcrypto": "^1.0.19",
     "applymixins": "^1.1.0",
-    "idb-keyval": "^3.2.0"
+    "idb-keyval": "^3.2.0",
+    "tslib": "*"
   },
   "devDependencies": {
     "@ndn/tlv": "workspace:*"

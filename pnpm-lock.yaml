@@ -65,6 +65,7 @@ importers:
       '@ndn/keychain': 'link:../../packages/keychain'
       '@ndn/llface': 'link:../../packages/llface'
       '@ndn/ws-transport': 'link:../../packages/ws-transport'
+      tslib: 1.10.0
     devDependencies:
       file-matcher: 1.3.0
     specifiers:
@@ -72,6 +73,7 @@ importers:
       '@ndn/llface': 'workspace:*'
       '@ndn/ws-transport': 'workspace:*'
       file-matcher: ^1.3.0
+      tslib: '*'
   packages/keychain:
     dependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
@@ -79,6 +81,7 @@ importers:
       '@peculiar/webcrypto': 1.0.19
       applymixins: 1.1.0
       idb-keyval: 3.2.0
+      tslib: 1.10.0
     devDependencies:
       '@ndn/tlv': 'link:../tlv'
     specifiers:
@@ -88,16 +91,19 @@ importers:
       '@peculiar/webcrypto': ^1.0.19
       applymixins: ^1.1.0
       idb-keyval: ^3.2.0
+      tslib: '*'
   packages/l3pkt:
     dependencies:
       '@ndn/name': 'link:../name'
       '@ndn/tlv': 'link:../tlv'
+      tslib: 1.10.0
     devDependencies:
       delay: 4.3.0
     specifiers:
       '@ndn/name': 'workspace:*'
       '@ndn/tlv': 'workspace:*'
       delay: ^4.3.0
+      tslib: '*'
   packages/llface:
     dependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
@@ -107,6 +113,7 @@ importers:
       readable-stream: 3.4.0
       remote-controlled-promise: 0.0.4
       strict-event-emitter-types: 2.0.0
+      tslib: 1.10.0
     devDependencies:
       '@types/duplexify': 3.6.0
       delay: 4.3.0
@@ -124,11 +131,13 @@ importers:
       remote-controlled-promise: ^0.0.4
       stream-mock: ^2.0.5
       strict-event-emitter-types: ^2.0.0
+      tslib: '*'
   packages/lp:
     dependencies:
       '@ndn/tlv': 'link:../tlv'
       '@types/readable-stream': 2.3.4
       readable-stream: 3.4.0
+      tslib: 1.10.0
     devDependencies:
       stream-mock: 2.0.5
     specifiers:
@@ -136,27 +145,36 @@ importers:
       '@types/readable-stream': ^2.3.4
       readable-stream: ^3.4.0
       stream-mock: ^2.0.5
+      tslib: '*'
   packages/name:
     dependencies:
       '@ndn/tlv': 'link:../tlv'
       '@types/buffer-compare': 0.0.30
       buffer-compare: 1.1.1
+      tslib: 1.10.0
     specifiers:
       '@ndn/tlv': 'workspace:*'
       '@types/buffer-compare': ^0.0.30
       buffer-compare: ^1.1.1
+      tslib: '*'
   packages/naming-convention-03:
     dependencies:
       '@ndn/name': 'link:../name'
       '@ndn/tlv': 'link:../tlv'
+      tslib: 1.10.0
     specifiers:
       '@ndn/name': 'workspace:*'
       '@ndn/tlv': 'workspace:*'
+      tslib: '*'
   packages/ndn:
-    specifiers: {}
+    dependencies:
+      tslib: 1.10.0
+    specifiers:
+      tslib: '*'
   packages/node-transport:
     dependencies:
       '@ndn/llface': 'link:../llface'
+      tslib: 1.10.0
     devDependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
       remote-controlled-promise: 0.0.4
@@ -164,11 +182,13 @@ importers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/llface': 'workspace:*'
       remote-controlled-promise: ^0.0.4
+      tslib: '*'
   packages/pit:
     dependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
       '@ndn/name': 'link:../name'
       strict-event-emitter-types: 2.0.0
+      tslib: 1.10.0
     devDependencies:
       delay: 4.3.0
     specifiers:
@@ -176,12 +196,17 @@ importers:
       '@ndn/name': 'workspace:*'
       delay: ^4.3.0
       strict-event-emitter-types: ^2.0.0
+      tslib: '*'
   packages/tlv:
-    specifiers: {}
+    dependencies:
+      tslib: 1.10.0
+    specifiers:
+      tslib: '*'
   packages/ws-transport:
     dependencies:
       '@ndn/llface': 'link:../llface'
       '@types/ws': 6.0.3
+      tslib: 1.10.0
       websocket-stream: 5.5.0
     devDependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
@@ -191,6 +216,7 @@ importers:
       '@ndn/llface': 'workspace:*'
       '@types/ws': ^6.0.3
       remote-controlled-promise: ^0.0.4
+      tslib: '*'
       websocket-stream: ^5.5.0
 lockfileVersion: 5.1
 packages:

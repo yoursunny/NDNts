@@ -8,11 +8,11 @@
   ],
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
-  "main": "src/index.ts",
   "files": [
     "lib"
   ],
-  "sideEffects": [],
+  "main": "src/index.ts",
+  "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
@@ -26,6 +26,7 @@
   "dependencies": {
     "@ndn/llface": "workspace:*",
     "@types/ws": "^6.0.3",
+    "tslib": "*",
     "websocket-stream": "^5.5.0"
   },
   "devDependencies": {

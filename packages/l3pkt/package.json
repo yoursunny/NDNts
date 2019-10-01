@@ -8,15 +8,15 @@
   ],
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
-  "main": "src/index.ts",
   "files": [
     "lib"
   ],
+  "main": "src/index.ts",
   "browser": {
     "./lib/sha256.js": "./lib/sha256-browser.js",
     "./src/sha256.ts": "./src/sha256-browser.ts"
   },
-  "sideEffects": [],
+  "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
@@ -29,7 +29,8 @@
   },
   "dependencies": {
     "@ndn/name": "workspace:*",
-    "@ndn/tlv": "workspace:*"
+    "@ndn/tlv": "workspace:*",
+    "tslib": "*"
   },
   "devDependencies": {
     "delay": "^4.3.0"

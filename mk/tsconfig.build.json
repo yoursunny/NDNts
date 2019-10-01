@@ -4,6 +4,7 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
     "module": "commonjs",
     "noImplicitAny": false,
     "noImplicitReturns": true,

@@ -8,11 +8,11 @@
   ],
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
-  "main": "src/index.ts",
   "files": [
     "lib"
   ],
-  "sideEffects": [],
+  "main": "src/index.ts",
+  "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
@@ -26,7 +26,8 @@
   "dependencies": {
     "@ndn/l3pkt": "workspace:*",
     "@ndn/name": "workspace:*",
-    "strict-event-emitter-types": "^2.0.0"
+    "strict-event-emitter-types": "^2.0.0",
+    "tslib": "*"
   },
   "devDependencies": {
     "delay": "^4.3.0"
