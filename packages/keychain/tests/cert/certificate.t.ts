@@ -3,21 +3,22 @@ import { Name } from "@ndn/name";
 import { Decoder, Encoder } from "@ndn/tlv";
 import "@ndn/tlv/test-fixture";
 
-import { Certificate, CertificateName, ValidityPeriod } from "../../src";
+import { buildCertificate, Certificate, CertificateName, theDigestKey, ValidityPeriod } from "../../src";
 
-test("encode decode", () => {
-  const cert = new Certificate();
-  cert.name = new CertificateName("/operator", "key-1", "self", "%FD%01"),
-  cert.validityPeriod = new ValidityPeriod(new Date(1542099529000), new Date(1602434283000));
-  cert.publicKey = new Uint8Array([0xC0, 0xC1]);
+test("encode decode", async () => {
+  const cert = await buildCertificate({
+    name: new CertificateName("/operator", "key-1", "self", "%FD%01"),
+    validity: new ValidityPeriod(new Date(1542099529000), new Date(1602434283000)),
+    publicKey: new Uint8Array([0xC0, 0xC1]),
+    signer: theDigestKey,
+  });
 
-  const wire = Encoder.encode(cert.data);
-  let data = new Decoder(wire).decode(Data);
+  let data = cert.data;
   expect(data.name.toString()).toBe("/operator/KEY/key-1/self/%FD%01");
   expect(data.contentType).toBe(0x02);
-  const cert2 = new Certificate(data);
-  expect(cert2.validityPeriod.includes(new Date(1569790373000))).toBeTruthy();
+  expect(data.freshnessPeriod).toBe(3600000);
 
+  const wire = Encoder.encode(cert.data);
   data = new Decoder(wire).decode(Data);
   data.name = new Name("/operator/not-KEY/key-1/self/%FD%01");
   expect(() => new Certificate(data)).toThrow(/invalid/);
@@ -52,8 +53,8 @@ test("decode ndn-testbed-root-v2.ndncert", () => {
   expect(cert.name.keyId.toString()).toBe("e%9D%7F%A5%C5%81%10%7D");
   expect(cert.name.issuerId.toString()).toBe("ndn");
   expect(cert.name.version.toString()).toBe("%FD%00%00%01%60qJQ%9B");
-  expect(cert.validityPeriod.notBefore.getTime()).toBe(1513729179000);
-  expect(cert.validityPeriod.notAfter.getTime()).toBe(1609459199000);
+  expect(cert.validity.notBefore.getTime()).toBe(1513729179000);
+  expect(cert.validity.notAfter.getTime()).toBe(1609459199000);
   expect(cert.publicKey).toEqualUint8Array(Buffer.from(`
     MIIBSzCCAQMGByqGSM49AgEwgfcCAQEwLAYHKoZIzj0BAQIhAP////8AAAABAAAA
     AAAAAAAAAAAA////////////////MFsEIP////8AAAABAAAAAAAAAAAAAAAA////

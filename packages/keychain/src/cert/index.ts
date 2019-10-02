@@ -1,3 +1,4 @@
+export * from "./build";
 export * from "./certificate";
-export * from "./certificate-name";
+export * from "./name";
 export * from "./validity-period";
