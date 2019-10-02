@@ -84,13 +84,13 @@ importers:
       strict-event-emitter-types: 2.0.0
       tslib: 1.10.0
     devDependencies:
-      '@types/minimalistic-assert': gist.github.com/43bd1e216cf758d29213a74d46870829/ba22ef002fffe76fa2b17407e15ddd1544e929f3
+      '@types/minimalistic-assert': 1.0.0
     specifiers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/llface': 'workspace:*'
       '@ndn/name': 'workspace:*'
       '@ndn/pit': 'workspace:*'
-      '@types/minimalistic-assert': 'gist:43bd1e216cf758d29213a74d46870829'
+      '@types/minimalistic-assert': ^1.0.0
       minimalistic-assert: ^1.0.1
       strict-event-emitter-types: ^2.0.0
       tslib: '*'
@@ -211,12 +211,12 @@ importers:
       strict-event-emitter-types: 2.0.0
       tslib: 1.10.0
     devDependencies:
-      '@types/minimalistic-assert': gist.github.com/43bd1e216cf758d29213a74d46870829/ba22ef002fffe76fa2b17407e15ddd1544e929f3
+      '@types/minimalistic-assert': 1.0.0
       delay: 4.3.0
     specifiers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/name': 'workspace:*'
-      '@types/minimalistic-assert': 'gist:43bd1e216cf758d29213a74d46870829'
+      '@types/minimalistic-assert': ^1.0.0
       delay: ^4.3.0
       minimalistic-assert: ^1.0.1
       strict-event-emitter-types: ^2.0.0
@@ -1635,6 +1635,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-FwI9gX75FgVBJ7ywgnq/P7tw+/o1GUbtP0KzbtusLigAOgIgNISRK0ZPl4qertvXSIE8YbsVJueQ90cDt9YYyw==
+  /@types/minimalistic-assert/1.0.0:
+    dev: true
+    resolution:
+      integrity: sha512-Z7szANgSqTSklzQnRjf+oVo5Y0dvC2Tfj+05zSSny7fohCMlfnKsXAgGRd0YS2yv1g7KseVRoCHufYEoBYhPMw==
   /@types/minimatch/3.0.3:
     dev: true
     resolution:
@@ -9870,9 +9874,3 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==
-  gist.github.com/43bd1e216cf758d29213a74d46870829/ba22ef002fffe76fa2b17407e15ddd1544e929f3:
-    dev: true
-    name: '@types/minimalistic-assert'
-    resolution:
-      registry: 'http://localhost:4873/'
-      tarball: 'https://codeload.github.com/gist/43bd1e216cf758d29213a74d46870829/tar.gz/ba22ef002fffe76fa2b17407e15ddd1544e929f3'

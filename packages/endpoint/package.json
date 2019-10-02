@@ -35,6 +35,6 @@
     "tslib": "*"
   },
   "devDependencies": {
-    "@types/minimalistic-assert": "gist:43bd1e216cf758d29213a74d46870829"
+    "@types/minimalistic-assert": "^1.0.0"
   }
 }
