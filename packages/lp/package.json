@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@ndn/tlv": "workspace:*",
-    "@types/readable-stream": "^2.3.4",
+    "@types/readable-stream": "^2.3.5",
     "readable-stream": "^3.4.0",
     "tslib": "*"
   },
