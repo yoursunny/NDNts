@@ -33,8 +33,5 @@
     "@ndn/name": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "tslib": "*"
-  },
-  "devDependencies": {
-    "delay": "^4.3.0"
   }
 }

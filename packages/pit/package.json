@@ -33,7 +33,6 @@
     "tslib": "*"
   },
   "devDependencies": {
-    "@types/minimalistic-assert": "^1.0.0",
-    "delay": "^4.3.0"
+    "@types/minimalistic-assert": "^1.0.0"
   }
 }

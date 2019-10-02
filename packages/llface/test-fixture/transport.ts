@@ -1,5 +1,4 @@
 import { Data, Interest } from "@ndn/l3pkt";
-import delay from "delay";
 import * as rPromise from "remote-controlled-promise";
 
 import { LLFace, Transport } from "../src";
@@ -22,10 +21,10 @@ export async function execute(transportA: Transport, transportB: Transport): Pro
 
   process.nextTick(async () => {
     for (let i = 0; i < COUNT; ++i) {
-      await delay(0);
+      await new Promise((r) => setImmediate(r));
       faceA.sendInterest(new Interest(`/A/${i}`));
     }
-    await delay(80);
+    await new Promise((r) => setTimeout(r, 80));
     faceA.close();
   });
 

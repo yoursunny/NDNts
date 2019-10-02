@@ -1,6 +1,5 @@
 import { Data, Interest } from "@ndn/l3pkt";
 import { getDataFullName } from "@ndn/l3pkt/test-fixture";
-import delay from "delay";
 
 import { LinearPit } from "../src";
 
@@ -49,25 +48,25 @@ test("callback", async () => {
 
   expect(pit).toHaveLength(6);
   expect(cancelAB3).not.toHaveBeenCalled();
-  await delay(0);
+  await new Promise((r) => setImmediate(r));
   piAB3.cancel();
-  await delay(0);
+  await new Promise((r) => setImmediate(r));
   expect(pit).toHaveLength(5);
   expect(cancelAB3).toHaveBeenCalled();
 
   pit.processData(data);
-  await delay(10);
+  await new Promise((r) => setTimeout(r, 10));
   expect(pit).toHaveLength(1);
   expect(dataAcbp).toHaveBeenCalled();
   expect(dataAB).toHaveBeenCalled();
   expect(dataAB2).toHaveBeenCalled();
   expect(dataF).toHaveBeenCalled();
 
-  await delay(60);
+  await new Promise((r) => setTimeout(r, 60));
   expect(pit).toHaveLength(1);
   expect(timeoutA).not.toHaveBeenCalled();
 
-  await delay(150);
+  await new Promise((r) => setTimeout(r, 150));
   expect(pit).toHaveLength(0);
   expect(timeoutA).toHaveBeenCalled();
 
@@ -79,14 +78,16 @@ test("promise", async () => {
   const piAB = pit.addInterest(new Interest("/A/B", Interest.Lifetime(200)));
   const piC = pit.addInterest(new Interest("/C"));
   await Promise.all([
-    delay(100).then(() => pit.processData(new Data("/A/B"))),
+    new Promise((r) => setTimeout(r, 100))
+      .then(() => pit.processData(new Data("/A/B"))),
     expect(pit.addInterest(new Interest("/A", Interest.Lifetime(200))).promise)
       .rejects.toThrow(/timeout/),
     expect(pit.addInterest(new Interest("/A", Interest.CanBePrefix)).promise)
       .resolves.toBeInstanceOf(Data),
     expect(piAB.promise).resolves.toBeInstanceOf(Data),
     expect(piAB.promise).resolves.toBeInstanceOf(Data),
-    delay(20).then(() => piC.cancel()),
+    new Promise((r) => setTimeout(r, 20))
+      .then(() => piC.cancel()),
     expect(piC.promise).rejects.toThrow(/canceled/),
   ]);
 });

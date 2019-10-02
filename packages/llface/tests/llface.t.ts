@@ -1,5 +1,4 @@
 import { Interest, LLSign, SigInfo, SigType } from "@ndn/l3pkt";
-import delay from "delay";
 import duplexify from "duplexify";
 import * as rPromise from "remote-controlled-promise";
 import { ObjectReadableMock, ObjectWritableMock } from "stream-mock";
@@ -32,7 +31,7 @@ test("TX signing", async () => {
   interest[LLSign.PENDING] = signFn;
   face.sendInterest(interest);
 
-  await delay(5);
+  await new Promise((r) => setTimeout(r, 5));
   expect(signFn).toHaveBeenCalledTimes(1);
   expect(txRemote.data).toHaveLength(1);
   expect(Array.from(txRemote.data[0])).toEqual(expect.arrayContaining([0xA0, 0xA1, 0xA2, 0xA3]));
@@ -52,7 +51,7 @@ test("TX signing error", async () => {
   interest[LLSign.PENDING] = signFn;
   face.sendInterest(interest);
 
-  await delay(5);
+  await new Promise((r) => setTimeout(r, 5));
   expect(signFn).toHaveBeenCalledTimes(1);
   expect(txRemote.data).toHaveLength(0);
 

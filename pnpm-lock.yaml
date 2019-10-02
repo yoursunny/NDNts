@@ -117,12 +117,9 @@ importers:
       '@ndn/name': 'link:../name'
       '@ndn/tlv': 'link:../tlv'
       tslib: 1.10.0
-    devDependencies:
-      delay: 4.3.0
     specifiers:
       '@ndn/name': 'workspace:*'
       '@ndn/tlv': 'workspace:*'
-      delay: ^4.3.0
       tslib: '*'
   packages/llface:
     dependencies:
@@ -136,7 +133,6 @@ importers:
       tslib: 1.10.0
     devDependencies:
       '@types/duplexify': 3.6.0
-      delay: 4.3.0
       duplexify: 4.1.1
       stream-mock: 2.0.5
     specifiers:
@@ -145,7 +141,6 @@ importers:
       '@ndn/tlv': 'workspace:*'
       '@types/duplexify': ^3.6.0
       '@types/readable-stream': ^2.3.4
-      delay: ^4.3.0
       duplexify: ^4.1.1
       readable-stream: ^3.4.0
       remote-controlled-promise: ^0.0.4
@@ -212,12 +207,10 @@ importers:
       tslib: 1.10.0
     devDependencies:
       '@types/minimalistic-assert': 1.0.0
-      delay: 4.3.0
     specifiers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/name': 'workspace:*'
       '@types/minimalistic-assert': ^1.0.0
-      delay: ^4.3.0
       minimalistic-assert: ^1.0.1
       strict-event-emitter-types: ^2.0.0
       tslib: '*'
@@ -3392,12 +3385,6 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-QwGuEUouP2kVwQenAsOof5Fv8K9t3D8Ca8NxcXKrIpEHjTXK5J2nXLdP+ALI1cgv8wj7KuwBhTwBkOZSJKM5XQ==
-  /delay/4.3.0:
-    dev: true
-    engines:
-      node: '>=6'
-    resolution:
-      integrity: sha512-Lwaf3zVFDMBop1yDuFZ19F9WyGcZcGacsbdlZtWjQmM50tOcMntm1njF/Nb/Vjij3KaSvCF+sEYGKrrjObu2NA==
   /delayed-stream/1.0.0:
     dev: true
     engines:

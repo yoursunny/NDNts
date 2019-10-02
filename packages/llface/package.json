@@ -37,7 +37,6 @@
   },
   "devDependencies": {
     "@types/duplexify": "^3.6.0",
-    "delay": "^4.3.0",
     "duplexify": "^4.1.1",
     "stream-mock": "^2.0.5"
   }

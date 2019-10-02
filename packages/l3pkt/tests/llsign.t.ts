@@ -1,5 +1,4 @@
 import * as crypto from "crypto";
-import delay from "delay";
 
 import { Name } from "@ndn/name";
 import { Decodable, Decoder, Encodable, Encoder } from "@ndn/tlv";
@@ -12,7 +11,7 @@ class TestAlgo {
   }
 
   public sign = async (input: Uint8Array): Promise<Uint8Array> => {
-    await delay(5);
+    await new Promise((r) => setTimeout(r, 5));
     if (this.wantSignError) {
       throw new Error("mock-signing-error");
     }
@@ -20,7 +19,7 @@ class TestAlgo {
   }
 
   public verify = async (input: Uint8Array, sig: Uint8Array): Promise<void> => {
-    await delay(5);
+    await new Promise((r) => setTimeout(r, 5));
     // warning: this is insecure comparison, for test case only
     if (Buffer.compare(sig, this.computeSignature(input)) !== 0) {
       throw new Error("incorrect signature value");
