@@ -48,9 +48,9 @@ test("callback", async () => {
 
   expect(pit).toHaveLength(6);
   expect(cancelAB3).not.toHaveBeenCalled();
-  await new Promise((r) => setImmediate(r));
+  await new Promise((r) => setTimeout(r, 0));
   piAB3.cancel();
-  await new Promise((r) => setImmediate(r));
+  await new Promise((r) => setTimeout(r, 0));
   expect(pit).toHaveLength(5);
   expect(cancelAB3).toHaveBeenCalled();
 

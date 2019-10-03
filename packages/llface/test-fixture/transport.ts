@@ -21,7 +21,7 @@ export async function execute(transportA: Transport, transportB: Transport): Pro
 
   process.nextTick(async () => {
     for (let i = 0; i < COUNT; ++i) {
-      await new Promise((r) => setImmediate(r));
+      await new Promise((r) => setTimeout(r, 1));
       faceA.sendInterest(new Interest(`/A/${i}`));
     }
     await new Promise((r) => setTimeout(r, 80));
