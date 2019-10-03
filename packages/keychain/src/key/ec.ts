@@ -28,6 +28,11 @@ export class EcPublicKey extends PublicKeyBase {
     super(name, SigType.Sha256WithEcdsa, name);
   }
 
+  public async exportAsSpki(): Promise<Uint8Array> {
+    const spki = await crypto.subtle.exportKey("spki", this.key);
+    return new Uint8Array(spki);
+  }
+
   protected doMatch(si: SigInfo): boolean {
     // TODO match KeyDigest
     return si.keyLocator instanceof Name && si.keyLocator.isPrefixOf(this.name);

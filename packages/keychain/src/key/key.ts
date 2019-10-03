@@ -16,4 +16,8 @@ export namespace PublicKey {
   export function isPublicKey(obj: any): obj is PublicKey {
     return isKey(obj) && typeof (obj as PublicKey).verify === "function";
   }
+
+  export interface SpkiExportable extends PublicKey {
+    exportAsSpki(): Promise<Uint8Array>;
+  }
 }

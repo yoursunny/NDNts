@@ -15,7 +15,7 @@ test("construct", () => {
 });
 
 test("from", () => {
-  const cn = CertificateName.from(new Name("/owner/KEY/keyid"));
+  const cn = CertificateName.from(new Name("/owner/KEY/keyid/issuer/35=%02"));
   expect(cn.subjectName.toString()).toBe("/owner");
   expect(cn.keyId.toString()).toBe("keyid");
   expect(cn.issuerId.toString()).toBe("issuer");

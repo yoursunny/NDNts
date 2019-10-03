@@ -3,10 +3,10 @@ import { Name } from "@ndn/name";
 import { Decoder, Encoder } from "@ndn/tlv";
 import "@ndn/tlv/test-fixture";
 
-import { buildCertificate, Certificate, CertificateName, theDigestKey, ValidityPeriod } from "../../src";
+import { Certificate, CertificateName, theDigestKey, ValidityPeriod } from "../../src";
 
 test("encode decode", async () => {
-  const cert = await buildCertificate({
+  const cert = await Certificate.build({
     name: new CertificateName("/operator", "key-1", "self", "%FD%01"),
     validity: new ValidityPeriod(new Date(1542099529000), new Date(1602434283000)),
     publicKey: new Uint8Array([0xC0, 0xC1]),
