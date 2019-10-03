@@ -25,10 +25,10 @@ before_script:
   - npm run bootstrap
 
 script:
-  - npm run lint
+  - npm run lint-ci
   - npm run literate lint
   - npm run prod-build
   - npm run literate
   - npm run cover && coveralls < ./coverage/lcov.info
-  - pushd integ/browser-tests >/dev/null && npm test && popd >/dev/null
-  - pushd integ/ndncxx-tests >/dev/null && npm test && popd >/dev/null
+  - pushd integ/browser-tests >/dev/null; npm test; popd >/dev/null
+  - pushd integ/ndncxx-tests >/dev/null; npm test; popd >/dev/null

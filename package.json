@@ -7,6 +7,7 @@
     "clean": "rm -rf packages/*/lib/",
     "cover": "jest --coverage",
     "lint": "tslint --fix -p .",
+    "lint-ci": "tslint -p .",
     "literate": "sh mk/literate-run.sh",
     "preinstall": "node mk/only-allow-pnpm.js",
     "prod-build": "npm run prod-build-d && npm run prod-build-js",

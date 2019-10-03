@@ -1,8 +1,8 @@
 import { Certificate, EcPrivateKey, ValidityPeriod } from "@ndn/keychain";
-import { Encoder } from '@ndn/tlv';
-import { Component } from '@ndn/name';
+import { Component } from "@ndn/name";
+import { Encoder } from "@ndn/tlv";
 
-import { invoke } from '../../../test-fixture/cxxprogram';
+import { invoke } from "../../../test-fixture/cxxprogram";
 
 test("cxx decode", async () => {
   const [, publicKey] = await EcPrivateKey.generate("/A/KEY/x", "P-256");
@@ -22,6 +22,6 @@ test("cxx decode", async () => {
   expect(identity).toBe(cert.certName.subjectName.toString());
   expect(keyId).toBe(cert.certName.keyId.toString());
   expect(issuerId).toBe(cert.certName.issuerId.toString());
-  expect(parseInt(validityNotBefore)).toBe(validity.notBefore.getTime());
-  expect(parseInt(validityNotAfter)).toBe(validity.notAfter.getTime());
+  expect(parseInt(validityNotBefore, 10)).toBe(validity.notBefore.getTime());
+  expect(parseInt(validityNotAfter, 10)).toBe(validity.notAfter.getTime());
 });
