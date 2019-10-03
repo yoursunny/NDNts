@@ -4,6 +4,15 @@ dist: bionic
 language: node_js
 node_js: 12
 
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:named-data/ppa-dev'
+    packages:
+      - build-essential
+      - clang-format-6.0
+      - libndn-cxx-dev
+
 cache:
   npm: false
   directories:
@@ -21,3 +30,5 @@ script:
   - npm run prod-build
   - npm run literate
   - npm run cover && coveralls < ./coverage/lcov.info
+  - pushd integ/browser-tests >/dev/null && npm test && popd >/dev/null
+  - pushd integ/ndncxx-tests >/dev/null && npm test && popd >/dev/null
