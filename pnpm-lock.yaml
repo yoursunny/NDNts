@@ -63,18 +63,28 @@ importers:
       webpack-cli: ^3.3.6
       webpack-dev-server: ^3.8.2
   integ/browser-tests:
-    dependencies:
+    devDependencies:
       '@ndn/keychain': 'link:../../packages/keychain'
       '@ndn/llface': 'link:../../packages/llface'
       '@ndn/ws-transport': 'link:../../packages/ws-transport'
-      tslib: 1.10.0
-    devDependencies:
       file-matcher: 1.3.0
+      tslib: 1.10.0
     specifiers:
       '@ndn/keychain': 'workspace:*'
       '@ndn/llface': 'workspace:*'
       '@ndn/ws-transport': 'workspace:*'
       file-matcher: ^1.3.0
+      tslib: '*'
+  integ/ndncxx-tests:
+    devDependencies:
+      '@ndn/keychain': 'link:../../packages/keychain'
+      '@ndn/tlv': 'link:../../packages/tlv'
+      spawn2: 1.1.0
+      tslib: 1.10.0
+    specifiers:
+      '@ndn/keychain': 'workspace:*'
+      '@ndn/tlv': 'workspace:*'
+      spawn2: 1.1.0
       tslib: '*'
   packages/endpoint:
     dependencies:
@@ -4381,6 +4391,14 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-GMat4EJ5161kIy2HevLlr4luNjBgvmj413KaQA7jt4V8B4RDsfpHk7WQ9GVqfYyyx8OS/L66Kox+rJRNklLK7w==
+  /get-stream/5.1.0:
+    dependencies:
+      pump: 3.0.0
+    dev: true
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-EXr1FOzrzTfGeL0gQdeFEvOMm2mzMOglyiOXSTpPC+iAjAKftbr3jpCMWynogwYnM+eSj9sHGc6wjIcDvYiygw==
   /get-value/2.0.6:
     dev: true
     engines:
@@ -5031,6 +5049,15 @@ packages:
       node: '>= 0.10'
     resolution:
       integrity: sha512-mT34yGKMNceBQUoVn7iCDKDntA7SC6gycMAWzGx1z/CMCTV7b2AAtXlo3nRyHZ1FelRkQbQjprHSYGwzLtkVbw==
+  /into-stream/5.1.0:
+    dependencies:
+      from2: 2.3.0
+      p-is-promise: 2.1.0
+    dev: true
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-cbDhb8qlxKMxPBk/QxTtYg1DQ4CwXmadu7quG3B7nrJsgSncEreF2kwWKZFdnjc/lSNNIkFPsjI7SM0Cx/QXPw==
   /invariant/2.2.4:
     dependencies:
       loose-envify: 1.4.0
@@ -8475,6 +8502,13 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
+  /spawn2/1.1.0:
+    dependencies:
+      get-stream: 5.1.0
+      into-stream: 5.1.0
+    dev: true
+    resolution:
+      integrity: sha512-NM4C6Sc8czOCqsdS3sPiuv1DKYftk5nC2NwGqOgErYqw1M+vnOpFbdAYzElZK3K7csUTvRANzsCkJmj/mlCwDQ==
   /spawnd/4.0.0:
     dependencies:
       exit: 0.1.2

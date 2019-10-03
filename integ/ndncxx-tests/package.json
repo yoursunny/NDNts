@@ -1,0 +1,14 @@
+{
+  "name": "@ndn/ndncxx-tests",
+  "private": true,
+  "scripts": {
+    "lint": "find -name '*.cpp' | xargs clang-format-6.0 -i -style='{BasedOnStyle: Mozilla, ReflowComments: false}'",
+    "test": "sh -c ../../node_modules/.bin/jest"
+  },
+  "devDependencies": {
+    "@ndn/keychain": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "spawn2": "1.1.0",
+    "tslib": "*"
+  }
+}
