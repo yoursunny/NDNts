@@ -33,6 +33,7 @@
   "dependencies": {
     "@ndn/l3pkt": "workspace:*",
     "@ndn/name": "workspace:*",
+    "@ndn/naming-convention-03": "workspace:*",
     "@peculiar/webcrypto": "^1.0.19",
     "applymixins": "^1.1.0",
     "idb-keyval": "^3.2.0",

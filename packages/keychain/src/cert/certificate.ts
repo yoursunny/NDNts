@@ -1,7 +1,8 @@
 import { Data } from "@ndn/l3pkt";
 
+import { CertificateName } from "../name";
+
 import { ContentTypeKEY } from "./an";
-import { CertificateName } from "./name";
 import { ValidityPeriod } from "./validity-period";
 
 /**
@@ -10,14 +11,16 @@ import { ValidityPeriod } from "./validity-period";
  * To create a new Certificate, use buildCertificate function.
  */
 export class Certificate {
-  public readonly name: CertificateName;
+  public readonly certName: CertificateName;
   public readonly validity: ValidityPeriod;
+
+  public get name() { return this.data.name; }
 
   /** Public key in SubjectPublicKeyInfo binary format. */
   public get publicKey() { return this.data.content; }
 
   constructor(public readonly data: Data) {
-    this.name = CertificateName.from(data.name);
+    this.certName = CertificateName.from(data.name);
     if (this.data.contentType !== ContentTypeKEY) {
       throw new Error("ContentType must be KEY");
     }

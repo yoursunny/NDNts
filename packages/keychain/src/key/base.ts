@@ -12,7 +12,7 @@ type Verifiable = LLVerify.Verifiable & Readonly<PacketWithSignature>;
 const ISKEY = Symbol("KeyChain.IsKey");
 
 class NamedKey {
-  public [ISKEY] = ISKEY;
+  public readonly [ISKEY] = ISKEY;
 
   constructor(public readonly name: Name, public readonly sigType: number,
               public readonly keyLocator: KeyLocator|undefined) {

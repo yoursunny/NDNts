@@ -49,10 +49,11 @@ const NDN_TESTBED_ROOT_V2_NDNCERT = Buffer.from(`
 test("decode ndn-testbed-root-v2.ndncert", () => {
   const data = new Decoder(NDN_TESTBED_ROOT_V2_NDNCERT).decode(Data);
   const cert = new Certificate(data);
-  expect(cert.name.subjectName.toString()).toBe("/ndn");
-  expect(cert.name.keyId.toString()).toBe("e%9D%7F%A5%C5%81%10%7D");
-  expect(cert.name.issuerId.toString()).toBe("ndn");
-  expect(cert.name.version.toString()).toBe("%FD%00%00%01%60qJQ%9B");
+  expect(cert.name.toString()).toBe("/ndn/KEY/e%9D%7F%A5%C5%81%10%7D/ndn/%FD%00%00%01%60qJQ%9B");
+  expect(cert.certName.subjectName.toString()).toBe("/ndn");
+  expect(cert.certName.keyId.toString()).toBe("e%9D%7F%A5%C5%81%10%7D");
+  expect(cert.certName.issuerId.toString()).toBe("ndn");
+  expect(cert.certName.version.toString()).toBe("%FD%00%00%01%60qJQ%9B");
   expect(cert.validity.notBefore.getTime()).toBe(1513729179000);
   expect(cert.validity.notAfter.getTime()).toBe(1609459199000);
   expect(cert.publicKey).toEqualUint8Array(Buffer.from(`

@@ -100,6 +100,7 @@ importers:
     dependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
       '@ndn/name': 'link:../name'
+      '@ndn/naming-convention-03': 'link:../naming-convention-03'
       '@peculiar/webcrypto': 1.0.19
       applymixins: 1.1.0
       idb-keyval: 3.2.0
@@ -109,6 +110,7 @@ importers:
     specifiers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/name': 'workspace:*'
+      '@ndn/naming-convention-03': 'workspace:*'
       '@ndn/tlv': 'workspace:*'
       '@peculiar/webcrypto': ^1.0.19
       applymixins: ^1.1.0

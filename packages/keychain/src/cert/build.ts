@@ -1,10 +1,10 @@
 import { Data, LLSign } from "@ndn/l3pkt";
 
 import { PrivateKey } from "../key";
+import { CertificateName } from "../name";
 
 import { ContentTypeKEY } from "./an";
 import { Certificate } from "./certificate";
-import { CertificateName } from "./name";
 import { ValidityPeriod } from "./validity-period";
 
 interface Options {
