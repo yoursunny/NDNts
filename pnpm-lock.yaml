@@ -25,6 +25,7 @@ importers:
       ts-node: 8.4.1_typescript@3.6.3
       tsconfig-paths: 3.9.0
       tsconfig-paths-webpack-plugin: 3.2.0
+      tslib: 1.10.0
       tslint: 5.20.0_typescript@3.6.3
       typescript: 3.6.3
       webpack: 4.41.0_webpack@4.41.0
@@ -55,6 +56,7 @@ importers:
       ts-node: ^8.3.0
       tsconfig-paths: ^3.8.0
       tsconfig-paths-webpack-plugin: ^3.2.0
+      tslib: '*'
       tslint: ^5.20.0
       typescript: ~3.6.2
       webpack: ^4.41.0
