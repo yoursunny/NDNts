@@ -1,3 +1,5 @@
+import { CertificateStorage, PrivateKeyStorage } from "../storage";
+
 export const crypto = self.crypto;
 
 // https://codahale.com/a-lesson-in-timing-attacks/
@@ -11,4 +13,8 @@ export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
     result |= a[i] ^ b[i];
   }
   return result === 0;
+}
+
+export function openStorage(locator: string): [PrivateKeyStorage, CertificateStorage] {
+  throw new Error("not implemented");
 }

@@ -13,8 +13,8 @@
   ],
   "main": "src/index.ts",
   "browser": {
-    "./lib/platform/index.js": "./lib/platform/browser.js",
-    "./src/platform/index.ts": "./src/platform/browser.ts"
+    "./lib/platform/node/index.js": "./lib/platform/browser/index.js",
+    "./src/platform/node/index.ts": "./src/platform/browser/index.ts"
   },
   "sideEffects": [
     "./test-fixture/**",
@@ -34,12 +34,15 @@
     "@ndn/l3pkt": "workspace:*",
     "@ndn/name": "workspace:*",
     "@ndn/naming-convention-03": "workspace:*",
+    "@ndn/tlv": "workspace:*",
     "@peculiar/webcrypto": "^1.0.19",
     "applymixins": "^1.1.0",
     "idb-keyval": "^3.2.0",
-    "tslib": "*"
+    "readdirp": "^3.1.1",
+    "tslib": "*",
+    "write": "^1.0.3"
   },
   "devDependencies": {
-    "@ndn/tlv": "workspace:*"
+    "tmp-promise": "github:yoursunny/tmp-promise#a43571b526a3eae4f2e7e13e58d7d584c400d041"
   }
 }

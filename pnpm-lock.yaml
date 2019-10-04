@@ -111,12 +111,15 @@ importers:
       '@ndn/l3pkt': 'link:../l3pkt'
       '@ndn/name': 'link:../name'
       '@ndn/naming-convention-03': 'link:../naming-convention-03'
+      '@ndn/tlv': 'link:../tlv'
       '@peculiar/webcrypto': 1.0.19
       applymixins: 1.1.0
       idb-keyval: 3.2.0
+      readdirp: 3.1.3
       tslib: 1.10.0
+      write: 1.0.3
     devDependencies:
-      '@ndn/tlv': 'link:../tlv'
+      tmp-promise: github.com/yoursunny/tmp-promise/a43571b526a3eae4f2e7e13e58d7d584c400d041
     specifiers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/name': 'workspace:*'
@@ -125,7 +128,10 @@ importers:
       '@peculiar/webcrypto': ^1.0.19
       applymixins: ^1.1.0
       idb-keyval: ^3.2.0
+      readdirp: ^3.1.1
+      tmp-promise: 'github:yoursunny/tmp-promise#a43571b526a3eae4f2e7e13e58d7d584c400d041'
       tslib: '*'
+      write: ^1.0.3
   packages/l3pkt:
     dependencies:
       '@ndn/name': 'link:../name'
@@ -1709,6 +1715,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-78AdXtlhpCHT0K3EytMpn4JNxaf5tbqbLcbIRoQIHzpTIyjpxLQKRoxU55ujBXAtg3Nl2h/XWvfDa9dsMOd0pQ==
+  /@types/tmp/0.1.0:
+    dev: true
+    resolution:
+      integrity: sha512-6IwZ9HzWbCq6XoQWhxLpDjuADodH/MKXRUIDFudvgjcVdjFknvmR+DNsoUeer4XPrEnrZs04Jj+kfV9pFsrhmA==
   /@types/uglify-js/3.0.4:
     dependencies:
       source-map: 0.6.1
@@ -6583,7 +6593,6 @@ packages:
     resolution:
       integrity: sha1-3j+YVD2/lggr5IrRoMfNqDYwHc8=
   /minimist/0.0.8:
-    dev: true
     resolution:
       integrity: sha1-hX/Kv8M5fSYluCKCYuhqp6ARsF0=
   /minimist/1.2.0:
@@ -6649,7 +6658,6 @@ packages:
   /mkdirp/0.5.1:
     dependencies:
       minimist: 0.0.8
-    dev: true
     hasBin: true
     resolution:
       integrity: sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM=
@@ -7432,7 +7440,6 @@ packages:
     resolution:
       integrity: sha1-Ywn04OX6kT7BxpMHrjZLSzd8nns=
   /picomatch/2.0.7:
-    dev: true
     engines:
       node: '>=8'
     resolution:
@@ -7884,6 +7891,14 @@ packages:
       node: '>=0.10'
     resolution:
       integrity: sha512-1JU/8q+VgFZyxwrJ+SVIOsh+KywWGpds3NTqikiKpDMZWScmAYyKIgqkO+ARvNWJfXeXR1zxz7aHF4u4CyH6vQ==
+  /readdirp/3.1.3:
+    dependencies:
+      picomatch: 2.0.7
+    dev: false
+    engines:
+      node: '>= 8'
+    resolution:
+      integrity: sha512-ZOsfTGkjO2kqeR5Mzr5RYDbTGYneSkdNKX2fOX2P5jF7vMrd/GNnIAUtDldeHHumHUCQ3V05YfWUdxMPAsRu9Q==
   /readline/1.3.0:
     dev: true
     resolution:
@@ -8977,6 +8992,14 @@ packages:
       node: '>=0.6.0'
     resolution:
       integrity: sha512-jRCJlojKnZ3addtTOjdIqoRuPEKBvNXcGYqzO6zWZX8KfKEpnGY5jfggJQ3EjKuu8D4bJRr0y+cYJFmYbImXGw==
+  /tmp/0.1.0:
+    dependencies:
+      rimraf: 2.7.1
+    dev: true
+    engines:
+      node: '>=6'
+    resolution:
+      integrity: sha512-J7Z2K08jbGcdA1kkQpJSqLF6T0tdQqpR2pnSUXsIchbPdTI9v3e85cLW0d6WDhwuAleOV71j2xWs8qMPfK7nKw==
   /tmpl/1.0.4:
     dev: true
     resolution:
@@ -9808,6 +9831,14 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha512-tX2ifZ0YqEFOF1wjRW2Pk93NLsj02+n1UP5RvO6rCs0K6R2g1padvf006cY74PQJKMGS2r42NK7FD0dG6Y6paw==
+  /write/1.0.3:
+    dependencies:
+      mkdirp: 0.5.1
+    dev: false
+    engines:
+      node: '>=4'
+    resolution:
+      integrity: sha512-/lg70HAjtkUgWPVZhZcm+T4hkL8Zbtp1nFNOn3lRrxnlv50SRBv7cR7RqR+GMsd3hUXy9hWBo4CHTbFTcOYwig==
   /ws/3.3.3:
     dependencies:
       async-limiter: 1.0.1
@@ -9925,3 +9956,12 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==
+  github.com/yoursunny/tmp-promise/a43571b526a3eae4f2e7e13e58d7d584c400d041:
+    dependencies:
+      '@types/tmp': 0.1.0
+      tmp: 0.1.0
+    dev: true
+    name: tmp-promise
+    resolution:
+      tarball: 'https://codeload.github.com/yoursunny/tmp-promise/tar.gz/a43571b526a3eae4f2e7e13e58d7d584c400d041'
+    version: 2.0.2
