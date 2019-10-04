@@ -2,7 +2,7 @@ import { Component, NamingConvention } from "@ndn/name";
 import { Encoder, NNI } from "@ndn/tlv";
 
 abstract class Typed {
-  constructor(protected tt: number) {
+  constructor(protected readonly tt: number) {
   }
 
   public match(comp: Component): boolean {
@@ -38,17 +38,20 @@ class TypedNumber extends Typed implements NamingConvention<number> {
   }
 }
 
-class TypedDate extends Typed implements NamingConvention<Date> {
-  constructor(tt: number) {
-    super(tt);
+class TimestampType extends TypedNumber {
+  constructor() {
+    super(0x24);
   }
 
-  public create(v: Date): Component {
-    return TypedNumber.prototype.create.call(this, v.getTime() * 1000);
+  public create(v: number|Date): Component {
+    if (typeof v !== "number") {
+      v = v.getTime() * 1000;
+    }
+    return super.create(v);
   }
 
-  public parse(comp: Component, strict: boolean = false): Date {
-    const n = TypedNumber.prototype.parse.call(this, comp);
+  public parseDate(comp: Component, strict: boolean = false): Date {
+    const n = this.parse(comp);
     if (strict && n % 1000 !== 0) {
       throw new Error("Timestamp is not multiple of milliseconds");
     }
@@ -69,7 +72,7 @@ export const ByteOffset = new TypedNumber(0x22);
 export const Version = new TypedNumber(0x23);
 
 /** TimestampNameComponent */
-export const Timestamp = new TypedDate(0x24);
+export const Timestamp = new TimestampType();
 
 /** SequenceNumNameComponent */
 export const SequenceNum = new TypedNumber(0x25);

@@ -1,6 +1,5 @@
-import { Component, Name } from "@ndn/name";
+import { Name } from "@ndn/name";
 import "@ndn/name/test-fixture";
-import { Encoder, NNI } from "@ndn/tlv";
 
 import { ByteOffset, Keyword, Segment, SequenceNum, Timestamp, Version } from "../src";
 
@@ -33,14 +32,17 @@ test("Version", () => {
 });
 
 test("Timestamp", () => {
-  const name = new Name().append(Timestamp, new Date(540167400000));
+  const name = new Name().append(Timestamp, new Date(540167400000))
+                         .append(Timestamp, 540167400000009);
   expect(name.at(0)).toEqualComponent("36=%00%01%eb%47%85%ff%0a%00");
   expect(name.at(0).is(Timestamp)).toBeTruthy();
-  expect(Timestamp.parse(name.at(0))).toEqual(new Date(540167400000));
-
-  expect(() => {
-    Timestamp.parse(new Component(0x24, Encoder.encode(NNI(5001), 8)), true);
-  }).toThrow();
+  expect(name.at(1)).toEqualComponent("36=%00%01%eb%47%85%ff%0a%09");
+  expect(name.at(1).is(Timestamp)).toBeTruthy();
+  expect(Timestamp.parse(name.at(0))).toEqual(540167400000000);
+  expect(Timestamp.parseDate(name.at(0))).toEqual(new Date(540167400000));
+  expect(Timestamp.parse(name.at(1))).toEqual(540167400000009);
+  expect(Timestamp.parseDate(name.at(1))).toEqual(new Date(540167400000));
+  expect(() => Timestamp.parseDate(name.at(1), true)).toThrow(/milliseconds/);
 });
 
 test("SequenceNum", () => {
