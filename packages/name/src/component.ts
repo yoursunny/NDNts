@@ -2,7 +2,7 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import bufferCompare from "buffer-compare";
 
 import { TT } from "./an";
-import { NamingConventionBase } from "./convention";
+import { NamingConvention } from "./convention";
 
 function checkType(n: number) {
   if (n < 0x01 || n > 0xFFFF) {
@@ -119,8 +119,16 @@ export class Component {
   }
 
   /** Determine if component follows a naming convention. */
-  public is(convention: NamingConventionBase): boolean {
+  public is(convention: NamingConvention<unknown, unknown>): boolean {
     return convention.match(this);
+  }
+
+  /** Convert with naming convention. */
+  public as<R>(convention: NamingConvention<unknown, R>): R {
+    if (!this.is(convention)) {
+      throw new Error("component does not follow convention");
+    }
+    return convention.parse(this);
   }
 
   /** Compare this component with other. */

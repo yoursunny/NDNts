@@ -88,14 +88,14 @@ export class Name {
   }
 
   /** Append a component from naming convention. */
-  public append<T>(convention: NamingConvention<T>, v: T): Name;
+  public append<A>(convention: NamingConvention<A, unknown>, v: A): Name;
 
   /** Append suffix with one or more components. */
   public append(...suffix: ComponentLike[]): Name;
 
   public append(...args) {
-    if (NamingConvention.isNamingConvention(args[0])) {
-      const convention = args[0];
+    if (args.length === 2 && typeof args[0] === "object" && typeof args[0].create === "function") {
+      const convention = args[0] as NamingConvention<unknown, unknown>;
       return this.append(convention.create(args[1]));
     }
     const suffix = args as ComponentLike[];

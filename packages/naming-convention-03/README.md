@@ -26,7 +26,7 @@ assert.equal(name.toString(), "/A/32=metadata/35=%03/33=%00");
 assert.equal(Segment.match(name.at(-1)), true);
 assert.equal(Version.match(name.at(-1)), false);
 
-// Or you can use component.is():
+// Or you can use component.is().
 assert.equal(name.at(-1).is(Segment), true);
 assert.equal(name.at(-1).is(Version), false);
 
@@ -34,4 +34,9 @@ assert.equal(name.at(-1).is(Version), false);
 assert.equal(Keyword.parse(name.at(-3)), "metadata");
 assert.equal(Version.parse(name.at(-2)), 3);
 assert.equal(Segment.parse(name.at(-1)), 0);
+
+// Or you can use component.as().
+assert.equal(name.at(-3).as(Keyword), "metadata");
+assert.equal(name.at(-2).as(Version), 3);
+assert.equal(name.at(-1).as(Segment), 0);
 ```

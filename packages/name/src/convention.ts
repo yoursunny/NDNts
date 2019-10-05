@@ -1,19 +1,13 @@
 import { Component } from "./component";
 
-export interface NamingConventionBase {
+/** Naming convention, constructible from A and convertible to R. */
+export interface NamingConvention<A, R> {
+  /** Determine if a component follows this naming convention. */
   match(comp: Component): boolean;
-}
 
-export interface NamingConvention<T> extends NamingConventionBase {
-  create(v: T): Component;
-  parse(comp: Component): T;
-}
+  /** Create a component from input value following this naming convention. */
+  create(v: A): Component;
 
-export namespace NamingConvention {
-  export function isNamingConvention<R>(obj: any): obj is NamingConvention<R> {
-    return typeof obj === "object" &&
-          typeof obj.match === "function" &&
-          typeof obj.create === "function" &&
-          typeof obj.parse === "function";
-  }
+  /** Parse value from a component following this naming convention. */
+  parse(comp: Component): R;
 }

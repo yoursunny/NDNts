@@ -10,7 +10,7 @@ abstract class Typed {
   }
 }
 
-class TypedString extends Typed implements NamingConvention<string> {
+class TypedString extends Typed {
   constructor(tt: number) {
     super(tt);
   }
@@ -24,7 +24,7 @@ class TypedString extends Typed implements NamingConvention<string> {
   }
 }
 
-class TypedNumber extends Typed implements NamingConvention<number> {
+class TypedNumber extends Typed {
   constructor(tt: number) {
     super(tt);
   }
@@ -38,7 +38,7 @@ class TypedNumber extends Typed implements NamingConvention<number> {
   }
 }
 
-class TimestampType extends TypedNumber {
+abstract class TimestampBase extends Typed {
   constructor() {
     super(0x24);
   }
@@ -47,32 +47,58 @@ class TimestampType extends TypedNumber {
     if (typeof v !== "number") {
       v = v.getTime() * 1000;
     }
-    return super.create(v);
+    return TypedNumber.prototype.create.call(this, v);
+  }
+}
+
+class TimestampNumber extends TimestampBase {
+  public parse(comp: Component): number {
+    return TypedNumber.prototype.parse.call(this, comp);
+  }
+}
+
+class TimestampDate extends TimestampBase {
+  constructor(private readonly strict: boolean) {
+    super();
   }
 
-  public parseDate(comp: Component, strict: boolean = false): Date {
-    const n = this.parse(comp);
-    if (strict && n % 1000 !== 0) {
+  public parse(comp: Component): Date {
+    const n = TypedNumber.prototype.parse.call(this, comp);
+    if (this.strict && n % 1000 !== 0) {
       throw new Error("Timestamp is not multiple of milliseconds");
     }
     return new Date(n / 1000);
   }
 }
 
-/** KeywordNameComponent */
-export const Keyword = new TypedString(0x20);
+/** KeywordNameComponent, interpreted as string. */
+export const Keyword = new TypedString(0x20) as NamingConvention<string, string>;
 
-/** SegmentNameComponent */
-export const Segment = new TypedNumber(0x21);
+/** SegmentNameComponent, interpreted as number. */
+export const Segment = new TypedNumber(0x21) as NamingConvention<number, number>;
 
-/** ByteOffsetNameComponent */
-export const ByteOffset = new TypedNumber(0x22);
+/** ByteOffsetNameComponent, interpreted as number. */
+export const ByteOffset = new TypedNumber(0x22) as NamingConvention<number, number>;
 
-/** VersionNameComponent */
-export const Version = new TypedNumber(0x23);
+/** VersionNameComponent, interpreted as number. */
+export const Version = new TypedNumber(0x23) as NamingConvention<number, number>;
 
-/** TimestampNameComponent */
-export const Timestamp = new TimestampType();
+/** TimestampNameComponent, interpreted as number. */
+export const Timestamp = Object.assign(
+  new TimestampNumber() as NamingConvention<number|Date, number>,
+  {
+    /**
+     * TimestampNameComponent, interpreted as Date.
+     * Reject during parsing if value is not a multiple of milliseconds.
+     */
+    Date: new TimestampDate(true) as NamingConvention<number|Date, Date>,
 
-/** SequenceNumNameComponent */
-export const SequenceNum = new TypedNumber(0x25);
+    /**
+     * TimestampNameComponent, interpreted as Date.
+     * Round to nearest milliseconds during parsing.
+     */
+    DateInexact: new TimestampDate(false) as NamingConvention<number|Date, Date>,
+  });
+
+/** SequenceNumNameComponent, interpreted as number. */
+export const SequenceNum = new TypedNumber(0x25) as NamingConvention<number, number>;

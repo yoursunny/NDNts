@@ -5,8 +5,8 @@ import { Name } from "./name";
 
 const DIGEST_LENGTH = 32;
 
-class DigestComp implements NamingConvention<Uint8Array> {
-  constructor(private tt: number) {
+class DigestComp implements NamingConvention<Uint8Array, Uint8Array> {
+  constructor(private readonly tt: number) {
   }
 
   public match(comp: Component): boolean {

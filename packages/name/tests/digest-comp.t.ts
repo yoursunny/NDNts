@@ -1,8 +1,8 @@
-import { ImplicitDigest, Name, NamingConvention, ParamsDigest, TT } from "../src";
+import { Component, ImplicitDigest, Name, NamingConvention, ParamsDigest, TT } from "../src";
 import "../test-fixture";
 
 interface Row {
-  compType: NamingConvention<Uint8Array>;
+  compType: NamingConvention<Uint8Array, Uint8Array>;
   tt: number;
 }
 
@@ -17,8 +17,10 @@ test.each(TABLE)("DigestComp %#", ({ compType, tt }) => {
   const name = new Name().append(compType, digest);
   expect(name.at(0)).toEqualComponent(`${tt}=%00%aa${"%00".repeat(30)}`);
   expect(name.at(0).is(compType)).toBeTruthy();
-  expect(compType.parse(name.at(0))).toEqual(digest);
+  expect(name.at(0).as(compType)).toEqual(digest);
+
   expect(() => compType.create(new Uint8Array(7))).toThrow();
+  expect(() => new Component().as(compType)).toThrow();
 });
 
 test("ParamsDigest placeholder", () => {
