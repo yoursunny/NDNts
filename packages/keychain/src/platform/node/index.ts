@@ -1,9 +1,8 @@
 import { Crypto as peculiarCrypto } from "@peculiar/webcrypto";
 import { timingSafeEqual as nodeTimingSafeEqual } from "crypto";
 
-import { CertificateStorage, PrivateKeyStorage } from "../storage";
-import { FileCertificateStorage } from "./file-certificate-storage";
-import { FilePrivateKeyStorage } from "./file-private-key-storage";
+import { CertificateStore, PrivateKeyStore } from "../../store/internal";
+import { FileCertificateStore, FilePrivateKeyStore } from "./store";
 
 export const crypto = new peculiarCrypto() as Crypto; // export as DOM Crypto type
 
@@ -14,6 +13,9 @@ export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
   return nodeTimingSafeEqual(a, b);
 }
 
-export function openStorage(locator: string): [PrivateKeyStorage, CertificateStorage] {
-  return [new FilePrivateKeyStorage(locator), new FileCertificateStorage(locator)];
+export function openStores(locator: string): [PrivateKeyStore, CertificateStore] {
+  return [
+    new FilePrivateKeyStore(`${locator}/831e5c8f-9d63-40f3-8359-0f55254eeb80.json`),
+    new FileCertificateStore(`${locator}/c339669f-8d4b-4cb3-a8c2-09af61edd787.json`),
+  ];
 }

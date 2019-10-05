@@ -1,10 +1,10 @@
 import { SigInfo, SigType } from "@ndn/l3pkt";
-import { Name, NameLike } from "@ndn/name";
+import { Name } from "@ndn/name";
 
 import { KeyName } from "../name";
 import { crypto } from "../platform";
 
-import { PrivateKeyBase, PublicKeyBase } from "./base";
+import { KEYGEN, KeyGenResult, PrivateKeyBase, PublicKeyBase } from "./internal";
 
 export type EcCurve = "P-256" | "P-384" | "P-521";
 // tslint:disable-next-line object-literal-sort-keys
@@ -12,6 +12,29 @@ const SIGN_PARAMS = { name: "ECDSA", hash: "SHA-256" } as EcdsaParams;
 
 /** ECDSA private key. */
 export class EcPrivateKey extends PrivateKeyBase {
+  public static async [KEYGEN](name: KeyName, needJson: boolean, curve: EcCurve): Promise<KeyGenResult> {
+    const params = { name: "ECDSA", namedCurve: curve };
+    const pair: CryptoKeyPair = await crypto.subtle.generateKey(params, needJson, ["sign", "verify"]);
+    const pub = pair.publicKey;
+    let pvt = pair.privateKey;
+
+    let privateKeyExported: object;
+    if (needJson) {
+      const jwk = await crypto.subtle.exportKey("jwk", pvt);
+      privateKeyExported = jwk;
+      pvt = await crypto.subtle.importKey("jwk", jwk, params, false, ["sign"]);
+    } else {
+      privateKeyExported = pvt;
+    }
+
+    const n = name.toName();
+    return {
+      privateKey: new EcPrivateKey(n, pvt),
+      privateKeyExported,
+      publicKey:  new EcPublicKey(n, pub),
+    };
+  }
+
   constructor(name: Name, private readonly key: CryptoKey) {
     super(name, SigType.Sha256WithEcdsa, name);
   }
@@ -41,24 +64,5 @@ export class EcPublicKey extends PublicKeyBase {
   protected async llVerify(input: Uint8Array, sig: Uint8Array): Promise<void> {
     const ok = await crypto.subtle.verify(SIGN_PARAMS, this.key, sig, input);
     PublicKeyBase.throwOnIncorrectSig(ok);
-  }
-}
-
-export namespace EcPrivateKey {
-  /**
-   * Generate ECDSA key pair.
-   * @param name Name or URI as subjectName, or KeyName instance.
-   * @param curve EC curve.
-   */
-  export async function generate(name: NameLike|KeyName, curve: EcCurve): Promise<[EcPrivateKey, EcPublicKey]> {
-    const { publicKey: pub, privateKey: pvt }: CryptoKeyPair = await crypto.subtle.generateKey(
-      // tslint:disable-next-line object-literal-sort-keys
-      { name: "ECDSA", namedCurve: curve } as EcKeyGenParams,
-      false,
-      ["sign", "verify"],
-    );
-
-    const n = KeyName.create(name).toName();
-    return [new EcPrivateKey(n, pvt), new EcPublicKey(n, pub)];
   }
 }

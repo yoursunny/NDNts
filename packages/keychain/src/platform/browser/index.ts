@@ -1,4 +1,4 @@
-import { CertificateStorage, PrivateKeyStorage } from "../storage";
+import { CertificateStore, PrivateKeyStore } from "../../store/internal";
 
 export const crypto = self.crypto;
 
@@ -15,6 +15,6 @@ export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
   return result === 0;
 }
 
-export function openStorage(locator: string): [PrivateKeyStorage, CertificateStorage] {
+export function openStores(locator: string): [PrivateKeyStore, CertificateStore] {
   throw new Error("not implemented");
 }

@@ -73,6 +73,13 @@ SigInfo.registerExtension({
 });
 
 export namespace ValidityPeriod {
+  export function daysFromNow(n: number): ValidityPeriod {
+    const notBefore = new Date();
+    const notAfter = new Date(notBefore);
+    notAfter.setUTCDate(notAfter.getUTCDate() + n);
+    return new ValidityPeriod(notBefore, notAfter);
+  }
+
   export function get(si: SigInfo): ValidityPeriod|undefined {
     return Extension.get(si, TT.ValidityPeriod) as ValidityPeriod|undefined;
   }

@@ -2,7 +2,7 @@ import { SigType } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 import "@ndn/name/test-fixture";
 
-import { EcCurve, EcPrivateKey, PrivateKey, PublicKey } from "../../src";
+import { EcCurve, EcPrivateKey, KeyChain, PrivateKey, PublicKey, ValidityPeriod } from "../../src";
 import * as TestSignVerify from "../../test-fixture/sign-verify";
 
 interface Row extends TestSignVerify.Row {
@@ -16,8 +16,13 @@ const TABLE = TestSignVerify.TABLE.flatMap((row) => [
 ]) as Row[];
 
 test.each(TABLE)("%p", async ({ cls, curve }) => {
-  const [pvtA, pubA] = await EcPrivateKey.generate("/ECKEY-A/KEY/x", curve);
-  const [pvtB, pubB] = await EcPrivateKey.generate("/ECKEY-B/KEY/x", curve);
+  const keyChain = KeyChain.createTemp();
+  const validity = ValidityPeriod.daysFromNow(1);
+  const { privateKey: pvtA, publicKey: pubA } =
+    await keyChain.generateKey(EcPrivateKey, "/ECKEY-A/KEY/x", validity, curve);
+  const { privateKey: pvtB, publicKey: pubB } =
+    await keyChain.generateKey(EcPrivateKey, "/ECKEY-B/KEY/x", validity, curve);
+
   expect(PrivateKey.isPrivateKey(pvtA)).toBeTruthy();
   expect(PrivateKey.isPrivateKey(pubA)).toBeFalsy();
   expect(PublicKey.isPublicKey(pvtA)).toBeFalsy();

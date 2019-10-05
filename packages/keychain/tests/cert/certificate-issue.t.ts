@@ -1,39 +1,46 @@
-import { Component } from "@ndn/name";
+import { Component, Name } from "@ndn/name";
 import { Version } from "@ndn/naming-convention-03";
 
-import { Certificate, EcPrivateKey, ValidityPeriod } from "../../src";
+import { Certificate, EcPrivateKey, KeyChain, ValidityPeriod } from "../../src";
 
 test("issue", async () => {
-  const [issuerPrivateKey] = await EcPrivateKey.generate("/issuer/KEY/x", "P-384");
-  const [, publicKey] = await EcPrivateKey.generate("/rp/KEY/y", "P-256");
-  const validity = new ValidityPeriod(new Date(1542099529000), new Date(1602434283000));
+  const issuer = KeyChain.createTemp();
+  const { privateKey: issuerPrivateKey } =
+    await issuer.generateKey(EcPrivateKey, "/issuer/KEY/x", ValidityPeriod.daysFromNow(3), "P-384");
+
+  const rp = KeyChain.createTemp();
+  const { publicKey } =
+    await rp.generateKey(EcPrivateKey, "/rp/KEY/y", ValidityPeriod.daysFromNow(2), "P-256");
+
   const cert = await Certificate.issue({
     // tslint:disable-next-line object-literal-sort-keys
-    validity,
+    validity: ValidityPeriod.daysFromNow(1),
     issuerId: Component.from("i"),
     issuerPrivateKey,
     publicKey,
   });
+
   expect(cert.name).toHaveLength(5);
   expect(publicKey.name.append("i").isPrefixOf(cert.name)).toBeTruthy();
   expect(cert.name.at(-1).is(Version)).toBeTruthy();
 });
 
 test("self-sign", async () => {
-  const [privateKey, publicKey] = await EcPrivateKey.generate("/EC/KEY/x", "P-256");
-  const validity = new ValidityPeriod(new Date(1542099529000), new Date(1602434283000));
-  const cert = await Certificate.selfSign({
-    // tslint:disable-next-line object-literal-sort-keys
-    validity,
-    privateKey,
-    publicKey,
-  });
+  const keyChain = KeyChain.createTemp();
+  const { privateKey, selfSigned: cert } =
+    await keyChain.generateKey(EcPrivateKey, "/EC/KEY/x", ValidityPeriod.daysFromNow(1), "P-256");
+
   expect(cert.name).toHaveLength(5);
-  expect(publicKey.name.append("self").isPrefixOf(cert.name)).toBeTruthy();
+  expect(new Name("/EC/KEY/x/self").isPrefixOf(cert.name)).toBeTruthy();
   expect(cert.name.at(-1).is(Version)).toBeTruthy();
 
-  const [, publicKeyY] = await EcPrivateKey.generate("/EC/KEY/y", "P-256");
-  // tslint:disable-next-line object-literal-sort-keys
-  expect(Certificate.selfSign({ validity, privateKey, publicKey: publicKeyY }))
-    .rejects.toThrow(/mismatch/);
+  const { publicKey: publicKeyY } =
+    await keyChain.generateKey(EcPrivateKey, "/EC/KEY/y", ValidityPeriod.daysFromNow(1), "P-256");
+
+  await expect(Certificate.selfSign({
+    // tslint:disable-next-line object-literal-sort-keys
+    validity: ValidityPeriod.daysFromNow(1),
+    privateKey,
+    publicKey: publicKeyY,
+  })).rejects.toThrow(/mismatch/);
 });

@@ -1,4 +1,4 @@
-import { EcPrivateKey, PrivateKey, PublicKey, theDigestKey } from "@ndn/keychain";
+import { EcPrivateKey, KeyChain, PrivateKey, PublicKey, theDigestKey, ValidityPeriod } from "@ndn/keychain";
 import { execute as testSignVerify } from "@ndn/keychain/test-fixture/sign-verify";
 import { Data, Interest } from "@ndn/l3pkt";
 
@@ -19,7 +19,10 @@ window.testDigestKey = () => {
 };
 
 window.testEcKey = async () => {
-  const [pvtA, pubA] = await EcPrivateKey.generate("/ECKEY-A", "P-256");
-  const [pvtB, pubB] = await EcPrivateKey.generate("/ECKEY-B", "P-256");
+  const keyChain = KeyChain.createTemp();
+  const { privateKey: pvtA, publicKey: pubA } =
+    await keyChain.generateKey(EcPrivateKey, "/EC-A", ValidityPeriod.daysFromNow(1), "P-256");
+  const { privateKey: pvtB, publicKey: pubB } =
+    await keyChain.generateKey(EcPrivateKey, "/EC-B", ValidityPeriod.daysFromNow(1), "P-256");
   return testKey(pvtA, pubA, pvtB, pubB);
 };

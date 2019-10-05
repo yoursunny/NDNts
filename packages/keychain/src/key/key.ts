@@ -1,4 +1,4 @@
-import { isKey, PrivateKeyBase, PublicKeyBase } from "./base";
+import { isKey, PrivateKeyBase, PublicKeyBase } from "./internal";
 
 export type PrivateKey = PrivateKeyBase;
 
@@ -17,7 +17,5 @@ export namespace PublicKey {
     return isKey(obj) && typeof (obj as PublicKey).verify === "function";
   }
 
-  export interface SpkiExportable extends PublicKey {
-    exportAsSpki(): Promise<Uint8Array>;
-  }
+  export type SpkiExportable = PublicKeyBase.SpkiExportable;
 }

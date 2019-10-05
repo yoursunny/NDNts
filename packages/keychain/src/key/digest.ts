@@ -3,7 +3,7 @@ import { Name } from "@ndn/name";
 import applyMixins from "applymixins";
 
 import { crypto, timingSafeEqual } from "../platform";
-import { PrivateKeyBase, PublicKeyBase } from "./base";
+import { PrivateKeyBase, PublicKeyBase } from "./internal";
 import { PrivateKey } from "./key";
 
 const IDENTITY = new Name("/localhost/identity/digest-sha256");

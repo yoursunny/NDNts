@@ -1,6 +1,8 @@
 import { KeyLocator, LLSign, LLVerify, SigInfo } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 
+import { KeyName } from "../name";
+
 interface PacketWithSignature {
   sigInfo?: SigInfo;
   sigValue?: Uint8Array;
@@ -62,4 +64,20 @@ export namespace PublicKeyBase {
       throw new Error("incorrect signature");
     }
   }
+
+  export interface SpkiExportable extends PublicKeyBase {
+    exportAsSpki(): Promise<Uint8Array>;
+  }
+}
+
+export const KEYGEN = Symbol("KeyChain.KeyGen");
+
+export interface KeyGenResult {
+  privateKey: PrivateKeyBase;
+  privateKeyExported: object;
+  publicKey: PublicKeyBase.SpkiExportable;
+}
+
+export interface KeyGenerator<A extends any[]> {
+  [KEYGEN](name: KeyName, needJson: boolean, ...args: A): Promise<KeyGenResult>;
 }
