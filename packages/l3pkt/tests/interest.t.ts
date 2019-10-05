@@ -1,4 +1,5 @@
 import { Name, ParamsDigest } from "@ndn/name";
+import "@ndn/name/test-fixture";
 import { Decoder, Encoder } from "@ndn/tlv";
 import "@ndn/tlv/test-fixture";
 
@@ -11,7 +12,7 @@ test("encode", () => {
   expect(() => Encoder.encode(interest)).toThrow();
 
   interest = new Interest("/A");
-  expect(interest.name.toString()).toEqual("/A");
+  expect(interest.name).toEqualName("/A");
   expect(interest.canBePrefix).toBeFalsy();
   expect(interest.mustBeFresh).toBeFalsy();
   expect(interest.nonce).toBeUndefined();
@@ -26,7 +27,7 @@ test("encode", () => {
 
   interest = new Interest("/B", Interest.CanBePrefix, Interest.MustBeFresh,
                           Interest.Nonce(0x85AC8579), Interest.Lifetime(8198), Interest.HopLimit(5));
-  expect(interest.name.toString()).toEqual("/B");
+  expect(interest.name).toEqualName("/B");
   expect(interest.canBePrefix).toBeTruthy();
   expect(interest.mustBeFresh).toBeTruthy();
   expect(interest.nonce).not.toBeUndefined();
@@ -63,7 +64,7 @@ test("decode", async () => {
     0x07, 0x03, 0x08, 0x01, 0x41,
   ]));
   let interest = decoder.decode(Interest);
-  expect(interest.name.toString()).toBe("/A");
+  expect(interest.name).toEqualName("/A");
   expect(interest.canBePrefix).toBeFalsy();
   expect(interest.mustBeFresh).toBeFalsy();
 
@@ -78,7 +79,7 @@ test("decode", async () => {
     0x22, 0x01, 0xDC,
   ]));
   interest = decoder.decode(Interest);
-  expect(interest.name.toString()).toBe("/A");
+  expect(interest.name).toEqualName("/A");
   expect(interest.canBePrefix).toBeTruthy();
   expect(interest.mustBeFresh).toBeTruthy();
   expect(interest.nonce).toBe(0xA0A1A2A3);

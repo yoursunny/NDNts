@@ -1,4 +1,5 @@
 import { Name } from "@ndn/name";
+import "@ndn/name/test-fixture";
 import { Decoder, Encoder } from "@ndn/tlv";
 import "@ndn/tlv/test-fixture";
 
@@ -35,7 +36,7 @@ test("encode", () => {
       ({ type, value }) => {
         expect(type).toBe(TT.KeyLocator);
         expect(value).toMatchTlv(
-          ({ decoder }) => { expect(decoder.decode(Name).toString()).toBe("/KL"); },
+          ({ decoder }) => { expect(decoder.decode(Name)).toEqualName("/KL"); },
         );
       },
       ({ type, length, value }) => {
@@ -96,7 +97,7 @@ test("decode", () => {
   si = decoder.decode(SigInfo);
   expect(si.type).toBe(SigType.Sha256WithEcdsa);
   expect(si.keyLocator).toBeInstanceOf(Name);
-  expect((si.keyLocator as Name).toString()).toBe("/KL");
+  expect(si.keyLocator).toEqualName("/KL");
 
   decoder = new Decoder(new Uint8Array([
     0x2C, 0x18,

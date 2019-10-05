@@ -1,5 +1,6 @@
 import { SigType } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
+import "@ndn/name/test-fixture";
 
 import { EcCurve, EcPrivateKey, PrivateKey, PublicKey } from "../../src";
 import * as TestSignVerify from "../../test-fixture/sign-verify";
@@ -21,14 +22,14 @@ test.each(TABLE)("%p", async ({ cls, curve }) => {
   expect(PrivateKey.isPrivateKey(pubA)).toBeFalsy();
   expect(PublicKey.isPublicKey(pvtA)).toBeFalsy();
   expect(PublicKey.isPublicKey(pubA)).toBeTruthy();
-  expect(pvtA.name.toString()).toBe("/ECKEY-A/KEY/x");
-  expect(pubA.name.toString()).toBe("/ECKEY-A/KEY/x");
-  expect(pvtB.name.toString()).toBe("/ECKEY-B/KEY/x");
-  expect(pubB.name.toString()).toBe("/ECKEY-B/KEY/x");
+  expect(pvtA.name).toEqualName("/ECKEY-A/KEY/x");
+  expect(pubA.name).toEqualName("/ECKEY-A/KEY/x");
+  expect(pvtB.name).toEqualName("/ECKEY-B/KEY/x");
+  expect(pubB.name).toEqualName("/ECKEY-B/KEY/x");
 
   const record = await TestSignVerify.execute(cls, pvtA, pubA, pvtB, pubB);
   TestSignVerify.check(record, false, false);
   expect(record.sA0.sigInfo.type).toBe(SigType.Sha256WithEcdsa);
   expect(record.sA0.sigInfo.keyLocator).toBeInstanceOf(Name);
-  expect((record.sA0.sigInfo.keyLocator as Name).toString()).toBe(pvtA.name.toString());
+  expect(record.sA0.sigInfo.keyLocator).toEqualName(pvtA.name);
 });
