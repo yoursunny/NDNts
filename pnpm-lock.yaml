@@ -198,6 +198,15 @@ importers:
       '@types/buffer-compare': ^0.0.30
       buffer-compare: ^1.1.1
       tslib: '*'
+  packages/naming-convention-02:
+    dependencies:
+      '@ndn/name': 'link:../name'
+      '@ndn/tlv': 'link:../tlv'
+      tslib: 1.10.0
+    specifiers:
+      '@ndn/name': 'workspace:*'
+      '@ndn/tlv': 'workspace:*'
+      tslib: '*'
   packages/naming-convention-03:
     dependencies:
       '@ndn/name': 'link:../name'

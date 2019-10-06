@@ -2,7 +2,8 @@
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-This package implements NDN naming conventions as specified in [NDN-TR-0022 draft](https://gitlab.com/named-data/tr-ndn-0022-naming-conventions/blob/76bf31b81b5935de93e5c429da1a4c8e0f469c83/typed.tex) and [Name Component Type Assignment rev12](https://redmine.named-data.net/projects/ndn-tlv/wiki/NameComponentType/12).
+This package implements 2019-version NDN naming conventions as specified in [NDN-TR-0022 revision 2](https://named-data.net/publications/techreports/ndn-tr-22-2-ndn-memo-naming-conventions/) and [Name Component Type Assignment rev12](https://redmine.named-data.net/projects/ndn-tlv/wiki/NameComponentType/12).
+For 2014-version naming conventions, use `@ndn/naming-convention-02` package.
 
 ```ts
 import { Keyword, Version, Segment } from "@ndn/naming-convention-03";
