@@ -1,23 +1,21 @@
 import { Interest } from "@ndn/l3pkt";
 import { LLFace, Transport } from "@ndn/llface";
 import { LinearPit, Pit } from "@ndn/pit";
-import assert from "minimalistic-assert";
 
 import { ExpressedInterest } from "./expressed-interest";
+import { EndpointImpl } from "./internal";
 
 /** Endpoint for application to communicate with NDN network. */
 export class Endpoint {
-  private readonly llface: LLFace;
+  private readonly id: string = Math.random().toString();
+  private readonly impl: EndpointImpl;
 
-  constructor(transport: Transport, private readonly pit: Pit = new LinearPit()) {
-    this.llface = new LLFace(transport);
-    this.llface.on("data", (data) => this.pit.processData(data, ""));
+  constructor(transport: Transport, pit: Pit = new LinearPit()) {
+    this.impl = new EndpointImpl(new LLFace(transport), pit);
   }
 
   public expressInterest(interest: Interest): ExpressedInterest {
-    const pi = this.pit.addInterest(interest, "");
-    assert(typeof pi !== "undefined");
-    this.llface.sendInterest(interest);
-    return new ExpressedInterest(pi!);
+    const pi = this.impl.pit.addInterest(interest, this.id)!;
+    return new ExpressedInterest(this.impl, pi!);
   }
 }

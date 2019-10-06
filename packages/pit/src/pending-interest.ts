@@ -29,16 +29,16 @@ export class PendingInterest extends (EventEmitter as new() => Emitter) {
     return this.promise_;
   }
 
+  public get interest() { return this.interest_; }
+
+  private interest_: Interest;
   private timers: Record<string, number> = {};
   private promise_?: Promise<Data>;
 
-  constructor(private readonly table: PitImpl.Table, public readonly interest: Interest) {
+  constructor(private readonly table: PitImpl.Table, interest: Interest) {
     super();
-    this.setTimer(TIMEOUT, interest.lifetime, () => {
-      this.clearTimers();
-      this.emit("timeout");
-      this.table[PitImpl.REMOVE](this);
-    });
+    this.interest_ = interest;
+    this.renew(interest);
   }
 
   /**
@@ -55,6 +55,17 @@ export class PendingInterest extends (EventEmitter as new() => Emitter) {
   public clearTimer(id: string) {
     clearTimeout(this.timers[id]);
     delete this.timers[id];
+  }
+
+  /** Restart lifetime timer. */
+  public renew(interest: Interest) {
+    this.interest_ = interest;
+    this.clearTimer(TIMEOUT);
+    this.setTimer(TIMEOUT, interest.lifetime, () => {
+      this.clearTimers();
+      this.emit("timeout");
+      this.table[PitImpl.REMOVE](this);
+    });
   }
 
   public [PitImpl.SATISFY](data: Data) {
