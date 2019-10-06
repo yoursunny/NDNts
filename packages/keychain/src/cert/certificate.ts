@@ -69,7 +69,7 @@ export namespace Certificate {
   export async function issue(options: IssueOptions): Promise<Certificate> {
     const { issuerPrivateKey: pvt, issuerId, publicKey: pub } = options;
     const kn = KeyName.from(pub.name);
-    const cn = new CertificateName(kn.subjectName, kn.keyId, issuerId, Version.create(new Date().getTime()));
+    const cn = new CertificateName(kn.subjectName, kn.keyId, issuerId, Version.create(Date.now()));
     const publicKey = await pub.exportAsSpki();
     const opt: BuildOptions = Object.assign({}, options, { name: cn, publicKey, signer: pvt });
     return await build(opt);

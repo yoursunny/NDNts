@@ -12,38 +12,38 @@ test("callback", async () => {
 
   const piA = pit.addInterest(new Interest("/A", Interest.Lifetime(200)));
   piA.on("data", never);
-  const timeoutA = jest.fn<void, []>();
-  piA.on("timeout", timeoutA);
+  const expireA = jest.fn<void, []>();
+  piA.on("expire", expireA);
   piA.on("cancel", never);
 
   const piAcbp = pit.addInterest(new Interest("/A", Interest.CanBePrefix, Interest.Lifetime(200)));
   const dataAcbp = jest.fn<void, [Data]>();
   piAcbp.on("data", dataAcbp);
-  piAcbp.on("timeout", never);
+  piAcbp.on("expire", never);
   piAcbp.on("cancel", never);
 
   const piAB = pit.addInterest(new Interest("/A/B", Interest.Lifetime(200)));
   const dataAB = jest.fn<void, [Data]>();
   piAB.on("data", dataAB);
-  piAB.on("timeout", never);
+  piAB.on("expire", never);
   piAB.on("cancel", never);
 
   const piAB2 = pit.addInterest(new Interest("/A/B", Interest.Lifetime(200)));
   const dataAB2 = jest.fn<void, [Data]>();
   piAB2.on("data", dataAB2);
-  piAB2.on("timeout", never);
+  piAB2.on("expire", never);
   piAB2.on("cancel", never);
 
   const piAB3 = pit.addInterest(new Interest("/A/B", Interest.Lifetime(200)));
   piAB3.on("data", never);
-  piAB3.on("timeout", never);
+  piAB3.on("expire", never);
   const cancelAB3 = jest.fn<void, []>();
   piAB3.on("cancel", cancelAB3);
 
   const piF = pit.addInterest(new Interest(fullName, Interest.Lifetime(200)));
   const dataF = jest.fn<void, [Data]>();
   piF.on("data", dataF);
-  piF.on("timeout", never);
+  piF.on("expire", never);
   piF.on("cancel", never);
 
   expect(pit).toHaveLength(6);
@@ -64,11 +64,11 @@ test("callback", async () => {
 
   await new Promise((r) => setTimeout(r, 60));
   expect(pit).toHaveLength(1);
-  expect(timeoutA).not.toHaveBeenCalled();
+  expect(expireA).not.toHaveBeenCalled();
 
   await new Promise((r) => setTimeout(r, 150));
   expect(pit).toHaveLength(0);
-  expect(timeoutA).toHaveBeenCalled();
+  expect(expireA).toHaveBeenCalled();
 
   expect(never).not.toHaveBeenCalled();
 });

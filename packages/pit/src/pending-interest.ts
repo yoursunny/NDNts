@@ -4,25 +4,16 @@ import { StrictEventEmitter } from "strict-event-emitter-types";
 
 import { PitImpl } from "./internal";
 
-interface Events {
-  /** Emitted when Interest has been satisfied. */
-  data: Data;
-  /** Emitted when Interest times out. */
-  timeout: void;
-  /** Emitted when PendingInterest is canceled. */
-  cancel: void;
-}
-
-type Emitter = StrictEventEmitter<EventEmitter, Events>;
-
 const TIMEOUT = "4a96aedc-be5d-4eab-8a2b-775f13a7a982";
+
+type Emitter = StrictEventEmitter<EventEmitter, PendingInterest.Events>;
 
 export class PendingInterest extends (EventEmitter as new() => Emitter) {
   public get promise(): Promise<Data> {
     if (!this.promise_) {
       this.promise_ = new Promise<Data>((resolve, reject) => {
         this.on("data", resolve);
-        this.on("timeout", () => reject(new Error("Interest timeout")));
+        this.on("expire", () => reject(new Error("Interest timeout")));
         this.on("cancel", () => reject(new Error("PendingInterest canceled")));
       });
     }
@@ -30,15 +21,25 @@ export class PendingInterest extends (EventEmitter as new() => Emitter) {
   }
 
   public get interest() { return this.interest_; }
+  public get remainingLifetime(): number { return this.expireTime - Date.now(); }
 
   private interest_: Interest;
+  private expireTime: number;
   private timers: Record<string, number> = {};
   private promise_?: Promise<Data>;
 
   constructor(private readonly table: PitImpl.Table, interest: Interest) {
     super();
-    this.interest_ = interest;
-    this.renew(interest);
+    this.interest_ = new Interest(interest);
+    if (typeof this.interest_.nonce === "undefined") {
+      this.interest_.nonce = Interest.generateNonce();
+    }
+    this.expireTime = Date.now() + this.interest_.lifetime;
+    this.setTimer(TIMEOUT, this.interest_.lifetime, () => {
+      this.clearTimers();
+      this.emit("expire");
+      this.table[PitImpl.REMOVE](this);
+    });
   }
 
   /**
@@ -57,24 +58,28 @@ export class PendingInterest extends (EventEmitter as new() => Emitter) {
     delete this.timers[id];
   }
 
-  /** Restart lifetime timer. */
-  public renew(interest: Interest) {
-    this.interest_ = interest;
-    this.clearTimer(TIMEOUT);
-    this.setTimer(TIMEOUT, interest.lifetime, () => {
-      this.clearTimers();
-      this.emit("timeout");
-      this.table[PitImpl.REMOVE](this);
-    });
+  /**
+   * Change InterestLifetime so that it reflects the remaining lifetime of this entry.
+   * @returns true if successful, false if entry is satisfied/expired/canceled.
+   */
+  public adjustInterestLifetime(): boolean {
+    const lifetime = this.remainingLifetime;
+    if (lifetime <= 0) {
+      return false;
+    }
+    this.interest_.lifetime = lifetime;
+    return true;
   }
 
   public [PitImpl.SATISFY](data: Data) {
+    this.expireTime = 0;
     this.clearTimers();
     this.emit("data", data);
   }
 
   /** Indicate the requester no longer wants the Data. */
   public cancel() {
+    this.expireTime = 0;
     this.clearTimers();
     this.emit("cancel");
     this.table[PitImpl.REMOVE](this);
@@ -83,5 +88,16 @@ export class PendingInterest extends (EventEmitter as new() => Emitter) {
   private clearTimers() {
     Object.values(this.timers).forEach(clearTimeout);
     this.timers = {};
+  }
+}
+
+export namespace PendingInterest {
+  export interface Events {
+    /** Emitted when Interest has been satisfied. */
+    data: Data;
+    /** Emitted when Interest expires. */
+    expire: void;
+    /** Emitted when PendingInterest is canceled. */
+    cancel: void;
   }
 }

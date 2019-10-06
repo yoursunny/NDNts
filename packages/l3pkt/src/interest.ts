@@ -125,14 +125,11 @@ export class Interest {
     this.insertParamsDigest();
     LLSign.encodeErrorIfPending(this);
 
-    const nonce = typeof this.nonce === "undefined" ?
-                  Math.random() * 0x100000000 : this.nonce;
-
     encoder.prependTlv(TT.Interest,
       this.name,
       this.canBePrefix ? [TT.CanBePrefix] : undefined,
       this.mustBeFresh ? [TT.MustBeFresh] : undefined,
-      [TT.Nonce, NNI(nonce, 4)],
+      [TT.Nonce, NNI(typeof this.nonce === "number" ? this.nonce : Interest.generateNonce(), 4)],
       this.lifetime !== LIFETIME_DEFAULT ?
         [TT.InterestLifetime, NNI(this.lifetime)] : undefined,
       this.hopLimit !== HOPLIMIT_MAX ?
@@ -256,8 +253,8 @@ class HopLimitTag {
 }
 
 export namespace Interest {
-  export const CanBePrefix = Symbol("CanBePrefix");
-  export const MustBeFresh = Symbol("MustBeFresh");
+  export const CanBePrefix = Symbol("Interest.CanBePrefix");
+  export const MustBeFresh = Symbol("Interest.MustBeFresh");
 
   export function Nonce(v: number): NonceTag {
     return new NonceTag(v);
@@ -273,4 +270,9 @@ export namespace Interest {
 
   export type CtorArg = NameLike | typeof CanBePrefix | typeof MustBeFresh |
                         LifetimeTag | HopLimitTag | Uint8Array;
+
+  /** Generate a random nonce. */
+  export function generateNonce(): number {
+    return Math.floor(Math.random() * 0x100000000);
+  }
 }

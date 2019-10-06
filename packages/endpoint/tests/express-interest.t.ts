@@ -42,21 +42,23 @@ test("retransmit", async () => {
   });
   remote.on("interest", remoteInterest);
 
-  const nonceA1 = 0x06B288B7;
-  const interestA = new Interest("/A", Interest.Lifetime(100), Interest.Nonce(nonceA1));
+  const nonceA = 0x06B288B7;
+  const interestA = new Interest("/A", Interest.Lifetime(200), Interest.Nonce(nonceA));
   const eiA = endpoint.expressInterest(interestA);
   setTimeout(() => {
     expect(eiA.nRetx).toBe(0);
-    eiA.retransmit();
+    expect(eiA.retransmit()).toBeTruthy();
   }, 50);
   setTimeout(() => {
     expect(eiA.nRetx).toBe(1);
-    eiA.retransmit();
+    expect(eiA.retransmit()).toBeTruthy();
   }, 110);
   await expect(eiA.promise).resolves.toBeInstanceOf(Data);
+  expect(eiA.retransmit()).toBeFalsy();
 
   expect(eiA.nRetx).toBe(2);
   expect(remoteInterest).toHaveBeenCalledTimes(3);
-  expect(remoteNonces[0]).toBe(nonceA1);
-  expect(new Set(remoteNonces).size).toBe(3);
+  expect(remoteNonces[0]).toBe(nonceA);
+  expect(remoteNonces[1]).toBe(nonceA);
+  expect(remoteNonces[2]).toBe(nonceA);
 });
