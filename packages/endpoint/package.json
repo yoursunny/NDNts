@@ -26,10 +26,10 @@
     "types": "lib/index.d.ts"
   },
   "dependencies": {
+    "@ndn/fw": "workspace:*",
     "@ndn/l3pkt": "workspace:*",
     "@ndn/llface": "workspace:*",
     "@ndn/name": "workspace:*",
-    "@ndn/pit": "workspace:*",
     "minimalistic-assert": "^1.0.1",
     "strict-event-emitter-types": "^2.0.0",
     "tslib": "*"

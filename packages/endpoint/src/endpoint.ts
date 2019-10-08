@@ -1,6 +1,6 @@
+import { LinearPit, Pit } from "@ndn/fw";
 import { Interest } from "@ndn/l3pkt";
 import { LLFace, Transport } from "@ndn/llface";
-import { LinearPit, Pit } from "@ndn/pit";
 
 import { ExpressedInterest } from "./expressed-interest";
 import { EndpointImpl } from "./internal";

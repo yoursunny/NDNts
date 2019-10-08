@@ -1,7 +1,7 @@
 import { Data, Interest } from "@ndn/l3pkt";
 import { getDataFullName } from "@ndn/l3pkt/test-fixture";
 
-import { LinearPit } from "../src";
+import { LinearPit } from "../../src";
 
 test("callback", async () => {
   const data = new Data("/A/B");

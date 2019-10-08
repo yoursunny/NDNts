@@ -1,6 +1,6 @@
 import { Interest } from "@ndn/l3pkt";
 
-import { LinearPit } from "../src";
+import { LinearPit } from "../../src";
 
 let pit: LinearPit;
 

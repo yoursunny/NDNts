@@ -1,9 +1,9 @@
 import { canSatisfySync, Data, Interest } from "@ndn/l3pkt";
 import assert from "minimalistic-assert";
 
-import { Pit } from "./interface";
 import { PitImpl } from "./internal";
 import { PendingInterest } from "./pending-interest";
+import { Pit } from "./pit";
 
 /**
  * PIT implemented with an array.

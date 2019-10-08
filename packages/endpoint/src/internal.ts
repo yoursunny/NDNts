@@ -1,5 +1,5 @@
+import { Pit } from "@ndn/fw";
 import { LLFace } from "@ndn/llface";
-import { Pit } from "@ndn/pit";
 
 export class EndpointImpl {
   constructor(public readonly llface: LLFace, public readonly pit: Pit) {

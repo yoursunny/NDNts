@@ -1,4 +1,4 @@
-import { PendingInterest } from "@ndn/pit";
+import { PendingInterest } from "@ndn/fw";
 import { EventEmitter } from "events";
 import { StrictEventEmitter } from "strict-event-emitter-types";
 
