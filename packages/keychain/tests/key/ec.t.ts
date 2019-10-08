@@ -9,11 +9,9 @@ interface Row extends TestSignVerify.Row {
   curve: EcCurve;
 }
 
-const TABLE = TestSignVerify.TABLE.flatMap((row) => [
-  Object.assign({ curve: "P-256" }, row),
-  Object.assign({ curve: "P-384" }, row),
-  Object.assign({ curve: "P-521" }, row),
-]) as Row[];
+const TABLE = TestSignVerify.TABLE.flatMap((row) =>
+  ["P-256", "P-384", "P-521"].map((curve) => ({ ...row, curve })),
+) as Row[];
 
 test.each(TABLE)("%p", async ({ cls, curve }) => {
   const keyChain = KeyChain.createTemp();

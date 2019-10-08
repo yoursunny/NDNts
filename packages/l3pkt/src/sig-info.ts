@@ -59,7 +59,7 @@ export class SigInfo {
         this.keyLocator = arg;
       } else if (arg instanceof SigInfo) {
         Object.assign(this, arg);
-        this[Extensible.TAG] = Object.assign({}, arg[Extensible.TAG]);
+        this[Extensible.TAG] = { ...arg[Extensible.TAG] };
       } else {
         throw new Error("unknown SigInfo constructor argument");
       }

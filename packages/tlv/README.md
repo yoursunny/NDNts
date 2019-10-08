@@ -93,11 +93,12 @@ class Adjacency {
 }
 
 // Declare constants for TLV-TYPE numbers.
-const TT = Object.assign({
+const TT = {
+  ...nameTT,
   Adjacency: 0x84,
   Cost: 0x8C,
   Uri: 0x8D,
-}, nameTT);
+};
 
 // Create the decoder.
 const EVD = new EvDecoder<Adjacency>("Adjacency", TT.Adjacency)

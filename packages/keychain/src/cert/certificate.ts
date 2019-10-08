@@ -71,7 +71,7 @@ export namespace Certificate {
     const kn = KeyName.from(pub.name);
     const cn = new CertificateName(kn.subjectName, kn.keyId, issuerId, Version.create(Date.now()));
     const publicKey = await pub.exportAsSpki();
-    const opt: BuildOptions = Object.assign({}, options, { name: cn, publicKey, signer: pvt });
+    const opt: BuildOptions = {...options, name: cn, publicKey, signer: pvt };
     return await build(opt);
   }
 
@@ -86,8 +86,7 @@ export namespace Certificate {
     if (!pvtName.equals(pubName)) {
       throw new Error("key pair mismatch");
     }
-    const opt: IssueOptions = Object.assign({}, options,
-                              { issuerId: SELF_ISSUER, issuerPrivateKey: options.privateKey });
+    const opt: IssueOptions = { ...options, issuerId: SELF_ISSUER, issuerPrivateKey: options.privateKey };
     return await issue(opt);
   }
 }

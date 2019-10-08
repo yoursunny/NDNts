@@ -74,7 +74,7 @@ export class EvDecoder<T> {
     if (cb instanceof EvDecoder) {
       cb = nest(cb);
     }
-    this.rules[tt] = Object.assign({ cb, order: this.nextOrder, repeat: false } as Rule<T>, options);
+    this.rules[tt] = { cb, order: this.nextOrder, repeat: false, ...options};
     this.nextOrder += AUTO_ORDER_SKIP;
     return this;
   }
