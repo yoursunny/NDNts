@@ -33,6 +33,6 @@
   },
   "devDependencies": {
     "@ndn/l3pkt": "workspace:*",
-    "remote-controlled-promise": "^0.0.4"
+    "remote-controlled-promise": "^0.0.5"
   }
 }
