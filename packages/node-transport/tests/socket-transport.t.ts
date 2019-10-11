@@ -1,4 +1,4 @@
-import * as TestTransport from "@ndn/llface/test-fixture/transport";
+import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import * as net from "net";
 import * as rPromise from "remote-controlled-promise";
 

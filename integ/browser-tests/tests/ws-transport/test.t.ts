@@ -1,4 +1,4 @@
-import * as TestTransport from "@ndn/llface/test-fixture/transport";
+import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import { WsServerPair } from "@ndn/ws-transport/test-fixture";
 
 import { getPageUri, pageInvoke } from "../../test-fixture";

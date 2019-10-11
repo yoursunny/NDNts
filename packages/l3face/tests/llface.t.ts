@@ -2,15 +2,15 @@ import { Interest, LLSign, SigInfo, SigType } from "@ndn/l3pkt";
 import { ObjectReadableMock, ObjectWritableMock } from "stream-mock";
 import { consume } from "streaming-iterables";
 
-import { DatagramTransport, LLFace } from "../src";
+import { DatagramTransport, L3Face } from "../src";
 import { makeDuplex } from "../test-fixture/pair";
 
 test("RX error on unknown TLV-TYPE", async () => {
   const rxRemote = new ObjectReadableMock([
     Buffer.from([0xF0, 0x00]),
   ]);
-  const face = new LLFace(new DatagramTransport(makeDuplex(rxRemote, undefined)));
-  const rxErrorP = new Promise<LLFace.RxError>((r) => face.once("rxerror", (err) => r(err)));
+  const face = new L3Face(new DatagramTransport(makeDuplex(rxRemote, undefined)));
+  const rxErrorP = new Promise<L3Face.RxError>((r) => face.once("rxerror", (err) => r(err)));
 
   await consume(face.rx);
   await expect(rxErrorP).resolves.toThrow(/F000/);
@@ -18,7 +18,7 @@ test("RX error on unknown TLV-TYPE", async () => {
 
 test("TX signing", async () => {
   const txRemote = new ObjectWritableMock();
-  const face = new LLFace(new DatagramTransport(makeDuplex(undefined, txRemote)));
+  const face = new L3Face(new DatagramTransport(makeDuplex(undefined, txRemote)));
 
   const signFn = jest.fn(async (input: Uint8Array) => {
     return new Uint8Array([0xA0, 0xA1, 0xA2, 0xA3]);
@@ -40,8 +40,8 @@ test("TX signing", async () => {
 
 test("TX signing error", async () => {
   const txRemote = new ObjectWritableMock();
-  const face = new LLFace(new DatagramTransport(makeDuplex(undefined, txRemote)));
-  const txErrorP = new Promise<LLFace.TxError>((r) => face.once("txerror", r));
+  const face = new L3Face(new DatagramTransport(makeDuplex(undefined, txRemote)));
+  const txErrorP = new Promise<L3Face.TxError>((r) => face.once("txerror", r));
 
   const signFn = jest.fn(async (input: Uint8Array) => {
     throw new Error("mock-signing-error");

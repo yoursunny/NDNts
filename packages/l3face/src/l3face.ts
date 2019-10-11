@@ -12,15 +12,15 @@ type Packet = Interest | Data;
 
 interface Events {
   /** Emitted upon RX decoding error. */
-  rxerror: LLFace.RxError;
+  rxerror: L3Face.RxError;
   /** Emitted upon TX preparation error. */
-  txerror: LLFace.TxError;
+  txerror: L3Face.TxError;
 }
 
 type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
-/** Low-level face for sending and receiving L3 packets. */
-export class LLFace extends (EventEmitter as new() => Emitter) {
+/** Network layer face for sending and receiving L3 packets. */
+export class L3Face extends (EventEmitter as new() => Emitter) {
   public readonly lp = new LpService();
   public readonly rx: AsyncIterable<Packet>;
 
@@ -45,7 +45,7 @@ export class LLFace extends (EventEmitter as new() => Emitter) {
     try {
       await packet[LLSign.PROCESS]();
     } catch (err) {
-      this.emit("txerror", new LLFace.TxError(err, packet));
+      this.emit("txerror", new L3Face.TxError(err, packet));
       return undefined;
     }
     return Encoder.encode(packet);
@@ -62,13 +62,13 @@ export class LLFace extends (EventEmitter as new() => Emitter) {
           throw new Error(`TLV-TYPE ${printTT(type)} cannot appear at top level`);
       }
     } catch (err) {
-      this.emit("rxerror", new LLFace.RxError(err, tlv));
+      this.emit("rxerror", new L3Face.RxError(err, tlv));
     }
     return undefined;
   }
 }
 
-export namespace LLFace {
+export namespace L3Face {
   export class RxError extends Error {
     constructor(inner: Error, public packet: Uint8Array) {
       super(`${inner.message} ${toHex(packet)}`);

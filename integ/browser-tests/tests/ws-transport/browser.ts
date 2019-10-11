@@ -1,4 +1,4 @@
-import { execute as testTransport } from "@ndn/llface/test-fixture/transport";
+import { execute as testTransport } from "@ndn/l3face/test-fixture/transport";
 import { WsTransport } from "@ndn/ws-transport";
 
 import "./api";

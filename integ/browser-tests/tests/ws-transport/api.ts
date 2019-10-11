@@ -1,4 +1,4 @@
-import { TestRecord } from "@ndn/llface/test-fixture/transport";
+import { TestRecord } from "@ndn/l3face/test-fixture/transport";
 
 declare global {
   interface Window {

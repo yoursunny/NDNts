@@ -1,11 +1,11 @@
-# @ndn/llface
+# @ndn/l3face
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-This package implements low-level face abstraction and transport base types.
+This package implements network layer face and transport base types.
 
 ```ts
-import { LLFace, StreamTransport } from "@ndn/llface";
+import { L3Face, StreamTransport } from "@ndn/l3face";
 
 // other imports for examples
 import { Data, Interest, LLSign, SigInfo, SigType } from "@ndn/l3pkt";
@@ -15,11 +15,11 @@ import { PassThrough } from "readable-stream";
 (async () => {
 ```
 
-## LLFace: Low-Level Face
+## L3Face: Network Layer Face
 
-The **LLFace**, or low-level face, allows sending and receiving layer-3 packets on a stream or datagram transport.
-LLFace does not provide Interest-Data matching logic, timeout scheduler, etc.
-It is more like a forwarder's face abstraction.
+The **L3Face** allows sending and receiving layer-3 packets on a stream or datagram transport.
+L3Face does not provide Interest-Data matching logic, timeout scheduler, etc.
+It is more like a forwarder's face.
 
 ```ts
 // Give me a moment to get some plumbing ready.
@@ -32,8 +32,8 @@ connAB.on("end", close);
 connBA.on("end", close);
 
 // I'm ready. Let's create two faces connected to each other.
-const faceA = new LLFace(new StreamTransport(endA));
-const faceB = new LLFace(new StreamTransport(endB));
+const faceA = new L3Face(new StreamTransport(endA));
+const faceB = new L3Face(new StreamTransport(endB));
 
 await Promise.all([
   // TX side is a function that accepts an AsyncIterable.

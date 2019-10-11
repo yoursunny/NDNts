@@ -26,7 +26,7 @@
     "types": "lib/index.d.ts"
   },
   "dependencies": {
-    "@ndn/llface": "workspace:*",
+    "@ndn/l3face": "workspace:*",
     "@types/ws": "^6.0.3",
     "tslib": "*",
     "websocket-stream": "^5.5.0"

@@ -8,8 +8,8 @@ This package implements TCP/Unix socket transport for Node.js environment.
 import { SocketTransport } from "@ndn/node-transport";
 
 // other imports for examples
+import { L3Face } from "@ndn/l3face";
 import { Data, Interest } from "@ndn/l3pkt";
-import { LLFace } from "@ndn/llface";
 import * as rPromise from "remote-controlled-promise";
 (async () => {
 if (process.env.CI) { return; }
@@ -25,7 +25,7 @@ The **SocketTransport** communicates with a socket from Node.js ["net" package](
 const transport = await SocketTransport.connect({ host: "hobo.cs.arizona.edu", port: 6363 });
 
 // Create a low-level face using this transport.
-const face = new LLFace(transport);
+const face = new L3Face(transport);
 
 // We want to know if something goes wrong.
 face.on("rxerror", console.warn);

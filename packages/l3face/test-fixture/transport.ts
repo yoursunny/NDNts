@@ -1,6 +1,6 @@
 import { Data, Interest } from "@ndn/l3pkt";
 
-import { LLFace, Transport } from "../src";
+import { L3Face, Transport } from "../src";
 
 const COUNT = 50;
 
@@ -10,8 +10,8 @@ export interface TestRecord {
 }
 
 export async function execute(transportA: Transport, transportB: Transport): Promise<TestRecord> {
-  const faceA = new LLFace(transportA);
-  const faceB = new LLFace(transportB);
+  const faceA = new L3Face(transportA);
+  const faceB = new L3Face(transportB);
 
   const record: TestRecord = {
     namesA: [],

@@ -1,4 +1,4 @@
-import { DatagramTransport } from "@ndn/llface";
+import { DatagramTransport } from "@ndn/l3face";
 import WebSocketStream from "websocket-stream";
 
 /** WebSocket transport. */

@@ -1,4 +1,4 @@
 export * from "./datagram-transport";
-export * from "./llface";
+export * from "./l3face";
 export * from "./stream-transport";
 export * from "./transport";

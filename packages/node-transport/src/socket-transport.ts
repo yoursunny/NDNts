@@ -1,4 +1,4 @@
-import { StreamTransport } from "@ndn/llface";
+import { StreamTransport } from "@ndn/l3face";
 import * as net from "net";
 
 /** Stream-oriented socket transport. */

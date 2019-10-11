@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/llface",
+  "name": "@ndn/l3face",
   "version": "0.0.0",
-  "description": "NDNts: Low-Level Face",
+  "description": "NDNts: Network Layer Face",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -19,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/llface"
+    "directory": "packages/l3face"
   },
   "publishConfig": {
     "main": "lib/index.js",

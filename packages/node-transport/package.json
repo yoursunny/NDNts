@@ -26,7 +26,7 @@
     "types": "lib/index.d.ts"
   },
   "dependencies": {
-    "@ndn/llface": "workspace:*",
+    "@ndn/l3face": "workspace:*",
     "tslib": "*"
   },
   "devDependencies": {
