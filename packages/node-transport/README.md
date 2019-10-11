@@ -10,7 +10,6 @@ import { SocketTransport } from "@ndn/node-transport";
 // other imports for examples
 import { L3Face } from "@ndn/l3face";
 import { Data, Interest } from "@ndn/l3pkt";
-import * as rPromise from "remote-controlled-promise";
 (async () => {
 if (process.env.CI) { return; }
 ```
@@ -21,42 +20,45 @@ The **SocketTransport** communicates with a socket from Node.js ["net" package](
 
 ```ts
 // Create a SocketTransport connected to a router.
-// It accepts the same 'options' as net.createConnection(), so it supports both TCP and Unix.
+// It accepts the same options as net.createConnection(), so it supports both TCP and Unix.
 const transport = await SocketTransport.connect({ host: "hobo.cs.arizona.edu", port: 6363 });
 
-// Create a low-level face using this transport.
+// Create a network layer face using this transport.
 const face = new L3Face(transport);
 
 // We want to know if something goes wrong.
 face.on("rxerror", console.warn);
+face.on("txerror", console.warn);
 
-// Send five Interests.
-let count = 5;
-let i = Math.floor(Math.random() * 99999999);
-const interval = setInterval(() => {
-  const interest = new Interest(`/ndn/edu/arizona/ping/NDNts/${i++}`);
-  console.log("< I", interest.name.toString());
-  face.sendInterest(interest);
-  if (--count <= 0) {
-    clearInterval(interval);
-  }
-}, 50);
+await Promise.all([
+  face.tx({ async *[Symbol.asyncIterator]() {
+    // Send five Interests.
+    let seq = Math.floor(Math.random() * 99999999);
+    for (let i = 0; i < 5; ++i) {
+      await new Promise((r) => setTimeout(r, 50));
+      const interest = new Interest(`/ndn/edu/arizona/ping/NDNts/${seq++}`);
+      console.log("< I", interest.name.toString());
+      yield interest;
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  }}),
+  (async () => {
+    let nData = 0;
+    for await (const pkt of face.rx) {
+      if (!(pkt instanceof Data)) {
+        continue;
+      }
+      // Print incoming Data name.
+      const data = pkt as Data;
+      console.log("> D", data.name.toString());
+      if (++nData >= 5) {
+        return;
+      }
+    }
+  })(),
+]);
 
-const done = rPromise.create<void>();
-setTimeout(() => done.resolve(undefined), 4000).unref();
-
-let nData = 0;
-// Print incoming Data names.
-face.on("data", (data: Data) => {
-  console.log("> D", data.name.toString());
-  if (++nData >= 5) {
-    done.resolve(undefined);
-  }
-});
-await done.promise;
-
-// Close the face when we are done. This closes the transport.
-face.close();
+// Face and transport are automatically closed when TX iterable is exhausted.
 ```
 
 ```ts
