@@ -1,64 +1,44 @@
 import { Decoder } from "@ndn/tlv";
-import { pipeline, Transform } from "readable-stream";
+import { fromStream, pipeline } from "streaming-iterables";
 
-import { BaseTransport } from "./base-transport";
+import { SocketTransportBase } from "./socket-transport-base";
 import { Transport } from "./transport";
 
-class StreamRx extends Transform {
-  private buf: Buffer = Buffer.alloc(0);
-
-  constructor() {
-    super({
-      readableObjectMode: true,
-      writableObjectMode: false,
-    });
-  }
-
-  public _transform(chunk: Buffer, encoding, callback: (error?: Error) => any): void {
-    if (this.buf.length > 0) {
-      this.buf = Buffer.concat([this.buf, chunk], this.buf.length + chunk.length);
-    } else {
-      this.buf = chunk;
-    }
-    const decoder = new Decoder(this.buf);
-    let consumed = 0;
-    while (true) {
-      let tlv: Decoder.Tlv;
-      try {
-        tlv = decoder.read();
-      } catch (ex) {
-        break;
-      }
-      this.push(tlv);
-      consumed += tlv.size;
-    }
-    if (consumed > 0) {
-      this.buf = this.buf.subarray(consumed);
-    }
-    callback();
-  }
-
-  public _flush(callback: (error?: Error) => any): void {
-    if (this.buf.length > 0) {
-      callback(new Error("incomplete TLV in buffer"));
-      return;
-    }
-    callback();
-  }
-}
-
 /** Stream-oriented transport. */
-export class StreamTransport extends BaseTransport implements Transport {
-  public rx = new StreamRx();
-  public tx: NodeJS.WritableStream;
+export class StreamTransport extends SocketTransportBase implements Transport {
+  public readonly rx: AsyncIterable<Decoder.Tlv>;
 
   constructor(conn: NodeJS.ReadWriteStream) {
-    super();
-    pipeline(conn, this.rx, this.handlePipelineError);
-    this.tx = conn;
+    super(conn);
+    this.rx = pipeline(
+      () => fromStream<Buffer>(conn),
+      this.decode,
+    );
   }
 
-  public async close(): Promise<void> {
-    return this.closeImpl(() => { this.tx.end(); });
+  private async *decode(iterable: AsyncIterable<Buffer>): AsyncIterable<Decoder.Tlv> {
+    let leftover = Buffer.alloc(0);
+    for await (const chunk of iterable) {
+      if (leftover.length > 0) {
+        leftover = Buffer.concat([leftover, chunk], leftover.length + chunk.length);
+      } else {
+        leftover = chunk;
+      }
+      const decoder = new Decoder(leftover);
+      let consumed = 0;
+      while (true) {
+        let tlv: Decoder.Tlv;
+        try {
+          tlv = decoder.read();
+        } catch (ex) {
+          break;
+        }
+        yield tlv;
+        consumed += tlv.size;
+      }
+      if (consumed > 0) {
+        leftover = leftover.subarray(consumed);
+      }
+    }
   }
 }

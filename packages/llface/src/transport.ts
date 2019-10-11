@@ -1,25 +1,20 @@
-import { Emitter } from "./transport-events";
+import { Decoder } from "@ndn/tlv";
 
 /**
  * Low-level transport.
  *
  * The transport understands NDN TLV structures, but does not otherwise concern with packet format.
  */
-export interface Transport extends Emitter {
+export interface Transport {
   /**
-   * RX stream for incoming packets.
-   *
-   * Readable side of this stream operates in object mode. Each object is a Decoder.Tlv.
+   * RX iterable for incoming packets.
    */
-  readonly rx: NodeJS.ReadableStream;
+  readonly rx: AsyncIterable<Decoder.Tlv>;
 
   /**
-   * TX stream for outgoing packets.
+   * TX function for outgoing packets.
    *
-   * Writable side of this stream operates in object mode. Each object is an Uint8Array.
+   * @returns Promise that resolves when iterable is exhausted, and rejects upon error.
    */
-  readonly tx: NodeJS.WritableStream;
-
-  /** Request to close the transport. */
-  close(): Promise<void>;
+  readonly tx: (iterable: AsyncIterable<Uint8Array>) => Promise<void>;
 }

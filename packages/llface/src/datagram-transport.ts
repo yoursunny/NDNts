@@ -1,37 +1,29 @@
 import { Decoder } from "@ndn/tlv";
-import { pipeline, Transform } from "readable-stream";
+import { fromStream, pipeline } from "streaming-iterables";
 
-import { BaseTransport } from "./base-transport";
+import { mapFilter } from "./internal";
+import { SocketTransportBase } from "./socket-transport-base";
 import { Transport } from "./transport";
 
-class DatagramRx extends Transform {
-  constructor() {
-    super({ objectMode: true });
+/** Datagram-oriented transport. */
+export class DatagramTransport extends SocketTransportBase implements Transport {
+  public readonly rx: AsyncIterable<Decoder.Tlv>;
+
+  constructor(conn: NodeJS.ReadWriteStream) {
+    super(conn);
+    this.rx = pipeline(
+      () => fromStream<Uint8Array>(conn),
+      mapFilter(this.decode),
+    );
   }
 
-  public _transform(chunk: Buffer, encoding, callback: (error?: Error) => any): void {
-    const decoder = new Decoder(chunk);
+  private decode = (packet: Uint8Array): Decoder.Tlv|undefined => {
+    const decoder = new Decoder(packet);
     try {
-      this.push(decoder.read());
+      return decoder.read();
     } catch {
       // ignore error
     }
-    callback();
-  }
-}
-
-/** Datagram-oriented transport. */
-export class DatagramTransport extends BaseTransport implements Transport {
-  public rx = new DatagramRx();
-  public tx: NodeJS.WritableStream;
-
-  constructor(conn: NodeJS.ReadWriteStream) {
-    super();
-    pipeline(conn, this.rx, this.handlePipelineError);
-    this.tx = conn;
-  }
-
-  public async close(): Promise<void> {
-    return this.closeImpl(() => { this.tx.end(); });
+    return undefined;
   }
 }

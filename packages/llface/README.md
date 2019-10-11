@@ -12,7 +12,6 @@ import { Data, Interest, LLSign, SigInfo, SigType } from "@ndn/l3pkt";
 import { strict as assert } from "assert";
 import duplexify from "duplexify";
 import { PassThrough } from "readable-stream";
-import * as rPromise from "remote-controlled-promise";
 (async () => {
 ```
 
@@ -28,42 +27,52 @@ const connAB = new PassThrough();
 const connBA = new PassThrough();
 const endA = duplexify(connAB, connBA);
 const endB = duplexify(connBA, connAB);
+const close = () => setTimeout(() => { endA.destroy(); endB.destroy(); }, 100);
+connAB.on("end", close);
+connBA.on("end", close);
 
 // I'm ready. Let's create two faces connected to each other.
 const faceA = new LLFace(new StreamTransport(endA));
 const faceB = new LLFace(new StreamTransport(endB));
 
-process.nextTick(() => {
-  const interest = new Interest("/A", Interest.CanBePrefix);
+await Promise.all([
+  // TX side is a function that accepts an AsyncIterable.
+  // Here we send an Interest and then close the face.
+  faceA.tx({ async *[Symbol.asyncIterator]() {
+    const interest = new Interest("/A", Interest.CanBePrefix);
+    yield interest;
+  }}),
 
-  // Send an Interest using sendInterest() method.
-  faceA.sendInterest(interest);
-});
+  // RX side is an AsyncIterable that yields either Interest or Data.
+  // Here we assume it's Interest.
+  // We process the Interest, and then yield the Data to the TX side.
+  faceB.tx({ async *[Symbol.asyncIterator]() {
+    for await (const pkt of faceB.rx) {
+      const interest = pkt as Interest;
+      assert.equal(interest.name.toString(), "/A");
+      assert.equal(interest.canBePrefix, true);
+      assert.equal(interest.mustBeFresh, false);
 
-// Receive the Interest via 'interest' event.
-faceB.on("interest", (interest: Interest) => {
-  assert.equal(interest.name.toString(), "/A");
-  assert.equal(interest.canBePrefix, true);
-  assert.equal(interest.mustBeFresh, false);
+      const data = new Data("/A/B", new Uint8Array([0xB0, 0xB1, 0xB2, 0xB3]));
+      data.sigInfo = new SigInfo(SigType.Sha256);
+      data[LLSign.PENDING] = async () => new Uint8Array([0xF0, 0xF1]);
 
-  const data = new Data(interest.name.append("B"), new Uint8Array([0xB0, 0xB1, 0xB2, 0xB3]));
-  data.sigInfo = new SigInfo(SigType.Sha256);
-  data[LLSign.PENDING] = async () => new Uint8Array([0xF0, 0xF1]);
+      // Send a Data using sendData() method.
+      // Signing is processed internally.
+      yield data;
+    }
+  }}),
 
-  // Send a Data using sendData() method.
-  // Signing is processed internally.
-  faceB.sendData(data);
-});
-
-// Receive the Data via 'data' event.
-const dataArrival = rPromise.create<void>();
-faceA.on("data", (data: Data) => {
-  assert.equal(data.name.toString(), "/A/B");
-  assert.equal(data.content.length, 4);
-  assert.equal(data.sigValue.length, 2);
-  dataArrival.resolve(undefined);
-});
-await dataArrival.promise;
+  // Receive the Data.
+  (async () => {
+    for await (const pkt of faceA.rx) {
+      const data = pkt as Data;
+      assert.equal(data.name.toString(), "/A/B");
+      assert.equal(data.content.length, 4);
+      assert.equal(data.sigValue.length, 2);
+    }
+  })(),
+]);
 ```
 
 ```ts

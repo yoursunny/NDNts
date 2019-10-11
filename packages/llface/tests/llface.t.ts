@@ -1,27 +1,24 @@
 import { Interest, LLSign, SigInfo, SigType } from "@ndn/l3pkt";
-import duplexify from "duplexify";
-import * as rPromise from "remote-controlled-promise";
 import { ObjectReadableMock, ObjectWritableMock } from "stream-mock";
+import { consume } from "streaming-iterables";
 
 import { DatagramTransport, LLFace } from "../src";
+import { makeDuplex } from "../test-fixture/pair";
 
 test("RX error on unknown TLV-TYPE", async () => {
   const rxRemote = new ObjectReadableMock([
     Buffer.from([0xF0, 0x00]),
   ]);
-  const face = new LLFace(new DatagramTransport(duplexify.obj(new ObjectWritableMock(), rxRemote)));
+  const face = new LLFace(new DatagramTransport(makeDuplex(rxRemote, undefined)));
+  const rxErrorP = new Promise<LLFace.RxError>((r) => face.once("rxerror", (err) => r(err)));
 
-  const rxErrorP = rPromise.create<LLFace.RxError>();
-  face.once("rxerror", (error) => rxErrorP.resolve(error));
-  const rxError = await rxErrorP.promise;
-  expect(rxError.toString()).toMatch(/F000/);
-
-  await expect(face.close()).resolves.toBeUndefined();
+  await consume(face.rx);
+  await expect(rxErrorP).resolves.toThrow(/F000/);
 });
 
 test("TX signing", async () => {
   const txRemote = new ObjectWritableMock();
-  const face = new LLFace(new DatagramTransport(duplexify.obj(txRemote, new ObjectReadableMock([]))));
+  const face = new LLFace(new DatagramTransport(makeDuplex(undefined, txRemote)));
 
   const signFn = jest.fn(async (input: Uint8Array) => {
     return new Uint8Array([0xA0, 0xA1, 0xA2, 0xA3]);
@@ -29,7 +26,11 @@ test("TX signing", async () => {
   const interest = new Interest("/A");
   interest.sigInfo = new SigInfo(SigType.Sha256);
   interest[LLSign.PENDING] = signFn;
-  face.sendInterest(interest);
+  await face.tx({
+    async *[Symbol.asyncIterator]() {
+      yield interest;
+    },
+  });
 
   await new Promise((r) => setTimeout(r, 5));
   expect(signFn).toHaveBeenCalledTimes(1);
@@ -39,9 +40,8 @@ test("TX signing", async () => {
 
 test("TX signing error", async () => {
   const txRemote = new ObjectWritableMock();
-  const face = new LLFace(new DatagramTransport(duplexify.obj(txRemote, new ObjectReadableMock([]))));
-  const txErrorP = rPromise.create<LLFace.TxError>();
-  face.once("txerror", (error) => txErrorP.resolve(error));
+  const face = new LLFace(new DatagramTransport(makeDuplex(undefined, txRemote)));
+  const txErrorP = new Promise<LLFace.TxError>((r) => face.once("txerror", r));
 
   const signFn = jest.fn(async (input: Uint8Array) => {
     throw new Error("mock-signing-error");
@@ -49,12 +49,16 @@ test("TX signing error", async () => {
   const interest = new Interest("/A");
   interest.sigInfo = new SigInfo(SigType.Sha256);
   interest[LLSign.PENDING] = signFn;
-  face.sendInterest(interest);
+  await face.tx({
+    async *[Symbol.asyncIterator]() {
+      yield interest;
+    },
+  });
 
   await new Promise((r) => setTimeout(r, 5));
   expect(signFn).toHaveBeenCalledTimes(1);
   expect(txRemote.data).toHaveLength(0);
 
-  const txError = await txErrorP.promise;
+  const txError = await txErrorP;
   expect(txError.toString()).toMatch(/\/A/);
 });

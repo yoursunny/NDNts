@@ -1,22 +1,16 @@
 import { Data, Interest, LLSign, TT } from "@ndn/l3pkt";
-import { LpRx } from "@ndn/lp";
+import { LpService } from "@ndn/lp";
 import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
 import { EventEmitter } from "events";
-import { pipeline, Writable } from "readable-stream";
-import { StrictEventEmitter } from "strict-event-emitter-types";
+import { pipeline } from "streaming-iterables";
+import StrictEventEmitter from "strict-event-emitter-types";
 
+import { mapFilter } from "./internal";
 import { Transport } from "./transport";
 
-/** Packet types that can be transmitted. */
-type TxPacket = Interest | Data;
+type Packet = Interest | Data;
 
 interface Events {
-  /** Emitted when an Interest arrives. */
-  interest: Interest;
-  /** Emitted when a Data arrives. */
-  data: Data;
-  /** Emitted upon end of RX stream. */
-  end: Error|undefined;
   /** Emitted upon RX decoding error. */
   rxerror: LLFace.RxError;
   /** Emitted upon TX preparation error. */
@@ -27,58 +21,50 @@ type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
 /** Low-level face for sending and receiving L3 packets. */
 export class LLFace extends (EventEmitter as new() => Emitter) {
+  public readonly lp = new LpService();
+  public readonly rx: AsyncIterable<Packet>;
+
   constructor(public readonly transport: Transport) {
     super();
-    pipeline(
-      transport.rx,
-      new LpRx(),
-      new Writable({
-        objectMode: true,
-        write: this.rxWrite,
-      }),
-      (error) => this.emit("end", error || undefined),
+    this.rx = pipeline(
+      () => transport.rx,
+      this.lp.rx,
+      mapFilter(this.decode),
     );
   }
 
-  /** Transmit an Interest. */
-  public sendInterest(interest: Interest) {
-    this.txWrite(interest);
+  public async tx(iterable: AsyncIterable<Packet>) {
+    await pipeline(
+      () => iterable,
+      mapFilter(this.encode),
+      this.transport.tx,
+    );
   }
 
-  /** Transmit a Data. */
-  public sendData(data: Data) {
-    this.txWrite(data);
+  private encode = async (packet: Packet): Promise<Uint8Array|undefined> => {
+    try {
+      await packet[LLSign.PROCESS]();
+    } catch (err) {
+      this.emit("txerror", new LLFace.TxError(err, packet));
+      return undefined;
+    }
+    return Encoder.encode(packet);
   }
 
-  public close(): Promise<void> {
-    return this.transport.close();
-  }
-
-  private rxWrite = ({ type, decoder, tlv }: Decoder.Tlv, encoding,
-                     callback: (error?: Error) => any): void => {
+  private decode = ({ type, decoder, tlv }: Decoder.Tlv): Packet|undefined => {
     try {
       switch (type) {
         case TT.Interest:
-          const interest = decoder.decode(Interest);
-          this.emit("interest", interest);
-          break;
+          return decoder.decode(Interest);
         case TT.Data:
-          const data = decoder.decode(Data);
-          this.emit("data", data);
-          break;
+          return decoder.decode(Data);
         default:
           throw new Error(`TLV-TYPE ${printTT(type)} cannot appear at top level`);
       }
     } catch (err) {
       this.emit("rxerror", new LLFace.RxError(err, tlv));
     }
-    callback();
-  }
-
-  private txWrite(packet: TxPacket) {
-    packet[LLSign.PROCESS]()
-    .then(() => this.transport.tx.write(Encoder.encode(packet)),
-          (error) => this.emit("txerror", new LLFace.TxError(error, packet)));
+    return undefined;
   }
 }
 
@@ -90,7 +76,7 @@ export namespace LLFace {
   }
 
   export class TxError extends Error {
-    constructor(inner: Error, public packet: TxPacket) {
+    constructor(inner: Error, public packet: Packet) {
       super(`${inner.message} ${packet.name.toString()}`);
     }
   }

@@ -1,5 +1,4 @@
 import { Data, Interest } from "@ndn/l3pkt";
-import * as rPromise from "remote-controlled-promise";
 
 import { LLFace, Transport } from "../src";
 
@@ -19,29 +18,32 @@ export async function execute(transportA: Transport, transportB: Transport): Pro
     namesB: [],
   };
 
-  process.nextTick(async () => {
-    for (let i = 0; i < COUNT; ++i) {
-      await new Promise((r) => setTimeout(r, 1));
-      faceA.sendInterest(new Interest(`/A/${i}`));
-    }
-    await new Promise((r) => setTimeout(r, 80));
-    faceA.close();
-  });
-
-  faceB.on("interest", (interest) => {
-    const name = interest.name.toString();
-    record.namesB.push(name);
-    faceB.sendData(new Data(interest.name, new Uint8Array([0xC0, 0xC1])));
-  });
-
-  faceA.on("data", (data) => {
-    const name = data.name.toString();
-    record.namesA.push(name);
-  });
-
-  const endP = rPromise.create();
-  faceB.on("end", () => endP.resolve(undefined));
-  await endP.promise;
+  await Promise.all([
+    faceA.tx({ async *[Symbol.asyncIterator]() {
+      for (let i = 0; i < COUNT; ++i) {
+        await new Promise((r) => setTimeout(r, 1));
+        yield new Interest(`/A/${i}`);
+      }
+      await new Promise((r) => setTimeout(r, 80));
+    }}),
+    faceB.tx({ async *[Symbol.asyncIterator]() {
+      for await (const pkt of faceB.rx) {
+        if (pkt instanceof Interest) {
+          const name = pkt.name.toString();
+          record.namesB.push(name);
+          yield new Data(pkt.name, new Uint8Array([0xC0, 0xC1]));
+        }
+      }
+    }}),
+    (async () => {
+      for await (const pkt of faceA.rx) {
+        if (pkt instanceof Data) {
+          const name = pkt.name.toString();
+          record.namesA.push(name);
+        }
+      }
+    })(),
+  ]);
 
   return record;
 }

@@ -29,15 +29,15 @@
     "@ndn/l3pkt": "workspace:*",
     "@ndn/lp": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@types/readable-stream": "^2.3.5",
-    "readable-stream": "^3.4.0",
-    "remote-controlled-promise": "^0.0.5",
+    "streaming-iterables": "^4.1.0",
     "strict-event-emitter-types": "^2.0.0",
     "tslib": "*"
   },
   "devDependencies": {
     "@types/duplexify": "^3.6.0",
+    "@types/readable-stream": "^2.3.5",
     "duplexify": "^4.1.1",
+    "readable-stream": "^3.4.0",
     "stream-mock": "^2.0.5"
   }
 }

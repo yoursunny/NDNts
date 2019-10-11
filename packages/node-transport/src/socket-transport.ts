@@ -3,7 +3,6 @@ import * as net from "net";
 
 /** Stream-oriented socket transport. */
 export class SocketTransport extends StreamTransport {
-
   public static async connect(options: net.NetConnectOpts): Promise<SocketTransport> {
     return new Promise<SocketTransport>((resolve, reject) => {
       const sock = net.connect(options);
@@ -14,6 +13,7 @@ export class SocketTransport extends StreamTransport {
       });
     });
   }
+
   constructor(sock: net.Socket) {
     super(sock);
   }
