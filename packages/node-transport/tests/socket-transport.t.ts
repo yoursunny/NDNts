@@ -1,12 +1,12 @@
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import * as net from "net";
-import * as rPromise from "remote-controlled-promise";
+import pDefer from "p-defer";
 
 import { SocketTransport } from "../src";
 
 test("TCP", async () => {
-  const transportAp = rPromise.create<SocketTransport>();
-  const transportBp = rPromise.create<SocketTransport>();
+  const transportAp = pDefer<SocketTransport>();
+  const transportBp = pDefer<SocketTransport>();
 
   const server = net.createServer((connA) => {
     server.close();

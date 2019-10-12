@@ -1,6 +1,6 @@
 import * as http from "http";
 import * as net from "net";
-import * as rPromise from "remote-controlled-promise";
+import pDefer from "p-defer";
 import WebSocketStream from "websocket-stream";
 
 export class WsServerPair {
@@ -8,7 +8,7 @@ export class WsServerPair {
   private wss: WebSocketStream.Server;
   private streamA?: WebSocketStream.WebSocketDuplex;
   private streamB?: WebSocketStream.WebSocketDuplex;
-  private wait_ = rPromise.create();
+  private wait_ = pDefer();
 
   constructor() {
     this.httpServer = http.createServer();
@@ -21,7 +21,7 @@ export class WsServerPair {
           this.streamB = stream;
           this.streamA.pipe(this.streamB);
           this.streamB.pipe(this.streamA);
-          this.wait_.resolve(undefined);
+          this.wait_.resolve();
         } else {
           this.streamA = stream;
         }

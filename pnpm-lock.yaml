@@ -233,11 +233,11 @@ importers:
       tslib: 1.10.0
     devDependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
-      remote-controlled-promise: 0.0.5
+      p-defer: 3.0.0
     specifiers:
       '@ndn/l3face': 'workspace:*'
       '@ndn/l3pkt': 'workspace:*'
-      remote-controlled-promise: ^0.0.5
+      p-defer: ^3.0.0
       tslib: '*'
   packages/tlv:
     dependencies:
@@ -252,12 +252,12 @@ importers:
       websocket-stream: 5.5.0
     devDependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
-      remote-controlled-promise: 0.0.5
+      p-defer: 3.0.0
     specifiers:
       '@ndn/l3face': 'workspace:*'
       '@ndn/l3pkt': 'workspace:*'
       '@types/ws': ^6.0.3
-      remote-controlled-promise: ^0.0.5
+      p-defer: ^3.0.0
       tslib: '*'
       websocket-stream: ^5.5.0
 lockfileVersion: 5.1
@@ -7122,6 +7122,12 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha1-n26xgvbJqozXQwBKfU+WsZaw+ww=
+  /p-defer/3.0.0:
+    dev: true
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-ugZxsxmtTln604yeYd29EGrNhazN2lywetzpKhfmQjW/VJmhpDmWbiX+h0zL8V91R0UXkhb3KtPmyq9PZw3aYw==
   /p-each-series/1.0.0:
     dependencies:
       p-reduce: 1.0.0
@@ -7921,15 +7927,6 @@ packages:
       node: '>= 0.10'
     resolution:
       integrity: sha1-VNvzd+UUQKypCkzSdGANP/LYiKk=
-  /remote-controlled-promise/0.0.5:
-    dependencies:
-      '@types/node': 12.7.12
-      tslib: 1.10.0
-    dev: true
-    engines:
-      node: '>= 8.9.0'
-    resolution:
-      integrity: sha512-svkUAnx9NVLipKIwacdV3fiA/pV57eotr5ml5ndnlVjUFtc+kpLChBKNUoznMfeMM7qzU5w060Nt2zGR4aHtlw==
   /remove-trailing-separator/1.1.0:
     dev: true
     resolution:
