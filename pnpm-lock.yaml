@@ -111,22 +111,20 @@ importers:
       '@ndn/l3pkt': 'link:../l3pkt'
       '@ndn/name': 'link:../name'
       hirestime: 3.2.1
-      minimalistic-assert: 1.0.1
       p-defer: 3.0.0
       p-fifo: 1.0.0
       streaming-iterables: 4.1.0
       tslib: 1.10.0
     devDependencies:
-      '@types/minimalistic-assert': 1.0.0
-      '@types/p-fifo': 'link:../../../types/p-fifo'
+      '@ndn/tlv': 'link:../tlv'
+      '@types/p-fifo': gist.github.com/b5c0b4de5155da604daf6cb7af8dd534/75e539bc19b3f4a0ec451931c57867496d514a4f
       tinyqueue: 2.0.3
     specifiers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/name': 'workspace:*'
-      '@types/minimalistic-assert': ^1.0.0
-      '@types/p-fifo': 'file:../../../types/p-fifo'
+      '@ndn/tlv': 'workspace:*'
+      '@types/p-fifo': 'gist:b5c0b4de5155da604daf6cb7af8dd534'
       hirestime: ^3.2.1
-      minimalistic-assert: ^1.0.1
       p-defer: ^3.0.0
       p-fifo: ^1.0.0
       streaming-iterables: ^4.1.0
@@ -9959,6 +9957,13 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==
+  gist.github.com/b5c0b4de5155da604daf6cb7af8dd534/75e539bc19b3f4a0ec451931c57867496d514a4f:
+    dev: true
+    name: '@types/p-fifo'
+    resolution:
+      commit: 75e539bc19b3f4a0ec451931c57867496d514a4f
+      repo: 'git+ssh://git@gist.github.com/b5c0b4de5155da604daf6cb7af8dd534.git'
+      type: git
   github.com/yoursunny/tmp-promise/a43571b526a3eae4f2e7e13e58d7d584c400d041:
     dependencies:
       '@types/tmp': 0.1.0

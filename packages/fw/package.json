@@ -29,15 +29,14 @@
     "@ndn/l3pkt": "workspace:*",
     "@ndn/name": "workspace:*",
     "hirestime": "^3.2.1",
-    "minimalistic-assert": "^1.0.1",
     "p-defer": "^3.0.0",
     "p-fifo": "^1.0.0",
     "streaming-iterables": "^4.1.0",
     "tslib": "*"
   },
   "devDependencies": {
-    "@types/minimalistic-assert": "^1.0.0",
-    "@types/p-fifo": "file:../../../types/p-fifo",
+    "@ndn/tlv": "workspace:*",
+    "@types/p-fifo": "gist:b5c0b4de5155da604daf6cb7af8dd534",
     "tinyqueue": "^2.0.3"
   }
 }
