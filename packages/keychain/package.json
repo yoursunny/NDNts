@@ -43,6 +43,7 @@
     "write": "^2.0.0"
   },
   "devDependencies": {
-    "tmp-promise": "github:yoursunny/tmp-promise#a43571b526a3eae4f2e7e13e58d7d584c400d041"
+    "@types/tmp": "^0.1.0",
+    "tmp": "^0.1.0"
   }
 }

@@ -123,7 +123,7 @@ importers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/name': 'workspace:*'
       '@ndn/tlv': 'workspace:*'
-      '@types/p-fifo': 'gist:b5c0b4de5155da604daf6cb7af8dd534'
+      '@types/p-fifo': 'git+https://gist.github.com/b5c0b4de5155da604daf6cb7af8dd534.git'
       hirestime: ^3.2.1
       p-defer: ^3.0.0
       p-fifo: ^1.0.0
@@ -143,17 +143,19 @@ importers:
       tslib: 1.10.0
       write: 2.0.0
     devDependencies:
-      tmp-promise: github.com/yoursunny/tmp-promise/a43571b526a3eae4f2e7e13e58d7d584c400d041
+      '@types/tmp': 0.1.0
+      tmp: 0.1.0
     specifiers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/name': 'workspace:*'
       '@ndn/naming-convention-03': 'workspace:*'
       '@ndn/tlv': 'workspace:*'
       '@peculiar/webcrypto': ^1.0.19
+      '@types/tmp': ^0.1.0
       applymixins: ^1.1.0
       idb-keyval: ^3.2.0
       throat: ^5.0.0
-      tmp-promise: 'github:yoursunny/tmp-promise#a43571b526a3eae4f2e7e13e58d7d584c400d041'
+      tmp: ^0.1.0
       tslib: '*'
       write: ^2.0.0
   packages/l3face:
@@ -9961,16 +9963,5 @@ packages:
     dev: true
     name: '@types/p-fifo'
     resolution:
-      commit: 75e539bc19b3f4a0ec451931c57867496d514a4f
-      repo: 'git+ssh://git@gist.github.com/b5c0b4de5155da604daf6cb7af8dd534.git'
-      type: git
-  github.com/yoursunny/tmp-promise/a43571b526a3eae4f2e7e13e58d7d584c400d041:
-    dependencies:
-      '@types/tmp': 0.1.0
-      tmp: 0.1.0
-    dev: true
-    name: tmp-promise
-    resolution:
       registry: 'http://localhost:4873/'
-      tarball: 'https://codeload.github.com/yoursunny/tmp-promise/tar.gz/a43571b526a3eae4f2e7e13e58d7d584c400d041'
-    version: 2.0.2
+      tarball: 'https://codeload.github.com/gist/b5c0b4de5155da604daf6cb7af8dd534/tar.gz/75e539bc19b3f4a0ec451931c57867496d514a4f'

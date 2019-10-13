@@ -1,17 +1,17 @@
-import { dir as tmpDir } from "tmp-promise";
+import { dirSync as tmpDir } from "tmp";
 
 import { KeyChain } from "../../src";
 import * as TestKeyChainStore from "../../test-fixture/keychain-store";
 
 let locator: string;
-let cleanup: () => Promise<void>;
+let deleteTmpDir: () => void;
 
 beforeAll(async () => {
-  ({ path: locator, cleanup } = await tmpDir({ unsafeCleanup: true }));
+  ({ name: locator, removeCallback: deleteTmpDir } = tmpDir({ unsafeCleanup: true }));
 });
 
-afterAll(async () => {
-  await cleanup();
+afterAll(() => {
+  deleteTmpDir();
 });
 
 test("open store", async () => {
