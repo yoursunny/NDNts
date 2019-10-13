@@ -110,17 +110,27 @@ importers:
     dependencies:
       '@ndn/l3pkt': 'link:../l3pkt'
       '@ndn/name': 'link:../name'
+      hirestime: 3.2.1
       minimalistic-assert: 1.0.1
-      strict-event-emitter-types: 2.0.0
+      p-defer: 3.0.0
+      p-fifo: 1.0.0
+      streaming-iterables: 4.1.0
       tslib: 1.10.0
     devDependencies:
       '@types/minimalistic-assert': 1.0.0
+      '@types/p-fifo': 'link:../../../types/p-fifo'
+      tinyqueue: 2.0.3
     specifiers:
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/name': 'workspace:*'
       '@types/minimalistic-assert': ^1.0.0
+      '@types/p-fifo': 'file:../../../types/p-fifo'
+      hirestime: ^3.2.1
       minimalistic-assert: ^1.0.1
-      strict-event-emitter-types: ^2.0.0
+      p-defer: ^3.0.0
+      p-fifo: ^1.0.0
+      streaming-iterables: ^4.1.0
+      tinyqueue: ^2.0.3
       tslib: '*'
   packages/keychain:
     dependencies:
@@ -920,7 +930,7 @@ packages:
     dependencies:
       '@lerna/child-process': 3.16.5
       '@octokit/plugin-enterprise-rest': 3.6.2
-      '@octokit/rest': 16.33.0
+      '@octokit/rest': 16.33.1
       git-url-parse: 11.1.2
       npmlog: 4.1.2
     dev: true
@@ -1378,13 +1388,13 @@ packages:
       node: '>= 6'
     resolution:
       integrity: sha512-shAmDyaQC4H92APFoIaVDHCx5bStIocgvbwQyxPRrbUY20V1EYTbSDchWbuwlMG3V17cprZhA6+78JfB+3DTPw==
-  /@octokit/endpoint/5.4.0:
+  /@octokit/endpoint/5.4.1:
     dependencies:
       is-plain-object: 3.0.0
       universal-user-agent: 4.0.0
     dev: true
     resolution:
-      integrity: sha512-DWTNgEKg5KXzvNjKTzcFTnkZiL7te6pQxxumvxPjyjDpcY5V3xzywnNu1WVqySY3Ct1flF/kAoyDdZos6acq3Q==
+      integrity: sha512-iwn46orWg3F4iqIzAVRfbzhnROyx7BQ7zJE0B7SEeaMIBvk3qmWtswtRk14QkMNUuNiCHQ6mAM00VJxWqrdM1g==
   /@octokit/plugin-enterprise-rest/3.6.2:
     dev: true
     resolution:
@@ -1396,9 +1406,9 @@ packages:
     dev: true
     resolution:
       integrity: sha512-L4JaJDXn8SGT+5G0uX79rZLv0MNJmfGa4vb4vy1NnpjSnWDLJRy6m90udGwvMmavwsStgbv2QNkPzzTCMmL+ig==
-  /@octokit/request/5.2.0:
+  /@octokit/request/5.2.1:
     dependencies:
-      '@octokit/endpoint': 5.4.0
+      '@octokit/endpoint': 5.4.1
       '@octokit/request-error': 1.0.4
       deprecation: 2.3.1
       is-plain-object: 3.0.0
@@ -1407,10 +1417,10 @@ packages:
       universal-user-agent: 4.0.0
     dev: true
     resolution:
-      integrity: sha512-p8WDdywOrMMbN1eMgR86f2KwKMxTTNipqsibIKDJ6oRi910rdz2JR3ufiLB8U8KtQ0P/HdP0df8vQrUDzYaUzQ==
-  /@octokit/rest/16.33.0:
+      integrity: sha512-onjQo4QKyiMAqLM6j3eH8vWw1LEfNCpoZUl6a+TrZVJM1wysBC8F0GhK9K/Vc9UsScSmVs2bstOVD34xpQ2wqQ==
+  /@octokit/rest/16.33.1:
     dependencies:
-      '@octokit/request': 5.2.0
+      '@octokit/request': 5.2.1
       '@octokit/request-error': 1.0.4
       atob-lite: 2.0.0
       before-after-hook: 2.1.0
@@ -1424,7 +1434,7 @@ packages:
       universal-user-agent: 4.0.0
     dev: true
     resolution:
-      integrity: sha512-t4jMR+odsfooQwmHiREoTQixVTX2DfdbSaO+lKrW9R5XBuk0DW+5T/JdfwtxAGUAHgvDDpWY/NVVDfEPTzxD6g==
+      integrity: sha512-lOQ+fJZwkeJ/1PRTdnY1uNja01aKOMioRhQfZtei64gZMXIX3EAfF4koMQMvoLFwsnVBu3ifj1JW1WAAKdXcnA==
   /@peculiar/asn1-schema/1.0.3:
     dependencies:
       asn1js: 2.0.26
@@ -3114,11 +3124,11 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-Z29us8OZl8LuGsOpJP1hJHSPV40=
-  /core-js/2.6.9:
+  /core-js/2.6.10:
     dev: true
     requiresBuild: true
     resolution:
-      integrity: sha512-HOpZf6eXmnl7la+cUdMnLvUxKNqLUzJvgIziQ0DiF3JwSImNphIqdGqzj6hIKyX04MmV0poclQ7+wjWvxQyR2A==
+      integrity: sha512-I39t74+4t+zau64EN1fE5v2W31Adtc/REhzWN+gWRRXg6WH5qAsZm62DHpQ1+Yhe4047T55jvzz7MUqF/dBBlA==
   /core-util-is/1.0.2:
     resolution:
       integrity: sha1-tf1UIgqivFq1eqtxQMlAdUUDwac=
@@ -4005,6 +4015,10 @@ packages:
     dev: true
     resolution:
       integrity: sha1-ewUhjd+WZ79/Nwv3/bLLFf3Qqkk=
+  /fast-fifo/1.0.0:
+    dev: false
+    resolution:
+      integrity: sha512-4VEXmjxLj7sbs8J//cn2qhRap50dGzF5n8fjay8mau+Jn4hxSeR3xPFwxMaQq/pDaq7+KQk0PAbC2+nWDkJrmQ==
   /fast-glob/2.2.7:
     dependencies:
       '@mrmlnc/readdir-enhanced': 2.2.1
@@ -4681,6 +4695,12 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
+  /hirestime/3.2.1:
+    dev: false
+    engines:
+      node: '>=4.0'
+    resolution:
+      integrity: sha512-VoXZ1Wz2lII6KZid7ByyeoW1TheD/Hiu6r9TjWWFUM2O3tddeRlj2/yGP63bZiIizHXW336eW0KNUiD6wngzSw==
   /hmac-drbg/1.0.1:
     dependencies:
       hash.js: 1.1.7
@@ -7123,7 +7143,6 @@ packages:
     resolution:
       integrity: sha1-n26xgvbJqozXQwBKfU+WsZaw+ww=
   /p-defer/3.0.0:
-    dev: true
     engines:
       node: '>=8'
     resolution:
@@ -7136,6 +7155,13 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha1-kw89Et0fUOdDRFeiLNbwSsatf3E=
+  /p-fifo/1.0.0:
+    dependencies:
+      fast-fifo: 1.0.0
+      p-defer: 3.0.0
+    dev: false
+    resolution:
+      integrity: sha512-IjoCxXW48tqdtDFz6fqo5q1UfFVjjVZe8TC1QRflvNUJtNfCUhxOUw6MOVZhDPjqhSzc26xKdugsO17gmzd5+A==
   /p-finally/1.0.0:
     dev: true
     engines:
@@ -8961,6 +8987,10 @@ packages:
       node: '>=0.6.0'
     resolution:
       integrity: sha512-60aV6sgJ5YEbzUdn9c8kYGIqOubPoUdqQCul3SBAsRCZ40s6Y5cMcrW4dt3/k/EsbLVJNl9n6Vz3fTc+k2GeKQ==
+  /tinyqueue/2.0.3:
+    dev: true
+    resolution:
+      integrity: sha512-ppJZNDuKGgxzkHihX8v9v9G5f+18gzaTfrukGrq6ueg0lmH4nqVnA2IPG0AEH3jKEk2GRJCUhDoqpoiw3PHLBA==
   /tmp/0.0.33:
     dependencies:
       os-tmpdir: 1.0.2
@@ -9449,7 +9479,7 @@ packages:
   /wait-on/3.3.0:
     dependencies:
       '@hapi/joi': 15.1.1
-      core-js: 2.6.9
+      core-js: 2.6.10
       minimist: 1.2.0
       request: 2.88.0
       rx: 4.1.0
