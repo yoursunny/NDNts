@@ -4,10 +4,8 @@ import pDefer from "p-defer";
 import Fifo from "p-fifo";
 import { buffer, filter, pipeline } from "streaming-iterables";
 
-import { CancelInterest } from "./cancel-interest";
 import { ForwarderImpl } from "./forwarder";
-
-export type Packet = Interest | Data;
+import { CancelInterest, InterestToken, Rxable, Txable } from "./reqres";
 
 const STOP = Symbol("FaceImpl.Stop");
 
@@ -15,7 +13,7 @@ export class FaceImpl {
   public readonly stopping = pDefer<typeof STOP>();
   public running = true;
   public readonly routes = new Map<string, Name>();
-  public readonly txQueue = new Fifo<Packet>();
+  public readonly txQueue = new Fifo<Txable>();
   public txQueueLength = 0;
 
   constructor(private readonly fw: ForwarderImpl,
@@ -57,10 +55,7 @@ export class FaceImpl {
     return longestNameLength;
   }
 
-  public async send(pkt: Packet) {
-    if (!this.running) {
-      return;
-    }
+  public async send(pkt: Txable) {
     ++this.txQueueLength;
     await this.txQueue.push(pkt);
     --this.txQueueLength;
@@ -77,14 +72,18 @@ export class FaceImpl {
     };
   }
 
-  private rxLoop = async (input: AsyncIterable<Packet|CancelInterest>) => {
+  private rxLoop = async (input: AsyncIterable<Rxable>) => {
     for await (const pkt of filter(() => this.running, input)) {
-      if (pkt instanceof Interest) {
-        this.fw.processInterest(this, pkt);
-      } else if (pkt instanceof Data) {
-        this.fw.processData(this, pkt);
-      } else if (pkt instanceof CancelInterest) {
-        this.fw.cancelInterest(this, pkt.interest);
+      switch (true) {
+        case pkt instanceof Interest:
+          this.fw.processInterest(this, pkt as Interest, pkt[InterestToken]);
+          break;
+        case pkt instanceof Data:
+          this.fw.processData(this, pkt as Data);
+          break;
+        case pkt instanceof CancelInterest:
+          this.fw.cancelInterest(this, (pkt as CancelInterest).interest);
+          break;
       }
     }
     this.close();
@@ -120,11 +119,11 @@ export namespace FaceImpl {
 export type Face = Pick<FaceImpl, "close"|"addRoute"|"removeRoute">;
 
 export namespace Face {
-  export type Transform = (iterable: AsyncIterable<Packet>) => AsyncIterable<Packet|CancelInterest>;
+  export type Transform = (iterable: AsyncIterable<Txable>) => AsyncIterable<Rxable>;
 
   export interface RxTx {
-    rx: AsyncIterable<Packet|CancelInterest>;
-    tx(iterable: AsyncIterable<Packet>): any;
+    rx: AsyncIterable<Rxable>;
+    tx(iterable: AsyncIterable<Txable>): any;
   }
 
   export interface L3 {

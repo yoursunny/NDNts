@@ -1,3 +1,3 @@
-export { CancelInterest } from "./cancel-interest";
-export { Face, Packet } from "./face";
+export * from "./reqres";
+export { Face } from "./face";
 export { Forwarder } from "./forwarder";

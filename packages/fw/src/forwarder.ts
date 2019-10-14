@@ -16,9 +16,9 @@ export class ForwarderImpl {
     return new FaceImpl(this, face);
   }
 
-  public processInterest(face: FaceImpl, interest: Interest) {
+  public processInterest(face: FaceImpl, interest: Interest, token: any) {
     const pi = this.pit.lookup(interest);
-    pi.receiveInterest(face, interest);
+    pi.receiveInterest(face, interest, token);
 
     for (const nh of this.faces) {
       if (nh === face) {
@@ -53,4 +53,13 @@ export namespace Forwarder {
   }
 
   export type Options = FaceImpl.Options;
+
+  let defaultInstance: Forwarder|undefined;
+
+  export function getDefault(): Forwarder {
+    if (!defaultInstance) {
+      defaultInstance = Forwarder.create();
+    }
+    return defaultInstance;
+  }
 }
