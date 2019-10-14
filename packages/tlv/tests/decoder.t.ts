@@ -2,11 +2,11 @@ import { Decoder } from "../src";
 import "../test-fixture";
 
 test("simple", () => {
-  const decoder = new Decoder(Buffer.from([
+  const decoder = new Decoder(Uint8Array.of(
     0x01, 0x00,
     0xFD, 0x04, 0x09, 0x02, 0xB0, 0xB1,
     0xFE, 0x00, 0x02, 0x04, 0x09, 0x03, 0xC0, 0x01, 0xC2,
-  ]));
+  ));
 
   {
     const { type, length, value, tlv, size, before, after } = decoder.read();
@@ -55,26 +55,26 @@ test("from", () => {
 });
 
 test("error on incomplete VAR-NUMBER", () => {
-  let decoder = new Decoder(new Uint8Array([]));
+  let decoder = new Decoder(new Uint8Array());
   expect(() => decoder.read()).toThrow();
 
-  decoder = new Decoder(new Uint8Array([0xFD, 0x01]));
+  decoder = new Decoder(Uint8Array.of(0xFD, 0x01));
   expect(() => decoder.read()).toThrow();
 
-  decoder = new Decoder(new Uint8Array([0xFE, 0x00, 0x01, 0x02]));
+  decoder = new Decoder(Uint8Array.of(0xFE, 0x00, 0x01, 0x02));
   expect(() => decoder.read()).toThrow();
 });
 
 test("error on VAR-NUMBER-9", () => {
-  const decoder = new Decoder(new Uint8Array([
+  const decoder = new Decoder(Uint8Array.of(
     0x01, 0xFF, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01, 0xA0,
-  ]));
+  ));
   expect(() => decoder.read()).toThrow();
 });
 
 test("error on incomplete TLV-VALUE", () => {
-  const decoder = new Decoder(new Uint8Array([
+  const decoder = new Decoder(Uint8Array.of(
     0x01, 0x05, 0xA0, 0xA1, 0xA2,
-  ]));
+  ));
   expect(() => decoder.read()).toThrow();
 });

@@ -14,7 +14,7 @@ import { strict as assert } from "assert";
 ```ts
 // Name components are immutable. Once it's created, you can never change it.
 // Construct a Component from its TLV-TYPE and TLV-VALUE.
-const compA = new Component(TT.GenericNameComponent, new Uint8Array([0x41]));
+const compA = new Component(TT.GenericNameComponent, Uint8Array.of(0x41));
 // Create a Component from URI representation.
 const compB = Component.from("B");
 // Typed components are supported, too.
@@ -29,9 +29,9 @@ assert.equal(compA.length, 1);
 assert.equal(compB.length, 1);
 assert.equal(compMetadata.length, 8);
 
-assert.deepEqual(compA.value, new Uint8Array([0x41]));
-assert.deepEqual(compB.value, new Uint8Array([0x42]));
-assert.deepEqual(compMetadata.value, new Uint8Array([0x6D, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61]));
+assert.deepEqual(compA.value, Uint8Array.of(0x41));
+assert.deepEqual(compB.value, Uint8Array.of(0x42));
+assert.deepEqual(compMetadata.value, Uint8Array.of(0x6D, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61));
 
 // For convenience, we can retrieve TLV-VALUE as text string, too.
 assert.equal(compA.text, "A");

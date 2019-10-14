@@ -8,11 +8,11 @@ test("simple", () => {
   expect(name.length).toBe(0);
   expect(name.toString()).toBe("/");
 
-  const decoder = new Decoder(new Uint8Array([
+  const decoder = new Decoder(Uint8Array.of(
     0x07, 0x07,
     0x08, 0x01, 0x41,
     0xF0, 0x02, 0x42, 0x43,
-  ]));
+  ));
   name = decoder.decode(Name);
   expect(name.length).toBe(2);
   expect(name.get(0)).toEqual(Component.from("A"));

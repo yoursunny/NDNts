@@ -31,7 +31,7 @@ export async function execute(transportA: Transport, transportB: Transport): Pro
         if (pkt instanceof Interest) {
           const name = pkt.name.toString();
           record.namesB.push(name);
-          yield new Data(pkt.name, new Uint8Array([0xC0, 0xC1]));
+          yield new Data(pkt.name, Uint8Array.of(0xC0, 0xC1));
         }
       }
     }}),

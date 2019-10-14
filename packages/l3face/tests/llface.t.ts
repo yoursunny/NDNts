@@ -21,7 +21,7 @@ test("TX signing", async () => {
   const face = new L3Face(new DatagramTransport(makeDuplex(undefined, txRemote)));
 
   const signFn = jest.fn(async (input: Uint8Array) => {
-    return new Uint8Array([0xA0, 0xA1, 0xA2, 0xA3]);
+    return Uint8Array.of(0xA0, 0xA1, 0xA2, 0xA3);
   });
   const interest = new Interest("/A");
   interest.sigInfo = new SigInfo(SigType.Sha256);

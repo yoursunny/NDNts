@@ -43,7 +43,7 @@ data.content = new TextEncoder().encode("hello NDNts");
 // Nevertheless, this is how it works.
 
 // Our signature would be 'DDDD'.
-const expectedSignature = new Uint8Array([0xDD, 0xDD]);
+const expectedSignature = Uint8Array.of(0xDD, 0xDD);
 
 // First, set a signing function on [LLSign.PENDING] property.
 data[LLSign.PENDING] = async (input: Uint8Array): Promise<Uint8Array> => {

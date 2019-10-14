@@ -94,7 +94,7 @@ const TABLE = [
 
 test.each(TABLE)("sign %#", async ({ cls }) => {
   const obj = new cls(new Name("/A"));
-  obj.sigInfo = new SigInfo(SigType.HmacWithSha256, new KeyDigest(new Uint8Array([0xA0, 0xA1])));
+  obj.sigInfo = new SigInfo(SigType.HmacWithSha256, new KeyDigest(Uint8Array.of(0xA0, 0xA1)));
   await expect(obj[LLSign.PROCESS]()).resolves.toBeUndefined(); // noop
 
   obj[LLSign.PENDING] = ALGO1.sign;

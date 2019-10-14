@@ -23,23 +23,23 @@ It prepends any encodable items to the internal buffer, and reallocates a larger
 let encoder = new Encoder();
 encoder.encode(new Name("/A"));
 // Look at the output:
-assert.deepEqual(encoder.output, new Uint8Array([0x07, 0x03, 0x08, 0x01, 0x41]));
+assert.deepEqual(encoder.output, Uint8Array.of(0x07, 0x03, 0x08, 0x01, 0x41));
 
 // Prepend a TLV structure with specified TLV-TYPE and TLV-VALUE:
 encoder = new Encoder();
-encoder.encode([0xB0, new Uint8Array([0xC0, 0xC1])]);
-assert.deepEqual(encoder.output, new Uint8Array([0xB0, 0x02, 0xC0, 0xC1]));
+encoder.encode([0xB0, Uint8Array.of(0xC0, 0xC1)]);
+assert.deepEqual(encoder.output, Uint8Array.of(0xB0, 0x02, 0xC0, 0xC1));
 
 // Prepend a non-negative integer
 encoder.encode(NNI(0x200110));
 // We are using the same Encoder instance, so it gets prepended:
-assert.deepEqual(encoder.output, new Uint8Array([0x00, 0x20, 0x01, 0x10, 0xB0, 0x02, 0xC0, 0xC1]));
+assert.deepEqual(encoder.output, Uint8Array.of(0x00, 0x20, 0x01, 0x10, 0xB0, 0x02, 0xC0, 0xC1));
 
 // Put multiple encodable items in TLV-VALUE:
 encoder = new Encoder();
-encoder.encode([0xB0, new Uint8Array([0xC0, 0xC1]), new Name("/A")]);
+encoder.encode([0xB0, Uint8Array.of(0xC0, 0xC1), new Name("/A")]);
 assert.deepEqual(encoder.output,
-                 new Uint8Array([0xB0, 0x07, 0xC0, 0xC1, 0x07, 0x03, 0x08, 0x01, 0x41]));
+                 Uint8Array.of(0xB0, 0x07, 0xC0, 0xC1, 0x07, 0x03, 0x08, 0x01, 0x41));
 ```
 
 ## Decoder
@@ -48,17 +48,17 @@ The **Decoder** is a basic sequential decoder.
 
 ```ts
 // Read Type-Length-Value manually:
-let decoder = new Decoder(new Uint8Array([0x08, 0x01, 0x41, 0xFF]));
+let decoder = new Decoder(Uint8Array.of(0x08, 0x01, 0x41, 0xFF));
 const { type, length, value } = decoder.read();
 assert.equal(type, 0x08);
 assert.equal(length, 1);
-assert.deepEqual(value, new Uint8Array([0x41]));
+assert.deepEqual(value, Uint8Array.of(0x41));
 // The remaining [0xFF] is still in the buffer.
 // If you continue reading, you get an error due to incomplete TLV.
 assert.throws(() => decoder.read());
 
 // Decode into TLV object:
-decoder = new Decoder(new Uint8Array([0x07, 0x03, 0x08, 0x01, 0x41]));
+decoder = new Decoder(Uint8Array.of(0x07, 0x03, 0x08, 0x01, 0x41));
 const name = decoder.decode(Name);
 assert(name instanceof Name);
 assert.equal(name.toString(), "/A");
@@ -113,13 +113,13 @@ const EVD = new EvDecoder<Adjacency>("Adjacency", TT.Adjacency)
 //     the TLV-VALUE as a Decoder, the whole TLV as a Decoder, etc.
 
 // Suppose we receive this encoded TLV:
-const adjacencyWire = new Uint8Array([
+const adjacencyWire = Uint8Array.of(
   0x84, 0x0D,
   0x07, 0x03, 0x08, 0x01, 0x41, // Name
   0x8D, 0x01, 0x42, // Uri
   0xF0, 0x00, // unrecognized non-critical TLV-TYPE, ignored
   0x8C, 0x01, 0x80, // Cost
-]);
+);
 const adjacencyDecoder = new Decoder(adjacencyWire);
 
 // We can decode it with the EVD.

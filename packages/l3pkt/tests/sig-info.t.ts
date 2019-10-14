@@ -82,31 +82,31 @@ test("encode", () => {
 });
 
 test("decode", () => {
-  let decoder = new Decoder(new Uint8Array([
+  let decoder = new Decoder(Uint8Array.of(
     0x16, 0x03,
     0x1B, 0x01, 0x00,
-  ]));
+  ));
   let si = decoder.decode(SigInfo);
   expect(si.type).toBe(SigType.Sha256);
 
-  decoder = new Decoder(new Uint8Array([
+  decoder = new Decoder(Uint8Array.of(
     0x16, 0x0B,
     0x1B, 0x01, 0x03,
     0x1C, 0x06, 0x07, 0x04, 0x08, 0x02, 0x4B, 0x4C,
-  ]));
+  ));
   si = decoder.decode(SigInfo);
   expect(si.type).toBe(SigType.Sha256WithEcdsa);
   expect(si.keyLocator).toBeInstanceOf(Name);
   expect(si.keyLocator).toEqualName("/KL");
 
-  decoder = new Decoder(new Uint8Array([
+  decoder = new Decoder(Uint8Array.of(
     0x2C, 0x18,
     0x1B, 0x01, 0x04,
     0x1C, 0x05, 0x1D, 0x03, 0xA0, 0xA1, 0xA2,
     0x26, 0x04, 0xB0, 0xB1, 0xB2, 0xB3,
     0x28, 0x02, 0xC0, 0xC1,
     0x2A, 0x02, 0xD0, 0xD1,
-  ]));
+  ));
   si = decoder.decode(SigInfo);
   expect(si.type).toBe(SigType.HmacWithSha256);
   expect(si.keyLocator).toBeInstanceOf(KeyDigest);

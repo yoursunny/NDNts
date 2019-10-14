@@ -87,7 +87,7 @@ export async function execute(cls: PacketCtor, pvtA: PrivateKey, pubA: PublicKey
 
   const pktMd = cls.decodeFrom(new Decoder(sA0.wire));
   pktMd.sigValue = (() => {
-    const sig = new Uint8Array(pktMd.sigValue!);
+    const sig = Uint8Array.from(pktMd.sigValue!);
     const offset = Math.floor(Math.random() * (sig.byteLength - 1));
     sig.copyWithin(offset, offset + 1);
     return sig.subarray(0, -1);
@@ -95,7 +95,7 @@ export async function execute(cls: PacketCtor, pvtA: PrivateKey, pubA: PublicKey
 
   const pktMc = cls.decodeFrom(new Decoder(sA0.wire));
   pktMc.sigValue = (() => {
-    const sig = new Uint8Array(pktMc.sigValue!);
+    const sig = Uint8Array.from(pktMc.sigValue!);
     const offset = Math.floor(Math.random() * sig.byteLength);
     // tslint:disable-next-line no-bitwise
     sig[offset] ^= 0x01;

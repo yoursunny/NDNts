@@ -66,26 +66,26 @@ test("encode", () => {
 });
 
 test("decode", () => {
-  let decoder = new Decoder(new Uint8Array([
+  let decoder = new Decoder(Uint8Array.of(
     0xA0, 0x06,
     0xA1, 0x01, 0x01,
     0xA1, 0x01, 0x03,
-  ]));
+  ));
   let obj = EVD.decode(new ExtTestTarget(), decoder);
   expect(Extension.get(obj, 0xA1)).toBe(4);
   expect(Extension.get(obj, 0xA2)).toBeUndefined();
 
-  decoder = new Decoder(new Uint8Array([
+  decoder = new Decoder(Uint8Array.of(
     0xA0, 0x02,
     0xA2, 0x00,
-  ]));
+  ));
   obj = EVD.decode(new ExtTestTarget(), decoder);
   expect(Extension.get(obj, 0xA1)).toBeUndefined();
   expect(Extension.get(obj, 0xA2)).toBe(true);
 
-  decoder = new Decoder(new Uint8Array([
+  decoder = new Decoder(Uint8Array.of(
     0xA0, 0x02,
     0xA3, 0x00, // not matching any extension, critical
-  ]));
+  ));
   expect(() => EVD.decode(new ExtTestTarget(), decoder)).toThrow();
 });

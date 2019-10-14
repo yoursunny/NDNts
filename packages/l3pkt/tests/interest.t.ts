@@ -59,16 +59,16 @@ test("encode", () => {
 });
 
 test("decode", async () => {
-  let decoder = new Decoder(new Uint8Array([
+  let decoder = new Decoder(Uint8Array.of(
     0x05, 0x05,
     0x07, 0x03, 0x08, 0x01, 0x41,
-  ]));
+  ));
   let interest = decoder.decode(Interest);
   expect(interest.name).toEqualName("/A");
   expect(interest.canBePrefix).toBeFalsy();
   expect(interest.mustBeFresh).toBeFalsy();
 
-  decoder = new Decoder(new Uint8Array([
+  decoder = new Decoder(Uint8Array.of(
     0x05, 0x16,
     0x07, 0x03, 0x08, 0x01, 0x41,
     0x21, 0x00,
@@ -77,7 +77,7 @@ test("decode", async () => {
     0x0A, 0x04, 0xA0, 0xA1, 0xA2, 0xA3,
     0x0C, 0x02, 0x76, 0xA1,
     0x22, 0x01, 0xDC,
-  ]));
+  ));
   interest = decoder.decode(Interest);
   expect(interest.name).toEqualName("/A");
   expect(interest.canBePrefix).toBeTruthy();
@@ -117,7 +117,7 @@ test("encode parameterized", async () => {
   });
 
   // append ParamsDigest
-  interest = new Interest(new Name("/A"), new Uint8Array([0xC0, 0xC1]));
+  interest = new Interest(new Name("/A"), Uint8Array.of(0xC0, 0xC1));
   await interest.updateParamsDigest();
   expect(interest.name.length).toBe(2);
   expect(interest.name.at(1).is(ParamsDigest)).toBeTruthy();
@@ -131,14 +131,14 @@ test("decode parameterized", async () => {
   let decoder = new Decoder(Encoder.encode([
     TT.Interest,
     new Name("/A"),
-    [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
+    [TT.AppParameters, Uint8Array.of(0xC0, 0xC1)],
   ]));
   expect(() => decoder.decode(Interest)).toThrow(/missing/);
 
   decoder = new Decoder(Encoder.encode([
     TT.Interest,
     new Name("/A").append(ParamsDigest, new Uint8Array(32)),
-    [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
+    [TT.AppParameters, Uint8Array.of(0xC0, 0xC1)],
   ]));
   let interest = decoder.decode(Interest);
   expect(interest.name.length).toBe(2);
@@ -146,7 +146,7 @@ test("decode parameterized", async () => {
 
   const wire = await encodeWithLLSign(new Interest(
     new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"),
-    new Uint8Array([0xC0, 0xC1]),
+    Uint8Array.of(0xC0, 0xC1),
   ));
   decoder = new Decoder(wire);
   interest = decoder.decode(Interest);
@@ -185,7 +185,7 @@ test("decode signed", () => {
   decoder = new Decoder(Encoder.encode([
     TT.Interest,
     new Name("/A").append(ParamsDigest, new Uint8Array(32)),
-    [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
+    [TT.AppParameters, Uint8Array.of(0xC0, 0xC1)],
     [TT.ISigValue, new Uint8Array(4)],
   ]));
   expect(() => decoder.decode(Interest)).toThrow(/missing/);
@@ -193,7 +193,7 @@ test("decode signed", () => {
   decoder = new Decoder(Encoder.encode([
     TT.Interest,
     new Name("/A").append(ParamsDigest, new Uint8Array(32)).append("C"),
-    [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
+    [TT.AppParameters, Uint8Array.of(0xC0, 0xC1)],
     new SigInfo(SigType.Sha256).encodeAs(TT.ISigInfo),
     [TT.ISigValue, new Uint8Array(4)],
   ]));
@@ -202,7 +202,7 @@ test("decode signed", () => {
   decoder = new Decoder(Encoder.encode([
     TT.Interest,
     new Name("/A").append(ParamsDigest, new Uint8Array(32)),
-    [TT.AppParameters, new Uint8Array([0xC0, 0xC1])],
+    [TT.AppParameters, Uint8Array.of(0xC0, 0xC1)],
     new SigInfo(SigType.Sha256).encodeAs(TT.ISigInfo),
     [TT.ISigValue, new Uint8Array(4)],
   ]));

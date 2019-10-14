@@ -15,7 +15,7 @@ export function serializeInBrowser(value: unknown): SerializedInBrowser {
 export function deserializeInBrowser(text: SerializedInBrowser): unknown {
   return JSON.parse(text, (key, value) => {
     if (Array.isArray(value) && value[0] === UINT8ARRAY_TAG) {
-      return new Uint8Array(value.slice(1));
+      return Uint8Array.from(value.slice(1));
     }
     return value;
   });

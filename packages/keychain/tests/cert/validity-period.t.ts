@@ -15,12 +15,12 @@ test("encode decode", () => {
   let vp = new ValidityPeriod(new Date(1542099529000), new Date(1602434283000));
   expect(vp).toEncodeAs(wire);
 
-  vp = new Decoder(new Uint8Array(wire)).decode(ValidityPeriod);
+  vp = new Decoder(Uint8Array.from(wire)).decode(ValidityPeriod);
   expect(vp.notBefore).toEqual(new Date(1542099529000));
   expect(vp.notAfter).toEqual(new Date(1602434283000));
 
   // replace 'T' with 'A'
-  const decoder = new Decoder(new Uint8Array(wire).map((ch) => ch === 0x54 ? 0x41 : ch));
+  const decoder = new Decoder(Uint8Array.from(wire).map((ch) => ch === 0x54 ? 0x41 : ch));
   expect(() => decoder.decode(ValidityPeriod)).toThrow(/invalid/);
 });
 

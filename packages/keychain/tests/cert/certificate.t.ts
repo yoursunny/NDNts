@@ -10,7 +10,7 @@ test("encode decode", async () => {
   const cert = await Certificate.build({
     name: new CertificateName("/operator", "key-1", "self", "%FD%01"),
     validity: new ValidityPeriod(new Date(1542099529000), new Date(1602434283000)),
-    publicKey: new Uint8Array([0xC0, 0xC1]),
+    publicKey: Uint8Array.of(0xC0, 0xC1),
     signer: theDigestKey,
   });
 

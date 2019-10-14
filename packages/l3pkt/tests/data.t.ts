@@ -28,7 +28,7 @@ test("encode", () => {
   });
 
   data = new Data("/B", Data.ContentType(3), Data.FreshnessPeriod(2500),
-                  Data.FinalBlock, new Uint8Array([0xC0, 0xC1]));
+                  Data.FinalBlock, Uint8Array.of(0xC0, 0xC1));
   expect(data.name).toEqualName("/B");
   expect(data.contentType).toBe(3);
   expect(data.freshnessPeriod).toBe(2500);
@@ -73,7 +73,7 @@ test("encode", () => {
   expect(() => { data.freshnessPeriod = -1; }).toThrow();
   data.freshnessPeriod = 0;
   data.isFinalBlock = false;
-  data.content = new Uint8Array([0xC2, 0xC3]);
+  data.content = Uint8Array.of(0xC2, 0xC3);
   data = new Data(data);
   expect(data).toEncodeAs(({ type, value }) => {
     expect(type).toBe(TT.Data);
@@ -87,15 +87,15 @@ test("encode", () => {
 });
 
 test("decode", () => {
-  let decoder = new Decoder(new Uint8Array([
+  let decoder = new Decoder(Uint8Array.of(
     0x06, 0x05,
     0x07, 0x03, 0x08, 0x01, 0x41,
-  ]));
+  ));
   let data = decoder.decode(Data);
   expect(data.name).toEqualName("/A");
   expect(data.content).toHaveLength(0);
 
-  decoder = new Decoder(new Uint8Array([
+  decoder = new Decoder(Uint8Array.of(
     0x06, 0x1E,
     // Name
     0x07, 0x06, 0x08, 0x01, 0x42, 0x08, 0x01, 0x30,
@@ -113,7 +113,7 @@ test("decode", () => {
     0x16, 0x00,
     // DSigValue
     0x17, 0x00,
-  ]));
+  ));
   data = decoder.decode(Data);
   expect(data.name).toEqualName("/B/0");
   expect(data.contentType).toBe(3);

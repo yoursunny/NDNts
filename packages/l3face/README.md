@@ -53,9 +53,9 @@ await Promise.all([
       assert.equal(interest.canBePrefix, true);
       assert.equal(interest.mustBeFresh, false);
 
-      const data = new Data("/A/B", new Uint8Array([0xB0, 0xB1, 0xB2, 0xB3]));
+      const data = new Data("/A/B", Uint8Array.of(0xB0, 0xB1, 0xB2, 0xB3));
       data.sigInfo = new SigInfo(SigType.Sha256);
-      data[LLSign.PENDING] = async () => new Uint8Array([0xF0, 0xF1]);
+      data[LLSign.PENDING] = async () => Uint8Array.of(0xF0, 0xF1);
 
       // Send a Data using sendData() method.
       // Signing is processed internally.

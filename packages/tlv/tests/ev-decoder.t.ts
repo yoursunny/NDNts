@@ -37,7 +37,7 @@ const EVD = new EvDecoder<EvdTestTarget>("A0", 0xA0)
 );
 
 test("decode normal", () => {
-  const decoder = new Decoder(new Uint8Array([
+  const decoder = new Decoder(Uint8Array.of(
     0xA0, 0x11,
     0xA1, 0x01, 0x10,
     0xA4, 0x00,
@@ -45,7 +45,7 @@ test("decode normal", () => {
     0xA6, 0x00,
     0xA9, 0x00,
     0xC0, 0x04, 0xC1, 0x02, 0x01, 0x04,
-  ]));
+  ));
   const target = new EvdTestTarget();
   EVD.decode(target, decoder);
   expect(target.top).not.toBeUndefined();
@@ -55,67 +55,67 @@ test("decode normal", () => {
 });
 
 test("decode unknown non-critical", () => {
-  const decoder = new Decoder(new Uint8Array([
+  const decoder = new Decoder(Uint8Array.of(
     0xA0, 0x02,
     0xA2, 0x00, // non-critical
-  ]));
+  ));
   const target = new EvdTestTarget();
   EVD.decode(target, decoder);
   expect(target.sum()).toBe(0);
 });
 
 test("decode unknown critical", () => {
-  const decoder = new Decoder(new Uint8Array([
+  const decoder = new Decoder(Uint8Array.of(
     0xA0, 0x02,
     0xA3, 0x00,
-  ]));
+  ));
   const target = new EvdTestTarget();
   expect(() => EVD.decode(target, decoder)).toThrow();
 });
 
 test("decode unknown critical in grandfathered range", () => {
-  const decoder = new Decoder(new Uint8Array([
+  const decoder = new Decoder(Uint8Array.of(
     0xA0, 0x02,
     0x10, 0x00,
-  ]));
+  ));
   const target = new EvdTestTarget();
   expect(() => EVD.decode(target, decoder)).toThrow();
 });
 
 test("decode non-repeatable", () => {
-  const decoder = new Decoder(new Uint8Array([
+  const decoder = new Decoder(Uint8Array.of(
     0xA0, 0x05,
     0xA1, 0x01, 0x10,
     0xA1, 0x00, // cannot repeat
-  ]));
+  ));
   const target = new EvdTestTarget();
   expect(() => EVD.decode(target, decoder)).toThrow();
 });
 
 test("decode out-of-order critical", () => {
-  const decoder = new Decoder(new Uint8Array([
+  const decoder = new Decoder(Uint8Array.of(
     0xA0, 0x04,
     0xA4, 0x00,
     0xA1, 0x00,
-  ]));
+  ));
   const target = new EvdTestTarget();
   expect(() => EVD.decode(target, decoder)).toThrow();
 });
 
 test("decode out-of-order non-critical", () => {
-  const decoder = new Decoder(new Uint8Array([
+  const decoder = new Decoder(Uint8Array.of(
     0xA0, 0x06,
     0xA6, 0x00,
     0xA9, 0x00,
     0xA6, 0x00,
-  ]));
+  ));
   const target = new EvdTestTarget();
   EVD.decode(target, decoder);
   expect(target.sum()).toBe(11);
 });
 
 test("decode bad TLV-TYPE", () => {
-  const decoder = new Decoder(new Uint8Array([0xAF, 0x00]));
+  const decoder = new Decoder(Uint8Array.of(0xAF, 0x00));
   const target = new EvdTestTarget();
   expect(() => EVD.decode(target, decoder)).toThrow();
   expect(target.top).toBeUndefined();
@@ -132,7 +132,7 @@ test("setIsCritical", () => {
   .setIsCritical(cb)
   .add(0xA1, (t) => { ++t.a1; });
 
-  const decoder = new Decoder(new Uint8Array([
+  const decoder = new Decoder(Uint8Array.of(
     // first object
     0xA0, 0x04,
     0xA1, 0x00, // recognized
@@ -141,7 +141,7 @@ test("setIsCritical", () => {
     0xA0, 0x04,
     0xA1, 0x00, // recognized
     0xA2, 0x00, // critical in cb
-  ]));
+  ));
   const target = evd.decode(new EvdTestTarget(), decoder);
   expect(target.sum()).toBe(1000);
   expect(cb).toHaveBeenCalledTimes(1);
@@ -163,14 +163,14 @@ test("setUnknown", () => {
   .add(0xA4, (t) => { ++t.a4; }, { order: 7 })
   .setUnknown(cb);
 
-  const decoder = new Decoder(new Uint8Array([
+  const decoder = new Decoder(Uint8Array.of(
     0xAA, 0x0A,
     0xA2, 0x00, // ignored
     0xA1, 0x00, // handled by cb
     0xA4, 0x00, // handled by rule
     0xA1, 0x00, // handled by cb
     0xA6, 0x00, // ignored
-  ]));
+  ));
   const target = evd.decode(new EvdTestTarget(), decoder);
   expect(target.sum()).toBe(2100);
 
