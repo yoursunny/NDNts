@@ -3,10 +3,10 @@ import { getDataFullName } from "@ndn/l3pkt/test-fixture";
 import { Name } from "@ndn/name";
 import "@ndn/name/test-fixture";
 import { Encoder } from "@ndn/tlv";
+import pushable from "it-pushable";
 import { consume, map, pipeline, tap } from "streaming-iterables";
 
-import { CancelInterest, Forwarder } from "../src";
-import { TimedFaceRx } from "../test-fixture/face";
+import { CancelInterest, Forwarder, Packet } from "../src";
 
 test("InterestData", async () => {
   const fw = Forwarder.create();
@@ -15,21 +15,28 @@ test("InterestData", async () => {
   const nameDigest = await getDataFullName(dataDigest);
   const nameWrongDigest = await getDataFullName(new Data("/P/wrong-digest", Uint8Array.of(0xC0)));
 
+  const consumerTx = pushable<Packet|CancelInterest>();
+  setTimeout(() => {
+    consumerTx.push(new Interest("/P/exact"));
+    consumerTx.push(new Interest("/P/prefix", Interest.CanBePrefix));
+    consumerTx.push(new Interest("/P/no-prefix", Interest.Lifetime(500)));
+    consumerTx.push(new Interest("/P/fresh", Interest.MustBeFresh));
+    consumerTx.push(new Interest("/P/no-fresh", Interest.MustBeFresh, Interest.Lifetime(500)));
+    consumerTx.push(new Interest("/Q/too-slow", Interest.Lifetime(100)));
+    consumerTx.push(new Interest(nameDigest));
+    consumerTx.push(new Interest(nameWrongDigest, Interest.Lifetime(500)));
+    consumerTx.push(new Interest("/P/canceled"));
+  }, 10);
+  setTimeout(() => {
+    consumerTx.push(new CancelInterest(new Interest("/P/canceled")));
+  }, 12);
+  setTimeout(() => {
+    consumerTx.end();
+  }, 200);
   const consumerRx = new Map<string, Data>();
   fw.addFace({
     rxtx: {
-      rx: new TimedFaceRx(250)
-          .add(10, new Interest("/P/exact"))
-          .add(10, new Interest("/P/prefix", Interest.CanBePrefix))
-          .add(10, new Interest("/P/no-prefix", Interest.Lifetime(500)))
-          .add(10, new Interest("/P/fresh", Interest.MustBeFresh))
-          .add(10, new Interest("/P/no-fresh", Interest.MustBeFresh, Interest.Lifetime(500)))
-          .add(10, new Interest("/Q/too-slow", Interest.Lifetime(100)))
-          .add(10, new Interest(nameDigest))
-          .add(10, new Interest(nameWrongDigest, Interest.Lifetime(500)))
-          .add(10, new Interest("/P/canceled"))
-          .add(12, new CancelInterest(new Interest("/P/canceled")))
-          .rx,
+      rx: consumerTx,
       tx(iterable) {
         pipeline(
           () => iterable,

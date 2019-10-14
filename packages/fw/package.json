@@ -36,7 +36,8 @@
   },
   "devDependencies": {
     "@ndn/tlv": "workspace:*",
+    "@types/it-pushable": "git+https://gist.github.com/cb94c746ac568edbc2040ccc26016096.git",
     "@types/p-fifo": "git+https://gist.github.com/b5c0b4de5155da604daf6cb7af8dd534.git",
-    "tinyqueue": "^2.0.3"
+    "it-pushable": "^1.2.1"
   }
 }
