@@ -8,6 +8,10 @@ test("simple", () => {
   expect(name.length).toBe(0);
   expect(name.toString()).toBe("/");
 
+  name = new Name("/");
+  expect(name.length).toBe(0);
+  expect(name.toString()).toBe("/");
+
   const decoder = new Decoder(Uint8Array.of(
     0x07, 0x07,
     0x08, 0x01, 0x41,

@@ -1,16 +1,25 @@
 import { Data, Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
+import { EventEmitter } from "events";
 import pDefer from "p-defer";
 import Fifo from "p-fifo";
 import { buffer, filter, pipeline } from "streaming-iterables";
+import StrictEventEmitter from "strict-event-emitter-types";
 
 import { ForwarderImpl } from "./forwarder";
 import { CancelInterest, DataResponse as DataResponse_, InterestRequest, InterestRequest as InterestRequest_,
          InterestToken, RejectInterest } from "./reqres";
 
+interface Events {
+  /** Emitted upon face closing. */
+  close: void;
+}
+
+type Emitter = StrictEventEmitter<EventEmitter, Events>;
+
 const STOP = Symbol("FaceImpl.Stop");
 
-export class FaceImpl {
+export class FaceImpl extends (EventEmitter as new() => Emitter) {
   public readonly stopping = pDefer<typeof STOP>();
   public running = true;
   public readonly routes = new Map<string, Name>();
@@ -18,7 +27,8 @@ export class FaceImpl {
   public txQueueLength = 0;
 
   constructor(private readonly fw: ForwarderImpl,
-              public readonly face: Face.L3) {
+              public readonly face: Face.Base) {
+    super();
     fw.faces.add(this);
     pipeline(
       () => this.txLoop(),
@@ -36,6 +46,7 @@ export class FaceImpl {
     this.running = false;
     this.fw.faces.delete(this);
     this.stopping.resolve(STOP);
+    this.emit("close");
   }
 
   public addRoute(prefix: Name) {
@@ -62,14 +73,24 @@ export class FaceImpl {
     --this.txQueueLength;
   }
 
-  private getTransform(): Face.Transform {
-    const rxtx = this.face.rxtx;
-    if (typeof rxtx === "function") {
-      return rxtx;
+  private getTransform(): Face.RxTxTransform {
+    if (typeof this.face === "function") {
+      return this.face;
     }
+
+    const rtE = this.face as Face.RxTxExtended;
+    if (rtE.extendedTx) {
+      return (iterable) => {
+        rtE.tx(iterable);
+        return rtE.rx;
+      };
+    }
+
+    const rtS = this.face as Face.RxTxBasic;
     return (iterable) => {
-      rxtx.tx(iterable);
-      return rxtx.rx;
+      rtS.tx(filter((pkt) => pkt instanceof Interest || pkt instanceof Data,
+                    iterable) as AsyncIterable<Interest|Data>);
+      return rtS.rx as AsyncIterable<Face.Rxable>;
     };
   }
 
@@ -120,23 +141,29 @@ export namespace FaceImpl {
   } as Options;
 }
 
-export type Face = Pick<FaceImpl, "close"|"addRoute"|"removeRoute">;
+export type Face = Pick<FaceImpl, "close"|"addRoute"|"removeRoute"|keyof Emitter>;
 
 export namespace Face {
   export type InterestRequest = InterestRequest_;
   export type DataResponse = DataResponse_;
 
-  export type Rxable = InterestRequest|Data|CancelInterest;
+  export type Rxable = Interest|InterestRequest|Data|CancelInterest;
   export type Txable = Interest|DataResponse|RejectInterest;
 
-  export type Transform = (iterable: AsyncIterable<Txable>) => AsyncIterable<Rxable>;
+  export interface RxTxBasic {
+    rx: AsyncIterable<Rxable>;
+    tx(iterable: AsyncIterable<Interest|Data>): any;
+  }
 
-  export interface RxTx {
+  export interface RxTxExtended {
+    extendedTx: true;
     rx: AsyncIterable<Rxable>;
     tx(iterable: AsyncIterable<Txable>): any;
   }
 
-  export interface L3 {
-    rxtx: Transform|RxTx;
-  }
+  export type RxTxTransform = (iterable: AsyncIterable<Txable>) => AsyncIterable<Rxable>;
+
+  export type RxTx = RxTxBasic|RxTxExtended|RxTxTransform;
+
+  export type Base = RxTx;
 }

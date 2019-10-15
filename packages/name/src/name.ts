@@ -44,7 +44,8 @@ export class Name {
     if (arg1 instanceof Name) {
       this.comps_ = this.comps_.concat(arg1.comps_);
     } else if (typeof arg1 === "string") {
-      this.comps_ = arg1.replace(/^(?:ndn)?\//, "").split("/").map(Component.from);
+      this.comps_ = arg1.replace(/^(?:ndn)?\//, "").split("/")
+                    .filter((comp) => comp !== "").map(Component.from);
     } else if (Array.isArray(arg1)) {
       this.comps_ = arg1.map(Component.from);
     }

@@ -1,9 +1,9 @@
 import { Data, Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
+import { Encoder } from "@ndn/tlv";
 import pDefer from "p-defer";
 import { filter, map, pipeline, transform } from "streaming-iterables";
 
-import { Encoder } from "@ndn/tlv";
 import { Forwarder } from "./forwarder";
 import { CancelInterest, RejectInterest } from "./reqres";
 
@@ -15,22 +15,21 @@ export class SimpleEndpoint {
     const finish = pDefer<Data|RejectInterest>();
     const cancel = pDefer<true>();
     this.fw.addFace({
-      rxtx: {
-        rx: {
-          async *[Symbol.asyncIterator]() {
-            yield interest;
-            if (await Promise.race([finish.promise, cancel.promise]) === true) {
-              yield new CancelInterest(interest);
-              await finish.promise;
-            }
-          },
-        },
-        async tx(iterable) {
-          for await (const pkt of iterable) {
-            finish.resolve(pkt as Data|RejectInterest);
-            break;
+      extendedTx: true,
+      rx: {
+        async *[Symbol.asyncIterator]() {
+          yield interest;
+          if (await Promise.race([finish.promise, cancel.promise]) === true) {
+            yield new CancelInterest(interest);
+            await finish.promise;
           }
         },
+      },
+      async tx(iterable) {
+        for await (const pkt of iterable) {
+          finish.resolve(pkt as Data|RejectInterest);
+          break;
+        }
       },
     });
 
@@ -40,27 +39,25 @@ export class SimpleEndpoint {
         if (res instanceof Data) {
           return res;
         }
-        throw new Error(`Interest rejected: ${res.reject}`);
+        throw new Error(`Interest rejected: ${res.reason}`);
       })(),
       { cancel() { cancel.resolve(true); } },
     );
   }
 
   public produce({ prefix, handler, concurrency = 1 }: SimpleEndpoint.ProducerOptions): SimpleEndpoint.Producer {
-    const face = this.fw.addFace({
-      rxtx: (iterable) => {
-        return pipeline(
-          () => iterable as AsyncIterable<Interest>,
-          filter((item) => item instanceof Interest),
-          transform(concurrency, handler),
-          filter((item) => item !== SimpleEndpoint.TIMEOUT),
-          map((item) => {
-            const data = item as Data;
-            Encoder.encode(data);
-            return data as Data;
-          }),
-        );
-      },
+    const face = this.fw.addFace((iterable) => {
+      return pipeline(
+        () => iterable as AsyncIterable<Interest>,
+        filter((item) => item instanceof Interest),
+        transform(concurrency, handler),
+        filter((item) => item !== SimpleEndpoint.TIMEOUT),
+        map((item) => {
+          const data = item as Data;
+          Encoder.encode(data);
+          return data as Data;
+        }),
+      );
     });
     face.addRoute(prefix);
     return {

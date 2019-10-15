@@ -12,7 +12,7 @@ export class ForwarderImpl {
   constructor(public readonly options: Forwarder.Options) {
   }
 
-  public addFace(face: Face.L3): Face {
+  public addFace(face: Face.Base): Face {
     return new FaceImpl(this, face);
   }
 
