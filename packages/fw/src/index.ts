@@ -1,3 +1,3 @@
-export * from "./reqres";
-export { Face } from "./face";
+export { Face as FwFace } from "./face";
 export { Forwarder } from "./forwarder";
+export { InterestToken, CancelInterest, RejectInterest } from "./reqres";

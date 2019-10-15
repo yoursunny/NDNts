@@ -3,7 +3,7 @@ import { getDataFullName } from "@ndn/l3pkt/test-fixture";
 import { Name } from "@ndn/name";
 import "@ndn/name/test-fixture";
 
-import { CancelInterest, Forwarder, InterestToken, RejectInterest } from "../src";
+import { CancelInterest, Forwarder, FwFace, InterestToken, RejectInterest } from "../src";
 import { SimpleEndpoint } from "../src/simple-endpoint";
 
 test("simple", async () => {
@@ -99,23 +99,11 @@ test("aggregate & retransmit", async () => {
   fw.addFace({
     rxtx: {
       rx: (async function*() {
-        yield Object.assign(
-          new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0xC91585F2)),
-          { [InterestToken]: 1 },
-        );
-        yield Object.assign(
-          new Interest("/P", Interest.CanBePrefix),
-          { [InterestToken]: 4 },
-        );
+        yield InterestToken.set(new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0xC91585F2)), 1);
+        yield InterestToken.set(new Interest("/P", Interest.CanBePrefix), 4);
         await new Promise((r) => setTimeout(r, 20));
-        yield Object.assign(
-          new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0x7B5BD99A)),
-          { [InterestToken]: 2 },
-        );
-        yield Object.assign(
-          new Interest("/P/Q/R/S", Interest.Lifetime(400)),
-          { [InterestToken]: 3 },
-        );
+        yield InterestToken.set(new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0x7B5BD99A)), 2);
+        yield InterestToken.set(new Interest("/P/Q/R/S", Interest.Lifetime(400)), 3);
         yield new CancelInterest(new Interest("/P", Interest.CanBePrefix)); // cancel 4
         yield new CancelInterest(new Interest("/P/Q", Interest.CanBePrefix)); // no PitDn
         yield new CancelInterest(new Interest("/P/Q/R/S", Interest.MustBeFresh)); // no PitEntry
@@ -123,20 +111,20 @@ test("aggregate & retransmit", async () => {
       })(),
       async tx(iterable) {
         for await (const pkt of iterable) {
-          if ((pkt as RejectInterest).reject) {
-            const rej = pkt as RejectInterest;
-            expect(rej.reject).toBe("cancel");
-            expect(rej[InterestToken]).toBe(4);
-            ++nRxRejects;
-          } else {
-            expect(pkt).toBeInstanceOf(Data);
-            const data = pkt as Data;
-            expect(data[InterestToken]).toHaveLength(2);
-            const tokens = new Set(data[InterestToken]);
+          if (pkt instanceof Data) {
+            const data = pkt as FwFace.DataResponse;
+            const tokens = new Set(InterestToken.get(data));
             expect(tokens.has(1)).toBeFalsy();
             expect(tokens.has(2)).toBeTruthy();
             expect(tokens.has(3)).toBeTruthy();
             ++nRxData;
+          } else if (pkt instanceof RejectInterest) {
+            const rej = pkt as RejectInterest;
+            expect(rej.reason).toBe("cancel");
+            expect(InterestToken.get(rej)).toBe(4);
+            ++nRxRejects;
+          } else {
+            expect(true).toBeFalsy();
           }
         }
       },

@@ -3,7 +3,7 @@ import hirestime from "hirestime";
 import { consume, filter, flatMap, map, pipeline, tap } from "streaming-iterables";
 
 import { FaceImpl } from "./face";
-import { DataResponse, InterestToken } from "./reqres";
+import { DataResponse, InterestToken, RejectInterest } from "./reqres";
 
 const getNow = hirestime() as () => number;
 
@@ -50,7 +50,7 @@ export class PitEntry {
     }
     this.dnRecords.delete(face);
     this.updateExpire();
-    face.send({ reject: "cancel", [InterestToken]: dnR.token });
+    face.send(new RejectInterest("cancel", dnR.token));
   }
 
   public forwardInterest(face: FaceImpl) {
@@ -96,7 +96,7 @@ export class PitEntry {
   private expire = () => {
     this.pit.table.delete(this.key);
     for (const [face, dnR] of this.dnRecords) {
-      face.send({ reject: "expire", [InterestToken]: dnR.token });
+      face.send(new RejectInterest("expire", dnR.token));
     }
   }
 }
@@ -124,10 +124,10 @@ export class Pit {
       tap(({ dn, token }) => {
         let resp = responses.get(dn);
         if (!resp) {
-          resp = Object.assign(new Data(data), { [InterestToken]: [] });
+          resp = InterestToken.set(new Data(data), []);
           responses.set(dn, resp);
         }
-        resp[InterestToken].push(token);
+        InterestToken.get(resp).push(token);
       }),
       consume,
     );
