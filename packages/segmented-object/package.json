@@ -1,0 +1,43 @@
+{
+  "name": "@ndn/segmented-object",
+  "version": "0.0.0",
+  "description": "NDNts: Segmented Object",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "main": "src/index.ts",
+  "sideEffects": [
+    "./test-fixture/**"
+  ],
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/segmented-object"
+  },
+  "publishConfig": {
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts"
+  },
+  "dependencies": {
+    "@ndn/fw": "workspace:*",
+    "@ndn/l3pkt": "workspace:*",
+    "@ndn/name": "workspace:*",
+    "@ndn/naming-convention-03": "workspace:*",
+    "@types/readable-stream": "^2.3.5",
+    "it-pushable": "^1.2.1",
+    "p-defer": "^3.0.0",
+    "readable-stream": "^3.4.0",
+    "strict-event-emitter-types": "^2.0.0",
+    "tslib": "*"
+  },
+  "devDependencies": {
+    "@types/it-pushable": "git+https://gist.github.com/cb94c746ac568edbc2040ccc26016096.git"
+  }
+}

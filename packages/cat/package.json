@@ -1,0 +1,47 @@
+{
+  "name": "@ndn/cat",
+  "version": "0.0.0",
+  "description": "NDNts: ndncat - netcat for NDN",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "main": "src/index.ts",
+  "bin": {
+    "ndncat": "lib/index.js"
+  },
+  "sideEffects": [
+    "./test-fixture/**"
+  ],
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/cat"
+  },
+  "publishConfig": {
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts"
+  },
+  "dependencies": {
+    "@ndn/fw": "workspace:*",
+    "@ndn/l3face": "workspace:*",
+    "@ndn/name": "workspace:*",
+    "@ndn/naming-convention-02": "workspace:*",
+    "@ndn/naming-convention-03": "workspace:*",
+    "@ndn/node-transport": "workspace:*",
+    "@ndn/segmented-object": "workspace:*",
+    "@types/readable-stream": "^2.3.5",
+    "@types/yargs": "^13.0.3",
+    "loud-rejection": "^2.2.0",
+    "readable-stream": "^3.4.0",
+    "stdout-stream": "^1.4.1",
+    "tslib": "*",
+    "yargs": "^14.2.0"
+  }
+}
