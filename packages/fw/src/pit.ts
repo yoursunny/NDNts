@@ -5,7 +5,7 @@ import { consume, filter, flatMap, map, pipeline, tap } from "streaming-iterable
 import { FaceImpl } from "./face";
 import { DataResponse, InterestToken, RejectInterest } from "./reqres";
 
-const getNow = hirestime() as () => number;
+const getNow = hirestime();
 
 /** Downstream of pending Interest. */
 interface PitDn {

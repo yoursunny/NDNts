@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
-    "@types/p-fifo": "git+https://gist.github.com/b5c0b4de5155da604daf6cb7af8dd534.git"
+    "@types/hirestime": "git+https://gist.github.com/bd153b79e2669303a096af8560d6ac20.git",
+    "@types/p-fifo": "^1.0.0"
   }
 }

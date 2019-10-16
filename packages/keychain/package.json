@@ -35,7 +35,7 @@
     "@ndn/name": "workspace:*",
     "@ndn/naming-convention-03": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@peculiar/webcrypto": "^1.0.19",
+    "@peculiar/webcrypto": "^1.0.21",
     "applymixins": "^1.1.0",
     "idb-keyval": "^3.2.0",
     "throat": "^5.0.0",
