@@ -7,23 +7,34 @@ import { DataResponse, InterestToken, RejectInterest } from "./reqres";
 
 const getNow = hirestime() as () => number;
 
+/** Downstream of pending Interest. */
 interface PitDn {
+  /** How many times this downstream has (re)transmitted the Interest. */
   nRx: number;
+  /** Expiration time of this pending Interest at downstream. */
   expire: number;
+  /** Last nonce from this downstream. */
   nonce: number;
+  /** Last InterestToken from this downstream. */
   token: any;
 }
 
+/** Aggregated pending Interests from one or more downstream faces. */
 export class PitEntry {
+  /** Representative Interest. */
   public readonly interest: Interest;
+  /** Downstream records. */
   public dnRecords = new Map<FaceImpl, PitDn>();
+  /** Last expiration time among downstreams. */
   public lastExpire: number = 0;
+  /** Entry expiration timer; should match this.lastExpire. */
   public expireTimer?: NodeJS.Timer|number;
 
   constructor(private readonly pit: Pit, public readonly key, interest: Interest) {
     this.interest = new Interest(interest);
   }
 
+  /** Record Interest from downstream. */
   public receiveInterest(face: FaceImpl, interest: Interest, token: any) {
     const now = getNow();
     const expire = now + interest.lifetime;
@@ -43,6 +54,7 @@ export class PitEntry {
     this.updateExpire(now);
   }
 
+  /** Record Interest cancellation from downstream. */
   public cancelInterest(face: FaceImpl) {
     const dnR = this.dnRecords.get(face);
     if (!dnR) {
@@ -53,12 +65,14 @@ export class PitEntry {
     face.send(new RejectInterest("cancel", dnR.token));
   }
 
+  /** Forward Interest to upstream. */
   public forwardInterest(face: FaceImpl) {
     const now = getNow();
     this.interest.lifetime = this.lastExpire - now;
     face.send(this.interest);
   }
 
+  /** Determine which downstream faces should receive Data from upstream. */
   public returnData(face: FaceImpl, data: Data): AsyncIterable<{ dn: FaceImpl, token: any }> {
     clearTimeout(this.expireTimer as number);
     this.pit.table.delete(this.key);
@@ -101,11 +115,16 @@ export class PitEntry {
   }
 }
 
+/** Pending Interest table. */
 export class Pit {
   public readonly table = new Map<string, PitEntry>();
 
+  /** Find or insert entry. */
   public lookup(interest: Interest): PitEntry;
+
+  /** Find entry, disallow insertion. */
   public lookup(interest: Interest, canInsert: false): PitEntry|undefined;
+
   public lookup(interest: Interest, canInsert: boolean = true) {
     const key = `${interest.name} ${interest.canBePrefix ? "+" : "-"}${interest.mustBeFresh ? "+" : "-"}`;
     let entry = this.table.get(key);
@@ -115,6 +134,10 @@ export class Pit {
     return entry;
   }
 
+  /**
+   * Satisfy pending Interests with incoming Data.
+   * @returns true if Data satisfies any pending Interest, or false if Data is unsolicited.
+   */
   public async satisfy(face: FaceImpl, data: Data): Promise<boolean> {
     const responses = new Map<FaceImpl, DataResponse>();
     await pipeline(

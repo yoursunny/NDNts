@@ -39,6 +39,7 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
     );
   }
 
+  /** Shutdown the face. */
   public close() {
     if (!this.running) {
       return;
@@ -49,14 +50,21 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
     this.emit("close");
   }
 
+  /** Add a route toward the face. */
   public addRoute(prefix: Name) {
     this.routes.set(prefix.toString(), prefix);
   }
 
+  /** Remove a route toward the face. */
   public removeRoute(prefix: Name) {
     this.routes.delete(prefix.toString());
   }
 
+  /**
+   * Find a route toward the face that matches an Interest name.
+   * @param name Interest name.
+   * @returns number of name components in the route name, or -1 if no match.
+   */
   public findRoute(name: Name): number {
     let longestNameLength = -1;
     for (const prefix of this.routes.values()) {
@@ -67,12 +75,14 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
     return longestNameLength;
   }
 
+  /** Transmit a packet on the face. */
   public async send(pkt: Face.Txable) {
     ++this.txQueueLength;
     await this.txQueue.push(pkt);
     --this.txQueueLength;
   }
 
+  /** Convert base RX/TX to an RxTxTransform function. */
   private getTransform(): Face.RxTxTransform {
     if (typeof this.face === "function") {
       return this.face;
@@ -141,29 +151,45 @@ export namespace FaceImpl {
   } as Options;
 }
 
-export type Face = Pick<FaceImpl, "close"|"addRoute"|"removeRoute"|keyof Emitter>;
+/** A socket or network interface associated with forwarding plane. */
+export interface Face extends Pick<FaceImpl, "close"|"addRoute"|"removeRoute"|keyof Emitter> {
+  readonly running: boolean;
+}
 
 export namespace Face {
+  /** Interest with optional application-defined token. */
   export type InterestRequest = InterestRequest_;
+  /** Data with application-defined tokens from satisfied Interests. */
   export type DataResponse = DataResponse_;
 
+  /** Item that can be received on face. */
   export type Rxable = Interest|InterestRequest|Data|CancelInterest;
+  /** Item that can be transmitted on face, when extendedTx is enabled. */
   export type Txable = Interest|DataResponse|RejectInterest;
 
+  /** Underlying face RX/TX that can only transmit encodable packets. */
   export interface RxTxBasic {
+    /** Receive packets by forwarder. */
     rx: AsyncIterable<Rxable>;
+    /** Transmit packets from forwarder. */
     tx(iterable: AsyncIterable<Interest|Data>): any;
   }
 
+  /** Underlying face RX/TX that can transmit all Txable items. */
   export interface RxTxExtended {
     extendedTx: true;
+    /** Receive packets by forwarder. */
     rx: AsyncIterable<Rxable>;
+    /** Transmit packets from forwarder. */
     tx(iterable: AsyncIterable<Txable>): any;
   }
 
+  /** Underlying face RX/TX implemented as a transform function. */
   export type RxTxTransform = (iterable: AsyncIterable<Txable>) => AsyncIterable<Rxable>;
 
+  /** Underlying face RX/TX module. */
   export type RxTx = RxTxBasic|RxTxExtended|RxTxTransform;
 
+  /** Underlying face. */
   export type Base = RxTx;
 }

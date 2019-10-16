@@ -12,10 +12,12 @@ export class ForwarderImpl {
   constructor(public readonly options: Forwarder.Options) {
   }
 
+  /** Add a face to the forwarding plane. */
   public addFace(face: Face.Base): Face {
     return new FaceImpl(this, face);
   }
 
+  /** Process incoming Interest. */
   public processInterest(face: FaceImpl, interest: Interest, token: any) {
     const pi = this.pit.lookup(interest);
     pi.receiveInterest(face, interest, token);
@@ -31,6 +33,7 @@ export class ForwarderImpl {
     }
   }
 
+  /** Process incoming cancel Interest request. */
   public cancelInterest(face: FaceImpl, interest: Interest) {
     const pi = this.pit.lookup(interest, false);
     if (pi) {
@@ -38,24 +41,28 @@ export class ForwarderImpl {
     }
   }
 
+  /** Process incoming Data. */
   public processData(face: FaceImpl, data: Data) {
     this.pit.satisfy(face, data);
   }
 }
 
+/** Forwarding plane. */
 export interface Forwarder extends Pick<ForwarderImpl, "addFace"> {
   readonly faces: Set<Face>;
 }
 
 export namespace Forwarder {
-  export function create(options?: Forwarder.Options): Forwarder {
+  export type Options = FaceImpl.Options;
+
+  /** Create a new forwarding plane. */
+  export function create(options?: Options): Forwarder {
     return new ForwarderImpl(Object.assign({}, DefaultOptions, options));
   }
 
-  export type Options = FaceImpl.Options;
-
   let defaultInstance: Forwarder|undefined;
 
+  /** Access the default forwarding plane instance. */
   export function getDefault(): Forwarder {
     if (!defaultInstance) {
       defaultInstance = Forwarder.create();
