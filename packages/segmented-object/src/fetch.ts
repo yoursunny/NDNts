@@ -43,9 +43,10 @@ class Fetcher extends (EventEmitter as new() => Emitter) implements FwFace.RxTxE
   }
 
   public readonly extendedTx = true;
-  /** Deliver packets to forwarding. */
-  public rx = pushable<FwFace.Rxable>();
+  public get rx(): AsyncIterable<FwFace.Rxable> { return this.rx_; }
 
+  /** Deliver packets to forwarding. */
+  private rx_ = pushable<FwFace.Rxable>();
   private stream_?: Readable;
   private promise_?: Promise<Uint8Array>;
   private chunks: Uint8Array[] = [];
@@ -86,13 +87,13 @@ class Fetcher extends (EventEmitter as new() => Emitter) implements FwFace.RxTxE
 
   public abort(err?: Error) {
     this.emit("error", err || new Error("abort"));
-    this.rx.end();
+    this.rx_.end();
   }
 
   private async run() {
     for (let i = 0; typeof this.finalBlockId === "undefined" || i <= this.finalBlockId; ++i) {
       const dataPromise = pDefer<Data>();
-      this.rx.push(InterestToken.set(
+      this.rx_.push(InterestToken.set(
         new Interest(this.name.append(this.segmentNumConvention, i)),
         dataPromise,
       ));
@@ -115,7 +116,7 @@ class Fetcher extends (EventEmitter as new() => Emitter) implements FwFace.RxTxE
       }
     }
 
-    this.rx.end();
+    this.rx_.end();
     this.emit("end");
   }
 }
