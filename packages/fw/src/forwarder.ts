@@ -69,4 +69,9 @@ export namespace Forwarder {
     }
     return defaultInstance;
   }
+
+  /** Delete default instance (mainly for unit testing). */
+  export function deleteDefault() {
+    defaultInstance = undefined;
+  }
 }

@@ -89,22 +89,13 @@ importers:
   packages/endpoint:
     dependencies:
       '@ndn/fw': 'link:../fw'
-      '@ndn/l3face': 'link:../l3face'
       '@ndn/l3pkt': 'link:../l3pkt'
       '@ndn/name': 'link:../name'
-      minimalistic-assert: 1.0.1
-      strict-event-emitter-types: 2.0.0
       tslib: 1.10.0
-    devDependencies:
-      '@types/minimalistic-assert': 1.0.0
     specifiers:
       '@ndn/fw': 'workspace:*'
-      '@ndn/l3face': 'workspace:*'
       '@ndn/l3pkt': 'workspace:*'
       '@ndn/name': 'workspace:*'
-      '@types/minimalistic-assert': ^1.0.0
-      minimalistic-assert: ^1.0.1
-      strict-event-emitter-types: ^2.0.0
       tslib: '*'
   packages/fw:
     dependencies:
@@ -1649,10 +1640,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-FwI9gX75FgVBJ7ywgnq/P7tw+/o1GUbtP0KzbtusLigAOgIgNISRK0ZPl4qertvXSIE8YbsVJueQ90cDt9YYyw==
-  /@types/minimalistic-assert/1.0.0:
-    dev: true
-    resolution:
-      integrity: sha512-Z7szANgSqTSklzQnRjf+oVo5Y0dvC2Tfj+05zSSny7fohCMlfnKsXAgGRd0YS2yv1g7KseVRoCHufYEoBYhPMw==
   /@types/minimatch/3.0.3:
     dev: true
     resolution:
@@ -6570,6 +6557,7 @@ packages:
     resolution:
       integrity: sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==
   /minimalistic-assert/1.0.1:
+    dev: true
     resolution:
       integrity: sha512-UtJcAD4yEaGtjPezWuO9wC4nwUnVH/8/Im3yEHQP4b67cXlD/Qr9hdITCU1xDbSEXg2XKNaP8jsReV7vQd00/A==
   /minimalistic-crypto-utils/1.0.1:

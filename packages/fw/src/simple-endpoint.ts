@@ -8,7 +8,7 @@ import { Forwarder } from "./forwarder";
 import { CancelInterest, RejectInterest } from "./reqres";
 
 export class SimpleEndpoint {
-  constructor(private readonly fw: Forwarder = Forwarder.getDefault()) {
+  constructor(protected readonly fw: Forwarder = Forwarder.getDefault()) {
   }
 
   public consume(interest: Interest): SimpleEndpoint.Consumer {
