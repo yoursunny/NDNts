@@ -5,9 +5,7 @@ import { Segment as Segment02 } from "@ndn/naming-convention-02";
 import { Segment as Segment03 } from "@ndn/naming-convention-03";
 import { SocketTransport } from "@ndn/node-transport";
 import { fetch } from "@ndn/segmented-object";
-import { pipeline } from "readable-stream";
 import stdout from "stdout-stream";
-import { promisify } from "util";
 import { Arguments, Argv, CommandModule } from "yargs";
 
 interface Args {
@@ -26,7 +24,7 @@ async function main(args: Args) {
     segmentNumConvention: args.segment02 ? Segment02 : Segment03,
   });
   try {
-    await promisify(pipeline)(fetcher.stream, stdout);
+    await fetcher.writeToStream(stdout);
   } finally {
     tcpFace.close();
   }
@@ -39,6 +37,11 @@ class GetSegmentedCommand implements CommandModule<Args, Args> {
 
   public builder(argv: Argv<Args>): Argv<Args> {
     return argv
+    .positional("name", {
+      desc: "versioned name prefix",
+      type: "string",
+    })
+    .demandOption("name")
     .option("segment02", {
       default: false,
       desc: "use segment number format from 2014 Naming Convention",

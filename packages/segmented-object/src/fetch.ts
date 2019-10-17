@@ -5,7 +5,7 @@ import { Segment as Segment03 } from "@ndn/naming-convention-03";
 import { EventEmitter } from "events";
 import pushable from "it-pushable";
 import pDefer from "p-defer";
-import { Readable } from "readable-stream";
+import { writeToStream } from "streaming-iterables";
 import StrictEventEmitter from "strict-event-emitter-types";
 
 interface Events {
@@ -21,35 +21,45 @@ interface Events {
 
 type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
-class Fetcher extends (EventEmitter as new() => Emitter) implements FwFace.RxTxExtended {
-  public get stream() {
-    if (!this.stream_) {
-      const s = this.stream_ = new Readable({ read: () => undefined });
-      this.on("data", (payload) => s.push(payload));
-      this.on("end", () => s.push(null));
-      this.on("error", (err) => s.destroy(err));
-    }
-    return this.stream_;
-  }
-
+class Fetcher extends (EventEmitter as new() => Emitter) {
+  /**
+   * Wait for the segmented object to be completely fetched.
+   * Resolves to reassembled object; rejects upon error.
+   *
+   * This property must be first accessed right after fetch() function call.
+   */
   public get promise() {
     if (!this.promise_) {
       this.promise_ = new Promise<Uint8Array>((resolve, reject) => {
-        this.on("end", () => resolve(Buffer.concat(this.chunks)));
+        let totalLength = 0;
+        const chunks = [] as Uint8Array[];
+        this.on("data", (chunk) => {
+          chunks.push(chunk);
+          totalLength += chunk.length;
+        });
+        this.on("end", () => resolve(Buffer.concat(chunks, totalLength)));
         this.on("error", reject);
       });
     }
     return this.promise_;
   }
 
-  public readonly extendedTx = true;
-  public get rx(): AsyncIterable<FwFace.Rxable> { return this.rx_; }
+  /**
+   * Iterate over chunks of the segmented object in order.
+   *
+   * This property must be first accessed right after fetch() function call.
+   */
+  public get chunks(): AsyncIterable<Uint8Array> {
+    const it = pushable<Uint8Array>();
+    this.on("data", (chunk) => it.push(chunk));
+    this.on("end", () => it.end());
+    this.on("error", (err) => it.end(err));
+    return it;
+  }
 
   /** Deliver packets to forwarding. */
-  private rx_ = pushable<FwFace.Rxable>();
-  private stream_?: Readable;
+  private tx = pushable<FwFace.Rxable>();
   private promise_?: Promise<Uint8Array>;
-  private chunks: Uint8Array[] = [];
   private finalBlockId?: number;
 
   constructor(public readonly name: Name, opts: fetch.Options) {
@@ -57,15 +67,70 @@ class Fetcher extends (EventEmitter as new() => Emitter) implements FwFace.RxTxE
     this.fw = opts.fw || Forwarder.getDefault();
     this.segmentNumConvention = opts.segmentNumConvention || Segment03;
 
-    this.fw.addFace(this);
-    setTimeout(() => {
-      this.run()
-      .catch((err: Error) => this.emit("error", err));
-    }, 0);
+    (this as EventEmitter).on("newListener", this.waitForDataListener);
+  }
+
+  /** Stop fetching immediately. */
+  public abort(err?: Error) {
+    this.emit("error", err || new Error("abort"));
+    this.tx.end();
+  }
+
+  /**
+   * Write the segmented object to a stream as it's being fetched.
+   * @param stream destination stream; it will not be closed.
+   * @returns a Promise that resolves upon completion or rejects upon error.
+   *
+   * This must be invoked right after fetch() function call.
+   */
+  public writeToStream(stream: NodeJS.WriteStream): Promise<void> {
+    return writeToStream(stream, this.chunks);
+  }
+
+  private waitForDataListener = (eventName: string) => {
+    if (eventName !== "data") {
+      return;
+    }
+    (this as EventEmitter).off("newListener", this.waitForDataListener);
+
+    this.fw.addFace({
+      extendedTx: true,
+      rx: this.tx,
+      tx: this.rx,
+    });
+
+    this.run()
+    .catch((err: Error) => this.emit("error", err));
+  }
+
+  private async run() {
+    for (let i = 0; typeof this.finalBlockId === "undefined" || i <= this.finalBlockId; ++i) {
+      const dataPromise = pDefer<Data>();
+      this.tx.push(InterestToken.set(
+        new Interest(this.name.append(this.segmentNumConvention, i)),
+        dataPromise,
+      ));
+      let data;
+      try {
+        data = await dataPromise.promise;
+      } catch (err) {
+        this.abort(err);
+        return;
+      }
+      this.emit("segment", i, data);
+
+      if (data.finalBlockId && data.finalBlockId.equals(data.name.at(-1))) {
+        this.finalBlockId = i;
+      }
+      this.emit("data", data.content);
+    }
+
+    this.tx.end();
+    this.emit("end");
   }
 
   /** Process packet from forwarding. */
-  public async tx(iterable) {
+  private rx = async (iterable: AsyncIterable<FwFace.Txable>) => {
     for await (const pkt of iterable) {
       switch (true) {
         case pkt instanceof Data: {
@@ -83,41 +148,6 @@ class Fetcher extends (EventEmitter as new() => Emitter) implements FwFace.RxTxE
         }
       }
     }
-  }
-
-  public abort(err?: Error) {
-    this.emit("error", err || new Error("abort"));
-    this.rx_.end();
-  }
-
-  private async run() {
-    for (let i = 0; typeof this.finalBlockId === "undefined" || i <= this.finalBlockId; ++i) {
-      const dataPromise = pDefer<Data>();
-      this.rx_.push(InterestToken.set(
-        new Interest(this.name.append(this.segmentNumConvention, i)),
-        dataPromise,
-      ));
-      let data;
-      try {
-        data = await dataPromise.promise;
-      } catch (err) {
-        this.abort(err);
-        return;
-      }
-      this.emit("segment", i, data);
-
-      if (data.finalBlockId && data.finalBlockId.equals(data.name.at(-1))) {
-        this.finalBlockId = i;
-      }
-      this.chunks.push(data.content);
-
-      if (data.content.length > 0) {
-        this.emit("data", data.content);
-      }
-    }
-
-    this.rx_.end();
-    this.emit("end");
   }
 }
 interface Fetcher extends Required<fetch.Options> {}
@@ -142,20 +172,5 @@ export namespace fetch {
   }
 
   /** Fetching progress and response. */
-  export interface Fetcher extends Pick<Fetcher_, keyof Emitter|"abort"> {
-    /**
-     * Wait for the segmented object to be completely fetched.
-     * Resolves to reassembled object; rejects upon error.
-     *
-     * This property must be first accessed right after fetch() function call.
-     */
-    readonly promise: Promise<Uint8Array>;
-
-    /**
-     * Read from the segmented object as it's being fetched.
-     *
-     * This property must be first accessed right after fetch() function call.
-     */
-    readonly stream: Readable;
-  }
+  export type Fetcher = Pick<Fetcher_, keyof Emitter|"abort"|"promise"|"chunks"|"writeToStream">;
 }

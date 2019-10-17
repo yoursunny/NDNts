@@ -36,10 +36,8 @@
     "@ndn/naming-convention-03": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
-    "@types/readable-stream": "^2.3.5",
     "@types/yargs": "^13.0.3",
     "loud-rejection": "^2.2.0",
-    "readable-stream": "^3.4.0",
     "stdout-stream": "^1.4.1",
     "tslib": "*",
     "yargs": "^14.2.0"
