@@ -28,15 +28,21 @@
   "dependencies": {
     "@ndn/fw": "workspace:*",
     "@ndn/l3pkt": "workspace:*",
+    "@ndn/keychain": "workspace:*",
     "@ndn/name": "workspace:*",
     "@ndn/naming-convention-03": "workspace:*",
+    "is-stream": "^2.0.0",
     "it-pushable": "^1.2.1",
+    "minimalistic-assert": "^1.0.1",
     "p-defer": "^3.0.0",
     "streaming-iterables": "^4.1.0",
     "strict-event-emitter-types": "^2.0.0",
     "tslib": "*"
   },
   "devDependencies": {
-    "@types/it-pushable": "git+https://gist.github.com/cb94c746ac568edbc2040ccc26016096.git"
+    "@ndn/naming-convention-02": "workspace:*",
+    "@types/it-pushable": "git+https://gist.github.com/cb94c746ac568edbc2040ccc26016096.git",
+    "@types/minimalistic-assert": "^1.0.0",
+    "stream-mock": "^2.0.5"
   }
 }

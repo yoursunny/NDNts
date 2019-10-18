@@ -66,12 +66,13 @@ class Fetcher extends (EventEmitter as new() => Emitter) {
     super();
     this.fw = opts.fw || Forwarder.getDefault();
     this.segmentNumConvention = opts.segmentNumConvention || Segment03;
+    this.interestLifetime = opts.interestLifetime || Interest.DefaultLifetime;
 
     (this as EventEmitter).on("newListener", this.waitForDataListener);
   }
 
   /** Stop fetching immediately. */
-  public abort(err?: Error) {
+  public abort = (err?: Error) => {
     this.emit("error", err || new Error("abort"));
     this.tx.end();
   }
@@ -83,7 +84,7 @@ class Fetcher extends (EventEmitter as new() => Emitter) {
    *
    * This must be invoked right after fetch() function call.
    */
-  public writeToStream(stream: NodeJS.WriteStream): Promise<void> {
+  public writeToStream(stream: NodeJS.WritableStream): Promise<void> {
     return writeToStream(stream, this.chunks);
   }
 
@@ -99,24 +100,18 @@ class Fetcher extends (EventEmitter as new() => Emitter) {
       tx: this.rx,
     });
 
-    this.run()
-    .catch((err: Error) => this.emit("error", err));
+    this.run().catch(this.abort);
   }
 
   private async run() {
     for (let i = 0; typeof this.finalBlockId === "undefined" || i <= this.finalBlockId; ++i) {
       const dataPromise = pDefer<Data>();
       this.tx.push(InterestToken.set(
-        new Interest(this.name.append(this.segmentNumConvention, i)),
+        new Interest(this.name.append(this.segmentNumConvention, i),
+                     Interest.Lifetime(this.interestLifetime)),
         dataPromise,
       ));
-      let data;
-      try {
-        data = await dataPromise.promise;
-      } catch (err) {
-        this.abort(err);
-        return;
-      }
+      const data = await dataPromise.promise;
       this.emit("segment", i, data);
 
       if (data.finalBlockId && data.finalBlockId.equals(data.name.at(-1))) {
@@ -169,6 +164,9 @@ export namespace fetch {
      * Default is Segment from @ndn/naming-convention-03 package.
      */
     segmentNumConvention?: NamingConvention<number, unknown>;
+
+    /** Specify InterestLifetime. */
+    interestLifetime?: number;
   }
 
   /** Fetching progress and response. */

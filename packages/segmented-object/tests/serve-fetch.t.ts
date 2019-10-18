@@ -1,0 +1,130 @@
+import { Forwarder, SimpleEndpoint } from "@ndn/fw";
+import { Interest } from "@ndn/l3pkt";
+import { Name } from "@ndn/name";
+import { Segment as Segment02 } from "@ndn/naming-convention-02";
+import { BufferReadableMock, BufferWritableMock } from "stream-mock";
+
+import { fetch, serve } from "../src";
+
+let objectBody: Buffer;
+
+beforeAll(() => {
+  objectBody = Buffer.alloc(1024 * 1024);
+  for (let i = 0; i < objectBody.length; ++i) {
+    objectBody[i] = Math.random() * 0x100;
+  }
+});
+
+afterEach(() => Forwarder.deleteDefault());
+
+test("buffer to buffer", async () => {
+  const server = serve(new Name("/R"), objectBody);
+  const fetcher = fetch(new Name("/R"));
+  await expect(fetcher.promise).resolves.toEqual(objectBody);
+  await expect(fetcher.promise).resolves.toEqual(objectBody);
+  server.stop();
+});
+
+test("buffer to chunks", async () => {
+  const server = serve(new Name("/R"), objectBody);
+  const chunks = [] as Uint8Array[];
+  for await (const chunk of fetch(new Name("/R")).chunks) {
+    chunks.push(chunk);
+  }
+  expect(Buffer.concat(chunks)).toEqual(objectBody);
+  server.stop();
+});
+
+test("stream to stream", async () => {
+  const src = new BufferReadableMock([objectBody]);
+  const server = serve(new Name("/R"), src);
+
+  const dst = new BufferWritableMock();
+  const fetcher = fetch(new Name("/R"));
+  await fetcher.writeToStream(dst);
+
+  await new Promise((r) => dst.end(r));
+  expect(objectBody.compare(dst.flatData)).toEqual(0);
+  server.stop();
+});
+
+test("iterable to events", (done) => {
+  const server = serve(new Name("/R"), (async function*() {
+    const yieldSize = 5000;
+    for (let i = 0; i < objectBody.length; i += yieldSize) {
+      yield objectBody.subarray(i, i + yieldSize);
+    }
+  })(), {
+    chunkSize: 6000,
+  });
+
+  const fetcher = fetch(new Name("/R"));
+
+  const receivedSegments = new Set<number>();
+  fetcher.on("segment", (segmentNum, data) => {
+    expect(receivedSegments.has(segmentNum)).toBeFalsy();
+    receivedSegments.add(segmentNum);
+    expect(data.content.length <= 6000);
+  });
+
+  const fetched = [] as Uint8Array[];
+  fetcher.on("data", (chunk) => {
+    fetched.push(chunk);
+  });
+
+  fetcher.on("end", () => {
+    expect(receivedSegments.size).toEqual(fetched.length);
+    for (let i = 0; i < fetched.length; ++i) {
+      expect(receivedSegments.has(i)).toBeTruthy();
+    }
+    expect(Buffer.concat(fetched)).toEqual(objectBody);
+    server.stop();
+    done();
+  });
+});
+
+test("empty object", async () => {
+  const fw = Forwarder.create();
+  const server = serve(new Name("/R"), new Uint8Array(), { fw, segmentNumConvention: Segment02 });
+
+  const ep = new SimpleEndpoint(fw);
+  await expect(ep.consume(new Interest(new Name("/R").append(Segment02, 1), Interest.Lifetime(50))))
+        .rejects.toThrow();
+  const data = await ep.consume(new Interest(new Name("/R").append(Segment02, 0)));
+  expect(data.content).toHaveLength(0);
+
+  server.stop();
+});
+
+test("segment number convention mismatch", async () => {
+  const server = serve(new Name("/R"), objectBody, { segmentNumConvention: Segment02 });
+  await expect(fetch(new Name("/R"), { interestLifetime: 400 }).promise).rejects.toThrow();
+  server.stop();
+});
+
+test("abort", async () => {
+  const src = (async function*() {
+    const yieldSize = 8 * 1024;
+    for (let i = 0; i < objectBody.length; i += yieldSize) {
+      yield objectBody.subarray(i, i + yieldSize);
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  })();
+  const server = serve(new Name("/R"), src);
+  const fetcher = fetch(new Name("/R"), { interestLifetime: 400 });
+
+  const onError = jest.fn<void, [Error]>();
+  fetcher.on("error", onError);
+
+  await Promise.all([
+    (async () => {
+      await new Promise((r) => setTimeout(r, 150));
+      fetcher.abort();
+    })(),
+    expect(fetcher.promise).rejects.toThrow(/abort/),
+    expect(fetcher.writeToStream(new BufferWritableMock())).rejects.toThrow(/abort/),
+  ]);
+
+  expect(onError).toHaveBeenCalled();
+  server.stop();
+});

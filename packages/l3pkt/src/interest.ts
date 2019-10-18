@@ -6,7 +6,6 @@ import { LLSign, LLVerify } from "./llsign";
 import { sha256 } from "./sha256";
 import { SigInfo } from "./sig-info";
 
-const LIFETIME_DEFAULT = 4000;
 const HOPLIMIT_MAX = 255;
 const DecodeParams = Symbol("Interest.DecodeParams");
 const DigestValidated = Symbol("Interest.DigestValidated");
@@ -81,7 +80,7 @@ export class Interest {
   public [DecodeParams]?: Uint8Array|typeof DigestValidated;
 
   private nonce_: number|undefined;
-  private lifetime_: number = LIFETIME_DEFAULT;
+  private lifetime_: number = Interest.DefaultLifetime;
   private hopLimit_: number = HOPLIMIT_MAX;
 
   /**
@@ -130,7 +129,7 @@ export class Interest {
       this.canBePrefix ? [TT.CanBePrefix] : undefined,
       this.mustBeFresh ? [TT.MustBeFresh] : undefined,
       [TT.Nonce, NNI(typeof this.nonce === "number" ? this.nonce : Interest.generateNonce(), 4)],
-      this.lifetime !== LIFETIME_DEFAULT ?
+      this.lifetime !== Interest.DefaultLifetime ?
         [TT.InterestLifetime, NNI(this.lifetime)] : undefined,
       this.hopLimit !== HOPLIMIT_MAX ?
         [TT.HopLimit, NNI(this.hopLimit, 1)] : undefined,
@@ -263,6 +262,8 @@ export namespace Interest {
   export function Lifetime(v: number): LifetimeTag {
     return new LifetimeTag(v);
   }
+
+  export const DefaultLifetime = 4000;
 
   export function HopLimit(v: number): HopLimitTag {
     return new HopLimitTag(v);
