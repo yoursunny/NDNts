@@ -1,13 +1,13 @@
 import { Forwarder } from "@ndn/fw";
 import { theDigestKey } from "@ndn/keychain";
 import { L3Face } from "@ndn/l3face";
+import { Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 import { Segment as Segment02 } from "@ndn/naming-convention-02";
 import { Segment as Segment03 } from "@ndn/naming-convention-03";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { SocketTransport } from "@ndn/node-transport";
 import { serve } from "@ndn/segmented-object";
-import { Interest } from "packages/l3pkt/src";
 import { Arguments, Argv, CommandModule } from "yargs";
 
 interface Args {
