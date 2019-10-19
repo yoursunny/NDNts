@@ -12,7 +12,7 @@ class NfdAdvertise extends Advertise {
   }
 
   protected async doAdvertise(name: Name) {
-    const cr = await ControlCommand.rpc("rib/register", {
+    const cr = await ControlCommand.call("rib/register", {
       name,
       origin: 65,
       // tslint:disable-next-line:object-literal-sort-keys
@@ -29,7 +29,7 @@ class NfdAdvertise extends Advertise {
   }
 
   protected async doWithdraw(name: Name) {
-    const cr = await ControlCommand.rpc("rib/unregister", {
+    const cr = await ControlCommand.call("rib/unregister", {
       name,
       origin: 65,
     }, {
@@ -47,8 +47,10 @@ class NfdAdvertise extends Advertise {
  * @param face face connected to NFD.
  * @param opt options.
  *
- * Currently, only one face may enable NFD prefix registration.
+ * Only one face can enable NFD prefix registration. Enabling on multiple faces will result in
+ * unstable operation because command Interests would go to every face but only one reply Data
+ * could reach this module.
  */
-export function enableNfdPrefixReg(face: FwFace, opt: Options) {
+export function enableNfdPrefixReg(face: FwFace, opt: Options = {}) {
   face.advertise = new NfdAdvertise(face, opt);
 }

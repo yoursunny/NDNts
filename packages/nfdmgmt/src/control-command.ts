@@ -7,9 +7,15 @@ import { ControlParameters } from "./control-parameters";
 import { ControlResponse } from "./control-response";
 import { signInterest02 } from "./sign-interest-02";
 
+/**
+ * Pick fields from ControlParameters.Fields.
+ * R are required.
+ * O are optional.
+ */
 type CP<R extends keyof ControlParameters.Fields, O extends keyof ControlParameters.Fields> =
   Required<Pick<ControlParameters.Fields, R>> & Pick<ControlParameters.Fields, O>;
 
+/** Declare required and optional fields of each command. */
 interface Commands {
   "face/create": CP<"uri", "localUri"|"facePersistency"|"baseCongestionMarkingInterval"|
                            "defaultCongestionPeriod"|"mtu"|"flags"|"mask">;
@@ -22,6 +28,7 @@ interface Commands {
   "rib/unregister": CP<"name", "faceId"|"origin">;
 }
 
+/** NFD Management - Control Command client. */
 export namespace ControlCommand {
   export interface Options extends signInterest02.Options {
     fw?: Forwarder;
@@ -31,8 +38,9 @@ export namespace ControlCommand {
   export const localhostPrefix = new Name("/localhost/nfd");
   export const localhopPrefix = new Name("/localhop/nfd");
 
-  export async function rpc<C extends keyof Commands>(
-      command: C, params: Commands[C], opt: Options): Promise<ControlResponse> {
+  /** Invoke a command and wait for response. */
+  export async function call<C extends keyof Commands>(
+      command: C, params: Commands[C], opt: Options = {}): Promise<ControlResponse> {
     const prefix = opt.commandPrefix || localhostPrefix;
     const name = new Name([
       ...prefix.comps,

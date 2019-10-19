@@ -1,5 +1,4 @@
 import { Forwarder } from "@ndn/fw";
-import { theDigestKey } from "@ndn/keychain";
 import { L3Face } from "@ndn/l3face";
 import { Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
@@ -22,7 +21,7 @@ async function main(args: Args) {
     await SocketTransport.connect({ port: 6363, host: args.router })));
   tcpFace.addRoute(new Name());
   if (args.nfd) {
-    enableNfdPrefixReg(tcpFace, { signer: theDigestKey });
+    enableNfdPrefixReg(tcpFace);
     Interest.tolerateSelectors = true;
   }
 

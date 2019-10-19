@@ -1,7 +1,6 @@
 import { TT } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 import { EncodableTlv, Encoder, NNI } from "@ndn/tlv";
-import assert from "minimalistic-assert";
 
 interface Fields {
   name?: Name;
@@ -41,6 +40,7 @@ const fieldDefs = [
   [0x85, "facePersistency", NNI],
 ] as Array<[number, keyof Fields, any]>;
 
+/** NFD Management ControlParameters struct (encoding only). */
 export class ControlParameters {
   constructor(value: Fields = {}) {
     Object.assign(this, value);
@@ -51,19 +51,17 @@ export class ControlParameters {
       0x68,
       ...fieldDefs.map(([tt, key, type]) => {
         const value = this[key];
-        if (typeof value === "undefined") {
-          return undefined;
-        }
         switch (true) {
-          case tt === TT.Name:
-            return value as Name;
+          case typeof value === "undefined":
+            return undefined;
+          case type === NNI:
+            return [tt, NNI(value as number)] as EncodableTlv;
           case type === String:
             return [tt, new TextEncoder().encode(value as string)] as EncodableTlv;
           case type === Name:
             return [tt, value as Name] as EncodableTlv;
           default:
-            assert.equal(type, NNI);
-            return [tt, NNI(value as number)] as EncodableTlv;
+            return value;
         }
       }),
     );

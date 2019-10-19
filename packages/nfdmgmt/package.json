@@ -31,10 +31,6 @@
     "@ndn/l3pkt": "workspace:*",
     "@ndn/name": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "minimalistic-assert": "^1.0.1",
     "tslib": "*"
-  },
-  "devDependencies": {
-    "@types/minimalistic-assert": "^1.0.0"
   }
 }
