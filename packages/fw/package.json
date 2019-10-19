@@ -30,6 +30,7 @@
     "@ndn/name": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "hirestime": "^3.2.1",
+    "minimalistic-assert": "^1.0.1",
     "p-defer": "^3.0.0",
     "p-fifo": "^1.0.0",
     "streaming-iterables": "^4.1.0",
@@ -39,6 +40,7 @@
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
     "@types/hirestime": "git+https://gist.github.com/bd153b79e2669303a096af8560d6ac20.git",
+    "@types/minimalistic-assert": "^1.0.0",
     "@types/p-fifo": "^1.0.0"
   }
 }

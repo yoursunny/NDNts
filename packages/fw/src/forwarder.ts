@@ -1,12 +1,14 @@
 import { Data, Interest } from "@ndn/l3pkt";
 
 import { Face, FaceImpl } from "./face";
+import { Fib, FibEntry } from "./fib";
 import { Pit } from "./pit";
 
 const DefaultOptions = { ...FaceImpl.DefaultOptions };
 
 export class ForwarderImpl {
   public readonly faces = new Set<FaceImpl>();
+  public readonly fib = new Fib(this);
   public readonly pit = new Pit();
 
   constructor(public readonly options: Forwarder.Options) {
@@ -22,12 +24,12 @@ export class ForwarderImpl {
     const pi = this.pit.lookup(interest);
     pi.receiveInterest(face, interest, token);
 
-    for (const nh of this.faces) {
-      if (nh === face) {
-        continue;
-      }
-      const prefixLength = nh.findRoute(interest.name);
-      if (prefixLength >= 0) {
+    const fibEntry = this.fib.lpm(interest.name);
+    if (!fibEntry) {
+      return;
+    }
+    for (const nh of fibEntry.nexthops) {
+      if (nh !== face) {
         pi.forwardInterest(nh);
       }
     }
@@ -44,6 +46,22 @@ export class ForwarderImpl {
   /** Process incoming Data. */
   public processData(face: FaceImpl, data: Data) {
     this.pit.satisfy(face, data);
+  }
+
+  public advertisePrefix(fibEntry: FibEntry) {
+    for (const face of this.faces) {
+      if (face.advertise) {
+        face.advertise.advertise(fibEntry);
+      }
+    }
+  }
+
+  public withdrawPrefix(fibEntry: FibEntry) {
+    for (const face of this.faces) {
+      if (face.advertise) {
+        face.advertise.withdraw(fibEntry);
+      }
+    }
   }
 }
 

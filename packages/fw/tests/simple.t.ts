@@ -48,6 +48,8 @@ test("simple", async () => {
   const canceledInterest = se.consume(new Interest("/Q/canceled"));
   setTimeout(() => canceledInterest.cancel(), 10);
   await Promise.all([
+    expect(se.consume(new Interest("/O/no-route", Interest.Lifetime(500))))
+      .rejects.toThrow(),
     expect(se.consume(new Interest("/P/exact")))
       .resolves.toBeInstanceOf(Data),
     expect(se.consume(new Interest("/P/prefix", Interest.CanBePrefix)))
@@ -96,11 +98,12 @@ test("aggregate & retransmit", async () => {
 
   let nRxData = 0;
   let nRxRejects = 0;
-  fw.addFace({
+  const face = fw.addFace({
     extendedTx: true,
     rx: (async function*() {
       yield InterestToken.set(new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0xC91585F2)), 1);
       yield InterestToken.set(new Interest("/P", Interest.CanBePrefix), 4);
+      yield InterestToken.set(new Interest("/L", Interest.Lifetime(100)), 5); // no route other than self
       await new Promise((r) => setTimeout(r, 20));
       yield InterestToken.set(new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0x7B5BD99A)), 2);
       yield InterestToken.set(new Interest("/P/Q/R/S", Interest.Lifetime(400)), 3);
@@ -120,8 +123,17 @@ test("aggregate & retransmit", async () => {
           ++nRxData;
         } else if (pkt instanceof RejectInterest) {
           const rej = pkt as RejectInterest<number>;
-          expect(rej.reason).toBe("cancel");
-          expect(InterestToken.get(rej)).toBe(4);
+          switch (InterestToken.get(rej)) {
+            case 4:
+              expect(rej.reason).toBe("cancel");
+              break;
+            case 5:
+              expect(rej.reason).toBe("expire");
+              break;
+            default:
+              expect(true).toBeFalsy();
+              break;
+          }
           ++nRxRejects;
         } else {
           expect(true).toBeFalsy();
@@ -129,6 +141,7 @@ test("aggregate & retransmit", async () => {
       }
     },
   });
+  face.addRoute(new Name("/L"));
 
   await Promise.all([
     expect(se.consume(new Interest("/P/Q", Interest.CanBePrefix)))
@@ -140,5 +153,5 @@ test("aggregate & retransmit", async () => {
   ]);
 
   expect(nRxData).toBe(1);
-  expect(nRxRejects).toBe(1);
+  expect(nRxRejects).toBe(2);
 });

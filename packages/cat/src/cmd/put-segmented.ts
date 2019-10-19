@@ -27,7 +27,6 @@ async function main(args: Args) {
   }
 
   const name = new Name(args.name);
-  await tcpFace.registerPrefix(name);
   serve(name, process.stdin, {
     segmentNumConvention: args.segment02 ? Segment02 : Segment03,
   });

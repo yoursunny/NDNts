@@ -6,6 +6,7 @@ import Fifo from "p-fifo";
 import { buffer, filter, pipeline } from "streaming-iterables";
 import StrictEventEmitter from "strict-event-emitter-types";
 
+import { Advertise } from "./advertise";
 import { ForwarderImpl } from "./forwarder";
 import { CancelInterest, DataResponse, InterestRequest, InterestToken, RejectInterest } from "./reqres";
 
@@ -21,7 +22,8 @@ const STOP = Symbol("FaceImpl.Stop");
 export class FaceImpl extends (EventEmitter as new() => Emitter) {
   public readonly stopping = pDefer<typeof STOP>();
   public running = true;
-  public readonly routes = new Map<string, Name>();
+  public readonly routes = new Set<string>(); // used by FIB
+  public advertise?: Advertise;
   public readonly txQueue = new Fifo<Face.Txable>();
   public txQueueLength = 0;
 
@@ -45,43 +47,19 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
     }
     this.running = false;
     this.fw.faces.delete(this);
+    this.fw.fib.closeFace(this);
     this.stopping.resolve(STOP);
     this.emit("close");
   }
 
   /** Add a route toward the face. */
-  public addRoute(prefix: Name) {
-    this.routes.set(prefix.toString(), prefix);
+  public addRoute(name: Name) {
+    this.fw.fib.insert(name, this);
   }
 
   /** Remove a route toward the face. */
-  public removeRoute(prefix: Name) {
-    this.routes.delete(prefix.toString());
-  }
-
-  /**
-   * Find a route toward the face that matches an Interest name.
-   * @param name Interest name.
-   * @returns number of name components in the route name, or -1 if no match.
-   */
-  public findRoute(name: Name): number {
-    let longestNameLength = -1;
-    for (const prefix of this.routes.values()) {
-      if (prefix.isPrefixOf(name)) {
-        longestNameLength = Math.max(longestNameLength, prefix.length);
-      }
-    }
-    return longestNameLength;
-  }
-
-  /** Register a prefix from the remote peer. */
-  public registerPrefix(name: Name): Promise<void> {
-    return Promise.reject(new Error("not supported"));
-  }
-
-  /** Unregister a prefix from the remote peer. */
-  public unregisterPrefix(name: Name): Promise<void> {
-    return Promise.reject(new Error("not supported"));
+  public removeRoute(name: Name) {
+    this.fw.fib.delete(name, this);
   }
 
   /** Transmit a packet on the face. */
@@ -162,7 +140,7 @@ export namespace FaceImpl {
 
 /** A socket or network interface associated with forwarding plane. */
 export interface Face extends Pick<FaceImpl,
-    "fw"|"close"|"addRoute"|"removeRoute"|"registerPrefix"|"unregisterPrefix"|keyof Emitter> {
+    "fw"|"advertise"|"close"|"addRoute"|"removeRoute"|keyof Emitter> {
   readonly running: boolean;
 }
 
