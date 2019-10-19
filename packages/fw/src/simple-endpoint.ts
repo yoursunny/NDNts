@@ -2,7 +2,7 @@ import { Data, Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 import { Encoder } from "@ndn/tlv";
 import pDefer from "p-defer";
-import { filter, map, pipeline, transform } from "streaming-iterables";
+import { filter, pipeline, tap, transform } from "streaming-iterables";
 
 import { Forwarder } from "./forwarder";
 import { CancelInterest, RejectInterest } from "./reqres";
@@ -48,15 +48,11 @@ export class SimpleEndpoint {
   public produce({ prefix, handler, concurrency = 1 }: SimpleEndpoint.ProducerOptions): SimpleEndpoint.Producer {
     const face = this.fw.addFace((iterable) => {
       return pipeline(
-        () => iterable as AsyncIterable<Interest>,
-        filter((item) => item instanceof Interest),
+        () => iterable,
+        filter((item): item is Interest => item instanceof Interest),
         transform(concurrency, handler),
-        filter((item) => item !== SimpleEndpoint.TIMEOUT),
-        map((item) => {
-          const data = item as Data;
-          Encoder.encode(data);
-          return data as Data;
-        }),
+        filter((item): item is Data => item !== SimpleEndpoint.TIMEOUT),
+        tap((data) => Encoder.encode(data)),
       );
     });
     face.addRoute(prefix);

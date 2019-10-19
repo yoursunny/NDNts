@@ -85,8 +85,9 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
 
     const rtS = this.face as Face.RxTxBasic;
     return (iterable) => {
-      rtS.tx(filter((pkt) => pkt instanceof Interest || pkt instanceof Data,
-                    iterable) as AsyncIterable<Interest|Data>);
+      rtS.tx(filter(
+        (pkt): pkt is (Interest|DataResponse) => pkt instanceof Interest || pkt instanceof Data,
+        iterable));
       return rtS.rx as AsyncIterable<Face.Rxable>;
     };
   }

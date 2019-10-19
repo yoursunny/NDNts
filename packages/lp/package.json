@@ -30,6 +30,6 @@
     "tslib": "*"
   },
   "devDependencies": {
-    "streaming-iterables": "^4.1.0"
+    "streaming-iterables": "^4.1.1"
   }
 }

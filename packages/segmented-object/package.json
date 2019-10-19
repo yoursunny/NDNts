@@ -35,7 +35,7 @@
     "it-pushable": "^1.2.1",
     "minimalistic-assert": "^1.0.1",
     "p-defer": "^3.0.0",
-    "streaming-iterables": "^4.1.0",
+    "streaming-iterables": "^4.1.1",
     "strict-event-emitter-types": "^2.0.0",
     "tslib": "*"
   },

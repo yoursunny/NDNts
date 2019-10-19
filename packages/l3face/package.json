@@ -29,7 +29,7 @@
     "@ndn/l3pkt": "workspace:*",
     "@ndn/lp": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "streaming-iterables": "^4.1.0",
+    "streaming-iterables": "^4.1.1",
     "strict-event-emitter-types": "^2.0.0",
     "tslib": "*"
   },
