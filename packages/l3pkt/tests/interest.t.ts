@@ -212,3 +212,23 @@ test("decode signed", () => {
   expect(interest.sigInfo).not.toBeUndefined();
   expect(interest.sigValue).not.toBeUndefined();
 });
+
+describe("decode Selectors", () => {
+  const input = Uint8Array.of(
+    0x05, 0x0A,
+    0x07, 0x03, 0x08, 0x01, 0x41,
+    0x09, 0x03, 0x11, 0x01, 0x01,
+  );
+
+  afterEach(() => Interest.tolerateSelectors = false);
+
+  test("error on Selectors", () => {
+    expect(() => new Decoder(input).decode(Interest)).toThrow(/Selectors/);
+  });
+
+  test("tolerate Selectors", () => {
+    Interest.tolerateSelectors = true;
+    const interest = new Decoder(input).decode(Interest);
+    expect(interest.name).toEqualName("/A");
+  });
+});

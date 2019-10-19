@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/cat",
+  "name": "@ndn/nfdmgmt",
   "version": "0.0.0",
-  "description": "NDNts: ndncat - netcat for NDN",
+  "description": "NDNts: NFD Management",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -12,9 +12,6 @@
     "lib"
   ],
   "main": "src/index.ts",
-  "bin": {
-    "ndncat": "lib/index.js"
-  },
   "sideEffects": [
     "./test-fixture/**"
   ],
@@ -22,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/cat"
+    "directory": "packages/nfdmgmt"
   },
   "publishConfig": {
     "main": "lib/index.js",
@@ -30,17 +27,14 @@
   },
   "dependencies": {
     "@ndn/fw": "workspace:*",
-    "@ndn/l3face": "workspace:*",
+    "@ndn/keychain": "workspace:*",
+    "@ndn/l3pkt": "workspace:*",
     "@ndn/name": "workspace:*",
-    "@ndn/naming-convention-02": "workspace:*",
-    "@ndn/naming-convention-03": "workspace:*",
-    "@ndn/nfdmgmt": "workspace:*",
-    "@ndn/node-transport": "workspace:*",
-    "@ndn/segmented-object": "workspace:*",
-    "@types/yargs": "^13.0.3",
-    "loud-rejection": "^2.2.0",
-    "stdout-stream": "^1.4.1",
-    "tslib": "*",
-    "yargs": "^14.2.0"
+    "@ndn/tlv": "workspace:*",
+    "minimalistic-assert": "^1.0.1",
+    "tslib": "*"
+  },
+  "devDependencies": {
+    "@types/minimalistic-assert": "^1.0.0"
   }
 }

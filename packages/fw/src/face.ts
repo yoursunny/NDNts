@@ -26,7 +26,7 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
   public readonly txQueue = new Fifo<Face.Txable>();
   public txQueueLength = 0;
 
-  constructor(private readonly fw: ForwarderImpl,
+  constructor(public readonly fw: ForwarderImpl,
               public readonly face: Face.Base) {
     super();
     fw.faces.add(this);
@@ -73,6 +73,16 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
       }
     }
     return longestNameLength;
+  }
+
+  /** Register a prefix from the remote peer. */
+  public registerPrefix(name: Name): Promise<void> {
+    return Promise.reject(new Error("not supported"));
+  }
+
+  /** Unregister a prefix from the remote peer. */
+  public unregisterPrefix(name: Name): Promise<void> {
+    return Promise.reject(new Error("not supported"));
   }
 
   /** Transmit a packet on the face. */
@@ -152,7 +162,8 @@ export namespace FaceImpl {
 }
 
 /** A socket or network interface associated with forwarding plane. */
-export interface Face extends Pick<FaceImpl, "close"|"addRoute"|"removeRoute"|keyof Emitter> {
+export interface Face extends Pick<FaceImpl,
+    "fw"|"close"|"addRoute"|"removeRoute"|"registerPrefix"|"unregisterPrefix"|keyof Emitter> {
   readonly running: boolean;
 }
 
