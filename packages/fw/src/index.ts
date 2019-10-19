@@ -1,4 +1,4 @@
 export { Face as FwFace } from "./face";
 export { Forwarder } from "./forwarder";
-export { InterestToken, CancelInterest, RejectInterest } from "./reqres";
+export * from "./reqres";
 export { SimpleEndpoint } from "./simple-endpoint";

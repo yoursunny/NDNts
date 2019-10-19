@@ -1,5 +1,6 @@
 import { Data, Interest } from "@ndn/l3pkt";
 
+/** Application-defined opaque token attached to a packet. */
 export namespace InterestToken {
   export const TAG = Symbol("InterestToken");
 
@@ -7,29 +8,35 @@ export namespace InterestToken {
     [TAG]: T;
   }
 
-  export function get<T>(obj: { [TAG]: T }): T {
+  export function get<T>(obj: Tagged<T>): T {
     return obj[TAG];
   }
 
-  export function set<T, H extends object>(obj: H, token: T): H & {[TAG]: T} {
+  export function set<T, H extends object>(obj: H, token: T): H & Tagged<T> {
     return Object.assign(obj, { [TAG]: token });
   }
 }
 
-export type InterestRequest = Interest & InterestToken.Tagged;
+/** Interest with optional application-defined token. */
+export type InterestRequest<T = any> = Interest & InterestToken.Tagged<T>;
 
-export type DataResponse = Data & InterestToken.Tagged<any[]>;
+/** Data with application-defined tokens from satisfied Interests. */
+export type DataResponse<T = any> = Data & InterestToken.Tagged<T[]>;
 
-export type RejectInterestReason = "cancel"|"expire";
+/** Indicate an Interest has been rejected. */
+export class RejectInterest<T = any> {
+  public [InterestToken.TAG]: T;
 
-export class RejectInterest {
-  public [InterestToken.TAG]: any;
-
-  constructor(public readonly reason: RejectInterestReason, token: any) {
+  constructor(public readonly reason: RejectInterest.Reason, token: T) {
     InterestToken.set(this, token);
   }
 }
 
+export namespace RejectInterest {
+  export type Reason = "cancel"|"expire";
+}
+
+/** Request to cancel a pending Interest. */
 export class CancelInterest {
   constructor(public readonly interest: Interest) {
   }

@@ -7,8 +7,7 @@ import { buffer, filter, pipeline } from "streaming-iterables";
 import StrictEventEmitter from "strict-event-emitter-types";
 
 import { ForwarderImpl } from "./forwarder";
-import { CancelInterest, DataResponse as DataResponse_, InterestRequest, InterestRequest as InterestRequest_,
-         InterestToken, RejectInterest } from "./reqres";
+import { CancelInterest, DataResponse, InterestRequest, InterestToken, RejectInterest } from "./reqres";
 
 interface Events {
   /** Emitted upon face closing. */
@@ -168,11 +167,6 @@ export interface Face extends Pick<FaceImpl,
 }
 
 export namespace Face {
-  /** Interest with optional application-defined token. */
-  export type InterestRequest = InterestRequest_;
-  /** Data with application-defined tokens from satisfied Interests. */
-  export type DataResponse = DataResponse_;
-
   /** Item that can be received on face. */
   export type Rxable = Interest|InterestRequest|Data|CancelInterest;
   /** Item that can be transmitted on face, when extendedTx is enabled. */

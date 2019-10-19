@@ -3,7 +3,7 @@ import { getDataFullName } from "@ndn/l3pkt/test-fixture";
 import { Name } from "@ndn/name";
 import "@ndn/name/test-fixture";
 
-import { CancelInterest, Forwarder, FwFace, InterestToken, RejectInterest } from "../src";
+import { CancelInterest, DataResponse, Forwarder, InterestToken, RejectInterest } from "../src";
 import { SimpleEndpoint } from "../src/simple-endpoint";
 
 test("simple", async () => {
@@ -112,14 +112,14 @@ test("aggregate & retransmit", async () => {
     async tx(iterable) {
       for await (const pkt of iterable) {
         if (pkt instanceof Data) {
-          const data = pkt as FwFace.DataResponse;
+          const data = pkt as DataResponse<number>;
           const tokens = new Set(InterestToken.get(data));
           expect(tokens.has(1)).toBeFalsy();
           expect(tokens.has(2)).toBeTruthy();
           expect(tokens.has(3)).toBeTruthy();
           ++nRxData;
         } else if (pkt instanceof RejectInterest) {
-          const rej = pkt as RejectInterest;
+          const rej = pkt as RejectInterest<number>;
           expect(rej.reason).toBe("cancel");
           expect(InterestToken.get(rej)).toBe(4);
           ++nRxRejects;

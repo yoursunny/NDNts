@@ -1,4 +1,4 @@
-import { Forwarder, FwFace, InterestToken, RejectInterest } from "@ndn/fw";
+import { DataResponse, Forwarder, FwFace, InterestToken, RejectInterest } from "@ndn/fw";
 import { Data, Interest } from "@ndn/l3pkt";
 import { Name, NamingConvention } from "@ndn/name";
 import { Segment as Segment03 } from "@ndn/naming-convention-03";
@@ -129,15 +129,15 @@ class Fetcher extends (EventEmitter as new() => Emitter) {
     for await (const pkt of iterable) {
       switch (true) {
         case pkt instanceof Data: {
-          const data = pkt as FwFace.DataResponse;
-          for (const dataPromise of InterestToken.get(data) as Array<pDefer.DeferredPromise<Data>>) {
+          const data = pkt as DataResponse<pDefer.DeferredPromise<Data>>;
+          for (const dataPromise of InterestToken.get(data)) {
             dataPromise.resolve(data);
           }
           break;
         }
         case pkt instanceof RejectInterest: {
-          const rej = pkt as RejectInterest;
-          const dataPromise = InterestToken.get(rej) as pDefer.DeferredPromise<Data>;
+          const rej = pkt as RejectInterest<pDefer.DeferredPromise<Data>>;
+          const dataPromise = InterestToken.get(rej);
           dataPromise.reject(new Error(rej.reason));
           break;
         }
