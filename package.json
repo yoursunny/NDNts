@@ -13,7 +13,6 @@
     "prod-build": "npm run prod-build-d && npm run prod-build-js",
     "prod-build-d": "pnpm recursive exec --filter ./packages -- tsc -p tsconfig.build.json -d",
     "prod-build-js": "pnpm recursive exec --filter ./packages -- tsc -p tsconfig.build.json --removeComments true",
-    "publish": "npm run prod-build && lerna publish --no-push",
     "test": "jest"
   },
   "devDependencies": {
@@ -33,7 +32,6 @@
     "jest-environment-node": "^24.8.0",
     "jest-environment-puppeteer": "^4.3.0",
     "jest-puppeteer": "^4.3.0",
-    "lerna": "^3.18.1",
     "pnpm": "^4.0.2",
     "puppeteer": "^1.20.0",
     "ts-jest": "^24.0.2",
