@@ -19,7 +19,7 @@ cache:
     - $HOME/.pnpm-store
 
 install:
-  - npm install -g coveralls
+  - npm install -g coveralls pnpm verdaccio
 
 before_script:
   - npm run bootstrap
@@ -32,3 +32,15 @@ script:
   - npm run cover && coveralls < ./coverage/lcov.info
   - pushd integ/browser-tests >/dev/null; npm test; popd >/dev/null
   - pushd integ/ndncxx-tests >/dev/null; npm test; popd >/dev/null
+
+before_deploy:
+  - bash mk/publish-nightly.sh
+
+deploy:
+  - provider: netlify
+    edge: true
+    site: 11d6303b-b200-4b5c-b2c2-4ace41795b20
+    auth: $NETLIFY_AUTH
+    dir: "mk/nightly-output/"
+    message: $TRAVIS_COMMIT
+    prod: true
