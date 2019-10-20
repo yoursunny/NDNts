@@ -70,6 +70,10 @@ export class Encoder {
 
   /** Obtain part of encoding output. */
   public slice(start: number = 0, length?: number) {
+    if (typeof length === "undefined") {
+      // iOS would interpret length=undefined as length=0, so we need a conditional
+      return new Uint8Array(this.buf, this.off + start);
+    }
     return new Uint8Array(this.buf, this.off + start, length);
   }
 
@@ -83,7 +87,7 @@ export class Encoder {
       this.grow(sizeofObject);
     }
     this.off -= sizeofObject;
-    return new Uint8Array(this.buf, this.off, sizeofObject);
+    return this.slice(0, sizeofObject);
   }
 
   /** Prepend TLV-TYPE and TLV-LENGTH. */
