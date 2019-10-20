@@ -2,6 +2,7 @@ import { Forwarder, SimpleEndpoint } from "@ndn/fw";
 import { Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 import { Segment as Segment02 } from "@ndn/naming-convention-02";
+import "@ndn/tlv/test-fixture";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 
 import { fetch, serve } from "../src";
@@ -20,8 +21,8 @@ afterEach(() => Forwarder.deleteDefault());
 test("buffer to buffer", async () => {
   const server = serve(new Name("/R"), objectBody);
   const fetcher = fetch(new Name("/R"));
-  await expect(fetcher.promise).resolves.toEqual(objectBody);
-  await expect(fetcher.promise).resolves.toEqual(objectBody);
+  await expect(fetcher.promise).resolves.toEqualUint8Array(objectBody);
+  await expect(fetcher.promise).resolves.toEqualUint8Array(objectBody);
   server.stop();
 });
 
@@ -31,7 +32,7 @@ test("buffer to chunks", async () => {
   for await (const chunk of fetch(new Name("/R")).chunks) {
     chunks.push(chunk);
   }
-  expect(Buffer.concat(chunks)).toEqual(objectBody);
+  expect(Buffer.concat(chunks)).toEqualUint8Array(objectBody);
   server.stop();
 });
 
@@ -77,7 +78,7 @@ test("iterable to events", (done) => {
     for (let i = 0; i < fetched.length; ++i) {
       expect(receivedSegments.has(i)).toBeTruthy();
     }
-    expect(Buffer.concat(fetched)).toEqual(objectBody);
+    expect(Buffer.concat(fetched)).toEqualUint8Array(objectBody);
     server.stop();
     done();
   });

@@ -4,6 +4,7 @@ import { Name, NamingConvention } from "@ndn/name";
 import { Segment as Segment03 } from "@ndn/naming-convention-03";
 import { EventEmitter } from "events";
 import pushable from "it-pushable";
+import assert from "minimalistic-assert";
 import pDefer from "p-defer";
 import { writeToStream } from "streaming-iterables";
 import StrictEventEmitter from "strict-event-emitter-types";
@@ -37,7 +38,16 @@ class Fetcher extends (EventEmitter as new() => Emitter) {
           chunks.push(chunk);
           totalLength += chunk.length;
         });
-        this.on("end", () => resolve(Buffer.concat(chunks, totalLength)));
+        this.on("end", () => {
+          const output = new Uint8Array(totalLength);
+          let offset = 0;
+          chunks.forEach((chunk) => {
+            output.set(chunk, offset);
+            offset += chunk.length;
+          });
+          assert.equal(offset, totalLength);
+          resolve(output);
+        });
         this.on("error", reject);
       });
     }
