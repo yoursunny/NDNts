@@ -3,7 +3,7 @@ verdaccio -c mk/verdaccio-nightly.yaml &
 VERDACCIO_PID=$!
 export npm_config_registry=http://127.0.0.1:64448
 VERSION=0.0.$(date +%Y%m%d)-nightly.$(git log --pretty=format:'%h' -n 1)
-pnpm recursive exec --filter ./packages -- bash -c 'npm version '$VERSION' && pnpm publish'
+pnpm recursive exec --filter ./packages -- bash -c 'node ../../mk/prepare-packagejson-nightly.js '$VERSION' && pnpm publish'
 kill $VERDACCIO_PID
 
 mkdir -p mk/nightly-output/
@@ -13,7 +13,7 @@ done
 
 pushd mk/nightly-output/ >/dev/null
 (
-  echo '<!doctype html>'
+  echo '<!DOCTYPE html>'
   echo '<title>NDNts nightly build</title>'
   echo '<h1>NDNts nightly build '$VERSION'</h1>'
   echo '<p><a href="https://yoursunny.com/p/NDNts/">NDNts homepage</a></p>'
