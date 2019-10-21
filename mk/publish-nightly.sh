@@ -1,4 +1,5 @@
 #!/bin/bash
+rm -rf mk/nightly-temp/
 verdaccio -c mk/verdaccio-nightly.yaml &
 VERDACCIO_PID=$!
 export npm_config_registry=http://127.0.0.1:64448

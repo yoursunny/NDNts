@@ -11,6 +11,7 @@
   "files": [
     "lib"
   ],
+  "type": "module",
   "main": "src/index.ts",
   "sideEffects": [
     "./test-fixture/**"
@@ -22,8 +23,7 @@
     "directory": "packages/tlv"
   },
   "publishConfig": {
-    "main": "lib/index.js",
-    "types": "lib/index.d.ts"
+    "main": "lib/index.js"
   },
   "dependencies": {
     "tslib": "*"

@@ -11,6 +11,7 @@
   "files": [
     "lib"
   ],
+  "type": "module",
   "main": "src/index.ts",
   "browser": {
     "./lib/platform/node/index.js": "./lib/platform/browser/index.js",
@@ -27,8 +28,7 @@
     "directory": "packages/keychain"
   },
   "publishConfig": {
-    "main": "lib/index.js",
-    "types": "lib/index.d.ts"
+    "main": "lib/index.js"
   },
   "dependencies": {
     "@ndn/l3pkt": "workspace:*",

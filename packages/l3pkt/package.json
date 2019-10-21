@@ -11,6 +11,7 @@
   "files": [
     "lib"
   ],
+  "type": "module",
   "main": "src/index.ts",
   "browser": {
     "./lib/sha256.js": "./lib/sha256-browser.js",
@@ -26,8 +27,7 @@
     "directory": "packages/l3pkt"
   },
   "publishConfig": {
-    "main": "lib/index.js",
-    "types": "lib/index.d.ts"
+    "main": "lib/index.js"
   },
   "dependencies": {
     "@ndn/name": "workspace:*",

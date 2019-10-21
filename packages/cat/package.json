@@ -11,6 +11,7 @@
   "files": [
     "lib"
   ],
+  "type": "commonjs",
   "main": "src/index.ts",
   "bin": {
     "ndncat": "lib/index.js"
@@ -25,8 +26,7 @@
     "directory": "packages/cat"
   },
   "publishConfig": {
-    "main": "lib/index.js",
-    "types": "lib/index.d.ts"
+    "main": "lib/index.js"
   },
   "dependencies": {
     "@ndn/fw": "workspace:*",
