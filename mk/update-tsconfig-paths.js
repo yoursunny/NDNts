@@ -5,6 +5,7 @@ const tsconfig = {
   extends: "./mk/tsconfig.build.json",
   compilerOptions: {
     baseUrl: ".",
+    module: "commonjs",
     paths: {},
   },
 };

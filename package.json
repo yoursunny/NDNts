@@ -10,7 +10,7 @@
     "lint-ci": "tslint -p .",
     "literate": "sh mk/literate-run.sh",
     "preinstall": "node mk/only-allow-pnpm.js",
-    "prod-build": "pnpm recursive exec --filter ./packages -- bash ../../mk/prod-build.sh",
+    "prod-build": "pnpm recursive exec --filter ./packages -- bash -c \"tsc -p tsconfig.build.json -d && tsc -p tsconfig.build.json --removeComments true\"",
     "test": "jest"
   },
   "devDependencies": {
