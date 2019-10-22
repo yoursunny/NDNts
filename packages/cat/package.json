@@ -44,7 +44,7 @@
     "yargs": "^14.2.0"
   },
   "devDependencies": {
-    "@types/stdout-stream": "https://gist.github.com/yoursunny/365d6ab3f137378dfd775fb5173f34bd/archive/master.tar.gz",
+    "@types/stdout-stream": "https://gist.github.com/yoursunny/365d6ab3f137378dfd775fb5173f34bd/archive/894961a2254834a6eb4b1450ff5826db8695997a.tar.gz",
     "@types/yargs": "^13.0.3"
   }
 }

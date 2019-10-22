@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@types/tmp": "^0.1.0",
-    "@types/write": "https://gist.github.com/yoursunny/0f71e9fe2d32defbf681c295ef939f08/archive/master.tar.gz",
+    "@types/write": "https://gist.github.com/yoursunny/0f71e9fe2d32defbf681c295ef939f08/archive/e76e46bb158bfb2a2cc39f0e1b7cf18a09c26fa5.tar.gz",
     "tmp": "^0.1.0"
   }
 }
