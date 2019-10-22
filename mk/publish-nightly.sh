@@ -23,3 +23,4 @@ pushd mk/nightly-output/ >/dev/null
   echo '</pre>'
 ) > index.html
 popd >/dev/null
+cp docs/favicon.ico mk/nightly-output/
