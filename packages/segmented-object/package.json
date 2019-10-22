@@ -42,7 +42,7 @@
   "devDependencies": {
     "@ndn/naming-convention-02": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@types/it-pushable": "git+https://gist.github.com/cb94c746ac568edbc2040ccc26016096.git",
+    "@types/it-pushable": "https://gist.github.com/yoursunny/cb94c746ac568edbc2040ccc26016096/archive/master.tar.gz",
     "@types/minimalistic-assert": "^1.0.0",
     "stream-mock": "^2.0.5"
   }

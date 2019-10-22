@@ -11,7 +11,7 @@ class BufferBreaker extends Transform {
     super({ readableObjectMode: true, writableObjectMode: false });
   }
 
-  public _transform(chunk: Buffer, enc, callback: (error?: Error) => any) {
+  public _transform(chunk: Buffer, enc: unknown, callback: (error?: Error) => any) {
     const buf = Buffer.concat([this.buf, chunk]);
     const count = Math.min(buf.length, Math.ceil(Math.random() * 1.5 * buf.length));
     this.push(buf.subarray(0, count));

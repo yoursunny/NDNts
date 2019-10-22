@@ -1,7 +1,7 @@
 import expect from "expect";
 
 import { Decoder } from "../src/decoder";
-import { Encoder } from "../src/encoder";
+import { Encodable, Encoder } from "../src/encoder";
 
 type Uint8ArrayExpect = Uint8Array|Array<number|undefined>;
 
@@ -28,8 +28,8 @@ function toEqualUint8Array(received: Uint8Array, expected: Uint8ArrayExpect) {
 
 type TlvMatcher = (tlv: Decoder.Tlv) => any;
 
-function toMatchTlv(received, ...checks: TlvMatcher[]) {
-  const decoder = new Decoder(received as Uint8Array);
+function toMatchTlv(received: Uint8Array, ...checks: TlvMatcher[]) {
+  const decoder = new Decoder(received);
   checks.forEach((check) => {
     check(decoder.read());
   });
@@ -45,8 +45,7 @@ function toMatchTlv(received, ...checks: TlvMatcher[]) {
   };
 }
 
-function toEncodeAs(...args) {
-  const received = args[0];
+function toEncodeAs(received: Encoder|Encodable, ...args: any[]) {
   let output: Uint8Array;
   if (received instanceof Encoder) {
     output = received.output;
@@ -54,11 +53,10 @@ function toEncodeAs(...args) {
     output = Encoder.encode(received);
   }
 
-  if (args.length === 2 && (args[1] instanceof Uint8Array || Array.isArray(args[1]))) {
-    return toEqualUint8Array(output, args[1]);
+  if (args.length === 1 && (args[0] instanceof Uint8Array || Array.isArray(args[0]))) {
+    return toEqualUint8Array(output, args[0]);
   }
-  args[0] = output;
-  return toMatchTlv.apply(undefined, args as any);
+  return toMatchTlv(output, ...args);
 }
 
 expect.extend({

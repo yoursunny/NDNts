@@ -7,7 +7,7 @@
     "importHelpers": true,
     "module": "es2015",
     "moduleResolution": "node",
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "strict": true,

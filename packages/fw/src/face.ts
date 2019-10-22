@@ -156,7 +156,7 @@ export namespace Face {
     /** Receive packets by forwarder. */
     rx: AsyncIterable<Rxable>;
     /** Transmit packets from forwarder. */
-    tx(iterable: AsyncIterable<Interest|Data>): any;
+    tx(iterable: AsyncIterable<Interest|Data>): void;
   }
 
   /** Underlying face RX/TX that can transmit all Txable items. */
@@ -165,7 +165,7 @@ export namespace Face {
     /** Receive packets by forwarder. */
     rx: AsyncIterable<Rxable>;
     /** Transmit packets from forwarder. */
-    tx(iterable: AsyncIterable<Txable>): any;
+    tx(iterable: AsyncIterable<Txable>): void;
   }
 
   /** Underlying face RX/TX implemented as a transform function. */

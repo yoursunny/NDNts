@@ -1,6 +1,6 @@
 import { TT } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
-import { EncodableTlv, Encoder, NNI } from "@ndn/tlv";
+import { EncodableObj, EncodableTlv, Encoder, NNI } from "@ndn/tlv";
 
 interface Fields {
   name?: Name;
@@ -61,12 +61,14 @@ export class ControlParameters {
           case type === Name:
             return [tt, value as Name] as EncodableTlv;
           default:
-            return value;
+            return value as EncodableObj;
         }
       }),
     );
   }
 }
+// tslint:disable-next-line:no-empty-interface
+export interface ControlParameters extends ControlParameters.Fields {}
 
 type Fields_ = Fields;
 

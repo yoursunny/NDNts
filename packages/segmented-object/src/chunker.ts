@@ -2,7 +2,7 @@ import isStream from "is-stream";
 import { fromStream } from "streaming-iterables";
 
 function makeInputIterator(input: chunker.Input): AsyncIterable<Uint8Array> {
-  if ((isStream.readable as (obj) => obj is NodeJS.ReadableStream)(input)) {
+  if ((isStream.readable as (obj: unknown) => obj is NodeJS.ReadableStream)(input)) {
     return fromStream(input);
   }
   if (input instanceof Uint8Array) {

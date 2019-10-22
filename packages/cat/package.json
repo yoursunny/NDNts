@@ -37,11 +37,14 @@
     "@ndn/nfdmgmt": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
-    "@types/yargs": "^13.0.3",
     "esm": "^3.2.25",
     "loud-rejection": "^2.2.0",
     "stdout-stream": "^1.4.1",
     "tslib": "*",
     "yargs": "^14.2.0"
+  },
+  "devDependencies": {
+    "@types/stdout-stream": "https://gist.github.com/yoursunny/365d6ab3f137378dfd775fb5173f34bd/archive/master.tar.gz",
+    "@types/yargs": "^13.0.3"
   }
 }

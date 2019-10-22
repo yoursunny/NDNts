@@ -30,7 +30,7 @@ export class PitEntry {
   /** Entry expiration timer; should match this.lastExpire. */
   public expireTimer?: NodeJS.Timer|number;
 
-  constructor(private readonly pit: Pit, public readonly key, interest: Interest) {
+  constructor(private readonly pit: Pit, public readonly key: string, interest: Interest) {
     this.interest = new Interest(interest);
   }
 

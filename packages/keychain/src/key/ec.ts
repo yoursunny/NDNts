@@ -7,7 +7,7 @@ import { crypto } from "../platform";
 import { KEYGEN, KeyGenResult, PrivateKeyBase, PublicKeyBase } from "./internal";
 
 export type EcCurve = "P-256" | "P-384" | "P-521";
-// tslint:disable-next-line object-literal-sort-keys
+// tslint:disable-next-line:object-literal-sort-keys
 const SIGN_PARAMS = { name: "ECDSA", hash: "SHA-256" } as EcdsaParams;
 
 /** ECDSA private key. */

@@ -42,7 +42,7 @@ type Pkt = LLSign.Signable & LLVerify.Verifiable & Encodable & {sigInfo: SigInfo
 interface Row {
   cls: (new(name: Name) => Pkt) & Decodable<Pkt>;
   canVerifyAfterEncode: boolean;
-  checkWire(tlv: Decoder.Tlv);
+  checkWire(tlv: Decoder.Tlv): void;
 }
 
 const TABLE = [

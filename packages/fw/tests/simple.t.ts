@@ -3,7 +3,7 @@ import { getDataFullName } from "@ndn/l3pkt/test-fixture";
 import { Name } from "@ndn/name";
 import "@ndn/name/test-fixture";
 
-import { CancelInterest, DataResponse, Forwarder, InterestToken, RejectInterest } from "../src";
+import { CancelInterest, DataResponse, Forwarder, FwFace, InterestToken, RejectInterest } from "../src";
 import { SimpleEndpoint } from "../src/simple-endpoint";
 
 test("simple", async () => {
@@ -140,7 +140,7 @@ test("aggregate & retransmit", async () => {
         }
       }
     },
-  });
+  } as FwFace.RxTxExtended);
   face.addRoute(new Name("/L"));
 
   await Promise.all([

@@ -1,7 +1,6 @@
 import { Decoder } from "@ndn/tlv";
-import { fromStream, pipeline } from "streaming-iterables";
+import { filter, fromStream, map, pipeline } from "streaming-iterables";
 
-import { mapFilter } from "./internal";
 import { SocketTransportBase } from "./socket-transport-base";
 import { Transport } from "./transport";
 
@@ -13,7 +12,8 @@ export class DatagramTransport extends SocketTransportBase implements Transport 
     super(conn);
     this.rx = pipeline(
       () => fromStream<Uint8Array>(conn),
-      mapFilter(this.decode),
+      map(this.decode),
+      filter((item): item is Decoder.Tlv => !!item),
     );
   }
 

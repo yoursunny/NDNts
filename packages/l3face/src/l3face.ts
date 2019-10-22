@@ -2,10 +2,9 @@ import { Data, Interest, LLSign, TT } from "@ndn/l3pkt";
 import { LpService } from "@ndn/lp";
 import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
 import { EventEmitter } from "events";
-import { pipeline } from "streaming-iterables";
+import { filter, map, pipeline } from "streaming-iterables";
 import StrictEventEmitter from "strict-event-emitter-types";
 
-import { mapFilter } from "./internal";
 import { Transport } from "./transport";
 
 type Packet = Interest | Data;
@@ -29,14 +28,16 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
     this.rx = pipeline(
       () => transport.rx,
       this.lp.rx,
-      mapFilter(this.decode),
+      map(this.decode),
+      filter((pktOrUndefined): pktOrUndefined is Packet => !!pktOrUndefined),
     );
   }
 
   public async tx(iterable: AsyncIterable<Packet>) {
     await pipeline(
       () => iterable,
-      mapFilter(this.encode),
+      map(this.encode),
+      filter((pktOrUndefined): pktOrUndefined is Uint8Array => !!pktOrUndefined),
       this.transport.tx,
     );
   }

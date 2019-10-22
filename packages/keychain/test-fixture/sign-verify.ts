@@ -97,7 +97,7 @@ export async function execute(cls: PacketCtor, pvtA: PrivateKey, pubA: PublicKey
   pktMc.sigValue = (() => {
     const sig = Uint8Array.from(pktMc.sigValue!);
     const offset = Math.floor(Math.random() * sig.byteLength);
-    // tslint:disable-next-line no-bitwise
+    // tslint:disable-next-line:no-bitwise
     sig[offset] ^= 0x01;
     return sig;
   })();

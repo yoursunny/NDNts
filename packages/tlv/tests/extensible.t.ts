@@ -7,7 +7,7 @@ const EVD = new EvDecoder<ExtTestTarget>("ExtTestTarget")
 .setUnknown(EXTENSIONS.decodeUnknown);
 
 class ExtTestTarget {
-  public [Extensible.TAG]: Extensible.Records = {};
+  public [Extensible.TAG] = Extensible.newRecords();
 
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(0xA0, ...EXTENSIONS.encode(this));

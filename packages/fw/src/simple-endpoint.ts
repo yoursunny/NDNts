@@ -4,6 +4,7 @@ import { Encoder } from "@ndn/tlv";
 import pDefer from "p-defer";
 import { filter, pipeline, tap, transform } from "streaming-iterables";
 
+import { Face } from "./face";
 import { Forwarder } from "./forwarder";
 import { CancelInterest, RejectInterest } from "./reqres";
 
@@ -31,7 +32,7 @@ export class SimpleEndpoint {
           break;
         }
       },
-    });
+    } as Face.RxTxExtended);
 
     return Object.assign(
       (async () => {

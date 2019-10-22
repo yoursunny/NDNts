@@ -39,7 +39,7 @@ export class SigInfo {
   public nonce?: number;
   public time?: Date;
   public seqNum?: number;
-  public [Extensible.TAG]: Extensible.Records = {};
+  public [Extensible.TAG] = Extensible.newRecords();
 
   /**
    * Construct from flexible arguments.

@@ -43,7 +43,7 @@ class ParamsDigestComp extends DigestComp {
 
   /** Determine if comp is a ParamsDigest placeholder. */
   public isPlaceholder(comp: Component): boolean {
-    return !!comp[PARAMS_PLACEHOLDER_TAG];
+    return !!(comp as any)[PARAMS_PLACEHOLDER_TAG];
   }
 
   /** Find ParamsDigest or placeholder in name. */

@@ -13,7 +13,7 @@ test("issue", async () => {
     await rp.generateKey(EcPrivateKey, "/rp/KEY/y", ValidityPeriod.daysFromNow(2), "P-256");
 
   const cert = await Certificate.issue({
-    // tslint:disable-next-line object-literal-sort-keys
+    // tslint:disable-next-line:object-literal-sort-keys
     validity: ValidityPeriod.daysFromNow(1),
     issuerId: Component.from("i"),
     issuerPrivateKey,
@@ -38,7 +38,7 @@ test("self-sign", async () => {
     await keyChain.generateKey(EcPrivateKey, "/EC/KEY/y", ValidityPeriod.daysFromNow(1), "P-256");
 
   await expect(Certificate.selfSign({
-    // tslint:disable-next-line object-literal-sort-keys
+    // tslint:disable-next-line:object-literal-sort-keys
     validity: ValidityPeriod.daysFromNow(1),
     privateKey,
     publicKey: publicKeyY,

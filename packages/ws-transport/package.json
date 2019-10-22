@@ -28,7 +28,7 @@
   "dependencies": {
     "@ndn/l3face": "workspace:*",
     "tslib": "*",
-    "websocket-stream": "^5.5.0"
+    "websocket-stream": "github:yoursunny/websocket-stream#e9e9e5ae1bc2e9f843d7efb0c3e167c6b43c237e"
   },
   "devDependencies": {
     "@ndn/l3pkt": "workspace:*",

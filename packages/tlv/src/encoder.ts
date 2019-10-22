@@ -2,7 +2,7 @@
  * An object that knows how to prepend itself to an Encoder.
  */
 export interface EncodableObj {
-  encodeTo(encoder: Encoder);
+  encodeTo(encoder: Encoder): void;
 }
 
 /**

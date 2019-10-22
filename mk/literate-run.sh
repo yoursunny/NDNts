@@ -18,7 +18,7 @@ fi
 if [ -n ''$LINT ]; then
   (
     echo '// tslint:disable no-console'
-    echo '// tslint:disable-next-line ordered-imports'
+    echo '// tslint:disable-next-line:ordered-imports'
     codedown ts < README.md
   ) > $ROOTDIR/mk/literate-temp.ts
   echo literate lint $1/README.md >/dev/stderr

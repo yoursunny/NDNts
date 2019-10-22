@@ -39,7 +39,7 @@ export class Name {
   /** Create from components. */
   constructor(comps: ComponentLike[]);
 
-  constructor(arg1?) {
+  constructor(arg1?: NameLike|ComponentLike[]) {
     this.comps_ = [];
     if (arg1 instanceof Name) {
       this.comps_ = this.comps_.concat(arg1.comps_);
@@ -94,7 +94,7 @@ export class Name {
   /** Append suffix with one or more components. */
   public append(...suffix: ComponentLike[]): Name;
 
-  public append(...args) {
+  public append(...args: any[]) {
     if (args.length === 2 && typeof args[0] === "object" && typeof args[0].create === "function") {
       const convention = args[0] as NamingConvention<unknown, unknown>;
       return this.append(convention.create(args[1]));

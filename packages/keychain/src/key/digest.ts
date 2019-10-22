@@ -28,7 +28,7 @@ export class DigestKey extends PublicKeyBase implements PrivateKey {
     PublicKeyBase.throwOnIncorrectSig(ok);
   }
 }
-// tslint:disable-next-line no-empty-interface
+// tslint:disable-next-line:no-empty-interface
 export interface DigestKey extends PrivateKeyBase {}
 applyMixins(DigestKey, [PrivateKeyBase]);
 
