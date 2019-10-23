@@ -46,7 +46,7 @@ test("simple", async () => {
   });
 
   const canceledInterest = se.consume(new Interest("/Q/canceled"));
-  setTimeout(() => canceledInterest.cancel(), 10);
+  setTimeout(() => canceledInterest.abort(), 10);
   await Promise.all([
     expect(se.consume(new Interest("/O/no-route", Interest.Lifetime(500))))
       .rejects.toThrow(),

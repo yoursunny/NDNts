@@ -180,5 +180,5 @@ export namespace fetch {
   }
 
   /** Fetching progress and response. */
-  export type Fetcher = Pick<Fetcher_, keyof Emitter|"abort"|"promise"|"chunks"|"writeToStream">;
+  export type Fetcher = Omit<Fetcher_, keyof Options>;
 }

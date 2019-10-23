@@ -1,2 +1,3 @@
-export { fetch } from "./fetch";
-export { serve } from "./serve";
+export * from "./discover-version";
+export * from "./fetch";
+export * from "./serve";

@@ -114,5 +114,5 @@ export namespace serve {
   }
 
   /** Serving control. */
-  export type Server = Server_;
+  export type Server = Omit<Server_, keyof Options>;
 }

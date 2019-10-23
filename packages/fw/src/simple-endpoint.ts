@@ -14,13 +14,13 @@ export class SimpleEndpoint {
 
   public consume(interest: Interest): SimpleEndpoint.Consumer {
     const finish = pDefer<Data|RejectInterest>();
-    const cancel = pDefer<true>();
+    const abort = pDefer<true>();
     this.fw.addFace({
       extendedTx: true,
       rx: {
         async *[Symbol.asyncIterator]() {
           yield interest;
-          if (await Promise.race([finish.promise, cancel.promise]) === true) {
+          if (await Promise.race([finish.promise, abort.promise]) === true) {
             yield new CancelInterest(interest);
             await finish.promise;
           }
@@ -42,7 +42,7 @@ export class SimpleEndpoint {
         }
         throw new Error(`Interest rejected: ${res.reason}`);
       })(),
-      { cancel() { cancel.resolve(true); } },
+      { abort() { abort.resolve(true); } },
     );
   }
 
@@ -67,7 +67,7 @@ export namespace SimpleEndpoint {
   export const TIMEOUT = Symbol("SimpleEndpoint.TIMEOUT");
 
   export type Consumer = Promise<Data> & {
-    cancel(): void;
+    abort(): void;
   };
 
   export type ProducerHandler = (interest: Interest) => Promise<Data|typeof TIMEOUT>;
