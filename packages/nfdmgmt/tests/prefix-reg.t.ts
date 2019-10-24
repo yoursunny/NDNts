@@ -34,11 +34,13 @@ test.each(TABLE)("reg %#", async ({ commandPrefix }) => {
       0x67, 0x02, 0x4F, 0x4B, // 'OK'
     ));
   });
-  const face = fw.addFace(async function*(iterable) {
-    for await (const pkt of iterable) {
-      expect(pkt).toBeInstanceOf(Interest);
-      yield remoteProcess(pkt as Interest);
-    }
+  const face = fw.addFace({
+    async *transform(iterable) {
+      for await (const pkt of iterable) {
+        expect(pkt).toBeInstanceOf(Interest);
+        yield remoteProcess(pkt as Interest);
+      }
+    },
   });
   enableNfdPrefixReg(face, { commandPrefix });
 
