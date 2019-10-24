@@ -1,0 +1,46 @@
+{
+  "name": "@ndn/fch",
+  "version": "0.0.0",
+  "description": "NDNts: NDN-FCH client",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "main": "src/index.ts",
+  "browser": {
+    "./lib/node.js": "./lib/browser.js",
+    "./src/node.ts": "./src/browser.ts"
+  },
+  "sideEffects": [
+    "./test-fixture/**"
+  ],
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/fch"
+  },
+  "publishConfig": {
+    "main": "lib/index.js"
+  },
+  "dependencies": {
+    "@ndn/fw": "workspace:*",
+    "@ndn/l3face": "workspace:*",
+    "@ndn/l3pkt": "workspace:*",
+    "@ndn/name": "workspace:*",
+    "@ndn/node-transport": "workspace:*",
+    "@ndn/ws-transport": "workspace:*",
+    "alls": "^1.0.4",
+    "node-fetch": "^2.6.0",
+    "tslib": "*"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.5.2"
+  }
+}
