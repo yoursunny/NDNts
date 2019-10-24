@@ -1,2 +1,2 @@
 #!/bin/sh
-../../node_modules/.bin/ts-node -r tsconfig-paths/register src/index.ts "$@"
+node -r ts-node/register/transpile-only -r tsconfig-paths/register src/index.ts "$@"

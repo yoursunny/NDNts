@@ -1,60 +1,65 @@
-import { Forwarder } from "@ndn/fw";
-import { L3Face } from "@ndn/l3face";
 import { Name } from "@ndn/name";
-import { Segment as Segment02 } from "@ndn/naming-convention-02";
-import { Segment as Segment03 } from "@ndn/naming-convention-03";
-import { SocketTransport } from "@ndn/node-transport";
-import { fetch } from "@ndn/segmented-object";
+import { discoverVersion, fetch } from "@ndn/segmented-object";
 import stdout from "stdout-stream";
 import { Arguments, Argv, CommandModule } from "yargs";
 
-interface Args {
+import { CommonArgs, segmentNumConvention, uplink, versionConvention } from "./common-args";
+
+type DiscoverVersionChoice = "none"|"cbp";
+const discoverVersionChoices: ReadonlyArray<DiscoverVersionChoice> = ["none", "cbp"];
+
+interface Args extends CommonArgs {
   name: string;
-  segment02: boolean;
-  router: string;
+  ver: DiscoverVersionChoice;
+  cbpnonfresh: boolean;
 }
 
 async function main(args: Args) {
-  const tcpFace = Forwarder.getDefault().addFace(new L3Face(
-    await SocketTransport.connect({ port: 6363, host: args.router })));
-  tcpFace.addRoute(new Name());
-
-  const name = new Name(args.name);
-  const fetcher = fetch(name, {
-    segmentNumConvention: args.segment02 ? Segment02 : Segment03,
-  });
-  try {
-    await fetcher.writeToStream(stdout);
-  } finally {
-    tcpFace.close();
+  let name = new Name(args.name);
+  switch (args.ver) {
+    case "none":
+      break;
+    case "cbp":
+      name = await discoverVersion(name, {
+        segmentNumConvention,
+        versionConvention,
+        versionMustBeFresh: !args.cbpnonfresh,
+      });
+      break;
   }
+
+  const fetcher = fetch(name, { segmentNumConvention });
+  await fetcher.writeToStream(stdout);
 }
 
-export class GetSegmentedCommand implements CommandModule<{}, Args> {
+export class GetSegmentedCommand implements CommandModule<CommonArgs, Args> {
   public command = "get-segmented <name>";
   public describe = "retrieve segmented object";
   public aliases = ["get"];
 
-  public builder(argv: Argv): Argv<Args> {
+  public builder(argv: Argv<CommonArgs>): Argv<Args> {
     return argv
     .positional("name", {
       desc: "versioned name prefix",
       type: "string",
     })
     .demandOption("name")
-    .option("segment02", {
-      default: false,
-      desc: "use segment number format from 2014 Naming Convention",
-      type: "boolean",
+    .option("ver", {
+      choices: discoverVersionChoices,
+      default: "none" as DiscoverVersionChoice,
+      desc: ["version discovery method",
+             "none: no discovery",
+             "cbp: send Interest with CanBePrefix",
+            ].join("\n"),
     })
-    .option("router", {
-      default: "localhost",
-      desc: "router hostname",
-      type: "string",
+    .option("cbpnonfresh", {
+      default: true,
+      desc: "set MustBeFresh=0 when using CanBePrefix version discovery",
     });
   }
 
   public handler(args: Arguments<Args>) {
-    main(args);
+    main(args)
+    .finally(() => uplink.close());
   }
 }
