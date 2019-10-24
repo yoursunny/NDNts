@@ -23,7 +23,10 @@ class Server {
 
     this.chunker = chunker(input, this.chunkSize);
     this.dataGen = this.generateData(this.chunker);
-    this.face = this.fw.addFace(this.producer);
+    this.face = this.fw.addFace({
+      toString: () => `serve(${this.name})`,
+      transform: this.producer,
+    });
     this.face.addRoute(name);
   }
 

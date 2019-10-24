@@ -17,7 +17,7 @@ export function discoverVersion(name: Name, opts: discoverVersion.Options = {}):
       if (data.name.length !== name.length + 2 ||
           !(opts.versionConvention || Version03).match(data.name.get(-2)!) ||
           !(opts.segmentNumConvention || Segment03).match(data.name.get(-1)!)) {
-        throw new Error(`cannot extract version from ${data.name.toString()}`);
+        throw new Error(`cannot extract version from ${data.name}`);
       }
       return data.name.getPrefix(-1);
     }),

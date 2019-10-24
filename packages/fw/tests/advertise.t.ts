@@ -2,6 +2,7 @@ import { Name } from "@ndn/name";
 import "@ndn/name/test-fixture";
 
 import { Advertise, Forwarder } from "../src";
+import { NoopFace } from "../test-fixture/noop-face";
 
 class MockAdvertise extends Advertise {
   public doAdvertise = jest.fn().mockReturnValue(Promise.resolve());
@@ -11,20 +12,17 @@ class MockAdvertise extends Advertise {
 test("simple", async () => {
   const fw = Forwarder.create();
 
-  // tslint:disable-next-line:no-empty
-  const uplinkP = fw.addFace(async function*() {});
+  const uplinkP = fw.addFace(new NoopFace());
   const advertiseP = new MockAdvertise(uplinkP);
   uplinkP.advertise = advertiseP;
 
-  // tslint:disable-next-line:no-empty
-  const appA = fw.addFace(async function*() {});
+  const appA = fw.addFace(new NoopFace());
   appA.addRoute(new Name("/M"));
   appA.addRoute(new Name("/M"));
   expect(advertiseP.doAdvertise).toHaveBeenCalledTimes(1);
   expect(advertiseP.doAdvertise.mock.calls[0][0]).toEqualName("/M");
 
-  // tslint:disable-next-line:no-empty
-  const appB = fw.addFace(async function*() {});
+  const appB = fw.addFace(new NoopFace());
   appB.addRoute(new Name("/M"));
   expect(advertiseP.doAdvertise).toHaveBeenCalledTimes(1);
 

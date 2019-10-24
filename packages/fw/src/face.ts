@@ -1,9 +1,9 @@
 import { Data, Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
-import { EventEmitter } from "events";
+import EventEmitter from "events";
 import pDefer from "p-defer";
 import Fifo from "p-fifo";
-import { buffer, filter, pipeline } from "streaming-iterables";
+import { buffer, filter, pipeline, tap } from "streaming-iterables";
 import StrictEventEmitter from "strict-event-emitter-types";
 
 import { Advertise } from "./advertise";
@@ -17,6 +17,8 @@ interface Events {
 
 type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
+type TransformFunc = (iterable: AsyncIterable<Face.Txable>) => AsyncIterable<Face.Rxable>;
+
 const STOP = Symbol("FaceImpl.Stop");
 
 export class FaceImpl extends (EventEmitter as new() => Emitter) {
@@ -28,13 +30,16 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
   public txQueueLength = 0;
 
   constructor(public readonly fw: ForwarderImpl,
-              public readonly face: Face.Base) {
+              public readonly inner: Face.Base) {
     super();
+    fw.emit("faceadd", this);
     fw.faces.add(this);
     pipeline(
       () => this.txLoop(),
       buffer(this.fw.options.faceTxBuffer),
+      tap((pkt) => fw.emit("pkttx", this, pkt)),
       this.getTransform(),
+      tap((pkt) => fw.emit("pktrx", this, pkt)),
       buffer(this.fw.options.faceRxBuffer),
       this.rxLoop,
     );
@@ -50,16 +55,23 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
     this.fw.fib.closeFace(this);
     this.stopping.resolve(STOP);
     this.emit("close");
+    this.fw.emit("facerm", this);
+  }
+
+  public toString() {
+    return this.inner.toString();
   }
 
   /** Add a route toward the face. */
   public addRoute(name: Name) {
+    this.fw.emit("prefixadd", this, name);
     this.fw.fib.insert(name, this);
   }
 
   /** Remove a route toward the face. */
   public removeRoute(name: Name) {
     this.fw.fib.delete(name, this);
+    this.fw.emit("prefixrm", this, name);
   }
 
   /** Transmit a packet on the face. */
@@ -69,13 +81,14 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
     --this.txQueueLength;
   }
 
-  /** Convert base RX/TX to an RxTxTransform function. */
-  private getTransform(): Face.RxTxTransform {
-    if (typeof this.face === "function") {
-      return this.face;
+  /** Convert base RX/TX to a TransformFunc. */
+  private getTransform(): TransformFunc {
+    const rtT = this.inner as Face.RxTxTransform;
+    if (rtT.transform) {
+      return rtT.transform;
     }
 
-    const rtE = this.face as Face.RxTxExtended;
+    const rtE = this.inner as Face.RxTxExtended;
     if (rtE.extendedTx) {
       return (iterable) => {
         rtE.tx(iterable);
@@ -83,7 +96,7 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
       };
     }
 
-    const rtS = this.face as Face.RxTxBasic;
+    const rtS = this.inner as Face.RxTxBasic;
     return (iterable) => {
       rtS.tx(filter(
         (pkt): pkt is (Interest|DataResponse) => pkt instanceof Interest || pkt instanceof Data,
@@ -141,7 +154,7 @@ export namespace FaceImpl {
 
 /** A socket or network interface associated with forwarding plane. */
 export interface Face extends Pick<FaceImpl,
-    "fw"|"advertise"|"close"|"addRoute"|"removeRoute"|keyof Emitter> {
+    "fw"|"advertise"|"close"|"toString"|"addRoute"|"removeRoute"|Exclude<keyof Emitter, "emit">> {
   readonly running: boolean;
 }
 
@@ -169,11 +182,16 @@ export namespace Face {
   }
 
   /** Underlying face RX/TX implemented as a transform function. */
-  export type RxTxTransform = (iterable: AsyncIterable<Txable>) => AsyncIterable<Rxable>;
+  export interface RxTxTransform {
+    transform: TransformFunc;
+  }
 
   /** Underlying face RX/TX module. */
   export type RxTx = RxTxBasic|RxTxExtended|RxTxTransform;
 
   /** Underlying face. */
-  export type Base = RxTx;
+  export type Base = RxTx & {
+    /** Return short string to identify this face. */
+    toString?: () => string;
+  };
 }

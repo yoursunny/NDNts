@@ -1,17 +1,42 @@
 import { Data, Interest } from "@ndn/l3pkt";
+import EventEmitter from "events";
+import StrictEventEmitter from "strict-event-emitter-types";
 
+import { Name } from "@ndn/name";
 import { Face, FaceImpl } from "./face";
 import { Fib, FibEntry } from "./fib";
 import { Pit } from "./pit";
 
+interface Events {
+  /** Emitted before adding face. */
+  faceadd: Face;
+  /** Emitted after removing face. */
+  facerm: Face;
+  /** Emitted before adding prefix to face. */
+  prefixadd: (face: Face, prefix: Name) => void;
+  /** Emitted after removing prefix from face. */
+  prefixrm: (face: Face, prefix: Name) => void;
+  /** Emitted before advertising prefix. */
+  annadd: Name;
+  /** Emitted before withdrawing prefix. */
+  annrm: Name;
+  /** Emitted after packet arrival. */
+  pktrx: (face: Face, pkt: Face.Rxable) => void;
+  /** Emitted before packet transmission. */
+  pkttx: (face: Face, pkt: Face.Txable) => void;
+}
+
+type Emitter = StrictEventEmitter<EventEmitter, Events>;
+
 const DefaultOptions = { ...FaceImpl.DefaultOptions };
 
-export class ForwarderImpl {
+export class ForwarderImpl extends (EventEmitter as new() => Emitter) {
   public readonly faces = new Set<FaceImpl>();
   public readonly fib = new Fib(this);
   public readonly pit = new Pit();
 
   constructor(public readonly options: Forwarder.Options) {
+    super();
   }
 
   /** Add a face to the forwarding plane. */
@@ -49,6 +74,7 @@ export class ForwarderImpl {
   }
 
   public advertisePrefix(fibEntry: FibEntry) {
+    this.emit("annadd", fibEntry.name);
     for (const face of this.faces) {
       if (face.advertise) {
         face.advertise.advertise(fibEntry);
@@ -57,6 +83,7 @@ export class ForwarderImpl {
   }
 
   public withdrawPrefix(fibEntry: FibEntry) {
+    this.emit("annrm", fibEntry.name);
     for (const face of this.faces) {
       if (face.advertise) {
         face.advertise.withdraw(fibEntry);
@@ -66,7 +93,7 @@ export class ForwarderImpl {
 }
 
 /** Forwarding plane. */
-export interface Forwarder extends Pick<ForwarderImpl, "addFace"> {
+export interface Forwarder extends Pick<ForwarderImpl, "addFace"|Exclude<keyof Emitter, "emit">> {
   readonly faces: Set<Face>;
 }
 

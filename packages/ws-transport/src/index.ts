@@ -9,10 +9,10 @@ export class WsTransport extends DatagramTransport {
         objectMode: true,
         perMessageDeflate: false,
       });
-    return new WsTransport(stream);
+    return new WsTransport(stream, uri);
   }
 
-  protected constructor(stream: WebSocketStream.WebSocketDuplex) {
-    super(stream);
+  protected constructor(stream: WebSocketStream.WebSocketDuplex, uri: string) {
+    super(stream, `WebSocket(${uri})`);
   }
 }

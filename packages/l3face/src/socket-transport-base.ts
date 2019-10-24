@@ -1,7 +1,11 @@
 import { pipeline, writeToStream } from "streaming-iterables";
 
 export abstract class SocketTransportBase {
-  constructor(protected readonly conn: NodeJS.ReadWriteStream) {
+
+  private describe: string;
+  constructor(protected readonly conn: NodeJS.ReadWriteStream,
+              describe?: string) {
+    this.describe = describe || conn.constructor.name;
   }
 
   public tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
@@ -13,5 +17,9 @@ export abstract class SocketTransportBase {
     } finally {
       this.conn.end();
     }
+  }
+
+  public toString() {
+    return this.describe;
   }
 }

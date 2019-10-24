@@ -1,4 +1,4 @@
-import { Forwarder, FwFace } from "@ndn/fw";
+import { Forwarder, FwFace, FwTracer } from "@ndn/fw";
 import { L3Face } from "@ndn/l3face";
 import { Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
@@ -8,6 +8,7 @@ import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { SocketTransport } from "@ndn/node-transport";
 
 export interface CommonArgs {
+  pkttrace: boolean;
   router: string;
   nfd: boolean;
   convention02: boolean;
@@ -18,6 +19,10 @@ export let segmentNumConvention = Segment03;
 export let uplink: FwFace;
 
 export async function applyCommonArgs(args: CommonArgs) {
+  if (args.pkttrace) {
+    FwTracer.enable();
+  }
+
   if (args.convention02) {
     versionConvention = Version02;
     segmentNumConvention = Segment02;

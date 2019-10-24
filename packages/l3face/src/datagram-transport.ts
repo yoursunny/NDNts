@@ -8,8 +8,8 @@ import { Transport } from "./transport";
 export class DatagramTransport extends SocketTransportBase implements Transport {
   public readonly rx: AsyncIterable<Decoder.Tlv>;
 
-  constructor(conn: NodeJS.ReadWriteStream) {
-    super(conn);
+  constructor(conn: NodeJS.ReadWriteStream, describe?: string) {
+    super(conn, describe);
     this.rx = pipeline(
       () => fromStream<Uint8Array>(conn),
       map(this.decode),

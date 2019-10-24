@@ -20,5 +20,6 @@ test("TCP", async () => {
   });
   const [transportA, transportB] = await Promise.all([transportAp.promise, transportBp.promise]);
 
+  expect(transportB.toString()).toBe("Socket(127.0.0.1)");
   TestTransport.check(await TestTransport.execute(transportA, transportB));
 });

@@ -5,6 +5,19 @@ import { consume } from "streaming-iterables";
 import { DatagramTransport, L3Face } from "../src";
 import { makeDuplex } from "../test-fixture/pair";
 
+test("name unspecified", () => {
+  const stream = makeDuplex(undefined, undefined);
+  // tslint:disable-next-line:no-empty
+  stream.constructor = function faceName() {};
+  const face = new L3Face(new DatagramTransport(stream));
+  expect(face.toString()).toBe("faceName");
+});
+
+test("name specified", () => {
+  const face = new L3Face(new DatagramTransport(makeDuplex(undefined, undefined), "face-name"));
+  expect(face.toString()).toBe("face-name");
+});
+
 test("RX error on unknown TLV-TYPE", async () => {
   const rxRemote = new ObjectReadableMock([
     Buffer.from([0xF0, 0x00]),

@@ -9,6 +9,11 @@ loudRejection();
 
 yargs
 .scriptName("ndncat")
+.option("pkttrace", {
+  default: false,
+  desc: "enable packet tracing",
+  type: "boolean",
+})
 .option("router", {
   default: "localhost",
   desc: "router hostname",

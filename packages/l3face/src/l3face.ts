@@ -42,6 +42,10 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
     );
   }
 
+  public toString() {
+    return this.transport.toString();
+  }
+
   private encode = async (packet: Packet): Promise<Uint8Array|undefined> => {
     try {
       await packet[LLSign.PROCESS]();
@@ -78,7 +82,7 @@ export namespace L3Face {
 
   export class TxError extends Error {
     constructor(inner: Error, public packet: Packet) {
-      super(`${inner.message} ${packet.name.toString()}`);
+      super(`${inner.message} ${packet.name}`);
     }
   }
 }

@@ -107,6 +107,7 @@ class Fetcher extends (EventEmitter as new() => Emitter) {
     this.fw.addFace({
       extendedTx: true,
       rx: this.tx,
+      toString: () => `fetch(${this.name})`,
       tx: this.rx,
     });
 

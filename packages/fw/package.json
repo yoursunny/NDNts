@@ -30,6 +30,7 @@
     "@ndn/name": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "hirestime": "^3.2.1",
+    "loglevel": "^1.6.4",
     "minimalistic-assert": "^1.0.1",
     "p-defer": "^3.0.0",
     "p-fifo": "^1.0.0",

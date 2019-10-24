@@ -62,7 +62,7 @@ export class PitEntry {
     }
     this.dnRecords.delete(face);
     this.updateExpire();
-    face.send(new RejectInterest("cancel", dnR.token));
+    face.send(new RejectInterest("cancel", this.interest, dnR.token));
   }
 
   /** Forward Interest to upstream. */
@@ -110,7 +110,7 @@ export class PitEntry {
   private expire = () => {
     this.pit.table.delete(this.key);
     for (const [face, dnR] of this.dnRecords) {
-      face.send(new RejectInterest("expire", dnR.token));
+      face.send(new RejectInterest("expire", this.interest, dnR.token));
     }
   }
 }

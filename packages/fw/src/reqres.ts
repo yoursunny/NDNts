@@ -27,7 +27,7 @@ export type DataResponse<T = any> = Data & InterestToken.Tagged<T[]>;
 export class RejectInterest<T = any> {
   public [InterestToken.TAG]: T;
 
-  constructor(public readonly reason: RejectInterest.Reason, token: T) {
+  constructor(public readonly reason: RejectInterest.Reason, public readonly interest: Interest, token: T) {
     InterestToken.set(this, token);
   }
 }

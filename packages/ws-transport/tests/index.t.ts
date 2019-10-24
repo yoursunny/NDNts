@@ -10,8 +10,7 @@ test("pair", async () => {
     WsTransport.connect(uri),
     WsTransport.connect(uri),
   ]);
-  expect(transportA).toBeInstanceOf(WsTransport);
-  expect(transportB).toBeInstanceOf(WsTransport);
+  expect(transportA.toString()).toBe(`WebSocket(${uri})`);
   await wssPair.waitPaired();
   TestTransport.check(await TestTransport.execute(transportA, transportB));
   await wssPair.close();
