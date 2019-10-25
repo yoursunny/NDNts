@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/fch",
+  "name": "@ndn/autoconfig",
   "version": "0.0.0",
-  "description": "NDNts: NDN-FCH client",
+  "description": "NDNts: automatic connection establishment",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -24,7 +24,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/fch"
+    "directory": "packages/autoconfig"
   },
   "publishConfig": {
     "main": "lib/index.js"
@@ -36,11 +36,14 @@
     "@ndn/name": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/ws-transport": "workspace:*",
-    "alls": "^1.0.4",
+    "default-gateway": "^5.0.4",
     "node-fetch": "^2.6.0",
+    "hirestime": "^3.2.1",
     "tslib": "*"
   },
   "devDependencies": {
+    "@types/default-gateway": "^3.0.0",
+    "@types/hirestime": "^3.2.0",
     "@types/node-fetch": "^2.5.2"
   }
 }
