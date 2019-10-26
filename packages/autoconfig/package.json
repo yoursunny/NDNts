@@ -14,8 +14,8 @@
   "type": "module",
   "main": "src/index.ts",
   "browser": {
-    "./lib/node.js": "./lib/browser.js",
-    "./src/node.ts": "./src/browser.ts"
+    "./lib/platform/index.js": "./lib/platform/browser.js",
+    "./src/platform/index.ts": "./src/platform/browser.ts"
   },
   "sideEffects": [
     "./test-fixture/**"

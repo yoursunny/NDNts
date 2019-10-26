@@ -4,6 +4,6 @@ export interface TestRecord {
 
 declare global {
   interface Window {
-    testFch(): Promise<TestRecord>;
+    testConnectToTestbed(): Promise<TestRecord>;
   }
 }
