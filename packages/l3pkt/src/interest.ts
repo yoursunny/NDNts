@@ -220,7 +220,7 @@ export class Interest {
       }
     }
     if (this.sigInfo || pdIndex >= 0) {
-      this.appParameters = this.appParameters || new Uint8Array();
+      this.appParameters = this.appParameters ?? new Uint8Array();
     }
     if (!this.appParameters) {
       return; // not a parameterized or signed Interest

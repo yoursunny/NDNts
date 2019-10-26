@@ -82,13 +82,13 @@ const NniClass = {
 
 /** Create Encodable from non-negative integer. */
 export function NNI(n: number, len?: Len): Encodable {
-  return new NniClass[len || 0](n);
+  return new NniClass[len ?? 0](n);
 }
 
 export namespace NNI {
   /** Decode non-negative integer. */
   export function decode(value: Uint8Array, len?: Len): number {
-    return NniClass[len || 0].decode(value);
+    return NniClass[len ?? 0].decode(value);
   }
 
   /** Error if n exceeds [min,max] range. */

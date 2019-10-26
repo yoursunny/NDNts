@@ -18,7 +18,7 @@ class A1Extension implements Extension<ExtTestTarget, number> {
   public readonly tt = 0xA1;
   public readonly order = 0xA3;
   public decode(obj: ExtTestTarget, { nni }: Decoder.Tlv, accumulator?: number): number {
-    return (accumulator || 0) + nni;
+    return (accumulator ?? 0) + nni;
   }
   public encode(obj: ExtTestTarget, value: number): Encodable {
     return [this.tt, NNI(value)];

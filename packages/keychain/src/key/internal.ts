@@ -23,14 +23,14 @@ class NamedKey {
 
 /** Determine if obj is a private/public key. */
 export function isKey(obj: any): obj is NamedKey {
-  return !!obj && obj[ISKEY] === ISKEY;
+  return obj?.[ISKEY] === ISKEY;
 }
 
 /** Named private key. */
 export abstract class PrivateKeyBase extends NamedKey {
   /** Sign the packet. */
   public sign(pkt: Signable): void {
-    const si = pkt.sigInfo || new SigInfo();
+    const si = pkt.sigInfo ?? new SigInfo();
     si.type = this.sigType;
     si.keyLocator = this.keyLocator;
     pkt.sigInfo = si;
@@ -44,7 +44,7 @@ export abstract class PrivateKeyBase extends NamedKey {
 export abstract class PublicKeyBase extends NamedKey {
   /** Determine whether a packet was signed by this public key. */
   public match(pkt: PacketWithSignature): boolean {
-    return !!pkt.sigInfo && pkt.sigInfo.type === this.sigType && this.doMatch(pkt.sigInfo);
+    return pkt.sigInfo?.type === this.sigType && this.doMatch(pkt.sigInfo);
   }
 
   /** Verify the signature on a packet. */

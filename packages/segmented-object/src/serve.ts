@@ -15,10 +15,10 @@ class Server {
   private allGenerated = false;
 
   constructor(public readonly name: Name, input: serve.Input, opts: serve.Options) {
-    this.fw = opts.fw || Forwarder.getDefault();
-    this.segmentNumConvention = opts.segmentNumConvention || Segment03;
-    this.chunkSize = opts.chunkSize || 8000;
-    this.signer = opts.signer || theDigestKey;
+    this.fw = opts.fw ?? Forwarder.getDefault();
+    this.segmentNumConvention = opts.segmentNumConvention ?? Segment03;
+    this.chunkSize = opts.chunkSize ?? 8000;
+    this.signer = opts.signer ?? theDigestKey;
     this.producer = this.producer.bind(this);
 
     this.chunker = chunker(input, this.chunkSize);

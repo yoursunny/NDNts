@@ -8,7 +8,7 @@ type Options = Omit<ControlCommand.Options, "fw">;
 class NfdAdvertise extends Advertise {
   constructor(face: FwFace, private readonly opt: Options) {
     super(face);
-    face.addRoute(opt.commandPrefix || ControlCommand.localhostPrefix);
+    face.addRoute(opt.commandPrefix ?? ControlCommand.localhostPrefix);
   }
 
   protected async doAdvertise(name: Name) {

@@ -44,8 +44,8 @@ export class ValidityPeriod {
   constructor(notBefore: Date, notAfter: Date);
 
   constructor(arg1?: Date, arg2?: Date) {
-    this.notBefore = arg1 || new Date(0);
-    this.notAfter = arg2 || new Date(0);
+    this.notBefore = arg1 ?? new Date(0);
+    this.notAfter = arg2 ?? new Date(0);
   }
 
   public encodeTo(encoder: Encoder) {

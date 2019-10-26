@@ -74,16 +74,16 @@ class Fetcher extends (EventEmitter as new() => Emitter) {
 
   constructor(public readonly name: Name, opts: fetch.Options) {
     super();
-    this.fw = opts.fw || Forwarder.getDefault();
-    this.segmentNumConvention = opts.segmentNumConvention || Segment03;
-    this.interestLifetime = opts.interestLifetime || Interest.DefaultLifetime;
+    this.fw = opts.fw ?? Forwarder.getDefault();
+    this.segmentNumConvention = opts.segmentNumConvention ?? Segment03;
+    this.interestLifetime = opts.interestLifetime ?? Interest.DefaultLifetime;
 
     (this as EventEmitter).on("newListener", this.waitForDataListener);
   }
 
   /** Stop fetching immediately. */
   public abort = (err?: Error) => {
-    this.emit("error", err || new Error("abort"));
+    this.emit("error", err ?? new Error("abort"));
     this.tx.end();
   }
 
@@ -115,7 +115,7 @@ class Fetcher extends (EventEmitter as new() => Emitter) {
   }
 
   private async run() {
-    for (let i = 0; typeof this.finalBlockId === "undefined" || i <= this.finalBlockId; ++i) {
+    for (let i = 0; i <= (this.finalBlockId ?? Infinity); ++i) {
       const dataPromise = pDefer<Data>();
       this.tx.push(InterestToken.set(
         new Interest(this.name.append(this.segmentNumConvention, i),

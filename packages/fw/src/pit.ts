@@ -38,8 +38,7 @@ export class PitEntry {
   public receiveInterest(face: FaceImpl, interest: Interest, token: any) {
     const now = getNow();
     const expire = now + interest.lifetime;
-    const nonce = typeof interest.nonce === "undefined" ?
-                  Interest.generateNonce() : interest.nonce;
+    const nonce = interest.nonce ?? Interest.generateNonce();
 
     const dnR = this.dnRecords.get(face);
     if (dnR) {

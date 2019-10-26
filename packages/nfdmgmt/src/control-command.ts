@@ -41,7 +41,7 @@ export namespace ControlCommand {
   /** Invoke a command and wait for response. */
   export async function call<C extends keyof Commands>(
       command: C, params: Commands[C], opt: Options = {}): Promise<ControlResponse> {
-    const prefix = opt.commandPrefix || localhostPrefix;
+    const prefix = opt.commandPrefix ?? localhostPrefix;
     const name = new Name([
       ...prefix.comps,
       ...command.split("/"),

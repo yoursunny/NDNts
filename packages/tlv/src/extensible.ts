@@ -88,7 +88,7 @@ export class ExtensionRegistry<T extends Extensible> {
       return {tt, value, ext};
     })
     .sort(({tt: ttA, ext: { order: orderA }},
-           {tt: ttB, ext: { order: orderB }}) => (orderA || ttA) - (orderB || ttB))
+           {tt: ttB, ext: { order: orderB }}) => (orderA ?? ttA) - (orderB ?? ttB))
     .map(({tt, value, ext}) => ext.encode(source, value));
   }
 }

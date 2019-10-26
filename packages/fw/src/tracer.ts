@@ -29,7 +29,7 @@ export class Tracer {
   private readonly fw: Forwarder;
 
   constructor(opts: Options) {
-    this.fw = opts.fw || Forwarder.getDefault();
+    this.fw = opts.fw ?? Forwarder.getDefault();
     /* istanbul ignore else */
     if (opts.face !== false) {
       this.fw.on("faceadd", this.faceadd);
