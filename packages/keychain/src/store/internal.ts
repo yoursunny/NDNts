@@ -13,7 +13,7 @@ interface Store<T> {
 
 export interface PrivateKeyStore extends Store<PrivateKey> {
   generate<A extends any[]>(gen: KeyGenerator<A>, name: KeyName,
-                            ...args: A): Promise<[PrivateKey, PublicKey.SpkiExportable]>;
+                            ...args: A): Promise<[PrivateKey, PublicKey]>;
 }
 
 export interface CertificateStore extends Store<Certificate> {

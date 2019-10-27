@@ -4,7 +4,9 @@ import { Name } from "@ndn/name";
 import { KeyName } from "../name";
 import { crypto } from "../platform";
 
-import { KEYGEN, KeyGenResult, PrivateKeyBase, PublicKeyBase } from "./internal";
+import { KEYGEN, KeyGenResult } from "./internal";
+import { PrivateKeyBase } from "./private-key";
+import { PublicKeyBase } from "./public-key";
 
 export type EcCurve = "P-256" | "P-384" | "P-521";
 // tslint:disable-next-line:object-literal-sort-keys
@@ -19,6 +21,7 @@ export class EcPrivateKey extends PrivateKeyBase {
     let pvt = pair.privateKey;
 
     let privateKeyExported: object;
+    /* istanbul ignore else browser-only */
     if (needJson) {
       const jwk = await crypto.subtle.exportKey("jwk", pvt);
       privateKeyExported = jwk;

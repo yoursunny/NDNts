@@ -16,7 +16,7 @@ export class JsonPrivateKeyStore extends JsonStoreBase<Item> implements PrivateK
   }
 
   public async generate<A extends any[]>(gen: KeyGenerator<A>, name: KeyName,
-                                         ...args: A): Promise<[PrivateKey, PublicKey.SpkiExportable]> {
+                                         ...args: A): Promise<[PrivateKey, PublicKey]> {
     const { privateKey, privateKeyExported, publicKey } = await gen[KEYGEN](name, true, ...args);
     await this.insertImpl(name.toName(), {
       privateKeyExported,

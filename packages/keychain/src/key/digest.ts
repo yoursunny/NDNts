@@ -3,14 +3,18 @@ import { Name } from "@ndn/name";
 import applyMixins from "applymixins";
 
 import { crypto, timingSafeEqual } from "../platform";
-import { PrivateKeyBase, PublicKeyBase } from "./internal";
-import { PrivateKey } from "./key";
+import { PrivateKeyBase } from "./private-key";
+import { PublicKeyBase } from "./public-key";
 
 const IDENTITY = new Name("/localhost/identity/digest-sha256");
 
-export class DigestKey extends PublicKeyBase implements PrivateKey {
+export class DigestKey extends PublicKeyBase {
   constructor() {
     super(IDENTITY, SigType.Sha256, undefined);
+  }
+
+  public exportAsSpki(): Promise<Uint8Array> {
+    return Promise.reject(new Error("cannot export DigestKey"));
   }
 
   protected async llSign(input: Uint8Array): Promise<Uint8Array> {

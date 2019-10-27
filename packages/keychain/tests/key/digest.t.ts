@@ -3,9 +3,10 @@ import { SigType } from "@ndn/l3pkt";
 import { PrivateKey, PublicKey, theDigestKey } from "../../src";
 import * as TestSignVerify from "../../test-fixture/sign-verify";
 
-test("isKey", () => {
+test("isKey", async () => {
   expect(PrivateKey.isPrivateKey(theDigestKey)).toBeTruthy();
   expect(PublicKey.isPublicKey(theDigestKey)).toBeTruthy();
+  await expect(theDigestKey.exportAsSpki()).rejects.toThrow(/cannot export/);
 });
 
 test.each(TestSignVerify.TABLE)("%p", async ({ cls }) => {

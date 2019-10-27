@@ -10,7 +10,7 @@ import { JsonCertificateStore, JsonPrivateKeyStore } from "./json";
 
 interface GenerateResult {
   privateKey: PrivateKey;
-  publicKey: PublicKey.SpkiExportable;
+  publicKey: PublicKey;
   selfSigned: Certificate;
 }
 

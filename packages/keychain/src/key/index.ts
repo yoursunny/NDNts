@@ -1,3 +1,4 @@
 export * from "./digest";
 export * from "./ec";
-export * from "./key";
+export { PrivateKey } from "./private-key";
+export { PublicKey } from "./public-key";

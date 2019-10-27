@@ -63,7 +63,7 @@ export namespace Certificate {
   interface IssueOptions extends Omit<BuildOptions, "name"|"publicKey"|"signer"> {
     issuerId: Component;
     issuerPrivateKey: PrivateKey;
-    publicKey: PublicKey.SpkiExportable;
+    publicKey: PublicKey;
   }
 
   export async function issue(options: IssueOptions): Promise<Certificate> {
