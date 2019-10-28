@@ -8,7 +8,7 @@
   "devDependencies": {
     "@ndn/keychain": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "spawn2": "1.1.0",
+    "execa": "^3.2.0",
     "tslib": "*"
   }
 }

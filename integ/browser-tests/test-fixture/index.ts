@@ -3,6 +3,8 @@ import { Page } from "puppeteer";
 
 import jestPuppeteerConfig from "../jest-puppeteer.config.js";
 
+jest.setTimeout(20000);
+
 /**
  * Obtain HTML page URI for test case.
  * @param testcaseDirname __dirname
