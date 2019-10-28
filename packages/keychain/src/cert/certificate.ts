@@ -5,6 +5,7 @@ import { Version } from "@ndn/naming-convention-03";
 import { PrivateKey, PublicKey } from "../key";
 import { CertificateName, KeyName } from "../name";
 
+import { importPublicKey } from "../key/import";
 import { ContentTypeKEY } from "./an";
 import { ValidityPeriod } from "./validity-period";
 
@@ -88,5 +89,9 @@ export namespace Certificate {
     }
     const opt: IssueOptions = { ...options, issuerId: SELF_ISSUER, issuerPrivateKey: options.privateKey };
     return await issue(opt);
+  }
+
+  export async function getPublicKey(cert: Certificate): Promise<PublicKey> {
+    return await importPublicKey(cert.certName.toKeyName().toName(), cert.publicKey);
   }
 }

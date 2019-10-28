@@ -3,18 +3,23 @@ import { Name } from "@ndn/name";
 
 import { KeyName } from "../name";
 import { crypto } from "../platform";
-
-import { KEYGEN, KeyGenResult } from "./internal";
+import { KeyGenResult } from "./internal";
 import { PrivateKeyBase } from "./private-key";
 import { PublicKeyBase } from "./public-key";
 
 export type EcCurve = "P-256" | "P-384" | "P-521";
+export const EC_CURVES: ReadonlyArray<EcCurve> = ["P-256", "P-384", "P-521"];
 // tslint:disable-next-line:object-literal-sort-keys
 const SIGN_PARAMS = { name: "ECDSA", hash: "SHA-256" } as EcdsaParams;
 
+interface EcPvtExport {
+  kty: "EC";
+  pvt: CryptoKey;
+}
+
 /** ECDSA private key. */
 export class EcPrivateKey extends PrivateKeyBase {
-  public static async [KEYGEN](name: KeyName, needJson: boolean, curve: EcCurve): Promise<KeyGenResult> {
+  public static async generate(name: KeyName, needJson: boolean, curve: EcCurve): Promise<KeyGenResult> {
     const params = { name: "ECDSA", namedCurve: curve };
     const pair: CryptoKeyPair = await crypto.subtle.generateKey(params, needJson, ["sign", "verify"]);
     const pub = pair.publicKey;
@@ -27,7 +32,7 @@ export class EcPrivateKey extends PrivateKeyBase {
       privateKeyExported = jwk;
       pvt = await crypto.subtle.importKey("jwk", jwk, params, false, ["sign"]);
     } else {
-      privateKeyExported = pvt;
+      privateKeyExported = { kty: "EC", pvt } as EcPvtExport;
     }
 
     const n = name.toName();
@@ -36,6 +41,26 @@ export class EcPrivateKey extends PrivateKeyBase {
       privateKeyExported,
       publicKey:  new EcPublicKey(n, pub),
     };
+  }
+
+  public static async importPrivateKey(name: Name, isJson: boolean,
+                                       privateKeyExported: object): Promise<EcPrivateKey> {
+    const { kty } = privateKeyExported as JsonWebKey|EcPvtExport;
+    if (kty !== "EC") {
+      throw new Error("not EcPrivateKey");
+    }
+
+    /* istanbul ignore if browser-only */
+    if (!isJson) {
+      const { pvt } = privateKeyExported as EcPvtExport;
+      return new EcPrivateKey(name, pvt);
+    }
+
+    const jwk = privateKeyExported as JsonWebKey;
+    const key = await crypto.subtle.importKey("jwk", jwk,
+      { name: "ECDSA", namedCurve: jwk.crv! },
+      false, ["sign"]);
+    return new EcPrivateKey(name, key);
   }
 
   constructor(name: Name, private readonly key: CryptoKey) {

@@ -37,6 +37,7 @@
     "@ndn/tlv": "workspace:*",
     "@peculiar/webcrypto": "^1.0.21",
     "applymixins": "^1.1.0",
+    "asn1-ts": "^2.5.1",
     "idb-keyval": "^3.2.0",
     "throat": "^5.0.0",
     "tslib": "*",
@@ -44,7 +45,7 @@
   },
   "devDependencies": {
     "@types/tmp": "^0.1.0",
-    "@types/write": "https://gist.github.com/yoursunny/0f71e9fe2d32defbf681c295ef939f08/archive/e76e46bb158bfb2a2cc39f0e1b7cf18a09c26fa5.tar.gz",
+    "@types/write": "^2.0.0",
     "tmp": "^0.1.0"
   }
 }

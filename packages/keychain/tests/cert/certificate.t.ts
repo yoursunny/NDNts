@@ -4,7 +4,7 @@ import "@ndn/name/test-fixture";
 import { Decoder, Encoder } from "@ndn/tlv";
 import "@ndn/tlv/test-fixture";
 
-import { Certificate, CertificateName, theDigestKey, ValidityPeriod } from "../../src";
+import { Certificate, CertificateName, EcPublicKey, theDigestKey, ValidityPeriod } from "../../src";
 
 test("encode decode", async () => {
   const cert = await Certificate.build({
@@ -47,7 +47,7 @@ const NDN_TESTBED_ROOT_V2_NDNCERT = Buffer.from(`
   YW1l/QICEE5ETiBUZXN0YmVkIFJvb3QXRjBEAiAwtzbOA+F6xiLB7iYBzSpWpZzf
   mtWqsXljm/SkXu4rPQIgTFMi3zZm/Eh+X0tzrcOxDhbmsl2chkIjyookaM9pukM=`, "base64");
 
-test("decode ndn-testbed-root-v2.ndncert", () => {
+test("decode ndn-testbed-root-v2.ndncert", async () => {
   const data = new Decoder(NDN_TESTBED_ROOT_V2_NDNCERT).decode(Data);
   const cert = new Certificate(data);
   expect(cert.name).toEqualName("/ndn/KEY/e%9D%7F%A5%C5%81%10%7D/ndn/%FD%00%00%01%60qJQ%9B");
@@ -65,4 +65,7 @@ test("decode ndn-testbed-root-v2.ndncert", () => {
     RdiYwpZP40Li/hp/m47n60p8D54WK84zV2sxXs7LtkBoN79R9QIhAP////8AAAAA
     //////////+85vqtpxeehPO5ysL8YyVRAgEBA0IABAUIdqatSflni6u9XO2ZSmBA
     +MjDwkx2RiPtCCLsm4oKVn2Jyfa/yOSgZseGqnTEdbN1rDWvlIgAmxI0MUXVM1g=`, "base64"));
+
+  const pub = await Certificate.getPublicKey(cert);
+  expect(pub).toBeInstanceOf(EcPublicKey);
 });

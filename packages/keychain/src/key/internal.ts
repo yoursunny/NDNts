@@ -16,8 +16,6 @@ export abstract class NamedKey {
   }
 }
 
-export const KEYGEN = Symbol("KeyChain.KeyGen");
-
 export interface KeyGenResult {
   privateKey: PrivateKey;
   privateKeyExported: object;
@@ -31,5 +29,5 @@ export interface KeyGenerator<A extends any[]> {
    * @param needJson true if privateKeyExported must be serializable as JSON,
    *                 false if privateKeyExported only needs to support structured clone algorithm.
    */
-  [KEYGEN](name: KeyName, needJson: boolean, ...args: A): Promise<KeyGenResult>;
+  generate(name: KeyName, needJson: boolean, ...args: A): Promise<KeyGenResult>;
 }

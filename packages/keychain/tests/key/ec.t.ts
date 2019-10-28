@@ -2,7 +2,8 @@ import { SigType } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 import "@ndn/name/test-fixture";
 
-import { EcCurve, EcPrivateKey, KeyChain, PrivateKey, PublicKey, ValidityPeriod } from "../../src";
+import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, EcPublicKey, KeyChain,
+         PrivateKey, PublicKey, ValidityPeriod } from "../../src";
 import * as TestSignVerify from "../../test-fixture/sign-verify";
 
 interface Row extends TestSignVerify.Row {
@@ -10,10 +11,10 @@ interface Row extends TestSignVerify.Row {
 }
 
 const TABLE = TestSignVerify.TABLE.flatMap((row) =>
-  ["P-256", "P-384", "P-521"].map((curve) => ({ ...row, curve })),
+  EC_CURVES.map((curve) => ({ ...row, curve })),
 ) as Row[];
 
-test.each(TABLE)("%p", async ({ cls, curve }) => {
+test.each(TABLE)("sign-verify %p", async ({ cls, curve }) => {
   const keyChain = KeyChain.createTemp();
   const validity = ValidityPeriod.daysFromNow(1);
   const { privateKey: pvtA, publicKey: pubA } =
@@ -35,4 +36,17 @@ test.each(TABLE)("%p", async ({ cls, curve }) => {
   expect(record.sA0.sigInfo.type).toBe(SigType.Sha256WithEcdsa);
   expect(record.sA0.sigInfo.keyLocator).toBeInstanceOf(Name);
   expect(record.sA0.sigInfo.keyLocator).toEqualName(pvtA.name);
+});
+
+test.each(EC_CURVES)("import %p", async (curve) => {
+  const keyChain = KeyChain.createTemp();
+  const validity = ValidityPeriod.daysFromNow(1);
+  const { publicKey, selfSigned } = await keyChain.generateKey(EcPrivateKey, "/ECKEY/KEY/x", validity, curve);
+
+  const pvt = await keyChain.getKey(new Name("/ECKEY/KEY/x"));
+  expect(pvt).toBeInstanceOf(EcPrivateKey);
+
+  const pub = await Certificate.getPublicKey(selfSigned);
+  expect(pub).toBeInstanceOf(EcPublicKey);
+  expect(pub.name).toEqualName(publicKey.name);
 });
