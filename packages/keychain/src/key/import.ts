@@ -35,7 +35,7 @@ export async function importPublicKey(name: Name, spki: Uint8Array): Promise<Pub
       const namedCurve = determineEcCurve(paramsEl);
       const key = await crypto.subtle.importKey("spki", spki,
         { name: "ECDSA", namedCurve }, true, ["verify"]);
-      return new EcPublicKey(name, key);
+      return new EcPublicKey(name, namedCurve, key);
   }
   /* istanbul ignore next */
   throw new Error("invalid SPKI or unknown algorithm");
