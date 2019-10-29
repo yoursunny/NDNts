@@ -1,4 +1,4 @@
-import { Data, LLSign } from "@ndn/l3pkt";
+import { Data, LLSign, SigInfo } from "@ndn/l3pkt";
 import { Component } from "@ndn/name";
 import { Version } from "@ndn/naming-convention-03";
 
@@ -27,7 +27,11 @@ export class Certificate {
     if (this.data.contentType !== ContentTypeKEY) {
       throw new Error("ContentType must be KEY");
     }
-    const validity = ValidityPeriod.get(data.sigInfo);
+    const si = data.sigInfo;
+    if (typeof si === "undefined") {
+      throw new Error("SigInfo is missing");
+    }
+    const validity = ValidityPeriod.get(si);
     if (typeof validity === "undefined") {
       throw new Error("ValidityPeriod is missing");
     }
@@ -54,7 +58,9 @@ export namespace Certificate {
       signer,
     }: BuildOptions): Promise<Certificate> {
     const data = new Data(name.toName(), Data.ContentType(ContentTypeKEY), Data.FreshnessPeriod(freshness));
-    ValidityPeriod.set(data.sigInfo, validity);
+    const si = new SigInfo();
+    ValidityPeriod.set(si, validity);
+    data.sigInfo = si;
     data.content = publicKey;
     signer.sign(data);
     await data[LLSign.PROCESS]();

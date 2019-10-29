@@ -59,8 +59,8 @@ export class Data {
   public name: Name = new Name();
   public finalBlockId?: Component;
   public content: Uint8Array = new Uint8Array();
-  public sigInfo: SigInfo = FAKE_SIGINFO;
-  public sigValue: Uint8Array = FAKE_SIGVALUE;
+  public sigInfo?: SigInfo;
+  public sigValue?: Uint8Array;
   public [LLSign.PENDING]?: LLSign;
   public [LLVerify.SIGNED]?: Uint8Array;
   public [TOPTLV]?: Uint8Array & {[TOPTLV_DIGEST]?: Uint8Array}; // for implicit digest
@@ -108,7 +108,7 @@ export class Data {
           this.getSignedPortion(),
           (output) => this[LLVerify.SIGNED] = output,
         ),
-        [TT.DSigValue, this.sigValue],
+        [TT.DSigValue, this.sigValue ?? FAKE_SIGVALUE],
       ] as EncodableTlv,
       (output) => this[TOPTLV] = output,
     ));
@@ -151,6 +151,9 @@ export class Data {
   }
 
   public [LLVerify.VERIFY](verify: LLVerify): Promise<void> {
+    if (!this.sigValue) {
+      return Promise.reject("packet is unsigned");
+    }
     return LLVerify.verifyImpl(this, this.sigValue, verify);
   }
 
@@ -164,7 +167,7 @@ export class Data {
         this.finalBlockId ? [TT.FinalBlockId, this.finalBlockId] : undefined,
       ],
       this.content.byteLength > 0 ? [TT.Content, this.content] : undefined,
-      this.sigInfo.encodeAs(TT.DSigInfo),
+      (this.sigInfo ?? FAKE_SIGINFO).encodeAs(TT.DSigInfo),
     ];
   }
 }

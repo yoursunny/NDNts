@@ -18,14 +18,37 @@ export function sigRawToDer(raw: Uint8Array, curve: EcCurve): Uint8Array {
     throw new Error("unexpected raw signature length");
   }
 
-  const sequenceEl = new DERElement();
+  const sequenceEl = new DERElement(
+    ASN1TagClass.universal,
+    undefined,
+    ASN1UniversalType.sequence,
+  );
   sequenceEl.sequence = [
-    new DERElement(ASN1TagClass.universal, ASN1Construction.primitive, ASN1UniversalType.integer,
-                   raw.subarray(0, pointSize)),
-    new DERElement(ASN1TagClass.universal, ASN1Construction.primitive, ASN1UniversalType.integer,
-                   raw.subarray(pointSize)),
+    writeIntegerDer(raw.subarray(0, pointSize)),
+    writeIntegerDer(raw.subarray(pointSize)),
   ];
   return sequenceEl.toBytes();
+}
+
+function writeIntegerDer(n: Uint8Array): DERElement {
+  let value = n;
+  if (n[0] >= 0x80) {
+    value = Uint8Array.of(0, ...n);
+  } else {
+    for (let i = 0; i < n.length - 1; ++i) {
+      // tslint:disable-next-line:no-bitwise
+      if ((n[i] << 1) + (n[i + 1] >> 7) !== 0) {
+        value = n.subarray(i);
+        break;
+      }
+    }
+  }
+  return  new DERElement(
+    ASN1TagClass.universal,
+    ASN1Construction.primitive,
+    ASN1UniversalType.integer,
+    value,
+  );
 }
 
 export function sigDerToRaw(asn1: Uint8Array, curve: EcCurve): Uint8Array {
@@ -35,12 +58,12 @@ export function sigDerToRaw(asn1: Uint8Array, curve: EcCurve): Uint8Array {
 
   const pointSize = mapPointSize[curve];
   const raw = new Uint8Array(pointSize * 2);
-  writeIntergerFixed(raw, 0, pointSize, r);
-  writeIntergerFixed(raw, pointSize, pointSize, s);
+  writeIntegerFixed(raw, 0, pointSize, r);
+  writeIntegerFixed(raw, pointSize, pointSize, s);
   return raw;
 }
 
-function writeIntergerFixed(dst: Uint8Array, offset: number, length: number, src: Uint8Array) {
+function writeIntegerFixed(dst: Uint8Array, offset: number, length: number, src: Uint8Array) {
   if (src.length > length) {
     /* istanbul ignore if */
     if (src.subarray(0, src.length - length).filter((b) => b > 0).length > 0) {

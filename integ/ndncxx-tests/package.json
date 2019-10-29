@@ -3,12 +3,16 @@
   "private": true,
   "scripts": {
     "lint": "find -name '*.cpp' | xargs clang-format-6.0 -i -style='{BasedOnStyle: Mozilla, ReflowComments: false}'",
-    "test": "sh -c ../../node_modules/.bin/jest"
+    "test": "../../node_modules/.bin/jest"
   },
   "devDependencies": {
     "@ndn/keychain": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "@types/tmp": "^0.1.0",
+    "@types/write": "^2.0.0",
     "execa": "^3.2.0",
-    "tslib": "*"
+    "tmp": "^0.1.0",
+    "tslib": "*",
+    "write": "^2.0.0"
   }
 }

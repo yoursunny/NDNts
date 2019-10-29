@@ -29,7 +29,11 @@ test("encode decode", async () => {
   expect(() => new Certificate(data)).toThrow(/ContentType/);
 
   data = new Decoder(wire).decode(Data);
-  ValidityPeriod.set(data.sigInfo, undefined);
+  data.sigInfo = undefined;
+  expect(() => new Certificate(data)).toThrow(/SigInfo/);
+
+  data = new Decoder(wire).decode(Data);
+  ValidityPeriod.set(data.sigInfo!, undefined);
   expect(() => new Certificate(data)).toThrow(/ValidityPeriod/);
 });
 
