@@ -9,7 +9,7 @@ The `fetch` function:
 * [X] supports version discovery via CanBePrefix.
 * [ ] supports version discovery via RDR protocol.
 * [ ] supports manifest.
-* [ ] allows specifying segment range.
+* [X] allows specifying segment range.
 * [X] supports segment numbers.
 * [ ] supports byte offsets.
 * [X] supports multiple naming conventions.

@@ -74,10 +74,7 @@ class Fetcher extends (EventEmitter as new() => Emitter) {
 
   constructor(public readonly name: Name, opts: fetch.Options) {
     super();
-    this.fw = opts.fw ?? Forwarder.getDefault();
-    this.segmentNumConvention = opts.segmentNumConvention ?? Segment03;
-    this.interestLifetime = opts.interestLifetime ?? Interest.DefaultLifetime;
-
+    Object.assign(this, opts);
     (this as EventEmitter).on("newListener", this.waitForDataListener);
   }
 
@@ -115,7 +112,9 @@ class Fetcher extends (EventEmitter as new() => Emitter) {
   }
 
   private async run() {
-    for (let i = 0; i <= (this.finalBlockId ?? Infinity); ++i) {
+    for (let i = this.segmentRange?.[0] ?? 0;
+         i <= Math.min(this.finalBlockId ?? Infinity, (this.segmentRange?.[1] ?? Infinity) - 1);
+         ++i) {
       const dataPromise = pDefer<Data>();
       this.tx.push(InterestToken.set(
         new Interest(this.name.append(this.segmentNumConvention, i),
@@ -156,11 +155,17 @@ class Fetcher extends (EventEmitter as new() => Emitter) {
     }
   }
 }
-interface Fetcher extends Required<fetch.Options> {}
+// tslint:disable-next-line:no-empty-interface
+interface Fetcher extends fetch.Options {}
 
 /** Initiate fetching of a segment object. */
-export function fetch(name: Name, opts: fetch.Options = {}): fetch.Fetcher {
-  return new Fetcher(name, opts);
+export function fetch(name: Name, opts: Partial<fetch.Options> = {}): fetch.Fetcher {
+  return new Fetcher(name, {
+    fw: Forwarder.getDefault(),
+    segmentNumConvention: Segment03,
+    interestLifetime: Interest.DefaultLifetime,
+    ...opts,
+  });
 }
 
 type Fetcher_ = Fetcher;
@@ -168,16 +173,25 @@ type Fetcher_ = Fetcher;
 export namespace fetch {
   export interface Options {
     /** Use the specified forwarder instead of the default. */
-    fw?: Forwarder;
+    fw: Forwarder;
 
     /**
      * Choose a segment number naming convention.
      * Default is Segment from @ndn/naming-convention-03 package.
      */
-    segmentNumConvention?: NamingConvention<number, unknown>;
+    segmentNumConvention: NamingConvention<number, unknown>;
+
+    /**
+     * Specify segment number range as [begin, end).
+     * The begin segment number is inclusive and the end segment number is exclusive.
+     * If the begin segment number is greater than the final segment number, fetching will fail.
+     * If the end segment number is undefined or greater than the final segment number,
+     * fetching will stop at the final segment.
+     */
+    segmentRange?: [number, number|undefined];
 
     /** Specify InterestLifetime. */
-    interestLifetime?: number;
+    interestLifetime: number;
   }
 
   /** Fetching progress and response. */

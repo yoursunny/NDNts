@@ -84,6 +84,21 @@ test("iterable to events", (done) => {
   });
 });
 
+test("ranged", async () => {
+  const server = serve(new Name("/R"), objectBody, { chunkSize: 1024 }); // 1024 segments
+  await expect(fetch(new Name("/R"), { segmentRange: [0, 8] }).promise)
+    .resolves.toEqualUint8Array(objectBody.subarray(0, 8 * 1024));
+  await expect(fetch(new Name("/R"), { segmentRange: [8, 24] }).promise)
+    .resolves.toEqualUint8Array(objectBody.subarray(8 * 1024, 24 * 1024));
+  await expect(fetch(new Name("/R"), { segmentRange: [1022, undefined] }).promise)
+    .resolves.toEqualUint8Array(objectBody.subarray(1022 * 1024));
+  await expect(fetch(new Name("/R"), { segmentRange: [1022, 1050] }).promise)
+    .resolves.toEqualUint8Array(objectBody.subarray(1022 * 1024));
+  await expect(fetch(new Name("/R"), { segmentRange: [1050, undefined], interestLifetime: 400 }).promise)
+    .rejects.toThrow();
+  server.stop();
+});
+
 test("empty object", async () => {
   const fw = Forwarder.create();
   const server = serve(new Name("/R"), new Uint8Array(), { fw, segmentNumConvention: Segment02 });
