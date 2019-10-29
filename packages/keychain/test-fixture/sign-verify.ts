@@ -96,9 +96,13 @@ export async function execute(cls: PacketCtor, pvtA: PrivateKey, pubA: PublicKey
   const pktMc = cls.decodeFrom(new Decoder(sA0.wire));
   pktMc.sigValue = (() => {
     const sig = Uint8Array.from(pktMc.sigValue!);
-    const offset = Math.floor(Math.random() * sig.byteLength);
-    // tslint:disable-next-line:no-bitwise
-    sig[offset] ^= 0x01;
+    // Changing one bit is sometimes insufficient to break the signature,
+    // so change four bits to reduce test failures.
+    for (let i = 0; i < 4; ++i) {
+      const offset = Math.floor(Math.random() * sig.byteLength);
+      // tslint:disable-next-line:no-bitwise
+      sig[offset] ^= 0x01;
+    }
     return sig;
   })();
 
