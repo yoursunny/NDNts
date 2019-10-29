@@ -1,6 +1,7 @@
 import { Name } from "@ndn/name";
 
-import { EcPrivateKey, KeyChain, ValidityPeriod } from "../src";
+import { EcPrivateKey, EcPublicKey, KeyChain, RsaPrivateKey, RsaPublicKey, ValidityPeriod } from "../src";
+import { importPublicKey } from "../src/key/import";
 
 export interface TestRecord {
   keys0: string[];
@@ -13,6 +14,7 @@ export interface TestRecord {
   certs3: string[];
   keys4: string[];
   certs4: string[];
+  keys5: string[];
 }
 
 function nameToString(name: Name) {
@@ -25,8 +27,11 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
 
   const validity = ValidityPeriod.daysFromNow(1);
   const gens = await Promise.all(Array.from((function*() {
-    for (let i = 0; i < 40; ++i) {
+    for (let i = 0; i < 20; ++i) {
       yield keyChain.generateKey(EcPrivateKey, `/${i}`, validity, "P-256");
+    }
+    for (let i = 20; i < 40; ++i) {
+      yield keyChain.generateKey(RsaPrivateKey, `/${i}`, validity, 2048);
     }
   })()));
   const keys1 = gens.map((gen) => gen.privateKey.name).map(nameToString);
@@ -45,13 +50,20 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
 
   const keys4 = [] as string[];
   const certs4 = [] as string[];
+  const keys5 = [] as string[];
   for (let i = 0; i < 40; ++i) {
     try {
       const key = await keyChain.getKey(new Name(keys1[i]));
-      if (key instanceof EcPrivateKey) {
-        keys4.push("EC");
-      } else {
-        keys4.push("bad");
+      switch (true) {
+        case key instanceof EcPrivateKey:
+          keys4.push("EC");
+          break;
+        case key instanceof RsaPrivateKey:
+          keys4.push("RSA");
+          break;
+        default:
+          keys4.push("bad");
+          break;
       }
     } catch {
       keys4.push("");
@@ -59,8 +71,25 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
     try {
       const cert = await keyChain.getCert(new Name(certs1[i]));
       certs4.push(cert.name.toString());
+      try {
+        const key = await importPublicKey(new Name("/K"), cert.publicKey);
+        switch (true) {
+          case key instanceof EcPublicKey:
+            keys5.push("EC");
+            break;
+          case key instanceof RsaPublicKey:
+            keys5.push("RSA");
+            break;
+          default:
+            keys5.push("bad");
+            break;
+        }
+      } catch (err) {
+        keys5.push("err");
+      }
     } catch {
       certs4.push("");
+      keys5.push("");
     }
   }
 
@@ -75,6 +104,7 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
     certs3,
     keys4,
     certs4,
+    keys5,
   } as TestRecord;
 }
 
@@ -89,9 +119,12 @@ export function check(record: TestRecord) {
   expect(record.certs3).toHaveLength(30);
   expect(record.keys4).toHaveLength(40);
   expect(record.certs4).toHaveLength(40);
+  expect(record.keys5).toHaveLength(40);
 
-  expect(record.keys4.filter((v) => v === "EC")).toHaveLength(30);
+  expect(record.keys4.filter((v) => v === "EC")).toHaveLength(15);
+  expect(record.keys4.filter((v) => v === "RSA")).toHaveLength(15);
   expect(record.certs4.filter((v) => v === "")).toHaveLength(10);
+  expect(record.keys5).toEqual(record.keys4);
 
   record.certs1.sort();
   record.certs2.sort();

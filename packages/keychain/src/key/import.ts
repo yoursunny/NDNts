@@ -5,6 +5,8 @@ import { crypto } from "../platform";
 import { EcCurve, EcPrivateKey, EcPublicKey } from "./ec";
 import { PrivateKey } from "./private-key";
 import { PublicKey } from "./public-key";
+import { RsaPrivateKey, RsaPublicKey } from "./rsa";
+import { IMPORT_PARAMS as rsaImportParams } from "./rsa/internal";
 
 interface PrivateKeyImporter {
   importPrivateKey(name: Name, isJson: boolean, privateKeyExported: object): Promise<PrivateKey>;
@@ -12,6 +14,7 @@ interface PrivateKeyImporter {
 
 const privateKeyImporters: PrivateKeyImporter[] = [
   EcPrivateKey,
+  RsaPrivateKey,
 ];
 
 export async function importPrivateKey(name: Name, isJson: boolean, privateKeyExported: object): Promise<PrivateKey> {
@@ -31,11 +34,17 @@ export async function importPublicKey(name: Name, spki: Uint8Array): Promise<Pub
   const algoOid = algoEl.objectIdentifier;
 
   switch (algoOid.dotDelimitedNotation) {
-    case "1.2.840.10045.2.1":
+    case "1.2.840.10045.2.1": {
       const namedCurve = determineEcCurve(paramsEl);
       const key = await crypto.subtle.importKey("spki", spki,
         { name: "ECDSA", namedCurve }, true, ["verify"]);
       return new EcPublicKey(name, namedCurve, key);
+    }
+    case "1.2.840.113549.1.1.1": {
+      const key = await crypto.subtle.importKey("spki", spki,
+        rsaImportParams, true, ["verify"]);
+      return new RsaPublicKey(name, key);
+    }
   }
   /* istanbul ignore next */
   throw new Error("invalid SPKI or unknown algorithm");
