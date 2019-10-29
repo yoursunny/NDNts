@@ -6,9 +6,9 @@ import { ControlCommand } from "./control-command";
 type Options = Omit<ControlCommand.Options, "fw">;
 
 class NfdAdvertise extends Advertise {
-  constructor(face: FwFace, private readonly opt: Options) {
+  constructor(face: FwFace, private readonly opts: Options) {
     super(face);
-    face.addRoute(opt.commandPrefix ?? ControlCommand.localhostPrefix);
+    face.addRoute(opts.commandPrefix ?? ControlCommand.localhostPrefix);
   }
 
   protected async doAdvertise(name: Name) {
@@ -20,7 +20,7 @@ class NfdAdvertise extends Advertise {
       // tslint:disable-next-line:object-literal-sort-keys
       flags: 0,
     }, {
-      ...this.opt,
+      ...this.opts,
       fw: this.face.fw,
     });
     if (cr.statusCode !== 200) {
@@ -33,7 +33,7 @@ class NfdAdvertise extends Advertise {
       name,
       origin: 65,
     }, {
-      ...this.opt,
+      ...this.opts,
       fw: this.face.fw,
     });
     if (cr.statusCode !== 200) {
@@ -45,12 +45,12 @@ class NfdAdvertise extends Advertise {
 /**
  * Enable prefix registration via NFD management protocol.
  * @param face face connected to NFD.
- * @param opt options.
+ * @param opts options.
  *
  * Only one face can enable NFD prefix registration. Enabling on multiple faces will result in
  * unstable operation because command Interests would go to every face but only one reply Data
  * could reach this module.
  */
-export function enableNfdPrefixReg(face: FwFace, opt: Options = {}) {
-  face.advertise = new NfdAdvertise(face, opt);
+export function enableNfdPrefixReg(face: FwFace, opts: Options = {}) {
+  face.advertise = new NfdAdvertise(face, opts);
 }
