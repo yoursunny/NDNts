@@ -69,7 +69,7 @@ await Promise.all([
       const data = pkt as Data;
       assert.equal(data.name.toString(), "/A/B");
       assert.equal(data.content.length, 4);
-      assert.equal(data.sigValue.length, 2);
+      assert.equal(data.sigValue?.length, 2);
     }
   })(),
 ]);
