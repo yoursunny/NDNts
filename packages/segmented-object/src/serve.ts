@@ -19,13 +19,12 @@ class Server {
     this.segmentNumConvention = opts.segmentNumConvention ?? Segment03;
     this.chunkSize = opts.chunkSize ?? 8000;
     this.signer = opts.signer ?? theDigestKey;
-    this.producer = this.producer.bind(this);
 
     this.chunker = chunker(input, this.chunkSize);
     this.dataGen = this.generateData(this.chunker);
     this.face = this.fw.addFace({
       toString: () => `serve(${this.name})`,
-      transform: this.producer,
+      transform: (iterable) => this.producer(iterable),
     });
     this.face.addRoute(name);
   }

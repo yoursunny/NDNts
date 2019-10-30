@@ -50,7 +50,7 @@ export class Component {
       return input;
     }
 
-    const s = input as string;
+    const s: string = input;
     let [sType, sValue] = s.split("=", 2);
     let type = TT.GenericNameComponent;
     if (typeof sValue !== "undefined") {

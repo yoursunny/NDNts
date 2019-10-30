@@ -27,8 +27,8 @@ const transport = await SocketTransport.connect({ host: "hobo.cs.arizona.edu", p
 const face = new L3Face(transport);
 
 // We want to know if something goes wrong.
-face.on("rxerror", console.warn);
-face.on("txerror", console.warn);
+face.on("rxerror", (err) => console.warn(err));
+face.on("txerror", (err) => console.warn(err));
 
 await Promise.all([
   face.tx({ async *[Symbol.asyncIterator]() {
@@ -49,7 +49,7 @@ await Promise.all([
         continue;
       }
       // Print incoming Data name.
-      const data = pkt as Data;
+      const data: Data = pkt;
       console.log("> D", data.name.toString());
       if (++nData >= 5) {
         return;

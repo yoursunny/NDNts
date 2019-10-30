@@ -4,11 +4,11 @@ import { TT } from "./an";
 import { LpPacket } from "./packet";
 
 export class LpService {
-  constructor() {
-    this.rx = this.rx.bind(this);
+  public rx = (iterable: AsyncIterable<Decoder.Tlv>) => {
+    return this.rx_(iterable);
   }
 
-  public async *rx(iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<Decoder.Tlv> {
+  private async *rx_(iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<Decoder.Tlv> {
     for await (const tlv of iterable) {
       yield* this.decode(tlv);
     }

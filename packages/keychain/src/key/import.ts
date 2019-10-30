@@ -21,7 +21,7 @@ export async function importPrivateKey(name: Name, isJson: boolean, privateKeyEx
   for (const importer of privateKeyImporters) {
     try {
       return await importer.importPrivateKey(name, isJson, privateKeyExported);
-    } catch (ex) {}
+    } catch (err) {}
   }
   throw new Error("invalid PrivateKey export");
 }

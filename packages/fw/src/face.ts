@@ -101,25 +101,28 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
       rtS.tx(filter(
         (pkt): pkt is (Interest|DataResponse) => pkt instanceof Interest || pkt instanceof Data,
         iterable));
-      return rtS.rx as AsyncIterable<Face.Rxable>;
+      return rtS.rx;
     };
   }
 
   private rxLoop = async (input: AsyncIterable<Face.Rxable>) => {
     for await (const pkt of filter(() => this.running, input)) {
       switch (true) {
-        case pkt instanceof Interest:
+        case pkt instanceof Interest: {
           const interest = pkt as InterestRequest;
           this.fw.processInterest(this, interest, InterestToken.get(interest));
           break;
-        case pkt instanceof Data:
+        }
+        case pkt instanceof Data: {
           const data = pkt as Data;
           this.fw.processData(this, data);
           break;
-        case pkt instanceof CancelInterest:
+        }
+        case pkt instanceof CancelInterest: {
           const canceled = pkt as CancelInterest;
           this.fw.cancelInterest(this, canceled.interest);
           break;
+        }
       }
     }
     this.close();

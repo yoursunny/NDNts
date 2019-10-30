@@ -10,12 +10,13 @@ class NNI0 {
         return dv.getUint16(0);
       case 4:
         return dv.getUint32(0);
-      case 8:
+      case 8: {
         const n = dv.getUint32(0) * 0x100000000 + dv.getUint32(4);
         if (!Number.isSafeInteger(n)) {
           throw new Error("integer is too large");
         }
         return n;
+      }
     }
     throw new Error("invalid TLV-LENGTH");
   }

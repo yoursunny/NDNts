@@ -8,11 +8,11 @@ import { deleteTmpFiles, execute, writeTmpFile } from "../../../test-fixture";
 afterEach(deleteTmpFiles);
 
 type Row = {
-  cls: typeof EcPrivateKey,
-  arg: EcCurve,
+  cls: typeof EcPrivateKey;
+  arg: EcCurve;
 } | {
-  cls: typeof RsaPrivateKey,
-  arg: RsaModulusLength,
+  cls: typeof RsaPrivateKey;
+  arg: RsaModulusLength;
 };
 
 const TABLE = ([] as Row[]).concat(

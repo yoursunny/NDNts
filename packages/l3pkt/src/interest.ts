@@ -283,5 +283,6 @@ export namespace Interest {
   }
 
   /** Don't raise decode error when encountering Selectors element. */
+  // eslint-disable-next-line prefer-const
   export let tolerateSelectors = false;
 }

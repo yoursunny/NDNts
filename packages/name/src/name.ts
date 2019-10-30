@@ -141,7 +141,7 @@ export class Name {
   }
 
   public encodeTo(encoder: Encoder) {
-    encoder.prependTlv.apply(encoder, ([TT.Name] as any).concat(this.comps_));
+    encoder.prependTlv(TT.Name, ...this.comps_);
   }
 }
 

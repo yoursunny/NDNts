@@ -6,6 +6,8 @@ import { Face } from "./face";
 import { Forwarder } from "./forwarder";
 import { CancelInterest, RejectInterest } from "./reqres";
 
+/* eslint-disable @typescript-eslint/unbound-method */
+
 export const logger = log.getLogger("@ndn/fw");
 logger.setLevel(log.levels.TRACE);
 
@@ -89,35 +91,41 @@ export class Tracer {
 
   private pktrx(face: Face, pkt: Face.Rxable) {
     switch (true) {
-      case pkt instanceof Interest:
+      case pkt instanceof Interest: {
         const interest = pkt as Interest;
         logger.debug(`${face} >I ${interestToString(interest)}`);
         break;
-      case pkt instanceof Data:
+      }
+      case pkt instanceof Data: {
         const data = pkt as Interest;
         logger.debug(`${face} >D ${data.name}`);
         break;
-      case pkt instanceof CancelInterest:
+      }
+      case pkt instanceof CancelInterest: {
         const cancel = pkt as CancelInterest;
         logger.debug(`${face} >Cancel ${interestToString(cancel.interest)}`);
         break;
+      }
     }
   }
 
   private pkttx(face: Face, pkt: Face.Txable) {
     switch (true) {
-      case pkt instanceof Interest:
+      case pkt instanceof Interest: {
         const interest = pkt as Interest;
         logger.debug(`${face} <I ${interestToString(interest)}`);
         break;
-      case pkt instanceof Data:
+      }
+      case pkt instanceof Data: {
         const data = pkt as Interest;
         logger.debug(`${face} <D ${data.name}`);
         break;
-      case pkt instanceof RejectInterest:
+      }
+      case pkt instanceof RejectInterest: {
         const rej = pkt as RejectInterest;
         logger.debug(`${face} <Reject(${rej.reason}) ${interestToString(rej.interest)}`);
         break;
+      }
     }
   }
 }

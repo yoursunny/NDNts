@@ -9,7 +9,7 @@ export type TestResult = [
 
 declare global {
   interface Window {
-    testDigestKey(): Promise<SerializedInBrowser>;
-    testEcKey(): Promise<SerializedInBrowser>;
+    testDigestKey: () => Promise<SerializedInBrowser>;
+    testEcKey: () => Promise<SerializedInBrowser>;
   }
 }

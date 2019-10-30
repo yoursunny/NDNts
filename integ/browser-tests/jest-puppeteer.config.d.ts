@@ -1,2 +1,2 @@
-declare var x: any;
+declare const x: any;
 export = x;

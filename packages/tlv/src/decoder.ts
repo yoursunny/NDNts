@@ -133,7 +133,7 @@ export namespace Decoder {
   export type Input = Decoder | Uint8Array;
 
   /** Test whether obj is Decoder.Input. */
-  export function isInput(obj: any): obj is Input {
+  export function isInput(obj: unknown): obj is Input {
     return obj instanceof Decoder || obj instanceof Uint8Array;
   }
 

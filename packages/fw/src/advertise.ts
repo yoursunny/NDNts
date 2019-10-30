@@ -17,7 +17,7 @@ export abstract class Advertise {
     }
     fibEntry.advertisedTo.set(this.face, null);
     this.doAdvertise(fibEntry.name)
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line @typescript-eslint/unbound-method, no-console
     .catch(console.warn);
     // TODO error handling and periodical retry
   }
@@ -25,7 +25,7 @@ export abstract class Advertise {
   /** Withdraw a prefix announcement. */
   public withdraw(fibEntry: FibEntry): void {
     this.doWithdraw(fibEntry.name)
-    // tslint:disable-next-line:no-console
+    // eslint-disable-next-line @typescript-eslint/unbound-method, no-console
     .catch(console.warn)
     .finally(() => fibEntry.advertisedTo.delete(this.face));
   }

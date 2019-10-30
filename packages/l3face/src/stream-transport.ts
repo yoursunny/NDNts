@@ -12,11 +12,12 @@ export class StreamTransport extends SocketTransportBase implements Transport {
     super(conn, describe);
     this.rx = pipeline(
       () => fromStream<Buffer>(conn),
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       this.decode,
     );
   }
 
-  private async *decode(iterable: AsyncIterable<Buffer>): AsyncIterable<Decoder.Tlv> {
+  private async *decode(this: void, iterable: AsyncIterable<Buffer>): AsyncIterable<Decoder.Tlv> {
     let leftover = Buffer.alloc(0);
     for await (const chunk of iterable) {
       if (leftover.length > 0) {
@@ -30,7 +31,7 @@ export class StreamTransport extends SocketTransportBase implements Transport {
         let tlv: Decoder.Tlv;
         try {
           tlv = decoder.read();
-        } catch (ex) {
+        } catch (err) {
           break;
         }
         yield tlv;

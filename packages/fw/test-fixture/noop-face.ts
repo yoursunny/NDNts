@@ -1,7 +1,7 @@
 import { FwFace } from "../src";
 
 export class NoopFace {
-  // tslint:disable-next-line:no-empty
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   public async *transform(): AsyncGenerator<FwFace.Rxable> {}
 
   public toString() {
