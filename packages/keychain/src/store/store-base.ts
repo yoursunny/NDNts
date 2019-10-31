@@ -1,31 +1,34 @@
 import { Name } from "@ndn/name";
+import throat from "throat";
 
 import { Certificate } from "..";
 import { StoreImpl } from "./store-impl";
 
 export abstract class StoreBase<T> {
+  private throttle = throat(1);
+
   constructor(protected readonly impl: StoreImpl<T>) {
   }
 
   protected get isJsonFormat() { return this.impl.storableKind === "json"; }
 
   /** List item names. */
-  public async list(): Promise<Name[]> {
-    const keys = await this.impl.list();
-    return keys.map((uri) => new Name(uri));
+  public list(): Promise<Name[]> {
+    return this.throttle(() => this.impl.list())
+    .then((keys) => keys.map((uri) => new Name(uri)));
   }
 
   /** Erase item by name. */
-  public async erase(name: Name): Promise<void> {
-    await this.impl.erase(name.toString());
+  public erase(name: Name): Promise<void> {
+    return this.throttle(() => this.impl.erase(name.toString()));
   }
 
-  protected async getImpl(name: Name): Promise<T> {
-    return await this.impl.get(name.toString());
+  protected getImpl(name: Name): Promise<T> {
+    return this.throttle(() => this.impl.get(name.toString()));
   }
 
-  protected async insertImpl(name: Name, value: T): Promise<void> {
-    await this.impl.insert(name.toString(), value);
+  protected insertImpl(name: Name, value: T): Promise<void> {
+    return this.throttle(() => this.impl.insert(name.toString(), value));
   }
 }
 
