@@ -1,4 +1,5 @@
 import { canSatisfy, Data, Interest } from "@ndn/l3pkt";
+import { Name } from "@ndn/name";
 import hirestime from "hirestime";
 import { consume, filter, flatMap, map, pipeline, tap } from "streaming-iterables";
 
@@ -125,7 +126,7 @@ export class Pit {
   public lookup(interest: Interest, canInsert: false): PitEntry|undefined;
 
   public lookup(interest: Interest, canInsert: boolean = true) {
-    const key = `${interest.name} ${interest.canBePrefix ? "+" : "-"}${interest.mustBeFresh ? "+" : "-"}`;
+    const key = `${Name.toStringKey(interest.name)} ${interest.canBePrefix ? "+" : "-"}${interest.mustBeFresh ? "+" : "-"}`;
     let entry = this.table.get(key);
     if (!entry && canInsert) {
       entry = new PitEntry(this, key, interest);

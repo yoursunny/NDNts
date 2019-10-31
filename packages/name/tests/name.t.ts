@@ -99,3 +99,12 @@ test("NameLike", () => {
   expect(Name.isNameLike("/")).toBeTruthy();
   expect(Name.isNameLike({})).toBeFalsy();
 });
+
+test("toStringKey", () => {
+  const name0 = new Name();
+  const nameA = new Name("/A");
+  const nameAB = new Name("/A/B");
+  expect(Name.toStringKey(name0)).not.toEqual(Name.toStringKey(nameA));
+  expect(Name.toStringKey(nameA)).toEqual(Name.toStringKey(nameA));
+  expect(Name.toStringKey(nameA)).not.toEqual(Name.toStringKey(nameAB));
+});

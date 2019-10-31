@@ -1,4 +1,4 @@
-import { Decoder, Encodable, Encoder } from "@ndn/tlv";
+import { Decoder, Encodable, Encoder, toHex } from "@ndn/tlv";
 
 import { TT } from "./an";
 import { Component, ComponentLike } from "./component";
@@ -164,5 +164,10 @@ export namespace Name {
     RPREFIX = 1,
     /** rhs is less than, but not a prefix of lhs */
     GT = Component.CompareResult.GT,
+  }
+
+  /** Obtain a string representation usable as record key. */
+  export function toStringKey(name: Name): string {
+    return name.comps.map(({ type, value }) => `${type}=${toHex(value)}`).join("/");
   }
 }
