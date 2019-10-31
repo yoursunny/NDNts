@@ -24,7 +24,6 @@ export class EcPrivateKey extends PrivateKeyBase {
     let pvt = pair.privateKey;
 
     let privateKeyExported: object;
-    /* istanbul ignore else browser-only */
     if (needJson) {
       const jwk = await crypto.subtle.exportKey("jwk", pvt);
       privateKeyExported = jwk;
@@ -48,7 +47,6 @@ export class EcPrivateKey extends PrivateKeyBase {
       throw new Error("not EcPrivateKey");
     }
 
-    /* istanbul ignore if browser-only */
     if (!isJson) {
       const { pvt } = privateKeyExported as EcPvtExport;
       return new EcPrivateKey(name, crv, pvt);

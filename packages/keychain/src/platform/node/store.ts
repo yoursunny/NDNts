@@ -1,31 +1,35 @@
-import { constants as FS, promises as fs } from "fs";
-import write from "write";
+import { Store } from "data-store";
 
-import { JsonCertificateStore, JsonPrivateKeyStore } from "../../store/json";
+import { StoreImpl } from "../../store/store-impl";
+import "./data-store.d.ts";
 
-class FileStore {
-  constructor(private readonly filename: string) {
+export class FileStoreImpl<T> implements StoreImpl<T> {
+  public readonly storableKind = "json";
+  private store: Store;
+
+  constructor(path: string) {
+    this.store = new Store({ path });
   }
 
-  public async load(): Promise<object> {
-    try { await fs.access(this.filename, FS.R_OK); } catch { return {}; }
-    const json = await fs.readFile(this.filename, "utf-8");
-    return JSON.parse(json);
+  public list(): Promise<string[]> {
+    return Promise.resolve(Object.keys(this.store.data));
   }
 
-  public async store(obj: object): Promise<void> {
-    await write(this.filename, JSON.stringify(obj), { overwrite: true });
+  public get(key: string): Promise<T> {
+    const value = this.store.get(key) as T|undefined;
+    if (typeof value === "undefined") {
+      return Promise.reject(new Error(`key ${key} is missing`));
+    }
+    return Promise.resolve(value);
   }
-}
 
-export class FilePrivateKeyStore extends JsonPrivateKeyStore {
-  constructor(filename: string) {
-    super(new FileStore(filename));
+  public insert(key: string, value: T): Promise<void> {
+    this.store.set(key, value);
+    return Promise.resolve();
   }
-}
 
-export class FileCertificateStore extends JsonCertificateStore {
-  constructor(filename: string) {
-    super(new FileStore(filename));
+  public erase(key: string): Promise<void> {
+    this.store.del(key);
+    return Promise.resolve();
   }
 }

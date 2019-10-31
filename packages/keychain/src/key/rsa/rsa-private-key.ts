@@ -29,7 +29,6 @@ export class RsaPrivateKey extends PrivateKeyBase {
     let pvt = pair.privateKey;
 
     let privateKeyExported: object;
-    /* istanbul ignore else browser-only */
     if (needJson) {
       const jwk = await crypto.subtle.exportKey("jwk", pvt);
       privateKeyExported = jwk;
@@ -53,7 +52,6 @@ export class RsaPrivateKey extends PrivateKeyBase {
       throw new Error("not RsaPrivateKey");
     }
 
-    /* istanbul ignore if browser-only */
     if (!isJson) {
       const { pvt } = privateKeyExported as RsaPvtExport;
       return new RsaPrivateKey(name, pvt);

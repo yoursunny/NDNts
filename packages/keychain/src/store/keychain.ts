@@ -5,8 +5,10 @@ import { PrivateKey, PublicKey } from "../key";
 import { KeyGenerator } from "../key/internal";
 import { KeyName } from "../name";
 import { openStores } from "../platform";
-import { CertificateStore, PrivateKeyStore } from "./internal";
-import { JsonCertificateStore, JsonPrivateKeyStore } from "./json";
+import { PrivateKeyStore } from "./private-key-store";
+import { SCloneCertStore } from "./sclone-cert-store";
+import { CertStore } from "./store-base";
+import { MemoryStoreImpl } from "./store-impl";
 
 interface GenerateResult {
   privateKey: PrivateKey;
@@ -15,7 +17,7 @@ interface GenerateResult {
 }
 
 export class KeyChain {
-  constructor(private readonly pvts: PrivateKeyStore, private readonly certs: CertificateStore) {
+  constructor(private readonly pvts: PrivateKeyStore, private readonly certs: CertStore) {
   }
 
   public async listKeys(prefix: Name = new Name()): Promise<Name[]> {
@@ -62,6 +64,9 @@ export namespace KeyChain {
   }
 
   export function createTemp(): KeyChain {
-    return new KeyChain(new JsonPrivateKeyStore(), new JsonCertificateStore());
+    return new KeyChain(
+      new PrivateKeyStore(new MemoryStoreImpl()),
+      new SCloneCertStore(new MemoryStoreImpl()),
+    );
   }
 }
