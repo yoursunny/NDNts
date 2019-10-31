@@ -1,8 +1,8 @@
 import { Data, Interest } from "@ndn/l3pkt";
+import { Name } from "@ndn/name";
 import EventEmitter from "events";
 import StrictEventEmitter from "strict-event-emitter-types";
 
-import { Name } from "@ndn/name";
 import { Face, FaceImpl } from "./face";
 import { Fib, FibEntry } from "./fib";
 import { Pit } from "./pit";

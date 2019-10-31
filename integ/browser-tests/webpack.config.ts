@@ -1,9 +1,10 @@
+import "webpack-dev-server";
+
 import { FileMatcher } from "file-matcher";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import * as path from "path";
 import TsconfigPathsPlugin from "tsconfig-paths-webpack-plugin";
 import webpack from "webpack";
-import "webpack-dev-server";
 
 import jestPuppeteerConfig from "./jest-puppeteer.config.js";
 

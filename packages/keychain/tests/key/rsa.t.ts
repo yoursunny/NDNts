@@ -1,6 +1,7 @@
+import "@ndn/name/test-fixture";
+
 import { SigType } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
-import "@ndn/name/test-fixture";
 
 import { Certificate, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength,
          RsaPrivateKey, RsaPublicKey, ValidityPeriod } from "../../src";

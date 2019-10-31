@@ -1,8 +1,9 @@
+import "@ndn/name/test-fixture";
+import "@ndn/tlv/test-fixture";
+
 import { Data } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
-import "@ndn/name/test-fixture";
 import { Decoder, Encoder } from "@ndn/tlv";
-import "@ndn/tlv/test-fixture";
 
 import { Certificate, CertificateName, EcPublicKey, theDigestKey, ValidityPeriod } from "../../src";
 

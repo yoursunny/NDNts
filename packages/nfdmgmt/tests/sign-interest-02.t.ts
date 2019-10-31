@@ -1,5 +1,6 @@
-import { Interest, TT } from "@ndn/l3pkt";
 import "@ndn/tlv/test-fixture";
+
+import { Interest, TT } from "@ndn/l3pkt";
 
 import { signInterest02 } from "../src";
 

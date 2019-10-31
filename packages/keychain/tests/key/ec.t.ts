@@ -1,6 +1,7 @@
+import "@ndn/name/test-fixture";
+
 import { SigType } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
-import "@ndn/name/test-fixture";
 
 import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, EcPublicKey, KeyChain,
          PrivateKey, PublicKey, ValidityPeriod } from "../../src";

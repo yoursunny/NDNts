@@ -1,7 +1,8 @@
-import { Component, ImplicitDigest, Name } from "@ndn/name";
 import "@ndn/name/test-fixture";
-import { Decoder, Encoder } from "@ndn/tlv";
 import "@ndn/tlv/test-fixture";
+
+import { Component, ImplicitDigest, Name } from "@ndn/name";
+import { Decoder, Encoder } from "@ndn/tlv";
 import { createHash } from "crypto";
 
 import { Data, TT } from "../src";

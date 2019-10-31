@@ -1,8 +1,8 @@
-import * as crypto from "crypto";
+import "@ndn/tlv/test-fixture";
 
 import { Name } from "@ndn/name";
 import { Decodable, Decoder, Encodable, Encoder } from "@ndn/tlv";
-import "@ndn/tlv/test-fixture";
+import * as crypto from "crypto";
 
 import { Data, Interest, KeyDigest, LLSign, LLVerify, SigInfo, SigType, TT } from "../src";
 

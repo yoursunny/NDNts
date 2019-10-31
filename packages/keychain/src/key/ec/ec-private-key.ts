@@ -5,7 +5,6 @@ import { KeyName } from "../../name";
 import { crypto } from "../../platform";
 import { KeyGenResult } from "../internal";
 import { PrivateKeyBase } from "../private-key";
-
 import { EcCurve, EcPublicKey, isEcCurve } from ".";
 import { SIGN_PARAMS, sigRawToDer } from "./internal";
 

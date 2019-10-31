@@ -1,7 +1,8 @@
+import "./data-store.d.ts";
+
 import { Store } from "data-store";
 
 import { StoreImpl } from "../../store/store-impl";
-import "./data-store.d.ts";
 
 export class FileStoreImpl<T> implements StoreImpl<T> {
   public readonly storableKind = "json";

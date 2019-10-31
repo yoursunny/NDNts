@@ -8,6 +8,7 @@ module.exports = {
   },
   plugins: [
     "@typescript-eslint/eslint-plugin",
+    "simple-import-sort",
   ],
   env: {
     node: true,

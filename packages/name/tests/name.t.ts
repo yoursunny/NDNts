@@ -1,5 +1,6 @@
-import { Decoder } from "@ndn/tlv";
 import "@ndn/tlv/test-fixture";
+
+import { Decoder } from "@ndn/tlv";
 
 import { Component, Name } from "../src";
 

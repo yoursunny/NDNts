@@ -1,9 +1,9 @@
+import "./api";
+
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import { WsServerPair } from "@ndn/ws-transport/test-fixture";
 
 import { getPageUri, pageInvoke } from "../../test-fixture";
-
-import "./api";
 
 let wssPair: WsServerPair;
 let wsUri: string;

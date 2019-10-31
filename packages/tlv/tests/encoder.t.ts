@@ -1,5 +1,6 @@
-import { Encoder } from "../src";
 import "../test-fixture";
+
+import { Encoder } from "../src";
 
 test("prependRoom", () => {
   const encoder = new Encoder(7);

@@ -1,6 +1,6 @@
-import { getPageUri, pageInvoke } from "../../test-fixture";
-
 import "./api";
+
+import { getPageUri, pageInvoke } from "../../test-fixture";
 
 test("connectToTestbed", async () => {
   await page.goto(getPageUri(__dirname));

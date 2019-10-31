@@ -1,7 +1,8 @@
+import "@ndn/name/test-fixture";
+
 import { Data, Interest } from "@ndn/l3pkt";
 import { getDataFullName } from "@ndn/l3pkt/test-fixture";
 import { Name } from "@ndn/name";
-import "@ndn/name/test-fixture";
 
 import { CancelInterest, DataResponse, Forwarder, FwFace, InterestToken, RejectInterest } from "../src";
 import { SimpleEndpoint } from "../src/simple-endpoint";

@@ -1,7 +1,8 @@
+import "@ndn/name/test-fixture";
+
 import { Forwarder, SimpleEndpoint } from "@ndn/fw";
 import { Data } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
-import "@ndn/name/test-fixture";
 import { Segment as Segment03, Version as Version03 } from "@ndn/naming-convention-03";
 
 import { discoverVersion } from "../src";

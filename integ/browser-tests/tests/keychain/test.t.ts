@@ -2,7 +2,6 @@ import * as TestSignVerify from "@ndn/keychain/test-fixture/sign-verify";
 
 import { getPageUri, pageInvoke } from "../../test-fixture";
 import { deserializeInBrowser } from "../../test-fixture/serialize";
-
 import { TestResult } from "./api";
 
 test("SHA256", async () => {

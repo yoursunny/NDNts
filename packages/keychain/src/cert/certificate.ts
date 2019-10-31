@@ -3,9 +3,8 @@ import { Component } from "@ndn/name";
 import { Version } from "@ndn/naming-convention-03";
 
 import { PrivateKey, PublicKey } from "../key";
-import { CertificateName, KeyName } from "../name";
-
 import { importPublicKey } from "../key/import";
+import { CertificateName, KeyName } from "../name";
 import { ContentTypeKEY } from "./an";
 import { ValidityPeriod } from "./validity-period";
 

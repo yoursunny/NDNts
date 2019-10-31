@@ -3,7 +3,6 @@ import { Name } from "@ndn/name";
 
 import { crypto } from "../../platform";
 import { PublicKeyBase } from "../public-key";
-
 import { EcCurve } from ".";
 import { sigDerToRaw, SIGN_PARAMS } from "./internal";
 

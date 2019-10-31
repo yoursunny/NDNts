@@ -1,5 +1,6 @@
-import { Component, ImplicitDigest, Name, NamingConvention, ParamsDigest, TT } from "../src";
 import "../test-fixture";
+
+import { Component, ImplicitDigest, Name, NamingConvention, ParamsDigest, TT } from "../src";
 
 interface Row {
   compType: NamingConvention<Uint8Array, Uint8Array>;

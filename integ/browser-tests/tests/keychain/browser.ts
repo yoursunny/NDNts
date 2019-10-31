@@ -3,7 +3,6 @@ import { execute as testSignVerify } from "@ndn/keychain/test-fixture/sign-verif
 import { Data, Interest } from "@ndn/l3pkt";
 
 import { SerializedInBrowser, serializeInBrowser } from "../../test-fixture/serialize";
-
 import { TestResult } from "./api";
 
 async function testKey(pvtA: PrivateKey, pubA: PublicKey,

@@ -2,8 +2,8 @@ import { Data } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { CertStore, StoreBase } from "./store-base";
 import { Certificate } from "..";
+import { CertStore, StoreBase } from "./store-base";
 
 interface Item {
   certBase64: string;

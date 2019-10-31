@@ -1,5 +1,6 @@
-import { Name } from "@ndn/name";
 import "@ndn/name/test-fixture";
+
+import { Name } from "@ndn/name";
 
 import { ByteOffset, Keyword, Segment, SequenceNum, Timestamp, Version } from "../src";
 

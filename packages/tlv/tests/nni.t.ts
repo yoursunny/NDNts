@@ -1,5 +1,6 @@
-import { Encoder, NNI } from "../src";
 import "../test-fixture";
+
+import { Encoder, NNI } from "../src";
 
 test("encode variable size", () => {
   expect(NNI(0x00)).toEncodeAs([0x00]);

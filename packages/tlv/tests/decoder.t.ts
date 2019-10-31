@@ -1,5 +1,6 @@
-import { Decoder } from "../src";
 import "../test-fixture";
+
+import { Decoder } from "../src";
 
 test("simple", () => {
   const decoder = new Decoder(Uint8Array.of(
