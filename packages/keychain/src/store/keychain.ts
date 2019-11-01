@@ -33,7 +33,6 @@ export class KeyChain {
       validity: ValidityPeriod, ...args: A): Promise<GenerateResult> {
     const [privateKey, publicKey] = await this.pvts.generate(gen, KeyName.create(name), ...args);
     const selfSigned = await Certificate.selfSign({
-      // tslint:disable-next-line:object-literal-sort-keys
       validity,
       privateKey,
       publicKey,

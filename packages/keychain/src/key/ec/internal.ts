@@ -2,7 +2,6 @@ import { ASN1Construction, ASN1TagClass, ASN1UniversalType, DERElement } from "a
 
 import { EcCurve } from ".";
 
-// tslint:disable-next-line:object-literal-sort-keys
 export const SIGN_PARAMS = { name: "ECDSA", hash: "SHA-256" } as EcdsaParams;
 
 const mapPointSize: Record<EcCurve, number> = {
@@ -36,7 +35,6 @@ function writeIntegerDer(n: Uint8Array): DERElement {
     value = Uint8Array.of(0, ...n);
   } else {
     for (let i = 0; i < n.length - 1; ++i) {
-      // tslint:disable-next-line:no-bitwise
       if ((n[i] << 1) + (n[i + 1] >> 7) !== 0) {
         value = n.subarray(i);
         break;

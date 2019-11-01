@@ -155,7 +155,6 @@ class Fetcher extends (EventEmitter as new() => Emitter) {
     }
   }
 }
-// tslint:disable-next-line:no-empty-interface
 interface Fetcher extends fetch.Options {}
 
 /** Initiate fetching of a segment object. */

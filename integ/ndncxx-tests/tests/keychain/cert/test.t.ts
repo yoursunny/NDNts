@@ -13,7 +13,6 @@ test("decode", async () => {
 
   const validity = new ValidityPeriod(new Date(1542099529000), new Date(1602434283000));
   const cert = await Certificate.issue({
-    // tslint:disable-next-line:object-literal-sort-keys
     validity,
     issuerId: Component.from("i"),
     issuerPrivateKey,

@@ -15,9 +15,7 @@ class NfdAdvertise extends Advertise {
     const cr = await ControlCommand.call("rib/register", {
       name,
       origin: 65,
-      // tslint:disable-next-line:object-literal-sort-keys
       cost: 0x7473, // ASCII of 'ts'
-      // tslint:disable-next-line:object-literal-sort-keys
       flags: 0,
     }, {
       ...this.opts,

@@ -67,7 +67,6 @@ export class ControlParameters {
     );
   }
 }
-// tslint:disable-next-line:no-empty-interface
 export interface ControlParameters extends ControlParameters.Fields {}
 
 type Fields_ = Fields;

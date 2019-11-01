@@ -9,9 +9,7 @@ import { fetch } from "./fetch";
 export function discoverVersion(name: Name, opts: Partial<discoverVersion.Options> = {}): discoverVersion.Progress {
   const { versionMustBeFresh, versionConvention, segmentNumConvention } = {
     versionMustBeFresh: true,
-    // tslint:disable-next-line:object-literal-sort-keys
     versionConvention: Version03,
-    // tslint:disable-next-line:object-literal-sort-keys
     segmentNumConvention: Segment03,
     ...opts,
   };

@@ -100,7 +100,6 @@ export async function execute(cls: PacketCtor, pvtA: PrivateKey, pubA: PublicKey
     // so change four bits to reduce test failures.
     for (let i = 0; i < 4; ++i) {
       const offset = Math.floor(Math.random() * sig.byteLength);
-      // tslint:disable-next-line:no-bitwise
       sig[offset] ^= 0x01;
     }
     return sig;

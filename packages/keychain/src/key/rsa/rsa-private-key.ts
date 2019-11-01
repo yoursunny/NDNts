@@ -20,7 +20,6 @@ export class RsaPrivateKey extends PrivateKeyBase {
     const pair: CryptoKeyPair = await crypto.subtle.generateKey(
       {
         ...GEN_PARAMS,
-        // tslint:disable-next-line:object-literal-sort-keys
         modulusLength,
       } as RsaHashedKeyGenParams,
       needJson, ["sign", "verify"]);

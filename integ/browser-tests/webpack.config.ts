@@ -13,7 +13,6 @@ const plugins: webpack.Plugin[] = [];
 
 const config = {
   mode: "development",
-  // tslint:disable-next-line:object-literal-sort-keys
   devtool: "cheap-module-eval-source-map",
   output: {
     filename: "[name].js",

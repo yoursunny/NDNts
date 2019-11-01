@@ -1,7 +1,6 @@
 export const ALGO = "RSASSA-PKCS1-v1_5";
 
 export const IMPORT_PARAMS = {
-  // tslint:disable-next-line:object-literal-sort-keys
   name: ALGO,
   hash: "SHA-256",
 } as RsaHashedImportParams;
