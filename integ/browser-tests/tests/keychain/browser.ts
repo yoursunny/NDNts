@@ -1,16 +1,21 @@
 import { EcPrivateKey, KeyChain, PrivateKey, PublicKey, theDigestKey, ValidityPeriod } from "@ndn/keychain";
+import { execute as testStore } from "@ndn/keychain/test-fixture/keychain-store";
 import { execute as testSignVerify } from "@ndn/keychain/test-fixture/sign-verify";
 import { Data, Interest } from "@ndn/l3pkt";
 
 import { SerializedInBrowser, serializeInBrowser } from "../../test-fixture/serialize";
-import { TestResult } from "./api";
+import { SignVerifyTestResult } from "./api";
+
+window.testStore = () => {
+  return testStore(KeyChain.open("296616c2-7abb-4d9e-94b3-a97e4fd327b5"));
+};
 
 async function testKey(pvtA: PrivateKey, pubA: PublicKey,
                        pvtB: PrivateKey, pubB: PublicKey): Promise<SerializedInBrowser> {
   return serializeInBrowser(await Promise.all([
     testSignVerify(Interest, pvtA, pubA, pvtB, pubB),
     testSignVerify(Data, pvtA, pubA, pvtB, pubB),
-  ]) as TestResult);
+  ]) as SignVerifyTestResult);
 }
 
 window.testDigestKey = () => {

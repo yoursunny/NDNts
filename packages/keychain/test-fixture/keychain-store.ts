@@ -85,7 +85,7 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
             break;
         }
       } catch (err) {
-        keys5.push("err");
+        keys5.push(`err ${err}`);
       }
     } catch {
       certs4.push("");
