@@ -22,7 +22,7 @@ function getHexTable(): string[] {
   return hexTable;
 }
 
-/** Convert TLV byte array to hexadecimal string. */
+/** Convert byte array to hexadecimal string. */
 export function toHex(buf: Uint8Array): string {
   const table = getHexTable();
   const a = new Array<string>(buf.length);
@@ -30,4 +30,17 @@ export function toHex(buf: Uint8Array): string {
     a[i] = table[buf[i]];
   }
   return a.join("");
+}
+
+/**
+ * Convert hexadecimal string to byte array.
+ *
+ * This function does not have error handling. Use on trusted input only.
+ */
+export function fromHex(s: string): Uint8Array {
+  const b = new Uint8Array(s.length / 2);
+  for (let i = 0; i < b.length; ++i) {
+    b[i] = parseInt(s.substr(i * 2, 2), 16);
+  }
+  return b;
 }

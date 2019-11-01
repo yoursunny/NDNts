@@ -1,4 +1,5 @@
 import "@ndn/tlv/test-fixture";
+import "../test-fixture";
 
 import { Decoder } from "@ndn/tlv";
 
@@ -100,11 +101,18 @@ test("NameLike", () => {
   expect(Name.isNameLike({})).toBeFalsy();
 });
 
-test("toStringKey", () => {
+test("StringKey", () => {
   const name0 = new Name();
   const nameA = new Name("/A");
   const nameAB = new Name("/A/B");
-  expect(Name.toStringKey(name0)).not.toEqual(Name.toStringKey(nameA));
-  expect(Name.toStringKey(nameA)).toEqual(Name.toStringKey(nameA));
-  expect(Name.toStringKey(nameA)).not.toEqual(Name.toStringKey(nameAB));
+
+  const key0 = Name.toStringKey(name0);
+  const keyA = Name.toStringKey(nameA);
+  const keyAB = Name.toStringKey(nameAB);
+
+  expect(Array.from(new Set([key0, keyA, keyAB]))).toHaveLength(3);
+
+  expect(Name.fromStringKey(key0)).toEqualName(name0);
+  expect(Name.fromStringKey(keyA)).toEqualName(nameA);
+  expect(Name.fromStringKey(keyAB)).toEqualName(nameAB);
 });

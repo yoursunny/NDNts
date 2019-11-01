@@ -1,4 +1,4 @@
-import { Decoder, Encodable, Encoder, toHex } from "@ndn/tlv";
+import { Decoder, Encodable, Encoder, fromHex,toHex } from "@ndn/tlv";
 
 import { TT } from "./an";
 import { Component, ComponentLike } from "./component";
@@ -169,5 +169,18 @@ export namespace Name {
   /** Obtain a string representation usable as record key. */
   export function toStringKey(name: Name): string {
     return name.comps.map(({ type, value }) => `${type}=${toHex(value)}`).join("/");
+  }
+
+  export function fromStringKey(s: string): Name {
+    if (s === "") {
+      return new Name();
+    }
+    return new Name(
+      s.split("/")
+      .map((c) => {
+        const [type, value] = c.split("=");
+        return new Component(parseInt(type, 10), fromHex(value));
+      })
+    );
   }
 }

@@ -1,4 +1,6 @@
-import { printTT, toHex } from "../src";
+import "../test-fixture";
+
+import { fromHex,printTT, toHex } from "../src";
 
 test("printTT", () => {
   expect(printTT(0x00)).toBe("0x00");
@@ -15,4 +17,11 @@ test("toHex", () => {
   expect(toHex(Uint8Array.of(0x00))).toBe("00");
   expect(toHex(Uint8Array.of(0x7F))).toBe("7F");
   expect(toHex(Uint8Array.of(0xBE, 0xEF))).toBe("BEEF");
+});
+
+test("fromHex", () => {
+  expect(fromHex("")).toEqualUint8Array([]);
+  expect(fromHex("00")).toEqualUint8Array([0x00]);
+  expect(fromHex("7F")).toEqualUint8Array([0x7F]);
+  expect(fromHex("BeeF")).toEqualUint8Array([0xBE, 0xEF]);
 });
