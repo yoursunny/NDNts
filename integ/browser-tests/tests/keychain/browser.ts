@@ -1,10 +1,46 @@
-import { EcPrivateKey, KeyChain, PrivateKey, PublicKey, theDigestKey, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, EC_CURVES, EcPrivateKey, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaPrivateKey,theDigestKey, ValidityPeriod } from "@ndn/keychain";
 import { execute as testStore } from "@ndn/keychain/test-fixture/keychain-store";
 import { execute as testSignVerify } from "@ndn/keychain/test-fixture/sign-verify";
 import { Data, Interest } from "@ndn/l3pkt";
 
 import { SerializedInBrowser, serializeInBrowser } from "../../test-fixture/serialize";
 import { SignVerifyTestResult } from "./api";
+
+async function checkBrowser() {
+  const lines = [] as string[];
+  const keychain = KeyChain.open("ae688cfd-fab7-4987-93f6-3b7a2507047b");
+  const validity = ValidityPeriod.daysFromNow(1);
+  for (const curve of EC_CURVES) {
+    try {
+      const { privateKey: {name}, selfSigned } =
+        await keychain.generateKey(EcPrivateKey, "/S", validity, curve);
+      await keychain.deleteKey(name);
+      await Certificate.getPublicKey(selfSigned);
+      lines.push(`ECDSA ${curve}: OK`);
+    } catch (err) {
+      lines.push(`ECDSA ${curve}: ${err}`);
+    }
+  }
+  for (const modulusLength of RSA_MODULUS_LENGTHS) {
+    try {
+      const { privateKey: {name}, selfSigned } =
+        await keychain.generateKey(RsaPrivateKey, "/S", validity, modulusLength);
+      await keychain.deleteKey(name);
+      await Certificate.getPublicKey(selfSigned);
+      lines.push(`RSA ${modulusLength}: OK`);
+    } catch (err) {
+      lines.push(`RSA ${modulusLength}: ${err}`);
+    }
+  }
+  document.body.innerText = lines.join("\n");
+}
+
+window.addEventListener("load", () => {
+  const btn = document.createElement("button");
+  btn.innerText = "check browser";
+  btn.addEventListener("click", checkBrowser);
+  document.body.appendChild(btn);
+});
 
 window.testStore = () => {
   return testStore(KeyChain.open("296616c2-7abb-4d9e-94b3-a97e4fd327b5"));

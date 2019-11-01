@@ -39,7 +39,11 @@ const config = {
 } as webpack.Configuration;
 
 config.devServer = {
+  allowedHosts: [
+    ".ngrok.io",
+  ],
   contentBase: path.join(__dirname, "public"),
+  host: "0.0.0.0",
   hot: false,
   port: jestPuppeteerConfig.server.port,
 };
