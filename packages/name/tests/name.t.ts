@@ -9,6 +9,7 @@ test("simple", () => {
   let name = new Name();
   expect(name.length).toBe(0);
   expect(name.toString()).toBe("/");
+  expect(name.value).toEqualUint8Array([]);
 
   name = new Name("/");
   expect(name.length).toBe(0);
@@ -24,6 +25,10 @@ test("simple", () => {
   expect(name.get(0)).toEqual(Component.from("A"));
   expect(name.get(1)).toEqual(Component.from("240=BC"));
   expect(name.toString()).toBe("/A/240=BC");
+  expect(name.value).toEqualUint8Array([
+    0x08, 0x01, 0x41,
+    0xF0, 0x02, 0x42, 0x43,
+  ]);
 });
 
 test("get at", () => {
@@ -87,32 +92,8 @@ test("encode", () => {
   ]);
 });
 
-test("encode valueOnly", () => {
-  const name = new Name("/A/B");
-  expect(name.valueOnly).toEncodeAs([
-    0x08, 0x01, 0x41,
-    0x08, 0x01, 0x42,
-  ]);
-});
-
 test("NameLike", () => {
   expect(Name.isNameLike(new Name())).toBeTruthy();
   expect(Name.isNameLike("/")).toBeTruthy();
   expect(Name.isNameLike({})).toBeFalsy();
-});
-
-test("StringKey", () => {
-  const name0 = new Name();
-  const nameA = new Name("/A");
-  const nameAB = new Name("/A/B");
-
-  const key0 = Name.toStringKey(name0);
-  const keyA = Name.toStringKey(nameA);
-  const keyAB = Name.toStringKey(nameAB);
-
-  expect(Array.from(new Set([key0, keyA, keyAB]))).toHaveLength(3);
-
-  expect(Name.fromStringKey(key0)).toEqualName(name0);
-  expect(Name.fromStringKey(keyA)).toEqualName(nameA);
-  expect(Name.fromStringKey(keyAB)).toEqualName(nameAB);
 });

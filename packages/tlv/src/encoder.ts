@@ -133,7 +133,7 @@ export class Encoder {
   }
 
   /** Prepend an Encodable object. */
-  public encode(obj: Encodable|Encodable[]) {
+  public encode(obj: Encodable|ReadonlyArray<Encodable>) {
     if (obj instanceof Uint8Array) {
       const dst = this.prependRoom(obj.byteLength);
       dst.set(obj);
@@ -143,7 +143,7 @@ export class Encoder {
       if (typeof obj[0] === "number") {
         this.prependTlv(...(obj as EncodableTlv));
       } else {
-        this.prependValue(...(obj as Encodable[]));
+        this.prependValue(...(obj as ReadonlyArray<Encodable>));
       }
     } else if (typeof obj !== "undefined") {
       throw new Error("Encoder.encode: obj is not Encodable");
@@ -166,14 +166,14 @@ export namespace Encoder {
 
   export const OmitEmpty = Symbol("OmitEmpty");
 
-  export function encode(obj: Encodable|Encodable[], initBufSize: number = BUF_INIT_SIZE) {
+  export function encode(obj: Encodable|ReadonlyArray<Encodable>, initBufSize: number = BUF_INIT_SIZE) {
     const encoder = new Encoder(initBufSize);
     encoder.encode(obj);
     return encoder.output;
   }
 
   /** Extract the encoding output of an element while writing to a larger encoder. */
-  export function extract(obj: Encodable|Encodable[], cb: (output: Uint8Array) => any): Encodable {
+  export function extract(obj: Encodable|ReadonlyArray<Encodable>, cb: (output: Uint8Array) => any): Encodable {
     return {
       encodeTo(encoder) {
         const sizeBefore = encoder.size;

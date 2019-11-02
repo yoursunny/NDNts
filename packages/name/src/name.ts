@@ -1,4 +1,4 @@
-import { Decoder, Encodable, Encoder, fromHex,toHex } from "@ndn/tlv";
+import { Decoder, Encoder } from "@ndn/tlv";
 
 import { TT } from "./an";
 import { Component, ComponentLike } from "./component";
@@ -12,53 +12,69 @@ export type NameLike = Name | string;
  */
 export class Name {
   public static decodeFrom(decoder: Decoder): Name {
-    const t = new Name();
-    const { vd } = decoder.read();
-    while (!vd.eof) {
-      t.comps_.push(vd.decode(Component));
-    }
-    return t;
+    const { value } = decoder.read();
+    return new Name(value);
   }
 
-  public get comps() { return this.comps_; }
-
-  /** Obtain an Encodable for TLV-VALUE only. */
-  public get valueOnly(): Encodable {
-    return {
-      encodeTo: (encoder: Encoder) => {
-        encoder.prependValue(...this.comps_);
-      },
-    };
-  }
-
-  private comps_: Component[];
+  /** TLV-VALUE of the Name. */
+  public readonly value: Uint8Array;
+  /** List of name components. */
+  public readonly comps: ReadonlyArray<Component>;
 
   /** Create empty name, or copy from other name, or parse from URI. */
   constructor(input?: NameLike);
 
-  /** Create from components. */
-  constructor(comps: ComponentLike[]);
+  /** Construct from TLV-VALUE. */
+  constructor(value: Uint8Array);
 
-  constructor(arg1?: NameLike|ComponentLike[]) {
-    this.comps_ = [];
-    if (arg1 instanceof Name) {
-      this.comps_ = this.comps_.concat(arg1.comps_);
-    } else if (typeof arg1 === "string") {
-      this.comps_ = arg1.replace(/^(?:ndn)?\//, "").split("/")
+  /** Construct from components. */
+  constructor(comps: ReadonlyArray<ComponentLike>);
+
+  constructor(arg1?: NameLike|Uint8Array|ReadonlyArray<ComponentLike>) {
+    let valueEncoderBufSize = 256;
+    switch (true) {
+      case arg1 instanceof Name: {
+        const other = arg1 as Name;
+        this.value = other.value;
+        this.comps = other.comps;
+        return;
+      }
+      case typeof arg1 === "string": {
+        const uri = arg1 as string;
+        this.comps = uri.replace(/^(?:ndn)?\//, "").split("/")
                     .filter((comp) => comp !== "").map(Component.from);
-    } else if (Array.isArray(arg1)) {
-      this.comps_ = arg1.map(Component.from);
+        valueEncoderBufSize = uri.length + 4 * this.comps.length;
+        break;
+      }
+      case Array.isArray(arg1):
+        this.comps = (arg1 as ReadonlyArray<ComponentLike>).map(Component.from);
+        break;
+      case arg1 instanceof Uint8Array: {
+        this.value = arg1 as Uint8Array;
+        const comps = [] as Component[];
+        const decoder = new Decoder(this.value);
+        while (!decoder.eof) {
+          comps.push(decoder.decode(Component));
+        }
+        this.comps = comps;
+        return;
+      }
+      default: // undefined
+        this.value = new Uint8Array();
+        this.comps = [];
+        return;
     }
+    this.value = Encoder.encode(this.comps, valueEncoderBufSize);
   }
 
   public get length(): number {
-    return this.comps_.length;
+    return this.comps.length;
   }
 
   /** Retrieve i-th component. */
   public get(i: number): Component|undefined {
     i = i < 0 ? i + this.length : i;
-    return this.comps_[i];
+    return this.comps[i];
   }
 
   /**
@@ -68,19 +84,19 @@ export class Name {
   public at(i: number): Component {
     const comp = this.get(i);
     if (typeof comp === "undefined") {
-      throw new Error("component " + i + " out of range");
+      throw new Error(`component ${i} out of range`);
     }
     return comp;
   }
 
   /** Get URI string. */
   public toString(): string {
-    return "/" + this.comps_.map((comp) => comp.toString()).join("/");
+    return "/" + this.comps.map((comp) => comp.toString()).join("/");
   }
 
   /** Get sub name [begin, end). */
   public slice(begin?: number, end?: number): Name {
-    return new Name(this.comps_.slice(begin, end));
+    return new Name(this.comps.slice(begin, end));
   }
 
   /** Get prefix of n components. */
@@ -92,22 +108,23 @@ export class Name {
   public append<A>(convention: NamingConvention<A, unknown>, v: A): Name;
 
   /** Append suffix with one or more components. */
-  public append(...suffix: ComponentLike[]): Name;
+  public append(...suffix: ReadonlyArray<ComponentLike>): Name;
 
-  public append(...args: any[]) {
-    if (args.length === 2 && typeof args[0] === "object" && typeof args[0].create === "function") {
+  public append(...args: unknown[]) {
+    if (args.length === 2 && typeof args[0] === "object" &&
+        typeof (args[0] as any).create === "function") {
       const convention = args[0] as NamingConvention<unknown, unknown>;
       return this.append(convention.create(args[1]));
     }
-    const suffix = args as ComponentLike[];
-    return new Name(this.comps_.concat(suffix.map(Component.from)));
+    const suffix = args as ReadonlyArray<ComponentLike>;
+    return new Name([...this.comps, ...suffix]);
   }
 
   /** Return a copy of Name with a component replaced. */
   public replaceAt(i: number, comp: ComponentLike): Name {
-    const copy = new Name(this);
-    copy.comps.splice(i, 1, Component.from(comp));
-    return copy;
+    const comps: ComponentLike[] = [...this.comps];
+    comps.splice(i, 1, comp);
+    return new Name(comps);
   }
 
   /** Compare with other name. */
@@ -115,7 +132,7 @@ export class Name {
     const rhs = new Name(other);
     const commonSize = Math.min(this.length, rhs.length);
     for (let i = 0; i < commonSize; ++i) {
-      const cmp = this.comps_[i].compare(rhs.comps_[i]);
+      const cmp = this.comps[i].compare(rhs.comps[i]);
       if (cmp !== Component.CompareResult.EQUAL) {
         return cmp as unknown as Name.CompareResult;
       }
@@ -141,7 +158,7 @@ export class Name {
   }
 
   public encodeTo(encoder: Encoder) {
-    encoder.prependTlv(TT.Name, ...this.comps_);
+    encoder.prependTlv(TT.Name, this.value);
   }
 }
 
@@ -164,23 +181,5 @@ export namespace Name {
     RPREFIX = 1,
     /** rhs is less than, but not a prefix of lhs */
     GT = Component.CompareResult.GT,
-  }
-
-  /** Obtain a string representation usable as record key. */
-  export function toStringKey(name: Name): string {
-    return name.comps.map(({ type, value }) => `${type}=${toHex(value)}`).join("/");
-  }
-
-  export function fromStringKey(s: string): Name {
-    if (s === "") {
-      return new Name();
-    }
-    return new Name(
-      s.split("/")
-      .map((c) => {
-        const [type, value] = c.split("=");
-        return new Component(parseInt(type, 10), fromHex(value));
-      })
-    );
   }
 }

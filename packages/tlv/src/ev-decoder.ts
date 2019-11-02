@@ -52,9 +52,9 @@ export class EvDecoder<T> {
   /**
    * Constructor.
    * @param typeName type name, used in error messages.
-   * @param topTT  if specified, check top-level TLV-TYPE to be in this list.
+   * @param topTT if specified, check top-level TLV-TYPE to be in this list.
    */
-  constructor(private typeName: string, topTT?: number|number[]) {
+  constructor(private typeName: string, topTT?: number|ReadonlyArray<number>) {
     this.topTT = !topTT ? [] : Array.isArray(topTT) ? topTT : [topTT];
     this.unknownCb = () => false;
     this.topCb = () => undefined;

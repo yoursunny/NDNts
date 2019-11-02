@@ -48,7 +48,7 @@ const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
 
   t.sigValue = value;
   t[LLVerify.SIGNED] = Encoder.encode([
-    t.name.getPrefix(-1).valueOnly,
+    t.name.getPrefix(-1).value,
     new Uint8Array(tlv.buffer, params.byteOffset, tlv.byteOffset - params.byteOffset),
   ]);
 });
@@ -167,7 +167,7 @@ export class Interest {
     this.insertParamsDigest();
     return LLSign.processImpl(this,
       () => Encoder.encode([
-        this.name.getPrefix(-1).valueOnly,
+        this.name.getPrefix(-1).value,
         [TT.AppParameters, this.appParameters],
         this.sigInfo ?
           this.sigInfo.encodeAs(TT.ISigInfo) : undefined,

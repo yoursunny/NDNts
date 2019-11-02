@@ -39,8 +39,8 @@ export class Component {
   }
 
   public static decodeFrom(decoder: Decoder): Component {
-    const { type, value } = decoder.read();
-    return new Component(type, value);
+    const { tlv } = decoder.read();
+    return new Component(tlv);
   }
 
   /** Parse from URI representation, or return existing Component. */
@@ -77,23 +77,50 @@ export class Component {
     return new Component(type, value.subarray(0, length));
   }
 
+  public readonly tlv: Uint8Array;
+  public readonly type: number;
   public readonly value: Uint8Array;
 
   /**
-   * Construct name component.
-   * @param type TLV-TYPE.
+   * Construct from TLV-TYPE and TLV-VALUE.
+   * @param type TLV-TYPE, default is GenericNameComponent.
    * @param value TLV-VALUE; if specified as string, it's encoded as UTF-8 but not interpreted
    *              as URI representation. Use from() to interpret URI.
    */
-  constructor(public readonly type: number = TT.GenericNameComponent, value?: Uint8Array|string) {
-    checkType(type);
-    if (value instanceof Uint8Array) {
-      this.value = value;
-    } else if (typeof value === "string") {
-      this.value = new TextEncoder().encode(value);
-    } else {
-      this.value = new Uint8Array();
+  constructor(type?: number, value?: Uint8Array|string);
+
+  /** Construct from TLV. */
+  constructor(tlv: Uint8Array);
+
+  constructor(arg1?: number|Uint8Array, arg2?: Uint8Array|string) {
+    switch (typeof arg1) {
+      case "object": {
+        this.tlv = arg1;
+        const decoder = new Decoder(arg1);
+        ({ type: this.type, value: this.value } = decoder.read());
+        checkType(this.type);
+        return;
+      }
+      case "undefined":
+        this.type = TT.GenericNameComponent;
+        break;
+      case "number":
+        this.type = arg1;
+        checkType(this.type);
+        break;
     }
+    switch (typeof arg2) {
+      case "undefined":
+        this.value = new Uint8Array(0);
+        break;
+      case "string":
+        this.value = new TextEncoder().encode(arg2);
+        break;
+      case "object":
+        this.value = arg2;
+        break;
+    }
+    this.tlv = Encoder.encode([this.type, this.value], 10+this.value.length);
   }
 
   /** Get URI string. */
@@ -115,7 +142,7 @@ export class Component {
   }
 
   public encodeTo(encoder: Encoder) {
-    encoder.prependTlv(this.type, this.value);
+    encoder.encode(this.tlv);
   }
 
   /** Determine if component follows a naming convention. */

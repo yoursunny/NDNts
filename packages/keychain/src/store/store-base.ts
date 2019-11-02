@@ -1,4 +1,5 @@
 import { Name } from "@ndn/name";
+import { fromHex, toHex } from "@ndn/tlv";
 import throat from "throat";
 
 import { Certificate } from "..";
@@ -15,20 +16,20 @@ export abstract class StoreBase<T> {
   /** List item names. */
   public list(): Promise<Name[]> {
     return this.throttle(() => this.impl.list())
-    .then((keys) => keys.map((k) => Name.fromStringKey(k)));
+    .then((keys) => keys.map((k) => new Name(fromHex(k))));
   }
 
   /** Erase item by name. */
   public erase(name: Name): Promise<void> {
-    return this.throttle(() => this.impl.erase(Name.toStringKey(name)));
+    return this.throttle(() => this.impl.erase(toHex(name.value)));
   }
 
   protected getImpl(name: Name): Promise<T> {
-    return this.throttle(() => this.impl.get(Name.toStringKey(name)));
+    return this.throttle(() => this.impl.get(toHex(name.value)));
   }
 
   protected insertImpl(name: Name, value: T): Promise<void> {
-    return this.throttle(() => this.impl.insert(Name.toStringKey(name), value));
+    return this.throttle(() => this.impl.insert(toHex(name.value), value));
   }
 }
 
