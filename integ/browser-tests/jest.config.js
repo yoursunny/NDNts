@@ -1,9 +1,14 @@
+const path = require("path");
 const parent = require("../../jest.config.js");
-const puppeteerPreset = require("jest-puppeteer/jest-preset.json");
 
 const config = {
   ...parent,
-  ...puppeteerPreset,
+
+  globalSetup: "jest-environment-puppeteer/setup",
+  globalTeardown: "jest-environment-puppeteer/teardown",
+  testEnvironment: path.resolve(__dirname, "..", "..", "mk", "jest-env", "puppeteer"),
+  setupFilesAfterEnv: ["expect-puppeteer"],
+
   testPathIgnorePatterns: parent.testPathIgnorePatterns.filter(x => !/integ/.test(x)),
 };
 

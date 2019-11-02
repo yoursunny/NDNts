@@ -33,7 +33,6 @@
     "jest": "^24.9.0",
     "jest-environment-node": "^24.8.0",
     "jest-environment-puppeteer": "^4.3.0",
-    "jest-puppeteer": "^4.3.0",
     "pnpm": "^4.1.6",
     "puppeteer": "^2.0.0",
     "ts-jest": "^24.1.0",
