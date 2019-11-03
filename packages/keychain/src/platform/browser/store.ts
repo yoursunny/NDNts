@@ -1,4 +1,4 @@
-import { del as idbDel, get as idbGet, keys as idbKeys,set as idbSet, Store as idbStore } from "idb-keyval";
+import { del as idbDel, get as idbGet, keys as idbKeys, set as idbSet, Store as idbStore } from "idb-keyval";
 
 import { StoreImpl } from "../../store/store-impl";
 

@@ -12,6 +12,8 @@ module.exports = {
   rules: {
     "simple-import-sort/sort": "error",
     "comma-dangle": ["error", "always-multiline"],
+    "comma-spacing": "error",
+    "comma-style": "error",
     "no-console": "warn",
     "no-empty": ["error", { allowEmptyCatch: true }],
     "quotes": ["error", "double", { allowTemplateLiterals: true }],
