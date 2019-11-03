@@ -81,7 +81,8 @@ export namespace Certificate {
     return await build(opt);
   }
 
-  interface SelfSignOptions extends Omit<IssueOptions, "issuerId"|"issuerPrivateKey"> {
+  interface SelfSignOptions extends Omit<IssueOptions, "validity"|"issuerId"|"issuerPrivateKey"> {
+    validity?: ValidityPeriod;
     privateKey: PrivateKey;
   }
 
@@ -92,7 +93,12 @@ export namespace Certificate {
     if (!pvtName.equals(pubName)) {
       throw new Error("key pair mismatch");
     }
-    const opt: IssueOptions = { ...options, issuerId: SELF_ISSUER, issuerPrivateKey: options.privateKey };
+    const opt: IssueOptions = {
+      validity: ValidityPeriod.MAX,
+      ...options,
+      issuerId: SELF_ISSUER,
+      issuerPrivateKey: options.privateKey,
+    };
     return await issue(opt);
   }
 

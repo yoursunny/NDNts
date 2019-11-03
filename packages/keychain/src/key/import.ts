@@ -3,19 +3,19 @@ import { ASN1UniversalType, DERElement } from "asn1-ts";
 
 import { crypto } from "../platform";
 import { EcCurve, EcPrivateKey, EcPublicKey } from "./ec";
-import { PvtExport } from "./internal";
+import { StoredKey } from "./internal";
 import { PublicKey } from "./public-key";
 import { RsaPrivateKey, RsaPublicKey } from "./rsa";
 import { IMPORT_PARAMS as rsaImportParams } from "./rsa/internal";
 
-export async function loadPvtExport(name: Name, pvtExport: PvtExport) {
-  switch (pvtExport.kty) {
+export async function loadFromStored(name: Name, stored: StoredKey) {
+  switch (stored.type) {
     case "EC":
-      return EcPrivateKey.loadPvtExport(name, pvtExport);
+      return EcPrivateKey.loadFromStored(name, stored);
     case "RSA":
-      return RsaPrivateKey.loadPvtExport(name, pvtExport);
+      return RsaPrivateKey.loadFromStored(name, stored);
   }
-  throw new Error(`unknown kty=${pvtExport.kty}`);
+  throw new Error(`unknown stored type ${stored.type}`);
 }
 
 export async function importSpki(name: Name, spki: Uint8Array): Promise<PublicKey> {

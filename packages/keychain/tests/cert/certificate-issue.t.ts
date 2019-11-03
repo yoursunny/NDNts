@@ -3,7 +3,7 @@ import "@ndn/name/test-fixture";
 import { Component } from "@ndn/name";
 import { Version } from "@ndn/naming-convention-03";
 
-import { Certificate, EcPrivateKey, KeyChain, ValidityPeriod } from "../../src";
+import { Certificate, EcPrivateKey, ValidityPeriod } from "../../src";
 
 test("issue", async () => {
   const [issuerPrivateKey] = await EcPrivateKey.generate("/issuer", "P-384");
@@ -22,10 +22,9 @@ test("issue", async () => {
 });
 
 test("self-sign", async () => {
-  const keyChain = KeyChain.createTemp();
-  const [privateKey] = await EcPrivateKey.generate("/EC/KEY/x", "P-256", keyChain);
+  const [privateKey, publicKey] = await EcPrivateKey.generate("/EC/KEY/x", "P-256");
 
-  const cert = await keyChain.findCert(privateKey.name);
+  const cert = await Certificate.selfSign({ privateKey, publicKey });
   expect(cert.name).toHaveLength(5);
   expect(cert.name.getPrefix(-1)).toEqualName("/EC/KEY/x/self");
   expect(cert.name.at(-1).is(Version)).toBeTruthy();

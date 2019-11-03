@@ -1,4 +1,4 @@
-import { CertStore, PrivateKeyStore, SCloneCertStore } from "../../store";
+import { CertStore, KeyStore, SCloneCertStore } from "../../store";
 import { IdbStoreImpl } from "./store";
 
 export const crypto = self.crypto;
@@ -15,9 +15,9 @@ export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
   return result === 0;
 }
 
-export function openStores(locator: string): [PrivateKeyStore, CertStore] {
+export function openStores(locator: string): [KeyStore, CertStore] {
   return [
-    new PrivateKeyStore(new IdbStoreImpl(`${locator} 2dc9febb-a01a-4543-8180-f03d24bea8f6`)),
+    new KeyStore(new IdbStoreImpl(`${locator} 2dc9febb-a01a-4543-8180-f03d24bea8f6`)),
     new SCloneCertStore(new IdbStoreImpl(`${locator} ecf40b97-07cb-4b4d-92ed-adcbaa0a9855`)),
   ];
 }

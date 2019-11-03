@@ -17,8 +17,9 @@ afterAll(async () => {
   await wssPair.close();
 });
 
+beforeEach(() => page.goto(getPageUri(__dirname)));
+
 test("pair", async () => {
-  await page.goto(getPageUri(__dirname));
   const result = await pageInvoke<typeof window.testWsTransportPair>(page, "testWsTransportPair", wsUri);
   TestTransport.check(result);
 });

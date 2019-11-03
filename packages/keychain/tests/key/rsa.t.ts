@@ -40,11 +40,11 @@ test.each(RSA_MODULUS_LENGTHS)("load %p", async (modulusLength) => {
   const name = new Name("/RSAKEY/KEY/x");
   await RsaPrivateKey.generate(name, modulusLength, keyChain);
 
-  const pvt = await keyChain.getKey(name);
+  const [pvt, pub] = await keyChain.getKeyPair(name);
   expect(pvt).toBeInstanceOf(RsaPrivateKey);
 
-  const cert = await keyChain.findCert(name);
-  const pub = await Certificate.getPublicKey(cert);
-  expect(pub).toBeInstanceOf(RsaPublicKey);
-  expect(pub.name).toEqualName(pvt.name);
+  const cert = await Certificate.selfSign({ privateKey: pvt, publicKey: pub });
+  const pub2 = await Certificate.getPublicKey(cert);
+  expect(pub2).toBeInstanceOf(RsaPublicKey);
+  expect(pub2.name).toEqualName(pvt.name);
 });

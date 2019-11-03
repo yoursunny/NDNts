@@ -1,5 +1,5 @@
 import { KeyLocator, SigInfo } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Name, NameLike } from "@ndn/name";
 
 import { KeyName } from "../name";
 import { crypto } from "../platform";
@@ -17,28 +17,48 @@ export abstract class NamedKey {
   }
 }
 
-export type PvtExportSClone<E extends { kty: string }> = E & { pvt: CryptoKey };
+export interface StoredKey {
+  type: string;
+  isJwk: boolean;
+  pvt: CryptoKey|JsonWebKey;
+  pub?: CryptoKey|JsonWebKey;
+}
 
-export type PvtExport<E extends { kty: string } = { kty: string }> =
-  (JsonWebKey & { kty: string }) | PvtExportSClone<E>;
+export async function generateKey<T extends { type: string }>(
+    nameInput: NameLike, type: T, algo: any,
+    keyChain: KeyChain|undefined): Promise<[Name, CryptoKey, CryptoKey|undefined]> {
+  const name = KeyName.create(nameInput).toName();
 
-type CryptoGenKeyAlgo = (EcKeyGenParams & EcKeyImportParams) |
-                        (RsaHashedKeyGenParams & RsaHashedImportParams);
-
-type CryptoGenKeyResult<E extends { kty: string }> = CryptoKeyPair & { pvtExport: PvtExport<E> };
-
-export async function cryptoGenerateKey<P extends CryptoGenKeyAlgo, E extends { kty: string }>(
-    algorithm: P, keyChain: KeyChain|undefined, pvtExportBase: E): Promise<CryptoGenKeyResult<E>> {
-  const needJwk = keyChain?.canSClonePvt === false;
-  const pair: CryptoKeyPair =
-    await crypto.subtle.generateKey(algorithm, needJwk, ["sign", "verify"]);
-  let pvtExport: PvtExport<E>;
-  if (needJwk) {
-    const jwk = await crypto.subtle.exportKey("jwk", pair.privateKey);
-    pair.privateKey = await crypto.subtle.importKey("jwk", jwk, algorithm, false, ["sign"]);
-    pvtExport = { kty: pvtExportBase.kty, ...jwk };
+  const needJwk = keyChain?.canSCloneKeys === false;
+  const pvtOrPair = await crypto.subtle.generateKey(algo, needJwk, ["sign", "verify"]);
+  let pvt: CryptoKey;
+  let pub: CryptoKey|undefined;
+  if ((pvtOrPair as CryptoKeyPair).privateKey) {
+    ({ privateKey: pvt, publicKey: pub } = pvtOrPair as CryptoKeyPair);
   } else {
-    pvtExport = { ...pvtExportBase, pvt: pair.privateKey };
+    pvt = pvtOrPair as CryptoKey;
+    pub = undefined;
   }
-  return { ...pair, pvtExport };
+
+  if (keyChain) {
+    let stored: StoredKey;
+    if (needJwk) {
+      stored = {
+        ...type,
+        isJwk: true,
+        pvt: await crypto.subtle.exportKey("jwk", pvt),
+        pub: pub ? await crypto.subtle.exportKey("jwk", pub) : undefined,
+      }
+    } else {
+      stored = {
+        ...type,
+        isJwk: false,
+        pvt,
+        pub,
+      };
+    }
+    keyChain.insertKey(name, stored);
+  }
+
+  return [name, pvt, pub];
 }
