@@ -6,11 +6,9 @@ import { crypto, timingSafeEqual } from "../platform";
 import { PrivateKeyBase } from "./private-key";
 import { PublicKeyBase } from "./public-key";
 
-const IDENTITY = new Name("/localhost/identity/digest-sha256");
-
 export class DigestKey extends PublicKeyBase {
   constructor() {
-    super(IDENTITY, SigType.Sha256, undefined);
+    super(new Name("/localhost/identity/digest-sha256/KEY/digest"), SigType.Sha256, undefined);
   }
 
   public exportAsSpki(): Promise<Uint8Array> {

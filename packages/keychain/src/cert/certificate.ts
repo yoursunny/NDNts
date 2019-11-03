@@ -3,7 +3,7 @@ import { Component } from "@ndn/name";
 import { Version } from "@ndn/naming-convention-03";
 
 import { PrivateKey, PublicKey } from "../key";
-import { importPublicKey } from "../key/import";
+import { importSpki } from "../key/import";
 import { CertificateName, KeyName } from "../name";
 import { ContentTypeKEY } from "./an";
 import { ValidityPeriod } from "./validity-period";
@@ -97,6 +97,6 @@ export namespace Certificate {
   }
 
   export async function getPublicKey(cert: Certificate): Promise<PublicKey> {
-    return await importPublicKey(cert.certName.toKeyName().toName(), cert.publicKey);
+    return await importSpki(cert.certName.toKeyName().toName(), cert.publicKey);
   }
 }

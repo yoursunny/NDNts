@@ -1,4 +1,4 @@
-import { Certificate, EC_CURVES, EcPrivateKey, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaPrivateKey,theDigestKey, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, EC_CURVES, EcPrivateKey, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaPrivateKey, theDigestKey } from "@ndn/keychain";
 import { execute as testStore } from "@ndn/keychain/test-fixture/keychain-store";
 import { execute as testSignVerify } from "@ndn/keychain/test-fixture/sign-verify";
 import { Data, Interest } from "@ndn/l3pkt";
@@ -8,14 +8,13 @@ import { SignVerifyTestResult } from "./api";
 
 async function checkBrowser() {
   const lines = [] as string[];
-  const keychain = KeyChain.open("ae688cfd-fab7-4987-93f6-3b7a2507047b");
-  const validity = ValidityPeriod.daysFromNow(1);
+  const keyChain = KeyChain.open("ae688cfd-fab7-4987-93f6-3b7a2507047b");
   for (const curve of EC_CURVES) {
     try {
-      const { privateKey: {name}, selfSigned } =
-        await keychain.generateKey(EcPrivateKey, "/S", validity, curve);
-      await keychain.deleteKey(name);
-      await Certificate.getPublicKey(selfSigned);
+      const [{name}] = await EcPrivateKey.generate("/S", curve, keyChain);
+      const cert = await keyChain.getCert((await keyChain.listCerts(name))[0]);
+      await keyChain.deleteKey(name);
+      await Certificate.getPublicKey(cert);
       lines.push(`ECDSA ${curve}: OK`);
     } catch (err) {
       lines.push(`ECDSA ${curve}: ${err}`);
@@ -23,10 +22,10 @@ async function checkBrowser() {
   }
   for (const modulusLength of RSA_MODULUS_LENGTHS) {
     try {
-      const { privateKey: {name}, selfSigned } =
-        await keychain.generateKey(RsaPrivateKey, "/S", validity, modulusLength);
-      await keychain.deleteKey(name);
-      await Certificate.getPublicKey(selfSigned);
+      const [{name}] = await RsaPrivateKey.generate("/S", modulusLength, keyChain);
+      const cert = await keyChain.getCert((await keyChain.listCerts(name))[0]);
+      await keyChain.deleteKey(name);
+      await Certificate.getPublicKey(cert);
       lines.push(`RSA ${modulusLength}: OK`);
     } catch (err) {
       lines.push(`RSA ${modulusLength}: ${err}`);
@@ -59,10 +58,7 @@ window.testDigestKey = () => {
 };
 
 window.testEcKey = async () => {
-  const keyChain = KeyChain.createTemp();
-  const { privateKey: pvtA, publicKey: pubA } =
-    await keyChain.generateKey(EcPrivateKey, "/EC-A", ValidityPeriod.daysFromNow(1), "P-256");
-  const { privateKey: pvtB, publicKey: pubB } =
-    await keyChain.generateKey(EcPrivateKey, "/EC-B", ValidityPeriod.daysFromNow(1), "P-256");
+  const [pvtA, pubA] = await EcPrivateKey.generate("/EC-A", "P-256");
+  const [pvtB, pubB] = await EcPrivateKey.generate("/EC-B", "P-256");
   return testKey(pvtA, pubA, pvtB, pubB);
 };

@@ -1,13 +1,10 @@
 import { Name } from "@ndn/name";
 
-import { EcPrivateKey, EcPublicKey, KeyChain, RsaPrivateKey, RsaPublicKey, ValidityPeriod } from "../src";
-import { importPublicKey } from "../src/key/import";
+import { Certificate, EcPrivateKey, EcPublicKey, KeyChain, RsaPrivateKey, RsaPublicKey } from "../src";
 
 export interface TestRecord {
   keys0: string[];
   certs0: string[];
-  keys1: string[];
-  certs1: string[];
   keys2: string[];
   certs2: string[];
   keys3: string[];
@@ -25,24 +22,21 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
   const keys0 = (await keyChain.listKeys()).map(nameToString);
   const certs0 = (await keyChain.listCerts()).map(nameToString);
 
-  const validity = ValidityPeriod.daysFromNow(1);
-  const gens = await Promise.all(Array.from((function*() {
+  await Promise.all(Array.from((function*(): Generator<Promise<unknown>> {
     for (let i = 0; i < 20; ++i) {
-      yield keyChain.generateKey(EcPrivateKey, `/${i}`, validity, "P-256");
+      yield EcPrivateKey.generate(`/${i}`, "P-256", keyChain);
     }
     for (let i = 20; i < 40; ++i) {
-      yield keyChain.generateKey(RsaPrivateKey, `/${i}`, validity, 2048);
+      yield RsaPrivateKey.generate(`/${i}`, 2048, keyChain);
     }
   })()));
-  const keys1 = gens.map((gen) => gen.privateKey.name).map(nameToString);
-  const certs1 = gens.map((gen) => gen.selfSigned.name).map(nameToString);
 
   const keys2 = (await keyChain.listKeys()).map(nameToString);
   const certs2 = (await keyChain.listCerts()).map(nameToString);
 
   await Promise.all(
-    gens.filter((gen, i) => i % 4 === 0)
-    .map((gen) => keyChain.deleteKey(gen.privateKey.name)),
+    keys2.filter((u, i) => i % 4 === 0)
+    .map((u) => keyChain.deleteKey(new Name(u))),
   );
 
   const keys3 = (await keyChain.listKeys()).map(nameToString);
@@ -53,7 +47,7 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
   const keys5 = [] as string[];
   for (let i = 0; i < 40; ++i) {
     try {
-      const key = await keyChain.getKey(new Name(keys1[i]));
+      const key = await keyChain.getKey(new Name(keys2[i]));
       switch (true) {
         case key instanceof EcPrivateKey:
           keys4.push("EC");
@@ -69,10 +63,10 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
       keys4.push("");
     }
     try {
-      const cert = await keyChain.getCert(new Name(certs1[i]));
+      const cert = await keyChain.getCert(new Name(certs2[i]));
       certs4.push(cert.name.toString());
       try {
-        const key = await importPublicKey(new Name("/K"), cert.publicKey);
+        const key = await Certificate.getPublicKey(cert);
         switch (true) {
           case key instanceof EcPublicKey:
             keys5.push("EC");
@@ -96,8 +90,6 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
   return {
     keys0,
     certs0,
-    keys1,
-    certs1,
     keys2,
     certs2,
     keys3,
@@ -111,8 +103,6 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
 export function check(record: TestRecord) {
   expect(record.keys0).toHaveLength(0);
   expect(record.certs0).toHaveLength(0);
-  expect(record.keys1).toHaveLength(40);
-  expect(record.certs1).toHaveLength(40);
   expect(record.keys2).toHaveLength(40);
   expect(record.certs2).toHaveLength(40);
   expect(record.keys3).toHaveLength(30);
@@ -125,8 +115,4 @@ export function check(record: TestRecord) {
   expect(record.keys4.filter((v) => v === "RSA")).toHaveLength(15);
   expect(record.certs4.filter((v) => v === "")).toHaveLength(10);
   expect(record.keys5).toEqual(record.keys4);
-
-  record.certs1.sort();
-  record.certs2.sort();
-  expect(record.certs1).toEqual(record.certs2);
 }

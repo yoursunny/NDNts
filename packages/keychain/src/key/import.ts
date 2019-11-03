@@ -3,30 +3,22 @@ import { ASN1UniversalType, DERElement } from "asn1-ts";
 
 import { crypto } from "../platform";
 import { EcCurve, EcPrivateKey, EcPublicKey } from "./ec";
-import { PrivateKey } from "./private-key";
+import { PvtExport } from "./internal";
 import { PublicKey } from "./public-key";
 import { RsaPrivateKey, RsaPublicKey } from "./rsa";
 import { IMPORT_PARAMS as rsaImportParams } from "./rsa/internal";
 
-interface PrivateKeyImporter {
-  importPrivateKey(name: Name, isJson: boolean, privateKeyExported: object): Promise<PrivateKey>;
-}
-
-const privateKeyImporters: PrivateKeyImporter[] = [
-  EcPrivateKey,
-  RsaPrivateKey,
-];
-
-export async function importPrivateKey(name: Name, isJson: boolean, privateKeyExported: object): Promise<PrivateKey> {
-  for (const importer of privateKeyImporters) {
-    try {
-      return await importer.importPrivateKey(name, isJson, privateKeyExported);
-    } catch (err) {}
+export async function loadPvtExport(name: Name, pvtExport: PvtExport) {
+  switch (pvtExport.kty) {
+    case "EC":
+      return EcPrivateKey.loadPvtExport(name, pvtExport);
+    case "RSA":
+      return RsaPrivateKey.loadPvtExport(name, pvtExport);
   }
-  throw new Error("invalid PrivateKey export");
+  throw new Error(`unknown kty=${pvtExport.kty}`);
 }
 
-export async function importPublicKey(name: Name, spki: Uint8Array): Promise<PublicKey> {
+export async function importSpki(name: Name, spki: Uint8Array): Promise<PublicKey> {
   const spkiEl = new DERElement();
   spkiEl.fromBytes(spki);
   const [algoIdEl] = spkiEl.sequence;

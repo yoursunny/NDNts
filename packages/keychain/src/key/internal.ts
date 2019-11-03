@@ -2,8 +2,8 @@ import { KeyLocator, SigInfo } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 
 import { KeyName } from "../name";
-import { PrivateKey } from "./private-key";
-import { PublicKey } from "./public-key";
+import { crypto } from "../platform";
+import { KeyChain } from "../store";
 
 export interface PacketWithSignature {
   sigInfo?: SigInfo;
@@ -13,21 +13,32 @@ export interface PacketWithSignature {
 export abstract class NamedKey {
   constructor(public readonly name: Name, public readonly sigType: number,
               public readonly keyLocator: KeyLocator|undefined) {
+    KeyName.from(name);
   }
 }
 
-export interface KeyGenResult {
-  privateKey: PrivateKey;
-  privateKeyExported: object;
-  publicKey: PublicKey;
-}
+export type PvtExportSClone<E extends { kty: string }> = E & { pvt: CryptoKey };
 
-export interface KeyGenerator<A extends any[]> {
-  /**
-   * Generate a key pair.
-   * @param name key name.
-   * @param needJson true if privateKeyExported must be serializable as JSON,
-   *                 false if privateKeyExported only needs to support structured clone algorithm.
-   */
-  generate(name: KeyName, needJson: boolean, ...args: A): Promise<KeyGenResult>;
+export type PvtExport<E extends { kty: string } = { kty: string }> =
+  (JsonWebKey & { kty: string }) | PvtExportSClone<E>;
+
+type CryptoGenKeyAlgo = (EcKeyGenParams & EcKeyImportParams) |
+                        (RsaHashedKeyGenParams & RsaHashedImportParams);
+
+type CryptoGenKeyResult<E extends { kty: string }> = CryptoKeyPair & { pvtExport: PvtExport<E> };
+
+export async function cryptoGenerateKey<P extends CryptoGenKeyAlgo, E extends { kty: string }>(
+    algorithm: P, keyChain: KeyChain|undefined, pvtExportBase: E): Promise<CryptoGenKeyResult<E>> {
+  const needJwk = keyChain?.canSClonePvt === false;
+  const pair: CryptoKeyPair =
+    await crypto.subtle.generateKey(algorithm, needJwk, ["sign", "verify"]);
+  let pvtExport: PvtExport<E>;
+  if (needJwk) {
+    const jwk = await crypto.subtle.exportKey("jwk", pair.privateKey);
+    pair.privateKey = await crypto.subtle.importKey("jwk", jwk, algorithm, false, ["sign"]);
+    pvtExport = { kty: pvtExportBase.kty, ...jwk };
+  } else {
+    pvtExport = { ...pvtExportBase, pvt: pair.privateKey };
+  }
+  return { ...pair, pvtExport };
 }

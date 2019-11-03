@@ -75,6 +75,11 @@ SigInfo.registerExtension({
 });
 
 export namespace ValidityPeriod {
+  export const MAX = new ValidityPeriod(
+    new Date(540109800000),
+    new Date(253402300799000),
+  );
+
   export function daysFromNow(n: number): ValidityPeriod {
     const notBefore = new Date();
     const notAfter = new Date(notBefore);

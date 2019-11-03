@@ -4,7 +4,7 @@ import { SigType } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 
 import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, EcPublicKey, KeyChain,
-         PrivateKey, PublicKey, ValidityPeriod } from "../../src";
+         PrivateKey, PublicKey } from "../../src";
 import * as TestSignVerify from "../../test-fixture/sign-verify";
 
 interface Row extends TestSignVerify.Row {
@@ -16,12 +16,8 @@ const TABLE = TestSignVerify.TABLE.flatMap((row) =>
 ) as Row[];
 
 test.each(TABLE)("sign-verify %p", async ({ cls, curve }) => {
-  const keyChain = KeyChain.createTemp();
-  const validity = ValidityPeriod.daysFromNow(1);
-  const { privateKey: pvtA, publicKey: pubA } =
-    await keyChain.generateKey(EcPrivateKey, "/ECKEY-A/KEY/x", validity, curve);
-  const { privateKey: pvtB, publicKey: pubB } =
-    await keyChain.generateKey(EcPrivateKey, "/ECKEY-B/KEY/x", validity, curve);
+  const [pvtA, pubA] = await EcPrivateKey.generate("/ECKEY-A/KEY/x", curve);
+  const [pvtB, pubB] = await EcPrivateKey.generate("/ECKEY-B/KEY/x", curve);
 
   expect(PrivateKey.isPrivateKey(pvtA)).toBeTruthy();
   expect(PrivateKey.isPrivateKey(pubA)).toBeFalsy();
@@ -39,15 +35,17 @@ test.each(TABLE)("sign-verify %p", async ({ cls, curve }) => {
   expect(record.sA0.sigInfo.keyLocator).toEqualName(pvtA.name);
 });
 
-test.each(EC_CURVES)("import %p", async (curve) => {
+test.each(EC_CURVES)("load %p", async (curve) => {
   const keyChain = KeyChain.createTemp();
-  const validity = ValidityPeriod.daysFromNow(1);
-  const { publicKey, selfSigned } = await keyChain.generateKey(EcPrivateKey, "/ECKEY/KEY/x", validity, curve);
+  const name = new Name("/ECKEY/KEY/x");
+  await EcPrivateKey.generate(name, curve, keyChain);
 
-  const pvt = await keyChain.getKey(new Name("/ECKEY/KEY/x"));
+  const pvt = await keyChain.getKey(name);
   expect(pvt).toBeInstanceOf(EcPrivateKey);
 
-  const pub = await Certificate.getPublicKey(selfSigned);
+  const certName = (await keyChain.listCerts(name))[0];
+  const cert = await keyChain.getCert(certName);
+  const pub = await Certificate.getPublicKey(cert);
   expect(pub).toBeInstanceOf(EcPublicKey);
-  expect(pub.name).toEqualName(publicKey.name);
+  expect(pub.name).toEqualName(pvt.name);
 });

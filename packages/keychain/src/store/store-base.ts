@@ -11,7 +11,7 @@ export abstract class StoreBase<T> {
   constructor(protected readonly impl: StoreImpl<T>) {
   }
 
-  protected get isJsonFormat() { return this.impl.storableKind === "json"; }
+  public get canSClone() { return this.impl.storableKind === "sclone"; }
 
   /** List item names. */
   public list(): Promise<Name[]> {

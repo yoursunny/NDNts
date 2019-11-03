@@ -1,24 +1,20 @@
-import { Name, NameLike } from "@ndn/name";
+import { Name } from "@ndn/name";
 
 import { Certificate, ValidityPeriod } from "../cert";
 import { PrivateKey, PublicKey } from "../key";
-import { KeyGenerator } from "../key/internal";
-import { KeyName } from "../name";
+import { PvtExport } from "../key/internal";
 import { openStores } from "../platform";
 import { PrivateKeyStore } from "./private-key-store";
 import { SCloneCertStore } from "./sclone-cert-store";
 import { CertStore } from "./store-base";
 import { MemoryStoreImpl } from "./store-impl";
 
-interface GenerateResult {
-  privateKey: PrivateKey;
-  publicKey: PublicKey;
-  selfSigned: Certificate;
-}
-
 export class KeyChain {
   constructor(private readonly pvts: PrivateKeyStore, private readonly certs: CertStore) {
   }
+
+  /** Return whether PrivateKeyStore can structure-clone CryptoKey objects. */
+  public get canSClonePvt() { return this.pvts.canSClone; }
 
   public async listKeys(prefix: Name = new Name()): Promise<Name[]> {
     return (await this.pvts.list()).filter((n) => prefix.isPrefixOf(n));
@@ -28,17 +24,16 @@ export class KeyChain {
     return await this.pvts.get(name);
   }
 
-  public async generateKey<A extends any[]>(
-      gen: KeyGenerator<A>, name: NameLike|KeyName,
-      validity: ValidityPeriod, ...args: A): Promise<GenerateResult> {
-    const [privateKey, publicKey] = await this.pvts.generate(gen, KeyName.create(name), ...args);
+  public async insertKey(privateKey: PrivateKey, pvtExport: PvtExport, publicKey: PublicKey): Promise<void> {
     const selfSigned = await Certificate.selfSign({
-      validity,
+      validity: ValidityPeriod.MAX,
       privateKey,
       publicKey,
     });
-    await this.certs.insert(selfSigned);
-    return { privateKey, publicKey, selfSigned };
+    await Promise.all([
+      this.pvts.insert(privateKey.name, pvtExport),
+      this.certs.insert(selfSigned),
+    ]);
   }
 
   public async deleteKey(name: Name): Promise<void> {

@@ -1,61 +1,39 @@
 import { SigType } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Name, NameLike } from "@ndn/name";
 
-import { KeyName } from "../../name";
+import { KeyChain, KeyName } from "../..";
 import { crypto } from "../../platform";
-import { KeyGenResult } from "../internal";
+import { cryptoGenerateKey, PvtExport, PvtExportSClone } from "../internal";
 import { PrivateKeyBase } from "../private-key";
 import { RsaModulusLength, RsaPublicKey } from ".";
 import { ALGO, GEN_PARAMS, IMPORT_PARAMS } from "./internal";
 
-interface RsaPvtExport {
+interface RsaPvtExportBase {
   kty: "RSA";
-  pvt: CryptoKey;
 }
 
 /** RSA private key. */
 export class RsaPrivateKey extends PrivateKeyBase {
-  public static async generate(name: KeyName, needJson: boolean,
-                               modulusLength: RsaModulusLength): Promise<KeyGenResult> {
-    const pair: CryptoKeyPair = await crypto.subtle.generateKey(
-      {
-        ...GEN_PARAMS,
-        modulusLength,
-      } as RsaHashedKeyGenParams,
-      needJson, ["sign", "verify"]);
-    const pub = pair.publicKey;
-    let pvt = pair.privateKey;
+  public static async generate(nameInput: NameLike, modulusLength: RsaModulusLength, keyChain?: KeyChain): Promise<[RsaPrivateKey, RsaPublicKey]> {
+    const { privateKey: pvt, publicKey: pub, pvtExport } = await cryptoGenerateKey(
+      { ...GEN_PARAMS, modulusLength },
+      keyChain,
+      { kty: "RSA" });
 
-    let privateKeyExported: object;
-    if (needJson) {
-      const jwk = await crypto.subtle.exportKey("jwk", pvt);
-      privateKeyExported = jwk;
-      pvt = await crypto.subtle.importKey("jwk", jwk, IMPORT_PARAMS, false, ["sign"]);
-    } else {
-      privateKeyExported = { kty: "RSA", pvt } as RsaPvtExport;
-    }
-
-    const n = name.toName();
-    return {
-      privateKey: new RsaPrivateKey(n, pvt),
-      privateKeyExported,
-      publicKey:  new RsaPublicKey(n, pub),
-    };
+    const name = KeyName.create(nameInput).toName();
+    const privateKey = new RsaPrivateKey(name, pvt);
+    const publicKey = new RsaPublicKey(name, pub);
+    await keyChain?.insertKey(privateKey, pvtExport, publicKey);
+    return [privateKey, publicKey];
   }
 
-  public static async importPrivateKey(name: Name, isJson: boolean,
-                                       privateKeyExported: object): Promise<RsaPrivateKey> {
-    const { kty } = privateKeyExported as JsonWebKey|RsaPvtExport;
-    if (kty !== "RSA") {
-      throw new Error("not RsaPrivateKey");
-    }
-
-    if (!isJson) {
-      const { pvt } = privateKeyExported as RsaPvtExport;
+  public static async loadPvtExport(name: Name, pvtExport: PvtExport): Promise<RsaPrivateKey> {
+    const { pvt } = pvtExport as PvtExportSClone<RsaPvtExportBase>;
+    if (pvt) {
       return new RsaPrivateKey(name, pvt);
     }
 
-    const jwk = privateKeyExported as JsonWebKey;
+    const jwk = pvtExport as JsonWebKey;
     const key = await crypto.subtle.importKey("jwk", jwk, IMPORT_PARAMS, false, ["sign"]);
     return new RsaPrivateKey(name, key);
   }

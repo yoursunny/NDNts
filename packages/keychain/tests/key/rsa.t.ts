@@ -4,7 +4,7 @@ import { SigType } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 
 import { Certificate, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength,
-         RsaPrivateKey, RsaPublicKey, ValidityPeriod } from "../../src";
+         RsaPrivateKey, RsaPublicKey } from "../../src";
 import * as TestSignVerify from "../../test-fixture/sign-verify";
 
 interface Row extends TestSignVerify.Row {
@@ -16,12 +16,8 @@ const TABLE = TestSignVerify.TABLE.flatMap((row) =>
 ) as Row[];
 
 test.each(TABLE)("sign-verify %p", async ({ cls, modulusLength }) => {
-  const keyChain = KeyChain.createTemp();
-  const validity = ValidityPeriod.daysFromNow(1);
-  const { privateKey: pvtA, publicKey: pubA } =
-    await keyChain.generateKey(RsaPrivateKey, "/RSAKEY-A/KEY/x", validity, modulusLength);
-  const { privateKey: pvtB, publicKey: pubB } =
-    await keyChain.generateKey(RsaPrivateKey, "/RSAKEY-B/KEY/x", validity, modulusLength);
+  const [pvtA, pubA] = await RsaPrivateKey.generate("/RSAKEY-A/KEY/x", modulusLength);
+  const [pvtB, pubB] = await RsaPrivateKey.generate("/RSAKEY-B/KEY/x", modulusLength);
 
   expect(PrivateKey.isPrivateKey(pvtA)).toBeTruthy();
   expect(PrivateKey.isPrivateKey(pubA)).toBeFalsy();
@@ -39,15 +35,17 @@ test.each(TABLE)("sign-verify %p", async ({ cls, modulusLength }) => {
   expect(record.sA0.sigInfo.keyLocator).toEqualName(pvtA.name);
 });
 
-test.each(RSA_MODULUS_LENGTHS)("import %p", async (modulusLength) => {
+test.each(RSA_MODULUS_LENGTHS)("load %p", async (modulusLength) => {
   const keyChain = KeyChain.createTemp();
-  const validity = ValidityPeriod.daysFromNow(1);
-  const { publicKey, selfSigned } = await keyChain.generateKey(RsaPrivateKey, "/RSAKEY/KEY/x", validity, modulusLength);
+  const name = new Name("/RSAKEY/KEY/x");
+  await RsaPrivateKey.generate(name, modulusLength, keyChain);
 
-  const pvt = await keyChain.getKey(new Name("/RSAKEY/KEY/x"));
+  const pvt = await keyChain.getKey(name);
   expect(pvt).toBeInstanceOf(RsaPrivateKey);
 
-  const pub = await Certificate.getPublicKey(selfSigned);
+  const certName = (await keyChain.listCerts(name))[0];
+  const cert = await keyChain.getCert(certName);
+  const pub = await Certificate.getPublicKey(cert);
   expect(pub).toBeInstanceOf(RsaPublicKey);
-  expect(pub.name).toEqualName(publicKey.name);
+  expect(pub.name).toEqualName(pvt.name);
 });

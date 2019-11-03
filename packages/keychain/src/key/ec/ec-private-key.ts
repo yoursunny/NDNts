@@ -1,57 +1,40 @@
 import { SigType } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Name, NameLike } from "@ndn/name";
 
-import { KeyName } from "../../name";
+import { KeyChain, KeyName } from "../..";
 import { crypto } from "../../platform";
-import { KeyGenResult } from "../internal";
+import { cryptoGenerateKey, PvtExport, PvtExportSClone } from "../internal";
 import { PrivateKeyBase } from "../private-key";
-import { EcCurve, EcPublicKey, isEcCurve } from ".";
+import { EcCurve, EcPublicKey } from ".";
 import { SIGN_PARAMS, sigRawToDer } from "./internal";
 
-interface EcPvtExport {
+type EcPvtExportBase = {
   kty: "EC";
   crv: EcCurve;
-  pvt: CryptoKey;
-}
+};
 
 /** ECDSA private key. */
 export class EcPrivateKey extends PrivateKeyBase {
-  public static async generate(name: KeyName, needJson: boolean, curve: EcCurve): Promise<KeyGenResult> {
-    const params = { name: "ECDSA", namedCurve: curve };
-    const pair: CryptoKeyPair = await crypto.subtle.generateKey(params, needJson, ["sign", "verify"]);
-    const pub = pair.publicKey;
-    let pvt = pair.privateKey;
+  public static async generate(nameInput: NameLike, curve: EcCurve, keyChain?: KeyChain): Promise<[EcPrivateKey, EcPublicKey]> {
+    const { privateKey: pvt, publicKey: pub, pvtExport } = await cryptoGenerateKey(
+      { name: "ECDSA", namedCurve: curve },
+      keyChain,
+      { kty: "EC", crv: curve });
 
-    let privateKeyExported: object;
-    if (needJson) {
-      const jwk = await crypto.subtle.exportKey("jwk", pvt);
-      privateKeyExported = jwk;
-      pvt = await crypto.subtle.importKey("jwk", jwk, params, false, ["sign"]);
-    } else {
-      privateKeyExported = { kty: "EC", crv: curve, pvt } as EcPvtExport;
-    }
-
-    const n = name.toName();
-    return {
-      privateKey: new EcPrivateKey(n, curve, pvt),
-      privateKeyExported,
-      publicKey:  new EcPublicKey(n, curve, pub),
-    };
+    const name = KeyName.create(nameInput).toName();
+    const privateKey = new EcPrivateKey(name, curve, pvt);
+    const publicKey = new EcPublicKey(name, curve, pub);
+    await keyChain?.insertKey(privateKey, pvtExport, publicKey);
+    return [privateKey, publicKey];
   }
 
-  public static async importPrivateKey(name: Name, isJson: boolean,
-                                       privateKeyExported: object): Promise<EcPrivateKey> {
-    const { kty, crv } = privateKeyExported as JsonWebKey|EcPvtExport;
-    if (kty !== "EC" || !isEcCurve(crv)) {
-      throw new Error("not EcPrivateKey");
-    }
-
-    if (!isJson) {
-      const { pvt } = privateKeyExported as EcPvtExport;
+  public static async loadPvtExport(name: Name, pvtExport: PvtExport): Promise<EcPrivateKey> {
+    const { crv, pvt } = pvtExport as PvtExportSClone<EcPvtExportBase>;
+    if (pvt) {
       return new EcPrivateKey(name, crv, pvt);
     }
 
-    const jwk = privateKeyExported as JsonWebKey;
+    const jwk = pvtExport as JsonWebKey;
     const key = await crypto.subtle.importKey("jwk", jwk,
       { name: "ECDSA", namedCurve: crv },
       false, ["sign"]);
