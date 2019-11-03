@@ -1,4 +1,4 @@
-import { Component, Name } from "@ndn/name";
+import { Component } from "@ndn/name";
 import { Version } from "@ndn/naming-convention-03";
 
 import { Certificate, EcPrivateKey, KeyChain, ValidityPeriod } from "../../src";
@@ -23,10 +23,9 @@ test("self-sign", async () => {
   const keyChain = KeyChain.createTemp();
   const [privateKey] = await EcPrivateKey.generate("/EC/KEY/x", "P-256", keyChain);
 
-  const certNames = await keyChain.listCerts(new Name("/EC/KEY/x/self"));
-  expect(certNames).toHaveLength(1);
-  const cert = await keyChain.getCert(certNames[0]);
+  const cert = await keyChain.findCert(privateKey.name);
   expect(cert.name).toHaveLength(5);
+  expect(cert.name.getPrefix(-1)).toEqualName("/EC/KEY/x/self");
   expect(cert.name.at(-1).is(Version)).toBeTruthy();
 
   const [, publicKeyY] = await EcPrivateKey.generate("/EC/KEY/y", "P-256");

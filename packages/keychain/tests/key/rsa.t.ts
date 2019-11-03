@@ -43,8 +43,7 @@ test.each(RSA_MODULUS_LENGTHS)("load %p", async (modulusLength) => {
   const pvt = await keyChain.getKey(name);
   expect(pvt).toBeInstanceOf(RsaPrivateKey);
 
-  const certName = (await keyChain.listCerts(name))[0];
-  const cert = await keyChain.getCert(certName);
+  const cert = await keyChain.findCert(name);
   const pub = await Certificate.getPublicKey(cert);
   expect(pub).toBeInstanceOf(RsaPublicKey);
   expect(pub.name).toEqualName(pvt.name);

@@ -43,8 +43,7 @@ test.each(EC_CURVES)("load %p", async (curve) => {
   const pvt = await keyChain.getKey(name);
   expect(pvt).toBeInstanceOf(EcPrivateKey);
 
-  const certName = (await keyChain.listCerts(name))[0];
-  const cert = await keyChain.getCert(certName);
+  const cert = await keyChain.findCert(name);
   const pub = await Certificate.getPublicKey(cert);
   expect(pub).toBeInstanceOf(EcPublicKey);
   expect(pub.name).toEqualName(pvt.name);

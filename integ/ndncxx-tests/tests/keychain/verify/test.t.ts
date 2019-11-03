@@ -1,5 +1,5 @@
-import { EC_CURVES, EcCurve, EcPrivateKey, KeyChain, RSA_MODULUS_LENGTHS, RsaModulusLength,
-         RsaPrivateKey, ValidityPeriod } from "@ndn/keychain";
+import { EC_CURVES, EcCurve, EcPrivateKey, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength,
+         RsaPrivateKey } from "@ndn/keychain";
 import { Data, LLSign } from "@ndn/l3pkt";
 import { Encoder } from "@ndn/tlv";
 
@@ -20,16 +20,18 @@ const TABLE = ([] as Row[]).concat(
   RSA_MODULUS_LENGTHS.map((modulusLength) => ({ cls: RsaPrivateKey, arg: modulusLength })),
 );
 
+type KeyGenFunc = (...args: unknown[]) => Promise<[PrivateKey, PublicKey]>;
+
 test.each(TABLE)("%p", async ({ cls, arg }) => {
   const keyChain = KeyChain.createTemp();
-  const { privateKey, selfSigned } = await keyChain.generateKey(
-    cls, "/A/KEY/x", ValidityPeriod.daysFromNow(1), arg);
+  const [privateKey] = await (cls.generate as KeyGenFunc)("/A", arg, keyChain);
+  const cert = await keyChain.findCert(privateKey.name);
 
   const packet = new Data("/D", Uint8Array.of(0xC0, 0xC1));
   privateKey.sign(packet);
   await packet[LLSign.PROCESS]();
 
-  const certFile = writeTmpFile(Encoder.encode(selfSigned.data));
+  const certFile = writeTmpFile(Encoder.encode(cert.data));
   const packetFile = writeTmpFile(Encoder.encode(packet));
   const input = [certFile, packetFile].join("\n");
   const { stdout } = await execute(__dirname, [], { input });

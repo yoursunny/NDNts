@@ -10,7 +10,7 @@ import { enableNfdPrefixReg, signInterest02 } from "@ndn/nfdmgmt";
 
 // other imports for examples
 import { Forwarder, SimpleEndpoint } from "@ndn/fw";
-import { EcPrivateKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
+import { EcPrivateKey } from "@ndn/keychain";
 import { L3Face } from "@ndn/l3face";
 import { Data, Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
@@ -25,10 +25,8 @@ While `@ndn/keychain` package only supports 2019 Signed Interest format, NFD Man
 `signInterest02` function provides basic support for that format.
 
 ```ts
-// Make a temporary KeyChain, and generate a key.
-const keyChain = KeyChain.createTemp();
-const { privateKey } = await keyChain.generateKey(
-  EcPrivateKey, "/ECKEY/KEY/x", ValidityPeriod.daysFromNow(1), "P-256");
+// Generate a key.
+const [privateKey] = await EcPrivateKey.generate("/K", "P-256");
 
 // Prepare the Interest.
 const interest = new Interest("/I");

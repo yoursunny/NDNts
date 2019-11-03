@@ -12,7 +12,7 @@ async function checkBrowser() {
   for (const curve of EC_CURVES) {
     try {
       const [{name}] = await EcPrivateKey.generate("/S", curve, keyChain);
-      const cert = await keyChain.getCert((await keyChain.listCerts(name))[0]);
+      const cert = await keyChain.findCert(name);
       await keyChain.deleteKey(name);
       await Certificate.getPublicKey(cert);
       lines.push(`ECDSA ${curve}: OK`);
@@ -23,7 +23,7 @@ async function checkBrowser() {
   for (const modulusLength of RSA_MODULUS_LENGTHS) {
     try {
       const [{name}] = await RsaPrivateKey.generate("/S", modulusLength, keyChain);
-      const cert = await keyChain.getCert((await keyChain.listCerts(name))[0]);
+      const cert = await keyChain.findCert(name);
       await keyChain.deleteKey(name);
       await Certificate.getPublicKey(cert);
       lines.push(`RSA ${modulusLength}: OK`);

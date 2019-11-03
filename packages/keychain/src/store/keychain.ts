@@ -49,6 +49,14 @@ export class KeyChain {
   public async getCert(name: Name): Promise<Certificate> {
     return await this.certs.get(name);
   }
+
+  public async findCert(keyName: Name): Promise<Certificate> {
+    const list = await this.listCerts(keyName);
+    if (list.length === 0) {
+      throw new Error(`no Certificate for key ${keyName}`)
+    }
+    return await this.getCert(list[0]);
+  }
 }
 
 export namespace KeyChain {
