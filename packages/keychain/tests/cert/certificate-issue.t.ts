@@ -1,3 +1,5 @@
+import "@ndn/name/test-fixture";
+
 import { Component } from "@ndn/name";
 import { Version } from "@ndn/naming-convention-03";
 
