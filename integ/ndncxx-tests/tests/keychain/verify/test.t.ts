@@ -1,5 +1,4 @@
-import { EC_CURVES, EcCurve, EcPrivateKey, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength,
-         RsaPrivateKey } from "@ndn/keychain";
+import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength, RsaPrivateKey } from "@ndn/keychain";
 import { Data, LLSign } from "@ndn/l3pkt";
 import { Encoder } from "@ndn/tlv";
 
@@ -23,9 +22,8 @@ const TABLE = ([] as Row[]).concat(
 type KeyGenFunc = (...args: unknown[]) => Promise<[PrivateKey, PublicKey]>;
 
 test.each(TABLE)("%p", async ({ cls, arg }) => {
-  const keyChain = KeyChain.createTemp();
-  const [privateKey] = await (cls.generate as KeyGenFunc)("/A", arg, keyChain);
-  const cert = await keyChain.findCert(privateKey.name);
+  const [privateKey, publicKey] = await (cls.generate as KeyGenFunc)("/A", arg);
+  const cert = await Certificate.selfSign({ privateKey, publicKey });
 
   const packet = new Data("/D", Uint8Array.of(0xC0, 0xC1));
   privateKey.sign(packet);
