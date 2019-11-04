@@ -80,7 +80,7 @@ export class PitEntry {
     return pipeline(
       () => this.dnRecords.entries(),
       filter<[FaceImpl, PitDn]>(([dn, { expire }]) => expire > now && dn !== face),
-      map(([dn, { token }]) => ({dn, token})),
+      map(([dn, { token }]) => ({ dn, token })),
     );
   }
 

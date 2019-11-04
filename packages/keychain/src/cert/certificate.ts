@@ -77,7 +77,7 @@ export namespace Certificate {
     const kn = KeyName.from(pub.name);
     const cn = new CertificateName(kn.subjectName, kn.keyId, issuerId, Version.create(Date.now()));
     const publicKey = await pub.exportAsSpki();
-    const opt: BuildOptions = {...options, name: cn, publicKey, signer: pvt };
+    const opt: BuildOptions = { ...options, name: cn, publicKey, signer: pvt };
     return await build(opt);
   }
 

@@ -38,7 +38,7 @@ class ParamsDigestComp extends DigestComp {
     super(TT.ParametersSha256DigestComponent);
     this.PLACEHOLDER = Object.assign(
       new Component(TT.ParametersSha256DigestComponent),
-      {[PARAMS_PLACEHOLDER_TAG]: true});
+      { [PARAMS_PLACEHOLDER_TAG]: true });
   }
 
   /** Determine if comp is a ParamsDigest placeholder. */

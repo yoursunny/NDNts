@@ -85,10 +85,10 @@ export class ExtensionRegistry<T extends Extensible> {
       if (!ext) {
         throw new Error(`unknown extension type ${tt}`);
       }
-      return {tt, value, ext};
+      return { tt, value, ext };
     })
-    .sort(({tt: ttA, ext: { order: orderA }},
-           {tt: ttB, ext: { order: orderB }}) => (orderA ?? ttA) - (orderB ?? ttB))
-    .map(({tt, value, ext}) => ext.encode(source, value));
+    .sort(({ tt: ttA, ext: { order: orderA } },
+           { tt: ttB, ext: { order: orderB } }) => (orderA ?? ttA) - (orderB ?? ttB))
+    .map(({ tt, value, ext }) => ext.encode(source, value));
   }
 }

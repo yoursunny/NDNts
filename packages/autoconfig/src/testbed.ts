@@ -36,11 +36,11 @@ export async function connectToTestbed(options: Partial<connectToTestbed.Options
   }
   if (opts.preferFastest && faces.length > 1) {
     faces.sort(({ testConnectionDuration: d1 }, { testConnectionDuration: d2 }) => d1 - d2);
-    for (const {face} of faces.splice(1)) {
+    for (const { face } of faces.splice(1)) {
       face.close();
     }
   }
-  return faces.map(({face}) => face);
+  return faces.map(({ face }) => face);
 }
 
 type Options_ = Options;

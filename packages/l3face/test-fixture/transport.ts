@@ -25,7 +25,7 @@ export async function execute(transportA: Transport, transportB: Transport): Pro
         yield new Interest(`/A/${i}`);
       }
       await new Promise((r) => setTimeout(r, 80));
-    }}),
+    } }),
     faceB.tx({ async *[Symbol.asyncIterator]() {
       for await (const pkt of faceB.rx) {
         if (pkt instanceof Interest) {
@@ -34,7 +34,7 @@ export async function execute(transportA: Transport, transportB: Transport): Pro
           yield new Data(pkt.name, Uint8Array.of(0xC0, 0xC1));
         }
       }
-    }}),
+    } }),
     (async () => {
       for await (const pkt of faceA.rx) {
         if (pkt instanceof Data) {
