@@ -4,6 +4,10 @@ import { EcCurve } from ".";
 
 export const SIGN_PARAMS = { name: "ECDSA", hash: "SHA-256" } as EcdsaParams;
 
+export function makeGenParams(curve: EcCurve): EcKeyGenParams&EcKeyImportParams {
+  return { name: "ECDSA", namedCurve: curve };
+}
+
 const mapPointSize: Record<EcCurve, number> = {
   "P-256": 32,
   "P-384": 48,
@@ -41,7 +45,7 @@ function writeIntegerDer(n: Uint8Array): DERElement {
       }
     }
   }
-  return  new DERElement(
+  return new DERElement(
     ASN1TagClass.universal,
     ASN1Construction.primitive,
     ASN1UniversalType.integer,

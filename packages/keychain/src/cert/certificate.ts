@@ -102,7 +102,7 @@ export namespace Certificate {
     return await issue(opt);
   }
 
-  export async function getPublicKey(cert: Certificate): Promise<PublicKey> {
+  export async function loadPublicKey(cert: Certificate): Promise<PublicKey> {
     return await importSpki(cert.certName.toKeyName().toName(), cert.publicKey);
   }
 }

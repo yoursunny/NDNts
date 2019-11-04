@@ -1,0 +1,46 @@
+{
+  "name": "@ndn/keyimport-ndnsec",
+  "version": "0.0.0",
+  "description": "NDNts: Import Keys from ndnsec",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "main": "src/index.ts",
+  "bin": {
+    "ndnsec2ndnts": "cli.js"
+  },
+  "sideEffects": [
+    "./test-fixture/**"
+  ],
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/keyimport-ndnsec"
+  },
+  "publishConfig": {
+    "main": "lib/index.js"
+  },
+  "dependencies": {
+    "@ndn/l3pkt": "workspace:*",
+    "@ndn/name": "workspace:*",
+    "@ndn/keychain": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "esm": "^3.2.25",
+    "execa": "^3.2.0",
+    "get-stream": "^5.1.0",
+    "loud-rejection": "^2.2.0",
+    "tslib": "*",
+    "yargs": "^14.2.0"
+  },
+  "devDependencies": {
+    "@types/yargs": "^13.0.3"
+  }
+}

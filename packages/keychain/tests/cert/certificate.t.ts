@@ -86,7 +86,7 @@ test("decode testbed certs", async () => {
     RdiYwpZP40Li/hp/m47n60p8D54WK84zV2sxXs7LtkBoN79R9QIhAP////8AAAAA
     //////////+85vqtpxeehPO5ysL8YyVRAgEBA0IABAUIdqatSflni6u9XO2ZSmBA
     +MjDwkx2RiPtCCLsm4oKVn2Jyfa/yOSgZseGqnTEdbN1rDWvlIgAmxI0MUXVM1g=`, "base64"));
-  const pub0 = await Certificate.getPublicKey(cert0);
+  const pub0 = await Certificate.loadPublicKey(cert0);
   expect(pub0).toBeInstanceOf(EcPublicKey);
 
   const data1 = new Decoder(NDN_TESTBED_ARIZONA_20190312).decode(Data);

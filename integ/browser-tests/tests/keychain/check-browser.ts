@@ -39,7 +39,7 @@ export async function checkBrowser() {
     if (!err) {
       try {
         const cert = await Certificate.selfSign({ privateKey: pvt!, publicKey: pub! });
-        await Certificate.getPublicKey(cert);
+        await Certificate.loadPublicKey(cert);
       } catch (err1) {
         err = err1;
       }

@@ -5,11 +5,11 @@ import { ASN1UniversalType, DERElement } from "asn1-ts";
 import { crypto } from "../../platform";
 import { PublicKeyBase } from "../public-key";
 import { EcCurve } from ".";
-import { sigDerToRaw, SIGN_PARAMS } from "./internal";
+import { makeGenParams, sigDerToRaw, SIGN_PARAMS } from "./internal";
 
 /** ECDSA public key. */
 export class EcPublicKey extends PublicKeyBase {
-  constructor(name: Name, public readonly curve: EcCurve, private readonly key: CryptoKey) {
+  constructor(name: Name, public readonly curve: EcCurve, public readonly key: CryptoKey) {
     super(name, SigType.Sha256WithEcdsa, name);
   }
 
@@ -38,8 +38,8 @@ function determineEcCurve(der: DERElement): EcCurve {
   } = der;
 
   if (paramsDer.tagNumber === ASN1UniversalType.objectIdentifier) {
-    const namedCurveOid = paramsDer.objectIdentifier;
-    switch (namedCurveOid.dotDelimitedNotation) {
+    const namedCurveOid = paramsDer.objectIdentifier.dotDelimitedNotation;
+    switch (namedCurveOid) {
       case "1.2.840.10045.3.1.7":
         return "P-256";
       case "1.3.132.0.34":
@@ -58,8 +58,7 @@ function determineEcCurve(der: DERElement): EcCurve {
 export namespace EcPublicKey {
   export async function importSpki(name: Name, spki: Uint8Array, der: DERElement): Promise<EcPublicKey> {
     const curve = determineEcCurve(der);
-    const key = await crypto.subtle.importKey("spki", spki,
-      { name: "ECDSA", namedCurve: curve }, true, ["verify"]);
+    const key = await crypto.subtle.importKey("spki", spki, makeGenParams(curve), true, ["verify"]);
     return new EcPublicKey(name, curve, key);
   }
 }

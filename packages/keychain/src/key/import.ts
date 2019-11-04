@@ -1,16 +1,14 @@
 import { Name } from "@ndn/name";
 import { DERElement } from "asn1-ts";
 
-import { EcPrivateKey, EcPublicKey } from "./ec";
-import { StoredKey } from "./internal";
-import { PublicKey } from "./public-key";
-import { RsaPrivateKey, RsaPublicKey } from "./rsa";
+import { EcPrivateKey, EcPublicKey, PublicKey, RsaPrivateKey, RsaPublicKey } from ".";
+import { StoredKey } from "./save";
 
 export async function loadFromStored(name: Name, stored: StoredKey) {
   switch (stored.type) {
-    case "EC":
+    case EcPrivateKey.STORED_TYPE:
       return EcPrivateKey.loadFromStored(name, stored);
-    case "RSA":
+    case RsaPrivateKey.STORED_TYPE:
       return RsaPrivateKey.loadFromStored(name, stored);
   }
   throw new Error(`unknown stored type ${stored.type}`);

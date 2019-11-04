@@ -4,10 +4,10 @@ import assert from "minimalistic-assert";
 
 import { KeyChain } from "../..";
 import { crypto } from "../../platform";
-import { generateKey, StoredKey } from "../internal";
 import { PrivateKeyBase } from "../private-key";
+import { generateKey, StoredKey } from "../save";
 import { EcCurve, EcPublicKey } from ".";
-import { SIGN_PARAMS, sigRawToDer } from "./internal";
+import { makeGenParams, SIGN_PARAMS, sigRawToDer } from "./internal";
 
 /** ECDSA private key. */
 export class EcPrivateKey extends PrivateKeyBase {
@@ -26,11 +26,18 @@ interface StoredEcKey extends StoredKey {
 }
 
 export namespace EcPrivateKey {
+  export const makeWebCryptoImportParams = makeGenParams;
+  export const STORED_TYPE = "EC";
+
+  export function makeStoredKeyBase(curve: EcCurve) {
+    return { type: STORED_TYPE, curve };
+  }
+
   export async function generate(
       nameInput: NameLike, curve: EcCurve,
       keyChain?: KeyChain): Promise<[EcPrivateKey, EcPublicKey]> {
-    const [name, pvt, pub] = await generateKey(nameInput, { type: "EC", curve },
-      { name: "ECDSA", namedCurve: curve } as EcKeyGenParams|EcKeyImportParams, keyChain);
+    const [name, pvt, pub] = await generateKey(nameInput, makeStoredKeyBase(curve),
+      makeGenParams(curve), keyChain);
     return [
       new EcPrivateKey(name, curve, pvt),
       new EcPublicKey(name, curve, pub!),
@@ -38,16 +45,15 @@ export namespace EcPrivateKey {
   }
 
   export async function loadFromStored(name: Name, stored: StoredKey): Promise<[EcPrivateKey, EcPublicKey]> {
-    assert.equal(stored.type, "EC");
+    assert.equal(stored.type, STORED_TYPE);
     const { curve } = stored as StoredEcKey;
     let pvt: CryptoKey;
     let pub: CryptoKey;
     if (stored.isJwk) {
+      const params = makeGenParams(curve);
       [pvt, pub] = await Promise.all([
-        crypto.subtle.importKey("jwk", stored.pvt as JsonWebKey,
-          { name: "ECDSA", namedCurve: curve }, false, ["sign"]),
-        crypto.subtle.importKey("jwk", stored.pub as JsonWebKey,
-          { name: "ECDSA", namedCurve: curve }, true, ["verify"]),
+        crypto.subtle.importKey("jwk", stored.pvt as JsonWebKey, params, false, ["sign"]),
+        crypto.subtle.importKey("jwk", stored.pub as JsonWebKey, params, true, ["verify"]),
       ]);
     } else {
       pvt = stored.pvt as CryptoKey;

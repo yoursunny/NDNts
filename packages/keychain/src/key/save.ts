@@ -1,21 +1,8 @@
-import { KeyLocator, SigInfo } from "@ndn/l3pkt";
 import { Name, NameLike } from "@ndn/name";
 
 import { KeyName } from "../name";
 import { crypto } from "../platform";
 import { KeyChain } from "../store";
-
-export interface PacketWithSignature {
-  sigInfo?: SigInfo;
-  sigValue?: Uint8Array;
-}
-
-export abstract class NamedKey {
-  constructor(public readonly name: Name, public readonly sigType: number,
-              public readonly keyLocator: KeyLocator|undefined) {
-    KeyName.from(name);
-  }
-}
 
 export interface StoredKey {
   type: string;
@@ -24,13 +11,14 @@ export interface StoredKey {
   pub?: CryptoKey|JsonWebKey;
 }
 
-export async function generateKey<T extends { type: string }>(
-    nameInput: NameLike, type: T, algo: any,
-    keyChain: KeyChain|undefined): Promise<[Name, CryptoKey, CryptoKey|undefined]> {
+export async function saveKey<T extends { type: string }>(
+    nameInput: NameLike, type: T, algo: any, keyChain: KeyChain|undefined,
+    makeKeys: (extractable: boolean, crypto: Crypto) => PromiseLike<CryptoKey|CryptoKeyPair>,
+): Promise<[Name, CryptoKey, CryptoKey|undefined]> {
   const name = KeyName.create(nameInput).toName();
 
   const needJwk = keyChain?.canSCloneKeys === false;
-  const pvtOrPair = await crypto.subtle.generateKey(algo, needJwk, ["sign", "verify"]);
+  const pvtOrPair = await makeKeys(needJwk, crypto);
   let pvt: CryptoKey;
   let pub: CryptoKey|undefined;
   if ((pvtOrPair as CryptoKeyPair).privateKey) {
@@ -48,7 +36,8 @@ export async function generateKey<T extends { type: string }>(
         isJwk: true,
         pvt: await crypto.subtle.exportKey("jwk", pvt),
         pub: pub ? await crypto.subtle.exportKey("jwk", pub) : undefined,
-      }
+      };
+      pvt = await crypto.subtle.importKey("jwk", stored.pvt as JsonWebKey, algo, false, ["sign"]);
     } else {
       stored = {
         ...type,
@@ -61,4 +50,13 @@ export async function generateKey<T extends { type: string }>(
   }
 
   return [name, pvt, pub];
+}
+
+export function generateKey<T extends { type: string }>(
+    nameInput: NameLike, type: T, algo: any, keyChain: KeyChain|undefined
+): Promise<[Name, CryptoKey, CryptoKey|undefined]> {
+  return saveKey(
+    nameInput, type, algo, keyChain,
+    (extractable) => crypto.subtle.generateKey(algo, extractable, ["sign", "verify"])
+  );
 }

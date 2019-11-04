@@ -1,7 +1,7 @@
 import { Name } from "@ndn/name";
 
 import { Certificate, PrivateKey, PublicKey } from "..";
-import { StoredKey } from "../key/internal";
+import { StoredKey } from "../key/save";
 import { openStores } from "../platform";
 import { CertStore, KeyStore, SCloneCertStore } from ".";
 import { MemoryStoreImpl } from "./store-impl";

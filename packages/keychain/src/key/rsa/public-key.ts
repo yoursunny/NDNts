@@ -7,7 +7,7 @@ import { ALGO, IMPORT_PARAMS } from "./internal";
 
 /** RSA public key. */
 export class RsaPublicKey extends PublicKeyBase {
-  constructor(name: Name, private readonly key: CryptoKey) {
+  constructor(name: Name, public readonly key: CryptoKey) {
     super(name, SigType.Sha256WithRsa, name);
   }
 

@@ -44,7 +44,7 @@ test.each(RSA_MODULUS_LENGTHS)("load %p", async (modulusLength) => {
   expect(pvt).toBeInstanceOf(RsaPrivateKey);
 
   const cert = await Certificate.selfSign({ privateKey: pvt, publicKey: pub });
-  const pub2 = await Certificate.getPublicKey(cert);
+  const pub2 = await Certificate.loadPublicKey(cert);
   expect(pub2).toBeInstanceOf(RsaPublicKey);
   expect(pub2.name).toEqualName(pvt.name);
 });

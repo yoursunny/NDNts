@@ -1,6 +1,6 @@
 import { LLVerify, SigInfo } from "@ndn/l3pkt";
 
-import { NamedKey, PacketWithSignature } from "./internal";
+import { NamedKey, PacketWithSignature } from "./named-key";
 
 type Verifiable = LLVerify.Verifiable & Readonly<PacketWithSignature>;
 
