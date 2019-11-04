@@ -41,7 +41,7 @@ await Promise.all([
   faceA.tx({ async *[Symbol.asyncIterator]() {
     const interest = new Interest("/A", Interest.CanBePrefix);
     yield interest;
-  }}),
+  } }),
 
   // RX side is an AsyncIterable that yields either Interest or Data.
   // Here we assume it's Interest.
@@ -61,7 +61,7 @@ await Promise.all([
       // Signing is processed internally.
       yield data;
     }
-  }}),
+  } }),
 
   // Receive the Data.
   (async () => {

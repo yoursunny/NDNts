@@ -41,7 +41,7 @@ await Promise.all([
       yield interest;
     }
     await new Promise((r) => setTimeout(r, 200));
-  }}),
+  } }),
   (async () => {
     let nData = 0;
     for await (const pkt of face.rx) {
