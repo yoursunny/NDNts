@@ -9,7 +9,7 @@ const config = {
   testEnvironment: path.resolve(__dirname, "..", "..", "mk", "jest-env", "puppeteer"),
   setupFilesAfterEnv: ["expect-puppeteer"],
 
-  testPathIgnorePatterns: parent.testPathIgnorePatterns.filter(x => !/integ/.test(x)),
+  testPathIgnorePatterns: parent.testPathIgnorePatterns.filter((x) => !/integ/.test(x)),
 };
 
 module.exports = config;

@@ -43,7 +43,7 @@ export class Tracer {
       this.fw.on("prefixrm", this.prefixrm);
     }
     /* istanbul ignore else */
-    if (opts.ann !== false ) {
+    if (opts.ann !== false) {
       this.fw.on("annadd", this.annadd);
       this.fw.on("annrm", this.annrm);
     }

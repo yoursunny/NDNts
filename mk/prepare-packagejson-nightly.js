@@ -12,7 +12,7 @@ if (j.publishConfig) {
 
 delete j.devDependencies;
 
-for (let [dep, specifier] of Object.entries(j.dependencies)) {
+for (const [dep, specifier] of Object.entries(j.dependencies)) {
   if (/^workspace:/.test(specifier)) {
     j.dependencies[dep] = `https://ndnts-nightly.netlify.com/${path.basename(dep)}.tgz`;
   }

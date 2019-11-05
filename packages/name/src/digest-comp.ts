@@ -15,7 +15,7 @@ class DigestComp implements NamingConvention<Uint8Array, Uint8Array> {
 
   public create(v: Uint8Array): Component {
     if (v.length !== DIGEST_LENGTH) {
-      throw new Error("digest length must be " + DIGEST_LENGTH);
+      throw new Error(`digest length must be ${DIGEST_LENGTH}`);
     }
     return new Component(this.tt, v);
   }

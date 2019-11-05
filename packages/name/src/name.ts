@@ -91,7 +91,7 @@ export class Name {
 
   /** Get URI string. */
   public toString(): string {
-    return "/" + this.comps.map((comp) => comp.toString()).join("/");
+    return `/${this.comps.map((comp) => comp.toString()).join("/")}`;
   }
 
   /** Get sub name [begin, end). */
