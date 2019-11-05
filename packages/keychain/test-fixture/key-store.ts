@@ -1,6 +1,6 @@
 import { Name } from "@ndn/name";
 
-import { EcPrivateKey, KeyChain, PrivateKey, PublicKey, RsaPrivateKey } from "../src";
+import { EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RsaPrivateKey } from "../src";
 
 export interface TestRecord {
   keys0: string[];
@@ -14,11 +14,14 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
   const keys0 = (await keyChain.listKeys()).map(String);
 
   const gen = await Promise.all(Array.from((function*(): Generator<Promise<[PrivateKey, PublicKey]>> {
-    for (let i = 0; i < 20; ++i) {
+    for (let i = 0; i < 16; ++i) {
       yield EcPrivateKey.generate(`/${i}`, "P-256", keyChain);
     }
-    for (let i = 20; i < 40; ++i) {
+    for (let i = 16; i < 32; ++i) {
       yield RsaPrivateKey.generate(`/${i}`, 2048, keyChain);
+    }
+    for (let i = 32; i < 40; ++i) {
+      yield HmacKey.generate(`/${i}`, keyChain).then((key) => [key, key]);
     }
   })()));
   const keys1 = gen.map(([pvt]) => pvt.name).map(String);
@@ -46,6 +49,9 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
         case key instanceof RsaPrivateKey:
           keys4.push("RSA");
           break;
+        case key instanceof HmacKey:
+          keys4.push("HMAC");
+          break;
         default:
           keys4.push("bad");
           break;
@@ -71,8 +77,9 @@ export function check(record: TestRecord) {
   expect(record.keys3).toHaveLength(30);
   expect(record.keys4).toHaveLength(40);
 
-  expect(record.keys4.filter((v) => v === "EC")).toHaveLength(15);
-  expect(record.keys4.filter((v) => v === "RSA")).toHaveLength(15);
+  expect(record.keys4.filter((v) => v === "EC")).toHaveLength(12);
+  expect(record.keys4.filter((v) => v === "RSA")).toHaveLength(12);
+  expect(record.keys4.filter((v) => v === "HMAC")).toHaveLength(6);
   expect(record.keys4.filter((v) => v === "")).toHaveLength(10);
 
   record.keys1.sort();

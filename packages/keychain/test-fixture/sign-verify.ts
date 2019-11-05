@@ -120,11 +120,19 @@ export async function execute(cls: PacketCtor, pvtA: PrivateKey, pubA: PublicKey
   } as TestRecord;
 }
 
-export function check(record: TestRecord, isDeterministic: boolean = false, sameAB: boolean = false) {
+export function check(record: TestRecord, {
+  deterministic = false,
+  sameAB = false,
+  alwaysMatch = false,
+}: {
+  deterministic?: boolean;
+  sameAB?: boolean;
+  alwaysMatch?: boolean;
+} = {}) {
   // If signing algorithm is deterministic, both signatures should be the same.
   // Otherwise, they should be different.
-  expect(!Buffer.compare(record.sA0.sigValue, record.sA1.sigValue)).toBe(isDeterministic);
-  expect(!Buffer.compare(record.sB0.sigValue, record.sB1.sigValue)).toBe(isDeterministic);
+  expect(!Buffer.compare(record.sA0.sigValue, record.sA1.sigValue)).toBe(deterministic);
+  expect(!Buffer.compare(record.sB0.sigValue, record.sB1.sigValue)).toBe(deterministic);
 
   // If A and B are different keys, their signatures should be different.
   if (!sameAB) {
@@ -138,9 +146,9 @@ export function check(record: TestRecord, isDeterministic: boolean = false, same
   expect(record.vBB.verified).toBeTruthy();
 
   // Verification using a different key should fail, unless A and B are the same (i.e. theDigestKey).
-  expect(record.vAB.matched).toBe(sameAB);
+  expect(record.vAB.matched).toBe(sameAB || alwaysMatch);
   expect(record.vAB.verified).toBe(sameAB);
-  expect(record.vBA.matched).toBe(sameAB);
+  expect(record.vBA.matched).toBe(sameAB || alwaysMatch);
   expect(record.vBA.verified).toBe(sameAB);
 
   // Verification on a mutated signature should fail.

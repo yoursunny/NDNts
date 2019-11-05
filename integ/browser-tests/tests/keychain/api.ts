@@ -15,5 +15,7 @@ declare global {
     testCertStore: () => Promise<CertStoreRecord>;
     testDigestKey: () => Promise<SerializedInBrowser>;
     testEcKey: () => Promise<SerializedInBrowser>;
+    testRsaKey: () => Promise<SerializedInBrowser>;
+    testHmacKey: () => Promise<SerializedInBrowser>;
   }
 }

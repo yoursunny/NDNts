@@ -2,19 +2,23 @@ import { Name } from "@ndn/name";
 import { DERElement } from "asn1-ts";
 
 import { EcPrivateKey, EcPublicKey, PublicKey, RsaPrivateKey, RsaPublicKey } from ".";
+import { HmacKey } from "./hmac";
+import { PrivateKey } from "./private-key";
 import { StoredKey } from "./save";
 
-export async function loadFromStored(name: Name, stored: StoredKey) {
+export async function loadFromStored(name: Name, stored: StoredKey): Promise<[PrivateKey, PublicKey]> {
   switch (stored.type) {
     case EcPrivateKey.STORED_TYPE:
       return EcPrivateKey.loadFromStored(name, stored);
     case RsaPrivateKey.STORED_TYPE:
       return RsaPrivateKey.loadFromStored(name, stored);
+    case HmacKey.STORED_TYPE:
+      return HmacKey.loadFromStored(name, stored);
   }
   throw new Error(`unknown stored type ${stored.type}`);
 }
 
-export async function importSpki(name: Name, spki: Uint8Array): Promise<PublicKey> {
+export async function loadSpki(name: Name, spki: Uint8Array): Promise<PublicKey> {
   const der = new DERElement();
   der.fromBytes(spki);
   const {

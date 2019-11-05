@@ -2,11 +2,10 @@ import { SigType } from "@ndn/l3pkt";
 import { Name, NameLike } from "@ndn/name";
 import assert from "minimalistic-assert";
 
-import { KeyChain } from "../..";
+import { KeyChain, RsaModulusLength, RsaPublicKey } from "../..";
 import { crypto } from "../../platform";
 import { PrivateKeyBase } from "../private-key";
 import { generateKey, StoredKey } from "../save";
-import { RsaModulusLength, RsaPublicKey } from ".";
 import { ALGO, GEN_PARAMS, IMPORT_PARAMS } from "./internal";
 
 /** RSA private key. */

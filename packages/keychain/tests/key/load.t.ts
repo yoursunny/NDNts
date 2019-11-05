@@ -1,8 +1,8 @@
 import { Name } from "@ndn/name";
 
-import { loadFromStored } from "../../src/key/import";
+import { loadFromStored } from "../../src/key/load";
 
-test("import invalid", async () => {
+test("load invalid", async () => {
   await expect(loadFromStored(new Name("/MY-KEY/KEY/x"), {
     type: "X",
     isJwk: true,

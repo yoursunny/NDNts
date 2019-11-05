@@ -29,7 +29,7 @@ test.each(TABLE)("sign-verify %p", async ({ cls, modulusLength }) => {
   expect(pubB.name).toEqualName("/RSAKEY-B/KEY/x");
 
   const record = await TestSignVerify.execute(cls, pvtA, pubA, pvtB, pubB);
-  TestSignVerify.check(record, true, false);
+  TestSignVerify.check(record, { deterministic: true });
   expect(record.sA0.sigInfo.type).toBe(SigType.Sha256WithRsa);
   expect(record.sA0.sigInfo.keyLocator).toBeInstanceOf(Name);
   expect(record.sA0.sigInfo.keyLocator).toEqualName(pvtA.name);

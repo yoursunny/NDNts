@@ -29,7 +29,7 @@ test.each(TABLE)("sign-verify %p", async ({ cls, curve }) => {
   expect(pubB.name).toEqualName("/ECKEY-B/KEY/x");
 
   const record = await TestSignVerify.execute(cls, pvtA, pubA, pvtB, pubB);
-  TestSignVerify.check(record, false, false);
+  TestSignVerify.check(record);
   expect(record.sA0.sigInfo.type).toBe(SigType.Sha256WithEcdsa);
   expect(record.sA0.sigInfo.keyLocator).toBeInstanceOf(Name);
   expect(record.sA0.sigInfo.keyLocator).toEqualName(pvtA.name);

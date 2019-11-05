@@ -18,7 +18,9 @@ This package implements signature types defined in [NDN Packet Format 0.3](https
   * [X] signing and verification
   * [X] KeyLocator .Name
   * [ ] KeyLocator .KeyDigest
-* [ ] SignatureHmacWithSha256
+* [X] SignatureHmacWithSha256
+  * [X] signing and verification
+  * [ ] KeyLocator matching
 
 The `PrivateKey` interface contains signing operators.
 The `PublicKey` interface contains verification operators.
@@ -64,3 +66,4 @@ Known issues:
 * In Firefox, certificates created from ECDSA keys have wrong OID, due to [Mozilla Bug 1410403](https://bugzilla.mozilla.org/show_bug.cgi?id=1410403).
 * In Firefox, ECDSA private keys cannot be saved in persistent keychain, due to [Mozilla Bug 1545813](https://bugzilla.mozilla.org/show_bug.cgi?id=1545813).
 * In Firefox, persistent keychain is unusable in a Private Browsing window, due to [Mozilla Bug 781982](https://bugzilla.mozilla.org/show_bug.cgi?id=781982).
+* In iOS, ECDSA P-521 curve is not supported.

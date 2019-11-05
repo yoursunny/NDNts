@@ -2,11 +2,10 @@ import { SigType } from "@ndn/l3pkt";
 import { Name, NameLike } from "@ndn/name";
 import assert from "minimalistic-assert";
 
-import { KeyChain } from "../..";
+import { EcCurve, EcPublicKey, KeyChain } from "../..";
 import { crypto } from "../../platform";
 import { PrivateKeyBase } from "../private-key";
 import { generateKey, StoredKey } from "../save";
-import { EcCurve, EcPublicKey } from ".";
 import { makeGenParams, SIGN_PARAMS, sigRawToDer } from "./internal";
 
 /** ECDSA private key. */

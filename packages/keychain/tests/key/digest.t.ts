@@ -11,7 +11,7 @@ test("isKey", async () => {
 
 test.each(TestSignVerify.TABLE)("%p", async ({ cls }) => {
   const record = await TestSignVerify.execute(cls, theDigestKey, theDigestKey, theDigestKey, theDigestKey);
-  TestSignVerify.check(record, true, true);
+  TestSignVerify.check(record, { deterministic: true, sameAB: true });
   expect(record.sA0.sigInfo.type).toBe(SigType.Sha256);
   expect(record.sA0.sigInfo.keyLocator).toBeUndefined();
 });

@@ -1,7 +1,7 @@
 import { Name } from "@ndn/name";
 
 import { PrivateKey, PublicKey } from "..";
-import { loadFromStored } from "../key/import";
+import { loadFromStored } from "../key/load";
 import { StoredKey } from "../key/save";
 import { StoreBase } from "./store-base";
 

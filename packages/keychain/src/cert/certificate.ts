@@ -2,11 +2,9 @@ import { Data, LLSign, SigInfo } from "@ndn/l3pkt";
 import { Component } from "@ndn/name";
 import { Version } from "@ndn/naming-convention2";
 
-import { PrivateKey, PublicKey } from "../key";
-import { importSpki } from "../key/import";
-import { CertificateName, KeyName } from "../name";
+import { CertificateName, KeyName, PrivateKey, PublicKey, ValidityPeriod } from "..";
+import { loadSpki } from "../key/load";
 import { ContentTypeKEY } from "./an";
-import { ValidityPeriod } from "./validity-period";
 
 /**
  * NDN Certificate v2.
@@ -103,6 +101,6 @@ export namespace Certificate {
   }
 
   export async function loadPublicKey(cert: Certificate): Promise<PublicKey> {
-    return await importSpki(cert.certName.toKeyName().toName(), cert.publicKey);
+    return await loadSpki(cert.certName.toKeyName().toName(), cert.publicKey);
   }
 }

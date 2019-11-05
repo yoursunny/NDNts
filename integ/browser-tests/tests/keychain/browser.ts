@@ -1,6 +1,6 @@
 import "./check-browser";
 
-import { EcPrivateKey, KeyChain, PrivateKey, PublicKey, theDigestKey } from "@ndn/keychain";
+import { EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RsaPrivateKey, theDigestKey } from "@ndn/keychain";
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";
 import { execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
 import { execute as testSignVerify } from "@ndn/keychain/test-fixture/sign-verify";
@@ -33,4 +33,16 @@ window.testEcKey = async () => {
   const [pvtA, pubA] = await EcPrivateKey.generate("/EC-A", "P-256");
   const [pvtB, pubB] = await EcPrivateKey.generate("/EC-B", "P-256");
   return testKey(pvtA, pubA, pvtB, pubB);
+};
+
+window.testRsaKey = async () => {
+  const [pvtA, pubA] = await RsaPrivateKey.generate("/RSA-A", 2048);
+  const [pvtB, pubB] = await RsaPrivateKey.generate("/RSA-B", 2048);
+  return testKey(pvtA, pubA, pvtB, pubB);
+};
+
+window.testHmacKey = async () => {
+  const keyA = await HmacKey.generate("/HMAC-A");
+  const keyB = await HmacKey.generate("/HMAC-B");
+  return testKey(keyA, keyA, keyB, keyB);
 };
