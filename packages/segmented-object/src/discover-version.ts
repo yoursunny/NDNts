@@ -1,7 +1,7 @@
 import { SimpleEndpoint } from "@ndn/fw";
 import { Interest } from "@ndn/l3pkt";
 import { Name, NamingConvention } from "@ndn/name";
-import { Segment as Segment03, Version as Version03 } from "@ndn/naming-convention-03";
+import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
 
 import { fetch } from "./fetch";
 
@@ -9,8 +9,8 @@ import { fetch } from "./fetch";
 export function discoverVersion(name: Name, opts: Partial<discoverVersion.Options> = {}): discoverVersion.Progress {
   const { versionMustBeFresh, versionConvention, segmentNumConvention } = {
     versionMustBeFresh: true,
-    versionConvention: Version03,
-    segmentNumConvention: Segment03,
+    versionConvention: Version2,
+    segmentNumConvention: Segment2,
     ...opts,
   };
 
@@ -34,7 +34,7 @@ export namespace discoverVersion {
   export interface Options extends fetch.Options {
     /**
      * Choose a version naming convention.
-     * Default is Version from @ndn/naming-convention-03 package.
+     * Default is Version from @ndn/naming-convention2 package.
      */
     versionConvention: NamingConvention<unknown, unknown>;
 

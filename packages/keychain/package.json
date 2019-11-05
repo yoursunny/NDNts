@@ -33,7 +33,7 @@
   "dependencies": {
     "@ndn/l3pkt": "workspace:*",
     "@ndn/name": "workspace:*",
-    "@ndn/naming-convention-03": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@types/minimalistic-assert": "^1.0.0",
     "@peculiar/webcrypto": "^1.0.21",

@@ -24,7 +24,7 @@ yargs
   desc: "use NFD prefix registration command and tolerate Selectors",
   type: "boolean",
 })
-.option("convention02", {
+.option("convention1", {
   default: false,
   desc: "use 2014 Naming Convention",
   type: "boolean",

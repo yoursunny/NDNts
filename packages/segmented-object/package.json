@@ -30,7 +30,7 @@
     "@ndn/l3pkt": "workspace:*",
     "@ndn/keychain": "workspace:*",
     "@ndn/name": "workspace:*",
-    "@ndn/naming-convention-03": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
     "is-stream": "^2.0.0",
     "it-pushable": "^1.4.0",
     "minimalistic-assert": "^1.0.1",
@@ -40,7 +40,7 @@
     "tslib": "*"
   },
   "devDependencies": {
-    "@ndn/naming-convention-02": "workspace:*",
+    "@ndn/naming-convention1": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@types/minimalistic-assert": "^1.0.0",
     "stream-mock": "^2.0.5"

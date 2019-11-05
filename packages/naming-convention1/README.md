@@ -1,12 +1,12 @@
-# @ndn/naming-convention-02
+# @ndn/naming-convention1
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package implements 2014-version NDN naming conventions as specified in [NDN-TR-0022 revision 1](https://named-data.net/publications/techreports/ndn-tr-22-ndn-memo-naming-conventions/).
-For 2019-version naming conventions, use `@ndn/naming-convention-03` package.
+For 2019-version naming conventions, use `@ndn/naming-convention2` package.
 
 ```ts
-import { Version, Segment } from "@ndn/naming-convention-02";
+import { Version, Segment } from "@ndn/naming-convention1";
 // We also have ByteOffset, Timestamp, and SequenceNum.
 
 // other imports for examples

@@ -1,6 +1,6 @@
 import { Data, LLSign, SigInfo } from "@ndn/l3pkt";
 import { Component } from "@ndn/name";
-import { Version } from "@ndn/naming-convention-03";
+import { Version } from "@ndn/naming-convention2";
 
 import { PrivateKey, PublicKey } from "../key";
 import { importSpki } from "../key/import";

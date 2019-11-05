@@ -1,5 +1,5 @@
 import { Component, ComponentLike, Name, NameLike, TT } from "@ndn/name";
-import { Timestamp } from "@ndn/naming-convention-03";
+import { Timestamp } from "@ndn/naming-convention2";
 
 const KEY = new Component(TT.GenericNameComponent, "KEY");
 

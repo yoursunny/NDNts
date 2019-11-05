@@ -3,7 +3,7 @@ import "@ndn/name/test-fixture";
 import { Forwarder, SimpleEndpoint } from "@ndn/fw";
 import { Data } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
-import { Segment as Segment03, Version as Version03 } from "@ndn/naming-convention-03";
+import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
 
 import { discoverVersion } from "../src";
 
@@ -16,7 +16,7 @@ test.each([false, true])("normal mbf=%p", async (mbf) => {
       expect(interest.name).toEqualName("/A");
       expect(interest.canBePrefix).toBeTruthy();
       expect(interest.mustBeFresh).toBe(mbf);
-      const data = new Data(interest.name.append(Version03, 2).append(Segment03, 4));
+      const data = new Data(interest.name.append(Version2, 2).append(Segment2, 4));
       if (mbf) {
         data.freshnessPeriod = 1000;
       }
@@ -24,14 +24,14 @@ test.each([false, true])("normal mbf=%p", async (mbf) => {
     },
   });
   await expect(discoverVersion(new Name("/A"), mbf ? undefined : { versionMustBeFresh: false }))
-        .resolves.toEqualName(new Name("/A").append(Version03, 2));
+        .resolves.toEqualName(new Name("/A").append(Version2, 2));
   producer.close();
 });
 
 const wrongNames = [
   new Name("/A/B/C/D"),
-  new Name("/A/B").append(Segment03, 4),
-  new Name("/A").append(Version03, 2).append("C"),
+  new Name("/A/B").append(Segment2, 4),
+  new Name("/A").append(Version2, 2).append("C"),
 ];
 
 test.each(wrongNames)("wrong name %#", async (dataName) => {

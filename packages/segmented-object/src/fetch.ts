@@ -1,7 +1,7 @@
 import { DataResponse, Forwarder, FwFace, InterestToken, RejectInterest } from "@ndn/fw";
 import { Data, Interest } from "@ndn/l3pkt";
 import { Name, NamingConvention } from "@ndn/name";
-import { Segment as Segment03 } from "@ndn/naming-convention-03";
+import { Segment as Segment2 } from "@ndn/naming-convention2";
 import { EventEmitter } from "events";
 import pushable from "it-pushable";
 import assert from "minimalistic-assert";
@@ -161,7 +161,7 @@ interface Fetcher extends fetch.Options {}
 export function fetch(name: Name, opts: Partial<fetch.Options> = {}): fetch.Fetcher {
   return new Fetcher(name, {
     fw: Forwarder.getDefault(),
-    segmentNumConvention: Segment03,
+    segmentNumConvention: Segment2,
     interestLifetime: Interest.DefaultLifetime,
     ...opts,
   });
@@ -176,7 +176,7 @@ export namespace fetch {
 
     /**
      * Choose a segment number naming convention.
-     * Default is Segment from @ndn/naming-convention-03 package.
+     * Default is Segment from @ndn/naming-convention2 package.
      */
     segmentNumConvention: NamingConvention<number, unknown>;
 

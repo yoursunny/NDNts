@@ -2,7 +2,7 @@ import { Forwarder, FwFace } from "@ndn/fw";
 import { PrivateKey, theDigestKey } from "@ndn/keychain";
 import { Data, Interest } from "@ndn/l3pkt";
 import { Name, NamingConvention } from "@ndn/name";
-import { Segment as Segment03 } from "@ndn/naming-convention-03";
+import { Segment as Segment2 } from "@ndn/naming-convention2";
 import assert from "minimalistic-assert";
 
 import { chunker } from "./chunker";
@@ -16,7 +16,7 @@ class Server {
 
   constructor(public readonly name: Name, input: serve.Input, opts: serve.Options) {
     this.fw = opts.fw ?? Forwarder.getDefault();
-    this.segmentNumConvention = opts.segmentNumConvention ?? Segment03;
+    this.segmentNumConvention = opts.segmentNumConvention ?? Segment2;
     this.chunkSize = opts.chunkSize ?? 8000;
     this.signer = opts.signer ?? theDigestKey;
 
@@ -98,7 +98,7 @@ export namespace serve {
 
     /**
      * Choose a segment number naming convention.
-     * Default is Segment from @ndn/naming-convention-03 package.
+     * Default is Segment from @ndn/naming-convention2 package.
      */
     segmentNumConvention?: NamingConvention<number, number>;
 

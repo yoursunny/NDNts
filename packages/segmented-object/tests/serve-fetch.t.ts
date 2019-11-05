@@ -3,7 +3,7 @@ import "@ndn/tlv/test-fixture";
 import { Forwarder, SimpleEndpoint } from "@ndn/fw";
 import { Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
-import { Segment as Segment02 } from "@ndn/naming-convention-02";
+import { Segment as Segment1 } from "@ndn/naming-convention1";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 
 import { fetch, serve } from "../src";
@@ -102,19 +102,19 @@ test("ranged", async () => {
 
 test("empty object", async () => {
   const fw = Forwarder.create();
-  const server = serve(new Name("/R"), new Uint8Array(), { fw, segmentNumConvention: Segment02 });
+  const server = serve(new Name("/R"), new Uint8Array(), { fw, segmentNumConvention: Segment1 });
 
   const ep = new SimpleEndpoint(fw);
-  await expect(ep.consume(new Interest(new Name("/R").append(Segment02, 1), Interest.Lifetime(50))))
+  await expect(ep.consume(new Interest(new Name("/R").append(Segment1, 1), Interest.Lifetime(50))))
         .rejects.toThrow();
-  const data = await ep.consume(new Interest(new Name("/R").append(Segment02, 0)));
+  const data = await ep.consume(new Interest(new Name("/R").append(Segment1, 0)));
   expect(data.content).toHaveLength(0);
 
   server.stop();
 });
 
 test("segment number convention mismatch", async () => {
-  const server = serve(new Name("/R"), objectBody, { segmentNumConvention: Segment02 });
+  const server = serve(new Name("/R"), objectBody, { segmentNumConvention: Segment1 });
   await expect(fetch(new Name("/R"), { interestLifetime: 400 }).promise).rejects.toThrow();
   server.stop();
 });

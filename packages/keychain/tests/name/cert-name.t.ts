@@ -1,7 +1,7 @@
 import "@ndn/name/test-fixture";
 
 import { Component, Name } from "@ndn/name";
-import { Version } from "@ndn/naming-convention-03";
+import { Version } from "@ndn/naming-convention2";
 
 import { CertificateName } from "../../src";
 
