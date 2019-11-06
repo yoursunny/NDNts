@@ -24,6 +24,22 @@ yargs
   desc: "use NFD prefix registration command and tolerate Selectors",
   type: "boolean",
 })
+.option("regkeychain", {
+  desc: "KeyChain locator for prefix registration",
+  implies: "nfd",
+  type: "string",
+})
+.option("regkey", {
+  desc: "key name for prefix registration (default is first key in the KeyChain)",
+  implies: "regkeychain",
+  type: "string",
+})
+.option("reglocalhop", {
+  default: false,
+  desc: "use /localhop/nfd prefix to send prefix registration command",
+  implies: "nfd",
+  type: "boolean",
+})
 .option("convention1", {
   default: false,
   desc: "use 2014 Naming Convention",
