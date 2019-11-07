@@ -1,0 +1,49 @@
+{
+  "name": "@ndn/keychain-cli",
+  "version": "0.0.0",
+  "description": "NDNts: KeyChain management",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "main": "src/index.ts",
+  "bin": {
+    "ndntssec": "cli.js"
+  },
+  "sideEffects": [
+    "./test-fixture/**"
+  ],
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/keychain-cli"
+  },
+  "publishConfig": {
+    "main": "lib/index.js"
+  },
+  "dependencies": {
+    "@ndn/name": "workspace:*",
+    "@ndn/keychain": "workspace:*",
+    "@ndn/l3pkt": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "esm": "^3.2.25",
+    "fast-chunk-string": "^1.0.1",
+    "get-stdin": "^7.0.0",
+    "loud-rejection": "^2.2.0",
+    "stdout-stream": "^1.4.1",
+    "tslib": "*",
+    "yargs": "^14.2.0"
+  },
+  "devDependencies": {
+    "@types/fast-chunk-string": "https://gist.github.com/yoursunny/a79bbea6e688b8c226474d3fffabfe86/archive/1ac367748efc5a2a84629fc8c5ddb27c39c11ab6.tar.gz",
+    "@types/stdout-stream": "^1.4.0",
+    "@types/yargs": "^13.0.3"
+  }
+}
