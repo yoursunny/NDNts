@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
-    "@types/hirestime": "^3.2.0",
+    "@types/hirestime": "^4.0.0",
     "@types/minimalistic-assert": "^1.0.0",
     "@types/p-fifo": "^1.0.0"
   }

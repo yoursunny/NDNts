@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@types/default-gateway": "^3.0.0",
-    "@types/hirestime": "^3.2.0",
-    "@types/node-fetch": "^2.5.2"
+    "@types/hirestime": "^4.0.0",
+    "@types/node-fetch": "^2.5.3"
   }
 }
