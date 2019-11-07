@@ -2,6 +2,10 @@ import { Certificate, EcPrivateKey, EcPublicKey, KeyChain, RsaPrivateKey, RsaPub
 import { SigType } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 
+/**
+ * Import public key from certificate and private key from PKCS8.
+ * This does not import certificate.
+ */
 export async function importKeyPair(cert: Certificate, pkcs8: Uint8Array, keyChain: KeyChain): Promise<Name> {
   const pub = await Certificate.loadPublicKey(cert);
   switch (pub.sigType) {

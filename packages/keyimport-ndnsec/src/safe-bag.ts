@@ -14,10 +14,7 @@ const EVD = new EvDecoder<SafeBagFields>("SafeBag", TT.SafeBag)
 .add(l3TT.Data, (t, { decoder }) => t.certificate = new Certificate(decoder.decode(Data)))
 .add(TT.EncryptedKeyBag, (t, { value }) => t.encryptedKey = value);
 
-/**
- * ndn-cxx private key export.
- * @see https://named-data.net/doc/ndn-cxx/0.6.6/specs/safe-bag.html
- */
+/** ndn-cxx private key export. */
 export class SafeBag {
   public static decodeFrom(decoder: Decoder): SafeBag {
     const { certificate, encryptedKey } = EVD.decode({} as SafeBagFields, decoder);
@@ -30,6 +27,7 @@ export class SafeBag {
   constructor(public readonly certificate: Certificate, public readonly encryptedKey: Uint8Array) {
   }
 
+  /** Decrypt private key and return unencrypted PKCS8 format. */
   public decryptKey(passphrase: string): Uint8Array {
     const key = createPrivateKey({
       key: Buffer.from(this.encryptedKey),

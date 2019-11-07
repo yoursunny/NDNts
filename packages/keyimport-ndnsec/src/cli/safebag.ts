@@ -22,6 +22,7 @@ async function main(args: Args) {
   const safeBag = new Decoder(Buffer.from(b64, "base64")).decode(SafeBag);
   const pkcs8 = safeBag.decryptKey(args.passphrase);
   await importKeyPair(safeBag.certificate, pkcs8, keyChain);
+  await keyChain.insertCert(safeBag.certificate);
 }
 
 export class SafeBagCommand implements CommandModule<CommonArgs, Args> {
