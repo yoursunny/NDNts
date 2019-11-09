@@ -1,5 +1,6 @@
 import { rxFromPacketIterable, Transport } from "@ndn/l3face";
 import * as dgram from "dgram";
+import * as dgram12 from "dgram12"; // dgram typing for Node 12, until https://github.com/DefinitelyTyped/DefinitelyTyped/pull/40263 is merged
 import { EventIterator } from "event-iterator";
 import { AddressInfo } from "net";
 
@@ -15,7 +16,7 @@ export class UdpTransport implements Transport {
         reuseAddr: true,
         recvBufferSize,
         sendBufferSize,
-      });
+      }) as dgram12.Socket;
       sock.on("error", reject);
       sock.on("connect", () => {
         sock.off("error", reject);
@@ -31,7 +32,7 @@ export class UdpTransport implements Transport {
   public get laddr(): AddressInfo { return this.sock.address(); }
   public get raddr(): AddressInfo { return this.sock.remoteAddress(); }
 
-  constructor(private readonly sock: dgram.Socket) {
+  constructor(private readonly sock: dgram12.Socket) {
     this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(
       (push, stop, fail) => {
         sock.addListener("message", push);
@@ -68,7 +69,7 @@ export namespace UdpTransport {
   export interface TunnelOptions {
     host: string;
     port?: number;
-    bind?: dgram.BindOptions;
+    bind?: dgram12.BindOptions;
     recvBufferSize?: number;
     sendBufferSize?: number;
   }

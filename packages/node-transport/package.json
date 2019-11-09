@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@ndn/l3face": "workspace:*",
+    "@types/dgram12": "gist:5d4ae98fe284f43fbe3be120140e8444",
     "event-iterator": "^1.2.0",
     "tslib": "*"
   },

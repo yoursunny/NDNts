@@ -1,9 +1,10 @@
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import * as dgram from "dgram";
+import * as dgram12 from "dgram12";
 
 import { UdpTransport } from "../src";
 
-let server: dgram.Socket;
+let server: dgram12.Socket;
 let serverPort: number;
 const clientPorts = new Set<number>();
 
@@ -11,7 +12,7 @@ beforeEach(async () => {
   server = dgram.createSocket({
     type: "udp4",
     reuseAddr: true,
-  });
+  }) as dgram12.Socket;
   serverPort = await new Promise<number>((r) =>
                server.bind({ address: "127.0.0.1" }, () => r(server.address().port)));
   server.on("message", (msg, { port }) => {
