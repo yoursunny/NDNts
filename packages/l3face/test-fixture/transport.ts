@@ -9,7 +9,9 @@ export interface TestRecord {
   namesB: string[];
 }
 
-export async function execute(transportA: Transport, transportB: Transport): Promise<TestRecord> {
+export async function execute<T extends Transport>(
+    transportA: T, transportB: T,
+    close?: (transport: T) => void): Promise<TestRecord> {
   const faceA = new L3Face(transportA);
   const faceB = new L3Face(transportB);
 
@@ -25,6 +27,9 @@ export async function execute(transportA: Transport, transportB: Transport): Pro
         yield new Interest(`/A/${i}`);
       }
       await new Promise((r) => setTimeout(r, 80));
+      if (close) {
+        setTimeout(() => close(transportB), 0);
+      }
     } }),
     faceB.tx({ async *[Symbol.asyncIterator]() {
       for await (const pkt of faceB.rx) {

@@ -1,45 +1,19 @@
-import { Decoder } from "@ndn/tlv";
-import { fromStream, pipeline } from "streaming-iterables";
-
-import { SocketTransportBase } from "./socket-transport-base";
+import { rxFromContinuousStream, txToStream } from "./rxtx";
 import { Transport } from "./transport";
 
 /** Stream-oriented transport. */
-export class StreamTransport extends SocketTransportBase implements Transport {
-  public readonly rx: AsyncIterable<Decoder.Tlv>;
+export class StreamTransport implements Transport {
+  public readonly rx: Transport.Rx;
+  public readonly tx: Transport.Tx;
+  private describe: string;
 
   constructor(conn: NodeJS.ReadWriteStream, describe?: string) {
-    super(conn, describe);
-    this.rx = pipeline(
-      () => fromStream<Buffer>(conn),
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      this.decode,
-    );
+    this.rx = rxFromContinuousStream(conn);
+    this.tx = txToStream(conn);
+    this.describe = describe ?? conn.constructor.name;
   }
 
-  private async *decode(this: void, iterable: AsyncIterable<Buffer>): AsyncIterable<Decoder.Tlv> {
-    let leftover = Buffer.alloc(0);
-    for await (const chunk of iterable) {
-      if (leftover.length > 0) {
-        leftover = Buffer.concat([leftover, chunk], leftover.length + chunk.length);
-      } else {
-        leftover = chunk;
-      }
-      const decoder = new Decoder(leftover);
-      let consumed = 0;
-      while (true) {
-        let tlv: Decoder.Tlv;
-        try {
-          tlv = decoder.read();
-        } catch (err) {
-          break;
-        }
-        yield tlv;
-        consumed += tlv.size;
-      }
-      if (consumed > 0) {
-        leftover = leftover.subarray(consumed);
-      }
-    }
+  public toString() {
+    return this.describe;
   }
 }

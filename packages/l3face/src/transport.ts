@@ -9,12 +9,18 @@ export interface Transport {
   /**
    * RX iterable for incoming packets.
    */
-  readonly rx: AsyncIterable<Decoder.Tlv>;
+  readonly rx: Transport.Rx;
 
   /**
    * TX function for outgoing packets.
    *
    * @returns Promise that resolves when iterable is exhausted, and rejects upon error.
    */
-  readonly tx: (iterable: AsyncIterable<Uint8Array>) => Promise<void>;
+  readonly tx: Transport.Tx;
+}
+
+export namespace Transport {
+  export type Rx = AsyncIterable<Decoder.Tlv>;
+
+  export type Tx = (iterable: AsyncIterable<Uint8Array>) => Promise<void>;
 }

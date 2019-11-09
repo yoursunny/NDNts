@@ -1,29 +1,19 @@
-import { Decoder } from "@ndn/tlv";
-import { filter, fromStream, map, pipeline } from "streaming-iterables";
-
-import { SocketTransportBase } from "./socket-transport-base";
+import { rxFromPacketStream, txToStream } from "./rxtx";
 import { Transport } from "./transport";
 
 /** Datagram-oriented transport. */
-export class DatagramTransport extends SocketTransportBase implements Transport {
-  public readonly rx: AsyncIterable<Decoder.Tlv>;
+export class DatagramTransport implements Transport {
+  public readonly rx: Transport.Rx;
+  public readonly tx: Transport.Tx;
+  private describe: string;
 
   constructor(conn: NodeJS.ReadWriteStream, describe?: string) {
-    super(conn, describe);
-    this.rx = pipeline(
-      () => fromStream<Uint8Array>(conn),
-      map(this.decode),
-      filter((item): item is Decoder.Tlv => !!item),
-    );
+    this.rx = rxFromPacketStream(conn);
+    this.tx = txToStream(conn);
+    this.describe = describe ?? conn.constructor.name;
   }
 
-  private decode = (packet: Uint8Array): Decoder.Tlv|undefined => {
-    const decoder = new Decoder(packet);
-    try {
-      return decoder.read();
-    } catch {
-      // ignore error
-    }
-    return undefined;
+  public toString() {
+    return this.describe;
   }
 }
