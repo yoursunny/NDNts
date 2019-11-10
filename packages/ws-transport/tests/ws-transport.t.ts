@@ -1,17 +1,19 @@
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 
 import { WsTransport } from "../src";
-import { WsServerPair } from "../test-fixture";
+import * as WsTest from "../test-fixture/wss";
+
+beforeEach(WsTest.createServer);
+
+afterEach(WsTest.destroyServer);
 
 test("pair", async () => {
-  const wssPair = new WsServerPair();
-  const uri = await wssPair.listen();
   const [transportA, transportB] = await Promise.all([
-    WsTransport.connect(uri),
-    WsTransport.connect(uri),
+    WsTransport.connect(WsTest.uri),
+    WsTransport.connect(WsTest.uri),
+    WsTest.waitNClients(2),
   ]);
-  expect(transportA.toString()).toBe(`WebSocket(${uri})`);
-  await wssPair.waitPaired();
-  TestTransport.check(await TestTransport.execute(transportA, transportB));
-  await wssPair.close();
+  WsTest.enableBroadcast();
+  expect(transportA.toString()).toBe(`WebSocket(${WsTest.uri})`);
+  TestTransport.check(await TestTransport.execute(transportA, transportB, (t) => t.close()));
 });

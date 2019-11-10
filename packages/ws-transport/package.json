@@ -37,8 +37,6 @@
   },
   "devDependencies": {
     "@ndn/l3pkt": "workspace:*",
-    "@types/ws": "^6.0.3",
-    "p-defer": "^3.0.0",
-    "websocket-stream": "^5.5.0"
+    "@types/ws": "^6.0.3"
   }
 }

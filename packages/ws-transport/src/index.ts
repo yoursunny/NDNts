@@ -1,7 +1,7 @@
 import { rxFromPacketIterable, Transport } from "@ndn/l3face";
 import { EventIterator } from "event-iterator";
 
-import { makeWebSocket, WebSocket } from "./platform";
+import { makeWebSocket } from "./platform";
 
 const HANDLER = Symbol("WsTransport.HANDLER");
 
@@ -11,7 +11,7 @@ export class WsTransport implements Transport {
     return new Promise<WsTransport>((resolve, reject) => {
       const sock = makeWebSocket(uri);
       sock.binaryType = "arraybuffer";
-      const onerror = (evt: WebSocket.ErrorEvent) => { reject(new Error(evt.message)); };
+      const onerror = (evt: Event) => reject(new Error(evt.toString()));
       sock.addEventListener("error", onerror);
       sock.addEventListener("open", () => {
         sock.removeEventListener("error", onerror);
@@ -21,20 +21,19 @@ export class WsTransport implements Transport {
   }
 
   public readonly rx: Transport.Rx;
-  private readonly bufferLimit: number;
+  private readonly highWaterMark: number;
+  private readonly lowWaterMark: number;
   private readonly describe: string;
 
-  constructor(private readonly sock: WebSocket, uri: string, {
-    bufferLimit: bufferLimit = 1024 * 1024,
-  }: WsTransport.Options) {
+  constructor(private readonly sock: WebSocket, uri: string, opts: WsTransport.Options) {
     this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(
       (push, stop, fail) => {
-        sock.addEventListener("message", (push as any)[HANDLER] = (event: WebSocket.MessageEvent) => {
+        sock.addEventListener("message", (push as any)[HANDLER] = (event: MessageEvent) => {
           push(new Uint8Array(event.data as ArrayBuffer));
         });
         sock.addEventListener("close", stop);
-        sock.addEventListener("error", (fail as any)[HANDLER] = (event: WebSocket.ErrorEvent) => {
-          fail(new Error(event.message));
+        sock.addEventListener("error", (fail as any)[HANDLER] = (event: Event) => {
+          fail(new Error(event.toString()));
         });
       },
       (push, stop, fail) => {
@@ -44,23 +43,28 @@ export class WsTransport implements Transport {
       },
     ));
     this.describe = `WebSocket(${uri})`;
-    this.bufferLimit = bufferLimit;
+    this.highWaterMark = opts.highWaterMark ?? 1024 * 1024;
+    this.lowWaterMark = opts.lowWaterMark ?? 16 * 1024;
+  }
+
+  public close() {
+    this.sock.close();
   }
 
   public tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
     for await (const pkt of iterable) {
       this.sock.send(pkt);
-      if (this.sock.bufferedAmount > this.bufferLimit) {
+      if (this.sock.bufferedAmount > this.highWaterMark) {
         await this.waitForTxBuffer();
       }
     }
-    this.sock.close();
+    this.close();
   }
 
   private waitForTxBuffer(): Promise<void> {
     return new Promise((resolve) => {
       const timer = setInterval(() => {
-        if (this.sock.bufferedAmount <= this.bufferLimit || this.sock.readyState !== WebSocket.OPEN) {
+        if (this.sock.bufferedAmount <= this.lowWaterMark || this.sock.readyState !== this.sock.OPEN) {
           clearInterval(timer);
           resolve();
         }
@@ -75,7 +79,9 @@ export class WsTransport implements Transport {
 
 export namespace WsTransport {
   export interface Options {
-    /** TX buffer limit in bytes. */
-    bufferLimit?: number;
+    /** Buffer amount (in bytes) to start TX throttling. */
+    highWaterMark?: number;
+    /** Buffer amount (in bytes) to stop TX throttling. */
+    lowWaterMark?: number;
   }
 }

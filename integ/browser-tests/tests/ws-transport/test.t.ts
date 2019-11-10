@@ -1,25 +1,21 @@
 import "./api";
 
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
-import { WsServerPair } from "@ndn/ws-transport/test-fixture";
+import * as WsTest from "@ndn/ws-transport/test-fixture/wss";
 
 import { getPageUri, pageInvoke } from "../../test-fixture";
 
-let wssPair: WsServerPair;
-let wsUri: string;
+beforeEach(() => Promise.all([
+  WsTest.createServer(),
+  page.goto(getPageUri(__dirname)),
+]));
 
-beforeAll(async () => {
-  wssPair = new WsServerPair();
-  wsUri = await wssPair.listen();
-});
-
-afterAll(async () => {
-  await wssPair.close();
-});
-
-beforeEach(() => page.goto(getPageUri(__dirname)));
+afterEach(WsTest.destroyServer);
 
 test("pair", async () => {
-  const result = await pageInvoke<typeof window.testWsTransportPair>(page, "testWsTransportPair", wsUri);
+  await pageInvoke<typeof window.connectWsTransportPair>(page, "connectWsTransportPair", WsTest.uri);
+  await WsTest.waitNClients(2);
+  WsTest.enableBroadcast();
+  const result = await pageInvoke<typeof window.testWsTransportPair>(page, "testWsTransportPair");
   TestTransport.check(result);
 });
