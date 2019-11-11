@@ -6,7 +6,7 @@ import { Name } from "@ndn/name";
 import { Segment as Segment1 } from "@ndn/naming-convention1";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 
-import { fetch, serve } from "../src";
+import { fetch, serve } from "..";
 
 let objectBody: Buffer;
 

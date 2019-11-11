@@ -25,11 +25,11 @@ before_script:
   - npm run bootstrap
 
 script:
-  - npm run lint-ci
+  - npm run build
   - npm run literate lint
-  - npm run prod-build
   - npm run literate
-  - npm run cover && coveralls < ./coverage/lcov.info
+  - npm run lint-ci
+  - npm run cover -- --colors && coveralls < ./coverage/lcov.info
   - cd $TRAVIS_BUILD_DIR/integ/browser-tests && npm test
   - cd $TRAVIS_BUILD_DIR/integ/ndncxx-tests && npm test
   - cd $TRAVIS_BUILD_DIR

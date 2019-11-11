@@ -1,4 +1,4 @@
-import { FwFace } from "../src";
+import { FwFace } from "..";
 
 export class NoopFace {
   // eslint-disable-next-line @typescript-eslint/no-empty-function

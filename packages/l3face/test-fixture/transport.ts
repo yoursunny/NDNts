@@ -1,6 +1,6 @@
 import { Data, Interest } from "@ndn/l3pkt";
 
-import { L3Face, Transport } from "../src";
+import { L3Face, Transport } from "..";
 
 const COUNT = 50;
 

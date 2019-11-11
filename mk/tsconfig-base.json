@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
@@ -7,9 +10,11 @@
     "importHelpers": true,
     "module": "es2015",
     "moduleResolution": "node",
+    "noEmitOnError": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
+    "sourceMap": true,
     "strict": true,
     "target": "es2019",
     "types": [

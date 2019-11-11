@@ -2,7 +2,7 @@ import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import * as dgram from "dgram";
 import * as dgram12 from "dgram12";
 
-import { UdpTransport } from "../src";
+import { UdpTransport } from "..";
 
 let server: dgram12.Socket;
 let serverPort: number;

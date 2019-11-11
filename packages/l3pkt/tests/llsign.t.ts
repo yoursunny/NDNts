@@ -4,7 +4,7 @@ import { Name } from "@ndn/name";
 import { Decodable, Decoder, Encodable, Encoder } from "@ndn/tlv";
 import * as crypto from "crypto";
 
-import { Data, Interest, KeyDigest, LLSign, LLVerify, SigInfo, SigType, TT } from "../src";
+import { Data, Interest, KeyDigest, LLSign, LLVerify, SigInfo, SigType, TT } from "..";
 
 class TestAlgo {
   constructor(private key: string, private wantSignError: boolean = false) {

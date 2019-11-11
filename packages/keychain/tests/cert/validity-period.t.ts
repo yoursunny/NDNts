@@ -2,7 +2,7 @@ import "@ndn/tlv/test-fixture";
 
 import { Decoder } from "@ndn/tlv";
 
-import { ValidityPeriod } from "../../src";
+import { ValidityPeriod } from "../..";
 
 test("encode decode", () => {
   const wire = [

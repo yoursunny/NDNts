@@ -3,7 +3,7 @@ import "@ndn/name/test-fixture";
 import { Component } from "@ndn/name";
 import { Version } from "@ndn/naming-convention2";
 
-import { Certificate, EcPrivateKey, ValidityPeriod } from "../../src";
+import { Certificate, EcPrivateKey, ValidityPeriod } from "../..";
 
 test("issue", async () => {
   const [issuerPrivateKey] = await EcPrivateKey.generate("/issuer", "P-384");

@@ -5,7 +5,7 @@ import { Data } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { Certificate, CertificateName, EcPublicKey, theDigestKey, ValidityPeriod } from "../../src";
+import { Certificate, CertificateName, EcPublicKey, theDigestKey, ValidityPeriod } from "../..";
 
 test("encode decode", async () => {
   const cert = await Certificate.build({

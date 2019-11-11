@@ -1,4 +1,4 @@
-import { Forwarder } from "../src";
+import { Forwarder } from "..";
 
 test("default instance", () => {
   const fw0 = Forwarder.getDefault();

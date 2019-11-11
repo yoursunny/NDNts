@@ -1,6 +1,6 @@
 import { dirSync as tmpDir } from "tmp";
 
-import { KeyChain } from "../../src";
+import { KeyChain } from "../..";
 import * as TestCertStore from "../../test-fixture/cert-store";
 import * as TestKeyStore from "../../test-fixture/key-store";
 

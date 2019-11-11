@@ -3,7 +3,7 @@ import { makeTransportPair } from "@ndn/l3face/test-fixture/pair";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import { Name } from "@ndn/name";
 
-import { Forwarder } from "../src";
+import { Forwarder } from "..";
 
 test("l3face", async () => {
   const [transportA0, transportA1] = makeTransportPair();

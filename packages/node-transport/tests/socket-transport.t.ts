@@ -2,7 +2,7 @@ import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import * as net from "net";
 import pDefer from "p-defer";
 
-import { SocketTransport } from "../src";
+import { SocketTransport } from "..";
 
 test("TCP", async () => {
   const transportAp = pDefer<SocketTransport>();

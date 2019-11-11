@@ -4,7 +4,7 @@ import { SigType } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 
 import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, EcPublicKey, KeyChain,
-         PrivateKey, PublicKey } from "../../src";
+         PrivateKey, PublicKey } from "../..";
 import * as TestSignVerify from "../../test-fixture/sign-verify";
 
 interface Row extends TestSignVerify.Row {

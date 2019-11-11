@@ -1,6 +1,6 @@
 import { SigType } from "@ndn/l3pkt";
 
-import { PrivateKey, PublicKey, theDigestKey } from "../../src";
+import { PrivateKey, PublicKey, theDigestKey } from "../..";
 import * as TestSignVerify from "../../test-fixture/sign-verify";
 
 test("isKey", async () => {

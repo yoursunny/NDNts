@@ -5,7 +5,7 @@ import { Component, ImplicitDigest, Name } from "@ndn/name";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { createHash } from "crypto";
 
-import { Data, TT } from "../src";
+import { Data, TT } from "..";
 
 test("encode", () => {
   expect(() => new Data({} as any)).toThrow();

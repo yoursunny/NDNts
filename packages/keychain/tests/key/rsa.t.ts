@@ -4,7 +4,7 @@ import { SigType } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 
 import { Certificate, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength,
-         RsaPrivateKey, RsaPublicKey } from "../../src";
+         RsaPrivateKey, RsaPublicKey } from "../..";
 import * as TestSignVerify from "../../test-fixture/sign-verify";
 
 interface Row extends TestSignVerify.Row {

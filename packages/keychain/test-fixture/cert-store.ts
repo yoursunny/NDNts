@@ -1,6 +1,6 @@
 import { Component } from "@ndn/name";
 
-import { Certificate, EcPrivateKey, KeyChain, ValidityPeriod } from "../src";
+import { Certificate, EcPrivateKey, KeyChain, ValidityPeriod } from "..";
 
 export interface TestRecord {
   key: string;

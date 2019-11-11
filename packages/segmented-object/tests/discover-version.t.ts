@@ -5,7 +5,7 @@ import { Data } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
 
-import { discoverVersion } from "../src";
+import { discoverVersion } from "..";
 
 afterEach(() => Forwarder.deleteDefault());
 

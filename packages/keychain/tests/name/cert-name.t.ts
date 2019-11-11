@@ -3,7 +3,7 @@ import "@ndn/name/test-fixture";
 import { Component, Name } from "@ndn/name";
 import { Version } from "@ndn/naming-convention2";
 
-import { CertificateName } from "../../src";
+import { CertificateName } from "../..";
 
 test("construct", () => {
   const cn = new CertificateName(new Name("/owner"), Component.from("keyid"),

@@ -3,7 +3,6 @@ import "webpack-dev-server";
 import { FileMatcher } from "file-matcher";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import * as path from "path";
-import TsconfigPathsPlugin from "tsconfig-paths-webpack-plugin";
 import webpack from "webpack";
 
 import jestPuppeteerConfig from "./jest-puppeteer.config.js";
@@ -31,9 +30,6 @@ const config = {
   },
   resolve: {
     extensions: [".ts", ".js"],
-    plugins: [
-      new TsconfigPathsPlugin({ configFile: "tsconfig.webpack.json" }),
-    ],
     symlinks: true,
   },
 } as webpack.Configuration;

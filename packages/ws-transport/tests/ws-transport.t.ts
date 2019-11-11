@@ -1,6 +1,6 @@
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 
-import { WsTransport } from "../src";
+import { WsTransport } from "..";
 import * as WsTest from "../test-fixture/wss";
 
 beforeEach(WsTest.createServer);

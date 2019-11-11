@@ -5,7 +5,7 @@ import { Forwarder, SimpleEndpoint } from "@ndn/fw";
 import { Data, Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 
-import { ControlCommand, enableNfdPrefixReg } from "../src";
+import { ControlCommand, enableNfdPrefixReg } from "..";
 
 interface Row {
   commandPrefix: Name;

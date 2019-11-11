@@ -4,7 +4,7 @@ import { Forwarder } from "@ndn/fw";
 import { Data, Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 
-import { Endpoint } from "../src";
+import { Endpoint } from "..";
 
 afterEach(() => Forwarder.deleteDefault());
 

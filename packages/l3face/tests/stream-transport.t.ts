@@ -1,6 +1,6 @@
 import { Transform } from "readable-stream";
 
-import { StreamTransport } from "../src";
+import { StreamTransport } from "..";
 import { makeTransportPair } from "../test-fixture/pair";
 import * as TestTransport from "../test-fixture/transport";
 

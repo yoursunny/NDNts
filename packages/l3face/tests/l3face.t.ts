@@ -2,7 +2,7 @@ import { Interest, LLSign, SigInfo, SigType } from "@ndn/l3pkt";
 import { ObjectReadableMock, ObjectWritableMock } from "stream-mock";
 import { consume } from "streaming-iterables";
 
-import { DatagramTransport, L3Face } from "../src";
+import { DatagramTransport, L3Face } from "..";
 import { makeDuplex } from "../test-fixture/pair";
 
 test("name unspecified", () => {

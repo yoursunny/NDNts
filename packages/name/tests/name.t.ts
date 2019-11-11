@@ -3,7 +3,7 @@ import "../test-fixture";
 
 import { Decoder } from "@ndn/tlv";
 
-import { Component, Name } from "../src";
+import { Component, Name } from "..";
 
 test("simple", () => {
   let name = new Name();

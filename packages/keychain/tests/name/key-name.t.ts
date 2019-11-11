@@ -3,7 +3,7 @@ import "@ndn/name/test-fixture";
 import { Component, Name } from "@ndn/name";
 import { Timestamp } from "@ndn/naming-convention2";
 
-import { KeyName } from "../../src";
+import { KeyName } from "../..";
 
 test("construct", () => {
   const kn = new KeyName(new Name("/owner"), Component.from("keyid"));

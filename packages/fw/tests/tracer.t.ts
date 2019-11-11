@@ -1,14 +1,13 @@
 import { Data, Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 
-import { Forwarder, FwTracer, SimpleEndpoint } from "../src";
-import { logger } from "../src/tracer";
+import { Forwarder, FwTracer, SimpleEndpoint } from "..";
 import { NoopFace } from "../test-fixture/noop-face";
 
 let debugFn: jest.SpyInstance;
 
 beforeEach(() => {
-  debugFn = jest.spyOn(logger, "debug").mockImplementation(() => undefined);
+  debugFn = jest.spyOn(FwTracer.internalLogger, "debug").mockImplementation(() => undefined);
 });
 
 afterEach(() => {

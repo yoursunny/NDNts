@@ -1,7 +1,7 @@
 import duplexify from "duplexify";
 import { Duplex, PassThrough, Readable, Writable } from "readable-stream";
 
-import { DatagramTransport, Transport } from "../src";
+import { DatagramTransport, Transport } from "..";
 
 export function makeDuplex(rx: NodeJS.ReadableStream|undefined,
                            tx: NodeJS.WritableStream|undefined): NodeJS.ReadWriteStream {

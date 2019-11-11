@@ -1,6 +1,6 @@
 import expect from "expect";
 
-import { Component, ComponentLike, Name, NameLike } from "../src";
+import { Component, ComponentLike, Name, NameLike } from "..";
 
 expect.extend({
   toEqualComponent(received: Component, comp: ComponentLike) {

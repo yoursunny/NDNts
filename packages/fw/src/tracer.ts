@@ -129,3 +129,7 @@ export class Tracer {
     }
   }
 }
+
+export namespace Tracer {
+  export const internalLogger = logger;
+}

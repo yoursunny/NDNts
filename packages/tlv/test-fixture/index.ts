@@ -1,7 +1,6 @@
 import expect from "expect";
 
-import { Decoder } from "../src/decoder";
-import { Encodable, Encoder } from "../src/encoder";
+import { Decoder, Encodable, Encoder } from "..";
 
 type Uint8ArrayExpect = Uint8Array|Array<number|undefined>;
 

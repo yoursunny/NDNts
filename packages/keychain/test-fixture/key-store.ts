@@ -1,6 +1,6 @@
 import { Name } from "@ndn/name";
 
-import { EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RsaPrivateKey } from "../src";
+import { EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RsaPrivateKey } from "..";
 
 export interface TestRecord {
   keys0: string[];

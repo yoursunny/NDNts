@@ -1,7 +1,7 @@
 import { Data, Interest, LLSign, LLVerify, SigInfo } from "@ndn/l3pkt";
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { PrivateKey, PublicKey } from "../src";
+import { PrivateKey, PublicKey } from "..";
 
 type Packet = Interest | Data;
 type PacketCtor = typeof Interest | typeof Data;

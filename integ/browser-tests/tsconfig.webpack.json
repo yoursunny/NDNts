@@ -5,6 +5,10 @@
     "sourceMap": true
   },
   "include": [
-    "./**/browser.ts"
+    "./test-fixture/**/*.ts",
+    "./tests/**/*.ts"
+  ],
+  "exclude": [
+    "./tests/**/*.t.ts"
   ]
 }

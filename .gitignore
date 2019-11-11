@@ -2,8 +2,10 @@
 coverage/
 node_modules/
 packages/*/lib/
+packages/*/literate-temp.ts
+packages/*/tsconfig.json
 lerna-debug.log
 npm-debug.log
 pnpm-debug.log
 pnpm-lock.yaml
-/tsconfig.json
+tsconfig.tsbuildinfo

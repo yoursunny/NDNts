@@ -3,7 +3,7 @@ import "@ndn/tlv/test-fixture";
 import { Decoder } from "@ndn/tlv";
 import { collect, map, pipeline } from "streaming-iterables";
 
-import { LpService } from "../src";
+import { LpService } from "..";
 
 test("simple", async () => {
   const input = [

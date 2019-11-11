@@ -1,6 +1,6 @@
 import "../test-fixture";
 
-import { Decoder, Encodable, Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI } from "../src";
+import { Decoder, Encodable, Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI } from "..";
 
 const EXTENSIONS = new ExtensionRegistry<ExtTestTarget>();
 

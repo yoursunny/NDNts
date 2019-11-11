@@ -1,7 +1,7 @@
 import { ObjectReadableMock } from "stream-mock";
 import { collect } from "streaming-iterables";
 
-import { DatagramTransport } from "../src";
+import { DatagramTransport } from "..";
 import { makeDuplex, makeTransportPair } from "../test-fixture/pair";
 import * as TestTransport from "../test-fixture/transport";
 

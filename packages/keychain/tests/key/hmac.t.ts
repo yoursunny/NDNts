@@ -1,7 +1,7 @@
 import { Data, SigType } from "@ndn/l3pkt";
 import { Decoder, fromHex } from "@ndn/tlv";
 
-import { HmacKey, PrivateKey, PublicKey } from "../../src";
+import { HmacKey, PrivateKey, PublicKey } from "../..";
 import * as TestSignVerify from "../../test-fixture/sign-verify";
 
 test("isKey", async () => {

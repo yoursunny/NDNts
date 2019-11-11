@@ -2,7 +2,7 @@ import "@ndn/name/test-fixture";
 
 import { Name } from "@ndn/name";
 
-import { Advertise, Forwarder } from "../src";
+import { Advertise, Forwarder } from "..";
 import { NoopFace } from "../test-fixture/noop-face";
 
 class MockAdvertise extends Advertise {

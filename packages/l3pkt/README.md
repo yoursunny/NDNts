@@ -94,6 +94,7 @@ const digest2 = data.getImplicitDigest();
 const fullName2 = data.getFullName();
 assert.equal(digest2, digest);
 assert(typeof fullName2 !== "undefined");
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 assert.equal(fullName2!.toString(), fullName.toString());
 
 // Note that these functions are only available after encoding or decoding.

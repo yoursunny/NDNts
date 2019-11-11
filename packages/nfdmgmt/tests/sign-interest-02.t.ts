@@ -2,7 +2,7 @@ import "@ndn/tlv/test-fixture";
 
 import { Interest, TT } from "@ndn/l3pkt";
 
-import { signInterest02 } from "../src";
+import { signInterest02 } from "..";
 
 test("simple", async () => {
   const interest = new Interest("/A");

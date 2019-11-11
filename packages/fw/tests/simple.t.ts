@@ -4,8 +4,7 @@ import { Data, Interest } from "@ndn/l3pkt";
 import { getDataFullName } from "@ndn/l3pkt/test-fixture";
 import { Name } from "@ndn/name";
 
-import { CancelInterest, DataResponse, Forwarder, FwFace, InterestToken, RejectInterest } from "../src";
-import { SimpleEndpoint } from "../src/simple-endpoint";
+import { CancelInterest, DataResponse, Forwarder, FwFace, InterestToken, RejectInterest, SimpleEndpoint } from "..";
 
 test("simple", async () => {
   const fw = Forwarder.create();

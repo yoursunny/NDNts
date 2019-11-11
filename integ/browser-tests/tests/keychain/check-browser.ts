@@ -1,6 +1,6 @@
 import { Certificate, EC_CURVES, EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaPrivateKey, theDigestKey } from "@ndn/keychain";
-import { Data, LLSign } from "packages/l3pkt/src";
-import { Decoder, Encoder } from "packages/tlv/src";
+import { Data, LLSign } from "@ndn/l3pkt";
+import { Decoder, Encoder } from "@ndn/tlv";
 
 interface GenResult {
   title: string;

@@ -2,7 +2,7 @@ import "@ndn/tlv/test-fixture";
 
 import { Decoder } from "@ndn/tlv";
 
-import { Component } from "../src";
+import { Component } from "..";
 
 test("decode", () => {
   let comp = new Component();
