@@ -7,33 +7,21 @@ const HANDLER = Symbol("WsTransport.HANDLER");
 
 /** WebSocket transport. */
 export class WsTransport implements Transport {
-  public static connect(uri: string, opts: WsTransport.Options = {}): Promise<WsTransport> {
-    return new Promise<WsTransport>((resolve, reject) => {
-      const sock = makeWebSocket(uri);
-      sock.binaryType = "arraybuffer";
-      const onerror = (evt: Event) => reject(new Error(evt.toString()));
-      sock.addEventListener("error", onerror);
-      sock.addEventListener("open", () => {
-        sock.removeEventListener("error", onerror);
-        resolve(new WsTransport(sock, uri, opts));
-      });
-    });
-  }
-
   public readonly rx: Transport.Rx;
   private readonly highWaterMark: number;
   private readonly lowWaterMark: number;
   private readonly describe: string;
 
-  constructor(private readonly sock: WebSocket, uri: string, opts: WsTransport.Options) {
+  constructor(private readonly sock: WebSocket, opts: WsTransport.Options) {
+    sock.binaryType = "arraybuffer";
     this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(
       (push, stop, fail) => {
-        sock.addEventListener("message", (push as any)[HANDLER] = (event: MessageEvent) => {
-          push(new Uint8Array(event.data as ArrayBuffer));
+        sock.addEventListener("message", (push as any)[HANDLER] = (evt: MessageEvent) => {
+          push(new Uint8Array(evt.data as ArrayBuffer));
         });
         sock.addEventListener("close", stop);
-        sock.addEventListener("error", (fail as any)[HANDLER] = (event: Event) => {
-          fail(new Error(event.toString()));
+        sock.addEventListener("error", (fail as any)[HANDLER] = (evt: Event) => {
+          fail(new Error((evt as ErrorEvent).message));
         });
       },
       (push, stop, fail) => {
@@ -42,7 +30,7 @@ export class WsTransport implements Transport {
         sock.removeEventListener("error", (fail as any)[HANDLER]);
       },
     ));
-    this.describe = `WebSocket(${uri})`;
+    this.describe = `WebSocket(${sock.url})`;
     this.highWaterMark = opts.highWaterMark ?? 1024 * 1024;
     this.lowWaterMark = opts.lowWaterMark ?? 16 * 1024;
   }
@@ -83,5 +71,17 @@ export namespace WsTransport {
     highWaterMark?: number;
     /** Buffer amount (in bytes) to stop TX throttling. */
     lowWaterMark?: number;
+  }
+
+  export function connect(uri: string, opts: WsTransport.Options = {}): Promise<WsTransport> {
+    return new Promise<WsTransport>((resolve, reject) => {
+      const sock = makeWebSocket(uri);
+      const onerror = (evt: Event) => reject(new Error((evt as ErrorEvent).message));
+      sock.addEventListener("error", onerror);
+      sock.addEventListener("open", () => {
+        sock.removeEventListener("error", onerror);
+        resolve(new WsTransport(sock, opts));
+      });
+    });
   }
 }

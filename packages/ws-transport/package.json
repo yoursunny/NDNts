@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@ndn/l3pkt": "workspace:*",
-    "@types/ws": "^6.0.3"
+    "@types/ws": "^6.0.3",
+    "it-pushable": "^1.4.0"
   }
 }
