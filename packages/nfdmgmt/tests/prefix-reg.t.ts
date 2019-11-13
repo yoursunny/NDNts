@@ -52,7 +52,8 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
     },
   });
   if (typeof faceIsLocal !== "undefined") {
-    jest.spyOn(face, "isLocal", "get").mockReturnValue(faceIsLocal);
+    const faceAttrs = { ...face.attributes, local: faceIsLocal };
+    jest.spyOn(face, "attributes", "get").mockReturnValue(faceAttrs);
   }
   enableNfdPrefixReg(face, { commandPrefix });
 

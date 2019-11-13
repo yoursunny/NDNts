@@ -5,14 +5,27 @@ import { consume } from "streaming-iterables";
 import { DatagramTransport, L3Face } from "..";
 import { makeDuplex } from "../test-fixture/pair";
 
-test("name unspecified", () => {
-  const face = new L3Face(new DatagramTransport(makeDuplex(undefined, undefined)));
-  expect(face.toString()).toBe("DatagramTransport");
-});
+describe("name", () => {
+  test("unspecified", () => {
+    const transport = new DatagramTransport(makeDuplex(undefined, undefined));
+    const face = new L3Face(transport);
+    expect(transport.toString()).toBe("DatagramTransport");
+    expect(face.toString()).toBe("L3Face(DatagramTransport)");
+  });
 
-test("name specified", () => {
-  const face = new L3Face(new DatagramTransport(makeDuplex(undefined, undefined), { describe: "face-name" }));
-  expect(face.toString()).toBe("face-name");
+  test("specified at transport", () => {
+    const transport = new DatagramTransport(makeDuplex(undefined, undefined), { describe: "tname" });
+    const face = new L3Face(transport);
+    expect(transport.toString()).toBe("tname");
+    expect(face.toString()).toBe("tname");
+  });
+
+  test("specified at face", () => {
+    const transport = new DatagramTransport(makeDuplex(undefined, undefined), { describe: "tname" });
+    const face = new L3Face(transport, { describe: "fname" });
+    expect(transport.toString()).toBe("tname");
+    expect(face.toString()).toBe("fname");
+  });
 });
 
 test("RX error on unknown TLV-TYPE", async () => {

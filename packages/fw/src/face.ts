@@ -26,9 +26,14 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
   public running = true;
   public readonly routes = new Set<string>(); // used by FIB
   public advertise?: Advertise;
-  public get isLocal() { return this.inner.isLocal ?? false; }
   public readonly txQueue = new Fifo<Face.Txable>();
   public txQueueLength = 0;
+
+  public get attributes(): Face.Attributes {
+    return {
+      ...(this.inner.attributes ?? {}),
+    };
+  }
 
   constructor(public readonly fw: ForwarderImpl,
               public readonly inner: Face.Base) {
@@ -158,12 +163,16 @@ export namespace FaceImpl {
 
 /** A socket or network interface associated with forwarding plane. */
 export interface Face extends Pick<FaceImpl,
-    "fw"|"advertise"|"close"|"isLocal"|"toString"|"addRoute"|"removeRoute"|
+    "fw"|"advertise"|"attributes"|"close"|"toString"|"addRoute"|"removeRoute"|
     Exclude<keyof Emitter, "emit">> {
   readonly running: boolean;
 }
 
 export namespace Face {
+  export interface Attributes extends Record<string, any> {
+    local?: boolean;
+  }
+
   /** Item that can be received on face. */
   export type Rxable = Interest|InterestRequest|Data|CancelInterest;
   /** Item that can be transmitted on face, when extendedTx is enabled. */
@@ -196,8 +205,7 @@ export namespace Face {
 
   /** Underlying face. */
   export type Base = RxTx & {
-    /** Indicate whether face connects to a local process. */
-    readonly isLocal?: boolean;
+    readonly attributes?: Attributes;
 
     /** Return short string to identify this face. */
     toString?: () => string;

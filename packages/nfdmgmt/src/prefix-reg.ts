@@ -14,8 +14,7 @@ class NfdAdvertise extends Advertise {
       ...opts,
       fw: face.fw,
     };
-    this.opts.commandPrefix = this.opts.commandPrefix ??
-      (face.isLocal ? ControlCommand.localhostPrefix : ControlCommand.localhopPrefix);
+    this.opts.commandPrefix = this.opts.commandPrefix ?? ControlCommand.getPrefix(face.attributes.local);
     face.addRoute(this.opts.commandPrefix);
   }
 

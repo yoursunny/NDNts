@@ -20,11 +20,13 @@ type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
 /** Network layer face for sending and receiving L3 packets. */
 export class L3Face extends (EventEmitter as new() => Emitter) {
+  public readonly attributes: L3Face.Attributes;
   public readonly lp = new LpService();
   public readonly rx: AsyncIterable<Packet>;
 
-  constructor(public readonly transport: Transport) {
+  constructor(public readonly transport: Transport, attributes: L3Face.Attributes = {}) {
     super();
+    this.attributes = { ...transport.attributes, ...attributes };
     this.rx = pipeline(
       () => transport.rx,
       this.lp.rx,
@@ -43,7 +45,7 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
   }
 
   public toString() {
-    return this.transport.toString();
+    return this.attributes.describe as string ?? `L3Face(${this.transport})`;
   }
 
   private encode = async (packet: Packet): Promise<Uint8Array|undefined> => {
@@ -74,6 +76,8 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
 }
 
 export namespace L3Face {
+  export type Attributes = Transport.Attributes;
+
   export class RxError extends Error {
     constructor(inner: Error, public packet: Uint8Array) {
       super(`${inner.message} ${toHex(packet)}`);

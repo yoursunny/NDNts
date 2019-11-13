@@ -9,24 +9,18 @@ export abstract class Transport {
   public abstract readonly rx: Transport.Rx;
   public abstract readonly tx: Transport.Tx;
 
-  public readonly isLocal: boolean;
-  private describe: string;
-
-  protected constructor({
-    isLocal: isLocal = false,
-    describe,
-  }: Transport.Attributes = {}) {
-    this.isLocal = isLocal;
-    this.describe = describe || this.constructor.name;
+  protected constructor(public readonly attributes: Transport.Attributes) {
   }
 
-  public toString() { return this.describe; }
+  public toString() {
+    return this.attributes.describe ?? this.constructor.name;
+  }
 }
 
 export namespace Transport {
-  export interface Attributes {
-    isLocal?: boolean;
+  export interface Attributes extends Record<string, any> {
     describe?: string;
+    local?: boolean;
   }
 
   /** RX iterable for incoming packets. */

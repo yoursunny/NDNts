@@ -38,6 +38,10 @@ export namespace ControlCommand {
   export const localhostPrefix = new Name("/localhost/nfd");
   export const localhopPrefix = new Name("/localhop/nfd");
 
+  export function getPrefix(isLocal?: boolean) {
+    return (isLocal ?? false) ? localhostPrefix : localhopPrefix;
+  }
+
   /** Invoke a command and wait for response. */
   export async function call<C extends keyof Commands>(
       command: C, params: Commands[C], opt: Options = {}): Promise<ControlResponse> {
