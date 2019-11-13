@@ -26,6 +26,7 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
   public running = true;
   public readonly routes = new Set<string>(); // used by FIB
   public advertise?: Advertise;
+  public get isLocal() { return this.inner.isLocal ?? false; }
   public readonly txQueue = new Fifo<Face.Txable>();
   public txQueueLength = 0;
 
@@ -157,7 +158,8 @@ export namespace FaceImpl {
 
 /** A socket or network interface associated with forwarding plane. */
 export interface Face extends Pick<FaceImpl,
-    "fw"|"advertise"|"close"|"toString"|"addRoute"|"removeRoute"|Exclude<keyof Emitter, "emit">> {
+    "fw"|"advertise"|"close"|"isLocal"|"toString"|"addRoute"|"removeRoute"|
+    Exclude<keyof Emitter, "emit">> {
   readonly running: boolean;
 }
 
@@ -194,6 +196,9 @@ export namespace Face {
 
   /** Underlying face. */
   export type Base = RxTx & {
+    /** Indicate whether face connects to a local process. */
+    readonly isLocal?: boolean;
+
     /** Return short string to identify this face. */
     toString?: () => string;
   };

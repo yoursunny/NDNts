@@ -8,24 +8,32 @@ import { Name } from "@ndn/name";
 import { ControlCommand, enableNfdPrefixReg } from "..";
 
 interface Row {
-  commandPrefix: Name;
+  faceIsLocal?: boolean;
+  commandPrefix?: Name;
+  expectedPrefix: Name;
 }
 
 const TABLE = [
   {
-    commandPrefix: ControlCommand.localhostPrefix,
+    faceIsLocal: true,
+    expectedPrefix: ControlCommand.localhostPrefix,
   },
   {
-    commandPrefix: ControlCommand.localhopPrefix,
+    faceIsLocal: false,
+    expectedPrefix: ControlCommand.localhopPrefix,
+  },
+  {
+    commandPrefix: new Name("/Q"),
+    expectedPrefix: new Name("/Q"),
   },
 ] as Row[];
 
-test.each(TABLE)("reg %#", async ({ commandPrefix }) => {
+test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }) => {
   const fw = Forwarder.create();
 
   const remoteProcess = jest.fn((interest: Interest) => {
-    expect(interest.name).toHaveLength(9);
-    expect(interest.name.at(4).value).toMatchTlv(({ type, vd }) => {
+    expect(interest.name).toHaveLength(expectedPrefix.length + 7);
+    expect(interest.name.at(-5).value).toMatchTlv(({ type, vd }) => {
       expect(type).toBe(0x68);
       expect(vd.decode(Name)).toEqualName("/R");
     });
@@ -43,6 +51,9 @@ test.each(TABLE)("reg %#", async ({ commandPrefix }) => {
       }
     },
   });
+  if (typeof faceIsLocal !== "undefined") {
+    jest.spyOn(face, "isLocal", "get").mockReturnValue(faceIsLocal);
+  }
   enableNfdPrefixReg(face, { commandPrefix });
 
   const se = new SimpleEndpoint(fw);
@@ -52,10 +63,12 @@ test.each(TABLE)("reg %#", async ({ commandPrefix }) => {
   });
   await new Promise((r) => setTimeout(r, 50));
   expect(remoteProcess).toHaveBeenCalledTimes(1);
-  expect(remoteProcess.mock.calls[0][0].name.getPrefix(4)).toEqualName(`${commandPrefix}/rib/register`);
+  expect(remoteProcess.mock.calls[0][0].name.getPrefix(expectedPrefix.length + 2))
+    .toEqualName(`${expectedPrefix}/rib/register`);
 
   producer.close();
   await new Promise((r) => setTimeout(r, 50));
   expect(remoteProcess).toHaveBeenCalledTimes(2);
-  expect(remoteProcess.mock.calls[1][0].name.getPrefix(4)).toEqualName(`${commandPrefix}/rib/unregister`);
+  expect(remoteProcess.mock.calls[1][0].name.getPrefix(expectedPrefix.length + 2))
+    .toEqualName(`${expectedPrefix}/rib/unregister`);
 });

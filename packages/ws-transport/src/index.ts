@@ -6,13 +6,15 @@ import { makeWebSocket } from "./platform";
 const HANDLER = Symbol("WsTransport.HANDLER");
 
 /** WebSocket transport. */
-export class WsTransport implements Transport {
+export class WsTransport extends Transport {
   public readonly rx: Transport.Rx;
   private readonly highWaterMark: number;
   private readonly lowWaterMark: number;
-  private readonly describe: string;
 
   constructor(private readonly sock: WebSocket, opts: WsTransport.Options) {
+    super({
+      describe: `WebSocket(${sock.url})`,
+    });
     sock.binaryType = "arraybuffer";
     this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(
       (push, stop, fail) => {
@@ -30,7 +32,6 @@ export class WsTransport implements Transport {
         sock.removeEventListener("error", (fail as any)[HANDLER]);
       },
     ));
-    this.describe = `WebSocket(${sock.url})`;
     this.highWaterMark = opts.highWaterMark ?? 1024 * 1024;
     this.lowWaterMark = opts.lowWaterMark ?? 16 * 1024;
   }
@@ -58,10 +59,6 @@ export class WsTransport implements Transport {
         }
       }, 100);
     });
-  }
-
-  public toString() {
-    return this.describe;
   }
 }
 

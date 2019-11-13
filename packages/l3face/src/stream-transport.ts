@@ -2,18 +2,13 @@ import { rxFromContinuousStream, txToStream } from "./rxtx";
 import { Transport } from "./transport";
 
 /** Stream-oriented transport. */
-export class StreamTransport implements Transport {
+export class StreamTransport extends Transport {
   public readonly rx: Transport.Rx;
   public readonly tx: Transport.Tx;
-  private describe: string;
 
-  constructor(conn: NodeJS.ReadWriteStream, describe?: string) {
+  constructor(conn: NodeJS.ReadWriteStream, attrs: Transport.Attributes = {}) {
+    super(attrs);
     this.rx = rxFromContinuousStream(conn);
     this.tx = txToStream(conn);
-    this.describe = describe ?? conn.constructor.name;
-  }
-
-  public toString() {
-    return this.describe;
   }
 }

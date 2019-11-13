@@ -34,12 +34,6 @@ yargs
   implies: "regkeychain",
   type: "string",
 })
-.option("reglocalhop", {
-  default: false,
-  desc: "use /localhop/nfd prefix to send prefix registration command",
-  implies: "nfd",
-  type: "boolean",
-})
 .option("convention1", {
   default: false,
   desc: "use 2014 Naming Convention",

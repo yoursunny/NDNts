@@ -5,7 +5,7 @@ import { Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 import { Segment as Segment1, Version as Version1 } from "@ndn/naming-convention1";
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
-import { ControlCommand, enableNfdPrefixReg } from "@ndn/nfdmgmt";
+import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { SocketTransport } from "@ndn/node-transport";
 
 export interface CommonArgs {
@@ -14,7 +14,6 @@ export interface CommonArgs {
   nfd: boolean;
   regkeychain?: string;
   regkey?: string;
-  reglocalhop: boolean;
   convention1: boolean;
 }
 
@@ -47,7 +46,6 @@ export async function applyCommonArgs(args: CommonArgs) {
       signer = await keyChain.getPrivateKey(keyNames[0]);
     }
     enableNfdPrefixReg(uplink, {
-      commandPrefix: args.reglocalhop ? ControlCommand.localhopPrefix : ControlCommand.localhostPrefix,
       signer,
     });
     Interest.tolerateSelectors = true;

@@ -6,9 +6,17 @@ import { ControlCommand } from "./control-command";
 type Options = Omit<ControlCommand.Options, "fw">;
 
 class NfdAdvertise extends Advertise {
-  constructor(face: FwFace, private readonly opts: Options) {
+  private readonly opts: ControlCommand.Options;
+
+  constructor(face: FwFace, opts: Options) {
     super(face);
-    face.addRoute(opts.commandPrefix ?? ControlCommand.localhostPrefix);
+    this.opts = {
+      ...opts,
+      fw: face.fw,
+    };
+    this.opts.commandPrefix = this.opts.commandPrefix ??
+      (face.isLocal ? ControlCommand.localhostPrefix : ControlCommand.localhopPrefix);
+    face.addRoute(this.opts.commandPrefix);
   }
 
   protected async doAdvertise(name: Name) {
@@ -17,10 +25,7 @@ class NfdAdvertise extends Advertise {
       origin: 65,
       cost: 0x7473, // ASCII of 'ts'
       flags: 0,
-    }, {
-      ...this.opts,
-      fw: this.face.fw,
-    });
+    }, this.opts);
     if (cr.statusCode !== 200) {
       throw new Error(`${cr.statusCode} ${cr.statusText}`);
     }
@@ -30,10 +35,7 @@ class NfdAdvertise extends Advertise {
     const cr = await ControlCommand.call("rib/unregister", {
       name,
       origin: 65,
-    }, {
-      ...this.opts,
-      fw: this.face.fw,
-    });
+    }, this.opts);
     if (cr.statusCode !== 200) {
       throw new Error(`${cr.statusCode} ${cr.statusText}`);
     }

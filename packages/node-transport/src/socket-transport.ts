@@ -15,6 +15,8 @@ export class SocketTransport extends StreamTransport {
   }
 
   constructor(sock: net.Socket) {
-    super(sock, `Socket(${sock.remoteAddress})`);
+    super(sock, {
+      describe: `Socket(${sock.remoteAddress})`,
+    });
   }
 }

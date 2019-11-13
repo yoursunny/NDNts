@@ -6,15 +6,12 @@ import { DatagramTransport, L3Face } from "..";
 import { makeDuplex } from "../test-fixture/pair";
 
 test("name unspecified", () => {
-  const stream = makeDuplex(undefined, undefined);
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  stream.constructor = function faceName() {};
-  const face = new L3Face(new DatagramTransport(stream));
-  expect(face.toString()).toBe("faceName");
+  const face = new L3Face(new DatagramTransport(makeDuplex(undefined, undefined)));
+  expect(face.toString()).toBe("DatagramTransport");
 });
 
 test("name specified", () => {
-  const face = new L3Face(new DatagramTransport(makeDuplex(undefined, undefined), "face-name"));
+  const face = new L3Face(new DatagramTransport(makeDuplex(undefined, undefined), { describe: "face-name" }));
   expect(face.toString()).toBe("face-name");
 });
 

@@ -5,34 +5,16 @@ import { EventIterator } from "event-iterator";
 import { AddressInfo } from "net";
 
 /** UDP socket transport. */
-export class UdpTransport implements Transport {
-  public static async connect({
-    port: port = 6363,
-    host, bind, recvBufferSize, sendBufferSize,
-  }: UdpTransport.TunnelOptions): Promise<UdpTransport> {
-    return new Promise<UdpTransport>((resolve, reject) => {
-      const sock = dgram.createSocket({
-        type: "udp4",
-        reuseAddr: true,
-        recvBufferSize,
-        sendBufferSize,
-      }) as dgram12.Socket;
-      sock.on("error", reject);
-      sock.on("connect", () => {
-        sock.off("error", reject);
-        resolve(new UdpTransport(sock));
-      });
-      sock.bind(bind ?? {}, () => sock.connect(port, host));
-    });
-  }
-
+export class UdpTransport extends Transport {
   public readonly rx: Transport.Rx;
-  private readonly describe: string;
 
   public get laddr(): AddressInfo { return this.sock.address(); }
   public get raddr(): AddressInfo { return this.sock.remoteAddress(); }
 
   constructor(private readonly sock: dgram12.Socket) {
+    super({
+      describe: `UDP(${sock.remoteAddress().address})`,
+    });
     this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(
       (push, stop, fail) => {
         sock.addListener("message", push);
@@ -45,7 +27,6 @@ export class UdpTransport implements Transport {
         sock.removeListener("error", fail);
       },
     ));
-    this.describe = `UDP(${this.raddr.address})`;
   }
 
   public close() {
@@ -59,10 +40,6 @@ export class UdpTransport implements Transport {
     }
     this.close();
   }
-
-  public toString() {
-    return this.describe;
-  }
 }
 
 export namespace UdpTransport {
@@ -72,5 +49,24 @@ export namespace UdpTransport {
     bind?: dgram12.BindOptions;
     recvBufferSize?: number;
     sendBufferSize?: number;
+  }
+
+  export async function connect({
+    port: port = 6363, host, bind: bind = {}, recvBufferSize, sendBufferSize,
+  }: UdpTransport.TunnelOptions): Promise<UdpTransport> {
+    return new Promise<UdpTransport>((resolve, reject) => {
+      const sock = dgram.createSocket({
+        type: "udp4",
+        reuseAddr: true,
+        recvBufferSize,
+        sendBufferSize,
+      }) as dgram12.Socket;
+      sock.on("error", reject);
+      sock.on("connect", () => {
+        sock.off("error", reject);
+        resolve(new UdpTransport(sock));
+      });
+      sock.bind(bind, () => sock.connect(port, host));
+    });
   }
 }
