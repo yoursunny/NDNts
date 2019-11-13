@@ -14,8 +14,10 @@
   "type": "module",
   "main": "src/index.ts",
   "browser": {
-    "./lib/platform/node/index.js": "./lib/platform/browser/index.js",
-    "./src/platform/node/index.ts": "./src/platform/browser/index.ts"
+    "./lib/key/platform/index.js": "./lib/key/platform/browser.js",
+    "./lib/store/platform/index.js": "./lib/store/platform/browser.js",
+    "./src/key/platform/index.ts": "./src/key/platform/browser.ts",
+    "./src/store/platform/index.ts": "./src/store/platform/browser.ts"
   },
   "sideEffects": [
     "./test-fixture/**",

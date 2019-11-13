@@ -3,7 +3,7 @@ import { Name, NameLike } from "@ndn/name";
 import assert from "minimalistic-assert";
 
 import { KeyChain, RsaModulusLength, RsaPublicKey } from "../..";
-import { crypto } from "../../platform";
+import { crypto } from "../platform";
 import { PrivateKeyBase } from "../private-key";
 import { generateKey, StoredKey } from "../save";
 import { ALGO, GEN_PARAMS, IMPORT_PARAMS } from "./internal";

@@ -4,7 +4,7 @@ import applyMixins from "applymixins";
 import assert from "minimalistic-assert";
 
 import { KeyChain } from "..";
-import { crypto } from "../platform";
+import { crypto } from "./platform";
 import { PrivateKeyBase } from "./private-key";
 import { PublicKeyBase } from "./public-key";
 import { generateKey, saveKey, StoredKey } from "./save";

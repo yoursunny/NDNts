@@ -1,6 +1,7 @@
 import Store from "data-store";
 
-import { StoreImpl } from "../../store/store-impl";
+import { CertStore, JsonCertStore, KeyStore } from "..";
+import { StoreImpl } from "../store-impl";
 
 export class FileStoreImpl<T> implements StoreImpl<T> {
   public readonly storableKind = "json";
@@ -33,4 +34,11 @@ export class FileStoreImpl<T> implements StoreImpl<T> {
     this.store.save();
     return Promise.resolve();
   }
+}
+
+export function openStores(locator: string): [KeyStore, CertStore] {
+  return [
+    new KeyStore(new FileStoreImpl(`${locator}/831e5c8f-9d63-40f3-8359-0f55254eeb80.json`)),
+    new JsonCertStore(new FileStoreImpl(`${locator}/c339669f-8d4b-4cb3-a8c2-09af61edd787.json`)),
+  ];
 }

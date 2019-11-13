@@ -2,7 +2,7 @@ import { SigInfo, SigType } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 import { ASN1UniversalType, DERElement } from "asn1-ts";
 
-import { crypto } from "../../platform";
+import { crypto } from "../platform";
 import { PublicKeyBase } from "../public-key";
 import { EcCurve } from ".";
 import { makeGenParams, sigDerToRaw, SIGN_PARAMS } from "./internal";

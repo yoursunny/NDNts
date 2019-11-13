@@ -1,7 +1,7 @@
 import { SigInfo, SigType } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 
-import { crypto } from "../../platform";
+import { crypto } from "../platform";
 import { PublicKeyBase } from "../public-key";
 import { ALGO, IMPORT_PARAMS } from "./internal";
 

@@ -2,7 +2,7 @@ import { SigInfo, SigType } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
 import applyMixins from "applymixins";
 
-import { crypto, timingSafeEqual } from "../platform";
+import { crypto, timingSafeEqual } from "./platform";
 import { PrivateKeyBase } from "./private-key";
 import { PublicKeyBase } from "./public-key";
 

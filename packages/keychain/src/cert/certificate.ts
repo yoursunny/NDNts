@@ -2,8 +2,9 @@ import { Data, LLSign, SigInfo } from "@ndn/l3pkt";
 import { Component } from "@ndn/name";
 import { Version } from "@ndn/naming-convention2";
 
-import { CertificateName, KeyName, PrivateKey, PublicKey, ValidityPeriod } from "..";
+import { CertificateName, KeyName, PrivateKey, PublicKey } from "..";
 import { loadSpki } from "../key/load";
+import { ValidityPeriod } from ".";
 import { ContentTypeKEY } from "./an";
 
 /**

@@ -1,6 +1,7 @@
 import { del as idbDel, get as idbGet, keys as idbKeys, set as idbSet, Store as idbStore } from "idb-keyval";
 
-import { StoreImpl } from "../../store/store-impl";
+import { CertStore, KeyStore, SCloneCertStore } from "..";
+import { StoreImpl } from "../store-impl";
 
 export class IdbStoreImpl<T> implements StoreImpl<T> {
   public readonly storableKind = "sclone";
@@ -29,4 +30,11 @@ export class IdbStoreImpl<T> implements StoreImpl<T> {
   public erase(key: string): Promise<void> {
     return idbDel(key, this.store);
   }
+}
+
+export function openStores(locator: string): [KeyStore, CertStore] {
+  return [
+    new KeyStore(new IdbStoreImpl(`${locator} 2dc9febb-a01a-4543-8180-f03d24bea8f6`)),
+    new SCloneCertStore(new IdbStoreImpl(`${locator} ecf40b97-07cb-4b4d-92ed-adcbaa0a9855`)),
+  ];
 }
