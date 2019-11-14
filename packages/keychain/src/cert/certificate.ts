@@ -76,8 +76,8 @@ export namespace Certificate {
     const kn = KeyName.from(pub.name);
     const cn = new CertificateName(kn.subjectName, kn.keyId, issuerId, Version.create(Date.now()));
     const publicKey = await pub.exportAsSpki();
-    const opt: BuildOptions = { ...options, name: cn, publicKey, signer: pvt };
-    return await build(opt);
+    const opts: BuildOptions = { ...options, name: cn, publicKey, signer: pvt };
+    return await build(opts);
   }
 
   interface SelfSignOptions extends Omit<IssueOptions, "validity"|"issuerId"|"issuerPrivateKey"> {
@@ -92,13 +92,13 @@ export namespace Certificate {
     if (!pvtName.equals(pubName)) {
       throw new Error("key pair mismatch");
     }
-    const opt: IssueOptions = {
+    const opts: IssueOptions = {
       validity: ValidityPeriod.MAX,
       ...options,
       issuerId: SELF_ISSUER,
       issuerPrivateKey: options.privateKey,
     };
-    return await issue(opt);
+    return await issue(opts);
   }
 
   export async function loadPublicKey(cert: Certificate): Promise<PublicKey> {

@@ -173,7 +173,7 @@ export namespace Encoder {
   }
 
   /** Extract the encoding output of an element while writing to a larger encoder. */
-  export function extract(obj: Encodable|ReadonlyArray<Encodable>, cb: (output: Uint8Array) => any): Encodable {
+  export function extract(obj: Encodable|ReadonlyArray<Encodable>, cb: (output: Uint8Array) => void): Encodable {
     return {
       encodeTo(encoder) {
         const sizeBefore = encoder.size;

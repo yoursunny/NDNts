@@ -44,16 +44,16 @@ export namespace ControlCommand {
 
   /** Invoke a command and wait for response. */
   export async function call<C extends keyof Commands>(
-      command: C, params: Commands[C], opt: Options = {}): Promise<ControlResponse> {
-    const prefix = opt.commandPrefix ?? localhostPrefix;
+      command: C, params: Commands[C], opts: Options = {}): Promise<ControlResponse> {
+    const prefix = opts.commandPrefix ?? localhostPrefix;
     const name = new Name([
       ...prefix.comps,
       ...command.split("/"),
       new Component(TT.GenericNameComponent, Encoder.encode(new ControlParameters(params))),
     ]);
-    const interest = await signInterest02(new Interest(name), opt);
+    const interest = await signInterest02(new Interest(name), opts);
 
-    const ep = new SimpleEndpoint(opt.fw);
+    const ep = new SimpleEndpoint(opts.fw);
     const data = await ep.consume(interest);
     return new Decoder(data.content).decode(ControlResponse);
   }

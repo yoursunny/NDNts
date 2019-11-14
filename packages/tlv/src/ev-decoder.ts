@@ -2,7 +2,7 @@ import { Decoder } from "./decoder";
 import { printTT } from "./string";
 
 /** Invoked when a matching TLV element is found. */
-type ElementCallback<T> = (target: T, tlv: Decoder.Tlv) => any;
+type ElementCallback<T> = (target: T, tlv: Decoder.Tlv) => void;
 
 interface Rule<T> {
   cb: ElementCallback<T>;
@@ -28,7 +28,7 @@ const AUTO_ORDER_SKIP = 100;
  */
 type UnknownElementCallback<T> = (target: T, tlv: Decoder.Tlv, order: number) => boolean;
 
-type TopElementCallback<T> = (target: T, tlv: Decoder.Tlv) => any;
+type TopElementCallback<T> = (target: T, tlv: Decoder.Tlv) => void;
 
 function nest<T>(evd: EvDecoder<T>): ElementCallback<T> {
   return (target, { decoder }) => { evd.decode(target, decoder); };

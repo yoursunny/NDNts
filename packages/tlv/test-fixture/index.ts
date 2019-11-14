@@ -25,7 +25,7 @@ function toEqualUint8Array(received: Uint8Array, expected: Uint8ArrayExpect) {
   };
 }
 
-type TlvMatcher = (tlv: Decoder.Tlv) => any;
+type TlvMatcher = (tlv: Decoder.Tlv) => void;
 
 function toMatchTlv(received: Uint8Array, ...checks: TlvMatcher[]) {
   const decoder = new Decoder(received);

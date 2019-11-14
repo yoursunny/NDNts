@@ -33,7 +33,7 @@ export namespace LLSign {
    * @param setSigValue callback to store signature; if returning Promise, it will be await-ed.
    */
   export async function processImpl(obj: Signable, getSignedPortion: () => Uint8Array,
-                                    setSigValue: (sig: Uint8Array) => any): Promise<void> {
+                                    setSigValue: (sig: Uint8Array) => void): Promise<void> {
     const sign = obj[PENDING];
     if (typeof sign === "undefined") {
       return;
