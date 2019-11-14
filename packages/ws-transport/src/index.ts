@@ -11,7 +11,7 @@ export class WsTransport extends Transport {
   private readonly highWaterMark: number;
   private readonly lowWaterMark: number;
 
-  constructor(private readonly sock: WebSocket, opts: WsTransport.Options) {
+  constructor(private readonly sock: WebSocket, private readonly opts: WsTransport.Options) {
     super({
       describe: `WebSocket(${sock.url})`,
     });
@@ -42,6 +42,9 @@ export class WsTransport extends Transport {
 
   public tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
     for await (const pkt of iterable) {
+      if (this.sock.readyState !== this.sock.OPEN) {
+        throw new Error(`unexpected WebSocket.readState ${this.sock.readyState}`);
+      }
       this.sock.send(pkt);
       if (this.sock.bufferedAmount > this.highWaterMark) {
         await this.waitForTxBuffer();
@@ -59,6 +62,10 @@ export class WsTransport extends Transport {
         }
       }, 100);
     });
+  }
+
+  public reopen() {
+    return WsTransport.connect(this.sock.url, this.opts);
   }
 }
 

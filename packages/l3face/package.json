@@ -36,6 +36,8 @@
   "devDependencies": {
     "@types/duplexify": "^3.6.0",
     "@types/readable-stream": "^2.3.5",
+    "abort-controller": "^3.0.0",
+    "abortable-iterator": "^3.0.0",
     "duplexify": "^4.1.1",
     "readable-stream": "^3.4.0",
     "stream-mock": "^2.0.5"

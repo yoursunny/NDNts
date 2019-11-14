@@ -29,6 +29,7 @@ module.exports = {
     "key-spacing": "error",
     "keyword-spacing": "error",
     "no-console": "warn",
+    "no-constant-condition": ["error", { checkLoops: false }],
     "no-else-return": "error",
     "no-empty": ["error", { allowEmptyCatch: true }],
     "no-spaced-func": "error",

@@ -12,6 +12,10 @@ export abstract class Transport {
   protected constructor(public readonly attributes: Transport.Attributes) {
   }
 
+  public reopen(): Promise<Transport> {
+    return Promise.reject("reopen not supported");
+  }
+
   public toString() {
     return this.attributes.describe ?? this.constructor.name;
   }

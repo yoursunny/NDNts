@@ -33,10 +33,14 @@ test("RX error on unknown TLV-TYPE", async () => {
     Buffer.from([0xF0, 0x00]),
   ]);
   const face = new L3Face(new DatagramTransport(makeDuplex(rxRemote, undefined)));
-  const rxErrorP = new Promise<L3Face.RxError>((r) => face.once("rxerror", (err) => r(err)));
+  const rxErrorP = new Promise<L3Face.RxError>((r) => face.once("rxerror", r));
 
-  await consume(face.rx);
-  await expect(rxErrorP).resolves.toThrow(/F000/);
+  await Promise.all([
+    consume(face.rx),
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    face.tx((async function*() {})()),
+    expect(rxErrorP).resolves.toThrow(/F000/),
+  ]);
 });
 
 test("TX signing", async () => {

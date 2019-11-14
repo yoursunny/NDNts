@@ -1,4 +1,6 @@
 import { Data, Interest } from "@ndn/l3pkt";
+import AbortController from "abort-controller";
+import abortable from "abortable-iterator";
 
 import { L3Face, Transport } from "..";
 
@@ -10,15 +12,15 @@ export interface TestRecord {
 }
 
 export async function execute<T extends Transport>(
-    transportA: T, transportB: T,
-    close?: (transport: T) => void): Promise<TestRecord> {
-  const faceA = new L3Face(transportA);
-  const faceB = new L3Face(transportB);
+    transportA: T, transportB: T): Promise<TestRecord> {
+  const faceA = new L3Face(transportA, { describe: "A" });
+  const faceB = new L3Face(transportB, { describe: "B" });
 
   const record: TestRecord = {
     namesA: [],
     namesB: [],
   };
+  const abortFaceB = new AbortController();
 
   await Promise.all([
     faceA.tx({ async *[Symbol.asyncIterator]() {
@@ -27,12 +29,14 @@ export async function execute<T extends Transport>(
         yield new Interest(`/A/${i}`);
       }
       await new Promise((r) => setTimeout(r, 80));
-      if (close) {
-        setTimeout(() => close(transportB), 0);
-      }
+      abortFaceB.abort();
     } }),
     faceB.tx({ async *[Symbol.asyncIterator]() {
-      for await (const pkt of faceB.rx) {
+      const it = faceB.rx[Symbol.asyncIterator]();
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      it.return = undefined;
+      for await (const pkt of abortable({ [Symbol.asyncIterator]() { return it; } },
+                                        abortFaceB.signal, { returnOnAbort: true })) {
         if (pkt instanceof Interest) {
           const name = pkt.name.toString();
           record.namesB.push(name);

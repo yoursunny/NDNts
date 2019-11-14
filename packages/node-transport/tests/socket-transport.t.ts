@@ -18,8 +18,8 @@ test("TCP", async () => {
     expect(connB).toBeInstanceOf(SocketTransport);
     transportBp.resolve(connB);
   });
-  const [transportA, transportB] = await Promise.all([transportAp.promise, transportBp.promise]);
+  const [tA, tB] = await Promise.all([transportAp.promise, transportBp.promise]);
 
-  expect(transportB.toString()).toBe("Socket(127.0.0.1)");
-  TestTransport.check(await TestTransport.execute(transportA, transportB));
+  expect(tB.toString()).toBe("Socket(127.0.0.1)");
+  TestTransport.check(await TestTransport.execute(tA, tB));
 });

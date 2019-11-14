@@ -14,5 +14,5 @@ window.connectWsTransportPair = async (uri) => {
 };
 
 window.testWsTransportPair = async () => {
-  return await testTransport(transportA, transportB, (t) => t.close());
+  return await testTransport(transportA, transportB);
 };

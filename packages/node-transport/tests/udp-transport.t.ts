@@ -31,16 +31,14 @@ afterEach((done) => {
 });
 
 test("UDP", async () => {
-  const [transportA, transportB] = await Promise.all([
+  const [tA, tB] = await Promise.all([
     UdpTransport.connect({ port: serverPort, host: "localhost" }),
     UdpTransport.connect({ port: serverPort, host: "127.0.0.1", bind: { address: "127.0.0.1" } }),
   ]);
-  clientPorts.add(transportA.laddr.port);
-  clientPorts.add(transportB.laddr.port);
+  clientPorts.add(tA.laddr.port);
+  clientPorts.add(tB.laddr.port);
 
-  expect(transportA.toString()).toBe("UDP(127.0.0.1)");
-  expect(transportB.toString()).toBe("UDP(127.0.0.1)");
-  TestTransport.check(await TestTransport.execute(
-    transportA, transportB, (t) => t.close(),
-  ));
+  expect(tA.toString()).toBe("UDP(127.0.0.1)");
+  expect(tB.toString()).toBe("UDP(127.0.0.1)");
+  TestTransport.check(await TestTransport.execute(tA, tB));
 });
