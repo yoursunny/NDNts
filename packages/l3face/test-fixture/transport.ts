@@ -28,7 +28,7 @@ export async function execute<T extends Transport>(
         await new Promise((r) => setTimeout(r, 1));
         yield new Interest(`/A/${i}`);
       }
-      await new Promise((r) => setTimeout(r, 80));
+      await new Promise((r) => setTimeout(r, 200));
       abortFaceB.abort();
     } }),
     faceB.tx({ async *[Symbol.asyncIterator]() {

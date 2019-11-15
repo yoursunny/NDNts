@@ -2,10 +2,10 @@
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-This package implements TCP/Unix socket transport for Node.js environment.
+This package implements socket transports for Node.js environment.
 
 ```ts
-import { SocketTransport, UdpTransport } from "@ndn/node-transport";
+import { TcpTransport, UdpTransport } from "@ndn/node-transport";
 
 // other imports for examples
 import { L3Face, Transport } from "@ndn/l3face";
@@ -14,30 +14,39 @@ import { Data, Interest } from "@ndn/l3pkt";
 if (process.env.CI) { return; }
 ```
 
-## SocketTransport for TCP and Unix
+## Transport Types
 
-The **SocketTransport** communicates with a socket from Node.js ["net" package](https://nodejs.org/api/net.html).
+There are three transport types:
 
-```ts
-// Create a SocketTransport connected to a router.
-// It accepts the same options as net.createConnection(), so it supports both TCP and Unix.
-const tcp = await SocketTransport.connect({ host: "hobo.cs.arizona.edu", port: 6363 });
-await useTransportInFace(tcp);
-```
-
-## UdpTransport
-
-The **UdpTransport** establishes a UDP tunnel.
-It supports IPv4 only.
+* UnixTransport: Unix socket, or Windows named pipe.
+* TcpTransport: TCP tunnel.
+* UdpTransport: UDP tunnel.
 
 ```ts
+// TcpTransport.connect() establishes a TCP tunnel.
+// It accepts either host+port or an options object for net.createConnection().
+const tcp = await TcpTransport.connect("hobo.cs.arizona.edu", 6363);
+await useInL3Face(tcp);
+
+// UdpTransport.connect() establishes a UDP tunnel.
+// It supports IPv4 only.
 const udp = await UdpTransport.connect({ host: "hobo.cs.arizona.edu" });
-await useTransportInFace(udp);
+await useInL3Face(udp);
+
+})();
 ```
 
+## How to Use a Transport
+
+Transports are normally used to construct **L3Face** objects (from `@ndn/l3face` package).
+L3Face allows sending and receiving layer-3 packets on a transport.
+L3Face does not provide Interest-Data matching logic, timeout scheduler, etc.
+It is more like a forwarder's face.
+
+This section presents the low-level details of how to use a "raw" transport with `L3Face` class.
+
 ```ts
-})();
-async function useTransportInFace(transport: Transport) {
+async function useInL3Face(transport: Transport) {
 
 // Transports are normally used in a network layer face.
 const face = new L3Face(transport);
@@ -74,6 +83,6 @@ await Promise.all([
   })(),
 ]);
 
-// Face and transport are automatically closed when TX iterable is exhausted.
+// L3Face and Transport are automatically closed when TX iterable is exhausted.
 }
 ```

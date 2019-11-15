@@ -33,6 +33,11 @@
   },
   "devDependencies": {
     "@ndn/l3pkt": "workspace:*",
-    "p-defer": "^3.0.0"
+    "@types/readable-stream": "^2.3.5",
+    "@types/tmp": "^0.1.0",
+    "readable-stream": "^3.4.0",
+    "stream-mock": "^2.0.5",
+    "streaming-iterables": "^4.1.1",
+    "tmp": "^0.1.0"
   }
 }

@@ -38,6 +38,7 @@ test("UDP", async () => {
   clientPorts.add(tA.laddr.port);
   clientPorts.add(tB.laddr.port);
 
+  expect(tA.raddr.port).toBe(serverPort);
   expect(tA.toString()).toBe("UDP(127.0.0.1)");
   expect(tB.toString()).toBe("UDP(127.0.0.1)");
   TestTransport.check(await TestTransport.execute(tA, tB));

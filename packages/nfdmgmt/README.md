@@ -14,7 +14,7 @@ import { EcPrivateKey } from "@ndn/keychain";
 import { L3Face } from "@ndn/l3face";
 import { Data, Interest } from "@ndn/l3pkt";
 import { Name } from "@ndn/name";
-import { SocketTransport } from "@ndn/node-transport";
+import { UnixTransport } from "@ndn/node-transport";
 import { strict as assert } from "assert";
 (async () => {
 ```
@@ -43,9 +43,9 @@ const fwC = Forwarder.create();
 const fwP = Forwarder.create();
 
 // Connect to NFD using Unix socket transport.
-let transportC: SocketTransport;
+let transportC: UnixTransport;
 try {
-  transportC = await SocketTransport.connect({ path: "/var/run/nfd.sock" });
+  transportC = await UnixTransport.connect("/var/run/nfd.sock");
 } catch (err) {
   // Skip the example if NFD is not running.
   console.warn("NFD not running");
@@ -53,7 +53,7 @@ try {
 }
 const uplinkC = fwC.addFace(new L3Face(transportC));
 uplinkC.addRoute(new Name("/"));
-const transportP = await SocketTransport.connect({ path: "/var/run/nfd.sock" });
+const transportP = await UnixTransport.connect("/var/run/nfd.sock");
 const uplinkP = fwP.addFace(new L3Face(transportP));
 
 // Enable NFD prefix registration.

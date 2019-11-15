@@ -1,5 +1,5 @@
 import { Transport } from "@ndn/l3face";
-import { SocketTransport } from "@ndn/node-transport";
+import { TcpTransport } from "@ndn/node-transport";
 import defaultGateway from "default-gateway";
 import nodeFetch from "node-fetch";
 
@@ -12,7 +12,7 @@ export function overrideFchOptions(opts: queryFch.Options) {
 }
 
 export function createTransport(host: string, opts: connect.Options): Promise<Transport> {
-  return SocketTransport.connect({ host, port: 6363 });
+  return TcpTransport.connect({ host, port: 6363 });
 }
 
 export async function getDefaultGateway(): Promise<string> {

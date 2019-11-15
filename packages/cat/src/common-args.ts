@@ -6,7 +6,7 @@ import { Name } from "@ndn/name";
 import { Segment as Segment1, Version as Version1 } from "@ndn/naming-convention1";
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
-import { SocketTransport } from "@ndn/node-transport";
+import { TcpTransport } from "@ndn/node-transport";
 
 export interface CommonArgs {
   pkttrace: boolean;
@@ -32,7 +32,7 @@ export async function applyCommonArgs(args: CommonArgs) {
   }
 
   uplink = Forwarder.getDefault().addFace(new L3Face(
-    await SocketTransport.connect({ port: 6363, host: args.router })));
+    await TcpTransport.connect({ port: 6363, host: args.router })));
   uplink.addRoute(new Name());
 
   if (args.nfd) {
