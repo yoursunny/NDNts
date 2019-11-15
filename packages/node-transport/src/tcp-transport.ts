@@ -28,6 +28,7 @@ export namespace TcpTransport {
     return new Promise<TcpTransport>((resolve, reject) => {
       const sock = net.connect(connectOpts);
       sock.setNoDelay(true);
+      sock.on("error", () => undefined);
       sock.once("error", reject);
       sock.once("connect", () => {
         sock.off("error", reject);

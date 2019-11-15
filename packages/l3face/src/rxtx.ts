@@ -1,5 +1,4 @@
 import { Decoder } from "@ndn/tlv";
-import { EventEmitter } from "events";
 import { fromStream, writeToStream } from "streaming-iterables";
 
 import { Transport } from "./transport";
@@ -14,21 +13,12 @@ export async function* rxFromPacketIterable(iterable: AsyncIterable<Uint8Array>)
   }
 }
 
-export function rxFromPacketStream(conn: NodeJS.ReadableStream): Transport.Rx {
-  return rxFromPacketIterable(fromStream<Uint8Array>(conn));
-}
-
 async function* fromStreamSafe(conn: NodeJS.ReadableStream) {
-  const emitter = conn as unknown as Partial<EventEmitter>;
-  if (typeof emitter.on === "function") {
-    emitter.on("error", (err) => undefined);
-  }
-
   try { yield* fromStream<Buffer>(conn); }
   catch (err) {}
 }
 
-export async function* rxFromContinuousStream(conn: NodeJS.ReadableStream): Transport.Rx {
+export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.Rx {
   let leftover = Buffer.alloc(0);
   for await (const chunk of fromStreamSafe(conn)) {
     if (leftover.length > 0) {
@@ -57,6 +47,7 @@ export function txToStream(conn: NodeJS.WritableStream): Transport.Tx {
       await writeToStream(conn, iterable);
     } finally {
       const destroyable = conn as unknown as { destroy?: () => void };
+      /* istanbul ignore else */
       if (typeof destroyable.destroy === "function") {
         destroyable.destroy();
       } else {

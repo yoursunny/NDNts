@@ -32,29 +32,28 @@ function handleNewClient(sock: net.Socket) {
   sock.once("close", close);
 }
 
-export function createTcpServer(): Promise<number> {
+function createServer(listen: (done: () => void) => void): Promise<void> {
   server = net.createServer(handleNewClient);
-  return new Promise<number>((resolve) => {
+  server.on("error", () => undefined);
+  return new Promise((resolve) => {
+    listen(resolve);
+  });
+}
+
+export function createTcpServer(): Promise<void> {
+  return createServer((done) => {
     server.listen(() => {
       ({ port: tcpPort } = server.address() as net.AddressInfo);
-      resolve(tcpPort);
+      done();
     });
   });
 }
 
-function makeIpcPath() {
-  if (process.platform === "win32") {
-    return `//./pipe/2a8370be-8abc-448f-bb09-54d8b243cf7a/${Math.floor(Math.random() * 0xFFFFFFFF)}`;
-  }
-  return tmpNameSync();
-}
-
-export function createIpcServer(): Promise<string> {
-  ipcPath = makeIpcPath();
-  server = net.createServer(handleNewClient);
-  return new Promise<string>((resolve) => {
-    server.listen(ipcPath, () => resolve(ipcPath));
-  });
+export function createIpcServer(): Promise<void> {
+  ipcPath = process.platform === "win32" ?
+            `//./pipe/2a8370be-8abc-448f-bb09-54d8b243cf7a/${Math.floor(Math.random() * 0xFFFFFFFF)}` :
+            tmpNameSync();
+  return createServer((done) => server.listen(ipcPath, done));
 }
 
 export async function destroyServer(): Promise<void> {

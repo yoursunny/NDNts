@@ -51,9 +51,14 @@ export namespace UdpTransport {
     sendBufferSize?: number;
   }
 
-  export async function connect({
-    port: port = 6363, host, bind: bind = {}, recvBufferSize, sendBufferSize,
-  }: UdpTransport.TunnelOptions): Promise<UdpTransport> {
+  export function connect(host: string, port?: number): Promise<UdpTransport>;
+
+  export function connect(opts: TunnelOptions): Promise<UdpTransport>;
+
+  export async function connect(arg1: string|TunnelOptions, port1?: number): Promise<UdpTransport> {
+    const { host, port: port = 6363, bind: bind = {}, recvBufferSize, sendBufferSize } =
+      typeof arg1 === "string" ? { host: arg1, port: port1 } as TunnelOptions :
+      arg1;
     return new Promise<UdpTransport>((resolve, reject) => {
       const sock = dgram.createSocket({
         type: "udp4",

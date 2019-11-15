@@ -26,7 +26,7 @@ beforeEach(async () => {
 
 afterEach(NetServerTest.destroyServer);
 
-test("RX error on unknown TLV-TYPE", async () => {
+test("RX error", async () => {
   setTimeout(() => sock.write(Uint8Array.of(0xF0, 0x00)), 200);
   await Promise.all([
     expect(collect(face.rx)).resolves.toHaveLength(0),

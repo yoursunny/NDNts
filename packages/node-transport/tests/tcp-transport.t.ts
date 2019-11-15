@@ -32,6 +32,6 @@ test("reopen", async () => {
   await TestReopen.run(
     transport,
     NetServerTest.waitNClients,
-    (sock) => sock.destroy(),
+    (sock) => sock.end(),
   );
 });

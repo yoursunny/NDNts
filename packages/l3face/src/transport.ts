@@ -13,10 +13,12 @@ export abstract class Transport {
   }
 
   public reopen(): Promise<Transport> {
+    /* istanbul ignore next */
     return Promise.reject("reopen not supported");
   }
 
   public toString() {
+    /* istanbul ignore next */
     return this.attributes.describe ?? this.constructor.name;
   }
 }

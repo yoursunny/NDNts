@@ -1,4 +1,4 @@
-import { rxFromContinuousStream, txToStream } from "./rxtx";
+import { rxFromStream, txToStream } from "./rxtx";
 import { Transport } from "./transport";
 
 /** Stream-oriented transport. */
@@ -8,7 +8,7 @@ export class StreamTransport extends Transport {
 
   constructor(conn: NodeJS.ReadWriteStream, attrs: Record<string, any> = {}) {
     super(attrs);
-    this.rx = rxFromContinuousStream(conn);
+    this.rx = rxFromStream(conn);
     this.tx = txToStream(conn);
   }
 }

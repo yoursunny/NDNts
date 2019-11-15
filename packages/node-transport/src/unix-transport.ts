@@ -23,6 +23,7 @@ export namespace UnixTransport {
     return new Promise<UnixTransport>((resolve, reject) => {
       const sock = net.connect(connectOpts);
       sock.setNoDelay(true);
+      sock.on("error", () => undefined);
       sock.once("error", reject);
       sock.once("connect", () => {
         sock.off("error", reject);
