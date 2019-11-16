@@ -3,7 +3,8 @@ import { EventIterator } from "event-iterator";
 
 import { makeWebSocket } from "./platform";
 
-const HANDLER = Symbol("WsTransport.HANDLER");
+// eslint-disable-next-line
+const pushHandlers = new WeakMap<object, (evt: MessageEvent) => void>();
 
 /** WebSocket transport. */
 export class WsTransport extends Transport {
@@ -17,19 +18,15 @@ export class WsTransport extends Transport {
     });
     sock.binaryType = "arraybuffer";
     this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(
-      (push, stop, fail) => {
-        sock.addEventListener("message", (push as any)[HANDLER] = (evt: MessageEvent) => {
-          push(new Uint8Array(evt.data as ArrayBuffer));
-        });
+      (push, stop) => {
+        const pushHandler = (evt: MessageEvent) => push(new Uint8Array(evt.data as ArrayBuffer));
+        pushHandlers.set(push, pushHandler);
+        sock.addEventListener("message", pushHandler);
         sock.addEventListener("close", stop);
-        sock.addEventListener("error", (fail as any)[HANDLER] = (evt: Event) => {
-          fail(new Error((evt as ErrorEvent).message));
-        });
       },
-      (push, stop, fail) => {
-        sock.removeEventListener("message", (push as any)[HANDLER]);
+      (push, stop) => {
+        sock.removeEventListener("message", pushHandlers.get(push)!);
         sock.removeEventListener("close", stop);
-        sock.removeEventListener("error", (fail as any)[HANDLER]);
       },
     ));
     this.highWaterMark = opts.highWaterMark ?? 1024 * 1024;
@@ -80,7 +77,10 @@ export namespace WsTransport {
   export function connect(uri: string, opts: WsTransport.Options = {}): Promise<WsTransport> {
     return new Promise<WsTransport>((resolve, reject) => {
       const sock = makeWebSocket(uri);
-      const onerror = (evt: Event) => reject(new Error((evt as ErrorEvent).message));
+      const onerror = (evt: Event) => {
+        reject(new Error((evt as ErrorEvent).message));
+        sock.close();
+      };
       sock.addEventListener("error", onerror);
       sock.addEventListener("open", () => {
         sock.removeEventListener("error", onerror);

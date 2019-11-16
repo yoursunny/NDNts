@@ -48,7 +48,7 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
 
   public async *makeRx() {
     const closePromise = new Promise((r) => this.once("close", r));
-    while (this.state !== L3Face.State.CLOSED) {
+    while (this.state_ !== L3Face.State.CLOSED) {
       yield* pipeline(
         () => this.transport.rx,
         this.lp.rx,
