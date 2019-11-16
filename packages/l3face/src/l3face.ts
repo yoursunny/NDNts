@@ -41,7 +41,11 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
   constructor(transport: Transport, attributes: L3Face.Attributes = {}) {
     super();
     this.transport = transport;
-    this.attributes = { ...transport.attributes, ...attributes };
+    this.attributes = {
+      advertiseFrom: false,
+      ...transport.attributes,
+      ...attributes,
+    };
     this.rx = this.makeRx();
     (this.rx as any).return = undefined;
   }
@@ -160,7 +164,9 @@ export namespace L3Face {
     CLOSED,
   }
 
-  export type Attributes = Transport.Attributes;
+  export interface Attributes extends Transport.Attributes {
+    advertiseFrom?: boolean;
+  }
 
   export class RxError extends Error {
     constructor(inner: Error, public packet: Uint8Array) {

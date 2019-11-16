@@ -17,6 +17,13 @@ export class FibEntry {
 
   constructor(public readonly name: Name) {
   }
+
+  /** Count how many nexthops want to advertise the name. */
+  public get nAdvertiseFrom() {
+    let n = 0;
+    this.nexthops.forEach((nh) => nh.attributes.advertiseFrom && ++n);
+    return n;
+  }
 }
 
 export class Fib {
@@ -36,9 +43,11 @@ export class Fib {
     if (!entry) {
       entry = new FibEntry(name);
       this.table.set(nameStr, entry);
-      this.fw.advertisePrefix(entry);
     }
     entry.nexthops.add(nexthop);
+    if (entry.nAdvertiseFrom > 0) {
+      this.fw.advertisePrefix(entry);
+    }
   }
 
   public delete(name: Name, nexthop: FaceImpl): void {
@@ -73,9 +82,11 @@ export class Fib {
     const entry = this.table.get(nameStr)!;
     assert(!!entry);
     entry.nexthops.delete(nexthop);
+    if (entry.nAdvertiseFrom === 0) {
+      this.fw.withdrawPrefix(entry);
+    }
     if (entry.nexthops.size === 0) {
       this.table.delete(nameStr);
-      this.fw.withdrawPrefix(entry);
     }
   }
 }

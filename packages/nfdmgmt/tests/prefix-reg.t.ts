@@ -50,11 +50,7 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
         yield remoteProcess(pkt as Interest);
       }
     },
-  });
-  if (typeof faceIsLocal !== "undefined") {
-    const faceAttrs = { ...face.attributes, local: faceIsLocal };
-    jest.spyOn(face, "attributes", "get").mockReturnValue(faceAttrs);
-  }
+  }, { local: faceIsLocal });
   enableNfdPrefixReg(face, { commandPrefix });
 
   const se = new SimpleEndpoint(fw);

@@ -40,8 +40,8 @@ export class ForwarderImpl extends (EventEmitter as new() => Emitter) {
   }
 
   /** Add a face to the forwarding plane. */
-  public addFace(face: Face.Base): Face {
-    return new FaceImpl(this, face);
+  public addFace(face: Face.Base, attributes: Face.Attributes = {}): Face {
+    return new FaceImpl(this, face, attributes);
   }
 
   /** Process incoming Interest. */
@@ -63,9 +63,7 @@ export class ForwarderImpl extends (EventEmitter as new() => Emitter) {
   /** Process incoming cancel Interest request. */
   public cancelInterest(face: FaceImpl, interest: Interest) {
     const pi = this.pit.lookup(interest, false);
-    if (pi) {
-      pi.cancelInterest(face);
-    }
+    pi?.cancelInterest(face);
   }
 
   /** Process incoming Data. */
@@ -76,18 +74,14 @@ export class ForwarderImpl extends (EventEmitter as new() => Emitter) {
   public advertisePrefix(fibEntry: FibEntry) {
     this.emit("annadd", fibEntry.name);
     for (const face of this.faces) {
-      if (face.advertise) {
-        face.advertise.advertise(fibEntry);
-      }
+      face.advertise?.advertise(fibEntry);
     }
   }
 
   public withdrawPrefix(fibEntry: FibEntry) {
     this.emit("annrm", fibEntry.name);
     for (const face of this.faces) {
-      if (face.advertise) {
-        face.advertise.withdraw(fibEntry);
-      }
+      face.advertise?.withdraw(fibEntry);
     }
   }
 }

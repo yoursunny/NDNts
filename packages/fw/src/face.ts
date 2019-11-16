@@ -22,22 +22,24 @@ type TransformFunc = (iterable: AsyncIterable<Face.Txable>) => AsyncIterable<Fac
 const STOP = Symbol("FaceImpl.Stop");
 
 export class FaceImpl extends (EventEmitter as new() => Emitter) {
+  public readonly attributes: Face.Attributes;
+  public advertise?: Advertise;
   public readonly stopping = pDefer<typeof STOP>();
   public running = true;
   public readonly routes = new Set<string>(); // used by FIB
-  public advertise?: Advertise;
   public readonly txQueue = new Fifo<Face.Txable>();
   public txQueueLength = 0;
 
-  public get attributes(): Face.Attributes {
-    return {
-      ...(this.inner.attributes ?? {}),
-    };
-  }
-
   constructor(public readonly fw: ForwarderImpl,
-              public readonly inner: Face.Base) {
+              public readonly inner: Face.Base,
+              attributes: Face.Attributes) {
     super();
+    this.attributes = {
+      local: false,
+      advertiseFrom: true,
+      ...inner.attributes,
+      ...attributes,
+    };
     fw.emit("faceadd", this);
     fw.faces.add(this);
     pipeline(
@@ -170,7 +172,10 @@ export interface Face extends Pick<FaceImpl,
 
 export namespace Face {
   export interface Attributes extends Record<string, any> {
+    /** Whether face is local. Default is false. */
     local?: boolean;
+    /** Whether to readvertise registered routes. Default is true. */
+    advertiseFrom?: boolean;
   }
 
   /** Item that can be received on face. */

@@ -3,6 +3,11 @@ import { Name } from "@ndn/name";
 import { Face, FaceImpl } from "./face";
 import { FibEntry } from "./fib";
 
+/**
+ * Prefix readvertise service.
+ *
+ * This is set on a FwFace if the face is a destination of prefix readvertise.
+ */
 export abstract class Advertise {
   protected readonly face: FaceImpl;
 
@@ -24,6 +29,9 @@ export abstract class Advertise {
 
   /** Withdraw a prefix announcement. */
   public withdraw(fibEntry: FibEntry): void {
+    if (!fibEntry.advertisedTo.has(this.face)) {
+      return;
+    }
     this.doWithdraw(fibEntry.name)
     // eslint-disable-next-line @typescript-eslint/unbound-method, no-console
     .catch(console.warn)
