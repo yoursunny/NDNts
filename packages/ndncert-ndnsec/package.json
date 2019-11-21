@@ -14,7 +14,7 @@
   "type": "module",
   "main": "src/index.ts",
   "bin": {
-    "ndncert-ndnsec": "cli.js"
+    "ndncert-ndnsec": "cli.cjs"
   },
   "sideEffects": [
     "./test-fixture/**"
@@ -23,7 +23,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/ndncert"
+    "directory": "packages/ndncert-ndnsec"
   },
   "publishConfig": {
     "main": "lib/index.js"

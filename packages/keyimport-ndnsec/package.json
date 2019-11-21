@@ -14,7 +14,7 @@
   "type": "module",
   "main": "src/index.ts",
   "bin": {
-    "ndnsec2ndnts": "cli.js"
+    "ndnsec2ndnts": "cli.cjs"
   },
   "sideEffects": [
     "./test-fixture/**"

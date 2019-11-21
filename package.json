@@ -6,8 +6,8 @@
     "build": "tsc -b mk/tsconfig-solution.json",
     "clean": "rm -rf packages/*/lib/ packages/*/literate-temp.ts packages/*/tsconfig.tsbuildinfo",
     "cover": "jest --coverage",
-    "lint": "eslint --ignore-path .gitignore -c mk/eslintrc-ts.js --fix **/*.ts && eslint --ignore-path .gitignore -c mk/eslintrc-js.js --fix **/*.js",
-    "lint-ci": "eslint --ignore-path .gitignore -c mk/eslintrc-ts.js **/*.ts && eslint --ignore-path .gitignore -c mk/eslintrc-js.js **/*.js",
+    "lint": "eslint --ignore-path .gitignore -c mk/eslintrc-ts.js --fix **/*.ts && eslint --ignore-path .gitignore -c mk/eslintrc-js.js --fix **/*.js **/*.cjs",
+    "lint-ci": "eslint --ignore-path .gitignore -c mk/eslintrc-ts.js **/*.ts && eslint --ignore-path .gitignore -c mk/eslintrc-js.js **/*.js **/*.cjs",
     "literate": "bash mk/literate.sh",
     "preinstall": "node mk/only-allow-pnpm.js",
     "test": "jest"

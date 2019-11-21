@@ -9,13 +9,12 @@
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
   "files": [
-    "cli.js",
     "lib"
   ],
   "type": "module",
   "main": "lib/index.js",
   "bin": {
-    "ndncat": "cli.js"
+    "ndncat": "cli.cjs"
   },
   "sideEffects": [
     "./test-fixture/**"
