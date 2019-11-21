@@ -21,6 +21,7 @@ module.exports = {
   ],
   rules: {
     ...jsRc.rules,
+    "@typescript-eslint/ban-ts-ignore": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/member-delimiter-style": ["error", { singleline: { delimiter: "comma" } }],
     "@typescript-eslint/no-empty-interface": ["error", { allowSingleExtends: true }],

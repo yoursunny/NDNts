@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/keychain-cli",
+  "name": "@ndn/ndncert-ndnsec",
   "version": "0.0.0",
-  "description": "NDNts: KeyChain management",
+  "description": "NDNts: NDNCERT integration with ndn-cxx KeyChain",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -14,7 +14,7 @@
   "type": "module",
   "main": "src/index.ts",
   "bin": {
-    "ndntssec": "cli.js"
+    "ndncert-ndnsec": "cli.js"
   },
   "sideEffects": [
     "./test-fixture/**"
@@ -23,27 +23,29 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/keychain-cli"
+    "directory": "packages/ndncert"
   },
   "publishConfig": {
     "main": "lib/index.js"
   },
   "dependencies": {
-    "@ndn/name": "workspace:*",
+    "@ndn/fw": "workspace:*",
     "@ndn/keychain": "workspace:*",
+    "@ndn/keyimport-ndnsec": "workspace:*",
+    "@ndn/l3face": "workspace:*",
     "@ndn/l3pkt": "workspace:*",
+    "@ndn/name": "workspace:*",
+    "@ndn/ndncert": "workspace:*",
+    "@ndn/node-transport": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "esm": "^3.2.25",
-    "fast-chunk-string": "^1.0.1",
-    "get-stdin": "^7.0.0",
+    "execa": "^3.2.0",
     "loud-rejection": "^2.2.0",
-    "stdout-stream": "^1.4.1",
+    "read-json-sync": "^2.0.1",
     "tslib": "*",
     "yargs": "^14.2.0"
   },
   "devDependencies": {
-    "@types/fast-chunk-string": "1.0.0",
-    "@types/stdout-stream": "^1.4.0",
     "@types/yargs": "^13.0.3"
   }
 }

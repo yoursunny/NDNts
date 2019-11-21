@@ -195,4 +195,13 @@ export namespace Data {
 
   export type CtorArg = NameLike | ContentTypeTag | FreshnessPeriodTag |
                         typeof FinalBlock | Uint8Array;
+
+  /** Obtain original encoding. */
+  export function getWire(data: Data): Uint8Array {
+    const wire = data[TOPTLV];
+    if (!wire) {
+      throw new Error("wire encoding unavailable");
+    }
+    return wire;
+  }
 }
