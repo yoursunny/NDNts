@@ -1,9 +1,8 @@
-import "@ndn/name/test-fixture";
+import "@ndn/packet/test-fixture";
 import "@ndn/tlv/test-fixture";
 
 import { Forwarder, SimpleEndpoint } from "@ndn/fw";
-import { Data, Interest } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Data, Interest, Name } from "@ndn/packet";
 
 import { ControlCommand, enableNfdPrefixReg } from "..";
 

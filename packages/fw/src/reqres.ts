@@ -1,4 +1,4 @@
-import { Data, Interest } from "@ndn/l3pkt";
+import { Data, Interest } from "@ndn/packet";
 
 /** Application-defined opaque token attached to a packet. */
 export namespace InterestToken {

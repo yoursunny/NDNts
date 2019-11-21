@@ -29,9 +29,8 @@
     "main": "lib/index.js"
   },
   "dependencies": {
-    "@ndn/l3pkt": "workspace:*",
-    "@ndn/name": "workspace:*",
     "@ndn/keychain": "workspace:*",
+    "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "esm": "^3.2.25",
     "execa": "^3.2.0",

@@ -1,6 +1,6 @@
-import "@ndn/name/test-fixture";
+import "@ndn/packet/test-fixture";
 
-import { Name } from "@ndn/name";
+import { Name } from "@ndn/packet";
 
 import { ByteOffset, Keyword, Segment, SequenceNum, Timestamp, Version } from "..";
 

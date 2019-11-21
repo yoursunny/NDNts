@@ -1,7 +1,4 @@
-import { TT } from "./an";
-import { Component } from "./component";
-import { NamingConvention } from "./convention";
-import { Name } from "./name";
+import { Component, Name, NamingConvention, TT } from ".";
 
 const DIGEST_LENGTH = 32;
 

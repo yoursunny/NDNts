@@ -1,6 +1,5 @@
 import { PrivateKey, theDigestKey } from "@ndn/keychain";
-import { Interest, LLSign, SigInfo, TT } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Interest, LLSign, Name, SigInfo, TT  } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
 
 class SignedInterest02 {

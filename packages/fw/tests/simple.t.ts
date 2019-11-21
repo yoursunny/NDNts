@@ -1,8 +1,7 @@
-import "@ndn/name/test-fixture";
+import "@ndn/packet/test-fixture";
 
-import { Data, Interest } from "@ndn/l3pkt";
-import { getDataFullName } from "@ndn/l3pkt/test-fixture";
-import { Name } from "@ndn/name";
+import { Data, Interest, Name } from "@ndn/packet";
+import { getDataFullName } from "@ndn/packet/test-fixture";
 
 import { CancelInterest, DataResponse, Forwarder, FwFace, InterestToken, RejectInterest, SimpleEndpoint } from "..";
 

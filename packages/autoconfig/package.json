@@ -32,9 +32,8 @@
   "dependencies": {
     "@ndn/fw": "workspace:*",
     "@ndn/l3face": "workspace:*",
-    "@ndn/l3pkt": "workspace:*",
-    "@ndn/name": "workspace:*",
     "@ndn/node-transport": "workspace:*",
+    "@ndn/packet": "workspace:*",
     "@ndn/ws-transport": "workspace:*",
     "default-gateway": "^5.0.4",
     "hirestime": "^4.0.0",

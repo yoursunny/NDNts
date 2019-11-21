@@ -1,4 +1,4 @@
-import { canSatisfy, Data, Interest } from "@ndn/l3pkt";
+import { canSatisfy, Data, Interest } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import hirestime from "hirestime";
 import { consume, filter, flatMap, map, pipeline, tap } from "streaming-iterables";

@@ -1,4 +1,4 @@
-import { Name } from "@ndn/name";
+import { Name } from "@ndn/packet";
 import { fromHex, toHex } from "@ndn/tlv";
 import throat from "throat";
 

@@ -1,4 +1,4 @@
-import { Data, SigType } from "@ndn/l3pkt";
+import { Data, SigType } from "@ndn/packet";
 import { Decoder, fromHex } from "@ndn/tlv";
 
 import { HmacKey, PrivateKey, PublicKey } from "../..";

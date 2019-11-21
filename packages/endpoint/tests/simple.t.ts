@@ -1,8 +1,7 @@
-import "@ndn/name/test-fixture";
+import "@ndn/packet/test-fixture";
 
 import { Forwarder } from "@ndn/fw";
-import { Data, Interest } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Data, Interest, Name } from "@ndn/packet";
 
 import { Endpoint } from "..";
 

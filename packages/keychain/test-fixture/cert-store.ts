@@ -1,4 +1,4 @@
-import { Component } from "@ndn/name";
+import { Component } from "@ndn/packet";
 
 import { Certificate, EcPrivateKey, KeyChain, ValidityPeriod } from "..";
 

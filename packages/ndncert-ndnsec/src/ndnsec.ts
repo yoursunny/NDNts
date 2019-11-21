@@ -1,7 +1,6 @@
 import { Certificate } from "@ndn/keychain";
 import { ndnsec } from "@ndn/keyimport-ndnsec";
-import { Data } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Data, Name } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 import execa from "execa";
 

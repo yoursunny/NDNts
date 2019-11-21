@@ -4,7 +4,7 @@ import { EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RsaPrivateKey, 
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";
 import { execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
 import { execute as testSignVerify } from "@ndn/keychain/test-fixture/sign-verify";
-import { Data, Interest } from "@ndn/l3pkt";
+import { Data, Interest } from "@ndn/packet";
 
 import { SerializedInBrowser, serializeInBrowser } from "../../test-fixture/serialize";
 import { SignVerifyTestResult } from "./api";

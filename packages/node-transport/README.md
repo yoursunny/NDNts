@@ -9,7 +9,7 @@ import { TcpTransport, UdpTransport } from "@ndn/node-transport";
 
 // other imports for examples
 import { L3Face, Transport } from "@ndn/l3face";
-import { Data, Interest } from "@ndn/l3pkt";
+import { Data, Interest } from "@ndn/packet";
 (async () => {
 if (process.env.CI) { return; }
 ```

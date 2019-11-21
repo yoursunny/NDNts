@@ -1,5 +1,5 @@
 import { L3Face } from "@ndn/l3face";
-import { Data, Interest, LLSign, SigInfo, SigType } from "@ndn/l3pkt";
+import { Data, Interest, LLSign, SigInfo, SigType } from "@ndn/packet";
 import * as net from "net";
 import { pipeline as pipeline_ } from "readable-stream";
 import { BufferWritableMock } from "stream-mock";

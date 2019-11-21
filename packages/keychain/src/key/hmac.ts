@@ -1,5 +1,4 @@
-import { SigInfo, SigType } from "@ndn/l3pkt";
-import { Name, NameLike } from "@ndn/name";
+import { Name, NameLike, SigInfo, SigType } from "@ndn/packet";
 import applyMixins from "applymixins";
 import assert from "minimalistic-assert";
 

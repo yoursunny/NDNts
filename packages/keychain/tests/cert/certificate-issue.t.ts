@@ -1,7 +1,7 @@
-import "@ndn/name/test-fixture";
+import "@ndn/packet/test-fixture";
 
-import { Component } from "@ndn/name";
 import { Version } from "@ndn/naming-convention2";
+import { Component } from "@ndn/packet";
 
 import { Certificate, EcPrivateKey, ValidityPeriod } from "../..";
 

@@ -27,8 +27,7 @@
   },
   "dependencies": {
     "@ndn/fw": "workspace:*",
-    "@ndn/l3pkt": "workspace:*",
-    "@ndn/name": "workspace:*",
+    "@ndn/packet": "workspace:*",
     "tslib": "*"
   }
 }

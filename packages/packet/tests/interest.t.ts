@@ -1,10 +1,9 @@
-import "@ndn/name/test-fixture";
+import "../test-fixture";
 import "@ndn/tlv/test-fixture";
 
-import { Name, ParamsDigest } from "@ndn/name";
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { Interest, LLSign, LLVerify, SigInfo, SigType, TT } from "..";
+import { Interest, LLSign, LLVerify, Name, ParamsDigest, SigInfo, SigType, TT } from "..";
 
 test("encode", () => {
   expect(() => new Interest({} as any)).toThrow();

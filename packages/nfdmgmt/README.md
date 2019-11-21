@@ -12,8 +12,8 @@ import { enableNfdPrefixReg, signInterest02 } from "@ndn/nfdmgmt";
 import { Forwarder, SimpleEndpoint } from "@ndn/fw";
 import { EcPrivateKey } from "@ndn/keychain";
 import { L3Face } from "@ndn/l3face";
-import { Data, Interest } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Data, Interest } from "@ndn/packet";
+import { Name } from "@ndn/packet";
 import { UnixTransport } from "@ndn/node-transport";
 import { strict as assert } from "assert";
 (async () => {

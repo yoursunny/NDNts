@@ -1,4 +1,4 @@
-import { Name } from "@ndn/name";
+import { Name } from "@ndn/packet";
 
 import { Certificate, PrivateKey, PublicKey } from "..";
 import { StoredKey } from "../key/save";

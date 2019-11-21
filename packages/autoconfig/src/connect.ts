@@ -1,7 +1,6 @@
 import { Forwarder, FwFace, SimpleEndpoint } from "@ndn/fw";
 import { L3Face } from "@ndn/l3face";
-import { Interest } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Interest, Name } from "@ndn/packet";
 import hirestime from "hirestime";
 
 import { createTransport } from "./platform";

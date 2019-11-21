@@ -1,6 +1,5 @@
 import { Certificate, EcPrivateKey, EcPublicKey, KeyChain, RsaPrivateKey, RsaPublicKey, saveKey } from "@ndn/keychain";
-import { SigType } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Name, SigType } from "@ndn/packet";
 
 /**
  * Import public key from certificate and private key from PKCS8.

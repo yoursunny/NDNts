@@ -1,4 +1,4 @@
-import { SigType } from "@ndn/l3pkt";
+import { SigType } from "@ndn/packet";
 
 import { PrivateKey, PublicKey, theDigestKey } from "../..";
 import * as TestSignVerify from "../../test-fixture/sign-verify";

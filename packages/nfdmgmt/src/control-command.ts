@@ -1,6 +1,5 @@
 import { Forwarder, SimpleEndpoint } from "@ndn/fw";
-import { Interest, TT } from "@ndn/l3pkt";
-import { Component, Name } from "@ndn/name";
+import { Component, Interest, Name, TT  } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { ControlParameters } from "./control-parameters";

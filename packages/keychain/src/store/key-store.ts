@@ -1,4 +1,4 @@
-import { Name } from "@ndn/name";
+import { Name } from "@ndn/packet";
 
 import { PrivateKey, PublicKey } from "..";
 import { loadFromStored } from "../key/load";

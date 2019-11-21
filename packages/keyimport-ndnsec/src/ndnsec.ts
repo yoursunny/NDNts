@@ -1,5 +1,5 @@
 import { KeyChain } from "@ndn/keychain";
-import { Name } from "@ndn/name";
+import { Name } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 import execa from "execa";
 

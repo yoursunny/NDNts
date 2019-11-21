@@ -1,4 +1,4 @@
-import { Name } from "@ndn/name";
+import { Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 

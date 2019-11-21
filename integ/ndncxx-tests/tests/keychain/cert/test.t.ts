@@ -1,5 +1,5 @@
 import { Certificate, EcPrivateKey, ValidityPeriod } from "@ndn/keychain";
-import { Component } from "@ndn/name";
+import { Component } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 
 import { execute } from "../../../test-fixture";

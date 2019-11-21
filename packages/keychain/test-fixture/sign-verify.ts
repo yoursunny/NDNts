@@ -1,4 +1,4 @@
-import { Data, Interest, LLSign, LLVerify, SigInfo } from "@ndn/l3pkt";
+import { Data, Interest, LLSign, LLVerify, SigInfo } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { PrivateKey, PublicKey } from "..";

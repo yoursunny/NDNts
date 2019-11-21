@@ -1,10 +1,7 @@
-import { Name, NameLike, ParamsDigest } from "@ndn/name";
 import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
-import { TT } from "./an";
-import { LLSign, LLVerify } from "./llsign";
-import { sha256 } from "./sha256";
-import { SigInfo } from "./sig-info";
+import { LLSign, LLVerify, Name, NameLike, ParamsDigest, SigInfo, TT } from ".";
+import { sha256 } from "./platform";
 
 const HOPLIMIT_MAX = 255;
 const DecodeParams = Symbol("Interest.DecodeParams");

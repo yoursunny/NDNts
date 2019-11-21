@@ -1,5 +1,4 @@
-import { KeyLocator, SigInfo } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { KeyLocator, Name, SigInfo } from "@ndn/packet";
 
 import { KeyName } from "../name";
 

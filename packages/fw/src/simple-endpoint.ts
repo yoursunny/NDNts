@@ -1,5 +1,4 @@
-import { Data, Interest } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Data, Interest, Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import pDefer from "p-defer";
 import { filter, pipeline, tap, transform } from "streaming-iterables";

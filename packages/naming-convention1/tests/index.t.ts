@@ -1,6 +1,6 @@
-import "@ndn/name/test-fixture";
+import "@ndn/packet/test-fixture";
 
-import { Component, Name, NamingConvention } from "@ndn/name";
+import { Component, Name, NamingConvention } from "@ndn/packet";
 
 import { ByteOffset, Segment, SequenceNum, Timestamp, Version } from "..";
 

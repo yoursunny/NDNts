@@ -7,8 +7,7 @@
   },
   "devDependencies": {
     "@ndn/keychain": "workspace:*",
-    "@ndn/l3pkt": "workspace:*",
-    "@ndn/name": "workspace:*",
+    "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@types/tmp": "^0.1.0",
     "@types/write": "^2.0.0",

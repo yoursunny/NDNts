@@ -1,7 +1,6 @@
 import { DataResponse, Forwarder, FwFace, InterestToken, RejectInterest } from "@ndn/fw";
-import { Data, Interest } from "@ndn/l3pkt";
-import { Name, NamingConvention } from "@ndn/name";
 import { Segment as Segment2 } from "@ndn/naming-convention2";
+import { Data, Interest, Name, NamingConvention } from "@ndn/packet";
 import { EventEmitter } from "events";
 import pushable from "it-pushable";
 import assert from "minimalistic-assert";

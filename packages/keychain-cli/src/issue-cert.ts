@@ -1,5 +1,5 @@
 import { Certificate, ValidityPeriod } from "@ndn/keychain";
-import { Component, Name } from "@ndn/name";
+import { Component, Name } from "@ndn/packet";
 import { Arguments, Argv, CommandModule } from "yargs";
 
 import { CommonArgs, keyChain } from "./common-args";

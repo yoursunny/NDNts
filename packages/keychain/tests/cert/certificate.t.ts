@@ -1,8 +1,7 @@
-import "@ndn/name/test-fixture";
+import "@ndn/packet/test-fixture";
 import "@ndn/tlv/test-fixture";
 
-import { Data } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Data, Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { Certificate, CertificateName, EcPublicKey, theDigestKey, ValidityPeriod } from "../..";

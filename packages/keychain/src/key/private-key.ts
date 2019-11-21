@@ -1,4 +1,4 @@
-import { LLSign, SigInfo } from "@ndn/l3pkt";
+import { LLSign, SigInfo } from "@ndn/packet";
 
 import { NamedKey, PacketWithSignature } from "./named-key";
 

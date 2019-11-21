@@ -1,4 +1,4 @@
-import { Component, NamingConvention, TT } from "@ndn/name";
+import { Component, NamingConvention, TT } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
 
 class Markered {

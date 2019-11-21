@@ -32,7 +32,7 @@
     "tslib": "*"
   },
   "devDependencies": {
-    "@ndn/l3pkt": "workspace:*",
+    "@ndn/packet": "workspace:*",
     "@types/readable-stream": "^2.3.5",
     "@types/tmp": "^0.1.0",
     "readable-stream": "^3.4.0",

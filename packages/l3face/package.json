@@ -26,8 +26,8 @@
     "main": "lib/index.js"
   },
   "dependencies": {
-    "@ndn/l3pkt": "workspace:*",
     "@ndn/lp": "workspace:*",
+    "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "it-pushable": "^1.4.0",
     "streaming-iterables": "^4.1.1",

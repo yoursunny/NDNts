@@ -1,5 +1,5 @@
 import { Certificate } from "@ndn/keychain";
-import { Data } from "@ndn/l3pkt";
+import { Data } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 import fastChunkString from "fast-chunk-string";
 import getStdin from "get-stdin";

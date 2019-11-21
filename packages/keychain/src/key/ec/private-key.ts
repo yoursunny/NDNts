@@ -1,5 +1,4 @@
-import { SigType } from "@ndn/l3pkt";
-import { Name, NameLike } from "@ndn/name";
+import { Name, NameLike, SigType } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
 import { EcCurve, EcPublicKey, KeyChain } from "../..";

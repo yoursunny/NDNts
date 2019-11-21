@@ -1,10 +1,9 @@
-import "@ndn/name/test-fixture";
+import "../test-fixture";
 import "@ndn/tlv/test-fixture";
 
-import { Name } from "@ndn/name";
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { KeyDigest, SigInfo, SigType, TT } from "..";
+import { KeyDigest, Name, SigInfo, SigType, TT } from "..";
 
 test("encode", () => {
   expect(() => new SigInfo({} as any)).toThrow();

@@ -1,4 +1,4 @@
-import { Data, Interest } from "@ndn/l3pkt";
+import { Data, Interest } from "@ndn/packet";
 import AbortController from "abort-controller";
 import abortable from "abortable-iterator";
 

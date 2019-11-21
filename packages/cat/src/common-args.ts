@@ -1,12 +1,11 @@
 import { Forwarder, FwFace, FwTracer } from "@ndn/fw";
 import { KeyChain, PrivateKey } from "@ndn/keychain";
 import { L3Face } from "@ndn/l3face";
-import { Interest } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
 import { Segment as Segment1, Version as Version1 } from "@ndn/naming-convention1";
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { TcpTransport } from "@ndn/node-transport";
+import { Interest, Name } from "@ndn/packet";
 
 export interface CommonArgs {
   pkttrace: boolean;

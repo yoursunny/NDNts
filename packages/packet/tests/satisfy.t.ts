@@ -1,6 +1,4 @@
-import { Name } from "@ndn/name";
-
-import { canSatisfy, canSatisfySync, Data, Interest } from "..";
+import { canSatisfy, canSatisfySync, Data, Interest, Name } from "..";
 import { getDataFullName } from "../test-fixture";
 
 test("simple", async () => {

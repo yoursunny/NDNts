@@ -1,7 +1,4 @@
-import { ImplicitDigest } from "@ndn/name";
-
-import { Data } from "./data";
-import { Interest } from "./interest";
+import { Data, ImplicitDigest, Interest } from ".";
 
 /**
  * Determine if a Data can satisfy an Interest.

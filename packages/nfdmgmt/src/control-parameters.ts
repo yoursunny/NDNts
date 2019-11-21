@@ -1,5 +1,4 @@
-import { TT } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Name, TT } from "@ndn/packet";
 import { EncodableObj, EncodableTlv, Encoder, NNI } from "@ndn/tlv";
 
 interface Fields {

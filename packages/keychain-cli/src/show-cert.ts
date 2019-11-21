@@ -1,4 +1,4 @@
-import { Name } from "@ndn/name";
+import { Name } from "@ndn/packet";
 import { Arguments, Argv, CommandModule } from "yargs";
 
 import { CommonArgs, keyChain } from "./common-args";

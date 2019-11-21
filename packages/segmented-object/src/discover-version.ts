@@ -1,7 +1,6 @@
 import { SimpleEndpoint } from "@ndn/fw";
-import { Interest } from "@ndn/l3pkt";
-import { Name, NamingConvention } from "@ndn/name";
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
+import { Interest, Name, NamingConvention } from "@ndn/packet";
 
 import { fetch } from "./fetch";
 

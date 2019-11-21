@@ -1,7 +1,6 @@
 import { Forwarder, SimpleEndpoint } from "@ndn/fw";
 import { Certificate, KeyChainImplWebCrypto as crypto, KeyName, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
-import { Data, Interest } from "@ndn/l3pkt";
-import { Component, Name } from "@ndn/name";
+import { Component, Data, Interest, Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { CMD_CHALLENGE, CMD_DOWNLOAD, CMD_NEW, CMD_PROBE, CMD_PROBEINFO } from "../an";

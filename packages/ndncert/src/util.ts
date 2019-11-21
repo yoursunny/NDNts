@@ -1,6 +1,6 @@
 import { KeyChainImplWebCrypto as crypto, PrivateKey } from "@ndn/keychain";
-import { Interest } from "@ndn/l3pkt";
 import { signInterest02 } from "@ndn/nfdmgmt";
+import { Interest } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 import fastChunkString from "fast-chunk-string";
 

@@ -1,5 +1,4 @@
-import { SigInfo, SigType } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Name, SigInfo, SigType } from "@ndn/packet";
 import { ASN1UniversalType, DERElement } from "asn1-ts";
 
 import { crypto } from "../platform";

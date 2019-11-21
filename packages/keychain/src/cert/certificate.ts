@@ -1,6 +1,5 @@
-import { Data, LLSign, SigInfo } from "@ndn/l3pkt";
-import { Component } from "@ndn/name";
 import { Version } from "@ndn/naming-convention2";
+import { Component, Data, LLSign, SigInfo } from "@ndn/packet";
 
 import { CertificateName, KeyName, PrivateKey, PublicKey } from "..";
 import { loadSpki } from "../key/load";

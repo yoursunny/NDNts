@@ -1,9 +1,8 @@
 import "@ndn/tlv/test-fixture";
 
 import { Forwarder, SimpleEndpoint } from "@ndn/fw";
-import { Interest } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
 import { Segment as Segment1 } from "@ndn/naming-convention1";
+import { Interest, Name } from "@ndn/packet";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 
 import { fetch, serve } from "..";

@@ -1,4 +1,4 @@
-import { Interest } from "@ndn/l3pkt";
+import { Interest } from "@ndn/packet";
 
 import { L3Face, Transport } from "../src";
 

@@ -1,9 +1,9 @@
 import { Forwarder } from "@ndn/fw";
 import { KeyChain } from "@ndn/keychain";
 import { L3Face } from "@ndn/l3face";
-import { Name } from "@ndn/name";
 import { Client, clientLogger, makeMailsacClientEmailChallenge, schema } from "@ndn/ndncert";
 import { UnixTransport } from "@ndn/node-transport";
+import { Name } from "@ndn/packet";
 import loudRejection from "loud-rejection";
 // @ts-ignore
 import readJsonSync from "read-json-sync";

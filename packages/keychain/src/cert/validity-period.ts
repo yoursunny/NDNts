@@ -1,4 +1,4 @@
-import { SigInfo } from "@ndn/l3pkt";
+import { SigInfo } from "@ndn/packet";
 import { Decoder, Encodable, Encoder, EvDecoder, Extension } from "@ndn/tlv";
 
 import { TT } from "./an";

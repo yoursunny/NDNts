@@ -1,5 +1,5 @@
 import { Advertise, FwFace } from "@ndn/fw";
-import { Name } from "@ndn/name";
+import { Name } from "@ndn/packet";
 
 import { ControlCommand } from "./control-command";
 

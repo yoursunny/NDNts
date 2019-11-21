@@ -27,10 +27,9 @@
   },
   "dependencies": {
     "@ndn/fw": "workspace:*",
-    "@ndn/l3pkt": "workspace:*",
     "@ndn/keychain": "workspace:*",
-    "@ndn/name": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
+    "@ndn/packet": "workspace:*",
     "is-stream": "^2.0.0",
     "it-pushable": "^1.4.0",
     "minimalistic-assert": "^1.0.1",

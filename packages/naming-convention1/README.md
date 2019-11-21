@@ -10,7 +10,7 @@ import { Version, Segment } from "@ndn/naming-convention1";
 // We also have ByteOffset, Timestamp, and SequenceNum.
 
 // other imports for examples
-import { Name } from "@ndn/name";
+import { Name } from "@ndn/packet";
 import { strict as assert } from "assert";
 
 // Append name component with marker.

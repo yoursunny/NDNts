@@ -32,9 +32,8 @@
   "dependencies": {
     "@ndn/fw": "workspace:*",
     "@ndn/keychain": "workspace:*",
-    "@ndn/l3pkt": "workspace:*",
-    "@ndn/name": "workspace:*",
     "@ndn/nfdmgmt": "workspace:*",
+    "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "fast-chunk-string": "^1.0.1",
     "loglevel": "^1.6.6",

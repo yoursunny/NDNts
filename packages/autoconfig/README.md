@@ -9,7 +9,7 @@ import { queryFch, connectToTestbed } from "@ndn/autoconfig";
 
 // other imports for examples
 import { Forwarder } from "@ndn/fw";
-import { Name } from "@ndn/name";
+import { Name } from "@ndn/packet";
 import { strict as assert } from "assert";
 (async () => {
 if (process.env.CI) { return; }

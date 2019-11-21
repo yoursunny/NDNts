@@ -1,5 +1,5 @@
 import { Certificate } from "@ndn/keychain";
-import { Data, TT as l3TT } from "@ndn/l3pkt";
+import { Data, TT as l3TT } from "@ndn/packet";
 import { Decoder, EvDecoder } from "@ndn/tlv";
 import { createPrivateKey } from "crypto";
 

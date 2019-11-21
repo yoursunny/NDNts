@@ -1,5 +1,4 @@
-import { Data, Interest } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Data, Interest, Name } from "@ndn/packet";
 import log from "loglevel";
 
 import { Face } from "./face";

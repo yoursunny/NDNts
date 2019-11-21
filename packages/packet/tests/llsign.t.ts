@@ -1,10 +1,9 @@
 import "@ndn/tlv/test-fixture";
 
-import { Name } from "@ndn/name";
 import { Decodable, Decoder, Encodable, Encoder } from "@ndn/tlv";
 import * as crypto from "crypto";
 
-import { Data, Interest, KeyDigest, LLSign, LLVerify, SigInfo, SigType, TT } from "..";
+import { Data, Interest, KeyDigest, LLSign, LLVerify, Name, SigInfo, SigType, TT } from "..";
 
 class TestAlgo {
   constructor(private key: string, private wantSignError: boolean = false) {

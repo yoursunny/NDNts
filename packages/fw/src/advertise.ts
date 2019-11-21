@@ -1,4 +1,4 @@
-import { Name } from "@ndn/name";
+import { Name } from "@ndn/packet";
 
 import { Face, FaceImpl } from "./face";
 import { FibEntry } from "./fib";

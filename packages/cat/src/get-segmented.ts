@@ -1,4 +1,4 @@
-import { Name } from "@ndn/name";
+import { Name } from "@ndn/packet";
 import { discoverVersion, fetch } from "@ndn/segmented-object";
 import stdout from "stdout-stream";
 import { Arguments, Argv, CommandModule } from "yargs";

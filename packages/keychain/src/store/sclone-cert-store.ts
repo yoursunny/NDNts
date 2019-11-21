@@ -1,5 +1,4 @@
-import { Data } from "@ndn/l3pkt";
-import { Name } from "@ndn/name";
+import { Data, Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { Certificate } from "..";

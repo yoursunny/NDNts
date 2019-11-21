@@ -1,5 +1,5 @@
-import { Data, Interest, LLSign, TT } from "@ndn/l3pkt";
 import { LpService } from "@ndn/lp";
+import { Data, Interest, LLSign, TT } from "@ndn/packet";
 import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
 import { EventEmitter } from "events";
 import { filter, map, pipeline } from "streaming-iterables";

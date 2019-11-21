@@ -1,5 +1,5 @@
 import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength, RsaPrivateKey } from "@ndn/keychain";
-import { Data, LLSign } from "@ndn/l3pkt";
+import { Data, LLSign } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 
 import { deleteTmpFiles, execute, writeTmpFile } from "../../../test-fixture";

@@ -1,4 +1,4 @@
-import { Name, NameLike } from "@ndn/name";
+import { Name, NameLike } from "@ndn/packet";
 
 import { KeyChain, KeyName } from "..";
 import { crypto } from "./platform";

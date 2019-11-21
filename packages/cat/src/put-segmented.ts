@@ -1,4 +1,4 @@
-import { Name } from "@ndn/name";
+import { Name } from "@ndn/packet";
 import { serve } from "@ndn/segmented-object";
 import { Arguments, Argv, CommandModule } from "yargs";
 

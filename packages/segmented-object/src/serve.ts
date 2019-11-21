@@ -1,8 +1,7 @@
 import { Forwarder, FwFace } from "@ndn/fw";
 import { PrivateKey, theDigestKey } from "@ndn/keychain";
-import { Data, Interest } from "@ndn/l3pkt";
-import { Name, NamingConvention } from "@ndn/name";
 import { Segment as Segment2 } from "@ndn/naming-convention2";
+import { Data, Interest, Name, NamingConvention } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
 import { chunker } from "./chunker";
