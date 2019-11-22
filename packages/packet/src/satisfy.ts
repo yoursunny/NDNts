@@ -1,4 +1,4 @@
-import { Data, ImplicitDigest, Interest } from ".";
+import { Data, ImplicitDigest, Interest } from "./mod";
 
 /**
  * Determine if a Data can satisfy an Interest.

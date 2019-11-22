@@ -6,7 +6,7 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import { CMD_CHALLENGE, CMD_DOWNLOAD, CMD_NEW, CMD_PROBE, CMD_PROBEINFO } from "../an";
 import { CaInfo, ChallengeDefinition, ChallengeRequest, ChallengeResponse, NewRequest, NewResponse, ProbeResponse } from "../json-types";
 import { base64Encode, makeInterestParams, readDataPayload, saltFromString, signInterest } from "../util";
-import { clientLogger as log } from ".";
+import { clientLogger as log } from "./mod";
 
 interface Options {
   fw?: Forwarder;

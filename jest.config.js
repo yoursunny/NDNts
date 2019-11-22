@@ -6,7 +6,7 @@ module.exports = {
 
   moduleFileExtensions: ["ts", "js"],
   moduleNameMapper: {
-    "^@ndn/([^/]*)$": path.join(__dirname, "packages/$1/src"),
+    "^@ndn/([^/]*)$": path.join(__dirname, "packages/$1"),
     "^@ndn/([^/]*)/test-fixture$": path.join(__dirname, "packages/$1/test-fixture"),
   },
 

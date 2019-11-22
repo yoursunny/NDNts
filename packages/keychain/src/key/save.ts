@@ -1,7 +1,7 @@
 import { Name, NameLike } from "@ndn/packet";
 
-import { KeyChain, KeyName } from "..";
-import { crypto } from "./platform";
+import { KeyChain, KeyName } from "../mod";
+import { crypto } from "./platform/mod";
 
 export interface StoredKey {
   type: string;

@@ -3,7 +3,7 @@ import { createReadStream } from "fs";
 import getStream from "get-stream";
 import { Arguments, Argv, CommandModule } from "yargs";
 
-import { importKeyPair, SafeBag  } from "..";
+import { importKeyPair, SafeBag  } from "../mod";
 import { CommonArgs, keyChain } from "./common-args";
 
 interface Args extends CommonArgs {

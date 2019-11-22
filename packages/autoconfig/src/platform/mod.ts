@@ -3,7 +3,7 @@ import { TcpTransport } from "@ndn/node-transport";
 import defaultGateway from "default-gateway";
 import nodeFetch from "node-fetch";
 
-import { connect, queryFch } from "..";
+import { connect, queryFch } from "../mod";
 
 export const fetch = nodeFetch;
 

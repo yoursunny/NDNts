@@ -1,6 +1,6 @@
 import { Interest } from "@ndn/packet";
 
-import { L3Face, Transport } from "../src";
+import { L3Face, Transport } from "..";
 
 export async function run<ServerSocket>(
   transport: Transport,

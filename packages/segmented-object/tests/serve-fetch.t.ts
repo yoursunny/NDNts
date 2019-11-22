@@ -1,4 +1,4 @@
-import "@ndn/tlv/test-fixture";
+import "@ndn/tlv/test-fixture/expect";
 
 import { Forwarder, SimpleEndpoint } from "@ndn/fw";
 import { Segment as Segment1 } from "@ndn/naming-convention1";

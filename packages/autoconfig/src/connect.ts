@@ -3,7 +3,7 @@ import { L3Face } from "@ndn/l3face";
 import { Interest, Name } from "@ndn/packet";
 import hirestime from "hirestime";
 
-import { createTransport } from "./platform";
+import { createTransport } from "./platform/mod";
 
 const getNow = hirestime();
 

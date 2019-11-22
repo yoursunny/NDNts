@@ -1,4 +1,4 @@
-import "@ndn/packet/test-fixture";
+import "@ndn/packet/test-fixture/expect";
 
 import { Forwarder } from "@ndn/fw";
 import { Data, Interest, Name } from "@ndn/packet";

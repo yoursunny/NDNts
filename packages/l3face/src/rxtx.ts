@@ -1,7 +1,7 @@
 import { Decoder } from "@ndn/tlv";
 import { fromStream, writeToStream } from "streaming-iterables";
 
-import { Transport } from "./transport";
+import { Transport } from "./mod";
 
 export async function* rxFromPacketIterable(iterable: AsyncIterable<Uint8Array>): Transport.Rx {
   for await (const pkt of iterable) {

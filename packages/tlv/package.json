@@ -12,7 +12,7 @@
     "lib"
   ],
   "type": "module",
-  "main": "src/index.ts",
+  "main": "src/mod.ts",
   "sideEffects": [
     "./test-fixture/**"
   ],
@@ -23,7 +23,7 @@
     "directory": "packages/tlv"
   },
   "publishConfig": {
-    "main": "lib/index.js"
+    "main": "lib/mod.js"
   },
   "dependencies": {
     "tslib": "*"

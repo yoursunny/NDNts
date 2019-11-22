@@ -1,4 +1,4 @@
-import { fetch, overrideFchOptions } from "./platform";
+import { fetch, overrideFchOptions } from "./platform/mod";
 
 function makeDefaultOptions() {
   return {

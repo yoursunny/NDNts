@@ -1,10 +1,10 @@
 import { Name, SigInfo, SigType } from "@ndn/packet";
 import { ASN1UniversalType, DERElement } from "asn1-ts";
 
-import { crypto } from "../platform";
+import { crypto } from "../platform/mod";
 import { PublicKeyBase } from "../public-key";
-import { EcCurve } from ".";
 import { makeGenParams, sigDerToRaw, SIGN_PARAMS } from "./internal";
+import { EcCurve } from "./mod";
 
 /** ECDSA public key. */
 export class EcPublicKey extends PublicKeyBase {

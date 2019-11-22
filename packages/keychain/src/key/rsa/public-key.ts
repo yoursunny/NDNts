@@ -1,6 +1,6 @@
 import { Name, SigInfo, SigType } from "@ndn/packet";
 
-import { crypto } from "../platform";
+import { crypto } from "../platform/mod";
 import { PublicKeyBase } from "../public-key";
 import { ALGO, IMPORT_PARAMS } from "./internal";
 

@@ -1,6 +1,6 @@
 import { ASN1Construction, ASN1TagClass, ASN1UniversalType, DERElement } from "asn1-ts";
 
-import { EcCurve } from ".";
+import { EcCurve } from "./mod";
 
 export const SIGN_PARAMS = { name: "ECDSA", hash: "SHA-256" } as EcdsaParams;
 

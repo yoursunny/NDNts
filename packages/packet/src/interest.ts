@@ -1,7 +1,7 @@
 import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
-import { LLSign, LLVerify, Name, NameLike, ParamsDigest, SigInfo, TT } from ".";
-import { sha256 } from "./platform";
+import { LLSign, LLVerify, Name, NameLike, ParamsDigest, SigInfo, TT } from "./mod";
+import { sha256 } from "./platform/mod";
 
 const HOPLIMIT_MAX = 255;
 const DecodeParams = Symbol("Interest.DecodeParams");

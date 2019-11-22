@@ -1,4 +1,4 @@
-import "@ndn/tlv/test-fixture";
+import "@ndn/tlv/test-fixture/expect";
 
 import { Interest, TT } from "@ndn/packet";
 

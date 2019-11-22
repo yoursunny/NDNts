@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require("esm")(module)("./lib/index.js");
+require("esm")(module)("./lib/mod.js");

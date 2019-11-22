@@ -1,8 +1,8 @@
 import { Name, NameLike, SigType } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
-import { EcCurve, EcPublicKey, KeyChain } from "../..";
-import { crypto } from "../platform";
+import { EcCurve, EcPublicKey, KeyChain } from "../../mod";
+import { crypto } from "../platform/mod";
 import { PrivateKeyBase } from "../private-key";
 import { generateKey, StoredKey } from "../save";
 import { makeGenParams, SIGN_PARAMS, sigRawToDer } from "./internal";

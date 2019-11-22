@@ -1,4 +1,4 @@
-import { Component, Name, NamingConvention, TT } from ".";
+import { Component, Name, NamingConvention, TT } from "./mod";
 
 const DIGEST_LENGTH = 32;
 

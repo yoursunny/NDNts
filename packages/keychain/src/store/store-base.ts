@@ -2,7 +2,7 @@ import { Name } from "@ndn/packet";
 import { fromHex, toHex } from "@ndn/tlv";
 import throat from "throat";
 
-import { Certificate } from "..";
+import { Certificate } from "../mod";
 import { StoreImpl } from "./store-impl";
 
 export abstract class StoreBase<T> {

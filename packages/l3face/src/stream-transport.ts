@@ -1,5 +1,4 @@
-import { rxFromStream, txToStream } from "./rxtx";
-import { Transport } from "./transport";
+import { rxFromStream, Transport, txToStream } from "./mod";
 
 /** Stream-oriented transport. */
 export class StreamTransport extends Transport {

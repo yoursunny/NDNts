@@ -1,6 +1,6 @@
 import Store from "data-store";
 
-import { CertStore, JsonCertStore, KeyStore } from "..";
+import { CertStore, JsonCertStore, KeyStore } from "../mod";
 import { StoreImpl } from "../store-impl";
 
 export class FileStoreImpl<T> implements StoreImpl<T> {

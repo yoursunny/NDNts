@@ -1,4 +1,4 @@
-import "../test-fixture";
+import "../test-fixture/expect";
 
 import { Component, ImplicitDigest, Name, NamingConvention, ParamsDigest, TT } from "..";
 

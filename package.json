@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "bootstrap": "npx pnpm install && bash mk/make-tsconfig.sh",
-    "build": "tsc -b mk/tsconfig-solution.json",
+    "build": "bash mk/build.sh",
     "clean": "rm -rf packages/*/lib/ packages/*/literate-temp.ts packages/*/tsconfig.tsbuildinfo",
     "cover": "jest --coverage",
     "lint": "eslint --ignore-path .gitignore -c mk/eslintrc-ts.js --fix **/*.ts && eslint --ignore-path .gitignore -c mk/eslintrc-js.js --fix **/*.js **/*.cjs",

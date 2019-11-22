@@ -2,7 +2,7 @@ import { FwFace } from "@ndn/fw";
 
 import { connect } from "./connect";
 import { queryFch } from "./fch";
-import { getDefaultGateway } from "./platform";
+import { getDefaultGateway } from "./platform/mod";
 
 interface Options {
   /** Maximum number of faces to establish. */

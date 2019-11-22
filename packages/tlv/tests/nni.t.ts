@@ -1,4 +1,4 @@
-import "../test-fixture";
+import "../test-fixture/expect";
 
 import { Encoder, NNI } from "..";
 

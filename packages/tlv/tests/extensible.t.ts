@@ -1,4 +1,4 @@
-import "../test-fixture";
+import "../test-fixture/expect";
 
 import { Decoder, Encodable, Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI } from "..";
 

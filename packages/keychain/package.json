@@ -12,12 +12,12 @@
     "lib"
   ],
   "type": "module",
-  "main": "src/index.ts",
+  "main": "src/mod.ts",
   "browser": {
-    "./lib/key/platform/index.js": "./lib/key/platform/browser.js",
-    "./lib/store/platform/index.js": "./lib/store/platform/browser.js",
-    "./src/key/platform/index.ts": "./src/key/platform/browser.ts",
-    "./src/store/platform/index.ts": "./src/store/platform/browser.ts"
+    "./lib/key/platform/mod.js": "./lib/key/platform/browser.js",
+    "./lib/store/platform/mod.js": "./lib/store/platform/browser.js",
+    "./src/key/platform/mod.ts": "./src/key/platform/browser.ts",
+    "./src/store/platform/mod.ts": "./src/store/platform/browser.ts"
   },
   "sideEffects": [
     "./test-fixture/**",
@@ -30,7 +30,7 @@
     "directory": "packages/keychain"
   },
   "publishConfig": {
-    "main": "lib/index.js"
+    "main": "lib/mod.js"
   },
   "dependencies": {
     "@ndn/naming-convention2": "workspace:*",

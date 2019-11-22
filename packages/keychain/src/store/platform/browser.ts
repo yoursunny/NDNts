@@ -1,6 +1,6 @@
 import { del as idbDel, get as idbGet, keys as idbKeys, set as idbSet, Store as idbStore } from "idb-keyval";
 
-import { CertStore, KeyStore, SCloneCertStore } from "..";
+import { CertStore, KeyStore, SCloneCertStore } from "../mod";
 import { StoreImpl } from "../store-impl";
 
 export class IdbStoreImpl<T> implements StoreImpl<T> {

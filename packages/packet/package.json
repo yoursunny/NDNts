@@ -12,10 +12,10 @@
     "lib"
   ],
   "type": "module",
-  "main": "src/index.ts",
+  "main": "src/mod.ts",
   "browser": {
-    "./lib/platform/index.js": "./lib/platform/browser.js",
-    "./src/platform/index.ts": "./src/platform/browser.ts"
+    "./lib/platform/mod.js": "./lib/platform/browser.js",
+    "./src/platform/mod.ts": "./src/platform/browser.ts"
   },
   "sideEffects": [
     "./test-fixture/**"
@@ -27,7 +27,7 @@
     "directory": "packages/packet"
   },
   "publishConfig": {
-    "main": "lib/index.js"
+    "main": "lib/mod.js"
   },
   "dependencies": {
     "@ndn/tlv": "workspace:*",

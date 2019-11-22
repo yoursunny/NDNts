@@ -1,10 +1,10 @@
 import { Version } from "@ndn/naming-convention2";
 import { Component, Data, LLSign, SigInfo } from "@ndn/packet";
 
-import { CertificateName, KeyName, PrivateKey, PublicKey } from "..";
 import { loadSpki } from "../key/load";
-import { ValidityPeriod } from ".";
+import { CertificateName, KeyName, PrivateKey, PublicKey } from "../mod";
 import { ContentTypeKEY } from "./an";
+import { ValidityPeriod } from "./mod";
 
 /**
  * NDN Certificate v2.

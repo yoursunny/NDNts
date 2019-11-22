@@ -1,7 +1,7 @@
 import { rxFromPacketIterable, Transport } from "@ndn/l3face";
 import { EventIterator } from "event-iterator";
 
-import { makeWebSocket } from "./platform";
+import { makeWebSocket } from "./platform/mod";
 
 // eslint-disable-next-line
 const pushHandlers = new WeakMap<object, (evt: MessageEvent) => void>();

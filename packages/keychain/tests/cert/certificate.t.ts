@@ -1,5 +1,4 @@
-import "@ndn/packet/test-fixture";
-import "@ndn/tlv/test-fixture";
+import "@ndn/packet/test-fixture/expect";
 
 import { Data, Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";

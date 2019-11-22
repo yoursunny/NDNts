@@ -12,7 +12,7 @@
     "lib"
   ],
   "type": "module",
-  "main": "lib/index.js",
+  "main": "lib/mod.js",
   "bin": {
     "ndncat": "cli.cjs"
   },

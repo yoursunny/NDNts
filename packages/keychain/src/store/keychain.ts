@@ -1,9 +1,9 @@
 import { Name } from "@ndn/packet";
 
-import { Certificate, PrivateKey, PublicKey } from "..";
 import { StoredKey } from "../key/save";
-import { CertStore, KeyStore, SCloneCertStore } from ".";
-import { openStores } from "./platform";
+import { Certificate, PrivateKey, PublicKey } from "../mod";
+import { CertStore, KeyStore, SCloneCertStore } from "./mod";
+import { openStores } from "./platform/mod";
 import { MemoryStoreImpl } from "./store-impl";
 
 export class KeyChain {

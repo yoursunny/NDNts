@@ -1,4 +1,4 @@
-import { Encodable, Encoder } from "./encoder";
+import { Encodable, Encoder } from "./mod";
 
 class NNI0 {
   public static decode(value: Uint8Array): number {

@@ -1,7 +1,6 @@
 import { Decoder } from "@ndn/tlv";
 
-import { TT } from "./an";
-import { LpPacket } from "./packet";
+import { LpPacket, TT } from "./mod";
 
 export class LpService {
   public rx = (iterable: AsyncIterable<Decoder.Tlv>) => {

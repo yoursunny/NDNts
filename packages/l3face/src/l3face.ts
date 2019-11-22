@@ -5,7 +5,7 @@ import { EventEmitter } from "events";
 import { filter, map, pipeline } from "streaming-iterables";
 import StrictEventEmitter from "strict-event-emitter-types";
 
-import { Transport } from "./transport";
+import { Transport } from "./mod";
 
 type Packet = Interest | Data;
 

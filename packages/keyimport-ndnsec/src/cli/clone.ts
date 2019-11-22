@@ -1,6 +1,6 @@
 import { CommandModule } from "yargs";
 
-import { ndnsec } from "..";
+import { ndnsec } from "../mod";
 import { CommonArgs, keyChain } from "./common-args";
 
 async function main() {

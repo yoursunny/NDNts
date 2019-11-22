@@ -1,7 +1,7 @@
-import "@ndn/packet/test-fixture";
+import "@ndn/packet/test-fixture/expect";
 
 import { Data, Interest, Name } from "@ndn/packet";
-import { getDataFullName } from "@ndn/packet/test-fixture";
+import { getDataFullName } from "@ndn/packet/test-fixture/name";
 
 import { CancelInterest, DataResponse, Forwarder, FwFace, InterestToken, RejectInterest, SimpleEndpoint } from "..";
 

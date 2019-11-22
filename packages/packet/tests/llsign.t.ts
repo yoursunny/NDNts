@@ -1,4 +1,4 @@
-import "@ndn/tlv/test-fixture";
+import "@ndn/tlv/test-fixture/expect";
 
 import { Decodable, Decoder, Encodable, Encoder } from "@ndn/tlv";
 import * as crypto from "crypto";

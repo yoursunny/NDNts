@@ -1,4 +1,4 @@
-import "@ndn/packet/test-fixture";
+import "@ndn/packet/test-fixture/expect";
 
 import { Name, SigType } from "@ndn/packet";
 

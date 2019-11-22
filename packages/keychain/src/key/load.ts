@@ -1,8 +1,8 @@
 import { Name } from "@ndn/packet";
 import { DERElement } from "asn1-ts";
 
-import { EcPrivateKey, EcPublicKey, PublicKey, RsaPrivateKey, RsaPublicKey } from ".";
 import { HmacKey } from "./hmac";
+import { EcPrivateKey, EcPublicKey, PublicKey, RsaPrivateKey, RsaPublicKey } from "./mod";
 import { PrivateKey } from "./private-key";
 import { StoredKey } from "./save";
 

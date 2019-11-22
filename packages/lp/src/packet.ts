@@ -1,6 +1,6 @@
 import { Decoder, EvDecoder } from "@ndn/tlv";
 
-import { TT } from "./an";
+import { TT } from "./mod";
 
 function isCritical(tt: number): boolean {
   return !(tt >= 800 && tt <= 959 && tt % 4 === 0);

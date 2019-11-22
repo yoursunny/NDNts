@@ -1,13 +1,8 @@
-import { Decoder, Encoder } from "@ndn/tlv";
+import "@ndn/tlv/test-fixture/expect";
+
 import expect from "expect";
 
-import { Component, ComponentLike, Data, Name, NameLike } from "..";
-
-/** Obtain Data full name without being cached on Data packet. */
-export async function getDataFullName(data: Data): Promise<Name> {
-  const copy = new Decoder(Encoder.encode(data)).decode(Data);
-  return await copy.computeFullName();
-}
+import { Component, ComponentLike, Name, NameLike } from "..";
 
 expect.extend({
   toEqualComponent(received: Component, comp: ComponentLike) {

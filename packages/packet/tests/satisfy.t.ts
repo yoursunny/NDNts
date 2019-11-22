@@ -1,5 +1,5 @@
 import { canSatisfy, canSatisfySync, Data, Interest, Name } from "..";
-import { getDataFullName } from "../test-fixture";
+import { getDataFullName } from "../test-fixture/name";
 
 test("simple", async () => {
   const interest = new Interest("/A");

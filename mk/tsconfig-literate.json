@@ -1,9 +1,9 @@
 {
   "extends": "./tsconfig-base.json",
-   "compilerOptions": {
+  "compilerOptions": {
     "baseUrl": "..",
     "paths": {
-      "@ndn/*": ["./packages/*/lib"]
+      "@ndn/*": ["./packages/*/lib/mod"]
     }
   },
 }

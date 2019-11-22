@@ -1,7 +1,7 @@
 import { Transport } from "@ndn/l3face";
 import { WsTransport } from "@ndn/ws-transport";
 
-import { connect, queryFch } from "..";
+import { connect, queryFch } from "../mod";
 
 export const fetch = self.fetch;
 

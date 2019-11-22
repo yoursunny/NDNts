@@ -1,4 +1,4 @@
-import { NNI } from "./nni";
+import { NNI } from "./mod";
 
 export interface Decodable<R> {
   decodeFrom(decoder: Decoder): R;

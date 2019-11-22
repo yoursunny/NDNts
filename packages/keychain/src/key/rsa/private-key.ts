@@ -1,8 +1,8 @@
 import { Name, NameLike, SigType } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
-import { KeyChain, RsaModulusLength, RsaPublicKey } from "../..";
-import { crypto } from "../platform";
+import { KeyChain, RsaModulusLength, RsaPublicKey } from "../../mod";
+import { crypto } from "../platform/mod";
 import { PrivateKeyBase } from "../private-key";
 import { generateKey, StoredKey } from "../save";
 import { ALGO, GEN_PARAMS, IMPORT_PARAMS } from "./internal";

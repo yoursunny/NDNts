@@ -1,5 +1,4 @@
-import "../test-fixture";
-import "@ndn/tlv/test-fixture";
+import "../test-fixture/expect";
 
 import { Decoder, Encoder } from "@ndn/tlv";
 import { createHash } from "crypto";

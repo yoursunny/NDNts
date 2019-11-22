@@ -1,6 +1,6 @@
 import { Decoder, EncodableObj, Encoder, EvDecoder, Extensible, ExtensionRegistry, NNI } from "@ndn/tlv";
 
-import { Name, NameLike, TT } from ".";
+import { Name, NameLike, TT } from "./mod";
 
 export class KeyDigest {
   constructor(public readonly value: Uint8Array) {

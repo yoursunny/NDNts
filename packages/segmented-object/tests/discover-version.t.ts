@@ -1,4 +1,4 @@
-import "@ndn/packet/test-fixture";
+import "@ndn/packet/test-fixture/expect";
 
 import { Forwarder, SimpleEndpoint } from "@ndn/fw";
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";

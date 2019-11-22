@@ -1,7 +1,7 @@
 import { Name, SigInfo, SigType } from "@ndn/packet";
 import applyMixins from "applymixins";
 
-import { crypto, timingSafeEqual } from "./platform";
+import { crypto, timingSafeEqual } from "./platform/mod";
 import { PrivateKeyBase } from "./private-key";
 import { PublicKeyBase } from "./public-key";
 
