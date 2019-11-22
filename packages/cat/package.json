@@ -16,9 +16,7 @@
   "bin": {
     "ndncat": "cli.cjs"
   },
-  "sideEffects": [
-    "./test-fixture/**"
-  ],
+  "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",

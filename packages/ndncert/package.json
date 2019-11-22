@@ -17,9 +17,7 @@
     "./lib/platform/mod.js": "./lib/platform/browser.js",
     "./src/platform/mod.ts": "./src/platform/browser.ts"
   },
-  "sideEffects": [
-    "./test-fixture/**"
-  ],
+  "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",

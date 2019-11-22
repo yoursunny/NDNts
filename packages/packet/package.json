@@ -18,7 +18,7 @@
     "./src/platform/mod.ts": "./src/platform/browser.ts"
   },
   "sideEffects": [
-    "./test-fixture/**"
+    "./test-fixture/expect.ts"
   ],
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {

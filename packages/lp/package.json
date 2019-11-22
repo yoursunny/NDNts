@@ -13,9 +13,7 @@
   ],
   "type": "module",
   "main": "src/mod.ts",
-  "sideEffects": [
-    "./test-fixture/**"
-  ],
+  "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",

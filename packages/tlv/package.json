@@ -14,7 +14,7 @@
   "type": "module",
   "main": "src/mod.ts",
   "sideEffects": [
-    "./test-fixture/**"
+    "./test-fixture/expect.ts"
   ],
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
