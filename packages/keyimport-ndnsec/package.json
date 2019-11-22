@@ -33,11 +33,11 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "esm": "^3.2.25",
-    "execa": "^3.2.0",
+    "execa": "^3.3.0",
     "get-stream": "^5.1.0",
     "loud-rejection": "^2.2.0",
     "tslib": "*",
-    "yargs": "^14.2.0"
+    "yargs": "^15.0.2"
   },
   "devDependencies": {
     "@types/yargs": "^13.0.3"

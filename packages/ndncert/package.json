@@ -44,6 +44,6 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@types/fast-chunk-string": "1.0.0",
-    "@types/node-fetch": "^1.6.9"
+    "@types/node-fetch": "^2.5.3"
   }
 }
