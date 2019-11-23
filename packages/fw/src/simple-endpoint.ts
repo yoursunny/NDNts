@@ -1,58 +1,46 @@
 import { Data, Interest, Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
-import pDefer from "p-defer";
+import pushable from "it-pushable";
+import PCancelable from "p-cancelable";
 import { filter, pipeline, tap, transform } from "streaming-iterables";
 
-import { Face } from "./face";
-import { Forwarder } from "./forwarder";
-import { CancelInterest, RejectInterest } from "./reqres";
+import { CancelInterest, Forwarder, FwFace, RejectInterest } from "./mod";
 
 export class SimpleEndpoint {
   constructor(protected readonly fw: Forwarder = Forwarder.getDefault()) {
   }
 
   public consume(interest: Interest): SimpleEndpoint.Consumer {
-    const finish = pDefer<Data|RejectInterest>();
-    const abort = pDefer<true>();
-    this.fw.addFace({
-      extendedTx: true,
-      rx: {
-        async *[Symbol.asyncIterator]() {
-          yield interest;
-          if (await Promise.race([finish.promise, abort.promise]) === true) {
-            yield new CancelInterest(interest);
-            await finish.promise;
+    return new PCancelable((resolve, reject, onCancel) => {
+      const rx = pushable<FwFace.Rxable>();
+      this.fw.addFace({
+        extendedTx: true,
+        rx,
+        async tx(iterable) {
+          for await (const pkt of iterable) {
+            rx.end();
+            if (pkt instanceof Data) {
+              resolve(pkt);
+            } else {
+              reject(new Error(`Interest rejected: ${(pkt as RejectInterest).reason} @${this}`));
+            }
+            break;
           }
         },
-      },
-      toString() {
-        return `consume(${interest.name})`;
-      },
-      async tx(iterable) {
-        for await (const pkt of iterable) {
-          finish.resolve(pkt as Data|RejectInterest);
-          break;
-        }
-      },
-    } as Face.Base & Face.RxTxExtended);
+        toString: () => `consume(${interest.name})`,
+      } as FwFace.Base & FwFace.RxTxExtended,
+      {
+        local: true,
+      });
 
-    return Object.assign(
-      (async () => {
-        const res = await finish.promise;
-        if (res instanceof Data) {
-          return res;
-        }
-        throw new Error(`Interest rejected: ${res.reason}`);
-      })(),
-      { abort() { abort.resolve(true); } },
-    );
+      rx.push(interest);
+      onCancel(() => rx.push(new CancelInterest(interest)));
+      onCancel.shouldReject = false;
+    });
   }
 
   public produce({ prefix, handler, concurrency = 1 }: SimpleEndpoint.ProducerOptions): SimpleEndpoint.Producer {
     const face = this.fw.addFace({
-      toString() {
-        return `produce(${prefix})`;
-      },
       transform(rxIterable) {
         return pipeline(
           () => rxIterable,
@@ -62,6 +50,12 @@ export class SimpleEndpoint {
           tap((data) => Encoder.encode(data)),
         );
       },
+      toString() {
+        return `produce(${prefix})`;
+      },
+    },
+    {
+      local: true,
     });
     face.addRoute(prefix);
     return {
@@ -73,9 +67,7 @@ export class SimpleEndpoint {
 export namespace SimpleEndpoint {
   export const TIMEOUT = Symbol("SimpleEndpoint.TIMEOUT");
 
-  export type Consumer = Promise<Data> & {
-    abort(): void;
-  };
+  export type Consumer = PCancelable<Data>;
 
   export type ProducerHandler = (interest: Interest) => Promise<Data|typeof TIMEOUT>;
 

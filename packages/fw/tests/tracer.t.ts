@@ -19,7 +19,7 @@ test("simple", async () => {
   const se = new SimpleEndpoint();
 
   const consumerA = se.consume(new Interest("/A"));
-  consumerA.abort();
+  consumerA.cancel();
   await expect(consumerA).rejects.toThrow();
 
   const produerB = se.produce({

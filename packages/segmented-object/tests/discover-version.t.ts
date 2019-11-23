@@ -44,8 +44,8 @@ test.each(wrongNames)("wrong name %#", async (dataName) => {
   producer.close();
 });
 
-test("abort", async () => {
+test("cancel", async () => {
   const p = discoverVersion(new Name("/A"));
-  setTimeout(() => p.abort(), 100);
+  setTimeout(() => p.cancel(), 100);
   await expect(p).rejects.toThrow();
 });
