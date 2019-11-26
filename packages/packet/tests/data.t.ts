@@ -127,6 +127,7 @@ test("decode", () => {
 test("ImplicitDigest", async () => {
   let data = new Data("/A");
   await expect(data.computeImplicitDigest()).rejects.toThrow(/unavailable/);
+  expect(() => Data.getWire(data)).toThrow();
 
   const wire = Encoder.encode(data);
   const expectedDigest = createHash("sha256").update(wire).digest();
@@ -135,7 +136,7 @@ test("ImplicitDigest", async () => {
   expect(data.getImplicitDigest()).toEqualUint8Array(expectedDigest);
   await expect(data.computeImplicitDigest()).resolves.toEqualUint8Array(expectedDigest);
 
-  data = new Decoder(wire).decode(Data);
+  data = new Decoder(Data.getWire(data)).decode(Data);
   expect(data.getFullName()).toBeUndefined();
   const fullName = await data.computeFullName();
   expect(fullName).toEqualName(`/A/${ImplicitDigest.create(expectedDigest)}`);

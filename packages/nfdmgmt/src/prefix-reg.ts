@@ -1,3 +1,4 @@
+import { Endpoint } from "@ndn/endpoint";
 import { Advertise, FwFace } from "@ndn/fw";
 import { Name } from "@ndn/packet";
 
@@ -12,7 +13,7 @@ class NfdAdvertise extends Advertise {
     super(face);
     this.opts = {
       ...opts,
-      fw: face.fw,
+      endpoint: new Endpoint(face.fw),
     };
     this.opts.commandPrefix = this.opts.commandPrefix ?? ControlCommand.getPrefix(face.attributes.local);
     face.addRoute(this.opts.commandPrefix);

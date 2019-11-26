@@ -9,7 +9,8 @@ In particular, it enables prefix registration on NFD.
 import { enableNfdPrefixReg, signInterest02 } from "@ndn/nfdmgmt";
 
 // other imports for examples
-import { Forwarder, SimpleEndpoint } from "@ndn/fw";
+import { Endpoint } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { EcPrivateKey } from "@ndn/keychain";
 import { L3Face } from "@ndn/l3face";
 import { Data, Interest } from "@ndn/packet";
@@ -60,7 +61,7 @@ const uplinkP = fwP.addFace(new L3Face(transportP));
 enableNfdPrefixReg(uplinkP, { signer: privateKey });
 
 // Start a producer.
-const producer = new SimpleEndpoint(fwP).produce({
+const producer = new Endpoint(fwP).produce({
   prefix: new Name("/P"),
   async handler() {
     console.log("producing");
@@ -71,7 +72,9 @@ const producer = new SimpleEndpoint(fwP).produce({
 await new Promise((r) => setTimeout(r, 500));
 
 // Start a consumer, fetching Data from the producer via NFD.
-const data = await new SimpleEndpoint(fwC).consume(new Interest("/P", Interest.MustBeFresh));
+const data = await new Endpoint(fwC).consume({
+  interest: new Interest("/P", Interest.MustBeFresh),
+});
 const payloadText = new TextDecoder().decode(data.content);
 console.log("received", `${data.name} ${payloadText}`);
 assert.equal(payloadText, "NDNts + NFD");

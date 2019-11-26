@@ -1,9 +1,11 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Forwarder, SimpleEndpoint } from "@ndn/fw";
+import { Endpoint } from "@ndn/endpoint";
 import { Data, Interest, Name } from "@ndn/packet";
 
 import { ControlCommand, enableNfdPrefixReg } from "..";
+
+afterEach(() => Endpoint.deleteDefaultForwarder());
 
 interface Row {
   faceIsLocal?: boolean;
@@ -27,7 +29,7 @@ const TABLE = [
 ] as Row[];
 
 test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }) => {
-  const fw = Forwarder.create();
+  const endpoint = new Endpoint();
 
   const remoteProcess = jest.fn((interest: Interest) => {
     expect(interest.name).toHaveLength(expectedPrefix.length + 7);
@@ -41,7 +43,7 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
       0x67, 0x02, 0x4F, 0x4B, // 'OK'
     ));
   });
-  const face = fw.addFace({
+  const face = endpoint.fw.addFace({
     async *transform(iterable) {
       for await (const pkt of iterable) {
         expect(pkt).toBeInstanceOf(Interest);
@@ -51,10 +53,9 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
   }, { local: faceIsLocal });
   enableNfdPrefixReg(face, { commandPrefix });
 
-  const se = new SimpleEndpoint(fw);
-  const producer = se.produce({
+  const producer = endpoint.produce({
     prefix: new Name("/R"),
-    handler() { return Promise.resolve(SimpleEndpoint.TIMEOUT); },
+    async handler() { return false; },
   });
   await new Promise((r) => setTimeout(r, 50));
   expect(remoteProcess).toHaveBeenCalledTimes(1);

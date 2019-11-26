@@ -1,4 +1,4 @@
-import { SimpleEndpoint } from "@ndn/fw";
+import { Endpoint } from "@ndn/endpoint";
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
 import { Interest, Name, NamingConvention } from "@ndn/packet";
 import PCancelable from "p-cancelable";
@@ -16,7 +16,7 @@ export function discoverVersion(name: Name, opts: Partial<discoverVersion.Option
 
   const interest = new Interest(name, Interest.CanBePrefix, Interest.MustBeFresh);
   interest.mustBeFresh = versionMustBeFresh;
-  const consumer = new SimpleEndpoint(opts.fw).consume(interest);
+  const consumer = new Endpoint(opts.fw).consume({ interest });
   return new PCancelable((resolve, reject, onCancel) => {
     onCancel(() => consumer.cancel());
     consumer.then(async (data) => {

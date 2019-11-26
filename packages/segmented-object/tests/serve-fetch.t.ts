@@ -1,6 +1,7 @@
 import "@ndn/tlv/test-fixture/expect";
 
-import { Forwarder, SimpleEndpoint } from "@ndn/fw";
+import { Endpoint } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { Segment as Segment1 } from "@ndn/naming-convention1";
 import { Interest, Name } from "@ndn/packet";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
@@ -103,10 +104,10 @@ test("empty object", async () => {
   const fw = Forwarder.create();
   const server = serve(new Name("/R"), new Uint8Array(), { fw, segmentNumConvention: Segment1 });
 
-  const ep = new SimpleEndpoint(fw);
-  await expect(ep.consume(new Interest(new Name("/R").append(Segment1, 1), Interest.Lifetime(50))))
+  const ep = new Endpoint(fw);
+  await expect(ep.consume({ interest: new Interest(new Name("/R").append(Segment1, 1), Interest.Lifetime(50)) }))
         .rejects.toThrow();
-  const data = await ep.consume(new Interest(new Name("/R").append(Segment1, 0)));
+  const data = await ep.consume({ interest: new Interest(new Name("/R").append(Segment1, 0)) });
   expect(data.content).toHaveLength(0);
 
   server.stop();

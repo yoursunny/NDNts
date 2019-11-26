@@ -28,6 +28,7 @@
     "main": "lib/mod.js"
   },
   "dependencies": {
+    "@ndn/endpoint": "workspace:*",
     "@ndn/fw": "workspace:*",
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",

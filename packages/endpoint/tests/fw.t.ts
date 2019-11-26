@@ -1,19 +1,31 @@
 import "@ndn/packet/test-fixture/expect";
 
+import { CancelInterest, DataResponse, Forwarder, FwFace, FwTracer, InterestToken, RejectInterest } from "@ndn/fw";
+import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, Interest, Name } from "@ndn/packet";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
 
-import { CancelInterest, DataResponse, Forwarder, FwFace, InterestToken, RejectInterest, SimpleEndpoint } from "..";
+import { Endpoint } from "..";
+
+let ep: Endpoint;
+
+/** Express Interest without retransmissions. */
+function consume(interest: Interest) {
+  return ep.consume({ interest });
+}
+
+beforeEach(() => {
+  ep = new Endpoint();
+});
+
+afterEach(() => Forwarder.deleteDefault());
 
 test("simple", async () => {
-  const fw = Forwarder.create();
-  const se = new SimpleEndpoint(fw);
-
   const dataDigest = new Data("/P/digest", Uint8Array.of(0xE0, 0xE1));
   const nameDigest = await getDataFullName(dataDigest);
   const nameWrongDigest = await getDataFullName(new Data("/P/wrong-digest", Uint8Array.of(0xC0)));
 
-  const producerP = se.produce({
+  const producerP = ep.produce({
     prefix: new Name("/P"),
     async handler(interest) {
       await new Promise((r) => setTimeout(r, 2));
@@ -36,7 +48,7 @@ test("simple", async () => {
     },
   });
 
-  const producerQ = se.produce({
+  const producerQ = ep.produce({
     prefix: new Name("/Q"),
     async handler(interest) {
       await new Promise((r) => setTimeout(r, 120));
@@ -44,50 +56,47 @@ test("simple", async () => {
     },
   });
 
-  const canceledInterest = se.consume(new Interest("/Q/canceled"));
+  const canceledInterest = consume(new Interest("/Q/canceled"));
   setTimeout(() => canceledInterest.cancel(), 50);
   await Promise.all([
-    expect(se.consume(new Interest("/O/no-route", Interest.Lifetime(500))))
+    expect(consume(new Interest("/O/no-route", Interest.Lifetime(500))))
       .rejects.toThrow(),
-    expect(se.consume(new Interest("/P/exact")))
+    expect(consume(new Interest("/P/exact")))
       .resolves.toBeInstanceOf(Data),
-    expect(se.consume(new Interest("/P/prefix", Interest.CanBePrefix)))
+    expect(consume(new Interest("/P/prefix", Interest.CanBePrefix)))
       .resolves.toBeInstanceOf(Data),
-    expect(se.consume(new Interest("/P/no-prefix", Interest.Lifetime(500))))
+    expect(consume(new Interest("/P/no-prefix", Interest.Lifetime(500))))
       .rejects.toThrow(),
-    expect(se.consume(new Interest("/P/fresh", Interest.MustBeFresh)))
+    expect(consume(new Interest("/P/fresh", Interest.MustBeFresh)))
       .resolves.toBeInstanceOf(Data),
-    expect(se.consume(new Interest("/P/no-fresh", Interest.MustBeFresh, Interest.Lifetime(500))))
+    expect(consume(new Interest("/P/no-fresh", Interest.MustBeFresh, Interest.Lifetime(500))))
       .rejects.toThrow(),
-    expect(se.consume(new Interest("/Q/exact")))
+    expect(consume(new Interest("/Q/exact")))
       .resolves.toBeInstanceOf(Data),
-    expect(se.consume(new Interest("/Q/too-slow", Interest.Lifetime(100))))
+    expect(consume(new Interest("/Q/too-slow", Interest.Lifetime(100))))
       .rejects.toThrow(),
-    expect(se.consume(new Interest(nameDigest)))
+    expect(consume(new Interest(nameDigest)))
       .resolves.toBeInstanceOf(Data),
-    expect(se.consume(new Interest(nameWrongDigest, Interest.Lifetime(500))))
+    expect(consume(new Interest(nameWrongDigest, Interest.Lifetime(500))))
       .rejects.toThrow(),
     expect(canceledInterest)
       .rejects.toThrow(),
   ]);
 
   await new Promise((r) => setTimeout(r, 50));
-  expect(fw.faces.size).toBe(2);
+  expect(ep.fw.faces.size).toBe(2);
   producerP.close();
   producerQ.close();
-  expect(fw.faces.size).toBe(0);
+  expect(ep.fw.faces.size).toBe(0);
 });
 
 test("aggregate & retransmit", async () => {
-  const fw = Forwarder.create();
-  const se = new SimpleEndpoint(fw);
-
   let producedP = false;
-  se.produce({
+  ep.produce({
     prefix: new Name("/P"),
     async handler(interest) {
       if (producedP) {
-        return SimpleEndpoint.TIMEOUT;
+        return false;
       }
       producedP = true;
       await new Promise((r) => setTimeout(r, 100));
@@ -97,7 +106,7 @@ test("aggregate & retransmit", async () => {
 
   let nRxData = 0;
   let nRxRejects = 0;
-  const face = fw.addFace({
+  const face = ep.fw.addFace({
     extendedTx: true,
     rx: (async function*() {
       yield InterestToken.set(new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0xC91585F2)), 1);
@@ -143,14 +152,63 @@ test("aggregate & retransmit", async () => {
   face.addRoute(new Name("/L"));
 
   await Promise.all([
-    expect(se.consume(new Interest("/P/Q", Interest.CanBePrefix)))
+    expect(consume(new Interest("/P/Q", Interest.CanBePrefix)))
       .resolves.toBeInstanceOf(Data),
-    expect(se.consume(new Interest("/P/Q", Interest.CanBePrefix)))
+    expect(consume(new Interest("/P/Q", Interest.CanBePrefix)))
       .resolves.toBeInstanceOf(Data),
-    expect(se.consume(new Interest("/P/Q/R/S")))
+    expect(consume(new Interest("/P/Q/R/S")))
       .resolves.toBeInstanceOf(Data),
   ]);
 
   expect(nRxData).toBe(1);
   expect(nRxRejects).toBe(2);
+});
+
+describe("tracer", () => {
+  let debugFn: jest.SpyInstance;
+  beforeEach(() => debugFn = jest.spyOn(FwTracer.internalLogger, "debug").mockImplementation(() => undefined));
+  afterEach(() => debugFn.mockRestore());
+
+  test("simple", async () => {
+    const tracer = FwTracer.enable();
+    const consumerA = consume(new Interest("/A"));
+    consumerA.cancel();
+    await expect(consumerA).rejects.toThrow();
+
+    const produerB = ep.produce({
+      prefix: new Name("/B"),
+      async handler() { return new Data("/B/1", Data.FreshnessPeriod(1000)); },
+    });
+    await consume(new Interest("/B", Interest.CanBePrefix, Interest.MustBeFresh));
+    produerB.close();
+
+    const faceC = Forwarder.getDefault().addFace(new NoopFace());
+    faceC.addRoute(new Name("/C"));
+    faceC.removeRoute(new Name("/C"));
+    tracer.disable();
+    faceC.close();
+
+    expect(debugFn.mock.calls.map((a) => a.join(" "))).toEqual([
+      "+Face consume(/A)",
+      "consume(/A) >I /A",
+      "consume(/A) >Cancel /A",
+      "consume(/A) <Reject(cancel) /A",
+      "+Face produce(/B)",
+      "produce(/B) +Prefix /B",
+      "+Announcement /B",
+      "+Face consume(/B)",
+      "consume(/B) >I /B[P][F]",
+      "-Face consume(/A)",
+      "produce(/B) <I /B[P][F]",
+      "produce(/B) >D /B/1",
+      "consume(/B) <D /B/1",
+      "-Announcement /B",
+      "-Face produce(/B)",
+      "+Face NoopFace",
+      "NoopFace +Prefix /C",
+      "+Announcement /C",
+      "-Announcement /C",
+      "NoopFace -Prefix /C",
+    ]);
+  });
 });

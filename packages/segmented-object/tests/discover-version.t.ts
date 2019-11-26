@@ -1,6 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Forwarder, SimpleEndpoint } from "@ndn/fw";
+import { Endpoint } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
 import { Data, Name } from "@ndn/packet";
 
@@ -9,7 +10,7 @@ import { discoverVersion } from "..";
 afterEach(() => Forwarder.deleteDefault());
 
 test.each([false, true])("normal mbf=%p", async (mbf) => {
-  const producer = new SimpleEndpoint().produce({
+  const producer = new Endpoint().produce({
     prefix: new Name("/A"),
     async handler(interest) {
       expect(interest.name).toEqualName("/A");
@@ -34,7 +35,7 @@ const wrongNames = [
 ];
 
 test.each(wrongNames)("wrong name %#", async (dataName) => {
-  const producer = new SimpleEndpoint().produce({
+  const producer = new Endpoint().produce({
     prefix: new Name("/A"),
     async handler(interest) {
       return new Data(dataName, Data.FreshnessPeriod(1000));

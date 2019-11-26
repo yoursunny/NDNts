@@ -1,4 +1,5 @@
-import { Forwarder, FwFace, SimpleEndpoint } from "@ndn/fw";
+import { Endpoint } from "@ndn/endpoint";
+import { Forwarder, FwFace } from "@ndn/fw";
 import { L3Face } from "@ndn/l3face";
 import { Interest, Name } from "@ndn/packet";
 import hirestime from "hirestime";
@@ -12,7 +13,7 @@ async function testConnection(face: FwFace, name: Name = new Name("/localhop/nfd
   try {
     const interest = new Interest(name, Interest.CanBePrefix,
                                   Interest.Lifetime(1000));
-    await new SimpleEndpoint(face.fw).consume(interest);
+    await new Endpoint(face.fw).consume({ interest });
   } finally {
     face.removeRoute(name);
   }

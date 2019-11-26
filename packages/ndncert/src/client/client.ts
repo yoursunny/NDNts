@@ -1,4 +1,4 @@
-import { Forwarder, SimpleEndpoint } from "@ndn/fw";
+import { Endpoint } from "@ndn/endpoint";
 import { Certificate, KeyChainImplWebCrypto as crypto, KeyName, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, Interest, Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
@@ -9,7 +9,7 @@ import { base64Encode, makeInterestParams, readDataPayload, saltFromString, sign
 import { clientLogger as log } from "./mod";
 
 interface Options {
-  fw?: Forwarder;
+  endpoint?: Endpoint;
 }
 
 /** NDNCERT client. */
@@ -17,7 +17,7 @@ export class Client {
   public readonly prefix: Name;
   public readonly title: string;
   public readonly probeKeys: ReadonlyArray<string>;
-  private readonly se: SimpleEndpoint;
+  private readonly endpoint: Endpoint;
 
   /** Construct client from CA information. */
   public static async create(caInfo: CaInfo, opts: Options = {}): Promise<Client> {
@@ -34,7 +34,7 @@ export class Client {
     this.prefix = new Name(caInfo["ca-prefix"]);
     this.title = caInfo["ca-info"];
     this.probeKeys = caInfo.probe.split("|");
-    this.se = new SimpleEndpoint(opts.fw);
+    this.endpoint = opts.endpoint ?? new Endpoint();
   }
 
   /**
@@ -116,7 +116,7 @@ export class Client {
   }
 
   private async consume(interest: Interest): Promise<Data> {
-    const data = await this.se.consume(interest);
+    const data = await this.endpoint.consume({ interest });
     await this.publicKey.verify(data);
     return data;
   }
@@ -128,8 +128,9 @@ export namespace Client {
    * Application should validate CA certificate before using the client.
    */
   export async function gatherInfo(prefix: Name, opts: Options = {}): Promise<Client> {
-    const se = new SimpleEndpoint(opts.fw);
-    const data = await se.consume(new Interest(prefix.append(...CMD_PROBEINFO), Interest.MustBeFresh));
+    const endpoint = opts.endpoint ?? new Endpoint();
+    const interest = new Interest(prefix.append(...CMD_PROBEINFO), Interest.MustBeFresh);
+    const data = await endpoint.consume({ interest });
     const caInfo = (await readDataPayload(data.content)) as CaInfo;
     const client = await Client.create(caInfo, opts);
     await client.publicKey.verify(data);

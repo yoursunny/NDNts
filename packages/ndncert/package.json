@@ -28,7 +28,7 @@
     "main": "lib/mod.js"
   },
   "dependencies": {
-    "@ndn/fw": "workspace:*",
+    "@ndn/endpoint": "workspace:*",
     "@ndn/keychain": "workspace:*",
     "@ndn/nfdmgmt": "workspace:*",
     "@ndn/packet": "workspace:*",

@@ -1,4 +1,4 @@
-import { Forwarder, SimpleEndpoint } from "@ndn/fw";
+import { Endpoint } from "@ndn/endpoint";
 import { Component, Interest, Name, TT  } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
@@ -30,7 +30,7 @@ interface Commands {
 /** NFD Management - Control Command client. */
 export namespace ControlCommand {
   export interface Options extends signInterest02.Options {
-    fw?: Forwarder;
+    endpoint?: Endpoint;
     commandPrefix?: Name;
   }
 
@@ -52,8 +52,8 @@ export namespace ControlCommand {
     ]);
     const interest = await signInterest02(new Interest(name), opts);
 
-    const ep = new SimpleEndpoint(opts.fw);
-    const data = await ep.consume(interest);
+    const endpoint = opts.endpoint ?? new Endpoint();
+    const data = await endpoint.consume({ interest });
     return new Decoder(data.content).decode(ControlResponse);
   }
 }
