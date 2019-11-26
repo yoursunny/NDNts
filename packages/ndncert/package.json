@@ -41,7 +41,7 @@
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
-    "@types/fast-chunk-string": "1.0.0",
-    "@types/node-fetch": "^2.5.3"
+    "@types/fast-chunk-string": "^1.0.0",
+    "@types/node-fetch": "^2.5.4"
   }
 }

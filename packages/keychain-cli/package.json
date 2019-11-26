@@ -39,7 +39,7 @@
     "yargs": "^15.0.2"
   },
   "devDependencies": {
-    "@types/fast-chunk-string": "1.0.0",
+    "@types/fast-chunk-string": "^1.0.0",
     "@types/stdout-stream": "^1.4.0",
     "@types/yargs": "^13.0.3"
   }

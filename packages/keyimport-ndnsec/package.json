@@ -31,7 +31,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "esm": "^3.2.25",
-    "execa": "^3.3.0",
+    "execa": "^3.4.0",
     "get-stream": "^5.1.0",
     "loud-rejection": "^2.2.0",
     "tslib": "*",

@@ -36,7 +36,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "esm": "^3.2.25",
-    "execa": "^3.3.0",
+    "execa": "^3.4.0",
     "loud-rejection": "^2.2.0",
     "read-json-sync": "^2.0.1",
     "tslib": "*",
