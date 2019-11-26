@@ -116,7 +116,7 @@ export class Client {
   }
 
   private async consume(interest: Interest): Promise<Data> {
-    const data = await this.endpoint.consume({ interest });
+    const data = await this.endpoint.consume(interest);
     await this.publicKey.verify(data);
     return data;
   }
@@ -130,7 +130,7 @@ export namespace Client {
   export async function gatherInfo(prefix: Name, opts: Options = {}): Promise<Client> {
     const endpoint = opts.endpoint ?? new Endpoint();
     const interest = new Interest(prefix.append(...CMD_PROBEINFO), Interest.MustBeFresh);
-    const data = await endpoint.consume({ interest });
+    const data = await endpoint.consume(interest);
     const caInfo = (await readDataPayload(data.content)) as CaInfo;
     const client = await Client.create(caInfo, opts);
     await client.publicKey.verify(data);

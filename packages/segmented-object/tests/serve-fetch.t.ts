@@ -105,9 +105,9 @@ test("empty object", async () => {
   const server = serve(new Name("/R"), new Uint8Array(), { fw, segmentNumConvention: Segment1 });
 
   const ep = new Endpoint(fw);
-  await expect(ep.consume({ interest: new Interest(new Name("/R").append(Segment1, 1), Interest.Lifetime(50)) }))
+  await expect(ep.consume(new Interest(new Name("/R").append(Segment1, 1), Interest.Lifetime(50))))
         .rejects.toThrow();
-  const data = await ep.consume({ interest: new Interest(new Name("/R").append(Segment1, 0)) });
+  const data = await ep.consume(new Interest(new Name("/R").append(Segment1, 0)));
   expect(data.content).toHaveLength(0);
 
   server.stop();

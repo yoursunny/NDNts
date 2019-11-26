@@ -10,9 +10,8 @@ import { discoverVersion } from "..";
 afterEach(() => Forwarder.deleteDefault());
 
 test.each([false, true])("normal mbf=%p", async (mbf) => {
-  const producer = new Endpoint().produce({
-    prefix: new Name("/A"),
-    async handler(interest) {
+  const producer = new Endpoint().produce("/A",
+    async (interest) => {
       expect(interest.name).toEqualName("/A");
       expect(interest.canBePrefix).toBeTruthy();
       expect(interest.mustBeFresh).toBe(mbf);
@@ -21,8 +20,7 @@ test.each([false, true])("normal mbf=%p", async (mbf) => {
         data.freshnessPeriod = 1000;
       }
       return data;
-    },
-  });
+    });
   await expect(discoverVersion(new Name("/A"), mbf ? undefined : { versionMustBeFresh: false }))
         .resolves.toEqualName(new Name("/A").append(Version2, 2));
   producer.close();
@@ -35,12 +33,8 @@ const wrongNames = [
 ];
 
 test.each(wrongNames)("wrong name %#", async (dataName) => {
-  const producer = new Endpoint().produce({
-    prefix: new Name("/A"),
-    async handler(interest) {
-      return new Data(dataName, Data.FreshnessPeriod(1000));
-    },
-  });
+  const producer = new Endpoint().produce("/A",
+    async (interest) => new Data(dataName, Data.FreshnessPeriod(1000)));
   await expect(discoverVersion(new Name("/A"))).rejects.toThrow(/cannot extract version/);
   producer.close();
 });

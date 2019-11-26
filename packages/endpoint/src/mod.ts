@@ -1,4 +1,4 @@
-export { ConsumerContext, ConsumerOptions } from "./consumer";
-export { Producer, ProducerHandler, ProducerOptions } from "./producer";
+export { Context as ConsumerContext, Options as ConsumerOptions } from "./consumer";
+export { Handler as ProducerHandler, Options as ProducerOptions, Producer } from "./producer";
 
 export * from "./endpoint";

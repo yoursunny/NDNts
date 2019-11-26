@@ -1,24 +1,46 @@
 import { Forwarder } from "@ndn/fw";
-import { Data, Interest, Name } from "@ndn/packet";
+import { Data, Interest, Name, NameLike } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import { filter, pipeline, tap, transform } from "streaming-iterables";
 
-export type ProducerHandler = (interest: Interest) => Promise<Data|false>;
+/**
+ * Producer handler function.
+ * @returns Data reply, or false to cause timeout.
+ */
+export type Handler = (interest: Interest) => Promise<Data|false>;
 
-export interface ProducerOptions {
-  prefix: Name;
-  handler: ProducerHandler;
+export interface Options {
+  prefix: NameLike;
+  handler: Handler;
   concurrency?: number;
 }
 
+/** A running producer. */
 export interface Producer {
+  readonly prefix: Name;
+
+  /** Close the producer. */
   close(): void;
 }
 
+/** Producer functionality of Endpoint. */
 export class EndpointProducer {
   declare public fw: Forwarder;
 
-  public produce({ prefix, handler, concurrency = 1 }: ProducerOptions): Producer {
+  /** Produce under a prefix. */
+  public produce(opts: Options): Producer;
+
+  /** Produce under a prefix. */
+  public produce(prefix: NameLike, handler: Handler, opts?: Omit<Options, "prefix"|"handler">): Producer;
+
+  public produce(arg1: Options|NameLike, arg2?: Handler, arg3?: Omit<Options, "prefix"|"handler">): Producer {
+    const {
+      prefix: prefixInput,
+      handler,
+      concurrency = 1,
+    } = !arg2 ? arg1 as Options : { prefix: arg1 as NameLike, handler: arg2, ...arg3 };
+    const prefix = new Name(prefixInput);
+
     const face = this.fw.addFace({
       transform(rxIterable) {
         return pipeline(
@@ -37,7 +59,9 @@ export class EndpointProducer {
       local: true,
     });
     face.addRoute(prefix);
+
     return {
+      prefix,
       close() { face.close(); },
     };
   }

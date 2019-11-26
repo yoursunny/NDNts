@@ -53,7 +53,7 @@ export namespace ControlCommand {
     const interest = await signInterest02(new Interest(name), opts);
 
     const endpoint = opts.endpoint ?? new Endpoint();
-    const data = await endpoint.consume({ interest });
+    const data = await endpoint.consume(interest);
     return new Decoder(data.content).decode(ControlResponse);
   }
 }

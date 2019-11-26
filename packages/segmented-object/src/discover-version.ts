@@ -16,7 +16,7 @@ export function discoverVersion(name: Name, opts: Partial<discoverVersion.Option
 
   const interest = new Interest(name, Interest.CanBePrefix, Interest.MustBeFresh);
   interest.mustBeFresh = versionMustBeFresh;
-  const consumer = new Endpoint(opts.fw).consume({ interest });
+  const consumer = new Endpoint(opts.fw).consume(interest);
   return new PCancelable((resolve, reject, onCancel) => {
     onCancel(() => consumer.cancel());
     consumer.then(async (data) => {

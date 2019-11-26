@@ -61,14 +61,12 @@ const uplinkP = fwP.addFace(new L3Face(transportP));
 enableNfdPrefixReg(uplinkP, { signer: privateKey });
 
 // Start a producer.
-const producer = new Endpoint(fwP).produce({
-  prefix: new Name("/P"),
-  async handler() {
+const producer = new Endpoint(fwP).produce("/P",
+  async() => {
     console.log("producing");
     return new Data("/P", Data.FreshnessPeriod(1000),
                     new TextEncoder().encode("NDNts + NFD"));
-  },
-});
+  });
 await new Promise((r) => setTimeout(r, 500));
 
 // Start a consumer, fetching Data from the producer via NFD.

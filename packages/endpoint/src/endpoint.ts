@@ -4,6 +4,10 @@ import applyMixins from "applymixins";
 import { EndpointConsumer } from "./consumer";
 import { EndpointProducer } from "./producer";
 
+/**
+ * Endpoint is the main entrypoint for an application to interact with the forwarding plane.
+ * It provides basic consumer and producer functionality.
+ */
 export class Endpoint {
   constructor(public readonly fw: Forwarder = Forwarder.getDefault()) {
   }
