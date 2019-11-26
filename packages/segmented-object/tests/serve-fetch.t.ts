@@ -104,7 +104,7 @@ test("empty object", async () => {
   const fw = Forwarder.create();
   const server = serve(new Name("/R"), new Uint8Array(), { fw, segmentNumConvention: Segment1 });
 
-  const ep = new Endpoint(fw);
+  const ep = new Endpoint({ fw });
   await expect(ep.consume(new Interest(new Name("/R").append(Segment1, 1), Interest.Lifetime(50))))
         .rejects.toThrow();
   const data = await ep.consume(new Interest(new Name("/R").append(Segment1, 0)));

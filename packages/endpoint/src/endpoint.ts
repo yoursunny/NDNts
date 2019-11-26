@@ -1,17 +1,25 @@
 import { Forwarder } from "@ndn/fw";
 import applyMixins from "applymixins";
 
-import { EndpointConsumer } from "./consumer";
-import { EndpointProducer } from "./producer";
+import { EndpointConsumer, Options as ConsumerOptions } from "./consumer";
+import { EndpointProducer, Options as ProducerOptions } from "./producer";
+
+export interface Options extends ConsumerOptions, ProducerOptions {
+  fw?: Forwarder;
+}
 
 /**
  * Endpoint is the main entrypoint for an application to interact with the forwarding plane.
  * It provides basic consumer and producer functionality.
  */
 export class Endpoint {
-  constructor(public readonly fw: Forwarder = Forwarder.getDefault()) {
+  public readonly fw: Forwarder;
+
+  constructor(public readonly opts: Options = {}) {
+    this.fw = opts.fw ?? Forwarder.getDefault();
   }
 }
+
 export interface Endpoint extends EndpointConsumer, EndpointProducer {}
 applyMixins(Endpoint, [EndpointConsumer, EndpointProducer]);
 

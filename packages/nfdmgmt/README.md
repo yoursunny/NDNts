@@ -61,7 +61,7 @@ const uplinkP = fwP.addFace(new L3Face(transportP));
 enableNfdPrefixReg(uplinkP, { signer: privateKey });
 
 // Start a producer.
-const producer = new Endpoint(fwP).produce("/P",
+const producer = new Endpoint({ fw: fwP }).produce("/P",
   async() => {
     console.log("producing");
     return new Data("/P", Data.FreshnessPeriod(1000),
@@ -70,9 +70,9 @@ const producer = new Endpoint(fwP).produce("/P",
 await new Promise((r) => setTimeout(r, 500));
 
 // Start a consumer, fetching Data from the producer via NFD.
-const data = await new Endpoint(fwC).consume({
-  interest: new Interest("/P", Interest.MustBeFresh),
-});
+const data = await new Endpoint({ fw: fwC }).consume(
+  new Interest("/P", Interest.MustBeFresh),
+);
 const payloadText = new TextDecoder().decode(data.content);
 console.log("received", `${data.name} ${payloadText}`);
 assert.equal(payloadText, "NDNts + NFD");

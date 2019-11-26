@@ -10,8 +10,6 @@ import { filter, pipeline, tap, transform } from "streaming-iterables";
 export type Handler = (interest: Interest) => Promise<Data|false>;
 
 export interface Options {
-  prefix: NameLike;
-  handler: Handler;
   concurrency?: number;
 }
 
@@ -26,20 +24,14 @@ export interface Producer {
 /** Producer functionality of Endpoint. */
 export class EndpointProducer {
   declare public fw: Forwarder;
+  declare public opts: Options;
 
   /** Produce under a prefix. */
-  public produce(opts: Options): Producer;
-
-  /** Produce under a prefix. */
-  public produce(prefix: NameLike, handler: Handler, opts?: Omit<Options, "prefix"|"handler">): Producer;
-
-  public produce(arg1: Options|NameLike, arg2?: Handler, arg3?: Omit<Options, "prefix"|"handler">): Producer {
-    const {
-      prefix: prefixInput,
-      handler,
-      concurrency = 1,
-    } = !arg2 ? arg1 as Options : { prefix: arg1 as NameLike, handler: arg2, ...arg3 };
+  public produce(prefixInput: NameLike, handler: Handler, opts: Options = {}): Producer {
     const prefix = new Name(prefixInput);
+    const {
+      concurrency = 1,
+    } = { ...this.opts, ...opts };
 
     const face = this.fw.addFace({
       transform(rxIterable) {

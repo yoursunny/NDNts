@@ -38,7 +38,7 @@ module.exports = {
     "object-curly-spacing": ["error", "always"],
     "object-shorthand": "error",
     "prefer-arrow-callback": "error",
-    "prefer-const": "error",
+    "prefer-const": ["error", { destructuring: "all" }],
     "prefer-rest-params": "error",
     "prefer-spread": "error",
     "prefer-template": "error",

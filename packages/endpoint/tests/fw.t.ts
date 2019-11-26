@@ -7,12 +7,12 @@ import { getDataFullName } from "@ndn/packet/test-fixture/name";
 
 import { Endpoint } from "..";
 
+let fw: Forwarder;
 let ep: Endpoint;
-
 beforeEach(() => {
-  ep = new Endpoint();
+  fw = Forwarder.create();
+  ep = new Endpoint({ fw, retx: null });
 });
-
 afterEach(() => Forwarder.deleteDefault());
 
 test("simple", async () => {
@@ -75,10 +75,10 @@ test("simple", async () => {
   ]);
 
   await new Promise((r) => setTimeout(r, 50));
-  expect(ep.fw.faces.size).toBe(2);
+  expect(fw.faces.size).toBe(2);
   producerP.close();
   producerQ.close();
-  expect(ep.fw.faces.size).toBe(0);
+  expect(fw.faces.size).toBe(0);
 });
 
 test("aggregate & retransmit", async () => {
@@ -95,7 +95,7 @@ test("aggregate & retransmit", async () => {
 
   let nRxData = 0;
   let nRxRejects = 0;
-  const face = ep.fw.addFace({
+  const face = fw.addFace({
     extendedTx: true,
     rx: (async function*() {
       yield InterestToken.set(new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0xC91585F2)), 1);
@@ -159,7 +159,7 @@ describe("tracer", () => {
   afterEach(() => debugFn.mockRestore());
 
   test("simple", async () => {
-    const tracer = FwTracer.enable();
+    const tracer = FwTracer.enable({ fw });
     const consumerA = ep.consume(new Interest("/A"));
     consumerA.cancel();
     await expect(consumerA).rejects.toThrow();
@@ -168,7 +168,7 @@ describe("tracer", () => {
     await ep.consume(new Interest("/B", Interest.CanBePrefix, Interest.MustBeFresh));
     produerB.close();
 
-    const faceC = Forwarder.getDefault().addFace(new NoopFace());
+    const faceC = fw.addFace(new NoopFace());
     faceC.addRoute(new Name("/C"));
     faceC.removeRoute(new Name("/C"));
     tracer.disable();

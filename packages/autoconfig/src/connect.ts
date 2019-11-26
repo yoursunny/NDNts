@@ -13,7 +13,7 @@ async function testConnection(face: FwFace, name: Name = new Name("/localhop/nfd
   try {
     const interest = new Interest(name, Interest.CanBePrefix,
                                   Interest.Lifetime(1000));
-    await new Endpoint(face.fw).consume(interest);
+    await new Endpoint({ fw: face.fw }).consume(interest);
   } finally {
     face.removeRoute(name);
   }

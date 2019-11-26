@@ -13,7 +13,7 @@ class NfdAdvertise extends Advertise {
     super(face);
     this.opts = {
       ...opts,
-      endpoint: new Endpoint(face.fw),
+      endpoint: new Endpoint({ fw: face.fw }),
     };
     this.opts.commandPrefix = this.opts.commandPrefix ?? ControlCommand.getPrefix(face.attributes.local);
     face.addRoute(this.opts.commandPrefix);
