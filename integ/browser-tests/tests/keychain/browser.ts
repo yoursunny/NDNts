@@ -1,4 +1,5 @@
-import "./check-browser";
+import "./ndncert";
+import "./webcrypto";
 
 import { EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RsaPrivateKey, theDigestKey } from "@ndn/keychain";
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";

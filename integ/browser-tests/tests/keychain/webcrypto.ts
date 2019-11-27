@@ -2,6 +2,8 @@ import { Certificate, EC_CURVES, EcPrivateKey, HmacKey, KeyChain, PrivateKey, Pu
 import { Data, LLSign } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
+import { addManualTest } from "../../test-fixture/manual";
+
 interface GenResult {
   title: string;
   err?: Error;
@@ -48,13 +50,11 @@ async function* genKeys(keyChain: KeyChain): AsyncGenerator<GenResult> {
   }
 }
 
-export async function checkBrowser() {
-  document.querySelector("button")?.setAttribute("disabled", "1");
+async function checkWebCrypto() {
   const lines = [] as string[];
   const keyChain = KeyChain.open("ae688cfd-fab7-4987-93f6-3b7a2507047b");
   for await (const genRes of genKeys(keyChain)) {
-    const { title, pvt, canMakeCert = true } = genRes;
-    let { err, pub } = genRes;
+    let { title, err, pvt, pub, canMakeCert = true } = genRes;
     if (!err) {
       pub = pub ?? pvt as unknown as PublicKey;
       try {
@@ -73,12 +73,7 @@ export async function checkBrowser() {
     }
     lines.push(`${title}: ${err ? err : "OK"}`);
   }
-  document.body.innerText = lines.join("\n");
+  return lines;
 }
 
-window.addEventListener("load", () => {
-  const btn = document.createElement("button");
-  btn.innerText = "check browser";
-  btn.addEventListener("click", checkBrowser);
-  document.body.appendChild(btn);
-});
+addManualTest("check WebCrypto", checkWebCrypto);

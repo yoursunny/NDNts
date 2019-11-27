@@ -10,6 +10,7 @@
     "@ndn/fw": "workspace:*",
     "@ndn/keychain": "workspace:*",
     "@ndn/l3face": "workspace:*",
+    "@ndn/ndncert": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/ws-transport": "workspace:*",

@@ -2,7 +2,7 @@ import * as TestCertStore from "@ndn/keychain/test-fixture/cert-store";
 import * as TestKeyStore from "@ndn/keychain/test-fixture/key-store";
 import * as TestSignVerify from "@ndn/keychain/test-fixture/sign-verify";
 
-import { getPageUri, pageInvoke } from "../../test-fixture";
+import { getPageUri, pageInvoke } from "../../test-fixture/pptr";
 import { deserializeInBrowser } from "../../test-fixture/serialize";
 import { SignVerifyTestResult } from "./api";
 

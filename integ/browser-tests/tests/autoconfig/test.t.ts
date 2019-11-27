@@ -1,6 +1,6 @@
 import "./api";
 
-import { getPageUri, pageInvoke } from "../../test-fixture";
+import { getPageUri, pageInvoke } from "../../test-fixture/pptr";
 
 beforeEach(() => page.goto(getPageUri(__dirname)));
 

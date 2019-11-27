@@ -3,7 +3,7 @@ import "./api";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import * as WsTest from "@ndn/ws-transport/test-fixture/wss";
 
-import { getPageUri, pageInvoke } from "../../test-fixture";
+import { getPageUri, pageInvoke } from "../../test-fixture/pptr";
 
 beforeEach(() => Promise.all([
   WsTest.createServer(),
