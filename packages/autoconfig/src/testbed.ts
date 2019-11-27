@@ -1,7 +1,7 @@
 import { FwFace } from "@ndn/fw";
+import { collect, filter, pipeline, take, transform } from "streaming-iterables";
 
-import { connect } from "./connect";
-import { queryFch } from "./fch";
+import { connect, queryFch } from "./mod";
 import { getDefaultGateway } from "./platform/mod";
 
 interface Options {
@@ -27,13 +27,13 @@ export async function connectToTestbed(options: Partial<connectToTestbed.Options
   if (opts.tryDefaultGateway) {
     try { hosts.unshift(await getDefaultGateway()); } catch (err) {}
   }
-  const faces = [] as connect.Result[];
-  for (const host of hosts) {
-    try { faces.push(await connect(host, options)); } catch (err) {}
-    if (faces.length >= opts.count) {
-      break;
-    }
-  }
+  const faces = await pipeline(
+    () => hosts,
+    transform(3, (host) => connect(host, options).catch(() => undefined)),
+    filter((res): res is connect.Result => !!res),
+    take(opts.count),
+    collect,
+  );
   if (opts.preferFastest && faces.length > 1) {
     faces.sort(({ testConnectionDuration: d1 }, { testConnectionDuration: d2 }) => d1 - d2);
     for (const { face } of faces.splice(1)) {

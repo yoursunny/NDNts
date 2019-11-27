@@ -27,6 +27,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "hirestime": "^4.0.0",
+    "it-pushable": "^1.4.0",
     "loglevel": "^1.6.6",
     "minimalistic-assert": "^1.0.1",
     "p-defer": "^3.0.0",
