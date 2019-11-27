@@ -1,6 +1,7 @@
 import "webpack-dev-server";
 
 import { FileMatcher } from "file-matcher";
+import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import * as path from "path";
 import webpack from "webpack";
@@ -19,12 +20,13 @@ const config = {
   module: {
     rules: [
       {
+        test: /\.ts$/,
         exclude: /node_modules/,
         loader: "ts-loader",
         options: {
           configFile: "tsconfig.webpack.json",
+          transpileOnly: true,
         },
-        test: /\.ts$/,
       },
     ],
   },
@@ -32,6 +34,9 @@ const config = {
     extensions: [".ts", ".js"],
     symlinks: true,
   },
+  plugins: [
+    new ForkTsCheckerWebpackPlugin({ tsconfig: "tsconfig.webpack.json" }),
+  ],
 } as webpack.Configuration;
 
 config.devServer = {
@@ -40,10 +45,8 @@ config.devServer = {
   ],
   contentBase: path.join(__dirname, "public"),
   host: "0.0.0.0",
-  hot: false,
   port: jestPuppeteerConfig.server.port,
 };
-(config.devServer as any).liveReload = false;
 
 export = async () => {
   const list = await new FileMatcher().find({
