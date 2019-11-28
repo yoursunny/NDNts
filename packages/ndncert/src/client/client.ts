@@ -5,7 +5,7 @@ import { Decoder, Encoder } from "@ndn/tlv";
 
 import { CMD_CHALLENGE, CMD_DOWNLOAD, CMD_NEW, CMD_PROBE, CMD_PROBEINFO } from "../an";
 import { CaInfo, ChallengeDefinition, ChallengeRequest, ChallengeResponse, NewRequest, NewResponse, ProbeResponse } from "../json-types";
-import { base64Encode, makeInterestParams, readDataPayload, saltFromString, signInterest } from "../util";
+import { base64Encode, compressEcPublicKey, HKDF_INFO, makeInterestParams, readDataPayload, saltFromString, signInterest } from "../util";
 import { clientLogger as log } from "./mod";
 
 interface Options {
@@ -72,7 +72,7 @@ export class Client {
 
     log.debug("NEW request", selfSignedCert.name.toString());
     const newReq = {
-      "ecdh-pub": base64Encode(new Uint8Array(await crypto.subtle.exportKey("raw", ecdhPubC))),
+      "ecdh-pub": base64Encode(compressEcPublicKey(new Uint8Array(await crypto.subtle.exportKey("raw", ecdhPubC)))),
       "cert-request": base64Encode(Encoder.encode(selfSignedCert.data)),
       "probe-token": opts.probeResult?.probeToken,
     } as NewRequest;
@@ -84,10 +84,15 @@ export class Client {
     log.debug("NEW response", newRes["request-id"]);
     const reqId = Component.from(newRes["request-id"]);
 
-    const ecdhPubS = await crypto.subtle.importKey("raw", Buffer.from(newRes["ecdh-pub"], "base64"), { name: "ECDH", namedCurve: "P-256" }, false, ["deriveBits"]);
-    const hkdfRaw = await crypto.subtle.deriveBits({ name: "ECDH", public: ecdhPubS }, ecdhPvtC, 256);
+    const ecdhPubS = await crypto.subtle.importKey("raw",
+      Buffer.from(newRes["ecdh-pub"], "base64"),
+      { name: "ECDH", namedCurve: "P-256" }, false, []);
+    const hkdfRaw = await crypto.subtle.deriveBits(
+      { name: "ECDH", public: ecdhPubS }, ecdhPvtC, 256);
     const hkdfKey = await crypto.subtle.importKey("raw", hkdfRaw, "HKDF", false, ["deriveKey"]);
-    const aesKey = await crypto.subtle.deriveKey({ name: "HKDF", salt: saltFromString(newRes.salt), info: Uint8Array.of(0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9), hash: "SHA-256" } as any, hkdfKey, { name: "AES-CBC", length: 256 }, false, ["encrypt", "decrypt"]);
+    const aesKey = await crypto.subtle.deriveKey(
+      { name: "HKDF", salt: saltFromString(newRes.salt), info: HKDF_INFO, hash: "SHA-256" } as any,
+      hkdfKey, { name: "AES-CBC", length: 256 }, false, ["encrypt", "decrypt"]);
 
     let challengeReq = await opts.startChallenge(newRes.challenges);
     const challengeId = challengeReq["selected-challenge"];
@@ -107,7 +112,8 @@ export class Client {
       challengeReq = await opts.continueChallenge(challengeRes["challenge-status"], challengeId);
     }
 
-    const downloadInterest = new Interest(this.prefix.append(...CMD_DOWNLOAD, reqId), Interest.MustBeFresh);
+    const downloadInterest = new Interest(
+      this.prefix.append(...CMD_DOWNLOAD, reqId), Interest.MustBeFresh);
     const downloadData = await this.consume(downloadInterest);
     const certData = new Decoder(downloadData.content).decode(Data);
     await this.publicKey.verify(certData);

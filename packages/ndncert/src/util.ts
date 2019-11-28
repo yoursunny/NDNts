@@ -57,6 +57,13 @@ export async function signInterest(interest: Interest, signer: PrivateKey): Prom
   return await signInterest02(interest, { signer });
 }
 
+export function compressEcPublicKey(raw: Uint8Array): Uint8Array {
+  // https://gist.github.com/shanewholloway/6ed5a52fa985b1d23024daa001b6a51e
+  const compressed = raw.slice(0, (raw.byteLength + 1) / 2);
+  compressed[0] = 0x02 + raw[raw.byteLength-1] % 2;
+  return compressed;
+}
+
 /**
  * ndncert-specific salt string decoder.
  *
@@ -68,3 +75,5 @@ export function saltFromString(input: string): Uint8Array {
   new DataView(a.buffer).setBigUint64(0, BigInt(input), true);
   return a;
 }
+
+export const HKDF_INFO = Uint8Array.of(0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9);
