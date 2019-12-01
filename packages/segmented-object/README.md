@@ -13,7 +13,7 @@ The `fetch` function:
 * [X] supports segment numbers.
 * [ ] supports byte offsets.
 * [X] supports multiple naming conventions.
-* [ ] has Interest pipelining, congestion control, and loss recovery.
+* [X] has Interest pipelining, congestion control, and loss recovery.
 * [ ] verifies packets with trust schema.
 * [X] emits events as segments arrive.
 * [X] outputs in-order data chunks as a readable stream.

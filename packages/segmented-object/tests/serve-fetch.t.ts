@@ -3,8 +3,11 @@ import "@ndn/tlv/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment as Segment1 } from "@ndn/naming-convention1";
+import { Segment as Segment2 } from "@ndn/naming-convention2";
 import { Interest, Name } from "@ndn/packet";
+import { AbortController } from "abort-controller";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
+import { consume } from "streaming-iterables";
 
 import { fetch, serve } from "..";
 
@@ -21,16 +24,15 @@ afterEach(() => Forwarder.deleteDefault());
 
 test("buffer to buffer", async () => {
   const server = serve(new Name("/R"), objectBody);
-  const fetcher = fetch(new Name("/R"));
-  await expect(fetcher.promise).resolves.toEqualUint8Array(objectBody);
-  await expect(fetcher.promise).resolves.toEqualUint8Array(objectBody);
+  const fetched = fetch.promise(new Name("/R"));
+  await expect(fetched).resolves.toEqualUint8Array(objectBody);
   server.stop();
 });
 
 test("buffer to chunks", async () => {
   const server = serve(new Name("/R"), objectBody);
   const chunks = [] as Uint8Array[];
-  for await (const chunk of fetch(new Name("/R")).chunks) {
+  for await (const chunk of fetch(new Name("/R"))) {
     chunks.push(chunk);
   }
   expect(Buffer.concat(chunks)).toEqualUint8Array(objectBody);
@@ -42,15 +44,14 @@ test("stream to stream", async () => {
   const server = serve(new Name("/R"), src);
 
   const dst = new BufferWritableMock();
-  const fetcher = fetch(new Name("/R"));
-  await fetcher.writeToStream(dst);
+  await fetch.toStream(new Name("/R"), dst);
 
   await new Promise((r) => dst.end(r));
   expect(objectBody.compare(dst.flatData)).toEqual(0);
   server.stop();
 });
 
-test("iterable to events", (done) => {
+test("iterable to unordered", async () => {
   const server = serve(new Name("/R"), (async function*() {
     const yieldSize = 5000;
     for (let i = 0; i < objectBody.length; i += yieldSize) {
@@ -60,43 +61,33 @@ test("iterable to events", (done) => {
     chunkSize: 6000,
   });
 
-  const fetcher = fetch(new Name("/R"));
-
+  let totalLength = 0;
   const receivedSegments = new Set<number>();
-  fetcher.on("segment", (segmentNum, data) => {
-    expect(receivedSegments.has(segmentNum)).toBeFalsy();
-    receivedSegments.add(segmentNum);
-    expect(data.content.length <= 6000);
-  });
-
-  const fetched = [] as Uint8Array[];
-  fetcher.on("data", (chunk) => {
-    fetched.push(chunk);
-  });
-
-  fetcher.on("end", () => {
-    expect(receivedSegments.size).toEqual(fetched.length);
-    for (let i = 0; i < fetched.length; ++i) {
-      expect(receivedSegments.has(i)).toBeTruthy();
-    }
-    expect(Buffer.concat(fetched)).toEqualUint8Array(objectBody);
-    server.stop();
-    done();
-  });
+  for await (const data of fetch.unordered(new Name("/R"))) {
+    const segNum = data.name.at(-1).as(Segment2);
+    expect(receivedSegments.has(segNum)).toBeFalsy();
+    receivedSegments.add(segNum);
+    expect(data.content.length).toBeLessThanOrEqual(6000);
+    totalLength += data.content.length;
+  }
+  expect(totalLength).toBe(objectBody.length);
+  server.stop();
 });
 
 test("ranged", async () => {
   const server = serve(new Name("/R"), objectBody, { chunkSize: 1024 }); // 1024 segments
-  await expect(fetch(new Name("/R"), { segmentRange: [0, 8] }).promise)
-    .resolves.toEqualUint8Array(objectBody.subarray(0, 8 * 1024));
-  await expect(fetch(new Name("/R"), { segmentRange: [8, 24] }).promise)
-    .resolves.toEqualUint8Array(objectBody.subarray(8 * 1024, 24 * 1024));
-  await expect(fetch(new Name("/R"), { segmentRange: [1022, undefined] }).promise)
-    .resolves.toEqualUint8Array(objectBody.subarray(1022 * 1024));
-  await expect(fetch(new Name("/R"), { segmentRange: [1022, 1050] }).promise)
-    .resolves.toEqualUint8Array(objectBody.subarray(1022 * 1024));
-  await expect(fetch(new Name("/R"), { segmentRange: [1050, undefined], interestLifetime: 400 }).promise)
-    .rejects.toThrow();
+  await Promise.all([
+    expect(fetch.promise(new Name("/R"), { segmentRange: [0, 8] }))
+      .resolves.toEqualUint8Array(objectBody.subarray(0, 8 * 1024)),
+    expect(fetch.promise(new Name("/R"), { segmentRange: [8, 24] }))
+      .resolves.toEqualUint8Array(objectBody.subarray(8 * 1024, 24 * 1024)),
+    expect(fetch.promise(new Name("/R"), { segmentRange: [1022, undefined] }))
+      .resolves.toEqualUint8Array(objectBody.subarray(1022 * 1024)),
+    expect(fetch.promise(new Name("/R"), { segmentRange: [1022, 1050] }))
+      .resolves.toEqualUint8Array(objectBody.subarray(1022 * 1024)),
+    expect(fetch.promise(new Name("/R"), { segmentRange: [1050, undefined], retxLimit: 1 }))
+      .rejects.toThrow(),
+  ]);
   server.stop();
 });
 
@@ -115,7 +106,7 @@ test("empty object", async () => {
 
 test("segment number convention mismatch", async () => {
   const server = serve(new Name("/R"), objectBody, { segmentNumConvention: Segment1 });
-  await expect(fetch(new Name("/R"), { interestLifetime: 400 }).promise).rejects.toThrow();
+  await expect(fetch.promise(new Name("/R"), { retxLimit: 1 })).rejects.toThrow();
   server.stop();
 });
 
@@ -128,20 +119,21 @@ test("abort", async () => {
     }
   })();
   const server = serve(new Name("/R"), src);
-  const fetcher = fetch(new Name("/R"), { interestLifetime: 400 });
 
-  const onError = jest.fn<void, [Error]>();
-  fetcher.on("error", onError);
-
+  const abort = new AbortController();
+  const cancelable = fetch.promise(new Name("/R"));
   await Promise.all([
     (async () => {
       await new Promise((r) => setTimeout(r, 150));
-      fetcher.abort();
+      abort.abort();
+      cancelable.cancel();
     })(),
-    expect(fetcher.promise).rejects.toThrow(/abort/),
-    expect(fetcher.writeToStream(new BufferWritableMock())).rejects.toThrow(/abort/),
+    expect(cancelable).rejects.toThrow(),
+    expect(fetch.promise(new Name("/R"), { abort })).rejects.toThrow(),
+    expect(consume(fetch(new Name("/R"), { abort }))).rejects.toThrow(),
+    expect(consume(fetch.packets(new Name("/R"), { abort }))).rejects.toThrow(),
+    expect(consume(fetch.unordered(new Name("/R"), { abort }))).rejects.toThrow(),
   ]);
 
-  expect(onError).toHaveBeenCalled();
   server.stop();
 });

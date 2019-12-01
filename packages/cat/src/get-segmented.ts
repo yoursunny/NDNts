@@ -28,8 +28,7 @@ async function main(args: Args) {
       break;
   }
 
-  const fetcher = fetch(name, { segmentNumConvention });
-  await fetcher.writeToStream(stdout);
+  await fetch.toStream(name, stdout, { segmentNumConvention });
 }
 
 export class GetSegmentedCommand implements CommandModule<CommonArgs, Args> {

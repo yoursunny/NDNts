@@ -1,20 +1,23 @@
 import { Forwarder, FwFace, FwTracer } from "@ndn/fw";
 import { KeyChain, PrivateKey } from "@ndn/keychain";
-import { L3Face } from "@ndn/l3face";
+import { L3Face, Transport } from "@ndn/l3face";
 import { Segment as Segment1, Version as Version1 } from "@ndn/naming-convention1";
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
-import { TcpTransport } from "@ndn/node-transport";
+import { TcpTransport, UdpTransport } from "@ndn/node-transport";
 import { Interest, Name } from "@ndn/packet";
 
 export interface CommonArgs {
   pkttrace: boolean;
   router: string;
+  transport: TransportArg;
   nfd: boolean;
   regkeychain?: string;
   regkey?: string;
   convention1: boolean;
 }
+
+export type TransportArg = "tcp"|"udp";
 
 export let versionConvention = Version2;
 export let segmentNumConvention = Segment2;
@@ -30,8 +33,16 @@ export async function applyCommonArgs(args: CommonArgs) {
     segmentNumConvention = Segment1;
   }
 
-  uplink = Forwarder.getDefault().addFace(new L3Face(
-    await TcpTransport.connect({ port: 6363, host: args.router })));
+  let transport: Transport;
+  switch (args.transport) {
+    case "tcp":
+      transport = await TcpTransport.connect(args.router);
+      break;
+    case "udp":
+      transport = await UdpTransport.connect(args.router);
+      break;
+  }
+  uplink = Forwarder.getDefault().addFace(new L3Face(transport));
   uplink.addRoute(new Name());
 
   if (args.nfd) {

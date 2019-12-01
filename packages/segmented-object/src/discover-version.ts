@@ -3,20 +3,21 @@ import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention
 import { Interest, Name, NamingConvention } from "@ndn/packet";
 import PCancelable from "p-cancelable";
 
-import { fetch } from "./fetch";
+import { fetch } from "./fetch/mod";
 
 /** Discover version with CanBePrefix. */
-export function discoverVersion(name: Name, opts: Partial<discoverVersion.Options> = {}): PCancelable<Name> {
-  const { versionMustBeFresh, versionConvention, segmentNumConvention } = {
-    versionMustBeFresh: true,
-    versionConvention: Version2,
-    segmentNumConvention: Segment2,
-    ...opts,
-  };
+export function discoverVersion(name: Name, opts: discoverVersion.Options = {}): PCancelable<Name> {
+  const {
+    endpoint = new Endpoint(),
+    versionMustBeFresh = true,
+    versionConvention = Version2,
+    segmentNumConvention = Segment2,
+    retxLimit = 2,
+  } = opts;
 
-  const interest = new Interest(name, Interest.CanBePrefix, Interest.MustBeFresh);
+  const interest = new Interest(name, Interest.CanBePrefix);
   interest.mustBeFresh = versionMustBeFresh;
-  const consumer = new Endpoint({ fw: opts.fw }).consume(interest);
+  const consumer = endpoint.consume(interest, { retx: retxLimit });
   return new PCancelable((resolve, reject, onCancel) => {
     onCancel(() => consumer.cancel());
     consumer.then(async (data) => {
@@ -37,12 +38,12 @@ export namespace discoverVersion {
      * Choose a version naming convention.
      * Default is Version from @ndn/naming-convention2 package.
      */
-    versionConvention: NamingConvention<unknown, unknown>;
+    versionConvention?: NamingConvention<unknown, unknown>;
 
     /**
      * Whether to set MustBeFresh on version discovery Interest.
      * Default is true.
      */
-    versionMustBeFresh: boolean;
+    versionMustBeFresh?: boolean;
   }
 }

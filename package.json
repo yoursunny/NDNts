@@ -39,7 +39,7 @@
     "puppeteer": "^2.0.0",
     "ts-jest": "^24.2.0",
     "ts-loader": "^6.2.1",
-    "ts-node": "^8.5.2",
+    "ts-node": "8.5.2",
     "tsconfig-paths": "^3.9.0",
     "tslib": "*",
     "typescript": "^3.7.2",

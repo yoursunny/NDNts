@@ -1,7 +1,7 @@
 import loudRejection from "loud-rejection";
 import yargs from "yargs";
 
-import { applyCommonArgs } from "./common-args";
+import { applyCommonArgs, TransportArg } from "./common-args";
 import { GetSegmentedCommand } from "./get-segmented";
 import { PutSegmentedCommand } from "./put-segmented";
 
@@ -18,6 +18,11 @@ yargs
   default: "localhost",
   desc: "router hostname",
   type: "string",
+})
+.option("transport", {
+  choices: ["tcp", "udp"] as TransportArg[],
+  default: "tcp" as TransportArg,
+  desc: "transport type",
 })
 .option("nfd", {
   default: false,

@@ -1,4 +1,4 @@
-import { CancelInterest, Forwarder, FwFace, RejectInterest } from "@ndn/fw";
+import { CancelInterest, DataResponse, Forwarder, FwFace, RejectInterest } from "@ndn/fw";
 import { Data, Interest } from "@ndn/packet";
 import pushable from "it-pushable";
 import PCancelable from "p-cancelable";
@@ -17,7 +17,7 @@ export interface Options {
  * This is a Promise that resolves with the retrieved Data, and rejects upon timeout.
  * Calling .cancel() cancels Data retrieval and rejects the Promise.
  */
-export type Context = PCancelable<Data> & {
+export type Context = PCancelable<DataResponse> & {
   readonly interest: Interest;
   readonly nRetx: number;
 };
