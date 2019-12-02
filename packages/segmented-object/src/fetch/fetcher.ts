@@ -8,7 +8,7 @@ import StrictEventEmitter from "strict-event-emitter-types";
 
 import { FetchLogic } from "./logic";
 
-export interface Options {
+interface Options extends FetchLogic.Options {
   /** Use the specified endpoint instead of the default. */
   endpoint?: Endpoint;
 
@@ -17,21 +17,6 @@ export interface Options {
    * Default is Segment from @ndn/naming-convention2 package.
    */
   segmentNumConvention?: NamingConvention<number, unknown>;
-
-  /**
-   * Specify segment number range as [begin, end).
-   * The begin segment number is inclusive and the end segment number is exclusive.
-   * If the begin segment number is greater than the final segment number, fetching will fail.
-   * If the end segment number is undefined or greater than the final segment number,
-   * fetching will stop at the final segment.
-   */
-  segmentRange?: [number, number|undefined];
-
-  /**
-   * Maximum number of retransmissions, excluding initial Interest.
-   * Default is 15.
-   */
-  retxLimit?: number;
 
   /** Allow aborting fetching process. */
   abort?: AbortController;
@@ -55,7 +40,7 @@ export class Fetcher extends (EventEmitter as new() => Emitter) {
   constructor(private readonly name: Name, private readonly opts: Options) {
     super();
     this.logic = new FetchLogic(opts);
-    this.logic.on("end", () => this.emit("end"));
+    this.logic.on("end", () => { this.emit("end"); this.close(); });
     this.logic.on("exceedRetxLimit", (segNum) => {
       this.emit("error", new Error(`cannot retrieve segment ${segNum}`));
       this.close();
@@ -112,4 +97,9 @@ export class Fetcher extends (EventEmitter as new() => Emitter) {
     }
     this.emit("segment", segNum, data);
   }
+}
+
+type Options_ = Options;
+export namespace Fetcher {
+  export type Options = Options_;
 }

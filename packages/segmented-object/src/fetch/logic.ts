@@ -3,6 +3,7 @@ import hirestime from "hirestime";
 import assert from "minimalistic-assert";
 import StrictEventEmitter from "strict-event-emitter-types";
 
+import { CongestionAvoidance } from "./congestion-avoidance";
 import { RttEstimator } from "./rtt-estimator";
 import { TcpCubic } from "./tcp-cubic";
 import { TokenLimiter } from "./token-limiter";
@@ -10,7 +11,25 @@ import { TokenLimiter } from "./token-limiter";
 const getNow = hirestime();
 
 interface Options {
+  /** Use given RttEstimator instance or construct RttEstimator from options. */
+  rtte?: RttEstimator|RttEstimator.Options;
+
+  /** Use given congestion avoidance instance. */
+  ca?: CongestionAvoidance;
+
+  /**
+   * Specify segment number range as [begin, end).
+   * The begin segment number is inclusive and the end segment number is exclusive.
+   * If the begin segment number is greater than the final segment number, fetching will fail.
+   * If the end segment number is undefined or greater than the final segment number,
+   * fetching will stop at the final segment.
+   */
   segmentRange?: [number, number|undefined];
+
+  /**
+   * Maximum number of retransmissions, excluding initial Interest.
+   * Default is 15.
+   */
   retxLimit?: number;
 }
 
@@ -47,9 +66,9 @@ type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
 /** Congestion control logic. */
 export class FetchLogic extends (EventEmitter as new() => Emitter) {
-  private readonly rtte = new RttEstimator();
-  private readonly ca = new TcpCubic();
-  private readonly tl = new TokenLimiter();
+  private readonly rtte: RttEstimator;
+  private readonly ca: CongestionAvoidance;
+  private readonly tl: TokenLimiter;
 
   private pending = new Map<number, SegState>();
   private retxQueue = new Set<number>();
@@ -65,13 +84,16 @@ export class FetchLogic extends (EventEmitter as new() => Emitter) {
 
   constructor(opts: Options) {
     super();
+    this.rtte = opts.rtte instanceof RttEstimator ? opts.rtte : new RttEstimator(opts.rtte);
+    this.ca = opts.ca ?? new TcpCubic();
+    this.tl = new TokenLimiter();
+    this.tl.capacity = this.ca.cwnd;
+    this.ca.on("cwndupdate", (cwnd) => this.tl.capacity = cwnd);
+
     this.hiInterestSegNum = (opts.segmentRange?.[0] ?? 0) - 1;
     this.finalSegNum = (opts.segmentRange?.[1] ?? Number.MAX_SAFE_INTEGER) - 1;
     assert(this.hiInterestSegNum < this.finalSegNum, "invalid segmentRange");
     this.retxLimit = opts.retxLimit ?? 15;
-
-    this.tl.capacity = this.ca.cwnd;
-    this.ca.on("cwndupdate", (cwnd) => this.tl.capacity = cwnd);
   }
 
   /** Abort. */
@@ -81,6 +103,7 @@ export class FetchLogic extends (EventEmitter as new() => Emitter) {
     for (const [, { rtoExpiry }] of this.pending) {
       clearTimeout(rtoExpiry!);
     }
+    this.tl.put(this.pending.size - this.retxQueue.size);
   }
 
   /** Generate stream of outgoing requests. */
@@ -194,4 +217,9 @@ export class FetchLogic extends (EventEmitter as new() => Emitter) {
     this.processCancels = true;
     this.emit(UNBLOCK);
   }
+}
+
+type Options_ = Options;
+export namespace FetchLogic {
+  export type Options = Options_;
 }

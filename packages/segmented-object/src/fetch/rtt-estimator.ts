@@ -1,22 +1,35 @@
-const K = 4;
-const ALPHA = 1 / 8;
-const BETA = 1 / 4;
-const INITRTO = 1000;
-const MINRTO = 200;
-const MAXRTO = 60000;
-
-function clampRto(rto: number) {
-  return Math.max(MINRTO, Math.min(rto, MAXRTO));
+interface Parameters {
+  k: number;
+  alpha: number;
+  beta: number;
+  initRto: number;
+  minRto: number;
+  maxRto: number;
 }
+
+const defaultParameters = {
+  k: 4,
+  alpha: 1 / 8,
+  beta: 1 / 4,
+  initRto: 1000,
+  minRto: 200,
+  maxRto: 60000,
+} as Parameters;
 
 /**
  * RTT estimator.
  * @see https://tools.ietf.org/html/rfc6298
  */
 export class RttEstimator {
+  private params: Parameters;
   private sRtt_ = NaN;
   private rttVar = NaN;
-  private rto_ = INITRTO;
+  private rto_: number;
+
+  constructor(opts: RttEstimator.Options = {}) {
+    this.params = { ...defaultParameters, ...opts };
+    this.rto_ = this.params.initRto;
+  }
 
   public get sRtt() { return this.sRtt_; }
   public get rto() { return this.rto_; }
@@ -26,15 +39,23 @@ export class RttEstimator {
       this.sRtt_ = rtt;
       this.rttVar = rtt / 2;
     } else {
-      const alpha = ALPHA / nPending;
-      const beta = BETA / nPending;
+      const alpha = this.params.alpha / nPending;
+      const beta = this.params.beta / nPending;
       this.rttVar = (1 - beta) * this.rttVar + beta * Math.abs(this.sRtt_ - rtt);
       this.sRtt_ = (1 - alpha) * this.sRtt_ + alpha * rtt;
     }
-    this.rto_ = clampRto(this.sRtt_ + K * this.rttVar);
+    this.rto_ = this.clampRto(this.sRtt_ + this.params.k * this.rttVar);
   }
 
   public backoff() {
-    this.rto_ = clampRto(this.rto_ * 2);
+    this.rto_ = this.clampRto(this.rto_ * 2);
   }
+
+  private clampRto(rto: number) {
+    return Math.max(this.params.minRto, Math.min(rto, this.params.maxRto));
+  }
+}
+
+export namespace RttEstimator {
+  export type Options = Partial<Parameters>;
 }
