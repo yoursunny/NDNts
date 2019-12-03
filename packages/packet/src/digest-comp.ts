@@ -22,8 +22,23 @@ class DigestComp implements NamingConvention<Uint8Array, Uint8Array> {
   }
 }
 
+class ImplicitDigestComp extends DigestComp {
+  constructor() {
+    super(TT.ImplicitSha256DigestComponent);
+  }
+
+  /** Remove ImplicitDigest if present at last component. */
+  public strip(name: Name): Name {
+    const lastComp = name.get(-1);
+    if (!!lastComp && this.match(lastComp)) {
+      return name.getPrefix(-1);
+    }
+    return name;
+  }
+}
+
 /** ImplicitSha256DigestComponent */
-export const ImplicitDigest = new DigestComp(TT.ImplicitSha256DigestComponent);
+export const ImplicitDigest = new ImplicitDigestComp();
 
 const PARAMS_PLACEHOLDER_TAG = Symbol("ParametersSha256DigestComponent.placeholder");
 

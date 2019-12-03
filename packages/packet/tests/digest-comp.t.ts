@@ -24,6 +24,14 @@ test.each(TABLE)("DigestComp %#", ({ compType, tt }) => {
   expect(() => new Component().as(compType)).toThrow();
 });
 
+test("ImplicitDigest strip", () => {
+  expect(ImplicitDigest.strip(new Name("/A"))).toEqualName("/A");
+
+  const digest = new Uint8Array(32);
+  digest[1] = 0xAA;
+  expect(ImplicitDigest.strip(new Name("/A").append(ImplicitDigest.create(digest)))).toEqualName("/A");
+});
+
 test("ParamsDigest placeholder", () => {
   let name = new Name("/A/B/C");
   expect(ParamsDigest.findIn(name)).toBeLessThan(0);
