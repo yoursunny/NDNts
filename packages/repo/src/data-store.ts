@@ -1,6 +1,6 @@
 import { canSatisfy, Data, ImplicitDigest, Interest, Name } from "@ndn/packet";
 import { AbstractLevelDOWN } from "abstract-leveldown";
-import { filter, fromStream, map, pipeline, writeToStream } from "streaming-iterables";
+import { filter, fromStream, map, pipeline } from "streaming-iterables";
 
 import { Db, filterExpired, isExpired, openDb, Record } from "./db";
 import { InsertOptions, Transaction } from "./transaction";
@@ -23,9 +23,11 @@ export class DataStore {
   }
 
   private async *iterRecords(prefix?: Name): AsyncGenerator<Record> {
-    const it = fromStream<Record>(this.db.createValueStream(prefix ? { gte: prefix } : undefined));
-    for await (const record of it) {
-      if (prefix?.isPrefixOf(record.data.name) === false) { break; }
+    const it = fromStream<{ key: Name, value: Record }>(
+      this.db.createReadStream(prefix ? { gte: prefix } : undefined));
+    for await (const { key: name, value: record } of it) {
+      if (prefix?.isPrefixOf(name) === false) { break; }
+      Object.defineProperty(record, "name", { value: name });
       yield record;
     }
   }
@@ -44,7 +46,7 @@ export class DataStore {
     return pipeline(
       () => this.iterRecords(prefix),
       filter(filterExpired(false)),
-      map(({ data: { name } }) => name),
+      map(({ name }) => name),
     );
   }
 
@@ -53,7 +55,9 @@ export class DataStore {
     let record: Record;
     try { record = await this.db.get(name); }
     catch (err) {
+      /* istanbul ignore else */
       if (err.notFound) { return undefined; }
+      /* istanbul ignore next */
       throw err;
     }
 
@@ -110,19 +114,9 @@ export class DataStore {
   public async clearExpired(): Promise<void> {
     const tx = this.tx();
     const it = filter(filterExpired(true), this.iterRecords());
-    for await (const { data: { name } } of it) {
+    for await (const { name } of it) {
       tx.delete(name);
     }
     return tx.commit();
-  }
-
-  /** Export Data packets to a stream. */
-  public archive(output: NodeJS.WritableStream, prefix?: Name): Promise<void> {
-    return pipeline(
-      () => this.iterRecords(prefix),
-      filter(filterExpired(false)),
-      map(({ data }) => Data.getWire(data)),
-      writeToStream(output),
-    );
   }
 }

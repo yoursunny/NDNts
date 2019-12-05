@@ -3,10 +3,7 @@ import { LevelUpChain } from "levelup";
 
 import { Record } from "./db";
 
-export interface InsertOptions {
-  /** If specified, record will expire at given timestamp. */
-  expireTime?: number;
-}
+export type InsertOptions = Omit<Record.Options, "insertTime">
 
 /** DataStore update transaction. */
 export class Transaction {
@@ -17,11 +14,10 @@ export class Transaction {
 
   /** Insert a Data packet. */
   public insert(data: Data, opts: InsertOptions = {}): this {
-    this.chain.put(data.name, {
-      data,
-      insertTime: this.timestamp,
+    this.chain.put(data.name, Record.fromData(data, {
       ...opts,
-    });
+      insertTime: this.timestamp,
+    }));
     return this;
   }
 

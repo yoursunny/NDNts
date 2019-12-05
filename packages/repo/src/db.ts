@@ -5,9 +5,23 @@ import EncodingDown from "encoding-down";
 import level, { LevelUp } from "levelup";
 
 export interface Record {
-  data: Data;
-  insertTime: number;
-  expireTime?: number;
+  readonly data: Data;
+  readonly name: Name;
+  readonly insertTime: number;
+  readonly expireTime?: number;
+}
+
+export namespace Record {
+  export type Options = Omit<Record, "name"|"data">;
+
+  export function fromData(data: Data, opts: Options): Record {
+    const record = { ...opts };
+    Object.defineProperties(record, {
+      name: { value: data.name },
+      data: { value: data },
+    }); // 'name' and 'data' are non-enumerable so they won't appear in JSON
+    return record as Record;
+  }
 }
 
 export type Db = LevelUp<EncodingDown<Name, Record>, AbstractIterator<Name, Record>>;
@@ -36,9 +50,17 @@ export function openDb(db: AbstractLevelDOWN): Db {
       },
       decode(stored: Buffer): Record {
         const { decoder, after } = new Decoder(stored).read();
-        const data = decoder.decode(Data);
-        const rec = JSON.parse(new TextDecoder().decode(after)) as Omit<Record, "data">;
-        return { ...rec, data };
+        const record = JSON.parse(new TextDecoder().decode(after)) as Record;
+        let data: Data|undefined;
+        Object.defineProperties(record, {
+          data: { get() { return (data = data ?? decoder.decode(Data)); } },
+          name: {
+            configurable: true,
+            /* istanbul ignore next */
+            get() { return record.data.name; },
+          },
+        });
+        return record;
       },
       buffer: true,
       type: "bb613530-3278-45f1-b5ae-7ced392eb602",
