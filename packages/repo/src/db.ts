@@ -2,29 +2,18 @@ import { Data, Name } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 import { AbstractIterator, AbstractLevelDOWN } from "abstract-leveldown";
 import EncodingDown from "encoding-down";
-import level, { LevelUp } from "levelup";
+import level, { LevelUp, LevelUpChain } from "levelup";
 
 export interface Record {
   readonly data: Data;
   readonly name: Name;
   readonly insertTime: number;
   readonly expireTime?: number;
-}
-
-export namespace Record {
-  export type Options = Omit<Record, "name"|"data">;
-
-  export function fromData(data: Data, opts: Options): Record {
-    const record = { ...opts };
-    Object.defineProperties(record, {
-      name: { value: data.name },
-      data: { value: data },
-    }); // 'name' and 'data' are non-enumerable so they won't appear in JSON
-    return record as Record;
-  }
+  encodedBuffer?: Buffer;
 }
 
 export type Db = LevelUp<EncodingDown<Name, Record>, AbstractIterator<Name, Record>>;
+export type DbChain = LevelUpChain<Name, Record>;
 
 export function openDb(db: AbstractLevelDOWN): Db {
   return level(EncodingDown<Name, Record>(db, {
@@ -41,12 +30,7 @@ export function openDb(db: AbstractLevelDOWN): Db {
     },
     valueEncoding: {
       encode(record: Record): Buffer {
-        const rec = { ...record } as Omit<Record, "data">;
-        delete (rec as any).data;
-        return Buffer.concat([
-          Data.getWire(record.data),
-          new TextEncoder().encode(JSON.stringify(rec)),
-        ]);
+        return record.encodedBuffer!;
       },
       decode(stored: Buffer): Record {
         const { decoder, after } = new Decoder(stored).read();

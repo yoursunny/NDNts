@@ -1,19 +1,33 @@
-import { canSatisfy, Data, ImplicitDigest, Interest, Name } from "@ndn/packet";
+import { canSatisfy, Data, ImplicitDigest, Interest, LLSign, Name } from "@ndn/packet";
+import { Encoder, toHex } from "@ndn/tlv";
 import { AbstractLevelDOWN } from "abstract-leveldown";
-import { filter, fromStream, map, pipeline } from "streaming-iterables";
+import { EventEmitter } from "events";
+import { collect, filter, fromStream, map, pipeline, transform } from "streaming-iterables";
+import StrictEventEmitter from "strict-event-emitter-types";
+import throat from "throat";
 
-import { Db, filterExpired, isExpired, openDb, Record } from "./db";
-import { InsertOptions, Transaction } from "./transaction";
+import { Db, DbChain, filterExpired, isExpired, openDb, Record } from "./db";
+
+interface Events {
+  /** Emitted when a new record is inserted. */
+  insert: Name;
+  /** Emitted when an existing record is deleted. */
+  delete: Name;
+}
+
+type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
 /** Data packet storage based on LevelDB or other abstract-leveldown store. */
-export class DataStore {
+export class DataStore extends (EventEmitter as new() => Emitter) {
   private readonly db: Db;
+  public readonly mutex = throat(1);
 
   /**
    * Constructor.
    * @param db an abstract-leveldown compatible store. It must support Buffer as keys.
    */
   constructor(db: AbstractLevelDOWN) {
+    super();
     this.db = openDb(db);
   }
 
@@ -77,11 +91,11 @@ export class DataStore {
 
   /** Start an update transaction. */
   public tx(): Transaction {
-    return new Transaction(this.db.batch());
+    return new Transaction(this.db, this);
   }
 
   /** Insert one or more Data packets. */
-  public insert(...pkts: [Data, ...Data[]]): Promise<void>;
+  public insert(...pkts: Data[]): Promise<void>;
 
   /** Insert one or more Data packets with given options. */
   public insert(opts: InsertOptions, ...pkts: Data[]): Promise<void>;
@@ -118,5 +132,94 @@ export class DataStore {
       tx.delete(name);
     }
     return tx.commit();
+  }
+}
+
+type InsertOptions = Pick<Record, "expireTime">;
+
+type Diff = ["insert"|"delete", Name];
+
+/** DataStore update transaction. */
+export class Transaction {
+  private readonly timestamp = Date.now();
+  private readonly chain: DbChain;
+  private readonly diffs = new Map<string, Diff>();
+  private encodePromises = [] as Array<Promise<void>>;
+  private encodeError?: Error;
+
+  constructor(private readonly db: Db, private readonly store: DataStore) {
+    this.chain = this.db.batch();
+  }
+
+  /** Insert a Data packet. */
+  public insert(data: Data, opts: InsertOptions = {}): this {
+    this.encodePromises.push(
+      this.insertImpl(data, opts).catch((err) => this.encodeError = err)
+    );
+    return this;
+  }
+
+  private async insertImpl(data: Data, opts: InsertOptions): Promise<void> {
+    const record = {
+      ...opts,
+      insertTime: this.timestamp,
+    } as Omit<Record, "name"|"data">;
+
+    const json = new TextEncoder().encode(JSON.stringify(record));
+    const encoder = new Encoder();
+    encoder.prependRoom(json.byteLength).set(json);
+
+    try {
+      const wire = Data.getWire(data);
+      encoder.prependRoom(wire.byteLength).set(wire);
+    } catch {
+      await data[LLSign.PROCESS]();
+      encoder.encode(data);
+    }
+
+    const buf = encoder.output;
+    record.encodedBuffer = Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
+
+    this.chain.put(data.name, record as Record);
+    this.diffs.set(toHex(data.name.value), ["insert", data.name]);
+  }
+
+  /** Delete a Data packet. */
+  public delete(name: Name): this {
+    this.chain.del(name);
+    this.diffs.set(toHex(name.value), ["delete", name]);
+    return this;
+  }
+
+  /** Commit the transaction. */
+  public async commit(): Promise<void> {
+    await Promise.all(this.encodePromises);
+    if (this.encodeError) { throw this.encodeError; }
+
+    if (this.store.listenerCount("insert") + this.store.listenerCount("delete") === 0) {
+      await this.chain.write();
+    } else {
+      await this.store.mutex(() => this.commitWithDiff());
+    }
+  }
+
+  private async commitWithDiff() {
+    const changes = await collect(pipeline(
+      () => this.diffs.values(),
+      transform(8, async (diff) => {
+        const [act, name] = diff;
+        let exists = true;
+        try { await this.db.get(name); }
+        catch { exists = false; }
+        return (exists ? act === "delete" : act === "insert") ? diff : undefined;
+      }),
+      filter((diff): diff is Diff => typeof diff !== "undefined"),
+    ));
+
+    await this.chain.write();
+
+    for (const [act, name] of changes) {
+      this.store.emit(act, name);
+    }
   }
 }

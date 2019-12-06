@@ -31,13 +31,19 @@
     "@types/abstract-leveldown": "^5.0.1",
     "encoding-down": "^6.3.0",
     "levelup": "^4.3.2",
+    "minimalistic-assert": "1.0.1",
+    "mnemonist": "^0.31.3",
     "streaming-iterables": "^4.1.1",
+    "strict-event-emitter-types": "^2.0.0",
+    "throat": "^5.0.0",
     "tslib": "*"
   },
   "devDependencies": {
+    "@ndn/naming-convention2": "workspace:*",
     "@types/encoding-down": "^5.0.0",
     "@types/levelup": "^3.1.1",
     "@types/memdown": "^3.0.0",
+    "@types/minimalistic-assert": "^1.0.0",
     "memdown": "^5.1.0"
   }
 }

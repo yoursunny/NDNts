@@ -1,4 +1,4 @@
-import { Forwarder } from "@ndn/fw";
+import { Forwarder, FwFace } from "@ndn/fw";
 import { Data, Interest, Name, NameLike } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import { filter, pipeline, tap, transform } from "streaming-iterables";
@@ -11,11 +11,14 @@ export type Handler = (interest: Interest) => Promise<Data|false>;
 
 export interface Options {
   concurrency?: number;
+  describe?: string;
 }
 
 /** A running producer. */
 export interface Producer {
-  readonly prefix: Name;
+  readonly prefix: Name|undefined;
+
+  readonly face: FwFace;
 
   /** Close the producer. */
   close(): void;
@@ -26,11 +29,16 @@ export class EndpointProducer {
   declare public fw: Forwarder;
   declare public opts: Options;
 
-  /** Produce under a prefix. */
-  public produce(prefixInput: NameLike, handler: Handler, opts: Options = {}): Producer {
-    const prefix = new Name(prefixInput);
+  /**
+   * Start a producer.
+   * @param prefixInput prefix registration; if undefined, prefixes may be added later.
+   * @param handler function to handle incoming Interest.
+   */
+  public produce(prefixInput: NameLike|undefined, handler: Handler, opts: Options = {}): Producer {
+    const prefix = typeof prefixInput === "undefined" ? undefined : new Name(prefixInput);
     const {
       concurrency = 1,
+      describe = `produce(${prefix})`,
     } = { ...this.opts, ...opts };
 
     const face = this.fw.addFace({
@@ -43,17 +51,18 @@ export class EndpointProducer {
           tap((data) => Encoder.encode(data)),
         );
       },
-      toString() {
-        return `produce(${prefix})`;
-      },
+      toString: () => describe,
     },
     {
       local: true,
     });
-    face.addRoute(prefix);
+    if (prefix) {
+      face.addRoute(prefix);
+    }
 
     return {
       prefix,
+      face,
       close() { face.close(); },
     };
   }
