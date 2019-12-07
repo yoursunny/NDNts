@@ -24,17 +24,13 @@
     "directory": "packages/cat"
   },
   "dependencies": {
-    "@ndn/fw": "workspace:*",
+    "@ndn/cli-common": "workspace:*",
     "@ndn/keychain": "workspace:*",
-    "@ndn/l3face": "workspace:*",
     "@ndn/naming-convention1": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
-    "@ndn/nfdmgmt": "workspace:*",
-    "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "esm": "^3.2.25",
-    "loud-rejection": "^2.2.0",
     "stdout-stream": "^1.4.1",
     "tslib": "*",
     "yargs": "^15.0.2"

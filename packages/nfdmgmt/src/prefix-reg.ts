@@ -25,7 +25,7 @@ class NfdAdvertise extends Advertise {
       name,
       origin: 65,
       cost: 0x7473, // ASCII of 'ts'
-      flags: 0,
+      flags: 0x02, // CAPTURE
     }, { ...this.opts, endpoint }).finally(untap);
     if (cr.statusCode !== 200) {
       throw new Error(`${cr.statusCode} ${cr.statusText}`);

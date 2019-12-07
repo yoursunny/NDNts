@@ -27,6 +27,7 @@
     "main": "lib/mod.js"
   },
   "dependencies": {
+    "@ndn/cli-common": "workspace:*",
     "@ndn/keychain": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",

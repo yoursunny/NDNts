@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/keyimport-ndnsec",
+  "name": "@ndn/cli-common",
   "version": "0.0.0",
-  "description": "NDNts: Import Keys from ndnsec",
+  "description": "NDNts: common routines for CLI programs",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -12,33 +12,25 @@
     "lib"
   ],
   "type": "module",
-  "main": "src/mod.ts",
-  "bin": {
-    "ndnsec2ndnts": "cli.cjs"
-  },
+  "main": "lib/mod.js",
   "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/keyimport-ndnsec"
-  },
-  "publishConfig": {
-    "main": "lib/mod.js"
+    "directory": "packages/cli-common"
   },
   "dependencies": {
-    "@ndn/cli-common": "workspace:*",
+    "@ndn/autoconfig": "workspace:*",
+    "@ndn/fw": "workspace:*",
     "@ndn/keychain": "workspace:*",
+    "@ndn/l3face": "workspace:*",
+    "@ndn/nfdmgmt": "workspace:*",
+    "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "@ndn/tlv": "workspace:*",
-    "esm": "^3.2.25",
-    "execa": "^3.4.0",
-    "get-stream": "^5.1.0",
+    "@strattadb/environment": "^7.0.0",
+    "dotenv": "^8.2.0",
     "loud-rejection": "^2.2.0",
-    "tslib": "*",
-    "yargs": "^15.0.2"
-  },
-  "devDependencies": {
-    "@types/yargs": "^13.0.3"
+    "tslib": "*"
   }
 }

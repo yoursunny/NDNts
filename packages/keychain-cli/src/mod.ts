@@ -14,11 +14,6 @@ loudRejection();
 
 yargs
 .scriptName("ndntssec")
-.option("locator", {
-  demandOption: true,
-  desc: "KeyChain locator",
-  type: "string",
-})
 .middleware(applyCommonArgs)
 .command(new GenKeyCommand())
 .command(new ShowCertCommand())

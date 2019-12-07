@@ -14,7 +14,8 @@ Since SafeBag contains encrypted PKCS#8 data that is not supported by WebCrypto,
 ```sh
 ndnsec key-gen /ME
 ndnsec export /ME -P passw0rd > ME.safebag
-ndnsec2ndnts safebag --locator /tmp/my-keychain --passphrase passw0rd ME.safebag
+
+NDNTS_KEYCHAIN=/tmp/my-keychain ndnsec2ndnts safebag --passphrase passw0rd ME.safebag
 ```
 
 This command does not depend on `ndnsec` tool.
@@ -25,7 +26,7 @@ It can work even if ndn-cxx is not installed on the local machine.
 `ndnsec2ndnts clone` command copies all private keys of current user's ndn-cxx KeyChain to an NDNts persistent KeyChain.
 
 ```sh
-ndnsec2ndnts clone --locator /tmp/my-keychain
+NDNTS_KEYCHAIN=/tmp/my-keychain ndnsec2ndnts clone
 ```
 
 This command requires `ndnsec` tool to be installed on the local machine.

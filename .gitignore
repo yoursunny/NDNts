@@ -1,11 +1,11 @@
+.env
 .vscode/
 coverage/
 node_modules/
+npm-debug.log
 packages/*/lib/
 packages/*/literate-temp.ts
 packages/*/tsconfig.json
-lerna-debug.log
-npm-debug.log
 pnpm-debug.log
 pnpm-lock.yaml
 tsconfig.tsbuildinfo

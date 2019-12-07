@@ -1,12 +1,12 @@
+import { openKeyChain } from "@ndn/cli-common";
 import { Decoder } from "@ndn/tlv";
 import { createReadStream } from "fs";
 import getStream from "get-stream";
 import { Arguments, Argv, CommandModule } from "yargs";
 
-import { importKeyPair, SafeBag  } from "../mod";
-import { CommonArgs, keyChain } from "./common-args";
+import { importKeyPair, SafeBag } from "../mod";
 
-interface Args extends CommonArgs {
+interface Args {
   file: string;
   passphrase: string;
 }
@@ -21,15 +21,17 @@ async function main(args: Args) {
   const b64 = await getStream(stream);
   const safeBag = new Decoder(Buffer.from(b64, "base64")).decode(SafeBag);
   const pkcs8 = safeBag.decryptKey(args.passphrase);
+
+  const keyChain = openKeyChain();
   await importKeyPair(safeBag.certificate, pkcs8, keyChain);
   await keyChain.insertCert(safeBag.certificate);
 }
 
-export class SafeBagCommand implements CommandModule<CommonArgs, Args> {
+export class SafeBagCommand implements CommandModule<{}, Args> {
   public command = "safebag [file]";
   public describe = "import SafeBag";
 
-  public builder(argv: Argv<CommonArgs>): Argv<Args> {
+  public builder(argv: Argv): Argv<Args> {
     return argv
     .positional("file", {
       default: "-",

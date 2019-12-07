@@ -1,17 +1,11 @@
-import { Forwarder } from "@ndn/fw";
+import { closeUplinks, openUplinks } from "@ndn/cli-common";
 import { KeyChain } from "@ndn/keychain";
-import { L3Face } from "@ndn/l3face";
 import { Client, clientLogger, makeMailsacClientEmailChallenge, schema } from "@ndn/ndncert";
-import { UnixTransport } from "@ndn/node-transport";
-import { Name } from "@ndn/packet";
-import loudRejection from "loud-rejection";
 // @ts-ignore
 import readJsonSync from "read-json-sync";
 import yargs from "yargs";
 
 import * as ndnsec from "./ndnsec";
-
-loudRejection();
 
 const args = yargs
 .scriptName("ndncert-ndnsec")
@@ -37,8 +31,7 @@ if (args.verbose) {
 const caInfo = readJsonSync(args.ca) as schema.CaInfo;
 
 (async function() {
-  const face = Forwarder.getDefault().addFace(new L3Face(await UnixTransport.connect("/var/run/nfd.sock")));
-  face.addRoute(new Name("/"));
+  await openUplinks();
 
   const challenge = await makeMailsacClientEmailChallenge();
   const client = await Client.create(caInfo);
@@ -57,6 +50,4 @@ const caInfo = readJsonSync(args.ca) as schema.CaInfo;
     ...challenge,
   });
   await ndnsec.installCert(cert);
-
-  face.close();
-})();
+})().finally(closeUplinks);

@@ -2,15 +2,15 @@ import { Name } from "@ndn/packet";
 import { serve } from "@ndn/segmented-object";
 import { Arguments, Argv, CommandModule } from "yargs";
 
-import { CommonArgs, segmentNumConvention } from "./common-args";
+import { CommonArgs, segmentNumConvention, signer } from "./common-args";
 
 interface Args extends CommonArgs {
   name: string;
 }
 
-async function main(args: Args) {
+function main(args: Args) {
   const name = new Name(args.name);
-  serve(name, process.stdin, { segmentNumConvention });
+  serve(name, process.stdin, { segmentNumConvention, signer });
 }
 
 export class PutSegmentedCommand implements CommandModule<CommonArgs, Args> {

@@ -1,9 +1,10 @@
+import { closeUplinks } from "@ndn/cli-common";
 import { Name } from "@ndn/packet";
 import { discoverVersion, fetch } from "@ndn/segmented-object";
 import stdout from "stdout-stream";
 import { Arguments, Argv, CommandModule } from "yargs";
 
-import { CommonArgs, segmentNumConvention, uplink, versionConvention } from "./common-args";
+import { CommonArgs, segmentNumConvention, versionConvention } from "./common-args";
 
 type DiscoverVersionChoice = "none"|"cbp";
 const discoverVersionChoices: ReadonlyArray<DiscoverVersionChoice> = ["none", "cbp"];
@@ -59,6 +60,6 @@ export class GetSegmentedCommand implements CommandModule<CommonArgs, Args> {
 
   public handler(args: Arguments<Args>) {
     main(args)
-    .finally(() => uplink.close());
+    .finally(closeUplinks);
   }
 }

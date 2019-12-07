@@ -1,16 +1,17 @@
+import { openKeyChain } from "@ndn/cli-common";
 import { CommandModule } from "yargs";
 
 import { ndnsec } from "../mod";
-import { CommonArgs, keyChain } from "./common-args";
 
 async function main() {
+  const keyChain = openKeyChain();
   const names = await ndnsec.listKeys();
   for (const name of names) {
     await ndnsec.importKey(name, keyChain);
   }
 }
 
-export class CloneCommand implements CommandModule<CommonArgs> {
+export class CloneCommand implements CommandModule {
   public command = "clone";
   public describe = "import all keys from ndnsec";
 

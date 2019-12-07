@@ -6,22 +6,22 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 
 ## Simple Commands
 
-* List keys: `ndntssec --locator /tmp/my-keychain list-keys`
-* List certificates: `ndntssec --locator /tmp/my-keychain list-certs`
-* Show certificate (in Base64 format): `ndntssec --locator /tmp/my-keychain show-cert /A/KEY/36=%00%05%96%BA%2C%A5%89%F8/self/35=%00%00%01nD%24%01%87`
-* Add certificate (key must exist): `ndntssec --locator /tmp/my-keychain add-cert < A.cert`
-* Delete keys and certificates (specify name prefix): `ndntssec --locator /tmp/my-keychain delete /A`
+* List keys: `NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec list-keys`
+* List certificates: `NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec list-certs`
+* Show certificate (in Base64 format): `NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec show-cert /A/KEY/36=%00%05%96%BA%2C%A5%89%F8/self/35=%00%00%01nD%24%01%87`
+* Add certificate (key must exist): `NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec add-cert < A.cert`
+* Delete keys and certificates (specify name prefix): `NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec delete /A`
 
-In all commands, `--locator` specifies the location of the KeyChain.
+In all commands, `NDNTS_KEYCHAIN` environment variable specifies the location of the KeyChain.
 It is unsafe to access the same KeyChain from multiple processes simultaneously.
 Therefore, NDNts does not provide a "default" KeyChain.
 
 ## Generate Key
 
 ```sh
-ndntssec --locator /tmp/my-keychain gen-key /A
-ndntssec --locator /tmp/my-keychain gen-key /A --type ec --curve P-384
-ndntssec --locator /tmp/my-keychain gen-key /A --type rsa --modulus-length 1024
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec gen-key /A
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec gen-key /A --type ec --curve P-384
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec gen-key /A --type rsa --modulus-length 1024
 ```
 
 * The name can either be a subject name (called "identity" in other tools), or a key name.
@@ -36,7 +36,7 @@ You may retrieve the certificate with `ndntssec show-cert` command.
 ## Issue Certificate
 
 ```sh
-ndntssec --locator /tmp/issuer-keychain issue-cert --issuer /B --issuer-id B --valid-days 72 < A-request.cert > A.cert
+NDNTS_KEYCHAIN=/tmp/issuer-keychain ndntssec issue-cert --issuer /B --issuer-id B --valid-days 72 < A-request.cert > A.cert
 ```
 
 * `--issuer` specifies name prefix of a private key that signs (issues) the certificate.
@@ -51,18 +51,17 @@ This command reads a certificate request (self-signed certificate) in Base64 for
 ### Example
 
 ```shell
-$ ndntssec --locator /tmp/issuer gen-key /issuer
+$ NDNTS_KEYCHAIN=/tmp/issuer ndntssec gen-key /issuer
 /issuer/KEY/36=%00%05%96%BAy%B2%60%90/self/35=%00%00%01nD7%BB%12
 
-$ ndntssec --locator /tmp/user gen-key /user
+$ NDNTS_KEYCHAIN=/tmp/user ndntssec gen-key /user
 /user/KEY/36=%00%05%96%BAz%FCl%C0/self/35=%00%00%01nD8%0F%8E
 
-$ ndntssec --locator /tmp/user show-cert /user/KEY/36=%00%05%96%BAz%FCl%C0/self/35=%00%00%01nD8%0F%8E \
-  | ndntssec --locator /tmp/issuer issue-cert --issuer /issuer --issuer-id master -
--valid-days 72 \
-  | ndntssec --locator /tmp/user add-cert
+$ NDNTS_KEYCHAIN=/tmp/user ndntssec show-cert /user/KEY/36=%00%05%96%BAz%FCl%C0/self/35=%00%00%01nD8%0F%8E \
+  | NDNTS_KEYCHAIN=/tmp/issuer ndntssec issue-cert --issuer /issuer --issuer-id master --valid-days 72 \
+  | NDNTS_KEYCHAIN=/tmp/user ndntssec add-cert
 
-$ ndntssec --locator /tmp/user list-certs
+$ NDNTS_KEYCHAIN=/tmp/user ndntssec list-certs
 /user/KEY/36=%00%05%96%BAz%FCl%C0/self/35=%00%00%01nD8%0F%8E
 /user/KEY/36=%00%05%96%BAz%FCl%C0/master/35=%00%00%01nD9L%05
 ```
