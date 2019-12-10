@@ -1,3 +1,5 @@
+import "loud-rejection/register";
+
 import { closeUplinks, openUplinks } from "@ndn/cli-common";
 import { KeyChain } from "@ndn/keychain";
 import { Client, clientLogger, makeMailsacClientEmailChallenge, schema } from "@ndn/ndncert";

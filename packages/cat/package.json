@@ -31,6 +31,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "esm": "^3.2.25",
+    "loud-rejection": "^2.2.0",
     "stdout-stream": "^1.4.1",
     "tslib": "*",
     "yargs": "^15.0.2"

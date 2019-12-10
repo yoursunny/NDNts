@@ -1,4 +1,5 @@
-import loudRejection from "loud-rejection";
+import "loud-rejection/register";
+
 import yargs from "yargs";
 
 import { AddCertCommand } from "./add-cert";
@@ -9,8 +10,6 @@ import { IssueCertCommand } from "./issue-cert";
 import { ListCertsCommand } from "./list-certs";
 import { ListKeysCommand } from "./list-keys";
 import { ShowCertCommand } from "./show-cert";
-
-loudRejection();
 
 yargs
 .scriptName("ndntssec")

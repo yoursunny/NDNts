@@ -30,7 +30,6 @@
     "@ndn/packet": "workspace:*",
     "@strattadb/environment": "^7.0.0",
     "dotenv": "^8.2.0",
-    "loud-rejection": "^2.2.0",
     "tslib": "*"
   }
 }

@@ -1,10 +1,8 @@
 import { Name } from "@ndn/packet";
 import { makeEnv, parsers } from "@strattadb/environment";
 import dotenv from "dotenv";
-import loudRejection from "loud-rejection";
 import { URL } from "url";
 
-loudRejection();
 dotenv.config();
 
 export const env = makeEnv({

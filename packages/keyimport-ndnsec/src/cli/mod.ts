@@ -1,10 +1,9 @@
-import loudRejection from "loud-rejection";
+import "loud-rejection/register";
+
 import yargs from "yargs";
 
 import { CloneCommand } from "./clone";
 import { SafeBagCommand } from "./safebag";
-
-loudRejection();
 
 yargs
 .scriptName("ndnsec2ndnts")
