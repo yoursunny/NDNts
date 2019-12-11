@@ -4,19 +4,20 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 
 **ndntssec** is a command line utility to access an NDNts persistent KeyChain.
 
-## Simple Commands
+`NDNTS_KEYCHAIN` environment variable specifies location of the KeyChain.
+If missing, the command will operate on a temporary in-memory KeyChain, which is not particularly useful.
 
-* List keys: `NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec list-keys`
-* List certificates: `NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec list-certs`
-* Show certificate (in Base64 format): `NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec show-cert /A/KEY/36=%00%05%96%BA%2C%A5%89%F8/self/35=%00%00%01nD%24%01%87`
-* Add certificate (key must exist): `NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec add-cert < A.cert`
-* Delete keys and certificates (specify name prefix): `NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec delete /A`
+NDNts does not provide a "default" KeyChain, because it is unsafe to access the same KeyChain from multiple processes simultaneously.
 
-In all commands, `NDNTS_KEYCHAIN` environment variable specifies the location of the KeyChain.
-It is unsafe to access the same KeyChain from multiple processes simultaneously.
-Therefore, NDNts does not provide a "default" KeyChain.
+## `ndntssec list-keys`: List Keys
 
-## Generate Key
+```sh
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec list-keys
+```
+
+This command prints a list of key names to standard output.
+
+## `ndntssec gen-key`: Generate Key
 
 ```sh
 NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec gen-key /A
@@ -31,13 +32,31 @@ NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec gen-key /A --type rsa --modulus-length 
 * Default is ECDSA key with P-256 curve.
 
 This command adds a self-signed certificate to the KeyChain, and prints the certificate name to stdout.
-You may retrieve the certificate with `ndntssec show-cert` command.
+You may retrieve the self-signed certificate with `ndntssec show-cert` command.
 
-## Issue Certificate
+## `ndntssec list-certs`: List Certificates
+
+```sh
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec list-certs
+```
+
+This command prints a list of certificate names to standard output.
+
+## `ndntssec show-cert`: Show Certificate
+
+```sh
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec show-cert /A/KEY/36=%00%05%96%BA%2C%A5%89%F8/self/35=%00%00%01nD%24%01%87
+```
+
+This command prints the specified certificate in Base64 format to standard output.
+
+## `ndntssec issue-cert`: Issue Certificate
 
 ```sh
 NDNTS_KEYCHAIN=/tmp/issuer-keychain ndntssec issue-cert --issuer /B --issuer-id B --valid-days 72 < A-request.cert > A.cert
 ```
+
+This command reads a certificate request (self-signed certificate) in Base64 format from standard input, signs (issues) a certificate to the public key enclosed in the certificate request, and prints the issued certificate in Base64 format to standard output.
 
 * `--issuer` specifies name prefix of a private key that signs (issues) the certificate.
   Default is any available key in the KeyChain.
@@ -46,9 +65,7 @@ NDNTS_KEYCHAIN=/tmp/issuer-keychain ndntssec issue-cert --issuer /B --issuer-id 
 * `--valid-days` specifies certificate ValidityPeriod in days from now.
   Default is 30 days.
 
-This command reads a certificate request (self-signed certificate) in Base64 format from standard input, signs (issues) a certificate to the public key enclosed in the certificate request, and prints the issued certificate in Base64 format to standard output.
-
-### Example
+Example:
 
 ```shell
 $ NDNTS_KEYCHAIN=/tmp/issuer ndntssec gen-key /issuer
@@ -70,3 +87,69 @@ $ NDNTS_KEYCHAIN=/tmp/user ndntssec list-certs
 2. Generate `/user` key in user's KeyChain.
 3. Show `/user` certificate request, have it signed by `/issuer`, and add the issued certificate to user's KeyChain.
 4. Display certificates in user's KeyChain.
+
+## `ndntssec add-cert`: Add Certificate
+
+```sh
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec add-cert < A.cert
+```
+
+This command reads a certificate in Base64 format from standard input, and saves it in the KeyChain.
+The corresponding key must exist in the KeyChain.
+
+## `ndntssec delete`: Delete Keys and Certificates
+
+```sh
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec delete /A
+```
+
+This command deletes keys and certificates under a name prefix.
+
+## `ndntssec import-safebag`: Import ndn-cxx SafeBag
+
+```sh
+ndnsec export -i /subject -P 888888 | NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec import-safebag --passphrase 888888
+```
+
+This command reads a ndn-cxx [SafeBag](https://named-data.net/doc/ndn-cxx/0.6.6/specs/safe-bag.html) object in Base64 format from standard input, and saves the enclosed private key, public key, and certificate in the KeyChain.
+
+## `ndntssec import-ndnsec`: Import ndn-cxx KeyChain via ndnsec
+
+```sh
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec import-ndnsec
+
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec import-ndnsec --prefix /subject
+```
+
+This command copies keys and certificates from ndn-cxx KeyChain using `ndnsec` executable, and prints imported key names to standard output.
+
+* `--prefix` limits key names to be under a prefix.
+  Default is importing all keys.
+
+See `@ndn/ndnsec` package for more information.
+
+## `ndntssec ndncert-client`: Request Certificate from NDNCERT CA
+
+```sh
+nfd-start
+ndn-autoconfig
+ndnpeek -p /ndn/edu/ucla/yufeng/CA/_PROBE/INFO > ndncert-ucla.json
+
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec ndncert-client --type ec --curve P-384 --ca ndncert-ucla.json --valid-days 10 --verbose
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec ndncert-client --ndnsec --ca ndncert-ucla.json
+```
+
+This command requests a certificate from NDNCERT certificate authority, and prints certificate name to standard output.
+
+* `--ca` specifies NDNCERT CA config file.
+  This argument is required.
+* `--verbose` enables NDNCERT client logging.
+* `--type`, `--curve`, and `--modulus-length` specify crypto key properties.
+  They are same as `ndntssec gen-key` command.
+* `--valid-days` specifies certificate ValidityPeriod.
+  It is same as `ndntssec issue-cert` command.
+* `--ndnsec` generates key pair and saves certificate in ndn-cxx KeyChain using `ndnsec` executable.
+  The crypto key is RSA-2048; `--type`, `--curve`, and `--modulus-length` are ignored.
+
+This command by default connects to local NFD forwarder.
+You may setup a different uplink using `NDNTS_UPLINK` environment variable, as explained in `@ndn/cli-common` documentation.

@@ -1,7 +1,6 @@
 import { CommandModule } from "yargs";
 
-import { keyChain } from "./common-args";
-import { inputCertBase64 } from "./util";
+import { inputCertBase64, keyChain } from "./util";
 
 async function main() {
   const cert = await inputCertBase64();

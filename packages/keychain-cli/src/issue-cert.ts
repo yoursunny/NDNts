@@ -2,10 +2,9 @@ import { Certificate, ValidityPeriod } from "@ndn/keychain";
 import { Component, Name } from "@ndn/packet";
 import { Arguments, Argv, CommandModule } from "yargs";
 
-import { CommonArgs, keyChain } from "./common-args";
-import { inputCertBase64, printCertBase64 } from "./util";
+import { inputCertBase64, keyChain, printCertBase64 } from "./util";
 
-interface Args extends CommonArgs {
+interface Args {
   issuer: string;
   "issuer-id": string;
   "valid-days": number;
@@ -34,11 +33,11 @@ async function main({ issuer, "issuer-id": issuerIdStr, "valid-days": validDays 
   printCertBase64(cert);
 }
 
-export class IssueCertCommand implements CommandModule<CommonArgs, Args> {
+export class IssueCertCommand implements CommandModule<{}, Args> {
   public command = "issue-cert";
   public describe = "issue certificate";
 
-  public builder(argv: Argv<CommonArgs>): Argv<Args> {
+  public builder(argv: Argv): Argv<Args> {
     return argv
     .option("issuer", {
       default: "/",

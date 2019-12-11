@@ -1,7 +1,7 @@
 import stdout from "stdout-stream";
 import { CommandModule } from "yargs";
 
-import { keyChain } from "./common-args";
+import { keyChain } from "./util";
 
 async function main() {
   const names = await keyChain.listKeys();

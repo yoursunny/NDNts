@@ -1,10 +1,9 @@
 import { Name } from "@ndn/packet";
 import { Arguments, Argv, CommandModule } from "yargs";
 
-import { CommonArgs, keyChain } from "./common-args";
-import { printCertBase64 } from "./util";
+import { keyChain, printCertBase64 } from "./util";
 
-interface Args extends CommonArgs {
+interface Args {
   name: string;
 }
 
@@ -16,11 +15,11 @@ async function main({ name }: Args) {
   }
 }
 
-export class ShowCertCommand implements CommandModule<CommonArgs, Args> {
+export class ShowCertCommand implements CommandModule<{}, Args> {
   public command = "show-cert <name>";
   public describe = "show certificate";
 
-  public builder(argv: Argv<CommonArgs>): Argv<Args> {
+  public builder(argv: Argv): Argv<Args> {
     return argv
     .positional("name", {
       desc: "certificate name or prefix",

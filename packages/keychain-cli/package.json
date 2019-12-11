@@ -28,6 +28,8 @@
   },
   "dependencies": {
     "@ndn/cli-common": "workspace:*",
+    "@ndn/ndncert": "workspace:*",
+    "@ndn/ndnsec": "workspace:*",
     "@ndn/keychain": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
@@ -35,6 +37,7 @@
     "fast-chunk-string": "^1.0.1",
     "get-stdin": "^7.0.0",
     "loud-rejection": "^2.2.0",
+    "read-json-sync": "^2.0.1",
     "stdout-stream": "^1.4.1",
     "tslib": "*",
     "yargs": "^15.0.2"

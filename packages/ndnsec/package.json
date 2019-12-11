@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/ndncert-ndnsec",
+  "name": "@ndn/ndnsec",
   "version": "0.0.0",
-  "description": "NDNts: NDNCERT integration with ndn-cxx KeyChain",
+  "description": "NDNts: interaction with ndn-cxx KeyChain",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -13,34 +13,21 @@
   ],
   "type": "module",
   "main": "src/mod.ts",
-  "bin": {
-    "ndncert-ndnsec": "cli.cjs"
-  },
   "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/ndncert-ndnsec"
+    "directory": "packages/ndnsec"
   },
   "publishConfig": {
     "main": "lib/mod.js"
   },
   "dependencies": {
-    "@ndn/cli-common": "workspace:*",
     "@ndn/keychain": "workspace:*",
-    "@ndn/keyimport-ndnsec": "workspace:*",
-    "@ndn/ndncert": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "esm": "^3.2.25",
     "execa": "^3.4.0",
-    "loud-rejection": "^2.2.0",
-    "read-json-sync": "^2.0.1",
-    "tslib": "*",
-    "yargs": "^15.0.2"
-  },
-  "devDependencies": {
-    "@types/yargs": "^13.0.3"
+    "tslib": "*"
   }
 }

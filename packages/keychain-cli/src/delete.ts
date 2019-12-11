@@ -2,9 +2,9 @@ import { Name } from "@ndn/packet";
 import stdout from "stdout-stream";
 import { Arguments, Argv, CommandModule } from "yargs";
 
-import { CommonArgs, keyChain } from "./common-args";
+import { keyChain } from "./util";
 
-interface Args extends CommonArgs {
+interface Args {
   name: string;
 }
 
@@ -22,11 +22,11 @@ async function main({ name }: Args) {
   }
 }
 
-export class DeleteCommand implements CommandModule<CommonArgs, Args> {
+export class DeleteCommand implements CommandModule<{}, Args> {
   public command = "delete <name>";
   public describe = "delete keys and certificates";
 
-  public builder(argv: Argv<CommonArgs>): Argv<Args> {
+  public builder(argv: Argv): Argv<Args> {
     return argv
     .positional("name", {
       desc: "name prefix",

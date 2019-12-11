@@ -1,43 +1,19 @@
 import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, HmacKey, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength, RsaPrivateKey } from "@ndn/keychain";
+import { NameLike } from "@ndn/packet";
 import stdout from "stdout-stream";
 import { Arguments, Argv, CommandModule } from "yargs";
 
-import { CommonArgs, keyChain } from "./common-args";
+import { keyChain } from "./util";
 
 type TypeChoice = "ec"|"rsa"|"hmac";
 const typeChoices: ReadonlyArray<TypeChoice> = ["ec", "rsa", "hmac"];
 
-interface Args extends CommonArgs {
+interface Args extends GenKeyCommand.KeyParamArgs {
   name: string;
-  type: TypeChoice;
-  curve: EcCurve;
-  "modulus-length": RsaModulusLength;
 }
 
-async function main({
-  name, type, curve, "modulus-length": modulusLength,
-}: Args) {
-  let pvt: PrivateKey;
-  let pub: PublicKey;
-  let canSelfSign = true;
-  switch (type) {
-    case "ec":
-      [pvt, pub] = await EcPrivateKey.generate(name, curve, keyChain);
-      break;
-    case "rsa":
-      [pvt, pub] = await RsaPrivateKey.generate(name, modulusLength, keyChain);
-      break;
-    case "hmac": {
-      const key = await HmacKey.generate(name, keyChain);
-      pvt = key;
-      pub = key;
-      canSelfSign = false;
-      break;
-    }
-    default:
-      /* istanbul ignore next */
-      throw new Error();
-  }
+async function main(args: Args) {
+  const { pvt, pub, canSelfSign } = await GenKeyCommand.generateKey(args.name, args);
 
   if (canSelfSign) {
     const cert = await Certificate.selfSign({ privateKey: pvt, publicKey: pub });
@@ -48,18 +24,34 @@ async function main({
   }
 }
 
-export class GenKeyCommand implements CommandModule<CommonArgs, Args> {
+export class GenKeyCommand implements CommandModule<{}, Args> {
   public command = "gen-key <name>";
   public describe = "generate key";
   public aliases = ["keygen"];
 
-  public builder(argv: Argv<CommonArgs>): Argv<Args> {
-    return argv
+  public builder(argv: Argv): Argv<Args> {
+    return GenKeyCommand.declareKeyParamArgs(argv)
     .positional("name", {
       desc: "subject name or key name",
       type: "string",
     })
-    .demandOption("name")
+    .demandOption("name");
+  }
+
+  public handler(args: Arguments<Args>) {
+    main(args);
+  }
+}
+
+export namespace GenKeyCommand {
+  export interface KeyParamArgs {
+    type: TypeChoice;
+    curve: EcCurve;
+    "modulus-length": RsaModulusLength;
+  }
+
+  export function declareKeyParamArgs<T>(argv: Argv<T>): Argv<T & KeyParamArgs> {
+    return argv
     .option("type", {
       choices: typeChoices,
       default: "ec" as TypeChoice,
@@ -77,7 +69,29 @@ export class GenKeyCommand implements CommandModule<CommonArgs, Args> {
     });
   }
 
-  public handler(args: Arguments<Args>) {
-    main(args);
+  export async function generateKey(name: NameLike, {
+    type, curve, "modulus-length": modulusLength,
+  }: KeyParamArgs): Promise<{
+    pvt: PrivateKey;
+    pub: PublicKey;
+    canSelfSign: boolean;
+  }> {
+    switch (type) {
+      case "ec": {
+        const [pvt, pub] = await EcPrivateKey.generate(name, curve, keyChain);
+        return { pvt, pub, canSelfSign: true };
+      }
+      case "rsa": {
+        const [pvt, pub] = await RsaPrivateKey.generate(name, modulusLength, keyChain);
+        return { pvt, pub, canSelfSign: true };
+      }
+      case "hmac": {
+        const key = await HmacKey.generate(name, keyChain);
+        return { pvt: key, pub: key, canSelfSign: false };
+      }
+      default:
+        /* istanbul ignore next */
+        throw new Error();
+    }
   }
 }
