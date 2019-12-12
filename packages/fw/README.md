@@ -20,3 +20,18 @@ A *packet* transmitted or received on an `FwFace` is typically an Interest or a 
 From application logic, it is possible to associate arbitrary metadata, called a *token*, on an outgoing Interest, and receive them back on the corresponding Data.
 You can also send a `CancelInterest` command to cancel a pending Interest, and receive a `RejectInterest` notice when the Interest is canceled or has expired.
 Obviously, these tokens and commands are not encodable, so they are only available for communication between application logic and the forwarding plane, but cannot appear beyond the NDNts application.
+
+## Forwarding Behavior
+
+It's sad but NDN does not have a formal forwarding behavior specification.
+This package implements a simplified version of NDN forwarding behavior specified in [NDN-LAN dissertation](https://hdl.handle.net/10150/625652) chapter 3.
+The main differences from a full forwarder include:
+
+* Forwarding strategy is dumb.
+* No Interest aggregation.
+* No Content Store (CS).
+  If your application needs data packet caching, use `@ndn/repo` package.
+* No forwarding hint processing.
+* No Nack generation or processing.
+
+These are subject to change.

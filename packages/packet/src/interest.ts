@@ -1,5 +1,7 @@
 import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import assert from "minimalistic-assert";
 
+import { FwHint } from "./fwhint";
 import { LLSign, LLVerify, Name, NameLike, ParamsDigest, SigInfo, TT } from "./mod";
 import { sha256 } from "./platform/mod";
 
@@ -16,7 +18,7 @@ const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
     throw new Error("cannot decode Selectors");
   }
 })
-// TODO ForwardingHint
+.add(TT.ForwardingHint, (t, { value }) => t.fwHint = FwHint.decodeValue(value))
 .add(TT.Nonce, (t, { value }) => t.nonce = NNI.decode(value, 4))
 .add(TT.InterestLifetime, (t, { nni }) => t.lifetime = nni)
 .add(TT.HopLimit, (t, { value }) => t.hopLimit = NNI.decode(value, 1))
@@ -43,6 +45,7 @@ const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
     throw new Error("ISigInfo missing in signed Interest");
   }
 
+  assert(tlv.buffer === params.buffer);
   t.sigValue = value;
   t[LLVerify.SIGNED] = Encoder.encode([
     t.name.getPrefix(-1).value,
@@ -68,6 +71,7 @@ export class Interest {
   public name: Name = new Name();
   public canBePrefix: boolean = false;
   public mustBeFresh: boolean = false;
+  public fwHint?: FwHint;
   public appParameters?: Uint8Array;
   public sigInfo?: SigInfo;
   public sigValue?: Uint8Array;
@@ -106,6 +110,8 @@ export class Interest {
         this.canBePrefix = true;
       } else if (arg === Interest.MustBeFresh) {
         this.mustBeFresh = true;
+      } else if (arg instanceof FwHint) {
+        this.fwHint = new FwHint(arg);
       } else if (arg instanceof NonceTag) {
         this.nonce = arg.v;
       } else if (arg instanceof LifetimeTag) {
@@ -130,6 +136,7 @@ export class Interest {
       this.name,
       this.canBePrefix ? [TT.CanBePrefix] : undefined,
       this.mustBeFresh ? [TT.MustBeFresh] : undefined,
+      this.fwHint,
       [TT.Nonce, NNI(typeof this.nonce === "number" ? this.nonce : Interest.generateNonce(), 4)],
       this.lifetime !== Interest.DefaultLifetime ?
         [TT.InterestLifetime, NNI(this.lifetime)] : undefined,
@@ -271,7 +278,7 @@ export namespace Interest {
     return new HopLimitTag(v);
   }
 
-  export type CtorArg = NameLike | typeof CanBePrefix | typeof MustBeFresh |
+  export type CtorArg = NameLike | typeof CanBePrefix | typeof MustBeFresh | FwHint |
                         LifetimeTag | HopLimitTag | Uint8Array;
 
   /** Generate a random nonce. */

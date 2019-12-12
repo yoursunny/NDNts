@@ -30,6 +30,9 @@ export const TT = {
   SigNonce: 0x26,
   SigTime: 0x28,
   SigSeqNum: 0x2A,
+
+  Delegation: 0x1F,
+  Preference: 0x1E,
 };
 
 export const SigType = {

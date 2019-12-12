@@ -3,6 +3,7 @@ import "../test-fixture/expect";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { Interest, LLSign, LLVerify, Name, ParamsDigest, SigInfo, SigType, TT } from "..";
+import { FwHint } from "../src/fwhint";
 
 test("encode", () => {
   expect(() => new Interest({} as any)).toThrow();
@@ -14,6 +15,7 @@ test("encode", () => {
   expect(interest.name).toEqualName("/A");
   expect(interest.canBePrefix).toBeFalsy();
   expect(interest.mustBeFresh).toBeFalsy();
+  expect(interest.fwHint).toBeUndefined();
   expect(interest.nonce).toBeUndefined();
   expect(interest.lifetime).toBe(4000);
   expect(interest.hopLimit).toBe(255);
@@ -25,6 +27,7 @@ test("encode", () => {
   expect(interest.nonce).toBeUndefined();
 
   interest = new Interest("/B", Interest.CanBePrefix, Interest.MustBeFresh,
+                          new FwHint([new FwHint.Delegation("/FH", 33)]),
                           Interest.Nonce(0x85AC8579), Interest.Lifetime(8198), Interest.HopLimit(5));
   expect(interest.name).toEqualName("/B");
   expect(interest.canBePrefix).toBeTruthy();
@@ -34,10 +37,11 @@ test("encode", () => {
   expect(interest.lifetime).toBe(8198);
   expect(interest.hopLimit).toBe(5);
   expect(interest).toEncodeAs([
-    0x05, 0x16,
+    0x05, 0x23,
     0x07, 0x03, 0x08, 0x01, 0x42,
     0x21, 0x00,
     0x12, 0x00,
+    0x1E, 0x0B, 0x1F, 0x09, 0x07, 0x04, 0x08, 0x02, 0x46, 0x48, 0x1E, 0x01, 0x21,
     0x0A, 0x04, 0x85, 0xAC, 0x85, 0x79,
     0x0C, 0x02, 0x20, 0x06,
     0x22, 0x01, 0x05,
@@ -46,6 +50,7 @@ test("encode", () => {
   interest.name = new Name("C");
   interest.canBePrefix = false;
   interest.mustBeFresh = false;
+  interest.fwHint = undefined;
   interest.nonce = undefined;
   interest.lifetime = 4000;
   interest.hopLimit = 255;
@@ -68,11 +73,11 @@ test("decode", async () => {
   expect(interest.mustBeFresh).toBeFalsy();
 
   decoder = new Decoder(Uint8Array.of(
-    0x05, 0x16,
+    0x05, 0x23,
     0x07, 0x03, 0x08, 0x01, 0x41,
     0x21, 0x00,
     0x12, 0x00,
-    // TODO ForwardingHint
+    0x1E, 0x0B, 0x1F, 0x09, 0x07, 0x04, 0x08, 0x02, 0x46, 0x48, 0x1E, 0x01, 0x21,
     0x0A, 0x04, 0xA0, 0xA1, 0xA2, 0xA3,
     0x0C, 0x02, 0x76, 0xA1,
     0x22, 0x01, 0xDC,
@@ -81,6 +86,8 @@ test("decode", async () => {
   expect(interest.name).toEqualName("/A");
   expect(interest.canBePrefix).toBeTruthy();
   expect(interest.mustBeFresh).toBeTruthy();
+  expect(interest.fwHint).toBeDefined();
+  expect(interest.fwHint!.delegations).toHaveLength(1);
   expect(interest.nonce).toBe(0xA0A1A2A3);
   expect(interest.lifetime).toBe(30369);
   expect(interest.hopLimit).toBe(220);
