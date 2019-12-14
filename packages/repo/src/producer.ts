@@ -5,7 +5,7 @@ import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 import MultiSet from "mnemonist/multi-set";
 
-import { DataStore } from "./data-store";
+import { DataStore } from "./mod";
 
 export class Producer {
   private readonly prod: EpProducer;

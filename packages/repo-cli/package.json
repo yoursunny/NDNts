@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/repo",
+  "name": "@ndn/repo-cli",
   "version": "0.0.0",
-  "description": "NDNts: Data Repository",
+  "description": "NDNts: Standalone Data Repository",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -13,38 +13,43 @@
   ],
   "type": "module",
   "main": "src/mod.ts",
+  "bin": {
+    "ndntsrepo": "cli.cjs"
+  },
   "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/repo"
+    "directory": "packages/repo-cli"
   },
   "publishConfig": {
     "main": "lib/mod.js"
   },
   "dependencies": {
+    "@ndn/cli-common": "workspace:*",
     "@ndn/endpoint": "workspace:*",
     "@ndn/fw": "workspace:*",
     "@ndn/l3face": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
+    "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
+    "@ndn/repo": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@types/abstract-leveldown": "^5.0.1",
-    "encoding-down": "^6.3.0",
-    "levelup": "^4.3.2",
+    "esm": "^3.2.25",
+    "loud-rejection": "^2.2.0",
+    "leveldown": "^5.4.1",
     "minimalistic-assert": "^1.0.1",
-    "mnemonist": "^0.31.3",
+    "progress": "^2.0.3",
     "streaming-iterables": "^4.1.1",
-    "strict-event-emitter-types": "^2.0.0",
     "throat": "^5.0.0",
-    "tslib": "*"
+    "tslib": "*",
+    "yargs": "^15.0.2"
   },
   "devDependencies": {
-    "@ndn/naming-convention2": "workspace:*",
-    "@types/encoding-down": "^5.0.0",
-    "@types/levelup": "^3.1.1",
-    "@types/memdown": "^3.0.0",
+    "@types/leveldown": "^4.0.2",
     "@types/minimalistic-assert": "^1.0.0",
-    "memdown": "^5.1.0"
+    "@types/progress": "^2.0.3",
+    "@types/yargs": "^13.0.3"
   }
 }

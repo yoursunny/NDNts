@@ -82,7 +82,7 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
     return undefined;
   }
 
-  public async tx(iterable: AsyncIterable<Packet>): Promise<void> {
+  public tx = async (iterable: AsyncIterable<Packet>): Promise<void> => {
     await this.txImpl(iterable);
     this.state_ = L3Face.State.CLOSED;
     this.emit("state", this.state_);
