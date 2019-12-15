@@ -5,36 +5,35 @@ import { connect, queryFch } from "./mod";
 import { getDefaultGateway } from "./platform/mod";
 
 interface Options {
+  /** List of routers to use in case FCH request fails. */
+  fchFallback?: string[];
   /** Maximum number of faces to establish. */
-  count: number;
+  count?: number;
   /** Consider default IPv4 gateway as a candidate. */
-  tryDefaultGateway: boolean;
+  tryDefaultGateway?: boolean;
   /** Choose one face with fastest testConnection completion and close others. */
-  preferFastest: boolean;
+  preferFastest?: boolean;
 }
 
-function makeDefaultOptions() {
-  return {
-    count: 1,
-    tryDefaultGateway: true,
-    preferFastest: false,
-  } as Options;
-}
-
-export async function connectToTestbed(options: Partial<connectToTestbed.Options> = {}): Promise<FwFace[]> {
-  const opts = { ...makeDefaultOptions(), ...options };
-  const hosts = await queryFch(opts);
-  if (opts.tryDefaultGateway) {
+export async function connectToTestbed(opts: connectToTestbed.Options = {}): Promise<FwFace[]> {
+  const {
+    fchFallback = [],
+    count = 1,
+    tryDefaultGateway = true,
+    preferFastest = false,
+  } = opts;
+  const hosts = await queryFch(opts).catch(() => fchFallback);
+  if (tryDefaultGateway) {
     try { hosts.unshift(await getDefaultGateway()); } catch (err) {}
   }
   const faces = await pipeline(
     () => hosts,
-    transform(3, (host) => connect(host, options).catch(() => undefined)),
+    transform(Infinity, (host) => connect(host, opts).catch(() => undefined)),
     filter((res): res is connect.Result => !!res),
-    take(opts.count),
+    take(count),
     collect,
   );
-  if (opts.preferFastest && faces.length > 1) {
+  if (preferFastest && faces.length > 1) {
     faces.sort(({ testConnectionDuration: d1 }, { testConnectionDuration: d2 }) => d1 - d2);
     for (const { face } of faces.splice(1)) {
       face.close();

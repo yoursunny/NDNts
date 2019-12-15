@@ -11,23 +11,17 @@ const getNow = hirestime();
 async function testConnection(face: FwFace, name: Name = new Name("/localhop/nfd/rib/list")) {
   const tapFace = TapFace.create(face);
   tapFace.addRoute(name);
-  const interest = new Interest(name, Interest.CanBePrefix,
-                                Interest.Lifetime(1000));
-  await new Endpoint({ fw: tapFace.fw }).consume(interest)
+  const interest = new Interest(name, Interest.CanBePrefix, Interest.Lifetime(1000));
+  await new Endpoint({ fw: tapFace.fw }).consume(interest, { describe: "TestConnection" })
         .finally(() => tapFace.close());
 }
 
-function makeDefaultOptions() {
-  return {
-    fw: Forwarder.getDefault(),
-    testConnection,
-  } as connect.Options;
-}
-
 /** Connect to a router and test the connection. */
-export async function connect(host: string, options: Partial<connect.Options> = {}): Promise<connect.Result> {
-  const opts = { ...makeDefaultOptions(), ...options };
-  const { fw, testConnection: tc } = opts;
+export async function connect(host: string, opts: connect.Options = {}): Promise<connect.Result> {
+  const {
+    fw = Forwarder.getDefault(),
+    testConnection: tc = testConnection,
+  } = opts;
   const transport = await createTransport(host, opts);
   const face = fw.addFace(new L3Face(transport));
 
@@ -50,10 +44,10 @@ export async function connect(host: string, options: Partial<connect.Options> = 
 
 export namespace connect {
   export interface Options {
-    fw: Forwarder;
+    fw?: Forwarder;
 
     /** Test that the face can reach a given name, or provide custom tester function. */
-    testConnection: Name | ((face: FwFace) => Promise<any>);
+    testConnection?: Name | ((face: FwFace) => Promise<any>);
   }
 
   export interface Result {

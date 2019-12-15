@@ -9,6 +9,7 @@ export type RetxGenerator = Iterable<number>;
 
 export interface Options {
   retx?: RetxPolicy;
+  describe?: string;
 }
 
 /**
@@ -31,6 +32,7 @@ export class EndpointConsumer {
   public consume(interest: Interest, opts: Options = {}): Context {
     const {
       retx,
+      describe,
     } = { ...this.opts, ...opts };
     let nRetx = -1;
     const retxGen = makeRetxGenerator(retx)(interest.lifetime)[Symbol.iterator]();
@@ -70,7 +72,7 @@ export class EndpointConsumer {
           cancelRetx();
           rx.end();
         },
-        toString: () => `consume(${interest.name})`,
+        toString: () => describe ?? `consume(${interest.name})`,
       } as FwFace.Base & FwFace.RxTxExtended,
       {
         local: true,

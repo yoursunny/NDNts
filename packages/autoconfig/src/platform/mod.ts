@@ -3,13 +3,11 @@ import { TcpTransport } from "@ndn/node-transport";
 import defaultGateway from "default-gateway";
 import nodeFetch from "node-fetch";
 
-import { connect, queryFch } from "../mod";
+import { connect } from "../mod";
 
 export const fetch = nodeFetch;
 
-export function overrideFchOptions(opts: queryFch.Options) {
-  return;
-}
+export const FCH_ALWAYS_CAPABILITIES = [];
 
 export function createTransport(host: string, opts: connect.Options): Promise<Transport> {
   return TcpTransport.connect({ host, port: 6363 });

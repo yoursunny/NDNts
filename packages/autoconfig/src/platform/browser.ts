@@ -1,15 +1,11 @@
 import { Transport } from "@ndn/l3face";
 import { WsTransport } from "@ndn/ws-transport";
 
-import { connect, queryFch } from "../mod";
+import { connect } from "../mod";
 
 export const fetch = self.fetch;
 
-export function overrideFchOptions(opts: queryFch.Options) {
-  const caps = new Set(opts.capabilities);
-  caps.add("wss");
-  opts.capabilities = Array.from(caps);
-}
+export const FCH_ALWAYS_CAPABILITIES = ["wss"];
 
 export function createTransport(host: string, opts: connect.Options): Promise<Transport> {
   return WsTransport.connect(`wss://${host}/ws/`);

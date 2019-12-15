@@ -1,25 +1,19 @@
-import { fetch, overrideFchOptions } from "./platform/mod";
+import { FCH_ALWAYS_CAPABILITIES, fetch } from "./platform/mod";
 
-function makeDefaultOptions() {
-  return {
-    server: "https://ndn-fch.named-data.net",
-    count: 1,
-    capabilities: [],
-    position: null,
-  } as queryFch.Options;
-}
-
-export async function queryFch(options: Partial<queryFch.Options> = {}): Promise<string[]> {
-  const opts = { ...makeDefaultOptions(), ...options };
-  overrideFchOptions(opts);
-  const { server, count, capabilities: cap, position } = opts;
+export async function queryFch(opts: queryFch.Options = {}): Promise<string[]> {
+  const {
+    server = "https://ndn-fch.named-data.net",
+    count = 1,
+    capabilities = [],
+    position = null,
+  } = opts;
 
   let u = `${server.replace(/[/]$/, "")}/?k=${count}`;
-  if (cap.length > 0) {
-    u += `&cap=${cap.join()}`;
+  for (const cap of new Set([...capabilities, ...FCH_ALWAYS_CAPABILITIES])) {
+    u += `&cap=${cap}`;
   }
   if (position) {
-    u += `&lon=${position[0]}&lat=${position[1]}`;
+    u += `&lon=${position[0].toFixed(5)}&lat=${position[1].toFixed(5)}`;
   }
 
   const resp = await fetch(u);
@@ -30,12 +24,12 @@ export async function queryFch(options: Partial<queryFch.Options> = {}): Promise
 export namespace queryFch {
   export interface Options {
     /** FCH server, must be https for browser. */
-    server: string;
-    /** Number of routers to request. */
-    count: number;
+    server?: string;
+    /** Number of routers to request, default is 1. */
+    count?: number;
     /** Required router capabilities. */
-    capabilities: string[];
+    capabilities?: string[];
     /** GPS position in GeoJSON [lon,lat] format, or null to use IP geolocation. */
-    position: null|[number, number];
+    position?: null|[number, number];
   }
 }

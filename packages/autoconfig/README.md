@@ -45,26 +45,32 @@ console.log("near @yoursunny's birthplace", hosts);
 const fw = Forwarder.create();
 
 // Create up to four faces, and consider default IPv4 gateway as a candidate.
+// In case NDN-FCH is unavailable, use a list of backup routers.
 let faces = await connectToTestbed({
   count: 4,
   fw,
   tryDefaultGateway: true,
+  fchFallback: ["hobo.cs.arizona.edu", "titan.cs.memphis.edu"],
 });
 assert(faces.length >= 1);
-faces.forEach((face) => console.log("connected to", `${face}`));
-faces.forEach((face) => face.close());
+faces.forEach((face) => {
+  console.log("connected to", `${face}`);
+  face.close();
+});
 
-// Try up to four candidates, and keep the fastest face.
+// Try up to four candidates, and keep the fastest face only.
 faces = await connectToTestbed({
   count: 4,
   fw,
   preferFastest: true,
-  testConnection: new Name(`/ndn/edu/wustl/ping/${Math.floor(Math.random() * 99999999)}`),
+  testConnection: new Name(`/ndn/edu/arizona/ping/${Math.floor(Math.random() * 99999999)}`),
   tryDefaultGateway: false,
 });
 assert.equal(faces.length, 1);
-faces.forEach((face) => console.log("fastest face is", `${face}`));
-faces.forEach((face) => face.close());
+faces.forEach((face) => {
+  console.log("fastest face is", `${face}`);
+  face.close();
+});
 ```
 
 ```ts
