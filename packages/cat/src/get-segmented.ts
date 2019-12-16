@@ -40,7 +40,7 @@ export class GetSegmentedCommand implements CommandModule<CommonArgs, Args> {
   public builder(argv: Argv<CommonArgs>): Argv<Args> {
     return argv
     .positional("name", {
-      desc: "versioned name prefix",
+      desc: "name prefix",
       type: "string",
     })
     .demandOption("name")

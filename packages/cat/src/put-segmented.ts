@@ -6,14 +6,14 @@ import { CommonArgs, segmentNumConvention, signer, versionConvention } from "./c
 
 interface Args extends CommonArgs {
   name: string;
-  ver: number;
+  ver: string;
 }
 
 function main({ name, ver }: Args) {
   serve(new Name(name), process.stdin, {
     segmentNumConvention,
     signer,
-    version: ver >= 0 ? ver : ver === -2,
+    version: ver === "none" ? false : ver === "now" ? true : parseInt(ver, 10),
     versionConvention,
   });
 }
@@ -31,9 +31,15 @@ export class PutSegmentedCommand implements CommandModule<CommonArgs, Args> {
     })
     .demandOption("name")
     .option("ver", {
-      default: -2,
-      desc: "version number; -1 to omit version component, -2 to use current timestamp",
-      type: "number",
+      default: "now",
+      desc: "version number; 'none' to omit version component, 'now' to use current timestamp",
+      type: "string",
+    })
+    .check(({ ver }) => {
+      if (!(["none", "now"].includes(ver) || parseInt(ver, 10) >= 0)) {
+        throw new Error("--ver must be either a non-negative integer or 'none' or 'now'");
+      }
+      return true;
     });
   }
 
