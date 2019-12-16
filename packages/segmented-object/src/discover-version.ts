@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
+import { Segment, Version } from "@ndn/naming-convention2";
 import { Interest, Name, NamingConvention } from "@ndn/packet";
 import PCancelable from "p-cancelable";
 
@@ -10,8 +10,8 @@ export function discoverVersion(name: Name, opts: discoverVersion.Options = {}):
   const {
     endpoint = new Endpoint(),
     versionMustBeFresh = true,
-    versionConvention = Version2,
-    segmentNumConvention = Segment2,
+    versionConvention = Version,
+    segmentNumConvention = Segment,
     retxLimit = 2,
   } = opts;
 
