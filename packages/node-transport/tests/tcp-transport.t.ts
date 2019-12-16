@@ -23,7 +23,10 @@ test("pair", async () => {
 test("connect error", async () => {
   const port = NetServerTest.tcpPort;
   NetServerTest.destroyServer();
-  await expect(TcpTransport.connect("localhost", port)).rejects.toThrow();
+  await Promise.all([
+    expect(TcpTransport.connect("localhost", port, { connectTimeout: 500 })).rejects.toThrow(),
+    expect(TcpTransport.connect({ port, connectTimeout: 500 })).rejects.toThrow(),
+  ]);
 });
 
 test("reopen", async () => {

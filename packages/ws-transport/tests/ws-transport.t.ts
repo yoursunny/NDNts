@@ -68,7 +68,7 @@ test("TX throttle", async () => {
 test("connect error", async () => {
   const uri = WsTest.uri;
   WsTest.destroyServer();
-  await expect(WsTransport.connect(uri)).rejects.toThrow();
+  await expect(WsTransport.connect(uri, { connectTimeout: 500 })).rejects.toThrow();
 });
 
 test("reopen", async () => {

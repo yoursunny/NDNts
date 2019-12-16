@@ -1,5 +1,7 @@
 import { StreamTransport } from "@ndn/l3face";
 import * as net from "net";
+import PCancelable from "p-cancelable";
+import pTimeout from "p-timeout";
 
 /** TCP socket transport. */
 export class TcpTransport extends StreamTransport {
@@ -16,16 +18,25 @@ export class TcpTransport extends StreamTransport {
 }
 
 export namespace TcpTransport {
-  export function connect(host?: string, port?: number): Promise<TcpTransport>;
+  export interface Options {
+    /** Connect timeout (in milliseconds). */
+    connectTimeout?: number;
+  }
 
-  export function connect(connectOpts: net.TcpNetConnectOpts): Promise<TcpTransport>;
+  export function connect(host?: string, port?: number, opts?: Options): Promise<TcpTransport>;
 
-  export function connect(arg1?: string|net.TcpNetConnectOpts, port: number = 6363): Promise<TcpTransport> {
+  export function connect(opts: net.TcpNetConnectOpts&Options): Promise<TcpTransport>;
+
+  export function connect(arg1?: string|(net.TcpNetConnectOpts&Options), port = 6363,
+                          { connectTimeout = 10000 }: Options = {}): Promise<TcpTransport> {
     const connectOpts: net.TcpNetConnectOpts =
       typeof arg1 === "undefined" ? { port } :
       typeof arg1 === "string" ? { host: arg1, port } :
-      arg1;
-    return new Promise<TcpTransport>((resolve, reject) => {
+      { connectTimeout, ...arg1 };
+    if (typeof arg1 === "object") {
+      connectTimeout = arg1.connectTimeout ?? connectTimeout;
+    }
+    return pTimeout(new PCancelable<TcpTransport>((resolve, reject, onCancel) => {
       const sock = net.connect(connectOpts);
       sock.setNoDelay(true);
       sock.on("error", () => undefined);
@@ -34,6 +45,7 @@ export namespace TcpTransport {
         sock.off("error", reject);
         resolve(new TcpTransport(sock, connectOpts));
       });
-    });
+      onCancel(() => sock.destroy());
+    }), connectTimeout);
   }
 }

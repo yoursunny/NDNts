@@ -1,5 +1,7 @@
 import { rxFromPacketIterable, Transport } from "@ndn/l3face";
 import { EventIterator } from "event-iterator";
+import PCancelable from "p-cancelable";
+import pTimeout from "p-timeout";
 
 import { makeWebSocket } from "./platform/mod";
 
@@ -68,6 +70,8 @@ export class WsTransport extends Transport {
 
 export namespace WsTransport {
   export interface Options {
+    /** Connect timeout (in milliseconds). */
+    connectTimeout?: number;
     /** Buffer amount (in bytes) to start TX throttling. */
     highWaterMark?: number;
     /** Buffer amount (in bytes) to stop TX throttling. */
@@ -75,7 +79,7 @@ export namespace WsTransport {
   }
 
   export function connect(uri: string, opts: WsTransport.Options = {}): Promise<WsTransport> {
-    return new Promise<WsTransport>((resolve, reject) => {
+    return pTimeout(new PCancelable<WsTransport>((resolve, reject, onCancel) => {
       const sock = makeWebSocket(uri);
       const onerror = (evt: Event) => {
         reject(new Error((evt as ErrorEvent).message));
@@ -86,6 +90,7 @@ export namespace WsTransport {
         sock.removeEventListener("error", onerror);
         resolve(new WsTransport(sock, opts));
       });
-    });
+      onCancel(() => sock.close());
+    }), opts.connectTimeout ?? 10000);
   }
 }
