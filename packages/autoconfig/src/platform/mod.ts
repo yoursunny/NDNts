@@ -9,8 +9,8 @@ export const fetch = nodeFetch;
 
 export const FCH_ALWAYS_CAPABILITIES = [];
 
-export function createTransport(host: string, opts: connect.Options): Promise<Transport> {
-  return TcpTransport.connect({ host, port: 6363 });
+export function createTransport(host: string, { connectTimeout }: connect.Options): Promise<Transport> {
+  return TcpTransport.connect({ host, port: 6363, connectTimeout });
 }
 
 export async function getDefaultGateway(): Promise<string> {

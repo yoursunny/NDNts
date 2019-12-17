@@ -58,11 +58,12 @@ faces.forEach((face) => {
   face.close();
 });
 
-// Try up to four candidates, and keep the fastest face only.
+// Try up to four candidates with 3-second timeout, and keep the fastest face only.
 faces = await connectToTestbed({
   count: 4,
   fw,
   preferFastest: true,
+  connectTimeout: 3000,
   testConnection: new Name(`/ndn/edu/arizona/ping/${Math.floor(Math.random() * 99999999)}`),
   tryDefaultGateway: false,
 });

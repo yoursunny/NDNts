@@ -46,6 +46,9 @@ export namespace connect {
   export interface Options {
     fw?: Forwarder;
 
+    /** Connect timeout (in milliseconds). */
+    connectTimeout?: number;
+
     /** Test that the face can reach a given name, or provide custom tester function. */
     testConnection?: Name | ((face: FwFace) => Promise<any>);
   }

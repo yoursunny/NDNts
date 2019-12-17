@@ -7,8 +7,8 @@ export const fetch = self.fetch;
 
 export const FCH_ALWAYS_CAPABILITIES = ["wss"];
 
-export function createTransport(host: string, opts: connect.Options): Promise<Transport> {
-  return WsTransport.connect(`wss://${host}/ws/`);
+export function createTransport(host: string, { connectTimeout }: connect.Options): Promise<Transport> {
+  return WsTransport.connect(`wss://${host}/ws/`, { connectTimeout });
 }
 
 export async function getDefaultGateway(): Promise<string> {
