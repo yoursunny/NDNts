@@ -5,8 +5,6 @@ import PCancelable from "p-cancelable";
 
 import { makeRetxGenerator, RetxPolicy } from "./retx";
 
-export type RetxGenerator = Iterable<number>;
-
 export interface Options {
   retx?: RetxPolicy;
   describe?: string;

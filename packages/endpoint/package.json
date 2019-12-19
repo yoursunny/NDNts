@@ -29,8 +29,15 @@
     "@ndn/tlv": "workspace:*",
     "applymixins": "^1.1.0",
     "it-pushable": "^1.4.0",
+    "minimalistic-assert": "^1.0.1",
     "p-cancelable": "^2.0.0",
     "streaming-iterables": "^4.1.1",
     "tslib": "*"
+  },
+  "devDependencies": {
+    "@ndn/repo": "workspace:*",
+    "@types/memdown": "^3.0.0",
+    "@types/minimalistic-assert": "^1.0.0",
+    "memdown": "^5.1.0"
   }
 }
