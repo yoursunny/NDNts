@@ -7,6 +7,7 @@ import MultiSet from "mnemonist/multi-set";
 
 import { DataStore } from "./mod";
 
+/** Make packets in DataStore available for retrieval. */
 export class Producer {
   private readonly prod: EpProducer;
   private readonly reg: ReturnType<Producer.PrefixRegController>;
@@ -38,9 +39,11 @@ export namespace Producer {
     reg?: PrefixRegController;
   }
 
+  /** Control prefix registrations of a repo producer. */
   export type PrefixRegController = (store: DataStore, face: Pick<FwFace, "addRoute"|"removeRoute">)
                                     => { close(): void };
 
+  /** Register a fixed set of prefixes. */
   export function PrefixRegStatic(...prefixes: Name[]): PrefixRegController {
     return (store, face) => {
       for (const prefix of prefixes) {
@@ -50,6 +53,13 @@ export namespace Producer {
     };
   }
 
+  /**
+   * Register prefixes derived from Data names.
+   * @param transform a function that accepts Data name and returns registered prefix name;
+   *                  it must return the same value for the same argument.
+   *
+   * Warning: this may misbehave when expireTime option is being used.
+   */
   export function PrefixRegDynamic(transform: (name: Name) => Name): PrefixRegController {
     return (store, face) => {
       const regs = new MultiSet<string>();
@@ -83,6 +93,7 @@ export namespace Producer {
     };
   }
 
+  /** Register prefixes k components shorter than Data names. */
   export function PrefixRegShorter(k: number): PrefixRegController {
     assert(k >= 0);
     return PrefixRegDynamic((name) => name.getPrefix(-k));
@@ -94,6 +105,7 @@ export namespace Producer {
     return typeof pred.match === "function";
   }
 
+  /** Register prefixes after stripping last few components matching a predicate. */
   export function PrefixRegStrip(...predicates: ComponentPredicate[]): PrefixRegController {
     const preds = predicates.map((pred) => {
       if (typeof pred === "function") { return pred; }
@@ -113,6 +125,7 @@ export namespace Producer {
     });
   }
 
+  /** A predicate for PrefixRegStrip that strips non-generic components. */
   export function stripNonGeneric(c: Component): boolean {
     return c.type !== TT.GenericNameComponent;
   }
