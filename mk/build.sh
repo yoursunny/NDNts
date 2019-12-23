@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 ACT=$1
 
 if [[ $ACT == watch ]]; then
