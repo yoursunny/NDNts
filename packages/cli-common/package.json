@@ -1,6 +1,6 @@
 {
   "name": "@ndn/cli-common",
-  "version": "0.0.0",
+  "version": "0.0.20191223-beta.1",
   "description": "NDNts: common routines for CLI programs",
   "keywords": [
     "NDN",
