@@ -46,3 +46,5 @@ deploy:
     dir: "mk/nightly-output/"
     message: $TRAVIS_COMMIT
     prod: true
+    on:
+      branch: develop

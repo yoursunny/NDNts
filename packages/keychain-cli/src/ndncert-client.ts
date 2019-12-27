@@ -36,13 +36,13 @@ class KeyChainOps {
 class NdnsecKeyChainOps extends KeyChainOps {
   public async generateKey(subjectName: Name): Promise<[PrivateKey, PublicKey]> {
     const PASSPHRASE = "PASSPHRASE";
-    const name = ndnsecGenKey(subjectName);
+    const name = ndnsecGenKey(subjectName, { setDefault: false });
     const safeBag = ndnsecExportKey(name, PASSPHRASE);
     await safeBag.saveKeyPair(PASSPHRASE, keyChain);
     return keyChain.getKeyPair(name);
   }
 
-  public async insertCert(cert: Certificate): Promise<void> {
+  public async installCert(cert: Certificate): Promise<void> {
     await super.installCert(cert);
     ndnsecInstallCert(cert);
   }

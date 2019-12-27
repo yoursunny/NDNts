@@ -19,10 +19,22 @@ export function listKeys(): Name[] {
 }
 
 /** Generate key in ndn-cxx KeyChain. */
-export function generateKey(subjectName: Name): Name {
-  const result = invokeNdnsec(["key-gen", "-i", subjectName.toString(), "-tr"]);
+export function generateKey(subjectName: Name, {
+  type = "rsa",
+  setDefault = true,
+}: generateKey.Options = {}): Name {
+  const result = invokeNdnsec(["key-gen", "-i", subjectName.toString(),
+                               `-t${type.charAt(0)}`,
+                               ...(setDefault ? [] : ["-n"])]);
   const cert = new Certificate(result.decode(Data));
   return cert.certName.toKeyName().toName();
+}
+
+export namespace generateKey {
+  export interface Options {
+    type?: "ec"|"rsa";
+    setDefault?: boolean;
+  }
 }
 
 /** Export key in ndn-cxx KeyChain as SafeBag. */
