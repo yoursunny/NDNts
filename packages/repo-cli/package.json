@@ -1,7 +1,7 @@
 {
   "name": "@ndn/repo-cli",
   "version": "0.0.20191223-beta.1",
-  "description": "NDNts: Standalone Data Repository",
+  "description": "NDNts: Data Repository CLI",
   "keywords": [
     "NDN",
     "Named Data Networking"
