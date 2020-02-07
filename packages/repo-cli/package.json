@@ -41,15 +41,15 @@
     "leveldown": "^5.4.1",
     "minimalistic-assert": "^1.0.1",
     "progress": "^2.0.3",
-    "streaming-iterables": "^4.1.1",
+    "streaming-iterables": "^4.1.2",
     "throat": "^5.0.0",
     "tslib": "*",
-    "yargs": "^15.0.2"
+    "yargs": "^15.1.0"
   },
   "devDependencies": {
     "@types/leveldown": "^4.0.2",
     "@types/minimalistic-assert": "^1.0.0",
     "@types/progress": "^2.0.3",
-    "@types/yargs": "^13.0.4"
+    "@types/yargs": "^15.0.3"
   }
 }

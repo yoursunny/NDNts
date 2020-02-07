@@ -31,7 +31,7 @@
     "it-pushable": "^1.4.0",
     "minimalistic-assert": "^1.0.1",
     "p-cancelable": "^2.0.0",
-    "streaming-iterables": "^4.1.1",
+    "streaming-iterables": "^4.1.2",
     "tslib": "*"
   },
   "devDependencies": {

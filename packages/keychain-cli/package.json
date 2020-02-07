@@ -40,11 +40,11 @@
     "read-json-sync": "^2.0.1",
     "stdout-stream": "^1.4.1",
     "tslib": "*",
-    "yargs": "^15.0.2"
+    "yargs": "^15.1.0"
   },
   "devDependencies": {
     "@types/fast-chunk-string": "^1.0.0",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^13.0.4"
+    "@types/yargs": "^15.0.3"
   }
 }
