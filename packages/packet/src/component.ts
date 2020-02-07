@@ -44,13 +44,11 @@ export class Component {
 
   /** Parse from URI representation, or return existing Component. */
   public static from(input: ComponentLike): Component {
-    // TODO handle ImplicitSha256DigestComponent and ParametersSha256DigestComponent
     if (input instanceof Component) {
       return input;
     }
 
-    const s: string = input;
-    let [sType, sValue] = s.split("=", 2);
+    let [sType, sValue] = input.split("=", 2);
     let type = TT.GenericNameComponent;
     if (typeof sValue !== "undefined") {
       type = parseInt(sType, 10);
@@ -124,12 +122,8 @@ export class Component {
 
   /** Get URI string. */
   public toString(): string {
-    // TODO handle ImplicitSha256DigestComponent and ParametersSha256DigestComponent
+    let b = `${this.type}=`;
     let hasNonPeriods = false;
-    let b = "";
-    if (this.type !== TT.GenericNameComponent) {
-      b = `${this.type}=`;
-    }
     this.value.forEach((ch) => {
       hasNonPeriods = hasNonPeriods || ch !== CHARCODE_PERIOD;
       b += CHAR_ENCODE[ch];

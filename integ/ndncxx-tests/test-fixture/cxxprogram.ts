@@ -18,5 +18,10 @@ function compile(cwd: string) {
 export function execute(cwd: string, args: string[] = [],
                         opts: execa.Options = {}): execa.ExecaChildProcess {
   compile(cwd);
-  return execa("./a.out", args, { cwd, stderr: "inherit", ...opts });
+  return execa("./a.out", args, {
+    cwd,
+    stderr: "inherit",
+    env: { NDN_NAME_ALT_URI: "0" },
+    ...opts,
+  });
 }

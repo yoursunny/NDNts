@@ -17,7 +17,7 @@ import { strict as assert } from "assert";
 const name = new Name("/A")
   .append(Version, 3)
   .append(Segment, 0);
-assert.equal(name.toString(), "/A/%FD%03/%00%00");
+assert.equal(name.toString(), "/8=A/8=%FD%03/8=%00%00");
 
 // Parse name component as marker.
 assert.equal(name.at(-2).as(Version), 3);

@@ -63,7 +63,7 @@ test("TX signing", async () => {
     })()),
     pipeline(sock, sent),
     expect(new Promise((resolve, reject) => face.once("txerror", reject)))
-      .rejects.toThrow(/\/A/),
+      .rejects.toThrow(/\/8=A/),
   ]);
 
   expect(signOk).toHaveBeenCalledTimes(1);

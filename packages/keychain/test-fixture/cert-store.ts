@@ -1,4 +1,4 @@
-import { Component } from "@ndn/packet";
+import { Component, Name } from "@ndn/packet";
 
 import { Certificate, EcPrivateKey, KeyChain, ValidityPeriod } from "..";
 
@@ -55,7 +55,7 @@ export function check(record: TestRecord) {
   expect(record.certs3).toHaveLength(1);
   expect(record.certs4).toHaveLength(0);
 
-  expect(record.certs1[0].startsWith(`${record.key}/self/`)).toBeTruthy();
-  expect(record.certs3[0].startsWith(`${record.key}/issuer/`)).toBeTruthy();
+  expect(new Name(`${record.key}/self`).isPrefixOf(record.certs1[0])).toBeTruthy();
+  expect(new Name(`${record.key}/issuer`).isPrefixOf(record.certs3[0])).toBeTruthy();
   expect(record.certs2).toEqual(expect.arrayContaining([...record.certs1, ...record.certs3]));
 }

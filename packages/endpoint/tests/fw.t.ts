@@ -25,10 +25,10 @@ test("simple", async () => {
       await new Promise((r) => setTimeout(r, 2));
       const name = interest.name.toString();
       switch (name) {
-        case "/P/prefix":
-        case "/P/no-prefix":
+        case "/8=P/8=prefix":
+        case "/8=P/8=no-prefix":
           return new Data(interest.name.append("suffix"));
-        case "/P/fresh":
+        case "/8=P/8=fresh":
           return new Data("/P/fresh", Data.FreshnessPeriod(1000));
         default:
           if (nameDigest.equals(interest.name)) {
@@ -175,26 +175,26 @@ describe("tracer", () => {
     faceC.close();
 
     expect(debugFn.mock.calls.map((a) => a.join(" "))).toEqual([
-      "+Face consume(/A)",
-      "consume(/A) >I /A",
-      "consume(/A) >Cancel /A",
-      "consume(/A) <Reject(cancel) /A",
-      "+Face produce(/B)",
-      "produce(/B) +Prefix /B",
-      "+Announcement /B",
-      "+Face consume(/B)",
-      "consume(/B) >I /B[P][F]",
-      "-Face consume(/A)",
-      "produce(/B) <I /B[P][F]",
-      "produce(/B) >D /B/1",
-      "consume(/B) <D /B/1",
-      "-Announcement /B",
-      "-Face produce(/B)",
+      "+Face consume(/8=A)",
+      "consume(/8=A) >I /8=A",
+      "consume(/8=A) >Cancel /8=A",
+      "consume(/8=A) <Reject(cancel) /8=A",
+      "+Face produce(/8=B)",
+      "produce(/8=B) +Prefix /8=B",
+      "+Announcement /8=B",
+      "+Face consume(/8=B)",
+      "consume(/8=B) >I /8=B[P][F]",
+      "-Face consume(/8=A)",
+      "produce(/8=B) <I /8=B[P][F]",
+      "produce(/8=B) >D /8=B/8=1",
+      "consume(/8=B) <D /8=B/8=1",
+      "-Announcement /8=B",
+      "-Face produce(/8=B)",
       "+Face NoopFace",
-      "NoopFace +Prefix /C",
-      "+Announcement /C",
-      "-Announcement /C",
-      "NoopFace -Prefix /C",
+      "NoopFace +Prefix /8=C",
+      "+Announcement /8=C",
+      "-Announcement /8=C",
+      "NoopFace -Prefix /8=C",
     ]);
   });
 });

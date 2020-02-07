@@ -61,7 +61,7 @@ assert.throws(() => decoder.read());
 decoder = new Decoder(Uint8Array.of(0x07, 0x03, 0x08, 0x01, 0x41));
 const name = decoder.decode(Name);
 assert(name instanceof Name);
-assert.equal(name.toString(), "/A");
+assert.equal(name.toString(), "/8=A");
 ```
 
 ## EvDecoder
@@ -124,7 +124,7 @@ const adjacencyDecoder = new Decoder(adjacencyWire);
 
 // We can decode it with the EVD.
 const adjacency = EVD.decode(new Adjacency(), adjacencyDecoder);
-assert.equal(adjacency.name.toString(), "/A");
+assert.equal(adjacency.name.toString(), "/8=A");
 assert.equal(adjacency.uri, "B");
 assert.equal(adjacency.cost, 128);
 

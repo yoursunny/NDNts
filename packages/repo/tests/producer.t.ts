@@ -38,7 +38,7 @@ test("simple", async () => {
     reg: RepoProducer.PrefixRegStatic(new Name("/A"), new Name("/B")),
   });
   await new Promise((r) => setTimeout(r, 50));
-  expect(listAnnounced()).toEqual(["/A", "/B"]);
+  expect(listAnnounced()).toEqual(["/8=A", "/8=B"]);
 
   const endpoint = new Endpoint();
   await Promise.all([
@@ -58,15 +58,15 @@ test("prefixreg shorter", async () => {
     reg: RepoProducer.PrefixRegShorter(1),
   });
   await new Promise((r) => setTimeout(r, 50));
-  expect(listAnnounced()).toEqual(["/A/B", "/C/D"]);
+  expect(listAnnounced()).toEqual(["/8=A/8=B", "/8=C/8=D"]);
 
   await insertData("/C/D/4", "/E/F/1");
   await new Promise((r) => setTimeout(r, 50));
-  expect(listAnnounced()).toEqual(["/A/B", "/C/D", "/E/F"]);
+  expect(listAnnounced()).toEqual(["/8=A/8=B", "/8=C/8=D", "/8=E/8=F"]);
 
   await store.delete(new Name("/C/D/3"), new Name("/C/D/4"));
   await new Promise((r) => setTimeout(r, 50));
-  expect(listAnnounced()).toEqual(["/A/B", "/E/F"]);
+  expect(listAnnounced()).toEqual(["/8=A/8=B", "/8=E/8=F"]);
 
   producer.close();
   await new Promise((r) => setTimeout(r, 50));
@@ -81,7 +81,7 @@ test("prefixreg strip non-generic", async () => {
   );
   const producer = new RepoProducer(store);
   await new Promise((r) => setTimeout(r, 50));
-  expect(listAnnounced()).toEqual(["/A", "/B", "/J/K"]);
+  expect(listAnnounced()).toEqual(["/8=A", "/8=B", "/8=J/8=K"]);
 
   producer.close();
   await new Promise((r) => setTimeout(r, 50));
@@ -92,7 +92,7 @@ test("prefixreg strip custom", async () => {
   await insertData(
     new Name("/A").append(Version, 1).append(Segment, 0),
     new Name("/B").append(Version, 1).append(SequenceNum, 4),
-    "/J/K/L",
+    "/8=J/8=K/8=L",
   );
   const producer = new RepoProducer(store, {
     reg: RepoProducer.PrefixRegStrip(Segment, "K", Component.from("L")),
@@ -101,7 +101,7 @@ test("prefixreg strip custom", async () => {
   expect(listAnnounced()).toEqual([
     `${new Name("/A").append(Version, 1)}`,
     `${new Name("/B").append(Version, 1).append(SequenceNum, 4)}`,
-    "/J",
+    "/8=J",
   ]);
 
   producer.close();

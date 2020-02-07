@@ -23,7 +23,7 @@ test("simple", () => {
   expect(name.length).toBe(2);
   expect(name.get(0)).toEqual(Component.from("A"));
   expect(name.get(1)).toEqual(Component.from("240=BC"));
-  expect(name.toString()).toBe("/A/240=BC");
+  expect(name.toString()).toBe("/8=A/240=BC");
   expect(name.value).toEqualUint8Array([
     0x08, 0x01, 0x41,
     0xF0, 0x02, 0x42, 0x43,
@@ -52,13 +52,13 @@ test("get at", () => {
 
 test("modify", () => {
   const name = new Name("/A/B/C");
-  expect(new Name(name).toString()).toBe("/A/B/C");
-  expect(name.slice(1).toString()).toBe("/B/C");
-  expect(name.getPrefix(-1).toString()).toBe("/A/B");
-  expect(name.append("D", "E").toString()).toBe("/A/B/C/D/E");
-  expect(name.replaceAt(1, "BB").toString()).toBe("/A/BB/C");
-  expect(name.replaceAt(-1, "CC").toString()).toBe("/A/B/CC");
-  expect(name.toString()).toBe("/A/B/C"); // immutable
+  expect(new Name(name)).toEqualName("/A/B/C");
+  expect(name.slice(1)).toEqualName("/B/C");
+  expect(name.getPrefix(-1)).toEqualName("/A/B");
+  expect(name.append("D", "E")).toEqualName("/A/B/C/D/E");
+  expect(name.replaceAt(1, "BB")).toEqualName("/A/BB/C");
+  expect(name.replaceAt(-1, "CC")).toEqualName("/A/B/CC");
+  expect(name).toEqualName("/A/B/C"); // immutable
 });
 
 test("compare", () => {

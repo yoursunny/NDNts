@@ -15,13 +15,13 @@ import { strict as assert } from "assert";
 
 // convention.create() returns a Component.
 let name = new Name(["A", Keyword.create("metadata")]);
-assert.equal(name.toString(), "/A/32=metadata");
+assert.equal(name.toString(), "/8=A/32=metadata");
 
 // name.append() has an overload for convention component.
 name = name.append(Version, 3);
-assert.equal(name.toString(), "/A/32=metadata/35=%03");
+assert.equal(name.toString(), "/8=A/32=metadata/35=%03");
 name = name.append(Segment, 0);
-assert.equal(name.toString(), "/A/32=metadata/35=%03/33=%00");
+assert.equal(name.toString(), "/8=A/32=metadata/35=%03/33=%00");
 
 // convention.match() checks whether a Component follows the convention.
 assert.equal(Segment.match(name.at(-1)), true);

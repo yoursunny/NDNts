@@ -8,7 +8,7 @@ test("decode", () => {
   let comp = new Component();
   expect(comp.type).toBe(0x08);
   expect(comp.value).toEqualUint8Array([]);
-  expect(comp.toString()).toEqual("...");
+  expect(comp.toString()).toEqual("8=...");
 
   const decoder = new Decoder(Uint8Array.of(0xF0, 0x03, 0x41, 0x01, 0xA0));
   comp = decoder.decode(Component);

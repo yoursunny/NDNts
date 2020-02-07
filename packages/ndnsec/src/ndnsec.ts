@@ -27,6 +27,7 @@ export function invokeNdnsec(argv: string[], {
   const result = execa.sync("ndnsec", argv, {
     stderr: "inherit",
     input: input ? Buffer.from(input).toString("base64") : undefined,
+    env: { NDN_NAME_ALT_URI: "0" },
   });
   if (mustExitZero && result.exitCode !== 0) {
     throw new Error(`ndnsec ${argv[0]} exit code ${result.exitCode}`);

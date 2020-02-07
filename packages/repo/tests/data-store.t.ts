@@ -44,25 +44,25 @@ test("list find expire", async () => {
 
   let names = await collect(map((data) => data.name.toString(), store.list()));
   names.sort();
-  expect(names).toEqual(["/A/1", "/A/2", "/B/1", "/B/2", "/C/1", "/C/2", "/C/3"]);
+  expect(names).toEqual(["/8=A/8=1", "/8=A/8=2", "/8=B/8=1", "/8=B/8=2", "/8=C/8=1", "/8=C/8=2", "/8=C/8=3"]);
 
   await expect(store.find(new Interest("/C", Interest.CanBePrefix))).resolves.not.toBeUndefined();
   await new Promise((r) => setTimeout(r, 700));
 
   names = await collect(map((name) => name.toString(), store.listNames()));
   names.sort();
-  expect(names).toEqual(["/A/1", "/A/2", "/B/1", "/B/2"]);
+  expect(names).toEqual(["/8=A/8=1", "/8=A/8=2", "/8=B/8=1", "/8=B/8=2"]);
 
   names = await collect(map((name) => name.toString(), store.listNames(new Name("/B"))));
   names.sort();
-  expect(names).toEqual(["/B/1", "/B/2"]);
+  expect(names).toEqual(["/8=B/8=1", "/8=B/8=2"]);
 
   await expect(store.get(new Name("/C/1"))).resolves.toBeUndefined();
   await expect(store.find(new Interest("/C", Interest.CanBePrefix))).resolves.toBeUndefined();
   await expect(store.find(new Interest("/A"))).resolves.toBeUndefined();
   await expect(store.find(new Interest("/A/1"))).resolves.toHaveName("/A/1");
   const dataA = await store.find(new Interest("/A", Interest.CanBePrefix));
-  expect(["/A/1", "/A/2"]).toContain(dataA?.name.toString());
+  expect(["/8=A/8=1", "/8=A/8=2"]).toContain(dataA?.name.toString());
   await expect(store.find(new Interest("/C", Interest.CanBePrefix))).resolves.toBeUndefined();
 
   await store.clearExpired();
@@ -87,7 +87,7 @@ test("events", async () => {
   expect(onInsert).toHaveBeenCalledTimes(3);
   let names = onInsert.mock.calls.map(([name]) => name.toString());
   names.sort();
-  expect(names).toEqual(["/A/1", "/A/2", "/A/3"]);
+  expect(names).toEqual(["/8=A/8=1", "/8=A/8=2", "/8=A/8=3"]);
   expect(onDelete).not.toHaveBeenCalled();
   onInsert.mockClear();
 
@@ -99,5 +99,5 @@ test("events", async () => {
   expect(onDelete).toHaveBeenCalledTimes(2);
   names = onDelete.mock.calls.map(([name]) => name.toString());
   names.sort();
-  expect(names).toEqual(["/A/1", "/A/3"]);
+  expect(names).toEqual(["/8=A/8=1", "/8=A/8=3"]);
 });

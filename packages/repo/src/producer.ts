@@ -102,7 +102,7 @@ export namespace Producer {
   type ComponentPredicate = ComponentLike | ((comp: Component) => boolean) | NamingConvention<unknown, unknown>;
 
   function isConvention(pred: any): pred is NamingConvention<unknown, unknown> {
-    return typeof pred.match === "function";
+    return typeof pred === "object" && typeof pred.match === "function";
   }
 
   /** Register prefixes after stripping last few components matching a predicate. */

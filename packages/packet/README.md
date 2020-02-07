@@ -57,13 +57,15 @@ assert.equal(compA.equals(compB), false);
 ```ts
 // Names, like components, are immutable.
 // Construct from URI.
-const name1 = new Name("/localhost/NDNts/rocks");
+const name1 = new Name("/localhost/2020=NDNts/rocks");
 // Construct from a list of components, or strings to create components.
 const name2 = new Name([compA, compB, "C", compMetadata]);
+// This library expects URI in canonical format. We DO NOT support alternate URI formats
+// other than allow omitting "8=" prefix of GenericNameComponent.
 
-// You can always convert a name back to its URI.
-assert.equal(name1.toString(), "/localhost/NDNts/rocks");
-assert.equal(name2.toString(), "/A/B/C/32=metadata");
+// You can always convert a name back to its URI in canonical format.
+assert.equal(name1.toString(), "/8=localhost/2020=NDNts/8=rocks");
+assert.equal(name2.toString(), "/8=A/8=B/8=C/32=metadata");
 
 // It's crucial to know how many name components you have.
 assert.equal(name1.length, 3);
@@ -84,16 +86,16 @@ assert.equal(name1.at(1).text, "NDNts");
 
 // Slice the name to obtain part of it.
 const name1sliced = name1.slice(1, 3);
-assert.equal(name1sliced.toString(), "/NDNts/rocks");
+assert.equal(name1sliced.toString(), "/2020=NDNts/8=rocks");
 
 // Or, get the prefix.
 const name2prefix = name2.getPrefix(3);
-assert.equal(name2prefix.toString(), "/A/B/C");
+assert.equal(name2prefix.toString(), "/8=A/8=B/8=C");
 
 // Indexing from the back is supported, too.
 assert.equal(name1.at(-1).text, "rocks");
-assert.equal(name1.slice(-2).toString(), "/NDNts/rocks");
-assert.equal(name2.getPrefix(-1).toString(), "/A/B/C");
+assert.equal(name1.slice(-2).toString(), "/2020=NDNts/8=rocks");
+assert.equal(name2.getPrefix(-1).toString(), "/8=A/8=B/8=C");
 
 // Names are comparable.
 const nameAB = new Name("/A/B");
@@ -127,8 +129,8 @@ assert.equal(nameABC.isPrefixOf(nameAB), false);
 
 // I said names are immutable, but you can surely modify them to get a new Name.
 const name1modified = name1.getPrefix(-1).append("is", "awesome");
-assert(name1modified.toString(), "/localhost/NDNts/rocks/is/awesome");
-assert(name1.toString(), "/localhost/NDNts/rocks"); // unchanged
+assert(name1modified.toString(), "/8=localhost/2020=NDNts/8=rocks/8=is/8=awesome");
+assert(name1.toString(), "/8=localhost/2020=NDNts/8=rocks"); // unchanged
 ```
 
 ## Layer-3 Packet Types: Interest and Data
@@ -143,7 +145,7 @@ interest.lifetime = 2000;
 // Encode and decode the Interest.
 const interestWire = Encoder.encode(interest);
 const interest2 = new Decoder(interestWire).decode(Interest);
-assert.equal(interest2.name.toString(), "/A");
+assert.equal(interest2.name.toString(), "/8=A");
 
 // We got a Data type, too.
 // You can set fields via constructor or setters.
