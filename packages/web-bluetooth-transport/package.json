@@ -1,0 +1,37 @@
+{
+  "name": "@ndn/web-bluetooth-transport",
+  "version": "0.0.0",
+  "description": "NDNts: Web Bluetooth Transport",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "main": "src/mod.ts",
+  "browser": {
+    "web-bluetooth": false
+  },
+  "sideEffects": false,
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/web-bluetooth-transport"
+  },
+  "publishConfig": {
+    "main": "lib/mod.js"
+  },
+  "dependencies": {
+    "@ndn/l3face": "workspace:*",
+    "event-iterator": "^1.2.0",
+    "tslib": "*"
+  },
+  "devDependencies": {
+    "@types/web-bluetooth": "^0.0.5"
+  }
+}

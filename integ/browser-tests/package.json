@@ -7,12 +7,14 @@
   },
   "devDependencies": {
     "@ndn/autoconfig": "workspace:*",
+    "@ndn/endpoint": "workspace:*",
     "@ndn/fw": "workspace:*",
     "@ndn/keychain": "workspace:*",
     "@ndn/l3face": "workspace:*",
     "@ndn/ndncert": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "@ndn/web-bluetooth-transport": "workspace:*",
     "@ndn/ws-transport": "workspace:*",
     "file-matcher": "^1.3.0",
     "tslib": "*"

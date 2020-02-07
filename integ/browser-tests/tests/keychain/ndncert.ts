@@ -8,8 +8,6 @@ import { addManualTest } from "../../test-fixture/manual";
 clientLogger.enableAll();
 
 async function runNdncert() {
-  document.querySelector("#btn-run-ndncert")?.setAttribute("disabled", "1");
-
   const [face] = await connectToTestbed({ count: 3, preferFastest: true });
   face.addRoute(new Name("/"));
 
