@@ -13,7 +13,6 @@ function nameToString(name: Name, prefixLen: number): string {
 
 export class FibEntry {
   public readonly nexthops = new Set<FaceImpl>();
-  public readonly advertisedTo = new WeakMap<FaceImpl, any>();
 
   constructor(public readonly name: Name) {
   }
