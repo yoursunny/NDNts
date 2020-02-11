@@ -33,6 +33,9 @@ export const TT = {
 
   Delegation: 0x1F,
   Preference: 0x1E,
+
+  Nack: 0x0320,
+  NackReason: 0x0321,
 };
 
 export const SigType = {
@@ -40,4 +43,10 @@ export const SigType = {
   Sha256WithRsa: 0x01,
   Sha256WithEcdsa: 0x03,
   HmacWithSha256: 0x04,
+};
+
+export const NackReason = {
+  Congestion: 50,
+  Duplicate: 100,
+  NoRoute: 150,
 };

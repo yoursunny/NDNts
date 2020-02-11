@@ -7,5 +7,6 @@ export * from "./fwhint";
 export * from "./sig-info";
 export * from "./llsign";
 export * from "./interest";
+export * from "./nack";
 export * from "./data";
 export * from "./satisfy";
