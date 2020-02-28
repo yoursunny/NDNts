@@ -17,6 +17,9 @@ export async function queryFch(opts: queryFch.Options = {}): Promise<string[]> {
   }
 
   const resp = await fetch(u);
+  if (!resp.ok) {
+    throw new Error(`invalid NDN-FCH HTTP response ${resp.status}`);
+  }
   const text = await resp.text();
   return text.split(",");
 }
