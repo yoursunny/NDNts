@@ -26,9 +26,9 @@
   "dependencies": {
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "hirestime": "^4.0.0",
+    "hirestime": "^6.0.0",
     "it-pushable": "^1.4.0",
-    "loglevel": "^1.6.6",
+    "loglevel": "^1.6.7",
     "minimalistic-assert": "^1.0.1",
     "p-defer": "^3.0.0",
     "p-fifo": "^1.0.0",
@@ -39,7 +39,6 @@
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
-    "@types/hirestime": "^4.0.0",
     "@types/minimalistic-assert": "^1.0.0",
     "@types/p-fifo": "^1.0.0"
   }

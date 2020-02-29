@@ -38,7 +38,7 @@
     "@ndn/tlv": "workspace:*",
     "esm": "^3.2.25",
     "loud-rejection": "^2.2.0",
-    "leveldown": "^5.4.1",
+    "leveldown": "^5.5.1",
     "minimalistic-assert": "^1.0.1",
     "progress": "^2.0.3",
     "streaming-iterables": "^4.1.2",
@@ -50,6 +50,6 @@
     "@types/leveldown": "^4.0.2",
     "@types/minimalistic-assert": "^1.0.0",
     "@types/progress": "^2.0.3",
-    "@types/yargs": "^15.0.3"
+    "@types/yargs": "^15.0.4"
   }
 }

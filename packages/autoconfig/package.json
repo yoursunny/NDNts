@@ -35,14 +35,13 @@
     "@ndn/packet": "workspace:*",
     "@ndn/ws-transport": "workspace:*",
     "default-gateway": "^5.0.5",
-    "hirestime": "^4.0.0",
+    "hirestime": "^6.0.0",
     "node-fetch": "^2.6.0",
     "streaming-iterables": "^4.1.2",
     "tslib": "*"
   },
   "devDependencies": {
     "@types/default-gateway": "^3.0.1",
-    "@types/hirestime": "^4.0.0",
-    "@types/node-fetch": "^2.5.4"
+    "@types/node-fetch": "^2.5.5"
   }
 }

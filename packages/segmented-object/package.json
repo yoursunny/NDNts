@@ -30,7 +30,7 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "abort-controller": "^3.0.0",
-    "hirestime": "^4.0.0",
+    "hirestime": "^6.0.0",
     "is-stream": "^2.0.0",
     "it-pushable": "^1.4.0",
     "minimalistic-assert": "^1.0.1",
@@ -43,7 +43,6 @@
   "devDependencies": {
     "@ndn/naming-convention1": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@types/hirestime": "^4.0.0",
     "@types/minimalistic-assert": "^1.0.0",
     "stream-mock": "^2.0.5"
   }

@@ -1,4 +1,4 @@
-export { CertStore } from "./store-base";
+export type { CertStore } from "./store-base";
 export * from "./key-store";
 export * from "./json-cert-store";
 export * from "./sclone-cert-store";
