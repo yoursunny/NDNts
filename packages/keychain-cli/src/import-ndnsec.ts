@@ -27,11 +27,11 @@ export class ImportNdnsecCommand implements CommandModule<{}, Args> {
 
   public builder(argv: Argv): Argv<Args> {
     return argv
-    .option("prefix", {
-      default: "/",
-      desc: "only import keys under prefix",
-      type: "string",
-    });
+      .option("prefix", {
+        default: "/",
+        desc: "only import keys under prefix",
+        type: "string",
+      });
   }
 
   public handler(args: Arguments<Args>) {

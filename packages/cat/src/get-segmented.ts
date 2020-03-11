@@ -7,7 +7,7 @@ import { Arguments, Argv, CommandModule } from "yargs";
 import { CommonArgs, segmentNumConvention, versionConvention } from "./common-args";
 
 type DiscoverVersionChoice = "none"|"cbp";
-const discoverVersionChoices: ReadonlyArray<DiscoverVersionChoice> = ["none", "cbp"];
+const discoverVersionChoices: readonly DiscoverVersionChoice[] = ["none", "cbp"];
 
 interface Args extends CommonArgs {
   name: string;
@@ -39,27 +39,26 @@ export class GetSegmentedCommand implements CommandModule<CommonArgs, Args> {
 
   public builder(argv: Argv<CommonArgs>): Argv<Args> {
     return argv
-    .positional("name", {
-      desc: "name prefix",
-      type: "string",
-    })
-    .demandOption("name")
-    .option("ver", {
-      choices: discoverVersionChoices,
-      default: "none" as DiscoverVersionChoice,
-      desc: ["version discovery method",
-             "none: no discovery",
-             "cbp: send Interest with CanBePrefix",
-            ].join("\n"),
-    })
-    .option("cbpnonfresh", {
-      default: true,
-      desc: "set MustBeFresh=0 when using CanBePrefix version discovery",
-    });
+      .positional("name", {
+        desc: "name prefix",
+        type: "string",
+      })
+      .demandOption("name")
+      .option("ver", {
+        choices: discoverVersionChoices,
+        default: "none" as DiscoverVersionChoice,
+        desc: ["version discovery method",
+          "none: no discovery",
+          "cbp: send Interest with CanBePrefix"].join("\n"),
+      })
+      .option("cbpnonfresh", {
+        default: true,
+        desc: "set MustBeFresh=0 when using CanBePrefix version discovery",
+      });
   }
 
   public handler(args: Arguments<Args>) {
     main(args)
-    .finally(closeUplinks);
+      .finally(closeUplinks);
   }
 }

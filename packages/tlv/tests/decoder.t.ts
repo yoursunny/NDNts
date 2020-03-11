@@ -1,6 +1,5 @@
-import "../test-fixture/expect";
-
 import { Decoder } from "..";
+import "../test-fixture/expect";
 
 test("simple", () => {
   const decoder = new Decoder(Uint8Array.of(

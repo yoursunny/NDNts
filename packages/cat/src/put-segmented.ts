@@ -25,22 +25,22 @@ export class PutSegmentedCommand implements CommandModule<CommonArgs, Args> {
 
   public builder(argv: Argv<CommonArgs>): Argv<Args> {
     return argv
-    .positional("name", {
-      desc: "name prefix",
-      type: "string",
-    })
-    .demandOption("name")
-    .option("ver", {
-      default: "now",
-      desc: "version number; 'none' to omit version component, 'now' to use current timestamp",
-      type: "string",
-    })
-    .check(({ ver }) => {
-      if (!(["none", "now"].includes(ver) || parseInt(ver, 10) >= 0)) {
-        throw new Error("--ver must be either a non-negative integer or 'none' or 'now'");
-      }
-      return true;
-    });
+      .positional("name", {
+        desc: "name prefix",
+        type: "string",
+      })
+      .demandOption("name")
+      .option("ver", {
+        default: "now",
+        desc: "version number; 'none' to omit version component, 'now' to use current timestamp",
+        type: "string",
+      })
+      .check(({ ver }) => {
+        if (!(["none", "now"].includes(ver) || parseInt(ver, 10) >= 0)) {
+          throw new Error("--ver must be either a non-negative integer or 'none' or 'now'");
+        }
+        return true;
+      });
   }
 
   public handler(args: Arguments<Args>) {

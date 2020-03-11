@@ -1,5 +1,4 @@
 import "loud-rejection/register";
-
 import yargs from "yargs";
 
 import { AddCertCommand } from "./add-cert";
@@ -14,16 +13,16 @@ import { NdncertClientCommand } from "./ndncert-client";
 import { ShowCertCommand } from "./show-cert";
 
 yargs
-.scriptName("ndntssec")
-.command(new GenKeyCommand())
-.command(new ShowCertCommand())
-.command(new DeleteCommand())
-.command(new IssueCertCommand())
-.command(new ListKeysCommand())
-.command(new ListCertsCommand())
-.command(new AddCertCommand())
-.command(new ImportSafeBagCommand())
-.command(new ImportNdnsecCommand())
-.command(new NdncertClientCommand())
-.demandCommand()
-.parse();
+  .scriptName("ndntssec")
+  .command(new GenKeyCommand())
+  .command(new ShowCertCommand())
+  .command(new DeleteCommand())
+  .command(new IssueCertCommand())
+  .command(new ListKeysCommand())
+  .command(new ListCertsCommand())
+  .command(new AddCertCommand())
+  .command(new ImportSafeBagCommand())
+  .command(new ImportNdnsecCommand())
+  .command(new NdncertClientCommand())
+  .demandCommand()
+  .parse();

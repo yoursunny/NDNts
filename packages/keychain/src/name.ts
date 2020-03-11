@@ -51,14 +51,14 @@ export class CertificateName extends KeyNameBase {
       throw new Error("invalid certificate name");
     }
     return new CertificateName(name.getPrefix(-4),
-           ...(name.slice(-3).comps as [Component, Component, Component]));
+      ...(name.slice(-3).comps as [Component, Component, Component]));
   }
 
   public readonly issuerId: Component;
   public readonly version: Component;
 
   constructor(subjectName: NameLike, keyId: ComponentLike,
-              issuerId: ComponentLike, version: ComponentLike) {
+      issuerId: ComponentLike, version: ComponentLike) {
     super(subjectName, keyId);
     this.issuerId = Component.from(issuerId);
     this.version = Component.from(version);

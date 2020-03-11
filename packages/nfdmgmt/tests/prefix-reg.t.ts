@@ -1,7 +1,6 @@
-import "@ndn/packet/test-fixture/expect";
-
 import { Endpoint } from "@ndn/endpoint";
 import { Data, Interest, Name } from "@ndn/packet";
+import "@ndn/packet/test-fixture/expect";
 
 import { ControlCommand, enableNfdPrefixReg } from "..";
 
@@ -53,7 +52,7 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
   }, { local: faceIsLocal });
   enableNfdPrefixReg(face, { commandPrefix });
 
-  const producer = endpoint.produce("/R", async() => false);
+  const producer = endpoint.produce("/R", async () => false);
   await new Promise((r) => setTimeout(r, 50));
   expect(remoteProcess).toHaveBeenCalledTimes(1);
   expect(remoteProcess.mock.calls[0][0].name.getPrefix(expectedPrefix.length + 2))

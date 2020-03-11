@@ -37,11 +37,15 @@ export function openDb(db: AbstractLevelDOWN): Db {
         const record = JSON.parse(new TextDecoder().decode(after)) as Record;
         let data: Data|undefined;
         Object.defineProperties(record, {
-          data: { get() { return (data = data ?? decoder.decode(Data)); } },
+          data: { get() {
+            return (data = data ?? decoder.decode(Data));
+          } },
           name: {
             configurable: true,
             /* istanbul ignore next */
-            get() { return record.data.name; },
+            get() {
+              return record.data.name;
+            },
           },
         });
         return record;

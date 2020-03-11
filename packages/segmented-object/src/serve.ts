@@ -6,7 +6,7 @@ import assert from "minimalistic-assert";
 import { chunker } from "./chunker";
 
 function appendVersion(name: Name, convention: NamingConvention<number, unknown>,
-                       version: ComponentLike|number|boolean = false): Name {
+    version: ComponentLike|number|boolean = false): Name {
   if (version === false) { return name; }
   if (version === true) { version = Date.now(); }
   if (typeof version === "number") { return name.append(convention, version); }

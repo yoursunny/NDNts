@@ -32,11 +32,11 @@ class TapRxController {
       this.fw.off("facerm", this.remove);
       TapRxController.instances.delete(this.fw);
     }
-  }
+  };
 
   private pktrx = (face: Face, pkt: Face.Rxable) => {
     this.taps.get(face)?.rx.push(pkt);
-  }
+  };
 }
 
 /**

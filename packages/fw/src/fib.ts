@@ -7,8 +7,8 @@ import { ForwarderImpl } from "./forwarder";
 
 function nameToString(name: Name, prefixLen: number): string {
   return name.comps
-         .map(({ tlv }, i) => i >= prefixLen ? "" : `/${toHex(tlv)}`)
-         .join("");
+    .map(({ tlv }, i) => i >= prefixLen ? "" : `/${toHex(tlv)}`)
+    .join("");
 }
 
 export class FibEntry {

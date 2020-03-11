@@ -1,6 +1,5 @@
-import "@ndn/packet/test-fixture/expect";
-
 import { Data, Interest } from "@ndn/packet";
+import "@ndn/packet/test-fixture/expect";
 import { DataStore } from "@ndn/repo";
 import memdown from "memdown";
 

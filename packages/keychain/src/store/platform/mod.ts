@@ -30,6 +30,7 @@ export class FileStoreImpl<T> implements StoreImpl<T> {
   }
 
   public erase(key: string): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete this.store.data[key];
     this.store.save();
     return Promise.resolve();

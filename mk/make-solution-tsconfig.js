@@ -7,11 +7,11 @@ const tsconfig = {
 };
 
 fs.readdirSync("packages", { withFileTypes: true })
-.forEach((direct) => {
-  if (!direct.isDirectory()) {
-    return;
-  }
-  tsconfig.references.push({ path: `../packages/${direct.name}` });
-});
+  .forEach((direct) => {
+    if (!direct.isDirectory()) {
+      return;
+    }
+    tsconfig.references.push({ path: `../packages/${direct.name}` });
+  });
 
 fs.writeFileSync("mk/tsconfig-solution.json", JSON.stringify(tsconfig, undefined, 2));

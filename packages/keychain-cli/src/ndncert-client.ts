@@ -77,31 +77,31 @@ export class NdncertClientCommand implements CommandModule<{}, Args> {
 
   public builder(argv: Argv): Argv<Args> {
     return GenKeyCommand.declareKeyParamArgs(argv)
-    .option("ca", {
-      demandOption: true,
-      desc: "CA config file",
-      type: "string",
-    })
-    .option("valid-days", {
-      default: 30,
-      desc: "validity period in days since now",
-      type: "number",
-    })
-    .option("ndnsec", {
-      default: false,
-      desc: "save key and certificate in ndn-cxx KeyChain",
-      type: "boolean",
-    })
-    .option("verbose", {
-      default: false,
-      desc: "enable NDNCERT client logging",
-      type: "boolean",
-    });
+      .option("ca", {
+        demandOption: true,
+        desc: "CA config file",
+        type: "string",
+      })
+      .option("valid-days", {
+        default: 30,
+        desc: "validity period in days since now",
+        type: "number",
+      })
+      .option("ndnsec", {
+        default: false,
+        desc: "save key and certificate in ndn-cxx KeyChain",
+        type: "boolean",
+      })
+      .option("verbose", {
+        default: false,
+        desc: "enable NDNCERT client logging",
+        type: "boolean",
+      });
   }
 
   public handler(args: Arguments<Args>) {
     openUplinks()
-    .then(() => main(args))
-    .finally(closeUplinks);
+      .then(() => main(args))
+      .finally(closeUplinks);
   }
 }

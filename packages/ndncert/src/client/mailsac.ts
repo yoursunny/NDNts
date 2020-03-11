@@ -16,9 +16,9 @@ function makeRandomInbox() {
 }
 
 async function listMessages(email: string): Promise<MailsacMessage[]> {
-  const res: MailsacError|Array<MailsacMessage> =
+  const res: MailsacError|MailsacMessage[] =
     await fetch(`https://mailsac.com/api/addresses/${encodeURIComponent(email)}/messages`)
-          .then((resp) => resp.json());
+      .then((resp) => resp.json());
   if (!Array.isArray(res)) {
     throw new Error(`${res.status} ${res.message}`);
   }
@@ -26,8 +26,8 @@ async function listMessages(email: string): Promise<MailsacMessage[]> {
 }
 
 async function readMessage(email: string, id: string): Promise<string> {
-  return await fetch(`https://mailsac.com/api/text/${encodeURIComponent(email)}/${encodeURIComponent(id)}`)
-               .then((resp) => resp.text());
+  return fetch(`https://mailsac.com/api/text/${encodeURIComponent(email)}/${encodeURIComponent(id)}`)
+    .then((resp) => resp.text());
 }
 
 async function getCode(email: string): Promise<string> {
@@ -48,8 +48,7 @@ export async function makeMailsacClientEmailChallenge(): Promise<ClientEmailChal
   let nMessages = -1;
   while (nMessages !== 0) {
     email = makeRandomInbox();
-    try { nMessages = (await listMessages(email)).length; }
-    catch (err) {}
+    try { nMessages = (await listMessages(email)).length; } catch (err) {}
   }
   return new ClientEmailChallenge(email, getCode.bind(null, email));
 }

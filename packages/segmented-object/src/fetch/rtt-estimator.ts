@@ -7,14 +7,14 @@ interface Parameters {
   maxRto: number;
 }
 
-const defaultParameters = {
+const defaultParameters: Parameters = {
   k: 4,
   alpha: 1 / 8,
   beta: 1 / 4,
   initRto: 1000,
   minRto: 200,
   maxRto: 60000,
-} as Parameters;
+};
 
 /**
  * RTT estimator.
@@ -34,7 +34,7 @@ export class RttEstimator {
   public get sRtt() { return this.sRtt_; }
   public get rto() { return this.rto_; }
 
-  public push(rtt: number, nPending: number = 1) {
+  public push(rtt: number, nPending = 1) {
     if (isNaN(this.rttVar)) {
       this.sRtt_ = rtt;
       this.rttVar = rtt / 2;

@@ -10,7 +10,7 @@ export function canSatisfySync(interest: Interest, data: Data): boolean|undefine
   }
 
   if (interest.canBePrefix ?
-      interest.name.isPrefixOf(data.name) : interest.name.equals(data.name)) {
+    interest.name.isPrefixOf(data.name) : interest.name.equals(data.name)) {
     return true;
   }
 

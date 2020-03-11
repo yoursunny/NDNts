@@ -42,7 +42,7 @@ class DecodedTlv {
   }
 
   constructor(public readonly type: number, private buf: Uint8Array,
-              private offsetT: number, private offsetV: number, private offsetE: number) {
+      private offsetT: number, private offsetV: number, private offsetE: number) {
   }
 }
 
@@ -53,7 +53,7 @@ export class Decoder {
     return this.offset >= this.input.length;
   }
 
-  private offset: number = 0;
+  private offset = 0;
 
   constructor(private input: Uint8Array) {
   }

@@ -5,6 +5,6 @@ module.exports = {
   rules: {
     ...tsRc.rules,
     "simple-import-sort/sort": "off",
-    "no-console": "off",
+    "padded-blocks": "off",
   },
 };

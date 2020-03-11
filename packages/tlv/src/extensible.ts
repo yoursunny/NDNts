@@ -59,11 +59,11 @@ export class ExtensionRegistry<T extends Extensible> {
 
   public registerExtension = <R>(ext: Extension<T, R>) => {
     this.table.set(ext.tt, ext);
-  }
+  };
 
   public unregisterExtension = (tt: number) => {
     this.table.delete(tt);
-  }
+  };
 
   public decodeUnknown = (target: T, tlv: Decoder.Tlv, order: number) => {
     const { type: tt } = tlv;
@@ -75,19 +75,19 @@ export class ExtensionRegistry<T extends Extensible> {
     const records = target[Extensible.TAG];
     records.set(tt, ext.decode(target, tlv, records.get(tt)));
     return true;
-  }
+  };
 
   public encode(source: T): Encodable[] {
     return Array.from(source[Extensible.TAG])
-    .map(([tt, value]) => {
-      const ext = this.table.get(tt);
-      if (!ext) {
-        throw new Error(`unknown extension type ${tt}`);
-      }
-      return { tt, value, ext };
-    })
-    .sort(({ tt: ttA, ext: { order: orderA } },
-           { tt: ttB, ext: { order: orderB } }) => (orderA ?? ttA) - (orderB ?? ttB))
-    .map(({ tt, value, ext }) => ext.encode(source, value));
+      .map(([tt, value]) => {
+        const ext = this.table.get(tt);
+        if (!ext) {
+          throw new Error(`unknown extension type ${tt}`);
+        }
+        return { tt, value, ext };
+      })
+      .sort(({ tt: ttA, ext: { order: orderA } },
+          { tt: ttB, ext: { order: orderB } }) => (orderA ?? ttA) - (orderB ?? ttB))
+      .map(({ tt, value, ext }) => ext.encode(source, value));
   }
 }

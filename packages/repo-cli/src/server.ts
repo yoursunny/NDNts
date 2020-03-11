@@ -29,6 +29,7 @@ function enableBulkInsertion({
 
 async function main(args: Args) {
   openStore(args);
+  // eslint-disable-next-line no-new
   new RepoProducer(store);
   if (args.bi) {
     enableBulkInsertion(args);
@@ -41,40 +42,40 @@ export class ServerCommand implements CommandModule<{}, Args> {
 
   public builder(argv: Argv): Argv<Args> {
     return declareStoreArgs(argv)
-    .option("prefix", {
-      default: "/localhost/ndntsrepo",
-      desc: "command prefix",
-      type: "string",
-    })
-    .option("bi", {
-      default: true,
-      desc: "enable bulk insertion",
-      type: "boolean",
-    })
-    .option("bi-host", {
-      default: "127.0.0.1",
-      desc: "bulk insertion listen host",
-      type: "string",
-    })
-    .option("bi-port", {
-      default: 7376,
-      desc: "bulk insertion listen port",
-      type: "number",
-    })
-    .option("bi-batch", {
-      default: 64,
-      desc: "bulk insertion packets per batch",
-      type: "number",
-    })
-    .option("bi-parallel", {
-      default: 1,
-      desc: "bulk insertion maximum parallel batches",
-      type: "number",
-    });
+      .option("prefix", {
+        default: "/localhost/ndntsrepo",
+        desc: "command prefix",
+        type: "string",
+      })
+      .option("bi", {
+        default: true,
+        desc: "enable bulk insertion",
+        type: "boolean",
+      })
+      .option("bi-host", {
+        default: "127.0.0.1",
+        desc: "bulk insertion listen host",
+        type: "string",
+      })
+      .option("bi-port", {
+        default: 7376,
+        desc: "bulk insertion listen port",
+        type: "number",
+      })
+      .option("bi-batch", {
+        default: 64,
+        desc: "bulk insertion packets per batch",
+        type: "number",
+      })
+      .option("bi-parallel", {
+        default: 1,
+        desc: "bulk insertion maximum parallel batches",
+        type: "number",
+      });
   }
 
   public handler(args: Arguments<Args>) {
     openUplinks()
-    .then(() => main(args));
+      .then(() => main(args));
   }
 }

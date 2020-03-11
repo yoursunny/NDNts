@@ -16,7 +16,7 @@ interface Options {
 export class Client {
   public readonly prefix: Name;
   public readonly title: string;
-  public readonly probeKeys: ReadonlyArray<string>;
+  public readonly probeKeys: readonly string[];
   private readonly endpoint: Endpoint;
 
   /** Construct client from CA information. */
@@ -61,7 +61,7 @@ export class Client {
       }
     }
     const validity = opts.validityPeriod instanceof ValidityPeriod ? opts.validityPeriod :
-                     ValidityPeriod.daysFromNow(opts.validityPeriod ?? 1);
+      ValidityPeriod.daysFromNow(opts.validityPeriod ?? 1);
     const selfSignedCert = await Certificate.selfSign({
       privateKey: opts.privateKey,
       publicKey: opts.publicKey,
@@ -71,11 +71,11 @@ export class Client {
       await crypto.subtle.generateKey({ name: "ECDH", namedCurve: "P-256" }, false, ["deriveBits"]);
 
     log.debug("NEW request", selfSignedCert.name.toString());
-    const newReq = {
+    const newReq: NewRequest = {
       "ecdh-pub": base64Encode(compressEcPublicKey(new Uint8Array(await crypto.subtle.exportKey("raw", ecdhPubC)))),
       "cert-request": base64Encode(Encoder.encode(selfSignedCert.data)),
       "probe-token": opts.probeResult?.probeToken,
-    } as NewRequest;
+    };
     const newInterest = await signInterest(new Interest(
       this.prefix.append(...CMD_NEW), Interest.MustBeFresh,
       await makeInterestParams(newReq)), opts.privateKey);
@@ -96,7 +96,7 @@ export class Client {
 
     let challengeReq = await opts.startChallenge(newRes.challenges);
     const challengeId = challengeReq["selected-challenge"];
-    while (true) {
+    for (;;) {
       log.debug("CHALLENGE request", challengeReq);
       const challengeInterest = await signInterest(new Interest(
         this.prefix.append(...CMD_CHALLENGE, reqId), Interest.MustBeFresh,
@@ -164,7 +164,7 @@ export namespace Client {
     /** ValidityPeriod, or validity days from now. */
     validityPeriod?: ValidityPeriod|number;
     /** Callback to select and start challenge. */
-    startChallenge: (challenges: ReadonlyArray<ChallengeDefinition>) => Promise<ChallengeRequest>;
+    startChallenge: (challenges: readonly ChallengeDefinition[]) => Promise<ChallengeRequest>;
     /** Callback to continue challenge. */
     continueChallenge: (challengeStatus: string, challengeId: string) => Promise<ChallengeRequest>;
   }

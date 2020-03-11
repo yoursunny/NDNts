@@ -17,7 +17,7 @@ export class Name {
   /** TLV-VALUE of the Name. */
   public readonly value: Uint8Array;
   /** List of name components. */
-  public readonly comps: ReadonlyArray<Component>;
+  public readonly comps: readonly Component[];
 
   /** Create empty name, or copy from other name, or parse from URI. */
   constructor(input?: NameLike);
@@ -26,9 +26,9 @@ export class Name {
   constructor(value: Uint8Array);
 
   /** Construct from components. */
-  constructor(comps: ReadonlyArray<ComponentLike>);
+  constructor(comps: readonly ComponentLike[]);
 
-  constructor(arg1?: NameLike|Uint8Array|ReadonlyArray<ComponentLike>) {
+  constructor(arg1?: NameLike|Uint8Array|readonly ComponentLike[]) {
     let valueEncoderBufSize = 256;
     switch (true) {
       case arg1 instanceof Name: {
@@ -40,12 +40,12 @@ export class Name {
       case typeof arg1 === "string": {
         const uri = arg1 as string;
         this.comps = uri.replace(/^(?:ndn)?\//, "").split("/")
-                    .filter((comp) => comp !== "").map(Component.from);
+          .filter((comp) => comp !== "").map(Component.from);
         valueEncoderBufSize = uri.length + 4 * this.comps.length;
         break;
       }
       case Array.isArray(arg1):
-        this.comps = (arg1 as ReadonlyArray<ComponentLike>).map(Component.from);
+        this.comps = (arg1 as readonly ComponentLike[]).map(Component.from);
         break;
       case arg1 instanceof Uint8Array: {
         this.value = arg1 as Uint8Array;
@@ -106,7 +106,7 @@ export class Name {
   public append<A>(convention: NamingConvention<A, unknown>, v: A): Name;
 
   /** Append suffix with one or more components. */
-  public append(...suffix: ReadonlyArray<ComponentLike>): Name;
+  public append(...suffix: readonly ComponentLike[]): Name;
 
   public append(...args: unknown[]) {
     if (args.length === 2 && typeof args[0] === "object" &&
@@ -114,7 +114,7 @@ export class Name {
       const convention = args[0] as NamingConvention<unknown, unknown>;
       return this.append(convention.create(args[1]));
     }
-    const suffix = args as ReadonlyArray<ComponentLike>;
+    const suffix = args as readonly ComponentLike[];
     return new Name([...this.comps, ...suffix]);
   }
 

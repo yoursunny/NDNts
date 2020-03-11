@@ -1,6 +1,5 @@
-import "@ndn/packet/test-fixture/expect";
-
 import { Data, Interest } from "@ndn/packet";
+import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint, ProducerHandler, RetxPolicy } from "..";
 
@@ -27,7 +26,7 @@ describe("retx limit", () => {
           limit: 2,
           interval: 50,
         },
-      }
+      },
     );
     await expect(promise).resolves.toBeInstanceOf(Data);
     expect(producer).toHaveBeenCalledTimes(3);
@@ -37,7 +36,7 @@ describe("retx limit", () => {
   test.each<[RetxPolicy, number]>([
     [{}, 1],
     [{ limit: 1, interval: 50 }, 2],
-    [function*() { yield 60; }, 2],  // retx before timeout
+    [function*() { yield 60; }, 2], // retx before timeout
     [function*() { yield 400; }, 2], // retx after timeout
     [0, 1],
     [1, 2],

@@ -1,17 +1,16 @@
-import "webpack-dev-server";
-
 import { FileMatcher } from "file-matcher";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import * as path from "path";
 import webpack from "webpack";
+import "webpack-dev-server";
 
 import jestPuppeteerConfig from "./jest-puppeteer.config.js";
 
 const entry: webpack.Entry = {};
 const plugins: webpack.Plugin[] = [];
 
-const config = {
+const config: webpack.Configuration = {
   mode: "development",
   devtool: "cheap-module-eval-source-map",
   output: {
@@ -37,9 +36,9 @@ const config = {
   plugins: [
     new ForkTsCheckerWebpackPlugin({ tsconfig: "tsconfig.webpack.json" }),
   ],
-} as webpack.Configuration;
+};
 
-config.devServer = {
+(config as any).devServer = {
   allowedHosts: [
     ".ngrok.io",
   ],

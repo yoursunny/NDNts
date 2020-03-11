@@ -29,8 +29,7 @@ export class UdpTransport extends Transport {
   }
 
   public close() {
-    try { this.sock.close(); }
-    catch (err) {}
+    try { this.sock.close(); } catch (err) {}
   }
 
   public tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
@@ -38,7 +37,7 @@ export class UdpTransport extends Transport {
       this.sock.send(pkt);
     }
     this.close();
-  }
+  };
 }
 
 export namespace UdpTransport {
@@ -55,8 +54,8 @@ export namespace UdpTransport {
   export function connect(opts: TunnelOptions): Promise<UdpTransport>;
 
   export async function connect(arg1: string|TunnelOptions, port1?: number): Promise<UdpTransport> {
-    const { host, port: port = 6363, bind: bind = {}, recvBufferSize, sendBufferSize } =
-      typeof arg1 === "string" ? { host: arg1, port: port1 } as TunnelOptions :
+    const { host, port = 6363, bind = {}, recvBufferSize, sendBufferSize }: TunnelOptions =
+      typeof arg1 === "string" ? { host: arg1, port: port1 } :
       arg1;
     return new Promise<UdpTransport>((resolve, reject) => {
       const sock = dgram.createSocket({

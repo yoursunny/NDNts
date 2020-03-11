@@ -28,7 +28,7 @@ export function discoverVersion(name: Name, opts: discoverVersion.Options = {}):
       }
       return data.name.getPrefix(-1);
     })
-    .then(resolve, reject);
+      .then(resolve, reject);
   });
 }
 

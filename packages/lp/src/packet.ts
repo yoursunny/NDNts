@@ -8,9 +8,9 @@ function isCritical(tt: number): boolean {
 }
 
 const EVD = new EvDecoder<LpPacket>("LpPacket", TT.LpPacket)
-.setIsCritical(isCritical)
-.add(l3TT.Nack, (t, { decoder }) => t.nack = decoder.decode(NackHeader))
-.add(TT.Fragment, (t, { value }) => t.fragment = value);
+  .setIsCritical(isCritical)
+  .add(l3TT.Nack, (t, { decoder }) => t.nack = decoder.decode(NackHeader))
+  .add(TT.Fragment, (t, { value }) => t.fragment = value);
 
 export class LpPacket {
   public static decodeFrom(decoder: Decoder): LpPacket {

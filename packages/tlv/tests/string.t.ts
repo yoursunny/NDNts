@@ -1,6 +1,5 @@
-import "../test-fixture/expect";
-
 import { fromHex, printTT, toHex } from "..";
+import "../test-fixture/expect";
 
 test("printTT", () => {
   expect(printTT(0x00)).toBe("0x00");

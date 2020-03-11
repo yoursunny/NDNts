@@ -27,7 +27,7 @@ export class PitEntry {
   /** Downstream records. */
   public dnRecords = new Map<FaceImpl, PitDn>();
   /** Last expiration time among downstreams. */
-  public lastExpire: number = 0;
+  public lastExpire = 0;
   /** Entry expiration timer; should match this.lastExpire. */
   public expireTimer?: NodeJS.Timer|number;
 
@@ -73,7 +73,7 @@ export class PitEntry {
   }
 
   /** Determine which downstream faces should receive Data from upstream. */
-  public returnData(face: FaceImpl, data: Data): AsyncIterable<{ dn: FaceImpl, token: any }> {
+  public returnData(face: FaceImpl, data: Data): AsyncIterable<{ dn: FaceImpl; token: any }> {
     clearTimeout(this.expireTimer as number);
     this.pit.table.delete(this.key);
     const now = getNow();
@@ -112,7 +112,7 @@ export class PitEntry {
     for (const [face, dnR] of this.dnRecords) {
       face.send(new RejectInterest("expire", this.interest, dnR.token));
     }
-  }
+  };
 }
 
 /** Pending Interest table. */
@@ -125,7 +125,7 @@ export class Pit {
   /** Find entry, disallow insertion. */
   public lookup(interest: Interest, canInsert: false): PitEntry|undefined;
 
-  public lookup(interest: Interest, canInsert: boolean = true) {
+  public lookup(interest: Interest, canInsert = true) {
     const key = `${toHex(interest.name.value)} ${interest.canBePrefix ? "+" : "-"}${interest.mustBeFresh ? "+" : "-"}`;
     let entry = this.table.get(key);
     if (!entry && canInsert) {

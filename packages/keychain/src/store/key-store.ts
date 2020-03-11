@@ -8,7 +8,7 @@ import { StoreBase } from "./store-base";
 export class KeyStore extends StoreBase<StoredKey> {
   public async get(name: Name): Promise<[PrivateKey, PublicKey]> {
     const stored = await this.getImpl(name);
-    return await loadFromStored(name, stored);
+    return loadFromStored(name, stored);
   }
 
   public async insert(name: Name, stored: StoredKey): Promise<void> {

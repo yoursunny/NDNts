@@ -71,7 +71,7 @@ async function verify(pkt: Packet, pub: PublicKey): Promise<VerifyRecord> {
 }
 
 export async function execute(cls: PacketCtor, pvtA: PrivateKey, pubA: PublicKey,
-                              pvtB: PrivateKey, pubB: PublicKey): Promise<TestRecord> {
+    pvtB: PrivateKey, pubB: PublicKey): Promise<TestRecord> {
   const [pktA, sA0] = await sign(cls, pvtA);
   const [pktB, sB0] = await sign(cls, pvtB);
 
@@ -117,7 +117,7 @@ export async function execute(cls: PacketCtor, pvtA: PrivateKey, pubA: PublicKey
     vMi: await verify(pktMi, pubA),
     vMd: await verify(pktMd, pubA),
     vMc: await verify(pktMc, pubA),
-  } as TestRecord;
+  };
 }
 
 export function check(record: TestRecord, {

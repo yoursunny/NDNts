@@ -24,8 +24,8 @@ export function generateKey(subjectName: Name, {
   setDefault = true,
 }: generateKey.Options = {}): Name {
   const result = invokeNdnsec(["key-gen", "-i", subjectName.toString(),
-                               `-t${type.charAt(0)}`,
-                               ...(setDefault ? [] : ["-n"])]);
+    `-t${type.charAt(0)}`,
+    ...(setDefault ? [] : ["-n"])]);
   const cert = new Certificate(result.decode(Data));
   return cert.certName.toKeyName().toName();
 }

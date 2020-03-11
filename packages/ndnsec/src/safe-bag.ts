@@ -11,8 +11,8 @@ interface SafeBagFields {
 }
 
 const EVD = new EvDecoder<SafeBagFields>("SafeBag", TT.SafeBag)
-.add(l3TT.Data, (t, { decoder }) => t.certificate = new Certificate(decoder.decode(Data)))
-.add(TT.EncryptedKeyBag, (t, { value }) => t.encryptedKey = value);
+  .add(l3TT.Data, (t, { decoder }) => t.certificate = new Certificate(decoder.decode(Data)))
+  .add(TT.EncryptedKeyBag, (t, { value }) => t.encryptedKey = value);
 
 /** ndn-cxx private key export. */
 export class SafeBag {
@@ -65,16 +65,16 @@ export class SafeBag {
     StoredBase extends { type: string },
     Param extends EcKeyImportParams|RsaHashedImportParams,
   >(
-    passphrase: string, keyChain: KeyChain, { name, key: publicKey }: Public,
-    base: StoredBase, params: Param,
+      passphrase: string, keyChain: KeyChain, { name, key: publicKey }: Public,
+      base: StoredBase, params: Param,
   ): Promise<void> {
     await saveKey(name, base, params, keyChain,
-      async (extractable, crypto) => {
+      async (extractable, crypto): Promise<CryptoKeyPair> => {
         const pkcs8 = this.decryptKey(passphrase);
         return {
           privateKey: await crypto.subtle.importKey("pkcs8", pkcs8, params, extractable, ["sign"]),
           publicKey,
-        } as CryptoKeyPair;
+        };
       });
   }
 }

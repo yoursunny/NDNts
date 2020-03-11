@@ -1,10 +1,9 @@
-import "@ndn/packet/test-fixture/expect";
-
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment as Segment1, Version as Version1 } from "@ndn/naming-convention1";
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
 import { Data, Interest, Name } from "@ndn/packet";
+import "@ndn/packet/test-fixture/expect";
 
 import { discoverVersion, serve } from "..";
 
@@ -32,7 +31,7 @@ describe("serve", () => {
 
   test("custom version component", async () => {
     server = serve(new Name("/A"), new Uint8Array(),
-                   { version: Version1.create(77), segmentNumConvention: Segment1 });
+      { version: Version1.create(77), segmentNumConvention: Segment1 });
     const versioned = await discoverVersion(new Name("/A"),
       { versionConvention: Version1, segmentNumConvention: Segment1 });
     expect(versioned).toHaveLength(2);
@@ -42,7 +41,7 @@ describe("serve", () => {
   test("no version", async () => {
     server = serve(new Name("/A"), new Uint8Array());
     await expect(new Endpoint().consume(new Interest("/A", Interest.CanBePrefix, Interest.MustBeFresh)))
-          .resolves.toHaveName(new Name("/A").append(Segment2, 0));
+      .resolves.toHaveName(new Name("/A").append(Segment2, 0));
     await expect(discoverVersion(new Name("/A"))).rejects.toThrow();
   });
 });
@@ -60,7 +59,7 @@ test.each([false, true])("discover mbf=%p", async (mbf) => {
       return data;
     });
   await expect(discoverVersion(new Name("/A"), mbf ? undefined : { versionMustBeFresh: false }))
-        .resolves.toEqualName(new Name("/A").append(Version2, 2));
+    .resolves.toEqualName(new Name("/A").append(Version2, 2));
   producer.close();
 });
 

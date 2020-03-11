@@ -9,7 +9,7 @@ export interface PacketWithSignature {
 
 export abstract class NamedKey {
   constructor(public readonly name: Name, public readonly sigType: number,
-              public readonly keyLocator: KeyLocator|undefined) {
+      public readonly keyLocator: KeyLocator|undefined) {
     KeyName.from(name);
   }
 }

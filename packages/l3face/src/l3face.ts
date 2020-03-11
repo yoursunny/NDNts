@@ -74,7 +74,7 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
     this.state_ = L3Face.State.CLOSED;
     this.emit("state", this.state_);
     this.emit("close");
-  }
+  };
 
   private async txImpl(iterable: AsyncIterable<Packet>): Promise<void> {
     const iterator = pipeline(
@@ -93,7 +93,7 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
       }
     }).bind(this);
 
-    while (true) {
+    for (;;) {
       try {
         await this.transport.tx(transportTx());
         return; // iterable drained, normal close
@@ -104,7 +104,7 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
       }
 
       const reopenPromise = this.reopenTransport();
-      while (true) {
+      for (;;) {
         const res = await Promise.race([
           reopenPromise, // wait for reopen completion
           iterator.next(), // drop packets

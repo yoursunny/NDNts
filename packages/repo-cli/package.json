@@ -44,7 +44,7 @@
     "streaming-iterables": "^4.1.2",
     "throat": "^5.0.0",
     "tslib": "*",
-    "yargs": "^15.1.0"
+    "yargs": "^15.3.0"
   },
   "devDependencies": {
     "@types/leveldown": "^4.0.2",

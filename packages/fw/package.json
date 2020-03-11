@@ -26,7 +26,7 @@
   "dependencies": {
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "hirestime": "^6.0.0",
+    "hirestime": "^6.0.1",
     "it-pushable": "^1.4.0",
     "loglevel": "^1.6.7",
     "minimalistic-assert": "^1.0.1",

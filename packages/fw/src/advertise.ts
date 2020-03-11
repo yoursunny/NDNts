@@ -6,12 +6,14 @@ import { FibEntry } from "./fib";
 
 const faceAdvertisements = new WeakMap<Face, WeakSet<FibEntry>>();
 
-const retryOptions = {
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+const retryOptions: pRetry.Options = {
   retries: 10,
   minTimeout: 100,
   maxTimeout: 30000,
   randomize: true,
 } as pRetry.Options;
+// For some reason, @types/retry is invisible during literate run, so we need this 'as'.
 
 /**
  * Prefix readvertise service.
@@ -46,8 +48,7 @@ export abstract class Advertise {
       }
       await this.doAdvertise(fibEntry.name);
     }, retryOptions)
-    // eslint-disable-next-line @typescript-eslint/unbound-method, no-console
-    .catch(console.warn);
+      .catch(console.warn);
     // TODO better error handling
   }
 
@@ -59,9 +60,8 @@ export abstract class Advertise {
       }
       await this.doWithdraw(fibEntry.name);
     }, retryOptions)
-    // eslint-disable-next-line @typescript-eslint/unbound-method, no-console
-    .catch(console.warn)
-    .finally(() => this.advertisedFibEntries.delete(fibEntry));
+      .catch(console.warn)
+      .finally(() => this.advertisedFibEntries.delete(fibEntry));
     // TODO better error handling
   }
 

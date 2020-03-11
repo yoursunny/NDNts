@@ -54,13 +54,13 @@ export async function readDataPayload(payload: Uint8Array, aesKey?: CryptoKey): 
  */
 export async function signInterest(interest: Interest, signer: PrivateKey): Promise<Interest> {
   await interest.updateParamsDigest();
-  return await signInterest02(interest, { signer });
+  return signInterest02(interest, { signer });
 }
 
 export function compressEcPublicKey(raw: Uint8Array): Uint8Array {
   // https://gist.github.com/shanewholloway/6ed5a52fa985b1d23024daa001b6a51e
   const compressed = raw.slice(0, (raw.byteLength + 1) / 2);
-  compressed[0] = 0x02 + raw[raw.byteLength-1] % 2;
+  compressed[0] = 0x02 + raw[raw.byteLength - 1] % 2;
   return compressed;
 }
 

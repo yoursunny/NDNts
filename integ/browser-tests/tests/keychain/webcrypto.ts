@@ -19,7 +19,7 @@ async function* genKeys(keyChain: KeyChain): AsyncGenerator<GenResult> {
     canMakeCert: false,
   };
   for (const curve of EC_CURVES) {
-    const res = { title: `ECDSA ${curve}` } as GenResult;
+    const res: GenResult = { title: `ECDSA ${curve}` };
     try {
       [res.pvt, res.pub] = await EcPrivateKey.generate("/S", curve, keyChain);
       await keyChain.deleteKey(res.pvt.name);
@@ -29,7 +29,7 @@ async function* genKeys(keyChain: KeyChain): AsyncGenerator<GenResult> {
     yield res;
   }
   for (const modulusLength of RSA_MODULUS_LENGTHS) {
-    const res = { title: `RSA ${modulusLength}` } as GenResult;
+    const res: GenResult = { title: `RSA ${modulusLength}` };
     try {
       [res.pvt, res.pub] = await RsaPrivateKey.generate("/S", modulusLength, keyChain);
       await keyChain.deleteKey(res.pvt.name);
@@ -39,7 +39,7 @@ async function* genKeys(keyChain: KeyChain): AsyncGenerator<GenResult> {
     yield res;
   }
   {
-    const res = { title: "HMAC", canMakeCert: false } as GenResult;
+    const res: GenResult = { title: "HMAC", canMakeCert: false };
     try {
       res.pvt = await HmacKey.generate("/S", keyChain);
       await keyChain.deleteKey(res.pvt.name);

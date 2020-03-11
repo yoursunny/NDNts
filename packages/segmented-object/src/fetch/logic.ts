@@ -48,9 +48,9 @@ class SegState {
 
 type SegRequest<T> = Pick<Readonly<SegState>, "segNum"|"isRetx"|"rto"> & {
   interest: T;
-}
+};
 
-const UNBLOCK = Symbol();
+const UNBLOCK = Symbol("UNBLOCK");
 
 interface Events {
   [UNBLOCK]: void;
@@ -108,8 +108,8 @@ export class FetchLogic extends (EventEmitter as new() => Emitter) {
 
   /** Generate stream of outgoing requests. */
   public async *outgoing<T, C>(
-    makeInterest: (req: SegRequest<unknown>) => T,
-    cancelInterest: (req: SegRequest<T>) => C,
+      makeInterest: (req: SegRequest<unknown>) => T,
+      cancelInterest: (req: SegRequest<T>) => C,
   ): AsyncGenerator<T|C> {
     while (this.running) {
       await this.tl.take();

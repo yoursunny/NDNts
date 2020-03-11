@@ -10,13 +10,13 @@ function checkType(n: number) {
 }
 
 const CHAR_ENCODE = (() => {
-  const UNESCAPED = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
-  const a = new Array<string>(256);
-  for (let ch = 0x00; ch <= 0xFF; ++ch) {
-    const s = String.fromCharCode(ch);
-    a[ch] = UNESCAPED.includes(s) ? s : `%${ch.toString(16).padStart(2, "0").toUpperCase()}`;
-  }
-  return a;
+const UNESCAPED = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+const a = new Array<string>(256);
+for (let ch = 0x00; ch <= 0xFF; ++ch) {
+  const s = String.fromCharCode(ch);
+  a[ch] = UNESCAPED.includes(s) ? s : `%${ch.toString(16).padStart(2, "0").toUpperCase()}`;
+}
+return a;
 })();
 const CHARCODE_PERCENT = "%".charCodeAt(0);
 const CHARCODE_PERIOD = ".".charCodeAt(0);
@@ -50,10 +50,10 @@ export class Component {
 
     let [sType, sValue] = input.split("=", 2);
     let type = TT.GenericNameComponent;
-    if (typeof sValue !== "undefined") {
-      type = parseInt(sType, 10);
-    } else {
+    if (typeof sValue === "undefined") {
       [sType, sValue] = ["", sType];
+    } else {
+      type = parseInt(sType, 10);
     }
     if (/^\.*$/.test(sValue)) {
       sValue = sValue.substr(3);
@@ -117,7 +117,7 @@ export class Component {
         this.value = arg2;
         break;
     }
-    this.tlv = Encoder.encode([this.type, this.value], 10+this.value.length);
+    this.tlv = Encoder.encode([this.type, this.value], 10 + this.value.length);
   }
 
   /** Get URI string. */
@@ -175,7 +175,7 @@ export namespace Component {
 
   function toCompareResult(diff: number): CompareResult {
     return diff === 0 ? CompareResult.EQUAL :
-           diff < 0 ? CompareResult.LT : CompareResult.GT;
+      diff < 0 ? CompareResult.LT : CompareResult.GT;
   }
 
   /** Compare two components. */

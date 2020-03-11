@@ -28,7 +28,7 @@ export namespace TcpTransport {
   export function connect(opts: net.TcpNetConnectOpts&Options): Promise<TcpTransport>;
 
   export function connect(arg1?: string|(net.TcpNetConnectOpts&Options), port = 6363,
-                          { connectTimeout = 10000 }: Options = {}): Promise<TcpTransport> {
+      { connectTimeout = 10000 }: Options = {}): Promise<TcpTransport> {
     const connectOpts: net.TcpNetConnectOpts =
       typeof arg1 === "undefined" ? { port } :
       typeof arg1 === "string" ? { host: arg1, port } :

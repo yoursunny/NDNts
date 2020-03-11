@@ -18,7 +18,7 @@ export class KeyChain {
   }
 
   public async getKeyPair(name: Name): Promise<[PrivateKey, PublicKey]> {
-    return await this.keys.get(name);
+    return this.keys.get(name);
   }
 
   public async getPrivateKey(name: Name): Promise<PrivateKey> {
@@ -44,7 +44,7 @@ export class KeyChain {
   }
 
   public async getCert(name: Name): Promise<Certificate> {
-    return await this.certs.get(name);
+    return this.certs.get(name);
   }
 
   public async insertCert(cert: Certificate): Promise<void> {

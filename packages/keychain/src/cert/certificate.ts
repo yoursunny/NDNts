@@ -48,12 +48,12 @@ export namespace Certificate {
   }
 
   export async function build({
-      name,
-      freshness = DEFAULT_FRESHNESS,
-      validity,
-      publicKey,
-      signer,
-    }: BuildOptions): Promise<Certificate> {
+    name,
+    freshness = DEFAULT_FRESHNESS,
+    validity,
+    publicKey,
+    signer,
+  }: BuildOptions): Promise<Certificate> {
     const data = new Data(name.toName(), Data.ContentType(ContentTypeKEY), Data.FreshnessPeriod(freshness));
     const si = new SigInfo();
     ValidityPeriod.set(si, validity);
@@ -76,7 +76,7 @@ export namespace Certificate {
     const cn = new CertificateName(kn.subjectName, kn.keyId, issuerId, Version.create(Date.now()));
     const publicKey = await pub.exportAsSpki();
     const opts: BuildOptions = { ...options, name: cn, publicKey, signer: pvt };
-    return await build(opts);
+    return build(opts);
   }
 
   interface SelfSignOptions extends Omit<IssueOptions, "validity"|"issuerId"|"issuerPrivateKey"> {
@@ -97,10 +97,10 @@ export namespace Certificate {
       issuerId: SELF_ISSUER,
       issuerPrivateKey: options.privateKey,
     };
-    return await issue(opts);
+    return issue(opts);
   }
 
   export async function loadPublicKey(cert: Certificate): Promise<PublicKey> {
-    return await loadSpki(cert.certName.toKeyName().toName(), cert.publicKey);
+    return loadSpki(cert.certName.toKeyName().toName(), cert.publicKey);
   }
 }

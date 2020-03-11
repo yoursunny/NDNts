@@ -4,7 +4,7 @@ import { NackReason } from "./an";
 import { Interest, TT } from "./mod";
 
 const EVD = new EvDecoder<NackHeader>("NackHeader", TT.Nack)
-.add(TT.NackReason, (t, { nni }) => t.reason = nni);
+  .add(TT.NackReason, (t, { nni }) => t.reason = nni);
 
 /** Nack header. */
 export class NackHeader {
@@ -17,14 +17,14 @@ export class NackHeader {
     return EVD.decode(new NackHeader(), decoder);
   }
 
-  constructor(reason: number = 0) {
+  constructor(reason = 0) {
     this.reason = reason;
   }
 
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(TT.Nack,
       [TT.NackReason, Encoder.OmitEmpty,
-       this.reason_ > 0 ? NNI(this.reason_): undefined],
+        this.reason_ > 0 ? NNI(this.reason_) : undefined],
     );
   }
 }

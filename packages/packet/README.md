@@ -6,7 +6,7 @@ This package implements **Name**, **Interest**, and **Data** types as specified 
 
 ```ts
 import { TT, Name, Component, ImplicitDigest,
-         Interest, Data, LLSign, LLVerify, canSatisfy, canSatisfySync } from "@ndn/packet";
+  Interest, Data, LLSign, LLVerify, canSatisfy, canSatisfySync } from "@ndn/packet";
 
 // other imports for examples
 import { Decoder, Encoder } from "@ndn/tlv";
@@ -184,7 +184,11 @@ assert(data2[LLVerify.SIGNED] instanceof Uint8Array);
 // Invoke [LLVerify.VERIFY] with a crypto verification function.
 await data2[LLVerify.VERIFY]((input: Uint8Array, sig: Uint8Array) => {
   return new Promise<void>((resolve, reject) => {
-    timingSafeEqual(sig, expectedSignature) ? resolve() : reject();
+    if (timingSafeEqual(sig, expectedSignature)) {
+      resolve();
+    } else {
+      reject();
+    }
   });
 });
 // It's very important that you do not modify the Data if you need to verify its signature.
@@ -203,7 +207,7 @@ assert.equal(digest.length, 32);
 
 // Full names are available, too.
 const fullName = await data2.computeFullName();
-assert.equal(fullName.length, data2.name.length + 1);
+assert.equal(fullName.length - 1, data2.name.length);
 assert(fullName.at(-1).is(ImplicitDigest));
 
 // After computation, implicit digest is cached on the Data instance,

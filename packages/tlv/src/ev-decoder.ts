@@ -42,7 +42,7 @@ function isCritical(tt: number): boolean {
 /** TLV-VALUE decoder that understands Packet Format v0.3 evolvability guidelines. */
 export class EvDecoder<T> {
   private topTT: number[];
-  private rules = {} as Record<number, Rule<T>>;
+  private rules: Record<number, Rule<T>> = {};
   private nextOrder = AUTO_ORDER_SKIP;
   private isCriticalCb: IsCriticalCallback = isCritical;
   private unknownCb: UnknownElementCallback<T>;
@@ -53,7 +53,8 @@ export class EvDecoder<T> {
    * @param typeName type name, used in error messages.
    * @param topTT if specified, check top-level TLV-TYPE to be in this list.
    */
-  constructor(private typeName: string, topTT?: number|ReadonlyArray<number>) {
+  constructor(private typeName: string, topTT?: number|readonly number[]) {
+    // eslint-disable-next-line no-negated-condition
     this.topTT = !topTT ? [] : Array.isArray(topTT) ? topTT : [topTT];
     this.unknownCb = () => false;
     this.topCb = () => undefined;
@@ -66,7 +67,7 @@ export class EvDecoder<T> {
    * @param options additional rule options.
    */
   public add(tt: number, cb: ElementCallback<T>|EvDecoder<T>,
-             options?: RuleOptions<T>): this {
+      options?: RuleOptions<T>): this {
     if (typeof this.rules[tt] !== "undefined") {
       throw new Error(`TLV-TYPE ${printTT(tt)} already has a rule`);
     }

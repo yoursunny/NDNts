@@ -10,13 +10,13 @@ function compile(cwd: string) {
     return;
   }
   execa.commandSync("g++ -std=c++14 *.cpp $(pkg-config --cflags --libs libndn-cxx)",
-                    { cwd, shell: true, stderr: "inherit" });
+    { cwd, shell: true, stderr: "inherit" });
   COMPILED.add(cwd);
 }
 
 /** Invoke the ndn-cxx program in cwd and return line-based output. */
 export function execute(cwd: string, args: string[] = [],
-                        opts: execa.Options = {}): execa.ExecaChildProcess {
+    opts: execa.Options = {}): execa.ExecaChildProcess {
   compile(cwd);
   return execa("./a.out", args, {
     cwd,

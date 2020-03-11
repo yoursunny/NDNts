@@ -37,10 +37,12 @@ export class DataStore extends (EventEmitter as new() => Emitter) {
   }
 
   private async *iterRecords(prefix?: Name): AsyncGenerator<Record> {
-    const it = fromStream<{ key: Name, value: Record }>(
+    const it = fromStream<{ key: Name; value: Record }>(
       this.db.createReadStream(prefix ? { gte: prefix } : undefined));
     for await (const { key: name, value: record } of it) {
-      if (prefix?.isPrefixOf(name) === false) { break; }
+      if (prefix?.isPrefixOf(name) === false) {
+        break;
+      }
       Object.defineProperty(record, "name", { value: name });
       yield record;
     }
@@ -67,10 +69,13 @@ export class DataStore extends (EventEmitter as new() => Emitter) {
   /** Retrieve Data by exact name. */
   public async get(name: Name): Promise<Data|undefined> {
     let record: Record;
-    try { record = await this.db.get(name); }
-    catch (err) {
+    try {
+      record = await this.db.get(name);
+    } catch (err) {
       /* istanbul ignore else */
-      if (err.notFound) { return undefined; }
+      if (err.notFound) {
+        return undefined;
+      }
       /* istanbul ignore next */
       throw err;
     }
@@ -84,7 +89,9 @@ export class DataStore extends (EventEmitter as new() => Emitter) {
     const prefix = ImplicitDigest.strip(interest.name);
     const it = filter(filterExpired(false), this.iterRecords(prefix));
     for await (const { data } of it) {
-      if (await canSatisfy(interest, data)) { return data; }
+      if (await canSatisfy(interest, data)) {
+        return data;
+      }
     }
     return undefined;
   }
@@ -105,8 +112,16 @@ export class DataStore extends (EventEmitter as new() => Emitter) {
 
   public insert(arg1: Data|InsertOptions, arg2?: Data|InsertOptions, ...pkts: Data[]): Promise<void> {
     let opts: InsertOptions|undefined;
-    if (arg2 instanceof Data) { pkts.unshift(arg2); } else { opts = arg2; }
-    if (arg1 instanceof Data) { pkts.unshift(arg1); } else { opts = arg1; }
+    if (arg2 instanceof Data) {
+      pkts.unshift(arg2);
+    } else {
+      opts = arg2;
+    }
+    if (arg1 instanceof Data) {
+      pkts.unshift(arg1);
+    } else {
+      opts = arg1;
+    }
 
     const tx = this.tx();
     for (const pkt of pkts) {
@@ -116,7 +131,7 @@ export class DataStore extends (EventEmitter as new() => Emitter) {
   }
 
   /** Delete Data packets with given names. */
-  public delete(...names: ReadonlyArray<Name>): Promise<void> {
+  public delete(...names: readonly Name[]): Promise<void> {
     const tx = this.tx();
     for (const name of names) {
       tx.delete(name);
@@ -154,16 +169,16 @@ export class Transaction {
   /** Insert a Data packet. */
   public insert(data: Data, opts: InsertOptions = {}): this {
     this.encodePromises.push(
-      this.insertImpl(data, opts).catch((err) => this.encodeError = err)
+      this.insertImpl(data, opts).catch((err) => this.encodeError = err),
     );
     return this;
   }
 
   private async insertImpl(data: Data, opts: InsertOptions): Promise<void> {
-    const record = {
+    const record: Omit<Record, "name"|"data"> = {
       ...opts,
       insertTime: this.timestamp,
-    } as Omit<Record, "name"|"data">;
+    };
 
     const json = new TextEncoder().encode(JSON.stringify(record));
     const encoder = new Encoder();
@@ -194,7 +209,9 @@ export class Transaction {
   /** Commit the transaction. */
   public async commit(): Promise<void> {
     await Promise.all(this.encodePromises);
-    if (this.encodeError) { throw this.encodeError; }
+    if (this.encodeError) {
+      throw this.encodeError;
+    }
 
     if (this.store.listenerCount("insert") + this.store.listenerCount("delete") === 0) {
       await this.chain.write();
@@ -209,8 +226,11 @@ export class Transaction {
       transform(8, async (diff) => {
         const [act, name] = diff;
         let exists = true;
-        try { await this.db.get(name); }
-        catch { exists = false; }
+        try {
+          await this.db.get(name);
+        } catch {
+          exists = false;
+        }
         return (exists ? act === "delete" : act === "insert") ? diff : undefined;
       }),
       filter((diff): diff is Diff => typeof diff !== "undefined"),

@@ -13,7 +13,7 @@ async function testConnection(face: FwFace, name: Name = new Name("/localhop/nfd
   tapFace.addRoute(name);
   const interest = new Interest(name, Interest.CanBePrefix, Interest.Lifetime(1000));
   await new Endpoint({ fw: tapFace.fw }).consume(interest, { describe: "TestConnection" })
-        .finally(() => tapFace.close());
+    .finally(() => tapFace.close());
 }
 
 /** Connect to a router and test the connection. */

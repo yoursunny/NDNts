@@ -30,26 +30,26 @@ function* genData({ prefix: prefixUri, start, count, size }: GenDataArgs) {
 abstract class FillCommandBase {
   protected buildGenDataArgv(argv: Argv): Argv<GenDataArgs> {
     return argv
-    .option("prefix", {
-      default: "/repodemo",
-      desc: "demo data prefix",
-      type: "string",
-    })
-    .option("start", {
-      default: 0,
-      desc: "start sequence number",
-      type: "number",
-    })
-    .option("count", {
-      default: 1048576,
-      desc: "count of packets",
-      type: "number",
-    })
-    .option("size", {
-      default: 1000,
-      desc: "payload size",
-      type: "number",
-    });
+      .option("prefix", {
+        default: "/repodemo",
+        desc: "demo data prefix",
+        type: "string",
+      })
+      .option("start", {
+        default: 0,
+        desc: "start sequence number",
+        type: "number",
+      })
+      .option("count", {
+        default: 1048576,
+        desc: "count of packets",
+        type: "number",
+      })
+      .option("size", {
+        default: 1000,
+        desc: "payload size",
+        type: "number",
+      });
   }
 
   protected async execute(args: GenDataArgs, f: (it: AsyncIterable<Data>) => Promise<unknown>) {
@@ -66,7 +66,7 @@ abstract class FillCommandBase {
 type FillStoreArgs = GenDataArgs & StoreArgs & {
   batch: number;
   parallel: number;
-}
+};
 
 export class FillStoreCommand extends FillCommandBase implements CommandModule<{}, FillStoreArgs> {
   public command = "fillstore";
@@ -74,17 +74,17 @@ export class FillStoreCommand extends FillCommandBase implements CommandModule<{
 
   public builder = (argv: Argv): Argv<FillStoreArgs> => {
     return declareStoreArgs(this.buildGenDataArgv(argv))
-    .option("batch", {
-      default: 64,
-      desc: "packets per batch",
-      type: "number",
-    })
-    .option("parallel", {
-      default: 1,
-      desc: "number of parallel transactions",
-      type: "number",
-    });
-  }
+      .option("batch", {
+        default: 64,
+        desc: "packets per batch",
+        type: "number",
+      })
+      .option("parallel", {
+        default: 1,
+        desc: "number of parallel transactions",
+        type: "number",
+      });
+  };
 
   public handler = async (args: Arguments<FillStoreArgs>) => {
     openStore(args);
@@ -94,13 +94,13 @@ export class FillStoreCommand extends FillCommandBase implements CommandModule<{
       transform(args.parallel, (pkts) => store.insert(...pkts)),
       consume,
     ));
-  }
+  };
 }
 
 type FillBiArgs = GenDataArgs & {
   host: string;
   port: number;
-}
+};
 
 export class FillBiCommand extends FillCommandBase implements CommandModule<{}, FillBiArgs> {
   public command = "fillbi";
@@ -108,20 +108,20 @@ export class FillBiCommand extends FillCommandBase implements CommandModule<{}, 
 
   public builder = (argv: Argv): Argv<FillBiArgs> => {
     return this.buildGenDataArgv(argv)
-    .option("host", {
-      default: "127.0.0.1",
-      desc: "destination host",
-      type: "string",
-    })
-    .option("port", {
-      default: 7376,
-      desc: "destination port",
-      type: "number",
-    });
-  }
+      .option("host", {
+        default: "127.0.0.1",
+        desc: "destination host",
+        type: "string",
+      })
+      .option("port", {
+        default: 7376,
+        desc: "destination port",
+        type: "number",
+      });
+  };
 
   public handler = async (args: Arguments<FillBiArgs>) => {
     const face = new L3Face(await TcpTransport.connect(args.host, args.port));
     await this.execute(args, (it) => face.tx(it));
-  }
+  };
 }

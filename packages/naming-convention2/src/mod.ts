@@ -11,10 +11,6 @@ abstract class Typed {
 }
 
 class TypedString extends Typed {
-  constructor(tt: number) {
-    super(tt);
-  }
-
   public create(v: string): Component {
     return new Component(this.tt, v);
   }
@@ -25,10 +21,6 @@ class TypedString extends Typed {
 }
 
 class TypedNumber extends Typed {
-  constructor(tt: number) {
-    super(tt);
-  }
-
   public create(v: number): Component {
     return new Component(this.tt, Encoder.encode(NNI(v), 8));
   }

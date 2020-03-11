@@ -1,7 +1,6 @@
-import "@ndn/packet/test-fixture/expect";
-
 import { theDigestKey } from "@ndn/keychain";
 import { Data, Interest, Nack, NackReason, TT as l3TT } from "@ndn/packet";
+import "@ndn/packet/test-fixture/expect";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { collect, map, pipeline } from "streaming-iterables";
 

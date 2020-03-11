@@ -1,6 +1,5 @@
-import "../test-fixture/expect";
-
 import { Component, ImplicitDigest, Name, NamingConvention, ParamsDigest, TT } from "..";
+import "../test-fixture/expect";
 
 interface Row {
   compType: NamingConvention<Uint8Array, Uint8Array>;

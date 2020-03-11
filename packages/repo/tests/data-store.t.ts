@@ -1,6 +1,5 @@
-import "@ndn/packet/test-fixture/expect";
-
 import { Data, Interest, LLSign, Name } from "@ndn/packet";
+import "@ndn/packet/test-fixture/expect";
 import memdown from "memdown";
 import { collect, map } from "streaming-iterables";
 
@@ -43,18 +42,18 @@ test("list find expire", async () => {
   ]);
 
   let names = await collect(map((data) => data.name.toString(), store.list()));
-  names.sort();
+  names.sort((a, b) => a.localeCompare(b));
   expect(names).toEqual(["/8=A/8=1", "/8=A/8=2", "/8=B/8=1", "/8=B/8=2", "/8=C/8=1", "/8=C/8=2", "/8=C/8=3"]);
 
   await expect(store.find(new Interest("/C", Interest.CanBePrefix))).resolves.not.toBeUndefined();
   await new Promise((r) => setTimeout(r, 700));
 
   names = await collect(map((name) => name.toString(), store.listNames()));
-  names.sort();
+  names.sort((a, b) => a.localeCompare(b));
   expect(names).toEqual(["/8=A/8=1", "/8=A/8=2", "/8=B/8=1", "/8=B/8=2"]);
 
   names = await collect(map((name) => name.toString(), store.listNames(new Name("/B"))));
-  names.sort();
+  names.sort((a, b) => a.localeCompare(b));
   expect(names).toEqual(["/8=B/8=1", "/8=B/8=2"]);
 
   await expect(store.get(new Name("/C/1"))).resolves.toBeUndefined();
@@ -86,7 +85,7 @@ test("events", async () => {
   ]);
   expect(onInsert).toHaveBeenCalledTimes(3);
   let names = onInsert.mock.calls.map(([name]) => name.toString());
-  names.sort();
+  names.sort((a, b) => a.localeCompare(b));
   expect(names).toEqual(["/8=A/8=1", "/8=A/8=2", "/8=A/8=3"]);
   expect(onDelete).not.toHaveBeenCalled();
   onInsert.mockClear();
@@ -98,6 +97,6 @@ test("events", async () => {
   expect(onInsert).not.toHaveBeenCalled();
   expect(onDelete).toHaveBeenCalledTimes(2);
   names = onDelete.mock.calls.map(([name]) => name.toString());
-  names.sort();
+  names.sort((a, b) => a.localeCompare(b));
   expect(names).toEqual(["/8=A/8=1", "/8=A/8=3"]);
 });

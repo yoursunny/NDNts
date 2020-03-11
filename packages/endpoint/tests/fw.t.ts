@@ -1,8 +1,7 @@
-import "@ndn/packet/test-fixture/expect";
-
 import { CancelInterest, DataResponse, Forwarder, FwFace, FwTracer, InterestToken, RejectInterest } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, Interest, Name } from "@ndn/packet";
+import "@ndn/packet/test-fixture/expect";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
 
 import { Endpoint } from "..";

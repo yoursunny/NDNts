@@ -7,7 +7,7 @@ interface Options {
 }
 
 class NdnsecOutput {
-  constructor(private readonly result: ExecaSyncReturnValue<string>) {
+  constructor(private readonly result: ExecaSyncReturnValue) {
   }
 
   public get exitCode() { return this.result.exitCode; }

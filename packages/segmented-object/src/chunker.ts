@@ -32,11 +32,11 @@ export async function* chunker(name: Name, input: chunker.Input, {
       yield data;
     }
     data = new Data(name.append(segmentNumConvention, ++segmentNum),
-                    Data.FreshnessPeriod(freshnessPeriod), chunk);
+      Data.FreshnessPeriod(freshnessPeriod), chunk);
   }
   if (!data) { // input is empty
     data = new Data(name.append(segmentNumConvention, ++segmentNum),
-                    Data.FreshnessPeriod(freshnessPeriod));
+      Data.FreshnessPeriod(freshnessPeriod));
   }
   data.isFinalBlock = true;
   signer.sign(data);

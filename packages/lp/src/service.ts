@@ -6,7 +6,7 @@ import { LpPacket, TT } from "./mod";
 export class LpService {
   public rx = (iterable: AsyncIterable<Decoder.Tlv>) => {
     return this.rx_(iterable);
-  }
+  };
 
   private async *rx_(iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<LpService.L3Pkt|LpService.RxError> {
     for await (const tlv of iterable) {
@@ -53,7 +53,7 @@ export class LpService {
 
   public tx = (iterable: AsyncIterable<LpService.L3Pkt>) => {
     return this.tx_(iterable);
-  }
+  };
 
   private async *tx_(iterable: AsyncIterable<LpService.L3Pkt>): AsyncIterable<Uint8Array|LpService.TxError> {
     for await (const pkt of iterable) {

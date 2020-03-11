@@ -19,11 +19,11 @@ export class ImportSafeBagCommand implements CommandModule<{}, Args> {
 
   public builder(argv: Argv): Argv<Args> {
     return argv
-    .option("passphrase", {
-      demandOption: true,
-      desc: "SafeBag passphrase",
-      type: "string",
-    });
+      .option("passphrase", {
+        demandOption: true,
+        desc: "SafeBag passphrase",
+        type: "string",
+      });
   }
 
   public handler(args: Arguments<Args>) {

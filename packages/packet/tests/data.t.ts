@@ -1,10 +1,9 @@
-import "../test-fixture/expect";
-
 import { Decoder, Encoder } from "@ndn/tlv";
 import { createHash } from "crypto";
 
 import { Component, ImplicitDigest, Name } from "..";
 import { Data, TT } from "..";
+import "../test-fixture/expect";
 
 test("encode", () => {
   expect(() => new Data({} as any)).toThrow();
@@ -28,7 +27,7 @@ test("encode", () => {
   });
 
   data = new Data("/B", Data.ContentType(3), Data.FreshnessPeriod(2500),
-                  Data.FinalBlock, Uint8Array.of(0xC0, 0xC1));
+    Data.FinalBlock, Uint8Array.of(0xC0, 0xC1));
   expect(data.name).toEqualName("/B");
   expect(data.contentType).toBe(3);
   expect(data.freshnessPeriod).toBe(2500);

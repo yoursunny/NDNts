@@ -3,9 +3,9 @@ import { Interest } from "@ndn/packet";
 import { L3Face, Transport } from "..";
 
 export async function run<ServerSocket>(
-  transport: Transport,
-  waitNClients: (n: number) => Promise<ServerSocket[]>,
-  closeClient: (sock: ServerSocket) => void,
+    transport: Transport,
+    waitNClients: (n: number) => Promise<ServerSocket[]>,
+    closeClient: (sock: ServerSocket) => void,
 ) {
   const [sock] = await waitNClients(1);
 
@@ -22,6 +22,7 @@ export async function run<ServerSocket>(
 
   let end = false;
   face.tx((async function*() {
+    // eslint-disable-next-line no-unmodified-loop-condition
     for (let i = 0; !end; ++i) {
       yield new Interest(`/A/${i}`);
       await new Promise((r) => setTimeout(r, 10));

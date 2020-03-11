@@ -7,7 +7,6 @@ export interface TestRecord {
   certs0: string[];
   certs1: string[];
   certs2: string[];
-  certKeys: boolean[];
   certs3: string[];
   certs4: string[];
 }
@@ -30,7 +29,7 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
   await keyChain.insertCert(issued);
   const certNames2 = await keyChain.listCerts();
   const certs2 = (await Promise.all(certNames2.map((n) => keyChain.getCert(n))))
-                 .map((cert) => cert.name.toString());
+    .map((cert) => cert.name.toString());
 
   await keyChain.deleteCert(selfSigned.name);
   const certs3 = (await keyChain.listCerts()).map(String);
@@ -45,7 +44,7 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
     certs2,
     certs3,
     certs4,
-  } as TestRecord;
+  };
 }
 
 export function check(record: TestRecord) {

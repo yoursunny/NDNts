@@ -2,7 +2,7 @@ export class Reorder<T> {
   private next: number;
   private buffer = new Map<number, T>();
 
-  constructor(first: number = 0) {
+  constructor(first = 0) {
     this.next = first;
   }
 
@@ -17,7 +17,7 @@ export class Reorder<T> {
 
   private pop(): T[] {
     const result = [] as T[];
-    while (true) {
+    for (;;) {
       const obj = this.buffer.get(this.next);
       if (obj) {
         result.push(obj);

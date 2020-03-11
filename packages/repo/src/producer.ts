@@ -29,7 +29,7 @@ export class Producer {
   private processInterest = async (interest: Interest): Promise<Data|false> => {
     const found = await this.store.find(interest);
     return found ?? false;
-  }
+  };
 }
 
 export namespace Producer {
@@ -41,7 +41,7 @@ export namespace Producer {
 
   /** Control prefix registrations of a repo producer. */
   export type PrefixRegController = (store: DataStore, face: Pick<FwFace, "addRoute"|"removeRoute">)
-                                    => { close(): void };
+  => { close(): void };
 
   /** Register a fixed set of prefixes. */
   export function PrefixRegStatic(...prefixes: Name[]): PrefixRegController {
@@ -66,7 +66,9 @@ export namespace Producer {
       const handleInsert = (name: Name) => {
         const prefix = transform(name);
         const prefixKey = toHex(prefix.value);
-        if (!regs.has(prefixKey)) { face.addRoute(prefix); }
+        if (!regs.has(prefixKey)) {
+          face.addRoute(prefix);
+        }
         regs.add(prefixKey);
       };
       const handleDelete = (name: Name) => {
@@ -74,7 +76,9 @@ export namespace Producer {
         const prefixKey = toHex(prefix.value);
         assert(regs.has(prefixKey));
         regs.remove(prefixKey);
-        if (!regs.has(prefixKey)) { face.removeRoute(prefix); }
+        if (!regs.has(prefixKey)) {
+          face.removeRoute(prefix);
+        }
       };
 
       store.mutex(async () => {
@@ -108,8 +112,12 @@ export namespace Producer {
   /** Register prefixes after stripping last few components matching a predicate. */
   export function PrefixRegStrip(...predicates: ComponentPredicate[]): PrefixRegController {
     const preds = predicates.map((pred) => {
-      if (typeof pred === "function") { return pred; }
-      if (isConvention(pred)) { return (c: Component) => pred.match(c); }
+      if (typeof pred === "function") {
+        return pred;
+      }
+      if (isConvention(pred)) {
+        return (c: Component) => pred.match(c);
+      }
       const comp = Component.from(pred);
       return (c: Component) => c.equals(comp);
     });

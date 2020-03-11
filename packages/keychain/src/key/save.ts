@@ -52,10 +52,10 @@ export async function saveKey<T extends { type: string }>(
 }
 
 export function generateKey<T extends { type: string }>(
-    nameInput: NameLike, type: T, algo: any, keyChain: KeyChain|undefined
+    nameInput: NameLike, type: T, algo: any, keyChain: KeyChain|undefined,
 ): Promise<[Name, CryptoKey, CryptoKey|undefined]> {
   return saveKey(
     nameInput, type, algo, keyChain,
-    (extractable) => crypto.subtle.generateKey(algo, extractable, ["sign", "verify"])
+    (extractable) => crypto.subtle.generateKey(algo, extractable, ["sign", "verify"]),
   );
 }

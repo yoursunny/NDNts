@@ -39,7 +39,7 @@ assert.deepEqual(encoder.output, Uint8Array.of(0x00, 0x20, 0x01, 0x10, 0xB0, 0x0
 encoder = new Encoder();
 encoder.encode([0xB0, Uint8Array.of(0xC0, 0xC1), new Name("/A")]);
 assert.deepEqual(encoder.output,
-                 Uint8Array.of(0xB0, 0x07, 0xC0, 0xC1, 0x07, 0x03, 0x08, 0x01, 0x41));
+  Uint8Array.of(0xB0, 0x07, 0xC0, 0xC1, 0x07, 0x03, 0x08, 0x01, 0x41));
 ```
 
 ## Decoder
@@ -87,9 +87,9 @@ COST-TYPE = 0x8C
 ```ts
 // Declare a class to represent this type.
 class Adjacency {
-  public name: Name = new Name();
-  public uri: string = "";
-  public cost: number = 0;
+  public name = new Name();
+  public uri = "";
+  public cost = 0;
 }
 
 // Declare constants for TLV-TYPE numbers.
@@ -102,9 +102,9 @@ const TT = {
 
 // Create the decoder.
 const EVD = new EvDecoder<Adjacency>("Adjacency", TT.Adjacency)
-.add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
-.add(TT.Uri, (t, { value }) => t.uri = new TextDecoder().decode(value))
-.add(TT.Cost, (t, { nni }) => t.cost = nni);
+  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
+  .add(TT.Uri, (t, { value }) => t.uri = new TextDecoder().decode(value))
+  .add(TT.Cost, (t, { nni }) => t.cost = nni);
 // Each rule declares a possible sub TLV.
 // They are added in the order of expected appearance.
 // The callback receives two arguments:

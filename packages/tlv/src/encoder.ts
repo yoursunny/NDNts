@@ -69,7 +69,7 @@ export class Encoder {
   }
 
   /** Obtain part of encoding output. */
-  public slice(start: number = 0, length?: number) {
+  public slice(start = 0, length?: number) {
     if (typeof length === "undefined") {
       // iOS would interpret length=undefined as length=0, so we need a conditional
       return new Uint8Array(this.buf, this.off + start);
@@ -113,7 +113,7 @@ export class Encoder {
    * @param tlvValue TLV-VALUE objects.
    */
   public prependTlv(tlvType: number, omitEmpty?: typeof Encoder.OmitEmpty|Encodable,
-                    ...tlvValue: Encodable[]) {
+      ...tlvValue: Encodable[]) {
     let hasOmitEmpty = false;
     if (omitEmpty) {
       if (omitEmpty === Encoder.OmitEmpty) {
@@ -133,7 +133,7 @@ export class Encoder {
   }
 
   /** Prepend an Encodable object. */
-  public encode(obj: Encodable|ReadonlyArray<Encodable>) {
+  public encode(obj: Encodable|readonly Encodable[]) {
     if (obj instanceof Uint8Array) {
       const dst = this.prependRoom(obj.byteLength);
       dst.set(obj);
@@ -143,7 +143,7 @@ export class Encoder {
       if (typeof obj[0] === "number") {
         this.prependTlv(...(obj as EncodableTlv));
       } else {
-        this.prependValue(...(obj as ReadonlyArray<Encodable>));
+        this.prependValue(...(obj as readonly Encodable[]));
       }
     } else if (typeof obj !== "undefined") {
       throw new Error("Encoder.encode: obj is not Encodable");
@@ -166,20 +166,20 @@ export namespace Encoder {
 
   export const OmitEmpty = Symbol("OmitEmpty");
 
-  export function encode(obj: Encodable|ReadonlyArray<Encodable>, initBufSize: number = BUF_INIT_SIZE) {
+  export function encode(obj: Encodable|readonly Encodable[], initBufSize: number = BUF_INIT_SIZE) {
     const encoder = new Encoder(initBufSize);
     encoder.encode(obj);
     return encoder.output;
   }
 
   /** Extract the encoding output of an element while writing to a larger encoder. */
-  export function extract(obj: Encodable|ReadonlyArray<Encodable>, cb: (output: Uint8Array) => void): Encodable {
+  export function extract(obj: Encodable|readonly Encodable[], cb: (output: Uint8Array) => void): Encodable {
     return {
       encodeTo(encoder) {
         const sizeBefore = encoder.size;
         encoder.encode(obj);
         cb(encoder.slice(0, encoder.size - sizeBefore));
       },
-    } as EncodableObj;
+    };
   }
 }

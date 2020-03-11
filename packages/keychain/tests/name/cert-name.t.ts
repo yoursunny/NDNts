@@ -1,13 +1,12 @@
-import "@ndn/packet/test-fixture/expect";
-
 import { Version } from "@ndn/naming-convention2";
 import { Component, Name } from "@ndn/packet";
+import "@ndn/packet/test-fixture/expect";
 
 import { CertificateName } from "../..";
 
 test("construct", () => {
   const cn = new CertificateName(new Name("/owner"), Component.from("keyid"),
-                                 Component.from("issuer"), Version.create(2));
+    Component.from("issuer"), Version.create(2));
   expect(cn.subjectName).toEqualName("/owner");
   expect(cn.keyId).toEqualComponent("keyid");
   expect(cn.issuerId).toEqualComponent("issuer");

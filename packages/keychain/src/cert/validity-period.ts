@@ -29,8 +29,8 @@ function encodeTimestamp(d: Date): Uint8Array {
 }
 
 const EVD = new EvDecoder<ValidityPeriod>("ValidityPeriod", TT.ValidityPeriod)
-.add(TT.NotBefore, (t, { value }) => t.notBefore = decodeTimestamp(value))
-.add(TT.NotAfter, (t, { value }) => t.notAfter = decodeTimestamp(value));
+  .add(TT.NotBefore, (t, { value }) => t.notBefore = decodeTimestamp(value))
+  .add(TT.NotAfter, (t, { value }) => t.notAfter = decodeTimestamp(value));
 
 /** Certificate validity period. */
 export class ValidityPeriod {

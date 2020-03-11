@@ -48,41 +48,42 @@ This section presents the low-level details of how to use a "raw" transport with
 ```ts
 async function useInL3Face(transport: Transport) {
 
-// Transports are normally used in a network layer face.
-const face = new L3Face(transport);
+  // Transports are normally used in a network layer face.
+  const face = new L3Face(transport);
 
-// We want to know if something goes wrong.
-face.on("rxerror", (err) => console.warn(err));
-face.on("txerror", (err) => console.warn(err));
+  // We want to know if something goes wrong.
+  face.on("rxerror", (err) => console.warn(err));
+  face.on("txerror", (err) => console.warn(err));
 
-await Promise.all([
-  face.tx({ async *[Symbol.asyncIterator]() {
-    // Send five Interests.
-    let seq = Math.floor(Math.random() * 99999999);
-    for (let i = 0; i < 5; ++i) {
-      await new Promise((r) => setTimeout(r, 50));
-      const interest = new Interest(`/ndn/edu/arizona/ping/NDNts/${seq++}`);
-      console.log(`${transport} <I ${interest.name}`);
-      yield interest;
-    }
-    await new Promise((r) => setTimeout(r, 200));
-  } }),
-  (async () => {
-    let nData = 0;
-    for await (const pkt of face.rx) {
-      if (!(pkt instanceof Data)) {
-        continue;
+  await Promise.all([
+    face.tx({ async *[Symbol.asyncIterator]() {
+      // Send five Interests.
+      let seq = Math.floor(Math.random() * 99999999);
+      for (let i = 0; i < 5; ++i) {
+        await new Promise((r) => setTimeout(r, 50));
+        const interest = new Interest(`/ndn/edu/arizona/ping/NDNts/${seq++}`);
+        console.log(`${transport} <I ${interest.name}`);
+        yield interest;
       }
-      // Print incoming Data name.
-      const data: Data = pkt;
-      console.log(`${transport} >D ${data.name}`);
-      if (++nData >= 5) {
-        return;
+      await new Promise((r) => setTimeout(r, 200));
+    } }),
+    (async () => {
+      let nData = 0;
+      for await (const pkt of face.rx) {
+        if (!(pkt instanceof Data)) {
+          continue;
+        }
+        // Print incoming Data name.
+        const data: Data = pkt;
+        console.log(`${transport} >D ${data.name}`);
+        if (++nData >= 5) {
+          return;
+        }
       }
-    }
-  })(),
-]);
+    })(),
+  ]);
 
-// L3Face and Transport are automatically closed when TX iterable is exhausted.
+  // L3Face and Transport are automatically closed when TX iterable is exhausted.
+
 }
 ```

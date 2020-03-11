@@ -28,15 +28,15 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
 
   const keyNames2 = await keyChain.listKeys();
   const keys2 = (await Promise.all(keyNames2.map((n) => keyChain.getPrivateKey(n))))
-                .map((pvt) => pvt.name.toString());
+    .map((pvt) => pvt.name.toString());
 
   await Promise.all(
     keys2.filter((u, i) => i % 4 === 0)
-    .map((u) => keyChain.deleteKey(new Name(u))),
+      .map((u) => keyChain.deleteKey(new Name(u))),
   );
   const keyNames3 = await keyChain.listKeys();
   const keys3 = (await Promise.all(keyNames3.map((n) => keyChain.getPublicKey(n))))
-                .map((pub) => pub.name.toString());
+    .map((pub) => pub.name.toString());
 
   const keys4 = [] as string[];
   for (let i = 0; i < 40; ++i) {
@@ -67,7 +67,7 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
     keys2,
     keys3,
     keys4,
-  } as TestRecord;
+  };
 }
 
 export function check(record: TestRecord) {
@@ -82,7 +82,7 @@ export function check(record: TestRecord) {
   expect(record.keys4.filter((v) => v === "HMAC")).toHaveLength(6);
   expect(record.keys4.filter((v) => v === "")).toHaveLength(10);
 
-  record.keys1.sort();
-  record.keys2.sort();
+  record.keys1.sort((a, b) => a.localeCompare(b));
+  record.keys2.sort((a, b) => a.localeCompare(b));
   expect(record.keys1).toEqual(record.keys2);
 }

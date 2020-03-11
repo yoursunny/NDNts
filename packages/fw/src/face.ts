@@ -30,8 +30,8 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
   public txQueueLength = 0;
 
   constructor(public readonly fw: ForwarderImpl,
-              public readonly inner: Face.Base,
-              attributes: Face.Attributes) {
+      public readonly inner: Face.Base,
+      attributes: Face.Attributes) {
     super();
     this.attributes = {
       local: false,
@@ -133,7 +133,7 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
       }
     }
     this.close();
-  }
+  };
 
   private async *txLoop() {
     while (true) {
@@ -156,16 +156,16 @@ export namespace FaceImpl {
     faceTxBuffer: number;
   }
 
-  export const DefaultOptions = {
+  export const DefaultOptions: Options = {
     faceRxBuffer: 16,
     faceTxBuffer: 16,
-  } as Options;
+  };
 }
 
 /** A socket or network interface associated with forwarding plane. */
 export interface Face extends Pick<FaceImpl,
-    "fw"|"advertise"|"attributes"|"close"|"toString"|"addRoute"|"removeRoute"|
-    Exclude<keyof Emitter, "emit">> {
+"fw"|"advertise"|"attributes"|"close"|"toString"|"addRoute"|"removeRoute"|
+Exclude<keyof Emitter, "emit">> {
   readonly running: boolean;
 }
 

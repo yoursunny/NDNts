@@ -95,7 +95,7 @@ export namespace Forwarder {
 
   /** Create a new forwarding plane. */
   export function create(options?: Options): Forwarder {
-    return new ForwarderImpl(Object.assign({}, DefaultOptions, options));
+    return new ForwarderImpl({ ...DefaultOptions, ...options });
   }
 
   let defaultInstance: Forwarder|undefined;

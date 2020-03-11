@@ -1,11 +1,10 @@
-import "../test-fixture/expect";
-
 import { Decoder, Encodable, Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI } from "..";
+import "../test-fixture/expect";
 
 const EXTENSIONS = new ExtensionRegistry<ExtTestTarget>();
 
 const EVD = new EvDecoder<ExtTestTarget>("ExtTestTarget")
-.setUnknown(EXTENSIONS.decodeUnknown);
+  .setUnknown(EXTENSIONS.decodeUnknown);
 
 class ExtTestTarget {
   public [Extensible.TAG] = Extensible.newRecords();
@@ -21,6 +20,7 @@ class A1Extension implements Extension<ExtTestTarget, number> {
   public decode(obj: ExtTestTarget, { nni }: Decoder.Tlv, accumulator?: number): number {
     return (accumulator ?? 0) + nni;
   }
+
   public encode(obj: ExtTestTarget, value: number): Encodable {
     return [this.tt, NNI(value)];
   }
@@ -31,6 +31,7 @@ class A2Extension implements Extension<ExtTestTarget, boolean> {
   public decode(): boolean {
     return true;
   }
+
   public encode(obj: ExtTestTarget, value: boolean): Encodable {
     if (value) {
       return [this.tt];

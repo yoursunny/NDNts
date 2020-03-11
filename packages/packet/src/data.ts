@@ -9,20 +9,20 @@ const TOPTLV = Symbol("Data.TopTlv");
 const TOPTLV_DIGEST = Symbol("Data.TopTlvDigest");
 
 const EVD = new EvDecoder<Data>("Data", TT.Data)
-.setTop((t, { tlv }) => t[TOPTLV] = tlv)
-.add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
-.add(TT.MetaInfo,
-  new EvDecoder<Data>("MetaInfo")
-  .add(TT.ContentType, (t, { nni }) => t.contentType = nni)
-  .add(TT.FreshnessPeriod, (t, { nni }) => t.freshnessPeriod = nni)
-  .add(TT.FinalBlockId, (t, { vd }) => t.finalBlockId = vd.decode(Component)),
-)
-.add(TT.Content, (t, { value }) => t.content = value)
-.add(TT.DSigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(SigInfo))
-.add(TT.DSigValue, (t, { value, before }) => {
-  t.sigValue = value;
-  t[LLVerify.SIGNED] = before;
-});
+  .setTop((t, { tlv }) => t[TOPTLV] = tlv)
+  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
+  .add(TT.MetaInfo,
+    new EvDecoder<Data>("MetaInfo")
+      .add(TT.ContentType, (t, { nni }) => t.contentType = nni)
+      .add(TT.FreshnessPeriod, (t, { nni }) => t.freshnessPeriod = nni)
+      .add(TT.FinalBlockId, (t, { vd }) => t.finalBlockId = vd.decode(Component)),
+  )
+  .add(TT.Content, (t, { value }) => t.content = value)
+  .add(TT.DSigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(SigInfo))
+  .add(TT.DSigValue, (t, { value, before }) => {
+    t.sigValue = value;
+    t[LLVerify.SIGNED] = before;
+  });
 
 /** Data packet. */
 export class Data {
@@ -62,8 +62,8 @@ export class Data {
   public [LLVerify.SIGNED]?: Uint8Array;
   public [TOPTLV]?: Uint8Array & {[TOPTLV_DIGEST]?: Uint8Array}; // for implicit digest
 
-  private contentType_: number = 0;
-  private freshnessPeriod_: number = 0;
+  private contentType_ = 0;
+  private freshnessPeriod_ = 0;
 
   /**
    * Construct from flexible arguments.
@@ -149,7 +149,7 @@ export class Data {
 
   public [LLVerify.VERIFY](verify: LLVerify): Promise<void> {
     if (!this.sigValue) {
-      return Promise.reject("packet is unsigned");
+      return Promise.reject(new Error("packet is unsigned"));
     }
     return LLVerify.verifyImpl(this, this.sigValue, verify);
   }

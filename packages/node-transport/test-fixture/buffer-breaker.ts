@@ -30,5 +30,5 @@ export class BufferBreaker extends Transform {
     }
     this.push(this.buf);
     this.buf = undefined;
-  }
+  };
 }

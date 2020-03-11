@@ -26,7 +26,7 @@ export class ClientEmailChallenge {
   }
 
   /** Select and start email challenge. */
-  public startChallenge = async (challenges: ReadonlyArray<ChallengeDefinition>): Promise<ChallengeRequest> => {
+  public startChallenge = async (challenges: readonly ChallengeDefinition[]): Promise<ChallengeRequest> => {
     if (!challenges.some((d) => d["challenge-id"] === "email")) {
       throw new Error("server rejects email challenge");
     }
@@ -34,7 +34,7 @@ export class ClientEmailChallenge {
       "selected-challenge": "email",
       email: this.email,
     };
-  }
+  };
 
   /** Continue email challenge by responding with PIN code. */
   public continueChallenge = async (challengeStatus: string): Promise<ChallengeRequest> => {
@@ -46,5 +46,5 @@ export class ClientEmailChallenge {
       "selected-challenge": "email",
       code,
     };
-  }
+  };
 }

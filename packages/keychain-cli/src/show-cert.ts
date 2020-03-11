@@ -21,11 +21,11 @@ export class ShowCertCommand implements CommandModule<{}, Args> {
 
   public builder(argv: Argv): Argv<Args> {
     return argv
-    .positional("name", {
-      desc: "certificate name or prefix",
-      type: "string",
-    })
-    .demandOption("name");
+      .positional("name", {
+        desc: "certificate name or prefix",
+        type: "string",
+      })
+      .demandOption("name");
   }
 
   public handler(args: Arguments<Args>) {

@@ -1,9 +1,8 @@
+import { Name, SigType } from "@ndn/packet";
 import "@ndn/packet/test-fixture/expect";
 
-import { Name, SigType  } from "@ndn/packet";
-
 import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, EcPublicKey, KeyChain,
-         PrivateKey, PublicKey } from "../..";
+  PrivateKey, PublicKey } from "../..";
 import * as TestSignVerify from "../../test-fixture/sign-verify";
 
 interface Row extends TestSignVerify.Row {

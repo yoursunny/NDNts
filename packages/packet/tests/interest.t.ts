@@ -1,9 +1,8 @@
-import "../test-fixture/expect";
-
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { Interest, LLSign, LLVerify, Name, ParamsDigest, SigInfo, SigType, TT } from "..";
 import { FwHint } from "../src/fwhint";
+import "../test-fixture/expect";
 
 test("encode", () => {
   expect(() => new Interest({} as any)).toThrow();
@@ -27,8 +26,8 @@ test("encode", () => {
   expect(interest.nonce).toBeUndefined();
 
   interest = new Interest("/B", Interest.CanBePrefix, Interest.MustBeFresh,
-                          new FwHint([new FwHint.Delegation("/FH", 33)]),
-                          Interest.Nonce(0x85AC8579), Interest.Lifetime(8198), Interest.HopLimit(5));
+    new FwHint([new FwHint.Delegation("/FH", 33)]),
+    Interest.Nonce(0x85AC8579), Interest.Lifetime(8198), Interest.HopLimit(5));
   expect(interest.name).toEqualName("/B");
   expect(interest.canBePrefix).toBeTruthy();
   expect(interest.mustBeFresh).toBeTruthy();

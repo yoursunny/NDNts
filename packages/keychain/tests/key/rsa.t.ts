@@ -1,9 +1,8 @@
+import { Name, SigType } from "@ndn/packet";
 import "@ndn/packet/test-fixture/expect";
 
-import { Name, SigType } from "@ndn/packet";
-
 import { Certificate, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength,
-         RsaPrivateKey, RsaPublicKey } from "../..";
+  RsaPrivateKey, RsaPublicKey } from "../..";
 import * as TestSignVerify from "../../test-fixture/sign-verify";
 
 interface Row extends TestSignVerify.Row {

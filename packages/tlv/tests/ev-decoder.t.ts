@@ -1,6 +1,5 @@
-import "../test-fixture/expect";
-
 import { Decoder, EvDecoder } from "..";
+import "../test-fixture/expect";
 
 class EvdTestTarget {
   public top?: Decoder.Tlv;
@@ -16,6 +15,7 @@ class EvdTestTarget {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class A1 {
   public static decodeFrom(decoder: Decoder): A1 {
     const { type, length, value } = decoder.read();
@@ -27,15 +27,15 @@ class A1 {
 }
 
 const EVD = new EvDecoder<EvdTestTarget>("A0", 0xA0)
-.setTop((t, tlv) => t.top = tlv)
-.add(0xA1, (t, { decoder }) => { ++t.a1; decoder.decode(A1); })
-.add(0xA4, (t) => { ++t.a4; })
-.add(0xA6, (t) => { ++t.a6; }, { repeat: true })
-.add(0xA9, (t) => { ++t.a9; })
-.add(0xC0,
-  new EvDecoder<EvdTestTarget>("C0")
-  .add(0xC1, (t, { nni }) => { t.c1 = nni; }),
-);
+  .setTop((t, tlv) => t.top = tlv)
+  .add(0xA1, (t, { decoder }) => { ++t.a1; decoder.decode(A1); })
+  .add(0xA4, (t) => { ++t.a4; })
+  .add(0xA6, (t) => { ++t.a6; }, { repeat: true })
+  .add(0xA9, (t) => { ++t.a9; })
+  .add(0xC0,
+    new EvDecoder<EvdTestTarget>("C0")
+      .add(0xC1, (t, { nni }) => { t.c1 = nni; }),
+  );
 
 test("decode normal", () => {
   const decoder = new Decoder(Uint8Array.of(
@@ -130,8 +130,8 @@ test("setIsCritical", () => {
   const cb = jest.fn((tt: number) => tt === 0xA2);
 
   const evd = new EvDecoder<EvdTestTarget>("A0", 0xA0)
-  .setIsCritical(cb)
-  .add(0xA1, (t) => { ++t.a1; });
+    .setIsCritical(cb)
+    .add(0xA1, (t) => { ++t.a1; });
 
   const decoder = new Decoder(Uint8Array.of(
     // first object
@@ -161,8 +161,8 @@ test("setUnknown", () => {
   });
 
   const evd = new EvDecoder<EvdTestTarget>("A0AA", [0xA0, 0xAA])
-  .add(0xA4, (t) => { ++t.a4; }, { order: 7 })
-  .setUnknown(cb);
+    .add(0xA4, (t) => { ++t.a4; }, { order: 7 })
+    .setUnknown(cb);
 
   const decoder = new Decoder(Uint8Array.of(
     0xAA, 0x0A,

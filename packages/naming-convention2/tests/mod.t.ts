@@ -1,6 +1,5 @@
-import "@ndn/packet/test-fixture/expect";
-
 import { Name } from "@ndn/packet";
+import "@ndn/packet/test-fixture/expect";
 
 import { ByteOffset, Keyword, Segment, SequenceNum, Timestamp, Version } from "..";
 
@@ -34,7 +33,7 @@ test("Version", () => {
 
 test("Timestamp", () => {
   const name = new Name().append(Timestamp, new Date(540167400000))
-                         .append(Timestamp, 1570239360127447);
+    .append(Timestamp, 1570239360127447);
 
   expect(name.at(0)).toEqualComponent("36=%00%01%eb%47%85%ff%0a%00");
   expect(name.at(0).is(Timestamp)).toBeTruthy();

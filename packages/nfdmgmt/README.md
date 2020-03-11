@@ -62,10 +62,10 @@ enableNfdPrefixReg(uplinkP, { signer: privateKey });
 
 // Start a producer.
 const producer = new Endpoint({ fw: fwP }).produce("/P",
-  async() => {
+  async () => {
     console.log("producing");
     return new Data("/P", Data.FreshnessPeriod(1000),
-                    new TextEncoder().encode("NDNts + NFD"));
+      new TextEncoder().encode("NDNts + NFD"));
   });
 await new Promise((r) => setTimeout(r, 500));
 

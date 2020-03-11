@@ -5,8 +5,6 @@ import { Face } from "./face";
 import { Forwarder } from "./forwarder";
 import { CancelInterest, RejectInterest } from "./reqres";
 
-/* eslint-disable @typescript-eslint/unbound-method */
-
 export const logger = log.getLogger("@ndn/fw");
 logger.setLevel(log.levels.TRACE);
 

@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Component, Interest, Name, TT  } from "@ndn/packet";
+import { Component, Interest, Name, TT } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { ControlParameters } from "./control-parameters";
@@ -17,9 +17,9 @@ type CP<R extends keyof ControlParameters.Fields, O extends keyof ControlParamet
 /** Declare required and optional fields of each command. */
 interface Commands {
   "face/create": CP<"uri", "localUri"|"facePersistency"|"baseCongestionMarkingInterval"|
-                           "defaultCongestionPeriod"|"mtu"|"flags"|"mask">;
+  "defaultCongestionPeriod"|"mtu"|"flags"|"mask">;
   "face/update": CP<never, "faceId"|"facePersistency"|"baseCongestionMarkingInterval"|
-                           "defaultCongestionPeriod"|"flags"|"mask">;
+  "defaultCongestionPeriod"|"flags"|"mask">;
   "face/destroy": CP<"faceId", never>;
   "strategy-choice/set": CP<"name"|"strategy", never>;
   "strategy-choice/unset": CP<"name", never>;

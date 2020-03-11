@@ -10,48 +10,48 @@ const DecodeParams = Symbol("Interest.DecodeParams");
 const DigestValidated = Symbol("Interest.DigestValidated");
 
 const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
-.add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
-.add(TT.CanBePrefix, (t) => t.canBePrefix = true)
-.add(TT.MustBeFresh, (t) => t.mustBeFresh = true)
-.add(0x09, () => {
-  if (!Interest.tolerateSelectors) {
-    throw new Error("cannot decode Selectors");
-  }
-})
-.add(TT.ForwardingHint, (t, { value }) => t.fwHint = FwHint.decodeValue(value))
-.add(TT.Nonce, (t, { value }) => t.nonce = NNI.decode(value, 4))
-.add(TT.InterestLifetime, (t, { nni }) => t.lifetime = nni)
-.add(TT.HopLimit, (t, { value }) => t.hopLimit = NNI.decode(value, 1))
-.add(TT.AppParameters, (t, { value, tlv, after }) => {
-  if (ParamsDigest.findIn(t.name, false) < 0) {
-    throw new Error("ParamsDigest missing in parameterized Interest");
-  }
-  t.appParameters = value;
-  t[DecodeParams] = new Uint8Array(tlv.buffer, tlv.byteOffset,
-                                   tlv.byteLength + after.byteLength);
-})
-.add(TT.ISigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(SigInfo))
-.add(TT.ISigValue, (t, { value, tlv }) => {
-  if (!ParamsDigest.match(t.name.at(-1))) {
-    throw new Error("ParamsDigest missing or out of place in signed Interest");
-  }
+  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
+  .add(TT.CanBePrefix, (t) => t.canBePrefix = true)
+  .add(TT.MustBeFresh, (t) => t.mustBeFresh = true)
+  .add(0x09, () => {
+    if (!Interest.tolerateSelectors) {
+      throw new Error("cannot decode Selectors");
+    }
+  })
+  .add(TT.ForwardingHint, (t, { value }) => t.fwHint = FwHint.decodeValue(value))
+  .add(TT.Nonce, (t, { value }) => t.nonce = NNI.decode(value, 4))
+  .add(TT.InterestLifetime, (t, { nni }) => t.lifetime = nni)
+  .add(TT.HopLimit, (t, { value }) => t.hopLimit = NNI.decode(value, 1))
+  .add(TT.AppParameters, (t, { value, tlv, after }) => {
+    if (ParamsDigest.findIn(t.name, false) < 0) {
+      throw new Error("ParamsDigest missing in parameterized Interest");
+    }
+    t.appParameters = value;
+    t[DecodeParams] = new Uint8Array(tlv.buffer, tlv.byteOffset,
+      tlv.byteLength + after.byteLength);
+  })
+  .add(TT.ISigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(SigInfo))
+  .add(TT.ISigValue, (t, { value, tlv }) => {
+    if (!ParamsDigest.match(t.name.at(-1))) {
+      throw new Error("ParamsDigest missing or out of place in signed Interest");
+    }
 
-  const params = t[DecodeParams];
-  if (!(params instanceof Uint8Array)) {
-    throw new Error("AppParameters missing in signed Interest");
-  }
+    const params = t[DecodeParams];
+    if (!(params instanceof Uint8Array)) {
+      throw new Error("AppParameters missing in signed Interest");
+    }
 
-  if (typeof t.sigInfo === "undefined") {
-    throw new Error("ISigInfo missing in signed Interest");
-  }
+    if (typeof t.sigInfo === "undefined") {
+      throw new Error("ISigInfo missing in signed Interest");
+    }
 
-  assert(tlv.buffer === params.buffer);
-  t.sigValue = value;
-  t[LLVerify.SIGNED] = Encoder.encode([
-    t.name.getPrefix(-1).value,
-    new Uint8Array(tlv.buffer, params.byteOffset, tlv.byteOffset - params.byteOffset),
-  ]);
-});
+    assert(tlv.buffer === params.buffer);
+    t.sigValue = value;
+    t[LLVerify.SIGNED] = Encoder.encode([
+      t.name.getPrefix(-1).value,
+      new Uint8Array(tlv.buffer, params.byteOffset, tlv.byteOffset - params.byteOffset),
+    ]);
+  });
 
 /** Interest packet. */
 export class Interest {
@@ -69,8 +69,8 @@ export class Interest {
   }
 
   public name: Name = new Name();
-  public canBePrefix: boolean = false;
-  public mustBeFresh: boolean = false;
+  public canBePrefix = false;
+  public mustBeFresh = false;
   public fwHint?: FwHint;
   public appParameters?: Uint8Array;
   public sigInfo?: SigInfo;
@@ -138,10 +138,10 @@ export class Interest {
       this.mustBeFresh ? [TT.MustBeFresh] : undefined,
       this.fwHint,
       [TT.Nonce, NNI(typeof this.nonce === "number" ? this.nonce : Interest.generateNonce(), 4)],
-      this.lifetime !== Interest.DefaultLifetime ?
-        [TT.InterestLifetime, NNI(this.lifetime)] : undefined,
-      this.hopLimit !== HOPLIMIT_MAX ?
-        [TT.HopLimit, NNI(this.hopLimit, 1)] : undefined,
+      this.lifetime === Interest.DefaultLifetime ?
+        undefined : [TT.InterestLifetime, NNI(this.lifetime)],
+      this.hopLimit === HOPLIMIT_MAX ?
+        undefined : [TT.HopLimit, NNI(this.hopLimit, 1)],
       this.appParameters ?
         [TT.AppParameters, this.appParameters] : undefined,
       this.sigInfo ?
@@ -160,7 +160,7 @@ export class Interest {
     const params = Encoder.encode([
       [TT.AppParameters, this.appParameters],
       this.sigInfo ?
-          this.sigInfo.encodeAs(TT.ISigInfo) : undefined,
+        this.sigInfo.encodeAs(TT.ISigInfo) : undefined,
       [TT.ISigValue, Encoder.OmitEmpty, this.sigValue],
     ]);
     const d = await sha256(params);
@@ -279,7 +279,7 @@ export namespace Interest {
   }
 
   export type CtorArg = NameLike | typeof CanBePrefix | typeof MustBeFresh | FwHint |
-                        LifetimeTag | HopLimitTag | Uint8Array;
+  LifetimeTag | HopLimitTag | Uint8Array;
 
   /** Generate a random nonce. */
   export function generateNonce(): number {

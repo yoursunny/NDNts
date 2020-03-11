@@ -20,7 +20,7 @@ export async function getSignerImpl(prefix: Name|undefined): Promise<PrivateKey>
   const keyChain = openKeyChain();
   const keys = await keyChain.listKeys(prefix);
   if (keys.length > 0) {
-    return await keyChain.getPrivateKey(keys[0]);
+    return keyChain.getPrivateKey(keys[0]);
   }
   return theDigestKey;
 }

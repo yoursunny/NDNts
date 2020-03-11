@@ -1,6 +1,5 @@
-import "@ndn/tlv/test-fixture/expect";
-
 import { Decodable, Decoder, Encodable, Encoder } from "@ndn/tlv";
+import "@ndn/tlv/test-fixture/expect";
 import * as crypto from "crypto";
 
 import { Data, Interest, KeyDigest, LLSign, LLVerify, Name, SigInfo, SigType, TT } from "..";
@@ -15,7 +14,7 @@ class TestAlgo {
       throw new Error("mock-signing-error");
     }
     return this.computeSignature(input);
-  }
+  };
 
   public verify = async (input: Uint8Array, sig: Uint8Array): Promise<void> => {
     await new Promise((r) => setTimeout(r, 5));
@@ -23,7 +22,7 @@ class TestAlgo {
     if (Buffer.compare(sig, this.computeSignature(input)) !== 0) {
       throw new Error("incorrect signature value");
     }
-  }
+  };
 
   private computeSignature(input: Uint8Array): Uint8Array {
     // warning: this is insecure hashing algorithm, for test case only

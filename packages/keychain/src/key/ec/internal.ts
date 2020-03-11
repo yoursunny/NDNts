@@ -2,7 +2,7 @@ import { ASN1Construction, ASN1TagClass, ASN1UniversalType, DERElement } from "a
 
 import { EcCurve } from "./mod";
 
-export const SIGN_PARAMS = { name: "ECDSA", hash: "SHA-256" } as EcdsaParams;
+export const SIGN_PARAMS: EcdsaParams = { name: "ECDSA", hash: "SHA-256" };
 
 export function makeGenParams(curve: EcCurve): EcKeyGenParams&EcKeyImportParams {
   return { name: "ECDSA", namedCurve: curve };

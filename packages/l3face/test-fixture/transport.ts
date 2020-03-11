@@ -33,10 +33,9 @@ export async function execute<T extends Transport>(
     } }),
     faceB.tx({ async *[Symbol.asyncIterator]() {
       const it = faceB.rx[Symbol.asyncIterator]();
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       it.return = undefined;
       for await (const pkt of abortable({ [Symbol.asyncIterator]() { return it; } },
-                                        abortFaceB.signal, { returnOnAbort: true })) {
+        abortFaceB.signal, { returnOnAbort: true })) {
         if (pkt instanceof Interest) {
           const name = pkt.name.toString();
           record.namesB.push(name);
@@ -57,7 +56,7 @@ export async function execute<T extends Transport>(
   return record;
 }
 
-export function check(record: TestRecord, threshold: number = 0.9) {
+export function check(record: TestRecord, threshold = 0.9) {
   expect(record.namesA.length).toBeGreaterThanOrEqual(Math.ceil(COUNT * threshold));
   expect(record.namesB.length).toBeGreaterThanOrEqual(Math.ceil(COUNT * threshold));
   expect(record.namesA).toHaveLength(new Set(record.namesA).size);

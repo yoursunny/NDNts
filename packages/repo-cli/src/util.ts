@@ -8,11 +8,11 @@ export interface StoreArgs {
 
 export function declareStoreArgs<T>(argv: Argv<T>): Argv<T & StoreArgs> {
   return argv
-  .option("store", {
-    demandOption: true,
-    desc: "filesystem location for leveldown",
-    type: "string",
-  });
+    .option("store", {
+      demandOption: true,
+      desc: "filesystem location for leveldown",
+      type: "string",
+    });
 }
 
 export let store: DataStore;

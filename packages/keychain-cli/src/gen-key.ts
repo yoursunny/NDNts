@@ -6,7 +6,7 @@ import { Arguments, Argv, CommandModule } from "yargs";
 import { keyChain } from "./util";
 
 type TypeChoice = "ec"|"rsa"|"hmac";
-const typeChoices: ReadonlyArray<TypeChoice> = ["ec", "rsa", "hmac"];
+const typeChoices: readonly TypeChoice[] = ["ec", "rsa", "hmac"];
 
 interface Args extends GenKeyCommand.KeyParamArgs {
   name: string;
@@ -31,11 +31,11 @@ export class GenKeyCommand implements CommandModule<{}, Args> {
 
   public builder(argv: Argv): Argv<Args> {
     return GenKeyCommand.declareKeyParamArgs(argv)
-    .positional("name", {
-      desc: "subject name or key name",
-      type: "string",
-    })
-    .demandOption("name");
+      .positional("name", {
+        desc: "subject name or key name",
+        type: "string",
+      })
+      .demandOption("name");
   }
 
   public handler(args: Arguments<Args>) {
@@ -52,30 +52,30 @@ export namespace GenKeyCommand {
 
   export function declareKeyParamArgs<T>(argv: Argv<T>): Argv<T & KeyParamArgs> {
     return argv
-    .option("type", {
-      choices: typeChoices,
-      default: "ec" as TypeChoice,
-      desc: "key type",
-    })
-    .option("curve", {
-      choices: EC_CURVES,
-      default: "P-256" as EcCurve,
-      desc: "EC curve",
-    })
-    .option("modulus-length", {
-      choices: RSA_MODULUS_LENGTHS,
-      default: 2048 as RsaModulusLength,
-      desc: "RSA modulus length",
-    });
+      .option("type", {
+        choices: typeChoices,
+        default: "ec" as TypeChoice,
+        desc: "key type",
+      })
+      .option("curve", {
+        choices: EC_CURVES,
+        default: "P-256" as EcCurve,
+        desc: "EC curve",
+      })
+      .option("modulus-length", {
+        choices: RSA_MODULUS_LENGTHS,
+        default: 2048 as RsaModulusLength,
+        desc: "RSA modulus length",
+      });
   }
 
   export async function generateKey(name: NameLike, {
     type, curve, "modulus-length": modulusLength,
   }: KeyParamArgs): Promise<{
-    pvt: PrivateKey;
-    pub: PublicKey;
-    canSelfSign: boolean;
-  }> {
+        pvt: PrivateKey;
+        pub: PublicKey;
+        canSelfSign: boolean;
+      }> {
     switch (type) {
       case "ec": {
         const [pvt, pub] = await EcPrivateKey.generate(name, curve, keyChain);

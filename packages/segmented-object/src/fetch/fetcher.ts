@@ -72,7 +72,7 @@ export class Fetcher extends (EventEmitter as new() => Emitter) {
       ({ segNum, rto }) => {
         return InterestToken.set(
           new Interest(this.name.append(segmentNumConvention, segNum),
-                      Interest.Lifetime(rto + 200)),
+            Interest.Lifetime(rto + 200)),
           segNum);
       },
       ({ interest }) => {
@@ -87,7 +87,7 @@ export class Fetcher extends (EventEmitter as new() => Emitter) {
         this.handleData(pkt);
       }
     }
-  }
+  };
 
   private handleData(data: DataResponse<number>) {
     const [segNum] = InterestToken.get(data);

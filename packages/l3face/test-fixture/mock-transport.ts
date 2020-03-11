@@ -29,7 +29,7 @@ export class MockTransport extends Transport {
 
   public readonly tx = async (iterable: AsyncIterable<Uint8Array>) => {
     const iterator = iterable[Symbol.asyncIterator]();
-    while (true) {
+    for (;;) {
       const pkt = await Promise.race([
         iterator.next(),
         this.closePromise.promise,
@@ -39,5 +39,5 @@ export class MockTransport extends Transport {
       }
       this.sent.push(pkt.value);
     }
-  }
+  };
 }

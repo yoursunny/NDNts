@@ -73,8 +73,9 @@ export class EndpointProducer {
       }
       return undefined;
     };
-    const processInterest = !dataBuffer ? processInterestUnbuffered :
-      async (interest: Interest) => {
+    let processInterest = processInterestUnbuffered;
+    if (dataBuffer) {
+      processInterest = async (interest: Interest) => {
         let found = await dataBuffer.find(interest);
         if (!found) {
           const output = await processInterestUnbuffered(interest);
@@ -86,6 +87,7 @@ export class EndpointProducer {
         }
         return found;
       };
+    }
 
     const face = this.fw.addFace({
       transform(rxIterable) {
@@ -93,7 +95,7 @@ export class EndpointProducer {
           () => rxIterable,
           filter((pkt): pkt is Interest => pkt instanceof Interest),
           transform(concurrency, processInterest),
-          filter((pkt): pkt is Data => pkt instanceof Data)
+          filter((pkt): pkt is Data => pkt instanceof Data),
         );
       },
       toString: () => describe,

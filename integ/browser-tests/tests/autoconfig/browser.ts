@@ -1,7 +1,7 @@
-import "./api";
-
 import { connectToTestbed } from "@ndn/autoconfig";
 import { FwTracer } from "@ndn/fw";
+
+import "./api";
 
 window.testConnectToTestbed = async () => {
   FwTracer.enable();

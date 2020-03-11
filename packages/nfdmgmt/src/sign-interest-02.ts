@@ -1,5 +1,5 @@
 import { PrivateKey, theDigestKey } from "@ndn/keychain";
-import { Interest, LLSign, Name, SigInfo, TT  } from "@ndn/packet";
+import { Interest, LLSign, Name, SigInfo, TT } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
 
 class SignedInterest02 {
@@ -34,8 +34,8 @@ class SignedInterest02 {
  * @see https://named-data.net/doc/ndn-cxx/0.6.6/specs/signed-interest.html
  */
 export async function signInterest02(
-  interest: Interest,
-  { signer = theDigestKey, timestamp = Date.now() }: signInterest02.Options = {},
+    interest: Interest,
+    { signer = theDigestKey, timestamp = Date.now() }: signInterest02.Options = {},
 ): Promise<Interest> {
   const si = new SignedInterest02(interest.name, timestamp);
   signer.sign(si);

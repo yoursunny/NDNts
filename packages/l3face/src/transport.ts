@@ -14,7 +14,7 @@ export abstract class Transport {
 
   public reopen(): Promise<Transport> {
     /* istanbul ignore next */
-    return Promise.reject("reopen not supported");
+    return Promise.reject(new Error("reopen not supported"));
   }
 
   public toString() {

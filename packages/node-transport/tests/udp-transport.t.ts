@@ -14,7 +14,7 @@ beforeEach(async () => {
     reuseAddr: true,
   });
   serverPort = await new Promise<number>((r) =>
-               server.bind({ address: "127.0.0.1" }, () => r(server.address().port)));
+    server.bind({ address: "127.0.0.1" }, () => r(server.address().port)));
   server.on("message", (msg, { port }) => {
     for (const clientPort of clientPorts) {
       if (port === clientPort) {

@@ -1,8 +1,7 @@
-import "../test-fixture/expect";
-
 import { Encoder } from "@ndn/tlv";
 
 import { FwHint } from "..";
+import "../test-fixture/expect";
 
 test("empty", () => {
   let fh = new FwHint();

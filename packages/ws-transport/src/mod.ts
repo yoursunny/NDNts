@@ -5,7 +5,6 @@ import pTimeout from "p-timeout";
 
 import { makeWebSocket } from "./platform/mod";
 
-// eslint-disable-next-line
 const pushHandlers = new WeakMap<object, (evt: MessageEvent) => void>();
 
 /** WebSocket transport. */
@@ -50,7 +49,7 @@ export class WsTransport extends Transport {
       }
     }
     this.close();
-  }
+  };
 
   private waitForTxBuffer(): Promise<void> {
     return new Promise((resolve) => {

@@ -16,7 +16,7 @@ export abstract class StoreBase<T> {
   /** List item names. */
   public list(): Promise<Name[]> {
     return this.throttle(() => this.impl.list())
-    .then((keys) => keys.map((k) => new Name(fromHex(k))));
+      .then((keys) => keys.map((k) => new Name(fromHex(k))));
   }
 
   /** Erase item by name. */

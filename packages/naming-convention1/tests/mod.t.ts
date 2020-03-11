@@ -1,6 +1,5 @@
-import "@ndn/packet/test-fixture/expect";
-
 import { Component, Name, NamingConvention } from "@ndn/packet";
+import "@ndn/packet/test-fixture/expect";
 
 import { ByteOffset, Segment, SequenceNum, Timestamp, Version } from "..";
 

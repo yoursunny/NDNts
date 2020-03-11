@@ -39,21 +39,21 @@ export class IssueCertCommand implements CommandModule<{}, Args> {
 
   public builder(argv: Argv): Argv<Args> {
     return argv
-    .option("issuer", {
-      default: "/",
-      desc: "issuer key name or prefix",
-      type: "string",
-    })
-    .option("issuer-id", {
-      default: "",
-      desc: "issuer id",
-      type: "string",
-    })
-    .option("valid-days", {
-      default: 30,
-      desc: "validity period in days since now",
-      type: "number",
-    });
+      .option("issuer", {
+        default: "/",
+        desc: "issuer key name or prefix",
+        type: "string",
+      })
+      .option("issuer-id", {
+        default: "",
+        desc: "issuer id",
+        type: "string",
+      })
+      .option("valid-days", {
+        default: 30,
+        desc: "validity period in days since now",
+        type: "number",
+      });
   }
 
   public handler(args: Arguments<Args>) {

@@ -94,7 +94,7 @@ export namespace NNI {
 
   /** Error if n exceeds [min,max] range. */
   export function constrain(n: number, typeName: string,
-                            max: number = Number.MAX_SAFE_INTEGER, min: number = 0): number {
+      max: number = Number.MAX_SAFE_INTEGER, min = 0): number {
     if (n >= min && n <= max) {
       return Math.floor(n);
     }

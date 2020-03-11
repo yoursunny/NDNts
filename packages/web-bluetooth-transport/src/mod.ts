@@ -1,7 +1,6 @@
-import "web-bluetooth";
-
 import { rxFromPacketIterable, Transport } from "@ndn/l3face";
 import { EventIterator } from "event-iterator";
+import "web-bluetooth";
 
 const UUID_SVC = "099577e3-0788-412a-8824-395084d97391";
 const UUID_CS = "cc5abb89-a541-46d8-a351-2f95a6a81f49";
@@ -15,9 +14,9 @@ export class WebBluetoothTransport extends Transport {
   public readonly rx: Transport.Rx;
 
   private constructor(
-    private readonly server: BluetoothRemoteGATTServer,
-    private readonly cs: BluetoothRemoteGATTCharacteristic,
-    sc: BluetoothRemoteGATTCharacteristic,
+      private readonly server: BluetoothRemoteGATTServer,
+      private readonly cs: BluetoothRemoteGATTCharacteristic,
+      sc: BluetoothRemoteGATTCharacteristic,
   ) {
     super({
       describe: `WebBluetoothTransport(${server.device.id})`,
@@ -52,7 +51,7 @@ export class WebBluetoothTransport extends Transport {
       await this.cs.writeValue(pkt);
     }
     this.close();
-  }
+  };
 
   public static async request() {
     const device = await navigator.bluetooth.requestDevice({

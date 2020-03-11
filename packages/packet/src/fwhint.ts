@@ -3,8 +3,8 @@ import { Decoder, Encoder, EvDecoder, NNI, toHex } from "@ndn/tlv";
 import { Name, NameLike, TT } from "./mod";
 
 const EVD = new EvDecoder<FwHint.Delegation>("Delegation", TT.Delegation)
-.add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
-.add(TT.Preference, (t, { nni }) => t.preference = nni);
+  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
+  .add(TT.Preference, (t, { nni }) => t.preference = nni);
 
 export class FwHint {
   public static decodeValue(value: Uint8Array): FwHint {
@@ -17,9 +17,9 @@ export class FwHint {
 
   constructor(copy?: FwHint);
 
-  constructor(delegations: ReadonlyArray<FwHint.Delegation>);
+  constructor(delegations: readonly FwHint.Delegation[]);
 
-  constructor(arg?: FwHint|ReadonlyArray<FwHint.Delegation>) {
+  constructor(arg?: FwHint|readonly FwHint.Delegation[]) {
     if (Array.isArray(arg)) {
       for (const del of arg) {
         this.m.set(toHex(del.name.value), del);
@@ -29,7 +29,7 @@ export class FwHint {
     }
   }
 
-  public get delegations(): ReadonlyArray<FwHint.Delegation> {
+  public get delegations(): readonly FwHint.Delegation[] {
     return Array.from(this.m.values()).sort((a, b) => a.preference - b.preference);
   }
 

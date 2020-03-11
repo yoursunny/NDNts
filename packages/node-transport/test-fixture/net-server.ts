@@ -51,8 +51,8 @@ export function createTcpServer(): Promise<void> {
 
 export function createIpcServer(): Promise<void> {
   ipcPath = process.platform === "win32" ?
-            `//./pipe/2a8370be-8abc-448f-bb09-54d8b243cf7a/${Math.floor(Math.random() * 0xFFFFFFFF)}` :
-            tmpNameSync();
+    `//./pipe/2a8370be-8abc-448f-bb09-54d8b243cf7a/${Math.floor(Math.random() * 0xFFFFFFFF)}` :
+    tmpNameSync();
   return createServer((done) => server.listen(ipcPath, done));
 }
 

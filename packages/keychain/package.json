@@ -34,7 +34,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@types/minimalistic-assert": "^1.0.0",
-    "@peculiar/webcrypto": "^1.0.22",
+    "@peculiar/webcrypto": "^1.0.23",
     "applymixins": "^1.1.0",
     "asn1-ts": "^3.0.1",
     "data-store": "github:jonschlinkert/data-store#b263df0455ad0c6a0a608fe30ed090d096c84487",

@@ -1,6 +1,5 @@
-import "@ndn/tlv/test-fixture/expect";
-
 import { Decoder } from "@ndn/tlv";
+import "@ndn/tlv/test-fixture/expect";
 
 import { ValidityPeriod } from "../..";
 
