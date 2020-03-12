@@ -1,6 +1,8 @@
-import { LpService } from "@ndn/lp";
+import { InterestToken } from "@ndn/fw";
+import { LpService, NumericPitToken, PitToken } from "@ndn/lp";
+import { Interest } from "@ndn/packet";
 import { EventEmitter } from "events";
-import { filter, pipeline } from "streaming-iterables";
+import { filter, pipeline, tap } from "streaming-iterables";
 import StrictEventEmitter from "strict-event-emitter-types";
 
 import { Transport } from "./mod";
@@ -30,6 +32,7 @@ const REOPENED = Symbol("L3Face.REOPENED");
 export class L3Face extends (EventEmitter as new() => Emitter) {
   public readonly attributes: L3Face.Attributes;
   public readonly lp = new LpService();
+  public readonly numericPitToken = new NumericPitToken();
   public readonly rx: AsyncIterable<Packet>;
   public get state() { return this.state_; }
 
@@ -61,6 +64,13 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
           }
           return true;
         }),
+        tap((pkt) => {
+          if (pkt instanceof Interest) {
+            InterestToken.set(pkt, PitToken.get(pkt));
+          } else {
+            InterestToken.set(pkt, this.numericPitToken.get(pkt));
+          }
+        }),
       );
       await Promise.race([
         new Promise((r) => this.once("up", r)),
@@ -79,8 +89,17 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
   private async txImpl(iterable: AsyncIterable<Packet>): Promise<void> {
     const iterator = pipeline(
       () => iterable,
+      tap((pkt) => {
+        const token = InterestToken.get(pkt);
+        if (typeof token === "number") {
+          this.numericPitToken.set(pkt, token);
+        } else if (token instanceof Uint8Array) {
+          PitToken.set(pkt, token);
+        }
+      }),
       this.lp.tx,
     )[Symbol.asyncIterator]();
+
     const transportTx = (async function*(this: L3Face) {
       while (true) {
         const { value, done } = await iterator.next();

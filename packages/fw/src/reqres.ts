@@ -1,33 +1,40 @@
-import { Data, Interest } from "@ndn/packet";
+import { Data, Interest, Nack } from "@ndn/packet";
+
+export type L3Pkt = Interest|Data|Nack;
+
+export function isL3Pkt(pkt: unknown): pkt is L3Pkt {
+  return pkt instanceof Interest || pkt instanceof Data || pkt instanceof Nack;
+}
 
 /** Application-defined opaque token attached to a packet. */
 export namespace InterestToken {
-  export const TAG = Symbol("InterestToken");
+  const map = new WeakMap();
 
-  export interface Tagged<T = any> {
-    [TAG]: T;
+  export function get<T>(pkt: object): T|undefined {
+    return map.get(pkt);
   }
 
-  export function get<T>(obj: Tagged<T>): T {
-    return obj[TAG];
+  export function set<H extends object>(pkt: H, token?: unknown): H {
+    if (typeof token === "undefined") {
+      map.delete(pkt);
+    } else {
+      map.set(pkt, token);
+    }
+    return pkt;
   }
 
-  export function set<T, H extends object>(obj: H, token: T): H & Tagged<T> {
-    return Object.assign(obj, { [TAG]: token });
+  export function copy<F extends object, H extends object>(from: F, to: H): H {
+    return set(to, get(from));
+  }
+
+  export function copyProxied<F extends object, H extends object>(from: F, to: H): H {
+    return copy(from, new Proxy(to, {}));
   }
 }
 
-/** Interest with optional application-defined token. */
-export type InterestRequest<T = any> = Interest & InterestToken.Tagged<T>;
-
-/** Data with application-defined tokens from satisfied Interests. */
-export type DataResponse<T = any> = Data & InterestToken.Tagged<T[]>;
-
 /** Indicate an Interest has been rejected. */
-export class RejectInterest<T = any> {
-  public [InterestToken.TAG]: T;
-
-  constructor(public readonly reason: RejectInterest.Reason, public readonly interest: Interest, token: T) {
+export class RejectInterest {
+  constructor(public readonly reason: RejectInterest.Reason, public readonly interest: Interest, token: unknown) {
     InterestToken.set(this, token);
   }
 }

@@ -1,7 +1,7 @@
-import { Forwarder, FwFace } from "@ndn/fw";
+import { Forwarder, FwFace, InterestToken } from "@ndn/fw";
 import { canSatisfy, Data, Interest, LLSign, Name, NameLike } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
-import { filter, pipeline, transform } from "streaming-iterables";
+import { flatTransform } from "streaming-iterables";
 
 import { DataBuffer } from "./data-buffer";
 
@@ -69,7 +69,10 @@ export class EndpointProducer {
       if (output instanceof Data) {
         await signData(output);
         Encoder.encode(output);
-        return await canSatisfy(interest, output) ? output : undefined;
+        if (!await canSatisfy(interest, output)) {
+          return undefined;
+        }
+        return output;
       }
       return undefined;
     };
@@ -90,14 +93,16 @@ export class EndpointProducer {
     }
 
     const face = this.fw.addFace({
-      transform(rxIterable) {
-        return pipeline(
-          () => rxIterable,
-          filter((pkt): pkt is Interest => pkt instanceof Interest),
-          transform(concurrency, processInterest),
-          filter((pkt): pkt is Data => pkt instanceof Data),
-        );
-      },
+      transform: flatTransform(concurrency, async function*(interest: FwFace.Txable) {
+        if (!(interest instanceof Interest)) {
+          return;
+        }
+        const data = await processInterest(interest);
+        if (!data) {
+          return;
+        }
+        yield InterestToken.copyProxied(interest, data);
+      }),
       toString: () => describe,
     },
     {

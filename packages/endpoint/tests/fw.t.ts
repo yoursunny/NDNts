@@ -1,8 +1,9 @@
-import { CancelInterest, DataResponse, Forwarder, FwFace, FwTracer, InterestToken, RejectInterest } from "@ndn/fw";
+import { CancelInterest, Forwarder, FwFace, FwTracer, InterestToken, RejectInterest } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, Interest, Name } from "@ndn/packet";
 import "@ndn/packet/test-fixture/expect";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
+import { toHex } from "@ndn/tlv";
 
 import { Endpoint } from "..";
 
@@ -81,18 +82,20 @@ test("simple", async () => {
 });
 
 test("aggregate & retransmit", async () => {
-  let producedP = false;
+  const producedNames = new Set<string>();
   ep.produce("/P",
     async (interest) => {
-      if (producedP) {
+      const nameStr = toHex(interest.name.value);
+      if (producedNames.has(nameStr)) {
         return false;
       }
-      producedP = true;
+      producedNames.add(nameStr);
       await new Promise((r) => setTimeout(r, 100));
       return new Data("/P/Q/R/S");
-    });
+    },
+    { concurrency: 8 });
 
-  let nRxData = 0;
+  const rxDataTokens = new Set<number>();
   let nRxRejects = 0;
   const face = fw.addFace({
     extendedTx: true,
@@ -111,20 +114,16 @@ test("aggregate & retransmit", async () => {
     async tx(iterable) {
       for await (const pkt of iterable) {
         if (pkt instanceof Data) {
-          const data = pkt as DataResponse<number>;
-          const tokens = new Set(InterestToken.get(data));
-          expect(tokens.has(1)).toBeFalsy();
-          expect(tokens.has(2)).toBeTruthy();
-          expect(tokens.has(3)).toBeTruthy();
-          ++nRxData;
+          const token = InterestToken.get<number>(pkt) ?? -1;
+          expect(rxDataTokens.has(token)).toBeFalsy();
+          rxDataTokens.add(token);
         } else if (pkt instanceof RejectInterest) {
-          const rej = pkt as RejectInterest<number>;
-          switch (InterestToken.get(rej)) {
+          switch (InterestToken.get(pkt)) {
             case 4:
-              expect(rej.reason).toBe("cancel");
+              expect(pkt.reason).toBe("cancel");
               break;
             case 5:
-              expect(rej.reason).toBe("expire");
+              expect(pkt.reason).toBe("expire");
               break;
             default:
               expect(true).toBeFalsy();
@@ -146,9 +145,12 @@ test("aggregate & retransmit", async () => {
       .resolves.toBeInstanceOf(Data),
     expect(ep.consume(new Interest("/P/Q/R/S")))
       .resolves.toBeInstanceOf(Data),
+    new Promise((r) => setTimeout(r, 200)),
   ]);
 
-  expect(nRxData).toBe(1);
+  expect(rxDataTokens.size).toBe(2);
+  expect(rxDataTokens.has(2)).toBeTruthy();
+  expect(rxDataTokens.has(3)).toBeTruthy();
   expect(nRxRejects).toBe(2);
 });
 
@@ -163,9 +165,9 @@ describe("tracer", () => {
     consumerA.cancel();
     await expect(consumerA).rejects.toThrow();
 
-    const produerB = ep.produce("/B", async () => new Data("/B/1", Data.FreshnessPeriod(1000)));
+    const producerB = ep.produce("/B", async () => new Data("/B/1", Data.FreshnessPeriod(1000)));
     await ep.consume(new Interest("/B", Interest.CanBePrefix, Interest.MustBeFresh));
-    produerB.close();
+    producerB.close();
 
     const faceC = fw.addFace(new NoopFace());
     faceC.addRoute(new Name("/C"));

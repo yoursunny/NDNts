@@ -1,10 +1,9 @@
 import { canSatisfy, Data, Interest } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import hirestime from "hirestime";
-import { consume, filter, flatMap, map, pipeline, tap } from "streaming-iterables";
 
 import { FaceImpl } from "./face";
-import { DataResponse, InterestToken, RejectInterest } from "./reqres";
+import { InterestToken, RejectInterest } from "./reqres";
 
 const getNow = hirestime();
 
@@ -17,13 +16,15 @@ interface PitDn {
   /** Last nonce from this downstream. */
   nonce: number;
   /** Last InterestToken from this downstream. */
-  token: any;
+  token: unknown;
 }
 
 /** Aggregated pending Interests from one or more downstream faces. */
 export class PitEntry {
   /** Representative Interest. */
   public readonly interest: Interest;
+  /** Outgoing numeric PIT token. */
+  public token?: number;
   /** Downstream records. */
   public dnRecords = new Map<FaceImpl, PitDn>();
   /** Last expiration time among downstreams. */
@@ -36,10 +37,11 @@ export class PitEntry {
   }
 
   /** Record Interest from downstream. */
-  public receiveInterest(face: FaceImpl, interest: Interest, token: any) {
+  public receiveInterest(face: FaceImpl, interest: Interest) {
     const now = getNow();
     const expire = now + interest.lifetime;
     const nonce = interest.nonce ?? Interest.generateNonce();
+    const token = InterestToken.get(interest);
 
     const dnR = this.dnRecords.get(face);
     if (dnR) {
@@ -57,9 +59,8 @@ export class PitEntry {
   /** Record Interest cancellation from downstream. */
   public cancelInterest(face: FaceImpl) {
     const dnR = this.dnRecords.get(face);
-    if (!dnR) {
-      return;
-    }
+    if (!dnR) { return; }
+
     this.dnRecords.delete(face);
     this.updateExpire();
     face.send(new RejectInterest("cancel", this.interest, dnR.token));
@@ -69,19 +70,21 @@ export class PitEntry {
   public forwardInterest(face: FaceImpl) {
     const now = getNow();
     this.interest.lifetime = this.lastExpire - now;
-    face.send(this.interest);
+    const upInterest = new Proxy(this.interest, {});
+    InterestToken.set(upInterest, this.token);
+    face.send(upInterest);
   }
 
   /** Determine which downstream faces should receive Data from upstream. */
-  public returnData(face: FaceImpl, data: Data): AsyncIterable<{ dn: FaceImpl; token: any }> {
+  public *returnData(up: FaceImpl): Iterable<{ dn: FaceImpl; token: unknown }> {
     clearTimeout(this.expireTimer as number);
-    this.pit.table.delete(this.key);
+    this.pit.eraseEntry(this);
     const now = getNow();
-    return pipeline(
-      () => this.dnRecords.entries(),
-      filter<[FaceImpl, PitDn]>(([dn, { expire }]) => expire > now && dn !== face),
-      map(([dn, { token }]) => ({ dn, token })),
-    );
+    for (const [dn, { expire, token }] of this.dnRecords) {
+      if (expire > now && dn !== up) {
+        yield { dn, token };
+      }
+    }
   }
 
   private updateExpire(now: number = getNow()) {
@@ -102,13 +105,13 @@ export class PitEntry {
     if (this.lastExpire === 0) {
       this.expire();
     } else {
-      this.pit.table.set(this.key, this);
+      this.pit.insertEntry(this);
       this.expireTimer = setTimeout(this.expire, this.lastExpire - now);
     }
   }
 
   private expire = () => {
-    this.pit.table.delete(this.key);
+    this.pit.eraseEntry(this);
     for (const [face, dnR] of this.dnRecords) {
       face.send(new RejectInterest("expire", this.interest, dnR.token));
     }
@@ -117,7 +120,32 @@ export class PitEntry {
 
 /** Pending Interest table. */
 export class Pit {
-  public readonly table = new Map<string, PitEntry>();
+  public readonly byName = new Map<string, PitEntry>();
+  public readonly byToken = new Map<number, PitEntry>();
+  private lastToken = 0;
+
+  private generateToken(): number {
+    do {
+      --this.lastToken;
+      if (this.lastToken <= 0) {
+        this.lastToken = 0xFFFFFFFF;
+      }
+    } while (this.byToken.has(this.lastToken));
+    return this.lastToken;
+  }
+
+  public insertEntry(entry: PitEntry) {
+    this.byName.set(entry.key, entry);
+    if (!entry.token) {
+      entry.token = this.generateToken();
+    }
+    this.byToken.set(entry.token, entry);
+  }
+
+  public eraseEntry(entry: PitEntry) {
+    this.byName.delete(entry.key);
+    this.byToken.delete(entry.token!);
+  }
 
   /** Find or insert entry. */
   public lookup(interest: Interest): PitEntry;
@@ -127,7 +155,7 @@ export class Pit {
 
   public lookup(interest: Interest, canInsert = true) {
     const key = `${toHex(interest.name.value)} ${interest.canBePrefix ? "+" : "-"}${interest.mustBeFresh ? "+" : "-"}`;
-    let entry = this.table.get(key);
+    let entry = this.byName.get(key);
     if (!entry && canInsert) {
       entry = new PitEntry(this, key, interest);
     }
@@ -139,24 +167,21 @@ export class Pit {
    * @returns true if Data satisfies any pending Interest, or false if Data is unsolicited.
    */
   public async satisfy(face: FaceImpl, data: Data): Promise<boolean> {
-    const responses = new Map<FaceImpl, DataResponse>();
-    await pipeline(
-      () => this.table.values(),
-      filter<PitEntry>((entry) => canSatisfy(entry.interest, data)),
-      flatMap((entry) => entry.returnData(face, data)),
-      tap(({ dn, token }) => {
-        let resp = responses.get(dn);
-        if (!resp) {
-          resp = InterestToken.set(new Data(data), []);
-          responses.set(dn, resp);
-        }
-        InterestToken.get(resp).push(token);
-      }),
-      consume,
-    );
-    for (const [dn, resp] of responses) {
-      dn.send(resp);
+    const token = InterestToken.get(data);
+    if (typeof token !== "number") {
+      return false;
     }
-    return responses.size > 0;
+
+    const entry = this.byToken.get(token);
+    if (!entry || !await canSatisfy(entry.interest, data)) {
+      return false;
+    }
+
+    for (const { dn, token: dnToken } of entry.returnData(face)) {
+      const dnData = new Proxy(data, {});
+      InterestToken.set(dnData, dnToken);
+      dn.send(dnData);
+    }
+    return true;
   }
 }

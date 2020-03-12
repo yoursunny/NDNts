@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { CancelInterest, DataResponse, Forwarder, FwFace, InterestToken } from "@ndn/fw";
+import { CancelInterest, Forwarder, FwFace, InterestToken } from "@ndn/fw";
 import { Segment as Segment2 } from "@ndn/naming-convention2";
 import { Data, Interest, Name, NamingConvention } from "@ndn/packet";
 import AbortController from "abort-controller";
@@ -89,8 +89,11 @@ export class Fetcher extends (EventEmitter as new() => Emitter) {
     }
   };
 
-  private handleData(data: DataResponse<number>) {
-    const [segNum] = InterestToken.get(data);
+  private handleData(data: Data) {
+    const segNum = InterestToken.get<number>(data);
+    if (typeof segNum === "undefined") {
+      return;
+    }
     this.logic.satisfy(segNum);
     if (data.isFinalBlock) {
       this.logic.setFinalSegNum(segNum);

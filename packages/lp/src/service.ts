@@ -2,6 +2,7 @@ import { Data, Interest, LLSign, Nack, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
 
 import { LpPacket, TT } from "./mod";
+import { PitToken } from "./pit-token";
 
 export class LpService {
   public rx = (iterable: AsyncIterable<Decoder.Tlv>) => {
@@ -34,6 +35,7 @@ export class LpService {
           throw new Error("Nack can only appear on Interest");
         }
       }
+      PitToken.set(l3pkt, lpp.pitToken);
       yield l3pkt;
     } catch (err) {
       yield new LpService.RxError(err, tlv.tlv);
@@ -66,13 +68,21 @@ export class LpService {
       switch (true) {
         case pkt instanceof Interest:
         case pkt instanceof Data: {
-          const pkt1 = pkt as Interest|Data;
-          await pkt1[LLSign.PROCESS]();
-          return yield Encoder.encode(pkt1);
+          const l3pkt = pkt as Interest|Data;
+          await l3pkt[LLSign.PROCESS]();
+          const pitToken = PitToken.get(l3pkt);
+          if (!pitToken) {
+            return yield Encoder.encode(l3pkt);
+          }
+          const lpp = new LpPacket();
+          lpp.pitToken = pitToken;
+          lpp.fragment = Encoder.encode(l3pkt);
+          return yield Encoder.encode(lpp);
         }
         case pkt instanceof Nack: {
           const nack = pkt as Nack;
           const lpp = new LpPacket();
+          lpp.pitToken = PitToken.get(nack);
           lpp.nack = nack.header;
           lpp.fragment = Encoder.encode(nack.interest);
           return yield Encoder.encode(lpp);
@@ -88,13 +98,13 @@ export namespace LpService {
   export type L3Pkt = Interest|Data|Nack;
 
   export class RxError extends Error {
-    constructor(inner: Error, public packet: Uint8Array) {
+    constructor(inner: Error, public readonly packet: Uint8Array) {
       super(`${inner.message} ${toHex(packet)}`);
     }
   }
 
   export class TxError extends Error {
-    constructor(inner: Error, public packet: L3Pkt) {
+    constructor(inner: Error, public readonly packet: L3Pkt) {
       super(`${inner.message} ${packet instanceof Nack ? packet.interest.name : packet.name}`);
     }
   }

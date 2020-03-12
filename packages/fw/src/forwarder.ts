@@ -1,4 +1,4 @@
-import { Data, Interest, Name } from "@ndn/packet";
+import { Data, Interest, Nack, Name } from "@ndn/packet";
 import EventEmitter from "events";
 import StrictEventEmitter from "strict-event-emitter-types";
 
@@ -44,9 +44,9 @@ export class ForwarderImpl extends (EventEmitter as new() => Emitter) {
   }
 
   /** Process incoming Interest. */
-  public processInterest(face: FaceImpl, interest: Interest, token: any) {
+  public processInterest(face: FaceImpl, interest: Interest) {
     const pi = this.pit.lookup(interest);
-    pi.receiveInterest(face, interest, token);
+    pi.receiveInterest(face, interest);
 
     const fibEntry = this.fib.lpm(interest.name);
     if (!fibEntry) {
@@ -68,6 +68,11 @@ export class ForwarderImpl extends (EventEmitter as new() => Emitter) {
   /** Process incoming Data. */
   public processData(face: FaceImpl, data: Data) {
     this.pit.satisfy(face, data);
+  }
+
+  /** Process incoming Nack. */
+  public processNack(face: FaceImpl, nack: Nack) {
+    // ignore Nack
   }
 
   public advertisePrefix(fibEntry: FibEntry) {

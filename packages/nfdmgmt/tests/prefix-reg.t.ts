@@ -1,4 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
+import { InterestToken } from "@ndn/fw";
 import { Data, Interest, Name } from "@ndn/packet";
 import "@ndn/packet/test-fixture/expect";
 
@@ -36,11 +37,12 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
       expect(type).toBe(0x68);
       expect(vd.decode(Name)).toEqualName("/R");
     });
-    return new Data(interest.name, Uint8Array.of(
+    const data = new Data(interest.name, Uint8Array.of(
       0x65, 0x07,
       0x66, 0x01, 0xC8, // 200
       0x67, 0x02, 0x4F, 0x4B, // 'OK'
     ));
+    return InterestToken.copy(interest, data);
   });
   const face = endpoint.fw.addFace({
     async *transform(iterable) {

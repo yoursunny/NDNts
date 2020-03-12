@@ -1,4 +1,4 @@
-import { Data, Interest, Name } from "@ndn/packet";
+import { Data, Interest, Nack, Name } from "@ndn/packet";
 import EventEmitter from "events";
 import pDefer from "p-defer";
 import Fifo from "p-fifo";
@@ -7,7 +7,7 @@ import StrictEventEmitter from "strict-event-emitter-types";
 
 import { Advertise } from "./advertise";
 import { ForwarderImpl } from "./forwarder";
-import { CancelInterest, DataResponse, InterestRequest, InterestToken, RejectInterest } from "./reqres";
+import { CancelInterest, isL3Pkt, L3Pkt, RejectInterest } from "./reqres";
 
 interface Events {
   /** Emitted upon face closing. */
@@ -105,9 +105,7 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
 
     const rtS = this.inner as Face.RxTxBasic;
     return (iterable) => {
-      rtS.tx(filter(
-        (pkt): pkt is (Interest|DataResponse) => pkt instanceof Interest || pkt instanceof Data,
-        iterable));
+      rtS.tx(filter(isL3Pkt, iterable));
       return rtS.rx;
     };
   }
@@ -116,13 +114,18 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
     for await (const pkt of filter(() => this.running, input)) {
       switch (true) {
         case pkt instanceof Interest: {
-          const interest = pkt as InterestRequest;
-          this.fw.processInterest(this, interest, InterestToken.get(interest));
+          const interest = pkt as Interest;
+          this.fw.processInterest(this, interest);
           break;
         }
         case pkt instanceof Data: {
           const data = pkt as Data;
           this.fw.processData(this, data);
+          break;
+        }
+        case pkt instanceof Nack: {
+          const nack = pkt as Nack;
+          this.fw.processNack(this, nack);
           break;
         }
         case pkt instanceof CancelInterest: {
@@ -178,16 +181,16 @@ export namespace Face {
   }
 
   /** Item that can be received on face. */
-  export type Rxable = Interest|InterestRequest|Data|CancelInterest;
+  export type Rxable = L3Pkt|CancelInterest;
   /** Item that can be transmitted on face, when extendedTx is enabled. */
-  export type Txable = Interest|DataResponse|RejectInterest;
+  export type Txable = L3Pkt|RejectInterest;
 
   /** Underlying face RX/TX that can only transmit encodable packets. */
   export interface RxTxBasic {
     /** Receive packets by forwarder. */
     rx: AsyncIterable<Rxable>;
     /** Transmit packets from forwarder. */
-    tx(iterable: AsyncIterable<Interest|Data>): void;
+    tx(iterable: AsyncIterable<L3Pkt>): void;
   }
 
   /** Underlying face RX/TX that can transmit all Txable items. */

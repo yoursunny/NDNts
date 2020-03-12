@@ -4,12 +4,13 @@ import "@ndn/packet/test-fixture/expect";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { collect, map, pipeline } from "streaming-iterables";
 
-import { LpService, TT } from "..";
+import { LpService, PitToken, TT } from "..";
 
 test("rx", async () => {
   const input = [
     Uint8Array.of( // LP packet successfully decoded, deliver payload only
-      0x64, 0x19,
+      0x64, 0x1F,
+      0x62, 0x04, 0xD0, 0xD1, 0xD2, 0xD3, // PitToken
       0xFD, 0x03, 0x48, 0x08, 0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, // TxSeqNum ignored
       0x50, 0x0B, // Fragment
       0x06, 0x09, // Data
@@ -56,8 +57,10 @@ test("rx", async () => {
   expect(output).toHaveLength(5);
   expect(output[0]).toBeInstanceOf(Data);
   expect(output[0]).toHaveName("/D");
+  expect(PitToken.get(output[0] as Data)).toEqualUint8Array([0xD0, 0xD1, 0xD2, 0xD3]);
   expect(output[1]).toBeInstanceOf(Interest);
   expect(output[1]).toHaveName("/I");
+  expect(PitToken.get(output[1] as Interest)).toBeUndefined();
   expect(output[2]).toBeInstanceOf(LpService.RxError);
   expect(output[3]).toBeInstanceOf(Nack);
   expect((output[3] as Nack).interest).toHaveName("/N");
@@ -70,8 +73,10 @@ test("tx", async () => {
     new Data("/D"),
     new Interest("/I"),
     new Nack(new Interest("/N", Interest.Nonce(0xA0A1A2A3))),
+    new Interest("/P"),
   ];
   theDigestKey.sign(input[0] as Data);
+  PitToken.set(input[3] as Interest, Uint8Array.of(0xD4, 0xD5));
 
   const output = await pipeline(
     async function*() { yield* input; },
@@ -79,7 +84,7 @@ test("tx", async () => {
     collect,
   );
 
-  expect(output).toHaveLength(3);
+  expect(output).toHaveLength(4);
   expect(output[0]).toMatchTlv(({ type }) => expect(type).toBe(l3TT.Data));
   expect(output[1]).toMatchTlv(({ type }) => expect(type).toBe(l3TT.Interest));
   expect(output[2]).toMatchTlv(({ type, value }) => {
@@ -95,6 +100,19 @@ test("tx", async () => {
       ({ type, value }) => {
         expect(type).toBe(TT.Fragment);
         expect(value).toMatchTlv(({ type }) => expect(type).toBe(l3TT.Interest));
+      },
+    );
+  });
+  expect(output[3]).toMatchTlv(({ type, value }) => {
+    expect(type).toBe(TT.LpPacket);
+    expect(value).toMatchTlv(
+      ({ type, length, value }) => {
+        expect(type).toBe(TT.PitToken);
+        expect(length).toBe(2);
+        expect(value).toEqualUint8Array([0xD4, 0xD5]);
+      },
+      ({ type }) => {
+        expect(type).toBe(TT.Fragment);
       },
     );
   });

@@ -38,7 +38,6 @@
     "tslib": "*"
   },
   "devDependencies": {
-    "@ndn/l3face": "workspace:*",
     "@types/minimalistic-assert": "^1.0.0",
     "@types/p-fifo": "^1.0.0"
   }

@@ -1,4 +1,4 @@
-import { Forwarder, FwFace } from "@ndn/fw";
+import { Forwarder, FwFace, InterestToken } from "@ndn/fw";
 import { Segment, Version } from "@ndn/naming-convention2";
 import { ComponentLike, Data, Interest, Name, NamingConvention } from "@ndn/packet";
 import assert from "minimalistic-assert";
@@ -67,7 +67,7 @@ class Server {
       }
       const data = await this.generateSegment(segmentNum);
       if (data) {
-        yield data;
+        yield InterestToken.copyProxied(interest, data);
       }
     }
   }

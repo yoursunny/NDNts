@@ -1,8 +1,8 @@
-import { L3Face } from "@ndn/l3face";
-import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
+import { Forwarder } from "@ndn/fw";
 import { Interest } from "@ndn/packet";
 
-import { Forwarder } from "..";
+import { L3Face } from "..";
+import { MockTransport } from "../test-fixture/mock-transport";
 
 test("l3face", async () => {
   const fw = Forwarder.create();
