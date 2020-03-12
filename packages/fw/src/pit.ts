@@ -1,6 +1,7 @@
 import { canSatisfy, Data, Interest } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import hirestime from "hirestime";
+import { filter, flatMap, pipeline, reduce, tap } from "streaming-iterables";
 
 import { FaceImpl } from "./face";
 import { InterestToken, RejectInterest } from "./reqres";
@@ -124,6 +125,15 @@ export class Pit {
   public readonly byToken = new Map<number, PitEntry>();
   private lastToken = 0;
 
+  /**
+   * true: try to match Data without token.
+   * false: Data without token.
+   * callback function: invoked when Data without token matches PIT entry.
+   * return true or nothing: deliver matched PIT entry.
+   * return false: drop Data.
+   */
+  public dataNoTokenMatch: boolean|((data: Data, key: string) => boolean|void) = true;
+
   private generateToken(): number {
     do {
       --this.lastToken;
@@ -167,21 +177,48 @@ export class Pit {
    * @returns true if Data satisfies any pending Interest, or false if Data is unsolicited.
    */
   public async satisfy(face: FaceImpl, data: Data): Promise<boolean> {
+    const nSentData = await pipeline(
+      () => this.findPotentialMatches(data),
+      filter(({ interest }: PitEntry) => canSatisfy(interest, data)),
+      flatMap((entry) => entry.returnData(face)),
+      tap(({ dn, token }) => {
+        dn.send(InterestToken.set(new Proxy(data, {}), token));
+        // this Promise resolves when packet is sent, don't wait for it
+      }),
+      reduce((count) => count + 1, 0),
+    );
+    return nSentData > 0;
+  }
+
+  private *findPotentialMatches(data: Data): Iterable<PitEntry> {
     const token = InterestToken.get(data);
-    if (typeof token !== "number") {
-      return false;
+    if (typeof token === "number") {
+      const entry = this.byToken.get(token);
+      if (entry) {
+        yield entry;
+      }
+      return;
     }
 
-    const entry = this.byToken.get(token);
-    if (!entry || !await canSatisfy(entry.interest, data)) {
-      return false;
+    if (this.dataNoTokenMatch === false) {
+      return;
     }
 
-    for (const { dn, token: dnToken } of entry.returnData(face)) {
-      const dnData = new Proxy(data, {});
-      InterestToken.set(dnData, dnToken);
-      dn.send(dnData);
+    for (let [prefix, exact] = [data.name, true];
+      prefix.length > 0;
+      [prefix, exact] = [prefix.getPrefix(-1), false]) {
+      const prefixHex = toHex(prefix.value);
+      for (const keySuffix of (exact ? [" ++", " +-", " -+", " --"] : [" ++", " +-"])) {
+        const key = prefixHex + keySuffix;
+        const entry = this.byName.get(key);
+        if (entry) {
+          if (typeof this.dataNoTokenMatch === "function" &&
+              this.dataNoTokenMatch(data, key) === false) {
+            return;
+          }
+          yield entry;
+        }
+      }
     }
-    return true;
   }
 }

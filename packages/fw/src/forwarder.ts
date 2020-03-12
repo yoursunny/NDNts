@@ -27,8 +27,6 @@ interface Events {
 
 type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
-const DefaultOptions = { ...FaceImpl.DefaultOptions };
-
 export class ForwarderImpl extends (EventEmitter as new() => Emitter) {
   public readonly faces = new Set<FaceImpl>();
   public readonly fib = new Fib(this);
@@ -93,10 +91,13 @@ export class ForwarderImpl extends (EventEmitter as new() => Emitter) {
 /** Forwarding plane. */
 export interface Forwarder extends Pick<ForwarderImpl, "addFace"|Exclude<keyof Emitter, "emit">> {
   readonly faces: Set<Face>;
+  readonly pit: Pick<Pit, "dataNoTokenMatch">;
 }
 
 export namespace Forwarder {
   export type Options = FaceImpl.Options;
+
+  const DefaultOptions = { ...FaceImpl.DefaultOptions };
 
   /** Create a new forwarding plane. */
   export function create(options?: Options): Forwarder {

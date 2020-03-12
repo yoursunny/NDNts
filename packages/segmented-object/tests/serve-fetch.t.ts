@@ -19,7 +19,7 @@ beforeAll(() => {
     objectBody[i] = Math.random() * 0x100;
   }
 });
-
+beforeEach(() => Forwarder.getDefault().pit.dataNoTokenMatch = false);
 afterEach(() => Forwarder.deleteDefault());
 
 test("buffer to buffer", async () => {

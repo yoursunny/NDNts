@@ -5,6 +5,7 @@ import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, Interest, Name } from "@ndn/packet";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
 import { toHex } from "@ndn/tlv";
+import { consume } from "streaming-iterables";
 
 import { Endpoint } from "..";
 
@@ -12,6 +13,7 @@ let fw: Forwarder;
 let ep: Endpoint;
 beforeEach(() => {
   fw = Forwarder.create();
+  fw.pit.dataNoTokenMatch = false;
   ep = new Endpoint({ fw, retx: null });
 });
 afterEach(() => Forwarder.deleteDefault());
@@ -153,6 +155,35 @@ test("aggregate & retransmit", async () => {
   expect(rxDataTokens.has(2)).toBeTruthy();
   expect(rxDataTokens.has(3)).toBeTruthy();
   expect(nRxRejects).toBe(2);
+});
+
+test("Data without token", async () => {
+  fw.pit.dataNoTokenMatch = jest.fn<boolean, [Data, string]>().mockReturnValue(true);
+
+  const face = fw.addFace({
+    extendedTx: true,
+    rx: (async function*() {
+      await new Promise((r) => setTimeout(r, 50));
+      yield new Data("/P/Q/R/S", Data.FreshnessPeriod(500));
+    })(),
+    tx: consume,
+  } as FwFace.RxTxExtended);
+  face.addRoute(new Name("/P"));
+
+  await Promise.all([
+    expect(ep.consume(new Interest("/P/Q", Interest.CanBePrefix)))
+      .resolves.toBeInstanceOf(Data),
+    expect(ep.consume(new Interest("/P/Q", Interest.CanBePrefix, Interest.MustBeFresh)))
+      .resolves.toBeInstanceOf(Data),
+    expect(ep.consume(new Interest("/P/Q/R/S")))
+      .resolves.toBeInstanceOf(Data),
+    expect(ep.consume(new Interest("/P/Q/R/S", Interest.CanBePrefix)))
+      .resolves.toBeInstanceOf(Data),
+    expect(ep.consume(new Interest("/P/Q/R/S", Interest.MustBeFresh)))
+      .resolves.toBeInstanceOf(Data),
+  ]);
+
+  expect(fw.pit.dataNoTokenMatch).toHaveBeenCalledTimes(5);
 });
 
 describe("tracer", () => {

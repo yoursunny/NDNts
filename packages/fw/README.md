@@ -33,6 +33,5 @@ The main differences from a full forwarder include:
   If your application needs data packet caching, use `@ndn/repo` package.
 * No forwarding hint processing.
 * No Nack generation or processing.
-* PIT token processing is required at upstream.
 
 These are subject to change.
