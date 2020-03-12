@@ -1,7 +1,8 @@
+import "@ndn/packet/test-fixture/expect";
+
 import { Endpoint } from "@ndn/endpoint";
 import { InterestToken } from "@ndn/fw";
 import { Data, Interest, Name } from "@ndn/packet";
-import "@ndn/packet/test-fixture/expect";
 
 import { ControlCommand, enableNfdPrefixReg } from "..";
 

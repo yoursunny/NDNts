@@ -1,8 +1,9 @@
+import "@ndn/packet/test-fixture/expect";
+
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment, SequenceNum, Version } from "@ndn/naming-convention2";
 import { Component, Data, Interest, Name, NameLike } from "@ndn/packet";
-import "@ndn/packet/test-fixture/expect";
 import memdown from "memdown";
 
 import { DataStore, RepoProducer } from "..";

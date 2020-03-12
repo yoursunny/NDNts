@@ -1,3 +1,6 @@
+import "./ndncert";
+import "./webcrypto";
+
 import { EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RsaPrivateKey, theDigestKey } from "@ndn/keychain";
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";
 import { execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
@@ -6,8 +9,6 @@ import { Data, Interest } from "@ndn/packet";
 
 import { SerializedInBrowser, serializeInBrowser } from "../../test-fixture/serialize";
 import { SignVerifyTestResult } from "./api";
-import "./ndncert";
-import "./webcrypto";
 
 window.testKeyStore = () => {
   return testKeyStore(KeyChain.open("296616c2-7abb-4d9e-94b3-a97e4fd327b5"));

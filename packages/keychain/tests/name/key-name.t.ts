@@ -1,6 +1,7 @@
+import "@ndn/packet/test-fixture/expect";
+
 import { Timestamp } from "@ndn/naming-convention2";
 import { Component, Name } from "@ndn/packet";
-import "@ndn/packet/test-fixture/expect";
 
 import { KeyName } from "../..";
 

@@ -1,9 +1,10 @@
+import "@ndn/tlv/test-fixture/expect";
+
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment as Segment1 } from "@ndn/naming-convention1";
 import { Segment as Segment2 } from "@ndn/naming-convention2";
 import { Interest, Name } from "@ndn/packet";
-import "@ndn/tlv/test-fixture/expect";
 import { AbortController } from "abort-controller";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { consume } from "streaming-iterables";

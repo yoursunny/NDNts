@@ -1,7 +1,8 @@
+import "@ndn/packet/test-fixture/expect";
+
 import { L3Face } from "@ndn/l3face";
 import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
 import { Data } from "@ndn/packet";
-import "@ndn/packet/test-fixture/expect";
 import memdown from "memdown";
 import { collect } from "streaming-iterables";
 

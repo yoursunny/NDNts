@@ -1,5 +1,6 @@
-import { Decoder, EvDecoder } from "..";
 import "../test-fixture/expect";
+
+import { Decoder, EvDecoder } from "..";
 
 class EvdTestTarget {
   public top?: Decoder.Tlv;

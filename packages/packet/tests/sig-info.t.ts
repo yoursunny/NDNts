@@ -1,7 +1,8 @@
+import "../test-fixture/expect";
+
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { KeyDigest, Name, SigInfo, SigType, TT } from "..";
-import "../test-fixture/expect";
 
 test("encode", () => {
   expect(() => new SigInfo({} as any)).toThrow();

@@ -1,4 +1,5 @@
 import "loud-rejection/register";
+
 import yargs from "yargs";
 
 import { FillBiCommand, FillStoreCommand } from "./fill";

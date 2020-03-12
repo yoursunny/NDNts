@@ -1,7 +1,8 @@
+import "../test-fixture/expect";
+
 import { Decoder } from "@ndn/tlv";
 
 import { Component, Name } from "..";
-import "../test-fixture/expect";
 
 test("simple", () => {
   let name = new Name();

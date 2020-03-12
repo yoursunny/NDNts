@@ -27,7 +27,7 @@
     "eslint": "^6.8.0",
     "eslint-config-xo": "^0.29.1",
     "eslint-config-xo-typescript": "^0.26.0",
-    "eslint-plugin-simple-import-sort": "^5.0.1",
+    "eslint-plugin-simple-import-sort": "^5.0.2",
     "esm": "^3.2.25",
     "expect": "^25.1.0",
     "expect-puppeteer": "^4.4.0",

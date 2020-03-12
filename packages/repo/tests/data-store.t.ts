@@ -1,5 +1,6 @@
-import { Data, Interest, LLSign, Name } from "@ndn/packet";
 import "@ndn/packet/test-fixture/expect";
+
+import { Data, Interest, LLSign, Name } from "@ndn/packet";
 import memdown from "memdown";
 import { collect, map } from "streaming-iterables";
 

@@ -1,8 +1,9 @@
+import "../test-fixture/expect";
+
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { Interest, LLSign, LLVerify, Name, ParamsDigest, SigInfo, SigType, TT } from "..";
 import { FwHint } from "../src/fwhint";
-import "../test-fixture/expect";
 
 test("encode", () => {
   expect(() => new Interest({} as any)).toThrow();

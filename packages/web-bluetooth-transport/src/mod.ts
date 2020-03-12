@@ -1,6 +1,7 @@
+import "web-bluetooth";
+
 import { rxFromPacketIterable, Transport } from "@ndn/l3face";
 import { EventIterator } from "event-iterator";
-import "web-bluetooth";
 
 const UUID_SVC = "099577e3-0788-412a-8824-395084d97391";
 const UUID_CS = "cc5abb89-a541-46d8-a351-2f95a6a81f49";

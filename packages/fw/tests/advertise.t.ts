@@ -1,5 +1,6 @@
-import { Name } from "@ndn/packet";
 import "@ndn/packet/test-fixture/expect";
+
+import { Name } from "@ndn/packet";
 
 import { Advertise, Forwarder } from "..";
 import { NoopFace } from "../test-fixture/noop-face";

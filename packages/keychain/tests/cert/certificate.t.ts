@@ -1,5 +1,6 @@
-import { Data, Name } from "@ndn/packet";
 import "@ndn/packet/test-fixture/expect";
+
+import { Data, Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { Certificate, CertificateName, EcPublicKey, theDigestKey, ValidityPeriod } from "../..";
