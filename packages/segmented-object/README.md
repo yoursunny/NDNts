@@ -23,7 +23,7 @@ The `serve` function:
 
 * [X] generates segments of fixed size.
 * [ ] generates segments of available data as Interest arrives, to minimize delivery latency.
-* [ ] responds to version discovery Interests with CanBePrefix.
+* [X] responds to version discovery Interests with CanBePrefix.
 * [ ] responds to RDR protocol.
 * [ ] generates manifest.
 * [X] supports segment numbers.

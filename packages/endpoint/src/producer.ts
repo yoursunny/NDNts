@@ -97,7 +97,8 @@ export class EndpointProducer {
         if (!(interest instanceof Interest)) {
           return;
         }
-        const data = await processInterest(interest);
+        // TODO return Nack upon rejected Promise
+        const data = await processInterest(interest).catch(() => undefined);
         if (!data) {
           return;
         }

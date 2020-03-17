@@ -1,5 +1,4 @@
-import { Name } from "@ndn/packet";
-import { serve } from "@ndn/segmented-object";
+import { serve, serveVersioned, StreamChunkSource } from "@ndn/segmented-object";
 import { Arguments, Argv, CommandModule } from "yargs";
 
 import { CommonArgs, segmentNumConvention, signer, versionConvention } from "./common-args";
@@ -10,10 +9,10 @@ interface Args extends CommonArgs {
 }
 
 function main({ name, ver }: Args) {
-  serve(new Name(name), process.stdin, {
+  (ver === "none" ? serve : serveVersioned)(name, new StreamChunkSource(process.stdin), {
     segmentNumConvention,
     signer,
-    version: ver === "none" ? false : ver === "now" ? true : parseInt(ver, 10),
+    version: ver === "now" ? undefined : parseInt(ver, 10),
     versionConvention,
   });
 }

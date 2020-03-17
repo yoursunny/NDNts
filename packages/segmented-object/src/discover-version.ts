@@ -1,8 +1,8 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Segment, Version } from "@ndn/naming-convention2";
-import { Interest, Name, NamingConvention } from "@ndn/packet";
+import { Interest, Name } from "@ndn/packet";
 import PCancelable from "p-cancelable";
 
+import { defaultSegmentConvention, defaultVersionConvention, VersionConvention } from "./convention";
 import { fetch } from "./fetch/mod";
 
 /** Discover version with CanBePrefix. */
@@ -10,8 +10,8 @@ export function discoverVersion(name: Name, opts: discoverVersion.Options = {}):
   const {
     endpoint = new Endpoint(),
     versionMustBeFresh = true,
-    versionConvention = Version,
-    segmentNumConvention = Segment,
+    versionConvention = defaultVersionConvention,
+    segmentNumConvention = defaultSegmentConvention,
     retxLimit = 2,
   } = opts;
 
@@ -38,7 +38,7 @@ export namespace discoverVersion {
      * Choose a version naming convention.
      * Default is Version from @ndn/naming-convention2 package.
      */
-    versionConvention?: NamingConvention<unknown, unknown>;
+    versionConvention?: VersionConvention;
 
     /**
      * Whether to set MustBeFresh on version discovery Interest.

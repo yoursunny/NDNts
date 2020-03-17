@@ -1,11 +1,11 @@
 import { Endpoint } from "@ndn/endpoint";
 import { CancelInterest, Forwarder, FwFace, InterestToken } from "@ndn/fw";
-import { Segment as Segment2 } from "@ndn/naming-convention2";
-import { Data, Interest, Name, NamingConvention } from "@ndn/packet";
+import { Data, Interest, Name } from "@ndn/packet";
 import AbortController from "abort-controller";
 import { EventEmitter } from "events";
 import StrictEventEmitter from "strict-event-emitter-types";
 
+import { defaultSegmentConvention, SegmentConvention } from "../convention";
 import { FetchLogic } from "./logic";
 
 interface Options extends FetchLogic.Options {
@@ -16,7 +16,7 @@ interface Options extends FetchLogic.Options {
    * Choose a segment number naming convention.
    * Default is Segment from @ndn/naming-convention2 package.
    */
-  segmentNumConvention?: NamingConvention<number, unknown>;
+  segmentNumConvention?: SegmentConvention;
 
   /** Allow aborting fetching process. */
   abort?: AbortController;
@@ -66,7 +66,7 @@ export class Fetcher extends (EventEmitter as new() => Emitter) {
 
   private tx(): AsyncIterable<FwFace.Rxable> {
     const {
-      segmentNumConvention = Segment2,
+      segmentNumConvention = defaultSegmentConvention,
     } = this.opts;
     return this.logic.outgoing(
       ({ segNum, rto }) => {

@@ -6,23 +6,29 @@ import { Segment as Segment1, Version as Version1 } from "@ndn/naming-convention
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
 import { Data, Interest, Name } from "@ndn/packet";
 
-import { discoverVersion, serve } from "..";
+import { BufferChunkSource, ChunkSource, discoverVersion, serve, Server, serveVersioned } from "..";
 
 afterEach(() => Forwarder.deleteDefault());
 
 describe("serve", () => {
-  let server: serve.Server;
-  afterEach(() => server.stop());
+  let server: Server;
+  let source: ChunkSource;
+  beforeEach(() => source = new BufferChunkSource(new Uint8Array()));
+  afterEach(() => server.close());
 
   test("version from number", async () => {
-    server = serve(new Name("/A"), new Uint8Array(), { version: 65 });
+    server = serveVersioned("/A", source, { version: 65 });
     const versioned = await discoverVersion(new Name("/A"));
     expect(versioned).toHaveLength(2);
     expect(versioned.at(-1)).toEqualComponent(Version2.create(65));
+
+    // missing CanBePrefix
+    await expect(new Endpoint().consume(new Interest("/A", Interest.MustBeFresh, Interest.Lifetime(50))))
+      .rejects.toThrow();
   });
 
   test("version from timestamp", async () => {
-    server = serve(new Name("/A"), new Uint8Array(), { version: true });
+    server = serveVersioned("/A", source);
     const versioned = await discoverVersion(new Name("/A"));
     expect(versioned).toHaveLength(2);
     const versionComp = versioned.at(-1);
@@ -31,7 +37,7 @@ describe("serve", () => {
   });
 
   test("custom version component", async () => {
-    server = serve(new Name("/A"), new Uint8Array(),
+    server = serveVersioned("/A", source,
       { version: Version1.create(77), segmentNumConvention: Segment1 });
     const versioned = await discoverVersion(new Name("/A"),
       { versionConvention: Version1, segmentNumConvention: Segment1 });
@@ -40,7 +46,7 @@ describe("serve", () => {
   });
 
   test("no version", async () => {
-    server = serve(new Name("/A"), new Uint8Array());
+    server = serve("/A", source);
     await expect(new Endpoint().consume(new Interest("/A", Interest.CanBePrefix, Interest.MustBeFresh)))
       .resolves.toHaveName(new Name("/A").append(Segment2, 0));
     await expect(discoverVersion(new Name("/A"))).rejects.toThrow();
