@@ -91,7 +91,7 @@ export namespace GenKeyCommand {
       }
       default:
         /* istanbul ignore next */
-        throw new Error();
+        throw new Error(`unknown type ${type}`);
     }
   }
 }

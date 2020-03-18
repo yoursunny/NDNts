@@ -7,7 +7,7 @@ for (const [folder, { specifiers, dependencies, devDependencies }] of Object.ent
   for (const list of [dependencies, devDependencies]) {
     for (const [dep, version] of Object.entries(list || {})) {
       const specifier = specifiers[dep];
-      if (/[:*]/.test(specifier)) {
+      if (/[*:]/.test(specifier)) {
         continue;
       }
       if (!version.startsWith(specifier.replace(/^[^]/, ""))) {

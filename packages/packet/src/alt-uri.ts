@@ -34,9 +34,9 @@ export class AltUriPrinter {
 
 class Generic implements NamingConvention, NamingConvention.WithAltUri {
   public match(comp: Component) { return comp.type === TT.GenericNameComponent; }
-  public create(): Component { /* istanbul ignore next */ throw new TypeError(); }
-  public parse() { /* istanbul ignore next */ throw new TypeError(); }
-  public toAltUri(comp: Component) { return comp.toString().substr(2); }
+  public create(): Component { /* istanbul ignore next */ throw new TypeError("not supported"); }
+  public parse() { /* istanbul ignore next */ throw new TypeError("not supported"); }
+  public toAltUri(comp: Component) { return comp.toString().slice(2); }
 }
 
 /** Print Generic, ImplicitDigest, ParamsDigest in alternate URI syntax. */

@@ -26,8 +26,8 @@ function getHexTable(): string[] {
 export function toHex(buf: Uint8Array): string {
   const table = getHexTable();
   const a = new Array<string>(buf.length);
-  for (let i = 0; i < buf.length; ++i) {
-    a[i] = table[buf[i]];
+  for (const [i, element] of buf.entries()) {
+    a[i] = table[element];
   }
   return a.join("");
 }
@@ -35,12 +35,12 @@ export function toHex(buf: Uint8Array): string {
 /**
  * Convert hexadecimal string to byte array.
  *
- * This function does not have error handling. Use on trusted input only.
+ * This function lacks error handling. Use on trusted input only.
  */
 export function fromHex(s: string): Uint8Array {
   const b = new Uint8Array(s.length / 2);
   for (let i = 0; i < b.length; ++i) {
-    b[i] = parseInt(s.substr(i * 2, 2), 16);
+    b[i] = parseInt(s.slice(i * 2, (i + 1) * 2), 16);
   }
   return b;
 }

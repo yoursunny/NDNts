@@ -23,7 +23,7 @@ async function makeFace(): Promise<FwFace> {
   switch (env.uplink.protocol) {
     case "autoconfig:": {
       const faces = await connectToTestbed({ preferFastest: true });
-      if (faces.length < 1) {
+      if (faces.length === 0) {
         throw new Error("autoconfig unavailable, set uplink in NDNTS_UPLINK");
       }
       return faces[0];

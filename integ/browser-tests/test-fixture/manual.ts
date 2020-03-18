@@ -6,17 +6,17 @@ export function addManualTest(title: string, f: () => Promise<string|string[]>) 
         if (Array.isArray(result)) {
           result = result.join("\n");
         }
-        document.body.innerText = result;
+        document.body.textContent = result;
       },
-      (err) => document.body.innerText = err,
+      (err) => document.body.textContent = err,
     );
   };
 
   window.addEventListener("load", () => {
     const btn = document.createElement("button");
-    btn.innerText = title;
+    btn.textContent = title;
     btn.addEventListener("click", handler);
-    document.body.appendChild(btn);
-    document.body.appendChild(document.createElement("br"));
+    document.body.append(btn);
+    document.body.append(document.createElement("br"));
   });
 }

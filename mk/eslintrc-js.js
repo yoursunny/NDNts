@@ -1,9 +1,11 @@
 module.exports = {
   extends: [
     "xo/esnext",
+    "plugin:unicorn/recommended",
   ],
   plugins: [
     "simple-import-sort",
+    "unicorn",
   ],
   env: {
     browser: true,
@@ -16,6 +18,12 @@ module.exports = {
   },
   rules: {
     "simple-import-sort/sort": "error",
+    "unicorn/catch-error-name": ["error", { name: "err", caughtErrorsIgnorePattern: "^err" }],
+    "unicorn/consistent-function-scoping": "off",
+    "unicorn/no-nested-ternary": "off",
+    "unicorn/prefer-spread": "off",
+    "unicorn/prefer-type-error": "off",
+    "unicorn/prevent-abbreviations": "off",
     "array-element-newline": "off",
     "arrow-parens": ["error", "always"],
     "brace-style": ["error", "1tbs", { allowSingleLine: true }],

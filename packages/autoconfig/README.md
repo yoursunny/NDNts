@@ -35,7 +35,7 @@ hosts = await queryFch({ capabilities: ["wss"] });
 console.log("supports secure WebSocket", hosts);
 
 // Ask for router at specific location:
-hosts = await queryFch({ position: [121.403351, 31.007990] });
+hosts = await queryFch({ position: [121.403351, 31.007990] }); // eslint-disable-line unicorn/no-zero-fractions
 console.log("near @yoursunny's birthplace", hosts);
 ```
 

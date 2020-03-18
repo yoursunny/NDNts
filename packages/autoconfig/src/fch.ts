@@ -8,7 +8,7 @@ export async function queryFch(opts: queryFch.Options = {}): Promise<string[]> {
     position = null,
   } = opts;
 
-  let u = `${server.replace(/[/]$/, "")}/?k=${count}`;
+  let u = `${server.replace(/\/$/, "")}/?k=${count}`;
   for (const cap of new Set([...capabilities, ...FCH_ALWAYS_CAPABILITIES])) {
     u += `&cap=${cap}`;
   }

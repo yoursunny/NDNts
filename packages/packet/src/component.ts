@@ -56,7 +56,7 @@ export class Component {
       type = parseInt(sType, 10);
     }
     if (/^\.*$/.test(sValue)) {
-      sValue = sValue.substr(3);
+      sValue = sValue.slice(3);
     }
 
     const value = new Uint8Array(sValue.length);
@@ -64,7 +64,7 @@ export class Component {
     for (let i = 0; i < sValue.length;) {
       let ch = sValue.charCodeAt(i);
       if (ch === CHARCODE_PERCENT) {
-        ch = parseInt(sValue.substr(i + 1, 2), 16);
+        ch = parseInt(sValue.slice(i + 1, i + 3), 16);
         i += 3;
       } else {
         ++i;

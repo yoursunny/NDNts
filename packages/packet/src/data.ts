@@ -43,7 +43,7 @@ export class Data {
       this.finalBlockId = undefined;
       return;
     }
-    if (this.name.length < 1) {
+    if (this.name.length === 0) {
       throw new Error("cannot set FinalBlockId when Name is empty");
     }
     this.finalBlockId = this.name.at(-1);

@@ -3,7 +3,7 @@ const jsRc = require("./eslintrc-js");
 
 module.exports = {
   extends: [
-    "xo/esnext",
+    ...jsRc.extends,
     "xo-typescript",
   ],
   parser: "@typescript-eslint/parser",
@@ -12,7 +12,7 @@ module.exports = {
   },
   plugins: [
     "@typescript-eslint",
-    "simple-import-sort",
+    ...jsRc.plugins,
   ],
   env: {
     ...jsRc.env,

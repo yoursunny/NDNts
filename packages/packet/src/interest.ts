@@ -213,7 +213,7 @@ export class Interest {
   }
 
   private insertParamsDigest() {
-    if (this.name.length < 1) {
+    if (this.name.length === 0) {
       throw new Error("Interest name is empty");
     }
 

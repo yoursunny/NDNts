@@ -3,7 +3,7 @@ import { Decoder, Encodable, Encoder, EvDecoder, Extension } from "@ndn/tlv";
 
 import { TT } from "./an";
 
-const timestampRe = /^([0-9]{4})([0-9]{2})([0-9]{2})T([0-9]{2})([0-9]{2})([0-9]{2})$/;
+const timestampRe = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/;
 
 function decodeTimestamp(value: Uint8Array): Date {
   const str = new TextDecoder().decode(value);

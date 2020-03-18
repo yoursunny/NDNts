@@ -7,8 +7,7 @@ const UUID_SVC = "099577e3-0788-412a-8824-395084d97391";
 const UUID_CS = "cc5abb89-a541-46d8-a351-2f95a6a81f49";
 const UUID_SC = "972f9527-0d83-4261-b95d-b1b2fc73bde4";
 
-// eslint-disable-next-line
-const pushHandlers = new WeakMap<object, any>();
+const pushHandlers = new WeakMap();
 
 /** Web Bluetooth transport. */
 export class WebBluetoothTransport extends Transport {

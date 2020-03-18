@@ -20,7 +20,7 @@ if (act.includes("D")) {
 
 if (act.includes("N")) {
   for (const [dep, specifier] of Object.entries(j.dependencies)) {
-    if (/^workspace:/.test(specifier)) {
+    if (specifier.startsWith("workspace:")) {
       j.dependencies[dep] = `https://ndnts-nightly.netlify.com/${path.basename(dep)}.tgz`;
     }
   }
@@ -28,7 +28,7 @@ if (act.includes("N")) {
 
 if (act.includes("R")) {
   for (const [dep, specifier] of Object.entries(j.dependencies)) {
-    if (/^workspace:/.test(specifier)) {
+    if (specifier.startsWith("workspace:")) {
       j.dependencies[dep] = process.argv[3];
     }
   }

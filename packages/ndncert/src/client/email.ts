@@ -1,7 +1,7 @@
 import { ChallengeDefinition, ChallengeRequest, ProbeRequest } from "../json-types";
 
 // https://github.com/named-data/ndncert/blob/aae119aeb9b5387f2fd8f80c56ee8cbfe8c15988/src/challenge-module/challenge-email.cpp#L183
-const RE_EMAIL = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9\-.]+$/;
+const RE_EMAIL = /^[\w+.-]+@[\dA-Za-z-]+.[\d.A-Za-z-]+$/;
 
 type GetCodeCallback = () => Promise<string>;
 

@@ -101,7 +101,7 @@ export class EvDecoder<T> {
   public decode<R extends T = T>(target: R, decoder: Decoder): R {
     const topTlv = decoder.read();
     const { type, vd } = topTlv;
-    if (this.topTT.length && !this.topTT.includes(type)) {
+    if (this.topTT.length > 0 && !this.topTT.includes(type)) {
       throw new Error(`TLV-TYPE ${printTT(type)} is not ${this.typeName}`);
     }
     this.topCb(target, topTlv);
