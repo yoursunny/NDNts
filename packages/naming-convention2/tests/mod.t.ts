@@ -2,13 +2,14 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Name } from "@ndn/packet";
 
-import { ByteOffset, Keyword, Segment, SequenceNum, Timestamp, Version } from "..";
+import { AltUri, ByteOffset, Keyword, Segment, SequenceNum, Timestamp, Version } from "..";
 
 test("Keyword", () => {
   const name = new Name().append(Keyword, "hello");
   expect(name.at(0)).toEqualComponent("32=hello");
   expect(name.at(0).is(Keyword)).toBeTruthy();
   expect(name.at(0).as(Keyword)).toBe("hello");
+  expect(AltUri.ofName(name)).toBe("/32=hello");
 });
 
 test("Segment", () => {
@@ -16,6 +17,7 @@ test("Segment", () => {
   expect(name.at(0)).toEqualComponent("33=%01%01");
   expect(name.at(0).is(Segment)).toBeTruthy();
   expect(name.at(0).as(Segment)).toBe(0x0101);
+  expect(AltUri.ofName(name)).toBe("/seg=257");
 });
 
 test("ByteOffset", () => {
@@ -23,6 +25,7 @@ test("ByteOffset", () => {
   expect(name.at(0)).toEqualComponent("34=%01%02");
   expect(name.at(0).is(ByteOffset)).toBeTruthy();
   expect(name.at(0).as(ByteOffset)).toBe(0x0102);
+  expect(AltUri.ofName(name)).toBe("/off=258");
 });
 
 test("Version", () => {
@@ -30,6 +33,7 @@ test("Version", () => {
   expect(name.at(0)).toEqualComponent("35=%01%03");
   expect(name.at(0).is(Version)).toBeTruthy();
   expect(name.at(0).as(Version)).toBe(0x0103);
+  expect(AltUri.ofName(name)).toBe("/v=259");
 });
 
 test("Timestamp", () => {
@@ -47,6 +51,8 @@ test("Timestamp", () => {
   expect(name.at(1).as(Timestamp)).toEqual(1570239360127447);
   expect(() => name.at(1).as(Timestamp.Date)).toThrow(/milliseconds/);
   expect(name.at(1).as(Timestamp.DateInexact)).toEqual(new Date(1570239360127));
+
+  expect(AltUri.ofName(name)).toBe("/t=540167400000000/t=1570239360127447");
 });
 
 test("SequenceNum", () => {
@@ -54,4 +60,5 @@ test("SequenceNum", () => {
   expect(name.at(0)).toEqualComponent("37=%01%05");
   expect(name.at(0).is(SequenceNum)).toBeTruthy();
   expect(name.at(0).as(SequenceNum)).toBe(0x0105);
+  expect(AltUri.ofName(name)).toBe("/seq=261");
 });

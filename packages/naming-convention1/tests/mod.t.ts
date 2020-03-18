@@ -6,7 +6,7 @@ import { ByteOffset, Segment, SequenceNum, Timestamp, Version } from "..";
 
 interface Row {
   marker: number;
-  convention: NamingConvention<number, number>;
+  convention: NamingConvention<number>;
 }
 
 const TABLE = [

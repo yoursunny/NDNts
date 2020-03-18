@@ -1,9 +1,11 @@
+import { toHex } from "@ndn/tlv";
+
 import { Component, Name, NamingConvention, TT } from "./mod";
 
 const DIGEST_LENGTH = 32;
 
-class DigestComp implements NamingConvention<Uint8Array, Uint8Array> {
-  constructor(private readonly tt: number) {
+class DigestComp implements NamingConvention<Uint8Array>, NamingConvention.WithAltUri {
+  constructor(private readonly tt: number, private readonly altUriPrefix: string) {
   }
 
   public match(comp: Component): boolean {
@@ -20,11 +22,15 @@ class DigestComp implements NamingConvention<Uint8Array, Uint8Array> {
   public parse(comp: Component): Uint8Array {
     return comp.value;
   }
+
+  public toAltUri(comp: Component): string {
+    return `${this.altUriPrefix}=${toHex(comp.value).toLowerCase()}`;
+  }
 }
 
 class ImplicitDigestComp extends DigestComp {
   constructor() {
-    super(TT.ImplicitSha256DigestComponent);
+    super(TT.ImplicitSha256DigestComponent, "sha256digest");
   }
 
   /** Remove ImplicitDigest if present at last component. */
@@ -47,7 +53,7 @@ class ParamsDigestComp extends DigestComp {
   public readonly PLACEHOLDER: Component;
 
   constructor() {
-    super(TT.ParametersSha256DigestComponent);
+    super(TT.ParametersSha256DigestComponent, "params-sha256");
     this.PLACEHOLDER = Object.assign(
       new Component(TT.ParametersSha256DigestComponent),
       { [PARAMS_PLACEHOLDER_TAG]: true });

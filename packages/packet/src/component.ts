@@ -139,7 +139,7 @@ export class Component {
   }
 
   /** Determine if component follows a naming convention. */
-  public is(convention: NamingConvention<unknown, unknown>): boolean {
+  public is(convention: NamingConvention): boolean {
     return convention.match(this);
   }
 

@@ -103,9 +103,9 @@ export namespace Producer {
     return PrefixRegDynamic((name) => name.getPrefix(-k));
   }
 
-  type ComponentPredicate = ComponentLike | ((comp: Component) => boolean) | NamingConvention<unknown, unknown>;
+  type ComponentPredicate = ComponentLike | ((comp: Component) => boolean) | NamingConvention;
 
-  function isConvention(pred: any): pred is NamingConvention<unknown, unknown> {
+  function isConvention(pred: any): pred is NamingConvention {
     return typeof pred === "object" && typeof pred.match === "function";
   }
 

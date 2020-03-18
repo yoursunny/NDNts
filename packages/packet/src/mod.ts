@@ -3,6 +3,7 @@ export * from "./component";
 export * from "./convention";
 export * from "./name";
 export * from "./digest-comp";
+export * from "./alt-uri";
 export * from "./fwhint";
 export * from "./sig-info";
 export * from "./llsign";

@@ -2,13 +2,14 @@ import "../test-fixture/expect";
 
 import { Decoder } from "@ndn/tlv";
 
-import { Component, Name } from "..";
+import { AltUri, Component, Name } from "..";
 
 test("simple", () => {
   let name = new Name();
   expect(name.length).toBe(0);
-  expect(name.toString()).toBe("/");
   expect(name.value).toEqualUint8Array([]);
+  expect(name.toString()).toBe("/");
+  expect(AltUri.ofName(name)).toEqual("/");
 
   name = new Name("/");
   expect(name.length).toBe(0);
@@ -23,11 +24,12 @@ test("simple", () => {
   expect(name.length).toBe(2);
   expect(name.get(0)).toEqual(Component.from("A"));
   expect(name.get(1)).toEqual(Component.from("240=BC"));
-  expect(name.toString()).toBe("/8=A/240=BC");
   expect(name.value).toEqualUint8Array([
     0x08, 0x01, 0x41,
     0xF0, 0x02, 0x42, 0x43,
   ]);
+  expect(name.toString()).toBe("/8=A/240=BC");
+  expect(AltUri.ofName(name)).toEqual("/A/240=BC");
 });
 
 test("get at", () => {

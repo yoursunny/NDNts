@@ -5,7 +5,7 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 This package implements **Name**, **Interest**, and **Data** types as specified in [NDN Packet Format v0.3](https://named-data.net/doc/NDN-packet-spec/0.3/).
 
 ```ts
-import { TT, Name, Component, ImplicitDigest,
+import { TT, Name, Component, ImplicitDigest, AltUri,
   Interest, Data, LLSign, LLVerify, canSatisfy, canSatisfySync } from "@ndn/packet";
 
 // other imports for examples
@@ -60,12 +60,20 @@ assert.equal(compA.equals(compB), false);
 const name1 = new Name("/localhost/2020=NDNts/rocks");
 // Construct from a list of components, or strings to create components.
 const name2 = new Name([compA, compB, "C", compMetadata]);
-// This library expects URI in canonical format. We DO NOT support alternate URI formats
-// other than allow omitting "8=" prefix of GenericNameComponent.
+// Name parsing functions expect URI in canonical format. They DO NOT recognize alternate/pretty
+// URI syntax other than allow omitting "8=" prefix of GenericNameComponent.
 
 // You can always convert a name back to its URI in canonical format.
 assert.equal(name1.toString(), "/8=localhost/2020=NDNts/8=rocks");
 assert.equal(name2.toString(), "/8=A/8=B/8=C/32=metadata");
+
+// AltUri.ofName() function allows printing a name as alternate/pretty URI syntax.
+assert.equal(AltUri.ofName(name1), "/localhost/2020=NDNts/rocks");
+assert.equal(AltUri.ofName(name2), "/A/B/C/32=metadata");
+// AltUri.ofName() from this package only recognizes 0x01, 0x02, and 0x08 types. If you are using
+// naming conventions from @ndn/naming-convention2 package, use the AltUri from that package.
+// This feature isn't in the regular name.toString(), so that it does not unnecessarily increase
+// browser bundle size in applications that do not need it.
 
 // It's crucial to know how many name components you have.
 assert.equal(name1.length, 3);

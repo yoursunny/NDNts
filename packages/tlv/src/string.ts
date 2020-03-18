@@ -22,7 +22,7 @@ function getHexTable(): string[] {
   return hexTable;
 }
 
-/** Convert byte array to hexadecimal string. */
+/** Convert byte array to upper-case hexadecimal string. */
 export function toHex(buf: Uint8Array): string {
   const table = getHexTable();
   const a = new Array<string>(buf.length);

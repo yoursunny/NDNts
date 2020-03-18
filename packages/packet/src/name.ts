@@ -111,7 +111,7 @@ export class Name {
   public append(...args: unknown[]) {
     if (args.length === 2 && typeof args[0] === "object" &&
         typeof (args[0] as any).create === "function") {
-      const convention = args[0] as NamingConvention<unknown, unknown>;
+      const convention = args[0] as NamingConvention;
       return this.append(convention.create(args[1]));
     }
     const suffix = args as readonly ComponentLike[];

@@ -1,9 +1,9 @@
 import { Segment, Version } from "@ndn/naming-convention2";
 import { NamingConvention } from "@ndn/packet";
 
-export type VersionConvention = NamingConvention<unknown, unknown>;
+export type VersionConvention = NamingConvention;
 export type VersionConventionFromNumber = NamingConvention<number, unknown>;
-export const defaultVersionConvention = Version;
+export const defaultVersionConvention: VersionConventionFromNumber = Version;
 
-export type SegmentConvention = NamingConvention<number, number>;
-export const defaultSegmentConvention = Segment;
+export type SegmentConvention = NamingConvention<number>;
+export const defaultSegmentConvention: SegmentConvention = Segment;

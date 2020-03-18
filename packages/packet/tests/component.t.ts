@@ -2,24 +2,27 @@ import "@ndn/tlv/test-fixture/expect";
 
 import { Decoder } from "@ndn/tlv";
 
-import { Component } from "..";
+import { AltUri, Component } from "..";
 
 test("decode", () => {
   let comp = new Component();
   expect(comp.type).toBe(0x08);
   expect(comp.value).toEqualUint8Array([]);
   expect(comp.toString()).toEqual("8=...");
+  expect(AltUri.ofComponent(comp)).toEqual("...");
 
   const decoder = new Decoder(Uint8Array.of(0xF0, 0x03, 0x41, 0x01, 0xA0));
   comp = decoder.decode(Component);
   expect(comp.type).toBe(0xF0);
   expect(comp.value).toEqualUint8Array([0x41, 0x01, 0xA0]);
   expect(comp.toString()).toEqual("240=A%01%A0");
+  expect(AltUri.ofComponent(comp)).toEqual("240=A%01%A0");
 
   comp = new Component(0xFFFF, Uint8Array.of(0x41));
   expect(comp.type).toBe(0xFFFF);
   expect(comp.value).toEqualUint8Array([0x41]);
   expect(comp.toString()).toEqual("65535=A");
+  expect(AltUri.ofComponent(comp)).toEqual("65535=A");
 });
 
 test("error on decode TLV-TYPE out of range", () => {
