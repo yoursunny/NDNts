@@ -21,7 +21,7 @@ if (act.includes("D")) {
 if (act.includes("N")) {
   for (const [dep, specifier] of Object.entries(j.dependencies)) {
     if (specifier.startsWith("workspace:")) {
-      j.dependencies[dep] = `https://ndnts-nightly.netlify.com/${path.basename(dep)}.tgz`;
+      j.dependencies[dep] = `https://ndnts-nightly.netlify.app/${path.basename(dep)}.tgz`;
     }
   }
 }
