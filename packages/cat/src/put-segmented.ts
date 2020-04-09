@@ -15,7 +15,7 @@ function main({ name, rdr, ver }: Args) {
   const server = serveFunc(name, new StreamChunkSource(process.stdin), {
     segmentNumConvention,
     signer,
-    version: ver === "now" ? undefined : parseInt(ver, 10),
+    version: ver === "now" ? undefined : Number.parseInt(ver, 10),
     versionConvention,
   });
   if (ver !== "none" && rdr) {
@@ -46,7 +46,7 @@ export class PutSegmentedCommand implements CommandModule<CommonArgs, Args> {
         type: "string",
       })
       .check(({ ver }) => {
-        if (!(["none", "now"].includes(ver) || parseInt(ver, 10) >= 0)) {
+        if (!(["none", "now"].includes(ver) || Number.parseInt(ver, 10) >= 0)) {
           throw new Error("--ver must be either a non-negative integer or 'none' or 'now'");
         }
         return true;

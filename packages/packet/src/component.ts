@@ -53,7 +53,7 @@ export class Component {
     if (typeof sValue === "undefined") {
       [sType, sValue] = ["", sType];
     } else {
-      type = parseInt(sType, 10);
+      type = Number.parseInt(sType, 10);
     }
     if (/^\.*$/.test(sValue)) {
       sValue = sValue.slice(3);
@@ -64,7 +64,7 @@ export class Component {
     for (let i = 0; i < sValue.length;) {
       let ch = sValue.charCodeAt(i);
       if (ch === CHARCODE_PERCENT) {
-        ch = parseInt(sValue.slice(i + 1, i + 3), 16);
+        ch = Number.parseInt(sValue.slice(i + 1, i + 3), 16);
         i += 3;
       } else {
         ++i;

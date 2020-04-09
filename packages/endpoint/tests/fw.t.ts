@@ -187,7 +187,7 @@ test("Data without token", async () => {
 });
 
 describe("tracer", () => {
-  let debugFn: jest.SpyInstance;
+  let debugFn: jest.SpyInstance<void, any[]>;
   beforeEach(() => debugFn = jest.spyOn(FwTracer.internalLogger, "debug").mockImplementation(() => undefined));
   afterEach(() => debugFn.mockRestore());
 

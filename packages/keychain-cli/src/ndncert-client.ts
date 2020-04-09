@@ -3,7 +3,6 @@ import { Certificate, PrivateKey, PublicKey } from "@ndn/keychain";
 import { Client, clientLogger, makeMailsacClientEmailChallenge, schema } from "@ndn/ndncert";
 import { exportKey as ndnsecExportKey, generateKey as ndnsecGenKey, installCert as ndnsecInstallCert } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
-// @ts-ignore
 import readJsonSync from "read-json-sync";
 import stdout from "stdout-stream";
 import { Arguments, Argv, CommandModule } from "yargs";

@@ -22,8 +22,8 @@ const defaultParameters: Parameters = {
  */
 export class RttEstimator {
   private params: Parameters;
-  private sRtt_ = NaN;
-  private rttVar = NaN;
+  private sRtt_ = Number.NaN;
+  private rttVar = Number.NaN;
   private rto_: number;
 
   constructor(opts: RttEstimator.Options = {}) {
@@ -35,7 +35,7 @@ export class RttEstimator {
   public get rto() { return this.rto_; }
 
   public push(rtt: number, nPending = 1) {
-    if (isNaN(this.rttVar)) {
+    if (Number.isNaN(this.rttVar)) {
       this.sRtt_ = rtt;
       this.rttVar = rtt / 2;
     } else {

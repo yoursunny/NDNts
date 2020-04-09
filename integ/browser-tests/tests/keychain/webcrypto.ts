@@ -71,7 +71,7 @@ async function checkWebCrypto() {
         err = err1;
       }
     }
-    lines.push(`${title}: ${err ? err : "OK"}`);
+    lines.push(`${title}: ${err ? err.toString() : "OK"}`);
   }
   return lines;
 }

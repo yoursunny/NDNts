@@ -11,8 +11,8 @@ const BETACUBIC = 0.7;
 export class TcpCubic extends CongestionAvoidance {
   private t0 = 0;
   private cwnd_ = IW;
-  private wMax = NaN;
-  private k = NaN;
+  private wMax = Number.NaN;
+  private k = Number.NaN;
   private ssthresh = Infinity;
 
   constructor() {

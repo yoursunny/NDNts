@@ -40,7 +40,7 @@ export function toHex(buf: Uint8Array): string {
 export function fromHex(s: string): Uint8Array {
   const b = new Uint8Array(s.length / 2);
   for (let i = 0; i < b.length; ++i) {
-    b[i] = parseInt(s.slice(i * 2, (i + 1) * 2), 16);
+    b[i] = Number.parseInt(s.slice(i * 2, (i + 1) * 2), 16);
   }
   return b;
 }

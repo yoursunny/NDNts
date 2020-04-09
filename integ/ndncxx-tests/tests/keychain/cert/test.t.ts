@@ -22,6 +22,6 @@ test("decode", async () => {
   expect(identity).toBe(cert.certName.subjectName.toString());
   expect(keyId).toBe(cert.certName.keyId.toString());
   expect(issuerId).toBe(cert.certName.issuerId.toString());
-  expect(parseInt(validityNotBefore, 10)).toBe(validity.notBefore.getTime());
-  expect(parseInt(validityNotAfter, 10)).toBe(validity.notAfter.getTime());
+  expect(Number.parseInt(validityNotBefore, 10)).toBe(validity.notBefore.getTime());
+  expect(Number.parseInt(validityNotAfter, 10)).toBe(validity.notAfter.getTime());
 });

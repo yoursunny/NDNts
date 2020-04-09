@@ -35,7 +35,7 @@
     "loud-rejection": "^2.2.0",
     "stdout-stream": "^1.4.1",
     "tslib": "*",
-    "yargs": "^15.3.0"
+    "yargs": "^15.3.1"
   },
   "devDependencies": {
     "@types/stdout-stream": "^1.4.0",

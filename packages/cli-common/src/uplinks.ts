@@ -14,7 +14,7 @@ if (env.pkttrace) {
 
 function connectTcpUdp(typ: typeof TcpTransport|typeof UdpTransport): Promise<Transport> {
   const { hostname, port } = env.uplink;
-  const portNum = port.length > 0 ? parseInt(port, 10) : undefined;
+  const portNum = port.length > 0 ? Number.parseInt(port, 10) : undefined;
   return typ.connect(hostname, portNum);
 }
 

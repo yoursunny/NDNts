@@ -11,7 +11,7 @@ function decodeTimestamp(value: Uint8Array): Date {
   if (!match) {
     throw new Error("invalid ISO8601 compact timestamp");
   }
-  const [, y, m, d, h, i, s] = match.map((c) => parseInt(c, 10));
+  const [, y, m, d, h, i, s] = match.map((c) => Number.parseInt(c, 10));
   return new Date(Date.UTC(y, m - 1, d, h, i, s));
 }
 
