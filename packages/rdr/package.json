@@ -1,0 +1,35 @@
+{
+  "name": "@ndn/rdr",
+  "version": "0.0.0",
+  "description": "NDNts: RDR Protocol",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "main": "src/mod.ts",
+  "sideEffects": false,
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/rdr"
+  },
+  "publishConfig": {
+    "main": "lib/mod.js"
+  },
+  "dependencies": {
+    "@ndn/endpoint": "workspace:*",
+    "@ndn/keychain": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "p-cancelable": "^2.0.0",
+    "tslib": "*"
+  }
+}
