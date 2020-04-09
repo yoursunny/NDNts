@@ -15,6 +15,7 @@ It accepts the following arguments:
 * `--ver=42` inserts a specific version number as version component.
 * `--ver=now` (default) inserts current timestamp as version component.
 * `--ver=none` omits version component.
+* `--no-rdr` disables publishing current version as a RDR metadata packet. This is ignored with `--ver=none`.
 
 `ndncat get-segmented` retrieves a segmented object, writing payload to standard output.
 It accepts the following arguments:
@@ -24,13 +25,21 @@ It accepts the following arguments:
 * `--convention1` selects 2014 Naming Convention instead of 2019 Naming Convention for version and segment components.
 * `--ver=none` (default) disables version discovery and assumes either Data has no version component or the input name has version component.
 * `--ver=cbp` sends Interest with CanBePrefix and MustBeFresh to discover version.
+* `--ver=rdr` sends an RDR discovery Interest to discover version.
 
 ### Example
 
 ```sh
 dd if=/dev/urandom of=/tmp/1.bin bs=1M count=1
-NDNTS_NFDREG=1 ndncat put-segmented /A
-ndncat get-segmented --ver=cbp /A > /tmp/2.bin
+
+# version discovery via CanBePrefix
+NDNTS_NFDREG=1 ndncat put-segmented /A </tmp/1.bin
+ndncat get-segmented --ver=cbp /A >/tmp/2.bin
+
+# version discovery via RDR protocol
+NDNTS_NFDREG=1 ndncat put-segmented /A </tmp/1.bin
+ndncat get-segmented --ver=rdr /A >/tmp/2.bin
+
 diff /tmp/1.bin /tmp/2.bin
 rm /tmp/1.bin /tmp/2.bin
 ```

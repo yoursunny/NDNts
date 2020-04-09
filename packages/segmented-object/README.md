@@ -3,11 +3,12 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package implements functions to publish and retrieve segmented objects.
+`@ndn/cat` package is a command line program that uses this package, and serves as an example.
 
-The `fetch` function:
+The consumer functionality:
 
 * [X] supports version discovery via CanBePrefix.
-* [ ] supports version discovery via RDR protocol.
+* [X] supports version discovery via RDR protocol (in `@ndn/rdr` package).
 * [ ] supports manifest.
 * [X] allows specifying segment range.
 * [X] supports segment numbers.
@@ -19,12 +20,12 @@ The `fetch` function:
 * [X] outputs in-order data chunks as a readable stream.
 * [X] outputs completely reassembled object via Promise.
 
-The `serve` function:
+The producer functionality:
 
 * [X] generates segments of fixed size.
 * [ ] generates segments of available data as Interest arrives, to minimize delivery latency.
 * [X] responds to version discovery Interests with CanBePrefix.
-* [ ] responds to RDR protocol.
+* [X] responds to RDR protocol (in `@ndn/rdr` package).
 * [ ] generates manifest.
 * [X] supports segment numbers.
 * [ ] supports byte offsets.

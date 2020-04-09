@@ -17,6 +17,7 @@ export type ServeOptions = DataProducer.Options & {
 };
 
 export interface Server {
+  readonly prefix: Name;
   close(): void;
 }
 
@@ -38,6 +39,7 @@ export function serve(prefixInput: NameLike, source: ChunkSource, opts: ServeOpt
       describe: `serve(${prefix})`,
     });
   return {
+    prefix,
     close() {
       producer.close();
       prod.close();

@@ -29,6 +29,7 @@
     "@ndn/naming-convention1": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
+    "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "esm": "^3.2.25",
     "loud-rejection": "^2.2.0",

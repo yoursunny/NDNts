@@ -1,18 +1,18 @@
 import { closeUplinks } from "@ndn/cli-common";
 import { Name } from "@ndn/packet";
+import { retrieveMetadata } from "@ndn/rdr";
 import { discoverVersion, fetch } from "@ndn/segmented-object";
 import stdout from "stdout-stream";
 import { Arguments, Argv, CommandModule } from "yargs";
 
 import { CommonArgs, segmentNumConvention, versionConvention } from "./common-args";
 
-type DiscoverVersionChoice = "none"|"cbp";
-const discoverVersionChoices: readonly DiscoverVersionChoice[] = ["none", "cbp"];
+type DiscoverVersionChoice = "none"|"cbp"|"rdr";
+const discoverVersionChoices: readonly DiscoverVersionChoice[] = ["none", "cbp", "rdr"];
 
 interface Args extends CommonArgs {
   name: string;
   ver: DiscoverVersionChoice;
-  cbpnonfresh: boolean;
 }
 
 async function main(args: Args) {
@@ -24,8 +24,10 @@ async function main(args: Args) {
       name = await discoverVersion(name, {
         segmentNumConvention,
         versionConvention,
-        versionMustBeFresh: !args.cbpnonfresh,
       });
+      break;
+    case "rdr":
+      name = (await retrieveMetadata(name)).name;
       break;
   }
 
@@ -50,10 +52,6 @@ export class GetSegmentedCommand implements CommandModule<CommonArgs, Args> {
         desc: ["version discovery method",
           "none: no discovery",
           "cbp: send Interest with CanBePrefix"].join("\n"),
-      })
-      .option("cbpnonfresh", {
-        default: true,
-        desc: "set MustBeFresh=0 when using CanBePrefix version discovery",
       });
   }
 

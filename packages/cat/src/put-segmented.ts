@@ -1,3 +1,4 @@
+import { serveMetadata } from "@ndn/rdr";
 import { serve, serveVersioned, StreamChunkSource } from "@ndn/segmented-object";
 import { Arguments, Argv, CommandModule } from "yargs";
 
@@ -5,16 +6,21 @@ import { CommonArgs, segmentNumConvention, signer, versionConvention } from "./c
 
 interface Args extends CommonArgs {
   name: string;
+  rdr: boolean;
   ver: string;
 }
 
-function main({ name, ver }: Args) {
-  (ver === "none" ? serve : serveVersioned)(name, new StreamChunkSource(process.stdin), {
+function main({ name, rdr, ver }: Args) {
+  const serveFunc = ver === "none" ? serve : serveVersioned;
+  const server = serveFunc(name, new StreamChunkSource(process.stdin), {
     segmentNumConvention,
     signer,
     version: ver === "now" ? undefined : parseInt(ver, 10),
     versionConvention,
   });
+  if (ver !== "none" && rdr) {
+    serveMetadata({ name: server.prefix }, { signer });
+  }
 }
 
 export class PutSegmentedCommand implements CommandModule<CommonArgs, Args> {
@@ -29,6 +35,11 @@ export class PutSegmentedCommand implements CommandModule<CommonArgs, Args> {
         type: "string",
       })
       .demandOption("name")
+      .option("rdr", {
+        default: true,
+        desc: "publish RDR metadata packet",
+        type: "boolean",
+      })
       .option("ver", {
         default: "now",
         desc: "version number; 'none' to omit version component, 'now' to use current timestamp",
