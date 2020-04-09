@@ -24,12 +24,6 @@ export const env = makeEnv({
     required: false,
     defaultValue: false,
   },
-  tolerateSelectors: {
-    envVarName: "NDNTS_TOLERATE_SELECTORS",
-    parser: parsers.boolean,
-    required: false,
-    defaultValue: false,
-  },
   uplink: {
     envVarName: "NDNTS_UPLINK",
     parser: (value) => new URL(value),

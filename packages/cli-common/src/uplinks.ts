@@ -3,7 +3,7 @@ import { Forwarder, FwFace, FwTracer } from "@ndn/fw";
 import { L3Face, Transport } from "@ndn/l3face";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { TcpTransport, UdpTransport, UnixTransport } from "@ndn/node-transport";
-import { Interest, Name } from "@ndn/packet";
+import { Name } from "@ndn/packet";
 
 import { env } from "./env";
 import { getSignerImpl } from "./keychain";
@@ -48,10 +48,6 @@ let theUplinks: FwFace[]|undefined;
 
 export async function openUplinks(): Promise<FwFace[]> {
   if (typeof theUplinks === "undefined") {
-    if (env.tolerateSelectors) {
-      Interest.tolerateSelectors = true;
-    }
-
     const face = await makeFace();
     if (env.nfdreg) {
       const signer = await getSignerImpl(env.nfdregkey ?? env.key);

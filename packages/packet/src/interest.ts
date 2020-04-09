@@ -13,11 +13,6 @@ const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
   .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
   .add(TT.CanBePrefix, (t) => t.canBePrefix = true)
   .add(TT.MustBeFresh, (t) => t.mustBeFresh = true)
-  .add(0x09, () => {
-    if (!Interest.tolerateSelectors) {
-      throw new Error("cannot decode Selectors");
-    }
-  })
   .add(TT.ForwardingHint, (t, { value }) => t.fwHint = FwHint.decodeValue(value))
   .add(TT.Nonce, (t, { value }) => t.nonce = NNI.decode(value, 4))
   .add(TT.InterestLifetime, (t, { nni }) => t.lifetime = nni)
@@ -285,8 +280,4 @@ export namespace Interest {
   export function generateNonce(): number {
     return Math.floor(Math.random() * 0x100000000);
   }
-
-  /** Don't raise decode error when encountering Selectors element. */
-  // eslint-disable-next-line prefer-const
-  export let tolerateSelectors = false;
 }

@@ -9,14 +9,12 @@ import { fetch } from "./fetch/mod";
 export function discoverVersion(name: Name, opts: discoverVersion.Options = {}): PCancelable<Name> {
   const {
     endpoint = new Endpoint(),
-    versionMustBeFresh = true,
     versionConvention = defaultVersionConvention,
     segmentNumConvention = defaultSegmentConvention,
     retxLimit = 2,
   } = opts;
 
-  const interest = new Interest(name, Interest.CanBePrefix);
-  interest.mustBeFresh = versionMustBeFresh;
+  const interest = new Interest(name, Interest.CanBePrefix, Interest.MustBeFresh);
   const consumer = endpoint.consume(interest, { retx: retxLimit });
   return new PCancelable((resolve, reject, onCancel) => {
     onCancel(() => consumer.cancel());
@@ -39,11 +37,5 @@ export namespace discoverVersion {
      * Default is Version from @ndn/naming-convention2 package.
      */
     versionConvention?: VersionConvention;
-
-    /**
-     * Whether to set MustBeFresh on version discovery Interest.
-     * Default is true.
-     */
-    versionMustBeFresh?: boolean;
   }
 }

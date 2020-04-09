@@ -53,19 +53,16 @@ describe("serve", () => {
   });
 });
 
-test.each([false, true])("discover mbf=%p", async (mbf) => {
+test("discover simple", async () => {
   const producer = new Endpoint().produce("/A",
     async (interest) => {
       expect(interest.name).toEqualName("/A");
       expect(interest.canBePrefix).toBeTruthy();
-      expect(interest.mustBeFresh).toBe(mbf);
-      const data = new Data(interest.name.append(Version2, 2).append(Segment2, 4));
-      if (mbf) {
-        data.freshnessPeriod = 1000;
-      }
-      return data;
+      expect(interest.mustBeFresh).toBeTruthy();
+      const name = interest.name.append(Version2, 2).append(Segment2, 4);
+      return new Data(name, Data.FreshnessPeriod(1000));
     });
-  await expect(discoverVersion(new Name("/A"), mbf ? undefined : { versionMustBeFresh: false }))
+  await expect(discoverVersion(new Name("/A")))
     .resolves.toEqualName(new Name("/A").append(Version2, 2));
   producer.close();
 });

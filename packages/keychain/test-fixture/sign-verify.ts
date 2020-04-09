@@ -97,8 +97,8 @@ export async function execute(cls: PacketCtor, pvtA: PrivateKey, pubA: PublicKey
   pktMc.sigValue = (() => {
     const sig = Uint8Array.from(pktMc.sigValue!);
     // Changing one bit is sometimes insufficient to break the signature,
-    // so change four bits to reduce test failures.
-    for (let i = 0; i < 4; ++i) {
+    // so change five bits to reduce test failures.
+    for (let i = 0; i < 5; ++i) {
       const offset = Math.floor(Math.random() * sig.byteLength);
       sig[offset] ^= 0x01;
     }
