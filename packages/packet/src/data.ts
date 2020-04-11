@@ -10,7 +10,7 @@ const TOPTLV_DIGEST = Symbol("Data.TopTlvDigest");
 
 const EVD = new EvDecoder<Data>("Data", TT.Data)
   .setTop((t, { tlv }) => t[TOPTLV] = tlv)
-  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
+  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
   .add(TT.MetaInfo,
     new EvDecoder<Data>("MetaInfo")
       .add(TT.ContentType, (t, { nni }) => t.contentType = nni)
@@ -18,11 +18,13 @@ const EVD = new EvDecoder<Data>("Data", TT.Data)
       .add(TT.FinalBlockId, (t, { vd }) => t.finalBlockId = vd.decode(Component)),
   )
   .add(TT.Content, (t, { value }) => t.content = value)
-  .add(TT.DSigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(SigInfo))
+  .add(TT.DSigInfo, (t, { decoder }) => {
+    t.sigInfo = decoder.decode(SigInfo);
+  }, { required: true })
   .add(TT.DSigValue, (t, { value, before }) => {
     t.sigValue = value;
     t[LLVerify.SIGNED] = before;
-  });
+  }, { required: true });
 
 /** Data packet. */
 export class Data {

@@ -4,6 +4,8 @@ export interface Decodable<R> {
   decodeFrom(decoder: Decoder): R;
 }
 
+const textDecoder = new TextDecoder(); // keep instance due to https://github.com/nodejs/node/issues/32424
+
 class DecodedTlv {
   public get length(): number {
     return this.offsetE - this.offsetV;
@@ -31,6 +33,10 @@ class DecodedTlv {
 
   public get nni(): number {
     return NNI.decode(this.value);
+  }
+
+  public get text(): string {
+    return textDecoder.decode(this.value);
   }
 
   public get before(): Uint8Array {
@@ -166,6 +172,8 @@ export namespace Decoder {
     readonly vd: Decoder;
     /** TLV-VALUE as non-negative integer */
     readonly nni: number;
+    /** TLV-VALUE as UTF-8 string */
+    readonly text: string;
     /** siblings before this TLV */
     readonly before: Uint8Array;
     /** siblings after this TLV */

@@ -10,7 +10,7 @@ const DecodeParams = Symbol("Interest.DecodeParams");
 const DigestValidated = Symbol("Interest.DigestValidated");
 
 const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
-  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
+  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
   .add(TT.CanBePrefix, (t) => t.canBePrefix = true)
   .add(TT.MustBeFresh, (t) => t.mustBeFresh = true)
   .add(TT.ForwardingHint, (t, { value }) => t.fwHint = FwHint.decodeValue(value))

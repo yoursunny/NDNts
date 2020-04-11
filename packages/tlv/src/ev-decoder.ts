@@ -12,6 +12,9 @@ interface Rule<T> {
    */
   order: number;
 
+  /** Whether TLV element must appear at least once. */
+  required: boolean;
+
   /** Whether TLV element may appear more than once. */
   repeat: boolean;
 }
@@ -42,7 +45,8 @@ function isCritical(tt: number): boolean {
 /** TLV-VALUE decoder that understands Packet Format v0.3 evolvability guidelines. */
 export class EvDecoder<T> {
   private topTT: number[];
-  private rules: Record<number, Rule<T>> = {};
+  private rules = new Map<number, Rule<T>>();
+  private requiredTlvTypes = new Set<number>();
   private nextOrder = AUTO_ORDER_SKIP;
   private isCriticalCb: IsCriticalCallback = isCritical;
   private unknownCb: UnknownElementCallback<T>;
@@ -68,14 +72,23 @@ export class EvDecoder<T> {
    */
   public add(tt: number, cb: ElementCallback<T>|EvDecoder<T>,
       options?: RuleOptions<T>): this {
-    if (typeof this.rules[tt] !== "undefined") {
+    if (this.rules.has(tt)) {
       throw new Error(`TLV-TYPE ${printTT(tt)} already has a rule`);
     }
-    if (cb instanceof EvDecoder) {
-      cb = nest(cb);
-    }
-    this.rules[tt] = { cb, order: this.nextOrder, repeat: false, ...options };
+
+    const rule = {
+      cb: cb instanceof EvDecoder ? nest(cb) : cb,
+      order: this.nextOrder,
+      required: false,
+      repeat: false,
+      ...options,
+    };
     this.nextOrder += AUTO_ORDER_SKIP;
+
+    this.rules.set(tt, rule);
+    if (rule.required) {
+      this.requiredTlvTypes.add(tt);
+    }
     return this;
   }
 
@@ -108,10 +121,13 @@ export class EvDecoder<T> {
 
     let currentOrder = 0;
     let currentCount = 0;
+    const missingTlvTypes = new Set(this.requiredTlvTypes);
     while (!vd.eof) {
       const tlv = vd.read();
       const tt = tlv.type;
-      const rule: Rule<T>|undefined = this.rules[tt];
+      missingTlvTypes.delete(tt);
+
+      const rule = this.rules.get(tt);
       if (typeof rule === "undefined") {
         if (!this.unknownCb(target, tlv, currentOrder)) {
           this.handleUnrecognized(tt, "unknown");
@@ -136,6 +152,9 @@ export class EvDecoder<T> {
       rule.cb(target, tlv);
     }
 
+    if (missingTlvTypes.size > 0) {
+      throw new Error(`TLV-TYPE ${Array.from(missingTlvTypes).map(printTT).join(",")} ${missingTlvTypes.size === 1 ? "is" : "are"} missing in ${this.typeName}`);
+    }
     return target;
   }
 

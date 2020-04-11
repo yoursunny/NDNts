@@ -50,8 +50,7 @@ test("decode normal", () => {
   ));
   const target = new EvdTestTarget();
   EVD.decode(target, decoder);
-  expect(target.top).not.toBeUndefined();
-  expect(target.top!.type).toBe(0xA0);
+  expect(target.top).toMatchObject({ type: 0xA0 });
   expect(target.sum()).toBe(1121);
   expect(target.c1).toBe(0x0104);
 });
@@ -123,6 +122,34 @@ test("decode bad TLV-TYPE", () => {
   expect(target.top).toBeUndefined();
 });
 
+test("decode required", () => {
+  const evd = new EvDecoder<EvdTestTarget>("A0", 0xA0)
+    .add(0xA9, (t) => { ++t.a9; }, { order: 3, required: true })
+    .add(0xA4, (t) => { ++t.a4; }, { order: 1 })
+    .add(0xA1, (t) => { ++t.a1; }, { order: 2, required: true });
+
+  const decoder = new Decoder(Uint8Array.of(
+    // first object, OK
+    0xA0, 0x06,
+    0xA4, 0x00,
+    0xA1, 0x00,
+    0xA9, 0x00,
+    // second object, missing 0xA1
+    0xA0, 0x04,
+    0xA4, 0x00,
+    0xA9, 0x00,
+    // third object, missing 0xA1 and 0xA9
+    0xA0, 0x00,
+  ));
+  const target = evd.decode(new EvdTestTarget(), decoder);
+  expect(target.sum()).toBe(1101);
+
+  expect(() => evd.decode(new EvdTestTarget(), decoder)).toThrow(/TLV-TYPE 0xA1 is missing/);
+
+  // TLV-TYPE numbers are shown in .add() order
+  expect(() => evd.decode(new EvdTestTarget(), decoder)).toThrow(/TLV-TYPE 0xA9,0xA1 are missing/);
+});
+
 test("add duplicate", () => {
   expect(() => EVD.add(0xA1, () => undefined)).toThrow(); // duplicate rule
 });
@@ -153,7 +180,7 @@ test("setIsCritical", () => {
 });
 
 test("setUnknown", () => {
-  const cb = jest.fn((t: EvdTestTarget, { type }: Decoder.Tlv, order: number) => {
+  const cb = jest.fn<boolean, [EvdTestTarget, Decoder.Tlv, number]>((t, { type }, order) => {
     if (type === 0xA1) {
       ++t.a1;
       return true;
@@ -177,12 +204,8 @@ test("setUnknown", () => {
   expect(target.sum()).toBe(2100);
 
   expect(cb).toHaveBeenCalledTimes(4);
-  expect(cb.mock.calls[0][1].type).toBe(0xA2);
-  expect(cb.mock.calls[0][2]).toBe(0);
-  expect(cb.mock.calls[1][1].type).toBe(0xA1);
-  expect(cb.mock.calls[1][2]).toBe(0);
-  expect(cb.mock.calls[2][1].type).toBe(0xA1);
-  expect(cb.mock.calls[2][2]).toBe(7);
-  expect(cb.mock.calls[3][1].type).toBe(0xA6);
-  expect(cb.mock.calls[3][2]).toBe(7);
+  expect(cb).toHaveBeenNthCalledWith(1, target, expect.objectContaining({ type: 0xA2 }), 0);
+  expect(cb).toHaveBeenNthCalledWith(2, target, expect.objectContaining({ type: 0xA1 }), 0);
+  expect(cb).toHaveBeenNthCalledWith(3, target, expect.objectContaining({ type: 0xA1 }), 7);
+  expect(cb).toHaveBeenNthCalledWith(4, target, expect.objectContaining({ type: 0xA6 }), 7);
 });

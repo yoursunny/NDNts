@@ -4,15 +4,13 @@ import { Decoder, Encodable, Encoder, EvDecoder, Extension } from "@ndn/tlv";
 import { TT } from "./an";
 
 const timestampRe = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/;
-const textDecoder = new TextDecoder(); // https://github.com/nodejs/node/issues/32424 workaround
 
-function decodeTimestamp(value: Uint8Array): Date {
-  const str = textDecoder.decode(value);
+function decodeTimestamp(str: string): Date {
   const match = timestampRe.exec(str);
   if (!match) {
     throw new Error("invalid ISO8601 compact timestamp");
   }
-  const [, y, m, d, h, i, s] = match.map((c) => Number.parseInt(c, 10));
+  const [y, m, d, h, i, s] = match.slice(1).map((c) => Number.parseInt(c, 10));
   return new Date(Date.UTC(y, m - 1, d, h, i, s));
 }
 
@@ -30,8 +28,8 @@ function encodeTimestamp(d: Date): Uint8Array {
 }
 
 const EVD = new EvDecoder<ValidityPeriod>("ValidityPeriod", TT.ValidityPeriod)
-  .add(TT.NotBefore, (t, { value }) => t.notBefore = decodeTimestamp(value))
-  .add(TT.NotAfter, (t, { value }) => t.notAfter = decodeTimestamp(value));
+  .add(TT.NotBefore, (t, { text }) => t.notBefore = decodeTimestamp(text), { required: true })
+  .add(TT.NotAfter, (t, { text }) => t.notAfter = decodeTimestamp(text), { required: true });
 
 /** Certificate validity period. */
 export class ValidityPeriod {
@@ -39,16 +37,11 @@ export class ValidityPeriod {
     return EVD.decode(new ValidityPeriod(), decoder);
   }
 
-  public notBefore: Date;
-  public notAfter: Date;
-
   constructor();
 
   constructor(notBefore: Date, notAfter: Date);
 
-  constructor(arg1?: Date, arg2?: Date) {
-    this.notBefore = arg1 ?? new Date(0);
-    this.notAfter = arg2 ?? new Date(0);
+  constructor(public notBefore = new Date(0), public notAfter = new Date(0)) {
   }
 
   public encodeTo(encoder: Encoder) {

@@ -16,7 +16,7 @@ export type KeyLocator = Name|KeyDigest;
 const EXTENSIONS = new ExtensionRegistry<SigInfo>();
 
 const EVD = new EvDecoder<SigInfo>("SigInfo", [TT.ISigInfo, TT.DSigInfo])
-  .add(TT.SigType, (t, { nni }) => t.type = nni)
+  .add(TT.SigType, (t, { nni }) => t.type = nni, { required: true })
   .add(TT.KeyLocator,
     new EvDecoder<SigInfo>("KeyLocator")
       .add(TT.Name, (t, { decoder }) => t.keyLocator = decoder.decode(Name), { order: 0 })

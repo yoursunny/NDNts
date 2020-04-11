@@ -102,9 +102,9 @@ const TT = {
 
 // Create the decoder.
 const EVD = new EvDecoder<Adjacency>("Adjacency", TT.Adjacency)
-  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
-  .add(TT.Uri, (t, { value }) => t.uri = new TextDecoder().decode(value))
-  .add(TT.Cost, (t, { nni }) => t.cost = nni);
+  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
+  .add(TT.Uri, (t, { text }) => t.uri = text, { required: true })
+  .add(TT.Cost, (t, { nni }) => t.cost = nni, { required: true });
 // Each rule declares a possible sub TLV.
 // They are added in the order of expected appearance.
 // The callback receives two arguments:
@@ -127,7 +127,4 @@ const adjacency = EVD.decode(new Adjacency(), adjacencyDecoder);
 assert.equal(adjacency.name.toString(), "/8=A");
 assert.equal(adjacency.uri, "B");
 assert.equal(adjacency.cost, 128);
-
-// Currently, EvDecoder itself cannot enforce a certain sub TLV is present.
-// Pull Requests are welcome to add 'options.required' argument.
 ```
