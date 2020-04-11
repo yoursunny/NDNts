@@ -9,7 +9,9 @@
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
   "files": [
-    "lib"
+    "lib",
+    "02.js",
+    "02.d.ts"
   ],
   "type": "module",
   "main": "src/mod.ts",

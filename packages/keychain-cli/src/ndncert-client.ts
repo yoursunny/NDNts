@@ -1,6 +1,6 @@
 import { closeUplinks, openUplinks } from "@ndn/cli-common";
 import { Certificate, PrivateKey, PublicKey } from "@ndn/keychain";
-import { Client, clientLogger, makeMailsacClientEmailChallenge, schema } from "@ndn/ndncert";
+import { Client, clientLogger, makeMailsacClientEmailChallenge, schema } from "@ndn/ndncert/02";
 import { exportKey as ndnsecExportKey, generateKey as ndnsecGenKey, installCert as ndnsecInstallCert } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
 import readJsonSync from "read-json-sync";

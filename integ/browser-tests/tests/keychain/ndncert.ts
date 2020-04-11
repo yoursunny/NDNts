@@ -1,6 +1,6 @@
 import { connectToTestbed } from "@ndn/autoconfig";
 import { RsaPrivateKey } from "@ndn/keychain";
-import { Client, clientLogger, makeMailsacClientEmailChallenge } from "@ndn/ndncert";
+import { Client, clientLogger, makeMailsacClientEmailChallenge } from "@ndn/ndncert/02";
 import { Name } from "@ndn/packet";
 
 import { addManualTest } from "../../test-fixture/manual";
