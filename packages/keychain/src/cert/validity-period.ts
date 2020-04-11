@@ -4,9 +4,10 @@ import { Decoder, Encodable, Encoder, EvDecoder, Extension } from "@ndn/tlv";
 import { TT } from "./an";
 
 const timestampRe = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/;
+const textDecoder = new TextDecoder(); // https://github.com/nodejs/node/issues/32424 workaround
 
 function decodeTimestamp(value: Uint8Array): Date {
-  const str = new TextDecoder().decode(value);
+  const str = textDecoder.decode(value);
   const match = timestampRe.exec(str);
   if (!match) {
     throw new Error("invalid ISO8601 compact timestamp");

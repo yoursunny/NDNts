@@ -23,6 +23,8 @@ const CHARCODE_PERIOD = ".".charCodeAt(0);
 
 export type ComponentLike = Component | string;
 
+const textDecoder = new TextDecoder(); // https://github.com/nodejs/node/issues/32424 workaround
+
 /**
  * Name component.
  * This type is immutable.
@@ -34,7 +36,7 @@ export class Component {
 
   /** TLV-VALUE interpreted as UTF-8 string. */
   public get text(): string {
-    return new TextDecoder().decode(this.value);
+    return textDecoder.decode(this.value);
   }
 
   public static decodeFrom(decoder: Decoder): Component {

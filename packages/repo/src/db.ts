@@ -15,6 +15,8 @@ export interface Record {
 export type Db = LevelUp<EncodingDown<Name, Record>, AbstractIterator<Name, Record>>;
 export type DbChain = LevelUpChain<Name, Record>;
 
+const textDecoder = new TextDecoder(); // https://github.com/nodejs/node/issues/32424 workaround
+
 export function openDb(db: AbstractLevelDOWN): Db {
   return level(EncodingDown<Name, Record>(db, {
     keyEncoding: {
@@ -34,12 +36,16 @@ export function openDb(db: AbstractLevelDOWN): Db {
       },
       decode(stored: Buffer): Record {
         const { decoder, after } = new Decoder(stored).read();
-        const record = JSON.parse(new TextDecoder().decode(after)) as Record;
-        let data: Data|undefined;
+        const record = JSON.parse(textDecoder.decode(after)) as Record;
         Object.defineProperties(record, {
-          data: { get() {
-            return (data = data ?? decoder.decode(Data));
-          } },
+          data: {
+            configurable: true,
+            get() {
+              const value = decoder.decode(Data);
+              Object.defineProperty(record, "data", { value });
+              return value;
+            },
+          },
           name: {
             configurable: true,
             /* istanbul ignore next */
