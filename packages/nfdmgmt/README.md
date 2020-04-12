@@ -13,9 +13,9 @@ import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { EcPrivateKey } from "@ndn/keychain";
 import { L3Face } from "@ndn/l3face";
-import { Data, Interest } from "@ndn/packet";
-import { Name } from "@ndn/packet";
 import { UnixTransport } from "@ndn/node-transport";
+import { Data, Interest, Name } from "@ndn/packet";
+import { fromUtf8, toUtf8 } from "@ndn/tlv";
 import { strict as assert } from "assert";
 (async () => {
 ```
@@ -64,8 +64,7 @@ enableNfdPrefixReg(uplinkP, { signer: privateKey });
 const producer = new Endpoint({ fw: fwP }).produce("/P",
   async () => {
     console.log("producing");
-    return new Data("/P", Data.FreshnessPeriod(1000),
-      new TextEncoder().encode("NDNts + NFD"));
+    return new Data("/P", Data.FreshnessPeriod(1000), toUtf8("NDNts + NFD"));
   });
 await new Promise((r) => setTimeout(r, 500));
 
@@ -73,7 +72,7 @@ await new Promise((r) => setTimeout(r, 500));
 const data = await new Endpoint({ fw: fwC }).consume(
   new Interest("/P", Interest.MustBeFresh),
 );
-const payloadText = new TextDecoder().decode(data.content);
+const payloadText = fromUtf8(data.content);
 console.log("received", `${data.name} ${payloadText}`);
 assert.equal(payloadText, "NDNts + NFD");
 

@@ -135,8 +135,7 @@ export class Encoder {
   /** Prepend an Encodable object. */
   public encode(obj: Encodable|readonly Encodable[]) {
     if (obj instanceof Uint8Array) {
-      const dst = this.prependRoom(obj.byteLength);
-      dst.set(obj);
+      this.prependRoom(obj.byteLength).set(obj);
     } else if (typeof obj === "object" && typeof (obj as EncodableObj).encodeTo === "function") {
       (obj as EncodableObj).encodeTo(this);
     } else if (Array.isArray(obj)) {

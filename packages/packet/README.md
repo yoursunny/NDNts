@@ -9,7 +9,7 @@ import { TT, Name, Component, ImplicitDigest, AltUri,
   Interest, Data, LLSign, LLVerify, canSatisfy, canSatisfySync } from "@ndn/packet";
 
 // other imports for examples
-import { Decoder, Encoder } from "@ndn/tlv";
+import { Decoder, Encoder, fromUtf8, toUtf8 } from "@ndn/tlv";
 import { strict as assert } from "assert";
 import { timingSafeEqual } from "crypto";
 (async () => {
@@ -158,7 +158,7 @@ assert.equal(interest2.name.toString(), "/8=A");
 // We got a Data type, too.
 // You can set fields via constructor or setters.
 const data = new Data(interest.name, Data.FreshnessPeriod(5000));
-data.content = new TextEncoder().encode("hello NDNts");
+data.content = toUtf8("hello NDNts");
 ```
 
 ## Low-Level Signing
@@ -203,7 +203,7 @@ await data2[LLVerify.VERIFY]((input: Uint8Array, sig: Uint8Array) => {
 // Otherwise, you'll get errors or incorrect results.
 
 // Now we can access the Content.
-assert.equal(new TextDecoder().decode(data2.content), "hello NDNts");
+assert.equal(fromUtf8(data2.content), "hello NDNts");
 ```
 
 ## Implicit Digest

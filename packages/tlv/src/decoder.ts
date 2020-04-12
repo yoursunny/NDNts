@@ -1,10 +1,8 @@
-import { NNI } from "./mod";
+import { fromUtf8, NNI } from "./mod";
 
 export interface Decodable<R> {
   decodeFrom(decoder: Decoder): R;
 }
-
-const textDecoder = new TextDecoder(); // keep instance due to https://github.com/nodejs/node/issues/32424
 
 class DecodedTlv {
   public get length(): number {
@@ -36,7 +34,7 @@ class DecodedTlv {
   }
 
   public get text(): string {
-    return textDecoder.decode(this.value);
+    return fromUtf8(this.value);
   }
 
   public get before(): Uint8Array {

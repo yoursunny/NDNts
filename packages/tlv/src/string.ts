@@ -44,3 +44,14 @@ export function fromHex(s: string): Uint8Array {
   }
   return b;
 }
+
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
+
+export function toUtf8(s: string): Uint8Array {
+  return textEncoder.encode(s);
+}
+
+export function fromUtf8(buf: Uint8Array): string {
+  return textDecoder.decode(buf);
+}

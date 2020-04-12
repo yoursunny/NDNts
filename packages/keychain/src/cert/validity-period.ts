@@ -1,5 +1,5 @@
 import { SigInfo } from "@ndn/packet";
-import { Decoder, Encodable, Encoder, EvDecoder, Extension } from "@ndn/tlv";
+import { Decoder, Encodable, Encoder, EvDecoder, Extension, toUtf8 } from "@ndn/tlv";
 
 import { TT } from "./an";
 
@@ -24,7 +24,7 @@ function encodeTimestamp(d: Date): Uint8Array {
     d.getUTCMinutes().toString().padStart(2, "0"),
     d.getUTCSeconds().toString().padStart(2, "0"),
   ].join("");
-  return new TextEncoder().encode(str);
+  return toUtf8(str);
 }
 
 const EVD = new EvDecoder<ValidityPeriod>("ValidityPeriod", TT.ValidityPeriod)

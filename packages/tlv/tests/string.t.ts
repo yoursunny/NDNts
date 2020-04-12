@@ -1,6 +1,6 @@
 import "../test-fixture/expect";
 
-import { fromHex, printTT, toHex } from "..";
+import { fromHex, fromUtf8, printTT, toHex, toUtf8 } from "..";
 
 test("printTT", () => {
   expect(printTT(0x00)).toBe("0x00");
@@ -24,4 +24,9 @@ test("fromHex", () => {
   expect(fromHex("00")).toEqualUint8Array([0x00]);
   expect(fromHex("7F")).toEqualUint8Array([0x7F]);
   expect(fromHex("BeeF")).toEqualUint8Array([0xBE, 0xEF]);
+});
+
+test("utf8", () => {
+  expect(toUtf8("A")).toEqualUint8Array([0x41]);
+  expect(fromUtf8(Uint8Array.of(0x42))).toBe("B");
 });

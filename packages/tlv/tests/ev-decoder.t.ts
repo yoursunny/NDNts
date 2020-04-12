@@ -39,7 +39,7 @@ const EVD = new EvDecoder<EvdTestTarget>("A0", 0xA0)
   );
 
 test("decode normal", () => {
-  const decoder = new Decoder(Uint8Array.of(
+  const input = Uint8Array.of(
     0xA0, 0x11,
     0xA1, 0x01, 0x10,
     0xA4, 0x00,
@@ -47,12 +47,18 @@ test("decode normal", () => {
     0xA6, 0x00,
     0xA9, 0x00,
     0xC0, 0x04, 0xC1, 0x02, 0x01, 0x04,
-  ));
+  );
   const target = new EvdTestTarget();
-  EVD.decode(target, decoder);
+  EVD.decode(target, new Decoder(input));
   expect(target.top).toMatchObject({ type: 0xA0 });
   expect(target.sum()).toBe(1121);
   expect(target.c1).toBe(0x0104);
+
+  const target2 = new EvdTestTarget();
+  const target3 = EVD.decodeValue(target2, new Decoder(input.slice(2)));
+  expect(target3).toBe(target2);
+  expect(target2.top).toBeUndefined();
+  expect(target2.sum()).toBe(1121);
 });
 
 test("decode unknown non-critical", () => {

@@ -1,5 +1,5 @@
 import { canSatisfy, Data, ImplicitDigest, Interest, LLSign, Name } from "@ndn/packet";
-import { Encoder, toHex } from "@ndn/tlv";
+import { Encoder, toHex, toUtf8 } from "@ndn/tlv";
 import { AbstractLevelDOWN } from "abstract-leveldown";
 import { EventEmitter } from "events";
 import { collect, filter, fromStream, map, pipeline, transform } from "streaming-iterables";
@@ -180,7 +180,7 @@ export class Transaction {
       insertTime: this.timestamp,
     };
 
-    const json = new TextEncoder().encode(JSON.stringify(record));
+    const json = toUtf8(JSON.stringify(record));
     const encoder = new Encoder();
     encoder.prependRoom(json.byteLength).set(json);
 

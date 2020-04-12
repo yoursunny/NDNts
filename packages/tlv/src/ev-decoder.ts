@@ -110,7 +110,7 @@ export class EvDecoder<T> {
     return this;
   }
 
-  /** Decode to target object. */
+  /** Decode TLV to target object. */
   public decode<R extends T = T>(target: R, decoder: Decoder): R {
     const topTlv = decoder.read();
     const { type, vd } = topTlv;
@@ -119,6 +119,11 @@ export class EvDecoder<T> {
     }
     this.topCb(target, topTlv);
 
+    return this.decodeValue(target, vd);
+  }
+
+  /** Decode TLV-VALUE to target object. */
+  public decodeValue<R extends T = T>(target: R, vd: Decoder): R {
     let currentOrder = 0;
     let currentCount = 0;
     const missingTlvTypes = new Set(this.requiredTlvTypes);

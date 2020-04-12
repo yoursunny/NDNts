@@ -1,4 +1,4 @@
-import { Decoder, Encoder } from "@ndn/tlv";
+import { Decoder, Encoder, fromUtf8, toUtf8 } from "@ndn/tlv";
 import bufferCompare from "buffer-compare";
 
 import { NamingConvention, TT } from "./mod";
@@ -23,8 +23,6 @@ const CHARCODE_PERIOD = ".".charCodeAt(0);
 
 export type ComponentLike = Component | string;
 
-const textDecoder = new TextDecoder(); // https://github.com/nodejs/node/issues/32424 workaround
-
 /**
  * Name component.
  * This type is immutable.
@@ -36,7 +34,7 @@ export class Component {
 
   /** TLV-VALUE interpreted as UTF-8 string. */
   public get text(): string {
-    return textDecoder.decode(this.value);
+    return fromUtf8(this.value);
   }
 
   public static decodeFrom(decoder: Decoder): Component {
@@ -110,10 +108,10 @@ export class Component {
     }
     switch (typeof arg2) {
       case "undefined":
-        this.value = new Uint8Array(0);
+        this.value = new Uint8Array();
         break;
       case "string":
-        this.value = new TextEncoder().encode(arg2);
+        this.value = toUtf8(arg2);
         break;
       case "object":
         this.value = arg2;

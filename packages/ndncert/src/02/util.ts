@@ -1,7 +1,7 @@
 import { KeyChainImplWebCrypto as crypto, PrivateKey } from "@ndn/keychain";
 import { signInterest02 } from "@ndn/nfdmgmt";
 import { Interest } from "@ndn/packet";
-import { Decoder, Encoder } from "@ndn/tlv";
+import { Decoder, Encoder, fromUtf8, toUtf8 } from "@ndn/tlv";
 import fastChunkString from "fast-chunk-string";
 
 import { TT_ENCRYPTED_PAYLOAD, TT_INITIAL_VECTOR } from "./an";
@@ -19,7 +19,7 @@ export function base64Encode(input: Uint8Array): string {
 }
 
 export async function makeInterestParams(json: unknown, aesKey?: CryptoKey): Promise<Uint8Array> {
-  const body = new TextEncoder().encode(JSON.stringify(json));
+  const body = toUtf8(JSON.stringify(json));
   if (!aesKey) {
     return body;
   }
@@ -33,8 +33,6 @@ export async function makeInterestParams(json: unknown, aesKey?: CryptoKey): Pro
   return encoder.output;
 }
 
-const textDecoder = new TextDecoder(); // https://github.com/nodejs/node/issues/32424 workaround
-
 export async function readDataPayload(payload: Uint8Array, aesKey?: CryptoKey): Promise<unknown> {
   let body = payload;
   if (aesKey) {
@@ -46,7 +44,7 @@ export async function readDataPayload(payload: Uint8Array, aesKey?: CryptoKey): 
     }
     body = new Uint8Array(await crypto.subtle.decrypt({ name: "AES-CBC", iv }, aesKey, encrypted));
   }
-  return JSON.parse(textDecoder.decode(body));
+  return JSON.parse(fromUtf8(body));
 }
 
 /**

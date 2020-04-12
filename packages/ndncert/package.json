@@ -32,6 +32,7 @@
   "dependencies": {
     "@ndn/endpoint": "workspace:*",
     "@ndn/keychain": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
     "@ndn/nfdmgmt": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",

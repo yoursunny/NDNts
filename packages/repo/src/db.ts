@@ -1,5 +1,5 @@
 import { Data, Name } from "@ndn/packet";
-import { Decoder } from "@ndn/tlv";
+import { Decoder, fromUtf8 } from "@ndn/tlv";
 import { AbstractIterator, AbstractLevelDOWN } from "abstract-leveldown";
 import EncodingDown from "encoding-down";
 import level, { LevelUp, LevelUpChain } from "levelup";
@@ -14,8 +14,6 @@ export interface Record {
 
 export type Db = LevelUp<EncodingDown<Name, Record>, AbstractIterator<Name, Record>>;
 export type DbChain = LevelUpChain<Name, Record>;
-
-const textDecoder = new TextDecoder(); // https://github.com/nodejs/node/issues/32424 workaround
 
 export function openDb(db: AbstractLevelDOWN): Db {
   return level(EncodingDown<Name, Record>(db, {
@@ -36,7 +34,7 @@ export function openDb(db: AbstractLevelDOWN): Db {
       },
       decode(stored: Buffer): Record {
         const { decoder, after } = new Decoder(stored).read();
-        const record = JSON.parse(textDecoder.decode(after)) as Record;
+        const record = JSON.parse(fromUtf8(after)) as Record;
         Object.defineProperties(record, {
           data: {
             configurable: true,

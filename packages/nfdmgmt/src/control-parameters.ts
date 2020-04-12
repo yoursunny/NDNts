@@ -1,5 +1,5 @@
 import { Name, TT } from "@ndn/packet";
-import { EncodableObj, EncodableTlv, Encoder, NNI } from "@ndn/tlv";
+import { EncodableObj, EncodableTlv, Encoder, NNI, toUtf8 } from "@ndn/tlv";
 
 interface Fields {
   name?: Name;
@@ -56,7 +56,7 @@ export class ControlParameters {
           case type === NNI:
             return [tt, NNI(value as number)] as EncodableTlv;
           case type === String:
-            return [tt, new TextEncoder().encode(value as string)] as EncodableTlv;
+            return [tt, toUtf8(value as string)] as EncodableTlv;
           case type === Name:
             return [tt, value as Name] as EncodableTlv;
           default:
