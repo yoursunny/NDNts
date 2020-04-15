@@ -35,9 +35,11 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/nfdmgmt": "workspace:*",
     "@ndn/packet": "workspace:*",
+    "@ndn/rdr": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "fast-chunk-string": "^1.0.1",
     "loglevel": "^1.6.7",
+    "minimalistic-assert": "^1.0.1",
     "node-fetch": "^2.6.0",
     "tslib": "*"
   },
@@ -45,6 +47,7 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@types/fast-chunk-string": "^1.0.0",
+    "@types/minimalistic-assert": "^1.0.0",
     "@types/node-fetch": "^2.5.5"
   }
 }
