@@ -171,13 +171,10 @@ data.content = toUtf8("hello NDNts");
 // Our signature would be 'DDDD'.
 const expectedSignature = Uint8Array.of(0xDD, 0xDD);
 
-// First, set a signing function on [LLSign.PENDING] property.
-data[LLSign.PENDING] = async (input: Uint8Array): Promise<Uint8Array> => {
+// Invoke [LLVerify.OP] with a crypto signer function.
+await data[LLSign.OP](async (input: Uint8Array): Promise<Uint8Array> => {
   return Promise.resolve(expectedSignature);
-};
-
-// Then, process the signing operations asynchronously.
-await data[LLSign.PROCESS]();
+});
 
 // Finally, we can encode the Data and then decode it.
 const dataWire = Encoder.encode(data);
@@ -186,11 +183,8 @@ const data2 = new Decoder(dataWire).decode(Data);
 // Data signature should be verified.
 // Again, this is a low-level API, so it would look difficult.
 
-// Signed portion is already saved during decoding.
-assert(data2[LLVerify.SIGNED] instanceof Uint8Array);
-
-// Invoke [LLVerify.VERIFY] with a crypto verification function.
-await data2[LLVerify.VERIFY]((input: Uint8Array, sig: Uint8Array) => {
+// Invoke [LLVerify.OP] with a crypto verification function.
+await data2[LLVerify.OP]((input: Uint8Array, sig: Uint8Array) => {
   return new Promise<void>((resolve, reject) => {
     if (timingSafeEqual(sig, expectedSignature)) {
       resolve();
@@ -227,14 +221,8 @@ assert(typeof fullName2 !== "undefined");
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 assert.equal(fullName2!.toString(), fullName.toString());
 
-// Note that these functions are only available after encoding or decoding.
-// Calling them on a Data before encoding results in an error.
-assert.throws(() => new Data().getImplicitDigest());
-assert.throws(() => new Data().getFullName());
-assert.rejects(new Data().computeImplicitDigest());
-assert.rejects(new Data().computeFullName());
-// Also, if you modify the Data after encoding or decoding, you'll get incorrect results.
-// In short, only call them right after encoding or decoding.
+// Note that you cannot modify the Data after encoding or decoding,
+// or you'll get incorrect implicit digest results.
 ```
 
 ## Interest-Data Matching

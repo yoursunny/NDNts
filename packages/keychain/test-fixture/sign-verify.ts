@@ -1,4 +1,4 @@
-import { Data, Interest, LLSign, LLVerify, SigInfo } from "@ndn/packet";
+import { Data, Interest, SigInfo } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { PrivateKey, PublicKey } from "..";
@@ -17,7 +17,6 @@ export const TABLE: Row[] = [
 
 interface SignRecord {
   wire: Uint8Array;
-  signed: Uint8Array;
   sigInfo: SigInfo;
   sigValue: Uint8Array;
 }
@@ -43,16 +42,13 @@ export interface TestRecord {
 
 async function sign(cls: PacketCtor, pvt: PrivateKey): Promise<[Packet, SignRecord]> {
   const src = new cls("/NAME");
-  pvt.sign(src);
-  await src[LLSign.PROCESS]();
+  await pvt.sign(src);
   const wire = Encoder.encode(src);
   const pkt = cls.decodeFrom(new Decoder(wire));
-  if (!pkt[LLVerify.SIGNED]) { throw new Error("[SIGNED] is missing"); }
   if (!pkt.sigInfo) { throw new Error("sigInfo is missing"); }
   if (!pkt.sigValue) { throw new Error("sigValue is missing"); }
   return [pkt, {
     wire,
-    signed: pkt[LLVerify.SIGNED]!,
     sigInfo: pkt.sigInfo,
     sigValue: pkt.sigValue,
   }];

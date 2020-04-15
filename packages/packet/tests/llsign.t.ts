@@ -6,24 +6,28 @@ import * as crypto from "crypto";
 import { Data, Interest, KeyDigest, LLSign, LLVerify, Name, SigInfo, SigType, TT } from "..";
 
 class TestAlgo {
-  constructor(private key: string, private wantSignError: boolean = false) {
+  constructor(private readonly key: string, private readonly wantSignError: boolean = false) {
   }
 
-  public sign = async (input: Uint8Array): Promise<Uint8Array> => {
-    await new Promise((r) => setTimeout(r, 5));
-    if (this.wantSignError) {
-      throw new Error("mock-signing-error");
-    }
-    return this.computeSignature(input);
-  };
+  public sign(pkt: LLSign.Signable) {
+    return pkt[LLSign.OP](async (input) => {
+      await new Promise((r) => setTimeout(r, 5));
+      if (this.wantSignError) {
+        throw new Error("mock-signing-error");
+      }
+      return this.computeSignature(input);
+    });
+  }
 
-  public verify = async (input: Uint8Array, sig: Uint8Array): Promise<void> => {
-    await new Promise((r) => setTimeout(r, 5));
-    // warning: this is insecure comparison, for test case only
-    if (Buffer.compare(sig, this.computeSignature(input)) !== 0) {
-      throw new Error("incorrect signature value");
-    }
-  };
+  public verify(pkt: LLVerify.Verifiable) {
+    return pkt[LLVerify.OP](async (input, sig) => {
+      await new Promise((r) => setTimeout(r, 5));
+      // warning: this is insecure comparison, for test case only
+      if (Buffer.compare(sig, this.computeSignature(input)) !== 0) {
+        throw new Error("incorrect signature value");
+      }
+    });
+  }
 
   private computeSignature(input: Uint8Array): Uint8Array {
     // warning: this is insecure hashing algorithm, for test case only
@@ -40,14 +44,12 @@ type Pkt = LLSign.Signable & LLVerify.Verifiable & Encodable & {sigInfo: SigInfo
 
 interface Row {
   cls: (new(name: Name) => Pkt) & Decodable<Pkt>;
-  canVerifyAfterEncode: boolean;
   checkWire(tlv: Decoder.Tlv): void;
 }
 
 const TABLE = [
   {
     cls: Interest,
-    canVerifyAfterEncode: false,
     checkWire({ type, value }) {
       expect(type).toBe(TT.Interest);
       expect(value).toMatchTlv(
@@ -76,7 +78,6 @@ const TABLE = [
   },
   {
     cls: Data,
-    canVerifyAfterEncode: true,
     checkWire({ type, value }) {
       expect(type).toBe(TT.Data);
       expect(value).toMatchTlv(
@@ -92,43 +93,25 @@ const TABLE = [
 ] as Row[];
 
 test.each(TABLE)("sign %#", async ({ cls }) => {
-  const obj = new cls(new Name("/A"));
-  obj.sigInfo = new SigInfo(SigType.HmacWithSha256, new KeyDigest(Uint8Array.of(0xA0, 0xA1)));
-  await expect(obj[LLSign.PROCESS]()).resolves.toBeUndefined(); // noop
+  const pkt = new cls(new Name("/A"));
+  pkt.sigInfo = new SigInfo(SigType.HmacWithSha256, new KeyDigest(Uint8Array.of(0xA0, 0xA1)));
+  await expect(ALGO1.sign(pkt)).rejects.toThrow(/mock-signing-error/);
 
-  obj[LLSign.PENDING] = ALGO1.sign;
-  expect(() => Encoder.encode(obj)).toThrow(/pending/);
-  await expect(obj[LLSign.PROCESS]()).rejects.toThrow(/mock-signing-error/);
-  expect(obj[LLSign.PENDING]).not.toBeUndefined();
-
-  obj[LLSign.PENDING] = ALGO0.sign;
-  await expect(obj[LLSign.PROCESS]()).resolves.toBeUndefined();
-  expect(obj[LLSign.PENDING]).toBeUndefined();
-  expect(Encoder.encode(obj)).not.toBeUndefined();
+  await ALGO0.sign(pkt);
+  expect(() => Encoder.encode(pkt)).not.toThrow();
 });
 
-test.each(TABLE)("verify %#", async ({ cls, checkWire, canVerifyAfterEncode }) => {
+test.each(TABLE)("verify %#", async ({ cls, checkWire }) => {
   const src = new cls(new Name("/A"));
   src.sigInfo = new SigInfo(SigType.Sha256);
-  src[LLSign.PENDING] = ALGO0.sign;
-  await src[LLSign.PROCESS]();
+  await ALGO0.sign(src);
   const wire = Encoder.encode(src);
   expect(wire).toMatchTlv(checkWire);
 
-  if (canVerifyAfterEncode) {
-    expect(src[LLVerify.SIGNED]).not.toBeUndefined();
-    await expect(src[LLVerify.VERIFY](ALGO0.verify)).resolves.toBeUndefined();
-    await expect(src[LLVerify.VERIFY](ALGO1.verify)).rejects.toThrow(/incorrect/);
-  } else {
-    expect(src[LLVerify.SIGNED]).toBeUndefined();
-    await expect(src[LLVerify.VERIFY](ALGO0.verify)).rejects.toThrow(/empty/);
-  }
+  await expect(ALGO0.verify(src)).resolves.toBeUndefined();
+  await expect(ALGO1.verify(src)).rejects.toThrow(/incorrect/);
 
   const obj = new Decoder(wire).decode(cls);
-  expect(obj[LLVerify.SIGNED]).not.toBeUndefined();
-  await expect(obj[LLVerify.VERIFY](ALGO0.verify)).resolves.toBeUndefined();
-  await expect(obj[LLVerify.VERIFY](ALGO1.verify)).rejects.toThrow(/incorrect/);
-
-  obj[LLVerify.SIGNED] = undefined;
-  await expect(obj[LLVerify.VERIFY](ALGO0.verify)).rejects.toThrow(/empty/);
+  await expect(ALGO0.verify(obj)).resolves.toBeUndefined();
+  await expect(ALGO1.verify(obj)).rejects.toThrow(/incorrect/);
 });

@@ -28,10 +28,6 @@ For asymmetric crypto algorithms, they are implemented by distinct classes.
 For symmetric crypto algorithms, they are generally implemented by the same class.
 
 Both Interest and Data are signable.
-`PrivateKey.prototype.sign` function assigns SignatureInfo field and returns immediately, deferring crypto signing operation in `pkt[LLSign.PENDING]`.
-When the packet is being transmitted, `L3Face` would trigger crypto signing during encoding.
-In case the signature is needed immediately, invoke `await pkt[LLSign.PROCESS]()` to execute crypto signing.
-
 The implementation uses [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API).
 
 * Modern browsers natively support WebCrypto.

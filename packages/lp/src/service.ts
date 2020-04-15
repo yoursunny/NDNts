@@ -1,4 +1,4 @@
-import { Data, Interest, LLSign, Nack, TT as l3TT } from "@ndn/packet";
+import { Data, Interest, Nack, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
 
 import { LpPacket, TT } from "./mod";
@@ -69,7 +69,6 @@ export class LpService {
         case pkt instanceof Interest:
         case pkt instanceof Data: {
           const l3pkt = pkt as Interest|Data;
-          await l3pkt[LLSign.PROCESS]();
           const pitToken = PitToken.get(l3pkt);
           if (!pitToken) {
             return yield Encoder.encode(l3pkt);

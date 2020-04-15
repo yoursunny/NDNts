@@ -5,11 +5,12 @@ import { sha256 } from "./platform/mod";
 
 const FAKE_SIGINFO = new SigInfo(SigType.Sha256);
 const FAKE_SIGVALUE = new Uint8Array(32);
-const TOPTLV = Symbol("Data.TopTlv");
-const TOPTLV_DIGEST = Symbol("Data.TopTlvDigest");
+const TopTlv = Symbol("Data.TopTlv");
+const TopTlvDigest = Symbol("Data.TopTlvDigest");
+const SignedPortion = Symbol("Data.SignedPortion");
 
 const EVD = new EvDecoder<Data>("Data", TT.Data)
-  .setTop((t, { tlv }) => t[TOPTLV] = tlv)
+  .setTop((t, { tlv }) => t[TopTlv] = tlv)
   .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
   .add(TT.MetaInfo,
     new EvDecoder<Data>("MetaInfo")
@@ -23,7 +24,7 @@ const EVD = new EvDecoder<Data>("Data", TT.Data)
   }, { required: true })
   .add(TT.DSigValue, (t, { value, before }) => {
     t.sigValue = value;
-    t[LLVerify.SIGNED] = before;
+    t[SignedPortion] = before;
   }, { required: true });
 
 /** Data packet. */
@@ -60,9 +61,8 @@ export class Data {
   public content: Uint8Array = new Uint8Array();
   public sigInfo?: SigInfo;
   public sigValue?: Uint8Array;
-  public [LLSign.PENDING]?: LLSign;
-  public [LLVerify.SIGNED]?: Uint8Array;
-  public [TOPTLV]?: Uint8Array & {[TOPTLV_DIGEST]?: Uint8Array}; // for implicit digest
+  public [SignedPortion]?: Uint8Array;
+  public [TopTlv]?: Uint8Array & {[TopTlvDigest]?: Uint8Array}; // for implicit digest
 
   private contentType_ = 0;
   private freshnessPeriod_ = 0;
@@ -99,33 +99,45 @@ export class Data {
   }
 
   public encodeTo(encoder: Encoder) {
-    LLSign.encodeErrorIfPending(this);
     encoder.encode(Encoder.extract(
       [
         TT.Data,
         Encoder.extract(
-          this.getSignedPortion(),
-          (output) => this[LLVerify.SIGNED] = output,
+          this.encodeSignedPortion(),
+          (output) => this[SignedPortion] = output,
         ),
         [TT.DSigValue, this.sigValue ?? FAKE_SIGVALUE],
       ] as EncodableTlv,
-      (output) => this[TOPTLV] = output,
+      (output) => this[TopTlv] = output,
     ));
   }
 
+  private encodeSignedPortion(): Encodable[] {
+    return [
+      this.name,
+      [
+        TT.MetaInfo, Encoder.OmitEmpty,
+        this.contentType > 0 ? [TT.ContentType, NNI(this.contentType)] : undefined,
+        this.freshnessPeriod > 0 ? [TT.FreshnessPeriod, NNI(this.freshnessPeriod)] : undefined,
+        this.finalBlockId ? [TT.FinalBlockId, this.finalBlockId] : undefined,
+      ],
+      this.content.byteLength > 0 ? [TT.Content, this.content] : undefined,
+      (this.sigInfo ?? FAKE_SIGINFO).encodeAs(TT.DSigInfo),
+    ];
+  }
+
   public getImplicitDigest(): Uint8Array|undefined {
-    const topTlv = this[TOPTLV];
-    if (!topTlv) {
-      throw new Error("wire encoding is unavailable");
-    }
-    return topTlv[TOPTLV_DIGEST];
+    return this[TopTlv]?.[TopTlvDigest];
   }
 
   public async computeImplicitDigest(): Promise<Uint8Array> {
     let digest = this.getImplicitDigest();
     if (!digest) {
-      digest = await sha256(this[TOPTLV]!);
-      this[TOPTLV]![TOPTLV_DIGEST] = digest;
+      if (!this[TopTlv]) {
+        Encoder.encode(this);
+      }
+      digest = await sha256(this[TopTlv]!);
+      this[TopTlv]![TopTlvDigest] = digest;
     }
     return digest;
   }
@@ -143,31 +155,21 @@ export class Data {
     return this.getFullName()!;
   }
 
-  public [LLSign.PROCESS](): Promise<void> {
-    return LLSign.processImpl(this,
-      () => Encoder.encode(this.getSignedPortion()),
-      (sig) => this.sigValue = sig);
+  public async [LLSign.OP](sign: LLSign) {
+    const signedPortion = Encoder.encode(this.encodeSignedPortion());
+    this[SignedPortion] = signedPortion;
+    this.sigValue = await sign(signedPortion);
   }
 
-  public [LLVerify.VERIFY](verify: LLVerify): Promise<void> {
+  public async [LLVerify.OP](verify: LLVerify) {
     if (!this.sigValue) {
-      return Promise.reject(new Error("packet is unsigned"));
+      throw new Error("SigValue is missing");
     }
-    return LLVerify.verifyImpl(this, this.sigValue, verify);
-  }
-
-  private getSignedPortion(): Encodable[] {
-    return [
-      this.name,
-      [
-        TT.MetaInfo, Encoder.OmitEmpty,
-        this.contentType > 0 ? [TT.ContentType, NNI(this.contentType)] : undefined,
-        this.freshnessPeriod > 0 ? [TT.FreshnessPeriod, NNI(this.freshnessPeriod)] : undefined,
-        this.finalBlockId ? [TT.FinalBlockId, this.finalBlockId] : undefined,
-      ],
-      this.content.byteLength > 0 ? [TT.Content, this.content] : undefined,
-      (this.sigInfo ?? FAKE_SIGINFO).encodeAs(TT.DSigInfo),
-    ];
+    const signedPortion = this[SignedPortion];
+    if (!signedPortion) {
+      throw new Error("SignedPortion is missing");
+    }
+    await verify(signedPortion, this.sigValue);
   }
 }
 
@@ -197,7 +199,7 @@ export namespace Data {
 
   /** Obtain original encoding. */
   export function getWire(data: Data): Uint8Array {
-    const wire = data[TOPTLV];
+    const wire = data[TopTlv];
     if (!wire) {
       throw new Error("wire encoding unavailable");
     }

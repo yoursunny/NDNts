@@ -99,15 +99,11 @@ test("decode", async () => {
   await expect(interest.validateParamsDigest()).resolves.toBeUndefined();
 });
 
-async function encodeWithLLSign(interest: Interest): Promise<Uint8Array> {
-  await interest[LLSign.PROCESS]();
-  return Encoder.encode(interest);
-}
-
 test("encode parameterized", async () => {
   // insert empty AppParameters
   let interest = new Interest(new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"));
-  await expect(encodeWithLLSign(interest)).resolves.toEncodeAs(({ value }) => {
+  await interest.updateParamsDigest();
+  expect(interest).toEncodeAs(({ value }) => {
     expect(value).toMatchTlv(
       ({ decoder }) => {
         const name = decoder.decode(Name);
@@ -129,8 +125,15 @@ test("encode parameterized", async () => {
   expect(interest.name.at(1).is(ParamsDigest)).toBeTruthy();
   expect(Encoder.encode(interest)).toBeInstanceOf(Uint8Array);
 
-  // cannot validate unless Interest comes from decoding
-  await expect(interest.validateParamsDigest()).rejects.toThrow(/empty/);
+  // immediately verifiable
+  await expect(interest.validateParamsDigest()).resolves.toBeUndefined();
+
+  // cannot encode placeholder
+  interest = new Interest(
+    new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"),
+    Uint8Array.of(0xC0, 0xC1),
+  );
+  expect(() => Encoder.encode(interest)).toThrow(/ParamsDigest/);
 });
 
 test("decode parameterized", async () => {
@@ -150,17 +153,19 @@ test("decode parameterized", async () => {
   expect(interest.name.length).toBe(2);
   expect(interest.appParameters).not.toBeUndefined();
 
-  const wire = await encodeWithLLSign(new Interest(
+  interest = new Interest(
     new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"),
     Uint8Array.of(0xC0, 0xC1),
-  ));
+  );
+  await interest.updateParamsDigest();
+  const wire = Encoder.encode(interest);
   decoder = new Decoder(wire);
   interest = decoder.decode(Interest);
   expect(interest.name.length).toBe(3);
   expect(interest.appParameters).not.toBeUndefined();
 
   const verify = jest.fn();
-  await expect(interest[LLVerify.VERIFY](verify)).resolves.toBeUndefined();
+  await expect(interest[LLVerify.OP](verify)).rejects.toThrow();
   expect(verify).not.toHaveBeenCalled();
 
   await expect(interest.validateParamsDigest()).resolves.toBeUndefined();
@@ -175,7 +180,8 @@ test("encode signed", async () => {
   // error on out of place ParamsDigest
   const interest = new Interest(new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"));
   interest.sigInfo = new SigInfo(SigType.Sha256);
-  await expect(encodeWithLLSign(interest)).rejects.toThrow(/out of place/);
+  const sign = jest.fn();
+  await expect(interest[LLSign.OP](sign)).rejects.toThrow(/out of place/);
 
   // other tests in llsign.t.ts
 });

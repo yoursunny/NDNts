@@ -1,6 +1,6 @@
 import "../test-fixture/expect";
 
-import { Decoder, Encoder } from "@ndn/tlv";
+import { Decoder } from "@ndn/tlv";
 import { createHash } from "crypto";
 
 import { Component, ImplicitDigest, Name } from "..";
@@ -131,13 +131,13 @@ test("decode", () => {
 
 test("ImplicitDigest", async () => {
   let data = new Data("/A");
-  await expect(data.computeImplicitDigest()).rejects.toThrow(/unavailable/);
   expect(() => Data.getWire(data)).toThrow();
-
-  const wire = Encoder.encode(data);
-  const expectedDigest = createHash("sha256").update(wire).digest();
   expect(data.getImplicitDigest()).toBeUndefined();
-  await expect(data.computeImplicitDigest()).resolves.toEqualUint8Array(expectedDigest);
+
+  const computedDigest = await data.computeImplicitDigest();
+  const wire = Data.getWire(data);
+  const expectedDigest = createHash("sha256").update(wire).digest();
+  expect(computedDigest).toEqualUint8Array(expectedDigest);
   expect(data.getImplicitDigest()).toEqualUint8Array(expectedDigest);
   await expect(data.computeImplicitDigest()).resolves.toEqualUint8Array(expectedDigest);
 
@@ -146,6 +146,5 @@ test("ImplicitDigest", async () => {
   const fullName = await data.computeFullName();
   expect(fullName).toEqualName(`/A/${ImplicitDigest.create(expectedDigest)}`);
   const fullName2 = data.getFullName();
-  expect(fullName2).not.toBeUndefined();
   expect(fullName2).toEqualName(fullName);
 });

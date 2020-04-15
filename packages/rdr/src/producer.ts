@@ -34,11 +34,11 @@ interface Options {
 }
 
 /** Make RDR metadata packet. */
-export function makeMetadataPacket(m: Metadata, {
+export async function makeMetadataPacket(m: Metadata, {
   freshnessPeriod = 1,
   prefix,
   signer = theDigestKey,
-}: Options = {}): Data {
+}: Options = {}): Promise<Data> {
   let name = prefix ? new Name(prefix) : m.name.getPrefix(-1);
   name = name.append(MetadataKeyword, Version.create(Date.now()), Segment.create(0));
 
@@ -46,7 +46,7 @@ export function makeMetadataPacket(m: Metadata, {
   data.name = makeName(m, prefix);
   data.content = encodeMetadataContent(m);
   data.freshnessPeriod = freshnessPeriod;
-  signer.sign(data);
+  await signer.sign(data);
   return data;
 }
 

@@ -5,12 +5,11 @@ import { Decoder, Encoder, NNI } from "@ndn/tlv";
 class SignedInterest02 {
   public sigInfo?: SigInfo;
   public sigValue?: Uint8Array;
-  public [LLSign.PENDING]?: LLSign;
 
   constructor(public name: Name, private readonly timestamp: number) {
   }
 
-  public async [LLSign.PROCESS](): Promise<void> {
+  public async [LLSign.OP](sign: LLSign) {
     const nonce = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
     const signedPortion = Encoder.encode([
       ...this.name.comps,
@@ -18,7 +17,7 @@ class SignedInterest02 {
       [TT.GenericNameComponent, NNI(nonce)],
       [TT.GenericNameComponent, this.sigInfo!.encodeAs(TT.DSigInfo)],
     ]);
-    await LLSign.processImpl(this, () => signedPortion, (sig) => this.sigValue = sig);
+    this.sigValue = await sign(signedPortion);
     this.name = new Decoder(Encoder.encode([
       TT.Name,
       signedPortion,
@@ -38,8 +37,7 @@ export async function signInterest02(
     { signer = theDigestKey, timestamp = Date.now() }: signInterest02.Options = {},
 ): Promise<Interest> {
   const si = new SignedInterest02(interest.name, timestamp);
-  signer.sign(si);
-  await si[LLSign.PROCESS]();
+  await signer.sign(si);
   interest.name = si.name;
   return interest;
 }

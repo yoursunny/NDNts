@@ -63,8 +63,7 @@ async function checkWebCrypto() {
           await Certificate.loadPublicKey(cert);
         }
         let pkt = new Data("/D");
-        pvt!.sign(pkt);
-        await pkt[LLSign.PROCESS]();
+        await pvt!.sign(pkt);
         pkt = new Decoder(Encoder.encode(pkt)).decode(Data);
         await pub.verify(pkt);
       } catch (err1) {

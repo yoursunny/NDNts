@@ -1,5 +1,5 @@
 import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength, RsaPrivateKey } from "@ndn/keychain";
-import { Data, LLSign } from "@ndn/packet";
+import { Data } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 
 import { deleteTmpFiles, execute, writeTmpFile } from "../../../test-fixture";
@@ -26,8 +26,7 @@ test.each(TABLE)("%p", async ({ cls, arg }) => {
   const cert = await Certificate.selfSign({ privateKey, publicKey });
 
   const packet = new Data("/D", Uint8Array.of(0xC0, 0xC1));
-  privateKey.sign(packet);
-  await packet[LLSign.PROCESS]();
+  await privateKey.sign(packet);
 
   const certFile = writeTmpFile(Encoder.encode(cert.data));
   const packetFile = writeTmpFile(Encoder.encode(packet));

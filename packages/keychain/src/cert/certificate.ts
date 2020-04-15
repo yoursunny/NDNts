@@ -1,5 +1,5 @@
 import { Version } from "@ndn/naming-convention2";
-import { Component, Data, LLSign, SigInfo } from "@ndn/packet";
+import { Component, Data, SigInfo } from "@ndn/packet";
 
 import { loadSpki } from "../key/load";
 import { CertificateName, KeyName, PrivateKey, PublicKey } from "../mod";
@@ -59,8 +59,7 @@ export namespace Certificate {
     ValidityPeriod.set(si, validity);
     data.sigInfo = si;
     data.content = publicKey;
-    signer.sign(data);
-    await data[LLSign.PROCESS]();
+    await signer.sign(data);
     return new Certificate(data);
   }
 

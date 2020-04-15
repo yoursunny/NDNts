@@ -1,4 +1,4 @@
-import { canSatisfy, Data, ImplicitDigest, Interest, LLSign, Name } from "@ndn/packet";
+import { canSatisfy, Data, ImplicitDigest, Interest, Name } from "@ndn/packet";
 import { Encoder, toHex, toUtf8 } from "@ndn/tlv";
 import { AbstractLevelDOWN } from "abstract-leveldown";
 import { EventEmitter } from "events";
@@ -188,7 +188,6 @@ export class Transaction {
       const wire = Data.getWire(data);
       encoder.prependRoom(wire.byteLength).set(wire);
     } catch {
-      await data[LLSign.PROCESS]();
       encoder.encode(data);
     }
 

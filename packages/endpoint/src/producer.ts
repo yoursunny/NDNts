@@ -1,6 +1,5 @@
 import { Forwarder, FwFace, InterestToken } from "@ndn/fw";
-import { canSatisfy, Data, Interest, LLSign, Name, NameLike } from "@ndn/packet";
-import { Encoder } from "@ndn/tlv";
+import { canSatisfy, Data, Interest, Name, NameLike } from "@ndn/packet";
 import { flatTransform } from "streaming-iterables";
 
 import { DataBuffer } from "./data-buffer";
@@ -60,15 +59,9 @@ export class EndpointProducer {
     } = { ...this.opts, ...opts };
     let producer: Producer; // eslint-disable-line prefer-const
 
-    const signData = async (data: Data) => {
-      // TODO sign with trust schema
-      await data[LLSign.PROCESS]();
-    };
     const processInterestUnbuffered = async (interest: Interest) => {
       const output = await handler(interest, producer);
       if (output instanceof Data) {
-        await signData(output);
-        Encoder.encode(output);
         if (!await canSatisfy(interest, output)) {
           return undefined;
         }

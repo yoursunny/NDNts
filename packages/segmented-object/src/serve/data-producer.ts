@@ -79,7 +79,7 @@ export abstract class DataProducer {
     throw new Error("invalid Interest name");
   }
 
-  protected makeData({ i, final, payload }: Chunk): Data {
+  protected async makeData({ i, final, payload }: Chunk): Promise<Data> {
     const data = new Data(
       this.prefix.append(this.segmentNumConvention, i),
       this.contentType,
@@ -89,7 +89,7 @@ export abstract class DataProducer {
     if (typeof final === "number") {
       data.finalBlockId = this.segmentNumConvention.create(final);
     }
-    this.signer.sign(data);
+    await this.signer.sign(data);
     return data;
   }
 
@@ -186,7 +186,7 @@ class SequentialDataProducer extends DataProducer {
         this.pause = undefined;
       }
 
-      const data = this.makeData(chunk);
+      const data = await this.makeData(chunk);
       this.buffer.set(i, data);
       if (Number.isFinite(bufferBehind)) {
         this.buffer.delete(i - bufferBehind);

@@ -13,7 +13,7 @@ export abstract class PublicKeyBase extends NamedKey {
 
   /** Verify the signature on a packet. */
   public verify(pkt: Verifiable): Promise<void> {
-    return pkt[LLVerify.VERIFY]((input, sig) => this.llVerify(input, sig));
+    return pkt[LLVerify.OP]((input, sig) => this.llVerify(input, sig));
   }
 
   /** Export as SubjectPublicKeyInfo format. */

@@ -76,7 +76,7 @@ test("tx", async () => {
     new Nack(new Interest("/N", Interest.Nonce(0xA0A1A2A3))),
     new Interest("/P"),
   ];
-  theDigestKey.sign(input[0] as Data);
+  await theDigestKey.sign(input[0] as Data);
   PitToken.set(input[3] as Interest, Uint8Array.of(0xD4, 0xD5));
 
   const output = await pipeline(

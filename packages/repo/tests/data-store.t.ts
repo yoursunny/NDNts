@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Data, Interest, LLSign, Name } from "@ndn/packet";
+import { Data, Interest, Name } from "@ndn/packet";
 import memdown from "memdown";
 import { collect, map } from "streaming-iterables";
 
@@ -11,13 +11,6 @@ beforeEach(() => store = new DataStore(memdown()));
 afterEach(() => store.close());
 
 test("insert get delete", async () => {
-  const dataA0 = new Data("/A/0");
-  dataA0[LLSign.PENDING] = () => Promise.reject(new Error("xxxx"));
-  await expect(store.insert(dataA0, new Data("/A/1"), new Data("/A/2"))).rejects.toThrow(/xxxx/);
-  await expect(store.get(new Name("/A/0"))).resolves.toBeUndefined();
-  await expect(store.get(new Name("/A/1"))).resolves.toBeUndefined();
-  await expect(store.get(new Name("/A/2"))).resolves.toBeUndefined();
-
   await store.insert(new Data("/A/1"), new Data("/A/2"));
   await expect(store.get(new Name("/A/0"))).resolves.toBeUndefined();
   await expect(store.get(new Name("/A/1"))).resolves.toHaveName("/A/1");

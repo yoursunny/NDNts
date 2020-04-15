@@ -7,12 +7,12 @@ type Signable = LLSign.Signable & PacketWithSignature;
 /** Named private key. */
 export abstract class PrivateKeyBase extends NamedKey {
   /** Sign the packet. */
-  public sign(pkt: Signable): void {
+  public sign(pkt: Signable): Promise<void> {
     const si = pkt.sigInfo ?? new SigInfo();
     si.type = this.sigType;
     si.keyLocator = this.keyLocator;
     pkt.sigInfo = si;
-    pkt[LLSign.PENDING] = (input) => this.llSign(input);
+    return pkt[LLSign.OP]((input) => this.llSign(input));
   }
 
   protected abstract llSign(input: Uint8Array): Promise<Uint8Array>;
