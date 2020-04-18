@@ -1,6 +1,6 @@
 import { Endpoint, Producer } from "@ndn/endpoint";
 import { Certificate, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
-import { Component, Interest } from "@ndn/packet";
+import { Component, ComponentLike, Data, Interest } from "@ndn/packet";
 import { serveMetadata } from "@ndn/rdr";
 import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
@@ -10,23 +10,33 @@ import { CaProfile, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, Ne
 
 export interface ServerOptions {
   endpoint?: Endpoint;
+  repo: RepoDataStore;
   profile: CaProfile;
   key: PrivateKey;
+  issuerId?: ComponentLike;
+}
+
+interface RepoDataStore {
+  insert(data: Data): Promise<void>;
 }
 
 export class Server {
   public static create({
     endpoint = new Endpoint(),
+    repo,
     profile,
     key,
+    issuerId = "NDNts-NDNCERT",
   }: ServerOptions): Server {
-    return new Server(endpoint, profile, key);
+    return new Server(endpoint, repo, profile, key, Component.from(issuerId));
   }
 
   private constructor(
       endpoint: Endpoint,
+      private readonly repo: RepoDataStore,
       private readonly profile: CaProfile,
       private readonly key: PrivateKey,
+      private readonly issuerId: Component,
   ) {
     const { cert, prefix, data: { name: infoName } } = profile;
     assert(cert.certName.toKeyName().toName().equals(key.name));
@@ -108,12 +118,13 @@ export class Server {
     this.state.delete(requestIdHex);
 
     const issuedCert = await Certificate.issue({
-      issuerId: Component.from("NDNCERT"),
+      issuerId: this.issuerId,
       issuerPrivateKey: this.key,
       publicKey: context.certRequestPub,
       validity: context.validityPeriod,
     });
     const issuedCertName = await issuedCert.data.computeFullName();
+    await this.repo.insert(issuedCert.data);
 
     const response = await ChallengeResponse.build({
       profile: this.profile,
@@ -130,7 +141,7 @@ export class Server {
   };
 }
 
-export interface Context {
+interface Context {
   updated: number;
   sessionKey: CryptoKey;
   certRequestPub: PublicKey;

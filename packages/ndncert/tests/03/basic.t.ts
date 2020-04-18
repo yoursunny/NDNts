@@ -2,8 +2,10 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Certificate, EcPrivateKey, RsaPrivateKey } from "@ndn/keychain";
 import { canSatisfy, Name } from "@ndn/packet";
+import { DataStore, RepoProducer } from "@ndn/repo";
+import memdown from "memdown";
 
-import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, requestCertificate, Server, Status } from "../../src/03/mod";
+import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, requestCertificate, Server, Status } from "../..";
 
 test("crypto", async () => {
   const { privateKey: ecdhPvtA, publicKey: ecdhPubA } = await crypto.generateEcdhKey();
@@ -124,6 +126,9 @@ test("packets", async () => {
 });
 
 test("workflow", async () => {
+  const repo = new DataStore(memdown());
+  const repoProducer = new RepoProducer(repo, { reg: RepoProducer.PrefixRegShorter(2) });
+
   const [caPvt, caPub] = await RsaPrivateKey.generate("/authority", 1024);
   const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
   const profile = await CaProfile.build({
@@ -138,16 +143,19 @@ test("workflow", async () => {
 
   const server = Server.create({
     profile,
+    repo,
     key: caPvt,
   });
 
   const [reqPvt, reqPub] = await EcPrivateKey.generate("/requester", "P-256");
-  const reqCertName = await requestCertificate({
+  const reqCert = await requestCertificate({
     profile,
     privateKey: reqPvt,
     publicKey: reqPub,
   });
-  console.log(`${reqCertName}`);
+  const { data: { name: reqCertName }, validity: reqCertValidity } = reqCert;
+  console.log(`${reqCertName} ${reqCertValidity}`);
 
   server.close();
+  repoProducer.close();
 });

@@ -1,6 +1,6 @@
 import { Endpoint } from "@ndn/endpoint";
-import { PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
-import { Name } from "@ndn/packet";
+import { Certificate, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
+import { Interest } from "@ndn/packet";
 
 import * as crypto from "../crypto-common";
 import { CaProfile, ChallengeRequest, ChallengeResponse, NewRequest, NewResponse } from "../packet/mod";
@@ -19,7 +19,7 @@ export async function requestCertificate({
   privateKey,
   publicKey,
   validity,
-}: ClientOptions): Promise<Name> {
+}: ClientOptions): Promise<Certificate> {
   const describe = `NDNCERT-CLIENT(${privateKey.name})`;
 
   const { privateKey: ecdhPvt, publicKey: ecdhPub } = await crypto.generateEcdhKey();
@@ -49,5 +49,8 @@ export async function requestCertificate({
   if (!issuedCertName) {
     throw new Error("certificate not issued");
   }
-  return issuedCertName;
+
+  const issuedCertData = await endpoint.consume(new Interest(issuedCertName), { describe });
+  const issuedCert = new Certificate(issuedCertData);
+  return issuedCert;
 }

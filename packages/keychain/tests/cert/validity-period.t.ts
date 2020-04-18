@@ -15,6 +15,7 @@ test("encode decode", () => {
 
   let vp = new ValidityPeriod(new Date(1542099529000), new Date(1602434283000));
   expect(vp).toEncodeAs(wire);
+  expect(vp.toString()).toBe("20181113T085849-20201011T163803");
 
   vp = new Decoder(Uint8Array.from(wire)).decode(ValidityPeriod);
   expect(vp.notBefore).toEqual(new Date(1542099529000));

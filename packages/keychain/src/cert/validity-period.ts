@@ -14,8 +14,8 @@ function decodeTimestamp(str: string): Date {
   return new Date(Date.UTC(y, m - 1, d, h, i, s));
 }
 
-function encodeTimestamp(d: Date): Uint8Array {
-  const str = [
+function encodeTimestampString(d: Date): string {
+  return [
     d.getUTCFullYear().toString().padStart(4, "0"),
     (d.getUTCMonth() + 1).toString().padStart(2, "0"),
     d.getUTCDate().toString().padStart(2, "0"),
@@ -24,7 +24,10 @@ function encodeTimestamp(d: Date): Uint8Array {
     d.getUTCMinutes().toString().padStart(2, "0"),
     d.getUTCSeconds().toString().padStart(2, "0"),
   ].join("");
-  return toUtf8(str);
+}
+
+function encodeTimestamp(d: Date): Uint8Array {
+  return toUtf8(encodeTimestampString(d));
 }
 
 const EVD = new EvDecoder<ValidityPeriod>("ValidityPeriod", TT.ValidityPeriod)
@@ -52,9 +55,13 @@ export class ValidityPeriod {
   }
 
   /** Determine whether dt is within validity period. */
-  public includes(dt: Date) {
+  public includes(dt: Date): boolean {
     const t = dt.getTime();
     return this.notBefore.getTime() <= t && t <= this.notAfter.getTime();
+  }
+
+  public toString(): string {
+    return `${encodeTimestampString(this.notBefore)}-${encodeTimestampString(this.notAfter)}`;
   }
 }
 
