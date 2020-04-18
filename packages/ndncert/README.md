@@ -11,7 +11,7 @@ Use `@ndn/ndncert/02` import path to access this implementation.
 This implementation works in Node and Chrome (desktop and Android).
 It does not work in Firefox and iOS, because Web Crypto API does not support ECDH *compressed point* format.
 
-`@ndn/keychain-cli` package offers `ndntssec ndncert-client` command that uses this implementation.
+`@ndn/keychain-cli` package offers `ndntssec ndncert02-client` command that uses this implementation.
 
 ## NDNCERT 0.3
 
@@ -40,3 +40,5 @@ It does not work in Firefox and iOS, because Web Crypto API does not support ECD
   * [ ] challenges
   * [X] retrieve certificate
   * [ ] handle error messages
+
+`@ndn/keychain-cli` package offers `ndntssec ndncert03-profile`,  `ndntssec ndncert03-ca`,  `ndntssec ndncert03-client` commands that use this implementation.

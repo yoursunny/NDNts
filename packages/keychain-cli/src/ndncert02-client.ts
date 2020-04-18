@@ -70,9 +70,9 @@ async function main(args: Args) {
   stdout.write(`${cert.name}\n`);
 }
 
-export class NdncertClientCommand implements CommandModule<{}, Args> {
-  public command = "ndncert-client";
-  public describe = "request certificate using NDNCERT protocol";
+export class Ndncert02ClientCommand implements CommandModule<{}, Args> {
+  public command = "ndncert02-client";
+  public describe = "request certificate using NDNCERT 0.2 protocol";
 
   public builder(argv: Argv): Argv<Args> {
     return GenKeyCommand.declareKeyParamArgs(argv)

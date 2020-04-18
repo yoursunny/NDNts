@@ -128,18 +128,18 @@ This command copies keys and certificates from ndn-cxx KeyChain using `ndnsec` e
 
 See `@ndn/ndnsec` package for more information.
 
-## `ndntssec ndncert-client`: Request Certificate from NDNCERT CA
+## `ndntssec ndncert02-client`: Request Certificate from NDNCERT 0.2 CA
 
 ```sh
 nfd-start
 ndn-autoconfig
 ndnpeek -p /ndn/edu/ucla/yufeng/CA/_PROBE/INFO > ndncert-ucla.json
 
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec ndncert-client --type ec --curve P-384 --ca ndncert-ucla.json --valid-days 10 --verbose
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec ndncert-client --ndnsec --ca ndncert-ucla.json
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec ndncert02-client --type ec --curve P-384 --ca ndncert-ucla.json --valid-days 10 --verbose
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec ndncert02-client --ndnsec --ca ndncert-ucla.json
 ```
 
-This command requests a certificate from NDNCERT certificate authority, and prints certificate name to standard output.
+This command requests a certificate from NDNCERT 0.2 certificate authority, and prints certificate name to standard output.
 
 * `--ca` specifies NDNCERT CA config file.
   This argument is required.
@@ -153,3 +153,44 @@ This command requests a certificate from NDNCERT certificate authority, and prin
 
 This command by default connects to local NFD forwarder.
 You may setup a different uplink using `NDNTS_UPLINK` environment variable, as explained in `@ndn/cli-common` documentation.
+
+## `ndntssec ndncert03-*`: NDNCERT 0.3
+
+`ndntssec ndncert03-profile` command generates a CA profile.
+
+* `--out` specifies output filename.
+  The file contains the CA profile Data packet in binary format.
+* `--prefix` specifies the name prefix for the CA.
+  Conventionally, it should end with `CA` component.
+* `--cert` specifies the certificate name for the CA.
+  The certificate and the corresponding private key must exist in the keychain given in `NDNTS_KEYCHAIN` environment variable.
+* `--valid-days` specifies maximum validity period of issued certificates, in days.
+  The default is 30 days.
+
+`ndntssec ndncert03-ca` command runs a CA.
+
+* `--profile` specifies filename of CA profile.
+* `--store` specifies directory path of a repository that stores issued certificates.
+
+`ndntssec ndncert03-client` command requests a certificate.
+
+* `--profile` specifies filename of CA profile.
+* `--key` specifies the key name to obtain certificate for.
+  The key pair must exist in the keychain given in `NDNTS_KEYCHAIN` environment variable.
+
+Example:
+
+```sh
+CACERT=$(NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec gen-key /A)
+
+NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec ndncert03-profile --out /tmp/ca.data --prefix /localhost/my-ndncert/CA --cert $CACERT --valid-days 60
+
+nfd-start
+NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo
+
+REQCERT=$(NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec gen-key /B)
+REQKEY=$(echo $REQCERT | awk 'BEGIN{FS=OFS="/"}{NF-=2;print}')
+NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec ndncert03-client --profile /tmp/ca.data --key $REQKEY
+
+NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec list-certs
+```
