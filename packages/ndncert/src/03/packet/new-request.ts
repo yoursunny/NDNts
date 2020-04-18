@@ -1,5 +1,5 @@
 import { Certificate, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
-import { Data, Interest } from "@ndn/packet";
+import { Data, Interest, SigInfo } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
@@ -16,6 +16,10 @@ export class NewRequest {
           interest.name.at(-2).equals(Verb.NEW))) {
       throw new Error("bad Name");
     }
+    if (typeof interest.sigInfo?.nonce === "undefined" || typeof interest.sigInfo.time === "undefined") {
+      throw new Error("bad SigInfo");
+    }
+
     const request = new NewRequest(interest);
     request.ecdhPub_ = await crypto.importEcdhPub(request.ecdhPubRaw);
     request.publicKey_ = await Certificate.loadPublicKey(request.certRequest);
@@ -85,6 +89,7 @@ export namespace NewRequest {
     interest.name = profile.prefix.append(Verb.NEW);
     interest.mustBeFresh = true;
     interest.appParameters = payload;
+    interest.sigInfo = new SigInfo(SigInfo.Nonce(), SigInfo.Time());
     await privateKey.sign(interest);
     return NewRequest.fromInterest(interest, profile);
   }

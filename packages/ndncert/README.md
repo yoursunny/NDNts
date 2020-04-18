@@ -19,20 +19,23 @@ It does not work in Firefox and iOS, because Web Crypto API does not support ECD
 * [X] crypto operations
 * [ ] messages
   * [X] CA profile (segmentation not supported)
-  * [ ] PROBE
-  * [ ] NEW request: missing SignatureNonce and SignatureTime
+  * [ ] PROBE request
+  * [ ] PROBE response
+  * [X] NEW request
   * [X] NEW response
-  * [ ] CHALLENGE request: missing SignatureNonce and SignatureTime
+  * [X] CHALLENGE request
   * [X] CHALLENGE response
   * [X] error messages
 * [ ] server
   * [X] publish CA profile with RDR
-  * [X] basic workflow
+  * [ ] probe
+  * [X] basic issuance workflow
   * [ ] challenges
   * [ ] publish certificate
-  * [ ] error messages
+  * [ ] proper error messages
 * [ ] client workflow
-  * [X] basic workflow
+  * [ ] probe
+  * [X] basic issuance workflow
   * [ ] challenges
   * [ ] retrieve certificate
-  * [ ] handle errors
+  * [ ] handle error messages

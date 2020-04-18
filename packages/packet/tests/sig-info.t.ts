@@ -21,10 +21,8 @@ test("encode", () => {
     );
   });
 
-  si = new SigInfo(SigType.Sha256WithRsa, "/KL");
-  si.nonce = 0x59EF;
-  si.time = new Date(1157512424208);
-  si.seqNum = 0xF598C7;
+  si = new SigInfo(SigType.Sha256WithRsa, "/KL", SigInfo.Nonce(0x59EF),
+    SigInfo.Time(1157512424208), SigInfo.SeqNum(0xF598C7));
   expect(si.encodeAs(TT.ISigInfo)).toEncodeAs(({ type, value }) => {
     expect(type).toBe(TT.ISigInfo);
     expect(value).toMatchTlv(
@@ -111,6 +109,6 @@ test("decode", () => {
   expect(si.keyLocator).toBeInstanceOf(KeyDigest);
   expect((si.keyLocator as KeyDigest).value).toHaveLength(3);
   expect(si.nonce).toBe(0xB0B1B2B3);
-  expect(si.time).toEqual(new Date(0xC0C1));
+  expect(si.time).toEqual(0xC0C1);
   expect(si.seqNum).toBe(0xD0D1);
 });

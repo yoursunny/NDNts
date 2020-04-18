@@ -1,5 +1,5 @@
 import { PrivateKey, PublicKey } from "@ndn/keychain";
-import { Component, Interest } from "@ndn/packet";
+import { Component, Interest, SigInfo } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, toUtf8 } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
@@ -25,9 +25,11 @@ export class ChallengeRequest {
           interest.name.at(-3).equals(Verb.CHALLENGE))) {
       throw new Error("bad Name");
     }
-
     if (!interest.appParameters) {
       throw new Error("ApplicationParameter is missing");
+    }
+    if (typeof interest.sigInfo?.nonce === "undefined" || typeof interest.sigInfo.time === "undefined") {
+      throw new Error("bad SigInfo");
     }
 
     const requestId = interest.name.at(-2).value;
@@ -82,6 +84,7 @@ export namespace ChallengeRequest {
     interest.name = profile.prefix.append(Verb.CHALLENGE, new Component(undefined, requestId));
     interest.mustBeFresh = true;
     interest.appParameters = encrypted_payload.encode(await crypto.sessionEncrypt(sessionKey, payload));
+    interest.sigInfo = new SigInfo(SigInfo.Nonce(), SigInfo.Time());
     await privateKey.sign(interest);
     return ChallengeRequest.fromInterest(interest, profile,
       () => Promise.resolve({ sessionKey, certRequestPub: publicKey }));

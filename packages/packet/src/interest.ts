@@ -238,9 +238,12 @@ export namespace Interest {
   export const CanBePrefix = Symbol("Interest.CanBePrefix");
   export const MustBeFresh = Symbol("Interest.MustBeFresh");
 
-  export function Nonce(v: number): NonceTag {
+  export function Nonce(v = generateNonce()): NonceTag {
     return new NonceTag(v);
   }
+
+  /** Generate a random nonce. */
+  export const generateNonce = SigInfo.generateNonce;
 
   export function Lifetime(v: number): LifetimeTag {
     return new LifetimeTag(v);
@@ -254,9 +257,4 @@ export namespace Interest {
 
   export type CtorArg = NameLike | typeof CanBePrefix | typeof MustBeFresh | FwHint |
   LifetimeTag | HopLimitTag | Uint8Array;
-
-  /** Generate a random nonce. */
-  export function generateNonce(): number {
-    return Math.floor(Math.random() * 0x100000000);
-  }
 }

@@ -23,7 +23,7 @@ const EVD = new EvDecoder<SigInfo>("SigInfo", [TT.ISigInfo, TT.DSigInfo])
       .add(TT.KeyDigest, (t, { value }) => t.keyLocator = new KeyDigest(value), { order: 0 }),
   )
   .add(TT.SigNonce, (t, { value }) => t.nonce = NNI.decode(value, 4))
-  .add(TT.SigTime, (t, { nni }) => t.time = new Date(nni))
+  .add(TT.SigTime, (t, { nni }) => t.time = nni)
   .add(TT.SigSeqNum, (t, { nni }) => t.seqNum = nni)
   .setUnknown(EXTENSIONS.decodeUnknown);
 
@@ -36,7 +36,7 @@ export class SigInfo {
   public type?: number;
   public keyLocator?: KeyLocator;
   public nonce?: number;
-  public time?: Date;
+  public time?: number;
   public seqNum?: number;
   public [Extensible.TAG] = Extensible.newRecords();
 
@@ -59,6 +59,12 @@ export class SigInfo {
       } else if (arg instanceof SigInfo) {
         Object.assign(this, arg);
         this[Extensible.TAG] = { ...arg[Extensible.TAG] };
+      } else if (arg instanceof NonceTag) {
+        this.nonce = arg.v;
+      } else if (arg instanceof TimeTag) {
+        this.time = arg.v;
+      } else if (arg instanceof SeqNumTag) {
+        this.seqNum = arg.v;
       } else {
         throw new Error("unknown SigInfo constructor argument");
       }
@@ -82,7 +88,7 @@ export class SigInfo {
       [TT.SigNonce, Encoder.OmitEmpty,
         typeof this.nonce === "undefined" ? undefined : NNI(this.nonce, 4)],
       [TT.SigTime, Encoder.OmitEmpty,
-        typeof this.time === "undefined" ? undefined : NNI(this.time.getTime())],
+        typeof this.time === "undefined" ? undefined : NNI(this.time)],
       [TT.SigSeqNum, Encoder.OmitEmpty,
         typeof this.seqNum === "undefined" ? undefined : NNI(this.seqNum)],
       ...EXTENSIONS.encode(this),
@@ -90,8 +96,40 @@ export class SigInfo {
   }
 }
 
+class NonceTag {
+  constructor(public v: number) {
+  }
+}
+
+class TimeTag {
+  constructor(public v: number) {
+  }
+}
+
+class SeqNumTag {
+  constructor(public v: number) {
+  }
+}
+
 export namespace SigInfo {
-  export type CtorArg = number | NameLike | KeyDigest;
+  export function Nonce(v = generateNonce()): NonceTag {
+    return new NonceTag(v);
+  }
+
+  /** Generate a random nonce. */
+  export function generateNonce(): number {
+    return Math.floor(Math.random() * 0x100000000);
+  }
+
+  export function Time(v = Date.now()): TimeTag {
+    return new TimeTag(v);
+  }
+
+  export function SeqNum(v: number): SeqNumTag {
+    return new SeqNumTag(v);
+  }
+
+  export type CtorArg = number | NameLike | KeyDigest | NonceTag | TimeTag | SeqNumTag;
 
   export const registerExtension = EXTENSIONS.registerExtension;
   export const unregisterExtension = EXTENSIONS.unregisterExtension;
