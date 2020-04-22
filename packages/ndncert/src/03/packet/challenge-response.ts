@@ -12,7 +12,7 @@ const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse", undefin
   .add(TT.Status, (t, { nni }) => t.status = NNI.constrain(nni, "Status", Status.MAX, Status.MIN), { required: true })
   .add(TT.ChallengeStatus, (t, { text }) => t.challengeStatus = text, { required: true })
   .add(TT.RemainingTries, (t, { nni }) => t.remainingTries = nni, { required: true })
-  .add(TT.RemainingTime, (t, { nni }) => t.remainingTime = nni, { required: true })
+  .add(TT.RemainingTime, (t, { nni }) => t.remainingTime = nni * 1000, { required: true })
   .add(TT.IssuedCertName, (t, { vd }) => t.issuedCertName = vd.decode(Name));
 
 export class ChallengeResponse {
@@ -35,7 +35,7 @@ export namespace ChallengeResponse {
     status: Status;
     challengeStatus: string;
     remainingTries: number;
-    remainingTime: number;
+    remainingTime: number; // milliseconds
     issuedCertName?: Name;
   }
 
@@ -61,7 +61,7 @@ export namespace ChallengeResponse {
       [TT.Status, NNI(status)],
       [TT.ChallengeStatus, toUtf8(challengeStatus)],
       [TT.RemainingTries, NNI(remainingTries)],
-      [TT.RemainingTime, NNI(remainingTime)],
+      [TT.RemainingTime, NNI(remainingTime / 1000)],
       [TT.IssuedCertName, Encoder.OmitEmpty, issuedCertName],
     ]);
 

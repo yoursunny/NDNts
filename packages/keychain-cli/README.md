@@ -167,16 +167,22 @@ You may setup a different uplink using `NDNTS_UPLINK` environment variable, as e
 * `--valid-days` specifies maximum validity period of issued certificates, in days.
   The default is 30 days.
 
-`ndntssec ndncert03-ca` command runs a CA.
+`ndntssec ndncert03-ca` command runs a certificate authority.
 
 * `--profile` specifies filename of CA profile.
 * `--store` specifies directory path of a repository that stores issued certificates.
+* `--challenge nop` enables "nop" challenge that approves all certificate requests.
+* `--challenge pin` enables "pin" challenge that requires the requester to enter a 6-digit PIN code.
+  The correct PIN code is displayed on the console of CA.
 
 `ndntssec ndncert03-client` command requests a certificate.
 
 * `--profile` specifies filename of CA profile.
 * `--key` specifies the key name to obtain certificate for.
   The key pair must exist in the keychain given in `NDNTS_KEYCHAIN` environment variable.
+* `--challenge nop` enables "nop" challenge.
+* `--challenge pin` enables "pin" challenge.
+* You may specify multiple challenges, and the first one advertised by the server will be used.
 
 Example:
 
@@ -186,11 +192,11 @@ CACERT=$(NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec gen-key /A)
 NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec ndncert03-profile --out /tmp/ca.data --prefix /localhost/my-ndncert/CA --cert $CACERT --valid-days 60
 
 nfd-start
-NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo
+NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge pin
 
 REQCERT=$(NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec gen-key /B)
 REQKEY=$(echo $REQCERT | awk 'BEGIN{FS=OFS="/"}{NF-=2;print}')
-NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec ndncert03-client --profile /tmp/ca.data --key $REQKEY
+NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec ndncert03-client --profile /tmp/ca.data --key $REQKEY --challenge pin
 
 NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec list-certs
 ```

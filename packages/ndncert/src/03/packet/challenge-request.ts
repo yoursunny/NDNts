@@ -16,11 +16,11 @@ interface Context {
 const EVD = new EvDecoder<ChallengeRequest.Fields>("ChallengeRequest", undefined)
   .add(TT.SelectedChallenge, (t, { text }) => t.selectedChallenge = text, { order: 1, required: true })
   .add(TT.ParameterKey, (t, { text }) => parameter_kv.parseKey(t.parameters, text), { order: 2, repeat: true })
-  .add(TT.ParameterValue, (t, { text }) => parameter_kv.parseValue(t.parameters, text), { order: 2, repeat: true });
+  .add(TT.ParameterValue, (t, { value }) => parameter_kv.parseValue(t.parameters, value), { order: 2, repeat: true });
 
 export class ChallengeRequest {
   public static async fromInterest(interest: Interest, profile: CaProfile,
-      lookupContext: (requestId: Uint8Array) => Promise<Context>): Promise<ChallengeRequest> {
+      lookupContext: (requestId: Uint8Array) => Promise<Context|undefined>): Promise<ChallengeRequest> {
     if (!(interest.name.getPrefix(-3).equals(profile.prefix) &&
           interest.name.at(-3).equals(Verb.CHALLENGE))) {
       throw new Error("bad Name");
@@ -34,7 +34,11 @@ export class ChallengeRequest {
 
     const requestId = interest.name.at(-2).value;
     crypto.checkRequestId(requestId);
-    const { sessionKey, certRequestPub } = await lookupContext(requestId);
+    const context = await lookupContext(requestId);
+    if (!context) {
+      throw new Error("unknown requestId");
+    }
+    const { sessionKey, certRequestPub } = context;
     await certRequestPub.verify(interest);
 
     const plaintext = await crypto.sessionDecrypt(sessionKey, encrypted_payload.decode(interest.appParameters));
@@ -43,7 +47,7 @@ export class ChallengeRequest {
   }
 
   private constructor(public readonly interest: Interest, plaintext: Uint8Array) {
-    (this as ChallengeRequest.Fields).parameters = new Map<string, string>();
+    (this as ChallengeRequest.Fields).parameters = {};
     EVD.decodeValue(this, new Decoder(plaintext));
     parameter_kv.finish(this.parameters);
   }
@@ -55,7 +59,7 @@ export interface ChallengeRequest extends Readonly<ChallengeRequest.Fields> {}
 export namespace ChallengeRequest {
   export interface Fields {
     selectedChallenge: string;
-    parameters: Map<string, string>;
+    parameters: Record<string, Uint8Array>;
   }
 
   export interface Options extends Fields {

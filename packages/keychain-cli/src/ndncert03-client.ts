@@ -1,9 +1,10 @@
 import { closeUplinks, openUplinks } from "@ndn/cli-common/src/mod";
 import { KeyName } from "@ndn/keychain";
-import { CaProfile, requestCertificate } from "@ndn/ndncert";
+import { CaProfile, ClientChallenge, ClientNopChallenge, ClientPinChallenge, requestCertificate } from "@ndn/ndncert";
 import { Data } from "@ndn/packet";
-import { Decoder } from "@ndn/tlv";
+import { Decoder, toHex } from "@ndn/tlv";
 import { promises as fs } from "graceful-fs";
+import prompts from "prompts";
 import stdout from "stdout-stream";
 import { Arguments, Argv, CommandModule } from "yargs";
 
@@ -12,6 +13,7 @@ import { keyChain } from "./util";
 interface Args {
   profile: string;
   key: string;
+  challenge: string[];
 }
 
 export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
@@ -29,6 +31,13 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
         demandOption: true,
         desc: "key name",
         type: "string",
+      })
+      .option("challenge", {
+        demandOption: true,
+        array: true,
+        choices: ["nop", "pin"],
+        desc: "supported challenges",
+        type: "string",
       });
   }
 
@@ -36,12 +45,35 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
     await openUplinks();
     const profile = await CaProfile.fromData(new Decoder(await fs.readFile(args.profile)).decode(Data));
     const [privateKey, publicKey] = await keyChain.getKeyPair(KeyName.create(args.key).toName());
+
+    const challenges: ClientChallenge[] = [];
+    for (const challengeId of args.challenge) {
+      switch (challengeId) {
+        case "nop":
+          challenges.push(new ClientNopChallenge());
+          break;
+        case "pin": {
+          challenges.push(new ClientPinChallenge(async ({ requestId }) => {
+            const response = await prompts({
+              type: "text",
+              name: "code",
+              message: `PIN for request ${toHex(requestId)}:`,
+            });
+            return response.code;
+          }));
+          break;
+        }
+      }
+    }
+
     const cert = await requestCertificate({
       profile,
       privateKey,
       publicKey,
+      challenges,
     });
     stdout.write(`${await cert.data.computeFullName()}\n`);
+
     await keyChain.insertCert(cert);
     closeUplinks();
   }

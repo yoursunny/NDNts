@@ -43,5 +43,6 @@ module.exports = {
     "brace-style": "off",
     indent: "off",
     quotes: "off",
+    "no-return-await": "off",
   },
 };

@@ -2,10 +2,9 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Certificate, EcPrivateKey, RsaPrivateKey } from "@ndn/keychain";
 import { canSatisfy, Name } from "@ndn/packet";
-import { DataStore, RepoProducer } from "@ndn/repo";
-import memdown from "memdown";
+import { toUtf8 } from "@ndn/tlv";
 
-import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, requestCertificate, Server, Status } from "../..";
+import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, Status } from "../..";
 
 test("crypto", async () => {
   const { privateKey: ecdhPvtA, publicKey: ecdhPubA } = await crypto.generateEcdhKey();
@@ -32,7 +31,7 @@ test("packets", async () => {
     prefix: new Name("/authority/CA"),
     info: "authority CA",
     probeKeys: ["uid"],
-    maxValidityPeriod: 86400,
+    maxValidityPeriod: 86400000,
     cert: caCert,
     signer: caPvt,
     version: 7,
@@ -43,7 +42,7 @@ test("packets", async () => {
   expect(profile.prefix).toEqualName("/authority/CA");
   expect(profile.info).toBe("authority CA");
   expect(profile.probeKeys).toEqual(["uid"]);
-  expect(profile.maxValidityPeriod).toBe(86400);
+  expect(profile.maxValidityPeriod).toBe(86400000);
   expect(profile.cert.name).toEqualName(caCert.name);
 
   const [reqPvt, reqPub] = await EcPrivateKey.generate("/requester", "P-256");
@@ -87,7 +86,7 @@ test("packets", async () => {
     publicKey: reqPub,
     privateKey: reqPvt,
     selectedChallenge: "pin",
-    parameters: new Map<string, string>([["pin", "000000"]]),
+    parameters: { code: toUtf8("000000") },
   });
   expect(challengeInterest.name).toHaveLength(5);
   expect(challengeInterest.name.getPrefix(3)).toEqualName("/authority/CA/CHALLENGE");
@@ -101,8 +100,8 @@ test("packets", async () => {
   expect(lookupContext).toHaveBeenCalledTimes(1);
   expect(lookupContext).toHaveBeenCalledWith(requestId);
   expect(challengeRequest.selectedChallenge).toBe("pin");
-  expect(challengeRequest.parameters.size).toBe(1);
-  expect(challengeRequest.parameters.get("pin")).toBe("000000");
+  expect(Object.keys(challengeRequest.parameters)).toStrictEqual(["code"]);
+  expect(challengeRequest.parameters.code).toEqualUint8Array(toUtf8("000000"));
 
   const { data: challengeData } = await ChallengeResponse.build({
     profile,
@@ -111,7 +110,7 @@ test("packets", async () => {
     status: Status.SUCCESS,
     challengeStatus: "OK",
     remainingTries: 1,
-    remainingTime: 30,
+    remainingTime: 30000,
     issuedCertName: new Name("/issued-cert"),
     signer: caPvt,
   });
@@ -121,41 +120,6 @@ test("packets", async () => {
   expect(challengeResponse.status).toBe(Status.SUCCESS);
   expect(challengeResponse.challengeStatus).toBe("OK");
   expect(challengeResponse.remainingTries).toBe(1);
-  expect(challengeResponse.remainingTime).toBe(30);
+  expect(challengeResponse.remainingTime).toBe(30000);
   expect(challengeResponse.issuedCertName).toEqualName("/issued-cert");
-});
-
-test("workflow", async () => {
-  const repo = new DataStore(memdown());
-  const repoProducer = new RepoProducer(repo, { reg: RepoProducer.PrefixRegShorter(2) });
-
-  const [caPvt, caPub] = await RsaPrivateKey.generate("/authority", 1024);
-  const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
-  const profile = await CaProfile.build({
-    prefix: new Name("/authority/CA"),
-    info: "authority CA",
-    probeKeys: ["uid"],
-    maxValidityPeriod: 86400,
-    cert: caCert,
-    signer: caPvt,
-    version: 7,
-  });
-
-  const server = Server.create({
-    profile,
-    repo,
-    key: caPvt,
-  });
-
-  const [reqPvt, reqPub] = await EcPrivateKey.generate("/requester", "P-256");
-  const reqCert = await requestCertificate({
-    profile,
-    privateKey: reqPvt,
-    publicKey: reqPub,
-  });
-  const { data: { name: reqCertName }, validity: reqCertValidity } = reqCert;
-  console.log(`${reqCertName} ${reqCertValidity}`);
-
-  server.close();
-  repoProducer.close();
 });

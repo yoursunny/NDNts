@@ -40,6 +40,7 @@
     "graceful-fs": "^4.2.3",
     "leveldown": "^5.6.0",
     "loud-rejection": "^2.2.0",
+    "prompts": "^2.3.2",
     "read-json-sync": "^2.0.1",
     "stdout-stream": "^1.4.1",
     "tslib": "*",
@@ -49,7 +50,8 @@
     "@types/fast-chunk-string": "^1.0.0",
     "@types/graceful-fs": "^4.1.3",
     "@types/leveldown": "^4.0.2",
-    "@types/read-json-sync": "gist:80777c00f72ee4627320779f72702efa",
+    "@types/prompts": "^2.0.5",
+    "@types/read-json-sync": "^2.0.0",
     "@types/stdout-stream": "^1.4.0",
     "@types/yargs": "^15.0.4"
   }

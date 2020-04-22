@@ -60,6 +60,11 @@ export class ValidityPeriod {
     return this.notBefore.getTime() <= t && t <= this.notAfter.getTime();
   }
 
+  public equals({ notBefore, notAfter }: ValidityPeriod): boolean {
+    return this.notBefore.getTime() === notBefore.getTime() &&
+           this.notAfter.getTime() === notAfter.getTime();
+  }
+
   public toString(): string {
     return `${encodeTimestampString(this.notBefore)}-${encodeTimestampString(this.notAfter)}`;
   }

@@ -9,7 +9,7 @@ const EVD = new EvDecoder<CaProfile.Fields>("CaProfile", undefined)
   .add(TT.CaPrefix, (t, { vd }) => t.prefix = vd.decode(Name), { required: true })
   .add(TT.CaInfo, (t, { text }) => t.info = text, { required: true })
   .add(TT.ParameterKey, (t, { text }) => t.probeKeys.push(text), { repeat: true })
-  .add(TT.MaxValidityPeriod, (t, { nni }) => t.maxValidityPeriod = nni, { required: true })
+  .add(TT.MaxValidityPeriod, (t, { nni }) => t.maxValidityPeriod = nni * 1000, { required: true })
   .add(TT.CaCertificate, (t, { vd }) => t.cert = new Certificate(vd.decode(Data)), { required: true });
 
 export class CaProfile {
@@ -41,7 +41,7 @@ export namespace CaProfile {
     prefix: Name;
     info: string;
     probeKeys: string[];
-    maxValidityPeriod: number; // seconds
+    maxValidityPeriod: number; // milliseconds
     cert: Certificate;
   }
 
@@ -63,7 +63,7 @@ export namespace CaProfile {
       [TT.CaPrefix, prefix],
       [TT.CaInfo, toUtf8(info)],
       ...probeKeys.map((key): EncodableTlv => [TT.ParameterKey, toUtf8(key)]),
-      [TT.MaxValidityPeriod, NNI(maxValidityPeriod)],
+      [TT.MaxValidityPeriod, NNI(maxValidityPeriod / 1000)],
       [TT.CaCertificate, cert.data],
     ]);
 

@@ -41,6 +41,7 @@
     "loglevel": "^1.6.7",
     "minimalistic-assert": "^1.0.1",
     "node-fetch": "^2.6.0",
+    "strict-event-emitter-types": "^2.0.0",
     "tslib": "*"
   },
   "devDependencies": {

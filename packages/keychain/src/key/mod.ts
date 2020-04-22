@@ -1,4 +1,4 @@
-export { crypto as KeyChainImplWebCrypto } from "./platform/mod";
+export { crypto as KeyChainImplWebCrypto, timingSafeEqual } from "./platform/mod";
 export { PrivateKey } from "./private-key";
 export { PublicKey } from "./public-key";
 export * from "./digest";

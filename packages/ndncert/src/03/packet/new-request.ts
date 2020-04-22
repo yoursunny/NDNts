@@ -21,6 +21,11 @@ export class NewRequest {
     }
 
     const request = new NewRequest(interest);
+    const { validity } = request.certRequest;
+    if (!validity.equals(truncateValidity(validity, profile, true))) {
+      throw new Error("bad ValidityPeriod");
+    }
+
     request.ecdhPub_ = await crypto.importEcdhPub(request.ecdhPubRaw);
     request.publicKey_ = await Certificate.loadPublicKey(request.certRequest);
     await request.publicKey.verify(interest);
@@ -47,9 +52,19 @@ function truncateValidity(
     {
       maxValidityPeriod,
       cert: { validity: { notBefore: caNotBefore, notAfter: caNotAfter } },
-    }: CaProfile): ValidityPeriod {
-  const notBeforeT = Math.max(notBefore.getTime(), caNotBefore.getTime(), Date.now());
-  const notAfterT = Math.min(notAfter.getTime(), caNotAfter.getTime(), notBeforeT + maxValidityPeriod * 1000);
+    }: CaProfile,
+    enableNotBeforeGracePeriod = false): ValidityPeriod {
+  const now = Date.now();
+  const notBeforeT = Math.max(
+    notBefore.getTime(),
+    now - (enableNotBeforeGracePeriod ? 120000 : 0),
+    caNotBefore.getTime(),
+  );
+  const notAfterT = Math.min(
+    notAfter.getTime(),
+    now + maxValidityPeriod,
+    caNotAfter.getTime(),
+  );
   return new ValidityPeriod(new Date(notBeforeT), new Date(notAfterT));
 }
 

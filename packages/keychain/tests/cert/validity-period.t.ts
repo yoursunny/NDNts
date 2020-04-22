@@ -13,13 +13,17 @@ test("encode decode", () => {
     0x32, 0x30, 0x32, 0x30, 0x31, 0x30, 0x31, 0x31, 0x54, 0x31, 0x36, 0x33, 0x38, 0x30, 0x33,
   ];
 
-  let vp = new ValidityPeriod(new Date(1542099529000), new Date(1602434283000));
-  expect(vp).toEncodeAs(wire);
-  expect(vp.toString()).toBe("20181113T085849-20201011T163803");
+  const vp1 = new ValidityPeriod(new Date(1542099529000), new Date(1602434283000));
+  expect(vp1).toEncodeAs(wire);
+  expect(vp1.toString()).toBe("20181113T085849-20201011T163803");
 
-  vp = new Decoder(Uint8Array.from(wire)).decode(ValidityPeriod);
-  expect(vp.notBefore).toEqual(new Date(1542099529000));
-  expect(vp.notAfter).toEqual(new Date(1602434283000));
+  const vp2 = new Decoder(Uint8Array.from(wire)).decode(ValidityPeriod);
+  expect(vp2.notBefore).toEqual(new Date(1542099529000));
+  expect(vp2.notAfter).toEqual(new Date(1602434283000));
+  expect(vp2.equals(vp1)).toBeTruthy();
+
+  vp2.notAfter = new Date(1581489000000);
+  expect(vp2.equals(vp1)).toBeFalsy();
 
   // replace 'T' with 'A'
   const decoder = new Decoder(Uint8Array.from(wire).map((ch) => ch === 0x54 ? 0x41 : ch));

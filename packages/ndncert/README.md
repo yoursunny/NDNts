@@ -31,14 +31,16 @@ It does not work in Firefox and iOS, because Web Crypto API does not support ECD
   * [X] publish CA profile with RDR
   * [ ] probe
   * [X] basic issuance workflow
-  * [ ] challenges
+  * [X] PIN challenge
+  * [ ] email challenge
   * [X] publish certificate
   * [ ] proper error messages
-* [ ] client workflow
+* [ ] client
   * [ ] probe
   * [X] basic issuance workflow
-  * [ ] challenges
+  * [X] PIN challenge
+  * [ ] email challenge
   * [X] retrieve certificate
-  * [ ] handle error messages
+  * [X] handle error messages
 
 `@ndn/keychain-cli` package offers `ndntssec ndncert03-profile`,  `ndntssec ndncert03-ca`,  `ndntssec ndncert03-client` commands that use this implementation.
