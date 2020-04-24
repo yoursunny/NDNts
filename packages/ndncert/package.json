@@ -38,6 +38,7 @@
     "@ndn/rdr": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "fast-chunk-string": "^1.0.1",
+    "indent-string": "^4.0.0",
     "loglevel": "^1.6.7",
     "minimalistic-assert": "^1.0.1",
     "node-fetch": "^2.6.0",

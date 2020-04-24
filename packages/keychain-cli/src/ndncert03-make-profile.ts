@@ -15,8 +15,8 @@ interface Args {
   "valid-days": number;
 }
 
-export class Ndncert03ProfileCommand implements CommandModule<{}, Args> {
-  public command = "ndncert03-profile";
+export class Ndncert03MakeProfileCommand implements CommandModule<{}, Args> {
+  public command = "ndncert03-make-profile";
   public describe = "generate CA profile of NDNCERT 0.3";
 
   public builder(argv: Argv): Argv<Args> {

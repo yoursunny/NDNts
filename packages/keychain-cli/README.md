@@ -156,7 +156,7 @@ You may setup a different uplink using `NDNTS_UPLINK` environment variable, as e
 
 ## `ndntssec ndncert03-*`: NDNCERT 0.3
 
-`ndntssec ndncert03-profile` command generates a CA profile.
+`ndntssec ndncert03-make-profile` command generates a CA profile.
 
 * `--out` specifies output filename.
   The file contains the CA profile Data packet in binary format.
@@ -166,6 +166,10 @@ You may setup a different uplink using `NDNTS_UPLINK` environment variable, as e
   The certificate and the corresponding private key must exist in the keychain given in `NDNTS_KEYCHAIN` environment variable.
 * `--valid-days` specifies maximum validity period of issued certificates, in days.
   The default is 30 days.
+
+`ndntssec ndncert03-show-profile` command displays information in a CA profile.
+
+* `--profile` specifies filename of CA profile.
 
 `ndntssec ndncert03-ca` command runs a certificate authority.
 
@@ -189,7 +193,9 @@ Example:
 ```sh
 CACERT=$(NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec gen-key /A)
 
-NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec ndncert03-profile --out /tmp/ca.data --prefix /localhost/my-ndncert/CA --cert $CACERT --valid-days 60
+NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec ndncert03-make-profile --out /tmp/ca.data --prefix /localhost/my-ndncert/CA --cert $CACERT --valid-days 60
+
+ndntssec ndncert03-show-profile --profile /tmp/ca.data
 
 nfd-start
 NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge pin

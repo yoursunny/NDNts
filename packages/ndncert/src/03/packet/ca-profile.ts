@@ -1,7 +1,8 @@
 import { Certificate, PrivateKey, PublicKey } from "@ndn/keychain";
 import { Segment, Version } from "@ndn/naming-convention2";
 import { Data, Name } from "@ndn/packet";
-import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
+import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI, toHex, toUtf8 } from "@ndn/tlv";
+import indentString from "indent-string";
 
 import { TT, Verb } from "./an";
 
@@ -23,6 +24,7 @@ export class CaProfile {
     }
     profile.publicKey_ = await Certificate.loadPublicKey(profile.cert);
     await profile.publicKey.verify(data);
+    profile.certDigest_ = await profile.cert.data.computeImplicitDigest();
     return profile;
   }
 
@@ -33,6 +35,21 @@ export class CaProfile {
 
   private publicKey_!: PublicKey;
   public get publicKey() { return this.publicKey_; }
+
+  private certDigest_!: Uint8Array;
+  public get certDigest() { return this.certDigest_; }
+
+  public toString() {
+    return `NDNCERT 0.3 CA profile
+CA prefix: ${this.prefix}
+CA information:
+${indentString(this.info, 2)}
+PROBE keys:
+${this.probeKeys.length === 0 ? "  (none)" : this.probeKeys.map((key) => `  ${key}`).join("\n")}
+Maximum validity period: ${this.maxValidityPeriod / 86400000} days
+Certificate name: ${this.cert.data.name}
+Certificate digest: ${toHex(this.certDigest)}`;
+  }
 }
 export interface CaProfile extends Readonly<CaProfile.Fields> {}
 
