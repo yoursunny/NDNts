@@ -33,6 +33,7 @@ export abstract class StoreBase<T> {
   }
 }
 
+/** Storage of certificates. */
 export interface CertStore extends StoreBase<unknown> {
   get(name: Name): Promise<Certificate>;
   insert(cert: Certificate): Promise<void>;

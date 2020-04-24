@@ -12,6 +12,7 @@ addons:
       - build-essential
       - clang-format-6.0
       - libndn-cxx-dev
+      - ndnsec
 
 cache:
   npm: false

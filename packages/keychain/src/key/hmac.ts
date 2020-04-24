@@ -6,7 +6,7 @@ import { KeyChain } from "../mod";
 import { crypto } from "./platform/mod";
 import { PrivateKeyBase } from "./private-key";
 import { PublicKeyBase } from "./public-key";
-import { generateKey, saveKey, StoredKey } from "./save";
+import { generateKey, LoadedKey, saveKey, StoredKey } from "./save";
 
 export class HmacKey extends PublicKeyBase {
   constructor(name: Name, private readonly key: CryptoKey) {
@@ -57,15 +57,19 @@ export namespace HmacKey {
     return new HmacKey(name, pvt);
   }
 
-  export async function loadFromStored(name: Name, stored: StoredKey): Promise<[HmacKey, HmacKey]> {
-    assert.equal(stored.type, STORED_TYPE);
-    let pvt: CryptoKey;
-    if (stored.isJwk) {
-      pvt = await crypto.subtle.importKey("jwk", stored.pvt as JsonWebKey, GEN_PARAMS, false, ["sign"]);
+  export async function loadFromStored(name: Name, { type, isJwk, pvt }: StoredKey, extractable = false): Promise<LoadedKey> {
+    assert.equal(type, STORED_TYPE);
+    let cryptoPvt: CryptoKey;
+    if (isJwk) {
+      cryptoPvt = await crypto.subtle.importKey("jwk", pvt as JsonWebKey, GEN_PARAMS, extractable, ["sign", "verify"]);
     } else {
-      pvt = stored.pvt as CryptoKey;
+      cryptoPvt = pvt as CryptoKey;
     }
-    const key = new HmacKey(name, pvt);
-    return [key, key];
+    const key = new HmacKey(name, cryptoPvt);
+    return {
+      cryptoPvt,
+      privateKey: key,
+      publicKey: key,
+    };
   }
 }

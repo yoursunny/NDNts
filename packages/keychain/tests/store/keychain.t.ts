@@ -24,7 +24,7 @@ describe("persistent", () => {
     ({ name: locator, removeCallback: deleteTmpDir } = tmpDir({ unsafeCleanup: true }));
   });
 
-  beforeEach(() => {
+  afterEach(() => {
     deleteTmpDir();
   });
 

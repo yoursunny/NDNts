@@ -4,7 +4,7 @@ import assert from "minimalistic-assert";
 import { EcCurve, EcPublicKey, KeyChain } from "../../mod";
 import { crypto } from "../platform/mod";
 import { PrivateKeyBase } from "../private-key";
-import { generateKey, StoredKey } from "../save";
+import { generateKey, LoadedKey, StoredKey } from "../save";
 import { makeGenParams, SIGN_PARAMS, sigRawToDer } from "./internal";
 
 /** ECDSA private key. */
@@ -42,24 +42,26 @@ export namespace EcPrivateKey {
     ];
   }
 
-  export async function loadFromStored(name: Name, stored: StoredKey): Promise<[EcPrivateKey, EcPublicKey]> {
+  export async function loadFromStored(name: Name, stored: StoredKey, extractable = false): Promise<LoadedKey> {
     assert.equal(stored.type, STORED_TYPE);
-    const { curve } = stored as StoredEcKey;
-    let pvt: CryptoKey;
-    let pub: CryptoKey;
-    if (stored.isJwk) {
+    const { curve, isJwk, pvt, pub } = stored as StoredEcKey;
+    let cryptoPvt: CryptoKey;
+    let cryptoPub: CryptoKey;
+    if (isJwk) {
       const params = makeGenParams(curve);
-      [pvt, pub] = await Promise.all([
-        crypto.subtle.importKey("jwk", stored.pvt as JsonWebKey, params, false, ["sign"]),
-        crypto.subtle.importKey("jwk", stored.pub as JsonWebKey, params, true, ["verify"]),
+      [cryptoPvt, cryptoPub] = await Promise.all([
+        crypto.subtle.importKey("jwk", pvt as JsonWebKey, params, extractable, ["sign"]),
+        crypto.subtle.importKey("jwk", pub as JsonWebKey, params, true, ["verify"]),
       ]);
     } else {
-      pvt = stored.pvt as CryptoKey;
-      pub = stored.pub as CryptoKey;
+      cryptoPvt = pvt as CryptoKey;
+      cryptoPub = pub as CryptoKey;
     }
-    return [
-      new EcPrivateKey(name, curve, pvt),
-      new EcPublicKey(name, curve, pub),
-    ];
+    return {
+      cryptoPvt,
+      cryptoPub,
+      privateKey: new EcPrivateKey(name, curve, cryptoPvt),
+      publicKey: new EcPublicKey(name, curve, cryptoPub),
+    };
   }
 }

@@ -4,7 +4,7 @@ import assert from "minimalistic-assert";
 import { KeyChain, RsaModulusLength, RsaPublicKey } from "../../mod";
 import { crypto } from "../platform/mod";
 import { PrivateKeyBase } from "../private-key";
-import { generateKey, StoredKey } from "../save";
+import { generateKey, LoadedKey, StoredKey } from "../save";
 import { ALGO, GEN_PARAMS, IMPORT_PARAMS } from "./internal";
 
 /** RSA private key. */
@@ -41,24 +41,26 @@ export namespace RsaPrivateKey {
     ];
   }
 
-  export async function loadFromStored(name: Name, stored: StoredKey): Promise<[RsaPrivateKey, RsaPublicKey]> {
-    assert.equal(stored.type, STORED_TYPE);
-    let pvt: CryptoKey;
-    let pub: CryptoKey;
-    if (stored.isJwk) {
-      [pvt, pub] = await Promise.all([
-        crypto.subtle.importKey("jwk", stored.pvt as JsonWebKey,
+  export async function loadFromStored(name: Name, { type, isJwk, pvt, pub }: StoredKey, extractable = false): Promise<LoadedKey> {
+    assert.equal(type, STORED_TYPE);
+    let cryptoPvt: CryptoKey;
+    let cryptoPub: CryptoKey;
+    if (isJwk) {
+      [cryptoPvt, cryptoPub] = await Promise.all([
+        crypto.subtle.importKey("jwk", pvt as JsonWebKey,
           IMPORT_PARAMS, false, ["sign"]),
-        crypto.subtle.importKey("jwk", stored.pub as JsonWebKey,
+        crypto.subtle.importKey("jwk", pub as JsonWebKey,
           IMPORT_PARAMS, true, ["verify"]),
       ]);
     } else {
-      pvt = stored.pvt as CryptoKey;
-      pub = stored.pub as CryptoKey;
+      cryptoPvt = pvt as CryptoKey;
+      cryptoPub = pub as CryptoKey;
     }
-    return [
-      new RsaPrivateKey(name, pvt),
-      new RsaPublicKey(name, pub),
-    ];
+    return {
+      cryptoPvt,
+      cryptoPub,
+      privateKey: new RsaPrivateKey(name, cryptoPvt),
+      publicKey: new RsaPublicKey(name, cryptoPub),
+    };
   }
 }

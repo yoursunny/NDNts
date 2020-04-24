@@ -1,6 +1,7 @@
 import { closeUplinks, openUplinks } from "@ndn/cli-common/src/mod";
 import { KeyName } from "@ndn/keychain";
 import { CaProfile, ClientChallenge, ClientNopChallenge, ClientPinChallenge, requestCertificate } from "@ndn/ndncert";
+import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Data } from "@ndn/packet";
 import { Decoder, toHex } from "@ndn/tlv";
 import { promises as fs } from "graceful-fs";
@@ -8,10 +9,11 @@ import prompts from "prompts";
 import stdout from "stdout-stream";
 import { Arguments, Argv, CommandModule } from "yargs";
 
-import { keyChain } from "./util";
+import { keyChain as defaultKeyChain } from "./util";
 
 interface Args {
   profile: string;
+  ndnsec: boolean;
   key: string;
   challenge: string[];
 }
@@ -26,6 +28,11 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
         demandOption: true,
         desc: "CA profile file",
         type: "string",
+      })
+      .option("ndnsec", {
+        default: false,
+        desc: "use ndn-cxx KeyChain",
+        type: "boolean",
       })
       .option("key", {
         demandOption: true,
@@ -43,6 +50,7 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
 
   public async handler(args: Arguments<Args>) {
     await openUplinks();
+    const keyChain = args.ndnsec ? new NdnsecKeyChain() : defaultKeyChain;
     const profile = await CaProfile.fromData(new Decoder(await fs.readFile(args.profile)).decode(Data));
     const [privateKey, publicKey] = await keyChain.getKeyPair(KeyName.create(args.key).toName());
 

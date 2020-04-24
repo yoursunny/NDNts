@@ -1,6 +1,6 @@
 import { Certificate, EcPrivateKey, EcPublicKey, KeyChain, RsaPrivateKey, RsaPublicKey, saveKey } from "@ndn/keychain";
 import { Data, SigType, TT as l3TT } from "@ndn/packet";
-import { Decoder, EvDecoder } from "@ndn/tlv";
+import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 import { createPrivateKey } from "crypto";
 
 import { TT } from "./an";
@@ -16,6 +16,21 @@ const EVD = new EvDecoder<SafeBagFields>("SafeBag", TT.SafeBag)
 
 /** ndn-cxx private key export. */
 export class SafeBag {
+  public static create(certificate: Certificate, privateKey: Uint8Array, passphrase: string): SafeBag {
+    const key = createPrivateKey({
+      key: Buffer.from(privateKey),
+      type: "pkcs8",
+      format: "der",
+    });
+    const encryptedKey = key.export({
+      type: "pkcs8",
+      format: "der",
+      cipher: "aes-256-cbc",
+      passphrase,
+    });
+    return new SafeBag(certificate, encryptedKey);
+  }
+
   public static decodeFrom(decoder: Decoder): SafeBag {
     const { certificate, encryptedKey } = EVD.decode({} as SafeBagFields, decoder);
     if (!certificate || !encryptedKey) {
@@ -27,15 +42,25 @@ export class SafeBag {
   constructor(public readonly certificate: Certificate, public readonly encryptedKey: Uint8Array) {
   }
 
+  public encodeTo(encoder: Encoder) {
+    encoder.prependTlv(TT.SafeBag,
+      this.certificate.data,
+      [TT.EncryptedKeyBag, this.encryptedKey],
+    );
+  }
+
   /** Decrypt private key and return unencrypted PKCS8 format. */
   public decryptKey(passphrase: string): Uint8Array {
     const key = createPrivateKey({
       key: Buffer.from(this.encryptedKey),
-      format: "der",
       type: "pkcs8",
+      format: "der",
       passphrase,
     });
-    return key.export({ type: "pkcs8", format: "der" });
+    return key.export({
+      type: "pkcs8",
+      format: "der",
+    });
   }
 
   /**

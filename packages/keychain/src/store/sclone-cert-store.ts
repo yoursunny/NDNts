@@ -8,6 +8,7 @@ interface Item {
   certBuffer: Uint8Array;
 }
 
+/** Certificate store where backend supports structured clone. */
 export class SCloneCertStore extends StoreBase<Item> implements CertStore {
   public async get(name: Name): Promise<Certificate> {
     const { certBuffer } = await this.getImpl(name);

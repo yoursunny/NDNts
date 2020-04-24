@@ -182,27 +182,56 @@ You may setup a different uplink using `NDNTS_UPLINK` environment variable, as e
 `ndntssec ndncert03-client` command requests a certificate.
 
 * `--profile` specifies filename of CA profile.
+* `--ndnsec` uses ndn-cxx keychain instead of NDNts keychain.
 * `--key` specifies the key name to obtain certificate for.
-  The key pair must exist in the keychain given in `NDNTS_KEYCHAIN` environment variable.
+  The key pair must exist in the keychain given in `NDNTS_KEYCHAIN` environment variable, or ndn-cxx keychain if `--ndnsec` is specified.
 * `--challenge nop` enables "nop" challenge.
 * `--challenge pin` enables "pin" challenge.
-* You may specify multiple challenges, and the first one advertised by the server will be used.
+* You may specify multiple challenges, and the first one allowed by the server will be used.
 
-Example:
+CA example:
 
 ```sh
+# generate CA key
 CACERT=$(NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec gen-key /A)
 
+# make CA profile
 NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec ndncert03-make-profile --out /tmp/ca.data --prefix /localhost/my-ndncert/CA --cert $CACERT --valid-days 60
 
+# display CA profile
 ndntssec ndncert03-show-profile --profile /tmp/ca.data
 
+# start CA
 nfd-start
 NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge pin
+```
 
+Client example using NDNts keychain:
+
+```sh
+# generate key pair
 REQCERT=$(NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec gen-key /B)
-REQKEY=$(echo $REQCERT | awk 'BEGIN{FS=OFS="/"}{NF-=2;print}')
+REQKEY=$(echo $REQCERT | awk 'BEGIN { FS=OFS="/" } { NF-=2; print }')
+
+# request certificate via NDNCERT
+# (you'll need to enter the PIN shown on CA console)
 NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec ndncert03-client --profile /tmp/ca.data --key $REQKEY --challenge pin
 
+# view certificates
 NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec list-certs
+```
+
+Client example using ndn-cxx keychain:
+
+```sh
+# generate key pair
+ndnsec key-gen -te /C >/dev/null
+REQKEY=$(ndnsec list -k | awk '$1=="+->*" && $2 ~ "^/C/" { print $2 }')
+
+# request certificate via NDNCERT
+# (you'll need to enter the PIN shown on CA console)
+ndntssec ndncert03-client --profile /tmp/ca.data --ndnsec --key $REQKEY --challenge pin
+
+# view certificates
+ndnsec list -c
 ```

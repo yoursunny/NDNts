@@ -3,17 +3,16 @@ import { DERElement } from "asn1-ts";
 
 import { HmacKey } from "./hmac";
 import { EcPrivateKey, EcPublicKey, PublicKey, RsaPrivateKey, RsaPublicKey } from "./mod";
-import { PrivateKey } from "./private-key";
-import { StoredKey } from "./save";
+import { LoadedKey, StoredKey } from "./save";
 
-export async function loadFromStored(name: Name, stored: StoredKey): Promise<[PrivateKey, PublicKey]> {
+export async function loadFromStored(name: Name, stored: StoredKey, extractable = false): Promise<LoadedKey> {
   switch (stored.type) {
     case EcPrivateKey.STORED_TYPE:
-      return EcPrivateKey.loadFromStored(name, stored);
+      return EcPrivateKey.loadFromStored(name, stored, extractable);
     case RsaPrivateKey.STORED_TYPE:
-      return RsaPrivateKey.loadFromStored(name, stored);
+      return RsaPrivateKey.loadFromStored(name, stored, extractable);
     case HmacKey.STORED_TYPE:
-      return HmacKey.loadFromStored(name, stored);
+      return HmacKey.loadFromStored(name, stored, extractable);
   }
   throw new Error(`unknown stored type ${stored.type}`);
 }

@@ -28,6 +28,11 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "execa": "^4.0.0",
+    "throat": "^5.0.0",
     "tslib": "*"
+  },
+  "devDependencies": {
+    "@types/tmp": "^0.1.0",
+    "tmp": "^0.1.0"
   }
 }

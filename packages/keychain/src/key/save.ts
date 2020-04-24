@@ -1,6 +1,6 @@
 import { Name, NameLike } from "@ndn/packet";
 
-import { KeyChain, KeyName } from "../mod";
+import { KeyChain, KeyName, PrivateKey, PublicKey } from "../mod";
 import { crypto } from "./platform/mod";
 
 export interface StoredKey {
@@ -8,6 +8,13 @@ export interface StoredKey {
   isJwk: boolean;
   pvt: CryptoKey|JsonWebKey;
   pub?: CryptoKey|JsonWebKey;
+}
+
+export interface LoadedKey {
+  cryptoPvt: CryptoKey;
+  cryptoPub?: CryptoKey;
+  privateKey: PrivateKey;
+  publicKey: PublicKey;
 }
 
 export async function saveKey<T extends { type: string }>(

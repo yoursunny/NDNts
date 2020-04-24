@@ -8,6 +8,7 @@ interface Item {
   certBase64: string;
 }
 
+/** Certificate store where backend supports JSON only. */
 export class JsonCertStore extends StoreBase<Item> implements CertStore {
   public async get(name: Name): Promise<Certificate> {
     const item = await this.getImpl(name);
