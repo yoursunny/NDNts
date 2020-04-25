@@ -2,7 +2,12 @@
 dist: bionic
 
 language: node_js
-node_js: '12.15'
+jobs:
+  include:
+  - node_js: '12.15'
+  - node_js: '14'
+  allow_failures:
+  - node_js: '14'
 
 addons:
   apt:

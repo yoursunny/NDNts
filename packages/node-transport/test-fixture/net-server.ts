@@ -29,6 +29,7 @@ function handleNewClient(sock: net.Socket) {
     clients.delete(sock);
   };
   sock.on("error", close);
+  sock.once("end", close);
   sock.once("close", close);
 }
 
