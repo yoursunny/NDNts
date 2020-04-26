@@ -1,9 +1,7 @@
 import { Endpoint, Producer as EpProducer } from "@ndn/endpoint";
 import { FwFace } from "@ndn/fw";
 import { Component, ComponentLike, Data, Interest, Name, NamingConvention, TT } from "@ndn/packet";
-import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
-import MultiSet from "mnemonist/multi-set";
 
 import { DataStore } from "./mod";
 
@@ -62,23 +60,13 @@ export namespace Producer {
    */
   export function PrefixRegDynamic(transform: (name: Name) => Name): PrefixRegController {
     return (store, face) => {
-      const regs = new MultiSet<string>();
       const handleInsert = (name: Name) => {
         const prefix = transform(name);
-        const prefixKey = toHex(prefix.value);
-        if (!regs.has(prefixKey)) {
-          face.addRoute(prefix);
-        }
-        regs.add(prefixKey);
+        face.addRoute(prefix);
       };
       const handleDelete = (name: Name) => {
         const prefix = transform(name);
-        const prefixKey = toHex(prefix.value);
-        assert(regs.has(prefixKey));
-        regs.remove(prefixKey);
-        if (!regs.has(prefixKey)) {
-          face.removeRoute(prefix);
-        }
+        face.removeRoute(prefix);
       };
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises

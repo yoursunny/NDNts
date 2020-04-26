@@ -1,5 +1,7 @@
 import { Data, Interest, Nack, Name } from "@ndn/packet";
+import { toHex } from "@ndn/tlv";
 import EventEmitter from "events";
+import MultiSet from "mnemonist/multi-set";
 import pDefer from "p-defer";
 import Fifo from "p-fifo";
 import { buffer, filter, pipeline, tap } from "streaming-iterables";
@@ -20,13 +22,24 @@ type TransformFunc = (iterable: AsyncIterable<Face.Txable>) => AsyncIterable<Fac
 
 const STOP = Symbol("FaceImpl.Stop");
 
+function computeAnnouncement(name: Name, announcement: Face.RouteAnnouncement): Name|undefined {
+  switch (typeof announcement) {
+    case "number":
+      return name.getPrefix(announcement);
+    case "boolean":
+      return announcement ? name : undefined;
+  }
+  return announcement;
+}
+
 export class FaceImpl extends (EventEmitter as new() => Emitter) {
   public readonly attributes: Face.Attributes;
   public advertise?: Advertise;
-  public readonly stopping = pDefer<typeof STOP>();
+  private readonly routes = new MultiSet<string>();
+  private readonly announcements = new MultiSet<string>();
+  private readonly stopping = pDefer<typeof STOP>();
   public running = true;
-  public readonly routes = new Set<string>(); // used by FIB
-  public readonly txQueue = new Fifo<Face.Txable>();
+  private readonly txQueue = new Fifo<Face.Txable>();
   public txQueueLength = 0;
 
   constructor(public readonly fw: ForwarderImpl,
@@ -60,7 +73,12 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
     }
     this.running = false;
     this.fw.faces.delete(this);
-    this.fw.fib.closeFace(this);
+    for (const nameHex of this.routes.keys()) {
+      this.fw.fib.delete(this, nameHex);
+    }
+    for (const nameHex of this.announcements.keys()) {
+      this.fw.removeAnnouncement(this, undefined, nameHex);
+    }
     this.stopping.resolve(STOP);
     this.emit("close");
     this.fw.emit("facerm", this);
@@ -71,15 +89,57 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
   }
 
   /** Add a route toward the face. */
-  public addRoute(name: Name) {
+  public addRoute(name: Name, announcement: Face.RouteAnnouncement = true) {
     this.fw.emit("prefixadd", this, name);
-    this.fw.fib.insert(name, this);
+    const nameHex = toHex(name.value);
+    this.routes.add(nameHex);
+    if (this.routes.count(nameHex) === 1) {
+      this.fw.fib.insert(this, name, nameHex);
+    }
+
+    const ann = computeAnnouncement(name, announcement);
+    if (ann) {
+      this.addAnnouncement(ann);
+    }
   }
 
   /** Remove a route toward the face. */
-  public removeRoute(name: Name) {
-    this.fw.fib.delete(name, this);
+  public removeRoute(name: Name, announcement: Face.RouteAnnouncement = true) {
+    const ann = computeAnnouncement(name, announcement);
+    if (ann) {
+      this.removeAnnouncement(ann);
+    }
+
+    const nameHex = toHex(name.value);
+    this.routes.remove(nameHex);
+    if (this.routes.count(nameHex) === 0) {
+      this.fw.fib.delete(this, nameHex);
+    }
     this.fw.emit("prefixrm", this, name);
+  }
+
+  /** Add a prefix announcement associated with the face. */
+  public addAnnouncement(name: Name) {
+    if (!this.attributes.advertiseFrom) {
+      return;
+    }
+    const nameHex = toHex(name.value);
+    this.announcements.add(nameHex);
+    if (this.announcements.count(nameHex) === 1) {
+      this.fw.addAnnouncement(this, name, nameHex);
+    }
+  }
+
+  /** Remove a prefix announcement associated with the face. */
+  public removeAnnouncement(name: Name) {
+    if (!this.attributes.advertiseFrom) {
+      return;
+    }
+    const nameHex = toHex(name.value);
+    this.announcements.remove(nameHex);
+    if (this.announcements.count(nameHex) === 0) {
+      this.fw.removeAnnouncement(this, name, nameHex);
+    }
   }
 
   /** Transmit a packet on the face. */
@@ -173,6 +233,7 @@ export interface Face extends Pick<FaceImpl,
 "fw"|"advertise"|"attributes"|"close"|"toString"|"addRoute"|"removeRoute"|
 Exclude<keyof Emitter, "emit">> {
   readonly running: boolean;
+  readonly txQueueLength: number;
 }
 
 export namespace Face {
@@ -182,6 +243,8 @@ export namespace Face {
     /** Whether to readvertise registered routes. Default is true. */
     advertiseFrom?: boolean;
   }
+
+  export type RouteAnnouncement = boolean | number | Name;
 
   /** Item that can be received on face. */
   export type Rxable = L3Pkt|CancelInterest;

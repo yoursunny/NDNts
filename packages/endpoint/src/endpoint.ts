@@ -26,4 +26,6 @@ applyMixins(Endpoint, [EndpointConsumer, EndpointProducer]);
 export namespace Endpoint {
   /** Delete default Forwarder instance (mainly for unit testing). */
   export const deleteDefaultForwarder = Forwarder.deleteDefault;
+
+  export type RouteAnnouncement = EndpointProducer.RouteAnnouncement;
 }

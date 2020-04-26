@@ -49,15 +49,15 @@ export class Server {
     const infoVersion = infoName.getPrefix(-1);
 
     this.producers = [
-      serveMetadata({ name: infoVersion }, { endpoint }),
+      serveMetadata({ name: infoVersion }, { endpoint, announcement: prefix }),
       endpoint.produce(infoVersion, this.handleInfoInterest,
-        { describe: `NDNCERT-CA(${prefix}, INFO)` }),
+        { describe: `NDNCERT-CA(${prefix}, INFO)`, announcement: prefix }),
       endpoint.produce(prefix.append(Verb.PROBE), this.handleProbeInterest,
-        { describe: `NDNCERT-CA(${prefix}, PROBE)` }),
+        { describe: `NDNCERT-CA(${prefix}, PROBE)`, announcement: prefix }),
       endpoint.produce(prefix.append(Verb.NEW), this.handleNewInterest,
-        { describe: `NDNCERT-CA(${prefix}, NEW)` }),
+        { describe: `NDNCERT-CA(${prefix}, NEW)`, announcement: prefix }),
       endpoint.produce(prefix.append(Verb.CHALLENGE), this.handleChallengeInterest,
-        { describe: `NDNCERT-CA(${prefix}, CHALLENGE)` }),
+        { describe: `NDNCERT-CA(${prefix}, CHALLENGE)`, announcement: prefix }),
     ];
 
     this.cleanupTimer = setInterval(this.cleanupContext, 60000);

@@ -17,6 +17,8 @@ import { DataBuffer } from "./data-buffer";
 export type Handler = (interest: Interest, producer: Producer) => Promise<Data|false>;
 
 export interface Options {
+  /** What name to be readvertised (ignored if prefix is unspecified). */
+  announcement?: EndpointProducer.RouteAnnouncement;
   /** How many Interests to process in parallel. */
   concurrency?: number;
   /** Description for debugging purpose. */
@@ -52,6 +54,7 @@ export class EndpointProducer {
   public produce(prefixInput: NameLike|undefined, handler: Handler, opts: Options = {}): Producer {
     const prefix = typeof prefixInput === "undefined" ? undefined : new Name(prefixInput);
     const {
+      announcement,
       concurrency = 1,
       describe = `produce(${prefix})`,
       dataBuffer,
@@ -103,7 +106,7 @@ export class EndpointProducer {
       local: true,
     });
     if (prefix) {
-      face.addRoute(prefix);
+      face.addRoute(prefix, announcement);
     }
 
     producer = {
@@ -114,4 +117,8 @@ export class EndpointProducer {
     };
     return producer;
   }
+}
+
+export namespace EndpointProducer {
+  export type RouteAnnouncement = FwFace.RouteAnnouncement;
 }

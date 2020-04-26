@@ -34,6 +34,13 @@ test("simple", async () => {
   const appB = fw.addFace(new NoopFace());
   appB.addRoute(new Name("/M"));
   expect(advertiseP.doAdvertise).toHaveBeenCalledTimes(1);
+  appB.addRoute(new Name("/N/A/1"), -1);
+  appB.addRoute(new Name("/N/B/1"), new Name("/N/B"));
+  appB.addRoute(new Name("/N/C/1"), false);
+  expect(advertiseP.doAdvertise).toHaveBeenCalledTimes(3);
+  expect(advertiseP.doAdvertise.mock.calls[1][0]).toEqualName("/N/A");
+  expect(advertiseP.doAdvertise.mock.calls[2][0]).toEqualName("/N/B");
+  expect(annadd).toHaveBeenCalledTimes(3);
 
   appA.removeRoute(new Name("/M"));
   appA.removeRoute(new Name("/M"));
@@ -44,6 +51,12 @@ test("simple", async () => {
   expect(advertiseP.doWithdraw.mock.calls[0][0]).toEqualName("/M");
   expect(annrm).toHaveBeenCalledTimes(1);
 
+  appB.close();
+  expect(advertiseP.doWithdraw).toHaveBeenCalledTimes(3);
+  expect(advertiseP.doWithdraw.mock.calls[1][0]).toEqualName("/N/A");
+  expect(advertiseP.doWithdraw.mock.calls[2][0]).toEqualName("/N/B");
+  expect(annrm).toHaveBeenCalledTimes(3);
+
   uplinkQ.addRoute(new Name("/Q"));
-  expect(advertiseP.doAdvertise).toHaveBeenCalledTimes(1);
+  expect(advertiseP.doAdvertise).toHaveBeenCalledTimes(3);
 });

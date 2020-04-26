@@ -2,9 +2,6 @@ import { Name } from "@ndn/packet";
 import pRetry from "p-retry";
 
 import { Face, FaceImpl } from "./face";
-import { FibEntry } from "./fib";
-
-const faceAdvertisements = new WeakMap<Face, WeakSet<FibEntry>>();
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
 const retryOptions: pRetry.Options = {
@@ -22,46 +19,39 @@ const retryOptions: pRetry.Options = {
  */
 export abstract class Advertise {
   protected readonly face: FaceImpl;
-  private readonly advertisedFibEntries: WeakSet<FibEntry>;
+  private readonly advertised = new Set<string>();
 
   constructor(face: Face) {
     this.face = face as FaceImpl;
-
-    let advertisedFibEntries = faceAdvertisements.get(face);
-    if (!advertisedFibEntries) {
-      advertisedFibEntries = new WeakSet<FibEntry>();
-      faceAdvertisements.set(face, advertisedFibEntries);
-    }
-    this.advertisedFibEntries = advertisedFibEntries;
   }
 
   /** Announce a prefix to the remote peer. */
-  public advertise(fibEntry: FibEntry): void {
-    if (this.advertisedFibEntries.has(fibEntry)) {
+  public advertise(name: Name, nameHex: string): void {
+    if (this.advertised.has(nameHex)) {
       return;
     }
-    this.advertisedFibEntries.add(fibEntry);
+    this.advertised.add(nameHex);
 
     pRetry(async () => {
-      if (!this.advertisedFibEntries.has(fibEntry)) {
+      if (!this.advertised.has(nameHex)) {
         return;
       }
-      await this.doAdvertise(fibEntry.name);
+      await this.doAdvertise(name);
     }, retryOptions)
       .catch(console.warn);
     // TODO better error handling
   }
 
   /** Withdraw a prefix announcement. */
-  public withdraw(fibEntry: FibEntry): void {
+  public withdraw(name: Name, nameHex: string): void {
     pRetry(async () => {
-      if (!this.advertisedFibEntries.has(fibEntry)) {
+      if (!this.advertised.has(nameHex)) {
         return;
       }
-      await this.doWithdraw(fibEntry.name);
+      await this.doWithdraw(name);
     }, retryOptions)
       .catch(console.warn)
-      .finally(() => this.advertisedFibEntries.delete(fibEntry));
+      .finally(() => this.advertised.delete(nameHex));
     // TODO better error handling
   }
 

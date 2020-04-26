@@ -31,6 +31,9 @@ interface Options {
 
   /** Endpoint to run producer. */
   endpoint?: Endpoint;
+
+  /** Prefix to announce from producer. */
+  announcement?: Endpoint.RouteAnnouncement;
 }
 
 /** Make RDR metadata packet. */
@@ -65,5 +68,6 @@ export function serveMetadata(m: Metadata|(() => Metadata), opts: Options = {}):
     },
     {
       describe: `RDR-s(${name})`,
+      announcement: opts.announcement,
     });
 }

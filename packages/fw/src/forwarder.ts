@@ -1,9 +1,11 @@
 import { Data, Interest, Nack, Name } from "@ndn/packet";
+import { fromHex } from "@ndn/tlv";
 import EventEmitter from "events";
+import MultiMap from "mnemonist/multi-map";
 import StrictEventEmitter from "strict-event-emitter-types";
 
 import { Face, FaceImpl } from "./face";
-import { Fib, FibEntry } from "./fib";
+import { Fib } from "./fib";
 import { Pit } from "./pit";
 
 interface Events {
@@ -29,8 +31,9 @@ type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
 export class ForwarderImpl extends (EventEmitter as new() => Emitter) {
   public readonly faces = new Set<FaceImpl>();
-  public readonly fib = new Fib(this);
+  public readonly fib = new Fib();
   public readonly pit = new Pit();
+  private readonly announcements = new MultiMap<string, FaceImpl>(Set);
 
   constructor(public readonly options: Forwarder.Options) {
     super();
@@ -74,17 +77,24 @@ export class ForwarderImpl extends (EventEmitter as new() => Emitter) {
     // ignore Nack
   }
 
-  public advertisePrefix(fibEntry: FibEntry) {
-    this.emit("annadd", fibEntry.name);
-    for (const face of this.faces) {
-      face.advertise?.advertise(fibEntry);
+  public addAnnouncement(face: FaceImpl, name: Name, nameHex: string) {
+    this.announcements.set(nameHex, face);
+    if (this.announcements.multiplicity(nameHex) === 1) {
+      this.emit("annadd", name);
+      for (const face of this.faces) {
+        face.advertise?.advertise(name, nameHex);
+      }
     }
   }
 
-  public withdrawPrefix(fibEntry: FibEntry) {
-    this.emit("annrm", fibEntry.name);
-    for (const face of this.faces) {
-      face.advertise?.withdraw(fibEntry);
+  public removeAnnouncement(face: FaceImpl, name: Name|undefined, nameHex: string) {
+    this.announcements.remove(nameHex, face);
+    if (this.announcements.multiplicity(nameHex) === 0) {
+      name = name ?? new Name(fromHex(nameHex));
+      this.emit("annrm", name);
+      for (const face of this.faces) {
+        face.advertise?.withdraw(name, nameHex);
+      }
     }
   }
 }
