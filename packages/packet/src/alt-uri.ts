@@ -13,7 +13,7 @@ import { Component, ImplicitDigest, Name, NamingConvention, ParamsDigest, TT } f
  * mistakenly interpreted with that convention.
  */
 export class AltUriPrinter {
-  constructor(public readonly conventions: ReadonlyArray<NamingConvention&NamingConvention.WithAltUri>) {
+  constructor(public readonly conventions: ReadonlyArray<NamingConvention<any>&NamingConvention.WithAltUri>) {
   }
 
   /** Print component in alternate URI syntax */
@@ -32,10 +32,10 @@ export class AltUriPrinter {
   }
 }
 
-class Generic implements NamingConvention, NamingConvention.WithAltUri {
+class Generic implements NamingConvention<never>, NamingConvention.WithAltUri {
   public match(comp: Component) { return comp.type === TT.GenericNameComponent; }
   public create(): Component { /* istanbul ignore next */ throw new TypeError("not supported"); }
-  public parse() { /* istanbul ignore next */ throw new TypeError("not supported"); }
+  public parse(): never { /* istanbul ignore next */ throw new TypeError("not supported"); }
   public toAltUri(comp: Component) { return comp.toString().slice(2); }
 }
 

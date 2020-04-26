@@ -5,14 +5,14 @@ export async function queryFch(opts: queryFch.Options = {}): Promise<string[]> {
     server = "https://ndn-fch.named-data.net",
     count = 1,
     capabilities = [],
-    position = null,
+    position = queryFch.IpGeolocation,
   } = opts;
 
   let u = `${server.replace(/\/$/, "")}/?k=${count}`;
   for (const cap of new Set([...capabilities, ...FCH_ALWAYS_CAPABILITIES])) {
     u += `&cap=${cap}`;
   }
-  if (position) {
+  if (position !== queryFch.IpGeolocation) {
     u += `&lon=${position[0].toFixed(5)}&lat=${position[1].toFixed(5)}`;
   }
 
@@ -32,7 +32,10 @@ export namespace queryFch {
     count?: number;
     /** Required router capabilities. */
     capabilities?: string[];
-    /** GPS position in GeoJSON [lon,lat] format, or null to use IP geolocation. */
-    position?: null|[number, number];
+    /** GPS position in GeoJSON [lon,lat] format, or IpGeolocation. */
+    position?: [number, number] | typeof IpGeolocation;
   }
+
+  /** Set IP geolocation in Options.position. */
+  export const IpGeolocation = Symbol("queryFch.IpGeolocation");
 }

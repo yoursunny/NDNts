@@ -41,6 +41,7 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
     };
     fw.emit("faceadd", this);
     fw.faces.add(this);
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     pipeline(
       () => this.txLoop(),
       buffer(this.fw.options.faceTxBuffer),
@@ -82,10 +83,12 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
   }
 
   /** Transmit a packet on the face. */
-  public async send(pkt: Face.Txable) {
-    ++this.txQueueLength;
-    await this.txQueue.push(pkt);
-    --this.txQueueLength;
+  public send(pkt: Face.Txable): void {
+    (async () => {
+      ++this.txQueueLength;
+      await this.txQueue.push(pkt);
+      --this.txQueueLength;
+    })();
   }
 
   /** Convert base RX/TX to a TransformFunc. */
@@ -190,7 +193,7 @@ export namespace Face {
     /** Receive packets by forwarder. */
     rx: AsyncIterable<Rxable>;
     /** Transmit packets from forwarder. */
-    tx(iterable: AsyncIterable<L3Pkt>): void;
+    tx: (iterable: AsyncIterable<L3Pkt>) => void;
   }
 
   /** Underlying face RX/TX that can transmit all Txable items. */
@@ -199,7 +202,7 @@ export namespace Face {
     /** Receive packets by forwarder. */
     rx: AsyncIterable<Rxable>;
     /** Transmit packets from forwarder. */
-    tx(iterable: AsyncIterable<Txable>): void;
+    tx: (iterable: AsyncIterable<Txable>) => void;
   }
 
   /** Underlying face RX/TX implemented as a transform function. */

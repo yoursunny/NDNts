@@ -12,18 +12,6 @@ interface Args extends GenKeyCommand.KeyParamArgs {
   name: string;
 }
 
-async function main(args: Args) {
-  const { pvt, pub, canSelfSign } = await GenKeyCommand.generateKey(args.name, args);
-
-  if (canSelfSign) {
-    const cert = await Certificate.selfSign({ privateKey: pvt, publicKey: pub });
-    await keyChain.insertCert(cert);
-    stdout.write(`${cert.name}\n`);
-  } else {
-    stdout.write(`${pvt.name}\n`);
-  }
-}
-
 export class GenKeyCommand implements CommandModule<{}, Args> {
   public command = "gen-key <name>";
   public describe = "generate key";
@@ -38,8 +26,16 @@ export class GenKeyCommand implements CommandModule<{}, Args> {
       .demandOption("name");
   }
 
-  public handler(args: Arguments<Args>) {
-    main(args);
+  public async handler(args: Arguments<Args>) {
+    const { pvt, pub, canSelfSign } = await GenKeyCommand.generateKey(args.name, args);
+
+    if (canSelfSign) {
+      const cert = await Certificate.selfSign({ privateKey: pvt, publicKey: pub });
+      await keyChain.insertCert(cert);
+      stdout.write(`${cert.name}\n`);
+    } else {
+      stdout.write(`${pvt.name}\n`);
+    }
   }
 }
 

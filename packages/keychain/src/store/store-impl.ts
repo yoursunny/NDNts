@@ -10,10 +10,10 @@ export type StorableKind = "json"|"sclone";
  */
 export interface StoreImpl<T> {
   readonly storableKind: StorableKind;
-  list(): Promise<string[]>;
-  get(key: string): Promise<T>;
-  insert(key: string, value: T): Promise<void>;
-  erase(key: string): Promise<void>;
+  list: () => Promise<string[]>;
+  get: (key: string) => Promise<T>;
+  insert: (key: string, value: T) => Promise<void>;
+  erase: (key: string) => Promise<void>;
 }
 
 export class MemoryStoreImpl<T> implements StoreImpl<T> {

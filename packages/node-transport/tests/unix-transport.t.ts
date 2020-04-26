@@ -22,7 +22,7 @@ test("pair", async () => {
 
 test("connect error", async () => {
   const path = NetServerTest.ipcPath;
-  NetServerTest.destroyServer();
+  await NetServerTest.destroyServer();
   await expect(UnixTransport.connect(path)).rejects.toThrow();
 });
 

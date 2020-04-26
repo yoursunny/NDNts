@@ -21,7 +21,7 @@ interface Fields {
 }
 
 const fieldDefs = [
-  [TT.Name, "name", null],
+  [TT.Name, "name", undefined],
   [0x69, "faceId", NNI],
   [0x72, "uri", String],
   [0x81, "localUri", String],

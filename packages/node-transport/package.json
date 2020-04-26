@@ -37,6 +37,6 @@
     "readable-stream": "^3.6.0",
     "stream-mock": "^2.0.5",
     "streaming-iterables": "^4.1.2",
-    "tmp": "^0.1.0"
+    "tmp": "^0.2.0"
   }
 }

@@ -20,6 +20,7 @@ module.exports = {
     "simple-import-sort/sort": "error",
     "unicorn/catch-error-name": ["error", { name: "err", caughtErrorsIgnorePattern: "^err" }],
     "unicorn/consistent-function-scoping": "off",
+    "unicorn/no-fn-reference-in-iterator": "off",
     "unicorn/no-nested-ternary": "off",
     "unicorn/prefer-spread": "off",
     "unicorn/prefer-type-error": "off",

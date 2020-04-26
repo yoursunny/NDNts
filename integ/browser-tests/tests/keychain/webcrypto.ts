@@ -66,8 +66,8 @@ async function checkWebCrypto() {
         await pvt!.sign(pkt);
         pkt = new Decoder(Encoder.encode(pkt)).decode(Data);
         await pub.verify(pkt);
-      } catch (err1) {
-        err = err1;
+      } catch (err_) {
+        err = err_;
       }
     }
     lines.push(`${title}: ${err ? err.toString() : "OK"}`);

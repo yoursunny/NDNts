@@ -18,7 +18,7 @@ export type ServeOptions = DataProducer.Options & {
 
 export interface Server {
   readonly prefix: Name;
-  close(): void;
+  close: () => void;
 }
 
 /**

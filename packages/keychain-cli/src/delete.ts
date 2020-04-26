@@ -8,20 +8,6 @@ interface Args {
   name: string;
 }
 
-async function main({ name }: Args) {
-  const n = new Name(name);
-  const certNames = await keyChain.listCerts(n);
-  for (const certName of certNames) {
-    stdout.write(`${certName}\n`);
-    await keyChain.deleteCert(certName);
-  }
-  const keyNames = await keyChain.listKeys(n);
-  for (const keyName of keyNames) {
-    stdout.write(`${keyName}\n`);
-    await keyChain.deleteKey(keyName);
-  }
-}
-
 export class DeleteCommand implements CommandModule<{}, Args> {
   public command = "delete <name>";
   public describe = "delete keys and certificates";
@@ -35,7 +21,17 @@ export class DeleteCommand implements CommandModule<{}, Args> {
       .demandOption("name");
   }
 
-  public handler(args: Arguments<Args>) {
-    main(args);
+  public async handler({ name }: Arguments<Args>) {
+    const n = new Name(name);
+    const certNames = await keyChain.listCerts(n);
+    for (const certName of certNames) {
+      stdout.write(`${certName}\n`);
+      await keyChain.deleteCert(certName);
+    }
+    const keyNames = await keyChain.listKeys(n);
+    for (const keyName of keyNames) {
+      stdout.write(`${keyName}\n`);
+      await keyChain.deleteKey(keyName);
+    }
   }
 }

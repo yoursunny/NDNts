@@ -4,7 +4,7 @@ export namespace LLSign {
   export const OP = Symbol("LLSign.OP");
 
   export interface Signable {
-    [OP](signer: LLSign): Promise<void>;
+    [OP]: (signer: LLSign) => Promise<void>;
   }
 }
 
@@ -14,6 +14,6 @@ export namespace LLVerify {
   export const OP = Symbol("LLVerify.OP");
 
   export interface Verifiable {
-    [OP](verifier: LLVerify): Promise<void>;
+    [OP]: (verifier: LLVerify) => Promise<void>;
   }
 }

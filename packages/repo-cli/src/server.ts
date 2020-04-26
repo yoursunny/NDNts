@@ -23,17 +23,9 @@ function enableBulkInsertion({
 }: Args) {
   const bi = new BulkInserter(store, { batch, parallel });
   createServer((sock) => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     bi.accept(new L3Face(new StreamTransport(sock)));
   }).listen(port, host);
-}
-
-async function main(args: Args) {
-  openStore(args);
-  // eslint-disable-next-line no-new
-  new RepoProducer(store);
-  if (args.bi) {
-    enableBulkInsertion(args);
-  }
 }
 
 export class ServerCommand implements CommandModule<{}, Args> {
@@ -74,8 +66,13 @@ export class ServerCommand implements CommandModule<{}, Args> {
       });
   }
 
-  public handler(args: Arguments<Args>) {
-    openUplinks()
-      .then(() => main(args));
+  public async handler(args: Arguments<Args>) {
+    await openUplinks();
+    openStore(args);
+    // eslint-disable-next-line no-new
+    new RepoProducer(store);
+    if (args.bi) {
+      enableBulkInsertion(args);
+    }
   }
 }

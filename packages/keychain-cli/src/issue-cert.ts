@@ -10,29 +10,6 @@ interface Args {
   "valid-days": number;
 }
 
-async function main({ issuer, "issuer-id": issuerIdStr, "valid-days": validDays }: Args) {
-  const keyNames = await keyChain.listKeys(new Name(issuer));
-  if (keyNames.length === 0) {
-    throw new Error(`issuer key ${issuer} not found`);
-  }
-  const issuerPrivateKey = await keyChain.getPrivateKey(keyNames[0]);
-
-  const certReq = await inputCertBase64();
-  const publicKey = await Certificate.loadPublicKey(certReq);
-
-  const issuerId = Component.from(issuerIdStr);
-
-  const validity = ValidityPeriod.daysFromNow(validDays);
-
-  const cert = await Certificate.issue({
-    issuerPrivateKey,
-    publicKey,
-    issuerId,
-    validity,
-  });
-  printCertBase64(cert);
-}
-
 export class IssueCertCommand implements CommandModule<{}, Args> {
   public command = "issue-cert";
   public describe = "issue certificate";
@@ -56,7 +33,26 @@ export class IssueCertCommand implements CommandModule<{}, Args> {
       });
   }
 
-  public handler(args: Arguments<Args>) {
-    main(args);
+  public async handler({ issuer, "issuer-id": issuerIdStr, "valid-days": validDays }: Arguments<Args>) {
+    const keyNames = await keyChain.listKeys(new Name(issuer));
+    if (keyNames.length === 0) {
+      throw new Error(`issuer key ${issuer} not found`);
+    }
+    const issuerPrivateKey = await keyChain.getPrivateKey(keyNames[0]);
+
+    const certReq = await inputCertBase64();
+    const publicKey = await Certificate.loadPublicKey(certReq);
+
+    const issuerId = Component.from(issuerIdStr);
+
+    const validity = ValidityPeriod.daysFromNow(validDays);
+
+    const cert = await Certificate.issue({
+      issuerPrivateKey,
+      publicKey,
+      issuerId,
+      validity,
+    });
+    printCertBase64(cert);
   }
 }

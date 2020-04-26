@@ -31,7 +31,7 @@ export interface Extension<T, R = unknown> {
    * @param tlv TLV of sub element; its TLV-TYPE would be this.tt .
    * @param accumulator previous decoded value, if extension element appears more than once.
    */
-  decode(obj: T, tlv: Decoder.Tlv, accumulator?: R): R;
+  decode: (obj: T, tlv: Decoder.Tlv, accumulator?: R) => R;
 
   /**
    * Encode extension element.
@@ -39,7 +39,7 @@ export interface Extension<T, R = unknown> {
    * @param value decoded value.
    * @returns encoding of sub element; its TLV-TYPE should be this.tt .
    */
-  encode(obj: T, value: R): Encodable;
+  encode: (obj: T, value: R) => Encodable;
 }
 
 export namespace Extension {
@@ -55,7 +55,7 @@ export namespace Extension {
 }
 
 export class ExtensionRegistry<T extends Extensible> {
-  private table = new Map<number, Extension<T>>();
+  private table = new Map<number, Extension<T, any>>();
 
   public registerExtension = <R>(ext: Extension<T, R>) => {
     this.table.set(ext.tt, ext);

@@ -65,7 +65,7 @@ test("prefill buffer", async () => {
 test.each([false, true])("autoBuffer %p", async (autoBuffer) => {
   const [ep] = makeEndpointBuffered(undefined, autoBuffer);
   const handler = jest.fn(async (interest: Interest, { dataBuffer }: Producer) => {
-    dataBuffer!.insert(new Data("/A/1"));
+    await dataBuffer!.insert(new Data("/A/1"));
     return new Data("/A/0");
   });
   ep.produce("/A", handler);

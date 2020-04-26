@@ -65,6 +65,7 @@ export class ForwarderImpl extends (EventEmitter as new() => Emitter) {
 
   /** Process incoming Data. */
   public processData(face: FaceImpl, data: Data) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.pit.satisfy(face, data);
   }
 

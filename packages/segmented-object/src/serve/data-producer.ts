@@ -138,6 +138,7 @@ class SequentialDataProducer extends DataProducer {
 
   constructor(source: ChunkSource, prefix: Name, opts: SequentialDataProducerOptions = {}) {
     super(source, prefix, opts);
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.produce(opts);
   }
 
@@ -172,6 +173,7 @@ class SequentialDataProducer extends DataProducer {
       const { done, value } = await Promise.race([iterator.next(), this.stop.promise]);
       if (done) {
         if (iterator.return) {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           iterator.return();
         }
         break;

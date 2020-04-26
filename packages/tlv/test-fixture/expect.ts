@@ -67,10 +67,9 @@ expect.extend({
 declare global {
   namespace jest {
     interface Matchers<R, T> {
-      toEqualUint8Array(expected: Uint8ArrayExpect): R;
-      toMatchTlv(...checks: TlvMatcher[]): R;
-      toEncodeAs(expected: Uint8ArrayExpect): R;
-      toEncodeAs(...checks: TlvMatcher[]): R;
+      toEqualUint8Array: (expected: Uint8ArrayExpect) => R;
+      toMatchTlv: (...checks: TlvMatcher[]) => R;
+      toEncodeAs: ((expected: Uint8ArrayExpect) => R) & ((...checks: TlvMatcher[]) => R);
     }
   }
 }

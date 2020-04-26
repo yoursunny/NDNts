@@ -1,7 +1,7 @@
 import { fromUtf8, NNI } from "./mod";
 
 export interface Decodable<R> {
-  decodeFrom(decoder: Decoder): R;
+  decodeFrom: (decoder: Decoder) => R;
 }
 
 class DecodedTlv {

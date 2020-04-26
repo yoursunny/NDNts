@@ -45,9 +45,9 @@ export type RetxGenerator = (interestLifetime: number) => Iterable<number>;
  * Interest retransmission policy.
  *
  * A number is interpreted as the limit.
- * null is equivalent to { limit:0 }, which disables retransmissions.
+ * Set 0 to disable retransmissions.
  */
-export type RetxPolicy = RetxOptions|RetxGenerator|number|null;
+export type RetxPolicy = RetxOptions|RetxGenerator|number;
 
 /** Construct RetxGenerator from RetxPolicy. */
 export function makeRetxGenerator(policy: RetxPolicy|undefined): RetxGenerator {

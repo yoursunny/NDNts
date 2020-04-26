@@ -106,7 +106,7 @@ export class FillBiCommand extends FillCommandBase implements CommandModule<{}, 
   public command = "fillbi";
   public describe = "fill repo with demo data via bulk insertion";
 
-  public builder = (argv: Argv): Argv<FillBiArgs> => {
+  public builder(argv: Argv): Argv<FillBiArgs> {
     return this.buildGenDataArgv(argv)
       .option("host", {
         default: "127.0.0.1",
@@ -118,10 +118,10 @@ export class FillBiCommand extends FillCommandBase implements CommandModule<{}, 
         desc: "destination port",
         type: "number",
       });
-  };
+  }
 
-  public handler = async (args: Arguments<FillBiArgs>) => {
+  public async handler(args: Arguments<FillBiArgs>) {
     const face = new L3Face(await TcpTransport.connect(args.host, args.port));
     await this.execute(args, (it) => face.tx(it));
-  };
+  }
 }

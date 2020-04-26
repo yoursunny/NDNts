@@ -16,8 +16,8 @@ beforeEach(() => {
   fw.on("annadd", (name) => announced.add(name.toString()));
   fw.on("annrm", (name) => announced.delete(name.toString()));
 });
-afterEach(() => {
-  store.close();
+afterEach(async () => {
+  await store.close();
   Forwarder.deleteDefault();
   announced.clear();
 });

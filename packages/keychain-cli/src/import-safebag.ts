@@ -7,12 +7,6 @@ interface Args {
   passphrase: string;
 }
 
-async function main({ passphrase }: Args) {
-  const safeBag = await inputBase64(SafeBag);
-  await safeBag.saveKeyPair(passphrase, keyChain);
-  await keyChain.insertCert(safeBag.certificate);
-}
-
 export class ImportSafeBagCommand implements CommandModule<{}, Args> {
   public command = "import-safebag [filename]";
   public describe = "import SafeBag";
@@ -26,7 +20,9 @@ export class ImportSafeBagCommand implements CommandModule<{}, Args> {
       });
   }
 
-  public handler(args: Arguments<Args>) {
-    main(args);
+  public async handler({ passphrase }: Arguments<Args>) {
+    const safeBag = await inputBase64(SafeBag);
+    await safeBag.saveKeyPair(passphrase, keyChain);
+    await keyChain.insertCert(safeBag.certificate);
   }
 }

@@ -36,7 +36,7 @@ export interface Producer {
   readonly dataBuffer?: DataBuffer;
 
   /** Close the producer. */
-  close(): void;
+  close: () => void;
 }
 
 /** Producer functionality of Endpoint. */

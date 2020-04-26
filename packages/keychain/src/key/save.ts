@@ -52,7 +52,7 @@ export async function saveKey<T extends { type: string }>(
         pub,
       };
     }
-    keyChain.insertKey(name, stored);
+    await keyChain.insertKey(name, stored);
   }
 
   return [name, pvt, pub];

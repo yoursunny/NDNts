@@ -139,12 +139,12 @@ export class Component {
   }
 
   /** Determine if component follows a naming convention. */
-  public is(convention: NamingConvention): boolean {
+  public is(convention: NamingConvention<any>): boolean {
     return convention.match(this);
   }
 
   /** Convert with naming convention. */
-  public as<R>(convention: NamingConvention<unknown, R>): R {
+  public as<R>(convention: NamingConvention<any, R>): R {
     if (!this.is(convention)) {
       throw new Error("component does not follow convention");
     }

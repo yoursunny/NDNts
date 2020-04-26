@@ -3,14 +3,14 @@ import assert from "minimalistic-assert";
 
 /** Outgoing Data buffer for producer. */
 export interface DataBuffer {
-  find(interest: Interest): Promise<Data|undefined>;
-  insert(...pkts: Data[]): Promise<void>;
+  find: (interest: Interest) => Promise<Data|undefined>;
+  insert: (...pkts: Data[]) => Promise<void>;
 }
 
 /** Prototype of DataStore from @ndn/repo package. */
 interface DataStore {
-  find(interest: Interest): Promise<Data|undefined>;
-  insert(opts: { expireTime?: number }, ...pkts: Data[]): Promise<void>;
+  find: (interest: Interest) => Promise<Data|undefined>;
+  insert: (opts: { expireTime?: number }, ...pkts: Data[]) => Promise<void>;
 }
 // We declare an interface here instead of importing DataStore, in order to reduce bundle size for
 // webapps that do not use DataBuffer. The trade-off is that, applications that want to use

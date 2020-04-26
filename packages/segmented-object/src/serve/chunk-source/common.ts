@@ -18,7 +18,7 @@ export interface ChunkSource {
    * Generate chunks sequentially.
    * @returns an Iterable or AsyncIterable of chunks in order.
    */
-  listChunks(): AnyIterable<Chunk>;
+  listChunks: () => AnyIterable<Chunk>;
 
   /**
    * Generate a chunk on-demand.

@@ -15,34 +15,34 @@ export interface KeyChain {
   readonly canSCloneKeys: boolean;
 
   /** List keys, filtered by name prefix. */
-  listKeys(prefix?: Name): Promise<Name[]>;
+  listKeys: (prefix?: Name) => Promise<Name[]>;
 
   /** Retrieve key pair by key name. */
-  getKeyPair(name: Name): Promise<[PrivateKey, PublicKey]>;
+  getKeyPair: (name: Name) => Promise<[PrivateKey, PublicKey]>;
 
   /** Retrieve private key by key name. */
-  getPrivateKey(name: Name): Promise<PrivateKey>;
+  getPrivateKey: (name: Name) => Promise<PrivateKey>;
 
   /** Retrieve public key by key name. */
-  getPublicKey(name: Name): Promise<PublicKey>;
+  getPublicKey: (name: Name) => Promise<PublicKey>;
 
   /** Insert key pair. */
-  insertKey(name: Name, stored: StoredKey): Promise<void>;
+  insertKey: (name: Name, stored: StoredKey) => Promise<void>;
 
   /** Delete key pair and associated certificates. */
-  deleteKey(name: Name): Promise<void>;
+  deleteKey: (name: Name) => Promise<void>;
 
   /** List certificates, filtered by name prefix. */
-  listCerts(prefix?: Name): Promise<Name[]>;
+  listCerts: (prefix?: Name) => Promise<Name[]>;
 
   /** Retrieve certificate by cert name. */
-  getCert(name: Name): Promise<Certificate>;
+  getCert: (name: Name) => Promise<Certificate>;
 
   /** Insert certificate; key must exist. */
-  insertCert(cert: Certificate): Promise<void>;
+  insertCert: (cert: Certificate) => Promise<void>;
 
   /** Delete certificate. */
-  deleteCert(name: Name): Promise<void>;
+  deleteCert: (name: Name) => Promise<void>;
 }
 
 class KeyChainImpl implements KeyChain {

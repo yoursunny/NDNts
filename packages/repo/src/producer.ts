@@ -41,7 +41,7 @@ export namespace Producer {
 
   /** Control prefix registrations of a repo producer. */
   export type PrefixRegController = (store: DataStore, face: Pick<FwFace, "addRoute"|"removeRoute">)
-  => { close(): void };
+  => { close: () => void };
 
   /** Register a fixed set of prefixes. */
   export function PrefixRegStatic(...prefixes: Name[]): PrefixRegController {
@@ -81,6 +81,7 @@ export namespace Producer {
         }
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       store.mutex(async () => {
         for await (const name of store.listNames()) {
           handleInsert(name);
@@ -103,11 +104,7 @@ export namespace Producer {
     return PrefixRegDynamic((name) => name.getPrefix(-k));
   }
 
-  type ComponentPredicate = ComponentLike | ((comp: Component) => boolean) | NamingConvention;
-
-  function isConvention(pred: any): pred is NamingConvention {
-    return typeof pred === "object" && typeof pred.match === "function";
-  }
+  type ComponentPredicate = ComponentLike | ((comp: Component) => boolean) | NamingConvention<any>;
 
   /** Register prefixes after stripping last few components matching a predicate. */
   export function PrefixRegStrip(...predicates: ComponentPredicate[]): PrefixRegController {
@@ -115,7 +112,7 @@ export namespace Producer {
       if (typeof pred === "function") {
         return pred;
       }
-      if (isConvention(pred)) {
+      if (NamingConvention.isConvention(pred)) {
         return (c: Component) => pred.match(c);
       }
       const comp = Component.from(pred);

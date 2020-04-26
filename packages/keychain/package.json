@@ -34,9 +34,9 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@types/minimalistic-assert": "^1.0.0",
-    "@peculiar/webcrypto": "^1.0.27",
+    "@peculiar/webcrypto": "^1.0.29",
     "applymixins": "^1.1.0",
-    "asn1-ts": "^3.0.1",
+    "asn1-ts": "^3.0.4",
     "data-store": "github:jonschlinkert/data-store#b263df0455ad0c6a0a608fe30ed090d096c84487",
     "minimalistic-assert": "^1.0.1",
     "idb-keyval": "^3.2.0",
@@ -45,6 +45,6 @@
   },
   "devDependencies": {
     "@types/tmp": "^0.1.0",
-    "tmp": "^0.1.0"
+    "tmp": "^0.2.0"
   }
 }

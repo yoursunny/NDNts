@@ -5,7 +5,7 @@ export interface ServerChallenge {
   readonly timeLimit: number;
   readonly retryLimit: number;
 
-  process(request: ChallengeRequest, context: ServerChallengeContext): Promise<ServerChallengeResponse>;
+  process: (request: ChallengeRequest, context: ServerChallengeContext) => Promise<ServerChallengeResponse>;
 }
 
 export interface ServerChallengeContext {

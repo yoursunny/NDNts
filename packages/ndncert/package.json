@@ -39,7 +39,7 @@
     "@ndn/tlv": "workspace:*",
     "fast-chunk-string": "^1.0.1",
     "indent-string": "^4.0.0",
-    "loglevel": "^1.6.7",
+    "loglevel": "^1.6.8",
     "minimalistic-assert": "^1.0.1",
     "node-fetch": "^2.6.0",
     "strict-event-emitter-types": "^2.0.0",
@@ -52,7 +52,7 @@
     "@types/fast-chunk-string": "^1.0.0",
     "@types/memdown": "^3.0.0",
     "@types/minimalistic-assert": "^1.0.0",
-    "@types/node-fetch": "^2.5.5",
+    "@types/node-fetch": "^2.5.7",
     "memdown": "^5.1.0"
   }
 }

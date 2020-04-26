@@ -49,9 +49,9 @@ expect.extend({
 declare global {
   namespace jest {
     interface Matchers<R, T> {
-      toEqualComponent(comp: ComponentLike): R;
-      toEqualName(name: NameLike): R;
-      toHaveName(name: NameLike): R;
+      toEqualComponent: (comp: ComponentLike) => R;
+      toEqualName: (name: NameLike) => R;
+      toHaveName: (name: NameLike) => R;
     }
   }
 }

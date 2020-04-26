@@ -44,7 +44,7 @@ type Pkt = LLSign.Signable & LLVerify.Verifiable & Encodable & {sigInfo: SigInfo
 
 interface Row {
   cls: (new(name: Name) => Pkt) & Decodable<Pkt>;
-  checkWire(tlv: Decoder.Tlv): void;
+  checkWire: (tlv: Decoder.Tlv) => void;
 }
 
 const TABLE = [

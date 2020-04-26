@@ -14,7 +14,7 @@ let ep: Endpoint;
 beforeEach(() => {
   fw = Forwarder.create();
   fw.pit.dataNoTokenMatch = false;
-  ep = new Endpoint({ fw, retx: null });
+  ep = new Endpoint({ fw, retx: 0 });
 });
 afterEach(() => Forwarder.deleteDefault());
 
