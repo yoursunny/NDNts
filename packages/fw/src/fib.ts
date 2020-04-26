@@ -1,6 +1,7 @@
 import { Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
+import DefaultMap from "mnemonist/default-map";
 
 import { FaceImpl } from "./face";
 
@@ -9,19 +10,15 @@ class FibEntry {
 }
 
 export class Fib {
-  public readonly table = new Map<string, FibEntry>();
+  public readonly table = new DefaultMap<string, FibEntry>(() => new FibEntry());
 
-  public insert(face: FaceImpl, name: Name, nameHex: string): void {
-    let entry = this.table.get(nameHex);
-    if (!entry) {
-      entry = new FibEntry();
-      this.table.set(nameHex, entry);
-    }
+  public insert(face: FaceImpl, nameHex: string): void {
+    const entry = this.table.get(nameHex);
     entry.nexthops.add(face);
   }
 
   public delete(face: FaceImpl, nameHex: string): void {
-    const entry = this.table.get(nameHex)!;
+    const entry = this.table.peek(nameHex)!;
     assert(!!entry);
     entry.nexthops.delete(face);
     if (entry.nexthops.size === 0) {
@@ -39,7 +36,7 @@ export class Fib {
 
     for (let prefixLen = name.length; prefixLen >= 0; --prefixLen) {
       const prefixStr = prefixStrs.pop()!;
-      const entry = this.table.get(prefixStr);
+      const entry = this.table.peek(prefixStr);
       if (entry) {
         assert(entry.nexthops.size > 0);
         return entry;

@@ -94,7 +94,7 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
     const nameHex = toHex(name.value);
     this.routes.add(nameHex);
     if (this.routes.count(nameHex) === 1) {
-      this.fw.fib.insert(this, name, nameHex);
+      this.fw.fib.insert(this, nameHex);
     }
 
     const ann = computeAnnouncement(name, announcement);

@@ -1,6 +1,7 @@
 import { canSatisfy, Data, Interest } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import hirestime from "hirestime";
+import DefaultMap from "mnemonist/default-map";
 import { filter, flatMap, pipeline, reduce, tap } from "streaming-iterables";
 
 import { FaceImpl } from "./face";
@@ -27,7 +28,9 @@ export class PitEntry {
   /** Outgoing numeric PIT token. */
   public token?: number;
   /** Downstream records. */
-  public dnRecords = new Map<FaceImpl, PitDn>();
+  public dnRecords = new DefaultMap<FaceImpl, PitDn>(
+    () => ({ nRx: 0, expire: 0, nonce: 0, token: undefined }));
+
   /** Last expiration time among downstreams. */
   public lastExpire = 0;
   /** Entry expiration timer; should match this.lastExpire. */
@@ -45,21 +48,17 @@ export class PitEntry {
     const token = InterestToken.get(interest);
 
     const dnR = this.dnRecords.get(face);
-    if (dnR) {
-      ++dnR.nRx;
-      dnR.expire = expire;
-      dnR.nonce = nonce;
-      dnR.token = token;
-    } else {
-      this.dnRecords.set(face, { nRx: 1, expire, nonce, token });
-    }
+    ++dnR.nRx;
+    dnR.expire = expire;
+    dnR.nonce = nonce;
+    dnR.token = token;
 
     this.updateExpire(now);
   }
 
   /** Record Interest cancellation from downstream. */
   public cancelInterest(face: FaceImpl) {
-    const dnR = this.dnRecords.get(face);
+    const dnR = this.dnRecords.peek(face);
     if (!dnR) { return; }
 
     this.dnRecords.delete(face);
