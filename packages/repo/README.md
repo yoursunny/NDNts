@@ -66,7 +66,7 @@ assert.equal(rA3, undefined);
 // See test cases for more options.
 // These registrations stay with NDNts forwarding plane. Typically you'll want a package such as
 // '@ndn/nfdmgmt' to propagate them to the uplink(s).
-const p = new RepoProducer(store, { reg: RepoProducer.PrefixRegShorter(1) });
+const p = RepoProducer.create(store, { reg: RepoProducer.PrefixRegShorter(1) });
 
 // Close the RepoProducer and the DataStore.
 p.close();

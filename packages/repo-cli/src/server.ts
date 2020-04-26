@@ -1,6 +1,6 @@
-import { openUplinks } from "@ndn/cli-common";
+import { getSigner, openUplinks } from "@ndn/cli-common";
 import { L3Face, StreamTransport } from "@ndn/l3face";
-import { BulkInserter, RepoProducer } from "@ndn/repo";
+import { BulkInserter, RepoProducer, respondRdr } from "@ndn/repo";
 import { createServer } from "net";
 import { Arguments, Argv, CommandModule } from "yargs";
 
@@ -8,6 +8,7 @@ import { declareStoreArgs, openStore, store, StoreArgs } from "./util";
 
 interface Args extends StoreArgs {
   prefix: string;
+  rdr: boolean;
   bi: boolean;
   "bi-host": string;
   "bi-port": number;
@@ -39,6 +40,11 @@ export class ServerCommand implements CommandModule<{}, Args> {
         desc: "command prefix",
         type: "string",
       })
+      .option("rdr", {
+        default: false,
+        desc: "respond to RDR discovery Interests",
+        type: "boolean",
+      })
       .option("bi", {
         default: true,
         desc: "enable bulk insertion",
@@ -69,8 +75,11 @@ export class ServerCommand implements CommandModule<{}, Args> {
   public async handler(args: Arguments<Args>) {
     await openUplinks();
     openStore(args);
-    // eslint-disable-next-line no-new
-    new RepoProducer(store);
+    const opts: RepoProducer.Options = {};
+    if (args.rdr) {
+      opts.fallback = respondRdr({ signer: await getSigner() });
+    }
+    RepoProducer.create(store, opts);
     if (args.bi) {
       enableBulkInsertion(args);
     }

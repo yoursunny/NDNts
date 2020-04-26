@@ -50,8 +50,7 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
     const key = await keyChain.getPrivateKey(certName.toKeyName().toName());
 
     const repo = new DataStore(leveldown(args.store));
-    // eslint-disable-next-line no-new
-    new RepoProducer(repo, { reg: RepoProducer.PrefixRegShorter(2) });
+    RepoProducer.create(repo, { reg: RepoProducer.PrefixRegShorter(2) });
 
     const challenges: ServerChallenge[] = [];
     for (const challengeId of args.challenge) {

@@ -56,7 +56,7 @@ test.each(TABLE)("workflow %#", async ({
   clientShouldFail = false,
 }) => {
   const repo = new DataStore(memdown());
-  const repoProducer = new RepoProducer(repo, { reg: RepoProducer.PrefixRegShorter(2) });
+  const repoProducer = RepoProducer.create(repo, { reg: RepoProducer.PrefixRegShorter(2) });
 
   const [caPvt, caPub] = await RsaPrivateKey.generate("/authority", 1024);
   const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });

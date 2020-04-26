@@ -1,7 +1,7 @@
 import { Endpoint, Producer } from "@ndn/endpoint";
 import { PrivateKey, theDigestKey } from "@ndn/keychain";
 import { Segment, Version } from "@ndn/naming-convention2";
-import { Data, Name, NameLike } from "@ndn/packet";
+import { Data, Interest, Name, NameLike } from "@ndn/packet";
 
 import { encodeMetadataContent, Metadata, MetadataKeyword } from "./metadata";
 
@@ -53,6 +53,11 @@ export async function makeMetadataPacket(m: Metadata, {
   return data;
 }
 
+/** Determine if an Interest is an RDR discovery Interest. */
+export function isDiscoveryInterest({ name, canBePrefix, mustBeFresh }: Interest): boolean {
+  return (name.get(-1)?.equals(MetadataKeyword) ?? false) && canBePrefix && mustBeFresh;
+}
+
 /** Serve RDR metadata packet in a producer. */
 export function serveMetadata(m: Metadata|(() => Metadata), opts: Options = {}): Producer {
   const { prefix, endpoint = new Endpoint() } = opts;
@@ -61,7 +66,7 @@ export function serveMetadata(m: Metadata|(() => Metadata), opts: Options = {}):
 
   return endpoint.produce(name,
     async (interest) => {
-      if (interest.name.length === name.length && interest.canBePrefix && interest.mustBeFresh) {
+      if (isDiscoveryInterest(interest) && interest.name.length === name.length) {
         return makeMetadataPacket(makeMetadata(), opts);
       }
       return false;
