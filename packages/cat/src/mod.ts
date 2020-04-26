@@ -1,4 +1,4 @@
-import "loud-rejection/register";
+import "hard-rejection/register.js";
 
 import yargs from "yargs";
 

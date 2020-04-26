@@ -37,7 +37,7 @@
     "@ndn/repo": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "esm": "^3.2.25",
-    "loud-rejection": "^2.2.0",
+    "hard-rejection": "^2.1.0",
     "leveldown": "^5.6.0",
     "minimalistic-assert": "^1.0.1",
     "progress": "^2.0.3",
