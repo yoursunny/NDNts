@@ -1,5 +1,3 @@
-import type { AnyIterable } from "streaming-iterables";
-
 /** Index and payload of a chunk. */
 export interface Chunk {
   /** Chunk number, starting from zero. */
@@ -16,9 +14,9 @@ export interface Chunk {
 export interface ChunkSource {
   /**
    * Generate chunks sequentially.
-   * @returns an Iterable or AsyncIterable of chunks in order.
+   * @returns an AsyncIterable of chunks in order.
    */
-  listChunks: () => AnyIterable<Chunk>;
+  listChunks: () => AsyncIterable<Chunk>;
 
   /**
    * Generate a chunk on-demand.
@@ -26,6 +24,50 @@ export interface ChunkSource {
    * @returns a Promise that resolves to requested chunk, or undefined if out of range.
    */
   getChunk?: (i: number) => Promise<Chunk|undefined>;
+
+  close?: () => void;
+}
+
+export abstract class KnownSizeChunkSource implements ChunkSource {
+  constructor(
+      protected readonly chunkSize: number,
+      protected readonly totalSize: number,
+  ) {
+    this.finalChunkSize = totalSize % chunkSize;
+    this.final = (totalSize - this.finalChunkSize) / chunkSize;
+    if (this.finalChunkSize === 0 && totalSize > 0) {
+      this.finalChunkSize = chunkSize;
+      this.final -= 1;
+    }
+  }
+
+  protected readonly final: number;
+  protected readonly finalChunkSize: number;
+
+  public async *listChunks(): AsyncIterable<Chunk> {
+    for (let i = 0; i <= this.final; ++i) {
+      yield this.makeChunk(i);
+    }
+  }
+
+  public async getChunk(i: number): Promise<Chunk|undefined> {
+    if (i > this.final) {
+      return undefined;
+    }
+    return this.makeChunk(i);
+  }
+
+  private async makeChunk(i: number): Promise<Chunk> {
+    const payload = await this.getPayload(i, i * this.chunkSize,
+      i === this.final ? this.finalChunkSize : this.chunkSize);
+    return {
+      i,
+      final: this.final,
+      payload,
+    };
+  }
+
+  protected abstract getPayload(i: number, offset: number, chunkSize: number): Promise<Uint8Array>;
 }
 
 interface ChunkSizeRange {

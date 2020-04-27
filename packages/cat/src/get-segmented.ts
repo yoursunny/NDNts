@@ -48,10 +48,11 @@ export class GetSegmentedCommand implements CommandModule<CommonArgs, Args> {
       .demandOption("name")
       .option("ver", {
         choices: discoverVersionChoices,
-        default: "none" as DiscoverVersionChoice,
+        default: "rdr" as DiscoverVersionChoice,
         desc: ["version discovery method",
           "none: no discovery",
-          "cbp: send Interest with CanBePrefix"].join("\n"),
+          "cbp: send Interest with CanBePrefix",
+          "rdr: use RDR protocol"].join("\n"),
       });
   }
 

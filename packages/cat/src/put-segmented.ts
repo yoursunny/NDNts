@@ -1,5 +1,5 @@
 import { serveMetadata } from "@ndn/rdr";
-import { serve, serveVersioned, StreamChunkSource } from "@ndn/segmented-object";
+import { FileChunkSource, serve, serveVersioned, StreamChunkSource } from "@ndn/segmented-object";
 import { Arguments, Argv, CommandModule } from "yargs";
 
 import { CommonArgs, segmentNumConvention, signer, versionConvention } from "./common-args";
@@ -8,11 +8,16 @@ interface Args extends CommonArgs {
   name: string;
   rdr: boolean;
   ver: string;
+  file?: string;
+  "chunk-size": number;
 }
 
-function main({ name, rdr, ver }: Args) {
+function main({ name, rdr, ver, file, "chunk-size": chunkSize }: Args) {
   const serveFunc = ver === "none" ? serve : serveVersioned;
-  const server = serveFunc(name, new StreamChunkSource(process.stdin), {
+  const source = file ?
+    new FileChunkSource(file, { chunkSize }) :
+    new StreamChunkSource(process.stdin, { chunkSize });
+  const server = serveFunc(name, source, {
     segmentNumConvention,
     signer,
     version: ver === "now" ? undefined : Number.parseInt(ver, 10),
@@ -44,6 +49,15 @@ export class PutSegmentedCommand implements CommandModule<CommonArgs, Args> {
         default: "now",
         desc: "version number; 'none' to omit version component, 'now' to use current timestamp",
         type: "string",
+      })
+      .option("file", {
+        desc: "read from file instead of stdin",
+        type: "string",
+      })
+      .option("chunk-size", {
+        default: 4096,
+        desc: "segment payload size",
+        type: "number",
       })
       .check(({ ver }) => {
         if (!(["none", "now"].includes(ver) || Number.parseInt(ver, 10) >= 0)) {

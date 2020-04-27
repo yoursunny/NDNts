@@ -8,8 +8,10 @@ import { Interest, Name } from "@ndn/packet";
 import { AbortController } from "abort-controller";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { consume } from "streaming-iterables";
+import { fileSync as tmpFile } from "tmp";
+import { sync as write } from "write";
 
-import { BufferChunkSource, fetch, IterableChunkSource, makeChunkSource, serve } from "..";
+import { BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, makeChunkSource, serve } from "..";
 
 let objectBody: Buffer;
 
@@ -49,6 +51,23 @@ test("stream to stream", async () => {
   await new Promise((r) => dst.end(r));
   expect(objectBody.compare(dst.flatData)).toEqual(0);
   server.close();
+});
+
+describe("file source", () => {
+  let filename: string;
+  let removeCallback: () => void;
+  beforeAll(() => {
+    ({ name: filename, removeCallback } = tmpFile());
+    write(filename, objectBody);
+  });
+  afterAll(() => removeCallback());
+
+  test("file to buffer", async () => {
+    const server = serve("/R", new FileChunkSource(filename));
+    const fetched = fetch.promise(new Name("/R"));
+    await expect(fetched).resolves.toEqualUint8Array(objectBody);
+    server.close();
+  });
 });
 
 test("iterable to unordered", async () => {

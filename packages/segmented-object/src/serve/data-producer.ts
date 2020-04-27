@@ -96,7 +96,7 @@ export abstract class DataProducer {
   protected abstract getData(i: number): Promise<Data|undefined>;
 
   public close(): void {
-    // no-op in base class
+    this.source.close?.();
   }
 }
 
@@ -204,6 +204,8 @@ class SequentialDataProducer extends DataProducer {
   }
 
   public close() {
+    super.close();
+
     for (const w of this.waitlist.values()) {
       w.resolve();
     }
