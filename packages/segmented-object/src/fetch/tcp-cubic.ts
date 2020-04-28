@@ -3,6 +3,7 @@ import { CongestionAvoidance } from "./congestion-avoidance";
 const IW = 2;
 const C = 0.4;
 const BETACUBIC = 0.7;
+const ALPHA_AIMD = 3 * (1 - BETACUBIC) / (1 + BETACUBIC);
 
 /**
  * TCP CUBIC algorithm.
@@ -11,7 +12,8 @@ const BETACUBIC = 0.7;
 export class TcpCubic extends CongestionAvoidance {
   private t0 = 0;
   private cwnd_ = IW;
-  private wMax = Number.NaN;
+  private wMax = 0;
+  private wLastMax = 0;
   private k = Number.NaN;
   private ssthresh = Infinity;
 
@@ -27,31 +29,31 @@ export class TcpCubic extends CongestionAvoidance {
     }
 
     const t = (now - this.t0) / 1000;
-    const rttSeconds = rtt / 1000;
-    const wEst = this.computeWEst(t, rttSeconds);
-    if (this.computeWCubic(t) < wEst) { // TCP friendly region
+    rtt /= 1000;
+    const wCubic = C * (t - this.k) ** 3 + this.wMax;
+    const wEst = this.wMax * BETACUBIC + ALPHA_AIMD * (t / rtt);
+    if (wCubic < wEst) { // TCP friendly region
       this.cwnd_ = wEst;
       this.updateCwnd(this.cwnd_);
       return;
     }
 
     // concave region or convex region
-    const wCubic = this.computeWCubic(t + rttSeconds);
+    // note: RFC8312 specifies `(W_cubic(t+RTT) - cwnd) / cwnd`, but NDN-DPDK benchmark shows
+    //       that using `(W_cubic(t) - cwnd) / cwnd` increases throughput by 10%
     this.cwnd_ += (wCubic - this.cwnd_) / this.cwnd_;
     this.updateCwnd(this.cwnd_);
   }
 
-  private computeWCubic(t: number) {
-    return C * (t - this.k) ** 3 + this.wMax;
-  }
-
-  private computeWEst(t: number, rtt: number) {
-    return this.wMax * BETACUBIC + (3 * (1 - BETACUBIC) / (1 + BETACUBIC)) * (t / rtt);
-  }
-
   public decrease(now: number) {
     this.t0 = now;
-    this.wMax = this.cwnd_;
+    if (this.cwnd_ < this.wLastMax) {
+      this.wLastMax = this.cwnd_;
+      this.wMax = this.cwnd_ + (1 + BETACUBIC) / 2;
+    } else {
+      this.wMax = this.cwnd_;
+      this.wLastMax = this.cwnd_;
+    }
     this.k = Math.cbrt(this.wMax * (1 - BETACUBIC) / C);
     this.cwnd_ *= BETACUBIC;
     this.ssthresh = Math.max(this.cwnd_, 2);

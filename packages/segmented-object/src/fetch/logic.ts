@@ -33,6 +33,8 @@ interface Options {
   retxLimit?: number;
 }
 
+const tokenLimiters = new WeakMap<CongestionAvoidance, TokenLimiter>();
+
 class SegState {
   constructor(public readonly segNum: number) {
   }
@@ -86,9 +88,14 @@ export class FetchLogic extends (EventEmitter as new() => Emitter) {
     super();
     this.rtte = opts.rtte instanceof RttEstimator ? opts.rtte : new RttEstimator(opts.rtte);
     this.ca = opts.ca ?? new TcpCubic();
-    this.tl = new TokenLimiter();
-    this.tl.capacity = this.ca.cwnd;
-    this.ca.on("cwndupdate", (cwnd) => this.tl.capacity = cwnd);
+    let tl = tokenLimiters.get(this.ca);
+    if (!tl) {
+      tl = new TokenLimiter();
+      tl.capacity = this.ca.cwnd;
+      this.ca.on("cwndupdate", (cwnd) => tl!.capacity = cwnd);
+      tokenLimiters.set(this.ca, tl);
+    }
+    this.tl = tl;
 
     this.hiInterestSegNum = (opts.segmentRange?.[0] ?? 0) - 1;
     this.finalSegNum = (opts.segmentRange?.[1] ?? Number.MAX_SAFE_INTEGER) - 1;
@@ -150,7 +157,7 @@ export class FetchLogic extends (EventEmitter as new() => Emitter) {
       }
 
       this.tl.put();
-      if (this.tl.nTaken === 0) {
+      if (this.pending.size === 0) {
         this.emit("end");
         break;
       }
@@ -183,7 +190,6 @@ export class FetchLogic extends (EventEmitter as new() => Emitter) {
     }
     this.ca.increase(now, this.rtte.sRtt);
     this.hiDataSegNum = Math.max(this.hiDataSegNum, segNum);
-    // console.log("increase", Math.round(this.rtte.sRtt), Math.round(this.rtte.rto), Math.round(this.ca.cwnd), this.tl.nTaken);
     this.emit(UNBLOCK);
   }
 
@@ -198,7 +204,6 @@ export class FetchLogic extends (EventEmitter as new() => Emitter) {
       this.ca.decrease(getNow());
       this.rtte.backoff();
       this.cwndDecreaseSegNum = this.hiInterestSegNum;
-      // console.log("decrease", Math.round(this.rtte.sRtt), Math.round(this.rtte.rto), Math.round(this.ca.cwnd), this.tl.nTaken);
     }
 
     if (req.nRetx >= this.retxLimit) {
