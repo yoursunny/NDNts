@@ -15,6 +15,12 @@ export function getPageUri(testcaseDirname: string) {
   return `http://localhost:${port}/${name}.html`;
 }
 
+/** Navigate to test case page. */
+export async function navigateToPage(testcaseDirname: string, delay = 200) {
+  await page.goto(getPageUri(testcaseDirname));
+  await new Promise((r) => setTimeout(r, delay));
+}
+
 /**
  * Invoke JavaScript function (in global scope) on page.
  */

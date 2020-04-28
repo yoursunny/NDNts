@@ -2,11 +2,11 @@ import * as TestCertStore from "@ndn/keychain/test-fixture/cert-store";
 import * as TestKeyStore from "@ndn/keychain/test-fixture/key-store";
 import * as TestSignVerify from "@ndn/keychain/test-fixture/sign-verify";
 
-import { getPageUri, pageInvoke } from "../../test-fixture/pptr";
+import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 import { deserializeInBrowser } from "../../test-fixture/serialize";
 import { SignVerifyTestResult } from "./api";
 
-beforeEach(() => page.goto(getPageUri(__dirname)));
+beforeEach(() => navigateToPage(__dirname));
 
 test("KeyStore", async () => {
   const result = await pageInvoke<typeof window.testKeyStore>(page, "testKeyStore");

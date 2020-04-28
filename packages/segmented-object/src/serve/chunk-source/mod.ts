@@ -3,4 +3,5 @@ export * from "./buffer";
 export * from "./iterable";
 export * from "./stream";
 export * from "./file";
+export * from "./blob";
 export * from "./make";

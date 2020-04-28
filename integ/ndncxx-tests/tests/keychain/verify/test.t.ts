@@ -1,8 +1,9 @@
 import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength, RsaPrivateKey } from "@ndn/keychain";
 import { Data } from "@ndn/packet";
+import { deleteTmpFiles, writeTmpFile } from "@ndn/segmented-object/test-fixture/tmpfile";
 import { Encoder } from "@ndn/tlv";
 
-import { deleteTmpFiles, execute, writeTmpFile } from "../../../test-fixture";
+import { execute } from "../../../test-fixture/cxxprogram";
 
 afterEach(deleteTmpFiles);
 

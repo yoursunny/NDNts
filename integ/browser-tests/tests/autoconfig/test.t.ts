@@ -1,8 +1,8 @@
 import "./api";
 
-import { getPageUri, pageInvoke } from "../../test-fixture/pptr";
+import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 
-beforeEach(() => page.goto(getPageUri(__dirname)));
+beforeEach(() => navigateToPage(__dirname));
 
 test("connectToTestbed", async () => {
   const record = await pageInvoke<typeof window.testConnectToTestbed>(page, "testConnectToTestbed");

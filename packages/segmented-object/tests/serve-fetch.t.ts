@@ -8,19 +8,12 @@ import { Interest, Name } from "@ndn/packet";
 import { AbortController } from "abort-controller";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { consume } from "streaming-iterables";
-import { fileSync as tmpFile } from "tmp";
-import { sync as write } from "write";
 
 import { BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, makeChunkSource, serve } from "..";
+import { makeObjectBody } from "../test-fixture/object-body";
+import { deleteTmpFiles, writeTmpFile } from "../test-fixture/tmpfile";
 
-let objectBody: Buffer;
-
-beforeAll(() => {
-  objectBody = Buffer.alloc(1024 * 1024);
-  for (let i = 0; i < objectBody.length; ++i) {
-    objectBody[i] = Math.random() * 0x100;
-  }
-});
+const objectBody = makeObjectBody();
 beforeEach(() => Forwarder.getDefault().pit.dataNoTokenMatch = false);
 afterEach(() => Forwarder.deleteDefault());
 
@@ -55,12 +48,8 @@ test("stream to stream", async () => {
 
 describe("file source", () => {
   let filename: string;
-  let removeCallback: () => void;
-  beforeAll(() => {
-    ({ name: filename, removeCallback } = tmpFile());
-    write(filename, objectBody);
-  });
-  afterAll(() => removeCallback());
+  beforeAll(() => filename = writeTmpFile(objectBody));
+  afterAll(deleteTmpFiles);
 
   test("file to buffer", async () => {
     const server = serve("/R", new FileChunkSource(filename));

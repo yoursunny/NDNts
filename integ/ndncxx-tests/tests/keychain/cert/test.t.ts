@@ -2,7 +2,7 @@ import { Certificate, EcPrivateKey, ValidityPeriod } from "@ndn/keychain";
 import { Component } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 
-import { execute } from "../../../test-fixture";
+import { execute } from "../../../test-fixture/cxxprogram";
 
 test("decode", async () => {
   const [, publicKey] = await EcPrivateKey.generate("/A", "P-256");

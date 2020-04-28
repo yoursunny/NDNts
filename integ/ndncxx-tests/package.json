@@ -8,12 +8,9 @@
   "devDependencies": {
     "@ndn/keychain": "workspace:*",
     "@ndn/packet": "workspace:*",
+    "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@types/tmp": "^0.1.0",
-    "@types/write": "^2.0.0",
     "execa": "^4.0.0",
-    "tmp": "^0.2.0",
-    "tslib": "*",
-    "write": "^2.0.0"
+    "tslib": "*"
   }
 }
