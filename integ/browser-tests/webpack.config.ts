@@ -20,6 +20,10 @@ const config: webpack.Configuration = {
   module: {
     rules: [
       {
+        test: /\.js$/,
+        loader: "ifdef-loader",
+      },
+      {
         test: /\.ts$/,
         exclude: /node_modules/,
         loader: "ts-loader",
