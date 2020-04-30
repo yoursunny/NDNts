@@ -34,7 +34,7 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "abort-controller": "^3.0.0",
-    "graceful-fs": "^4.2.3",
+    "graceful-fs": "^4.2.4",
     "hirestime": "^6.0.1",
     "is-stream": "^2.0.0",
     "it-pushable": "^1.4.0",
@@ -54,7 +54,7 @@
     "@types/tmp": "^0.1.0",
     "@types/write": "^2.0.0",
     "stream-mock": "^2.0.5",
-    "tmp": "^0.2.0",
+    "tmp": "^0.2.1",
     "write": "^2.0.0"
   }
 }
