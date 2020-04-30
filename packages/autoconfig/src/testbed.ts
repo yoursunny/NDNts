@@ -1,5 +1,5 @@
 import { FwFace } from "@ndn/fw";
-import { collect, filter, pipeline, take, transform } from "streaming-iterables";
+import { collect, filter, pipeline, transform } from "streaming-iterables";
 
 import { connect, queryFch } from "./mod";
 import { getDefaultGateway } from "./platform/mod";
@@ -18,7 +18,6 @@ interface Options {
 export async function connectToTestbed(opts: connectToTestbed.Options = {}): Promise<FwFace[]> {
   const {
     fchFallback = [],
-    count = 1,
     tryDefaultGateway = true,
     preferFastest = false,
   } = opts;
@@ -30,7 +29,6 @@ export async function connectToTestbed(opts: connectToTestbed.Options = {}): Pro
     () => hosts,
     transform(Infinity, (host) => connect(host, opts).catch(() => undefined)),
     filter((res): res is connect.Result => !!res),
-    take(count),
     collect,
   );
   if (preferFastest && faces.length > 1) {
