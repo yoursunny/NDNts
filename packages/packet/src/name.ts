@@ -1,6 +1,8 @@
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { Component, ComponentLike, NamingConvention, TT } from "./mod";
+import { TT } from "./an";
+import { Component, ComponentLike } from "./component";
+import { NamingConvention } from "./convention";
 
 export type NameLike = Name | string;
 

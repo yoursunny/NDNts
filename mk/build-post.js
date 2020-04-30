@@ -1,28 +1,36 @@
-// ES Module import paths should be URIs with '.js' extension.
-// TypeScript allows '.js' in import paths, but ts-jest is unhappy.
-// I have to leave '.js' off in TypeScript import paths, and modify the output files before publishing.
-// To enable this transform, 'index.ts' should be avoided in favor of 'mod.ts'.
-//
-// Node >=12.16 forbids importing CommonJS with `import`.
-// Thus, I have to replace `import` to `require`.
-// However, webpack is unhappy about `createRequire`.
-// So I kept both variants, and webapps will have to use ifdef-loader.
-//
-// Source Maps are stripped because (1) files are modified (2) source '.ts' files are not in package.
-
-const { readFileSync, writeFileSync } = require("fs");
 const builtins = require("builtins")();
+const { promises: fs } = require("fs");
+const { pipeline } = require("stream");
+const split2 = require("split2");
+
+/**
+ * @param {string} filename
+ * @param {string[]} lines
+ */
+function delayedWrite(filename, lines) {
+  setTimeout(() => fs.writeFile(filename, lines.join("\n")), 2000);
+}
+
+/**
+ * @param {string} filename
+ */
+async function transformDeclaration(filename) {
+  let lines = (await fs.readFile(filename, "utf-8")).split("\n");
+  lines = lines.filter((l) => !l.startsWith("//# sourceMappingURL="));
+  delayedWrite(filename, lines);
+}
 
 // Whitelist of packages published with ES Module entrypoint.
 const ESM_IMPORTS = new Set([...builtins]);
 
-for (const filename of process.argv.slice(2)) {
-  /** @type string[] */
-  let lines = readFileSync(filename, { encoding: "utf-8" }).split("\n");
+/**
+ * @param {string} filename
+ */
+async function transformJs(filename) {
+  let lines = (await fs.readFile(filename, { encoding: "utf-8" })).split("\n");
   let needRequire = false;
-  lines = lines.flatMap((input) => {
-    /** @type string */
-    const line = input.replace(/\r$/, "");
+  lines = lines.flatMap((/** @type string */line) => {
+    line = line.replace(/\r$/, "");
     if ((line.startsWith("import ") || line.startsWith("export ")) && line.includes(" from \".")) {
       return line.replace(/(\.js)?";$/, ".js\";");
     }
@@ -73,5 +81,30 @@ for (const filename of process.argv.slice(2)) {
       "/// #endif",
     );
   }
-  writeFileSync(filename, lines.join("\n"), { encoding: "utf-8" });
+  delayedWrite(filename, lines);
 }
+
+(async () => {
+const lines = split2();
+pipeline(process.stdin, lines,
+  (err) => { if (err) { console.error(err); } });
+
+lines.on("data", async (/** @type string */line) => {
+  process.stdout.write(`${line}\n`);
+  if (!line.startsWith("TSFILE: ")) {
+    return;
+  }
+  const filename = line.slice(8);
+  try {
+    if (filename.endsWith(".map")) {
+      await fs.unlink(filename);
+    } else if (filename.endsWith(".d.ts")) {
+      await transformDeclaration(filename);
+    } else if (filename.endsWith(".js")) {
+      await transformJs(filename);
+    }
+  } catch (err) {
+    console.warn(filename, err);
+  }
+});
+})();

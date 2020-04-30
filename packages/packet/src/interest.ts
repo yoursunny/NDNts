@@ -1,9 +1,13 @@
 import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 
+import { TT } from "./an";
+import { ParamsDigest } from "./digest-comp";
 import { FwHint } from "./fwhint";
-import { LLSign, LLVerify, Name, NameLike, ParamsDigest, SigInfo, TT } from "./mod";
+import { LLSign, LLVerify } from "./llsign";
+import { Name, NameLike } from "./name";
 import { sha256 } from "./platform/mod";
+import { SigInfo } from "./sig-info";
 
 const HOPLIMIT_MAX = 255;
 const SignedPortion = Symbol("Interest.SignedPortion");

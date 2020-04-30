@@ -1,3 +1,2 @@
 #!/bin/sh
-export TS_NODE_PROJECT=../../mk/tsconfig-literate.json
-node -r esm -r ts-node/register/transpile-only -r tsconfig-paths/register src/mod.ts "$@"
+node --experimental-modules --loader ../../mk/esm-loader.mjs --experimental-specifier-resolution=node cli.cjs "$@"

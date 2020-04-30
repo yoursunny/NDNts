@@ -12,13 +12,16 @@
     "lib"
   ],
   "type": "module",
-  "main": "lib/mod.js",
+  "main": "src/mod.ts",
   "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
     "directory": "packages/cli-common"
+  },
+  "publishConfig": {
+    "main": "lib/mod.js"
   },
   "dependencies": {
     "@ndn/autoconfig": "workspace:*",

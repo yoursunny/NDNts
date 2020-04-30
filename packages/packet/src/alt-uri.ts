@@ -1,4 +1,8 @@
-import { Component, ImplicitDigest, Name, NamingConvention, ParamsDigest, TT } from "./mod";
+import { TT } from "./an";
+import { Component } from "./component";
+import { NamingConvention } from "./convention";
+import { ImplicitDigest, ParamsDigest } from "./digest-comp";
+import { Name } from "./name";
 
 /**
  * Functions to print name or component in alternate/pretty URI syntax.

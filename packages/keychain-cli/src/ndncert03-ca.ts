@@ -1,4 +1,4 @@
-import { openUplinks } from "@ndn/cli-common/src/mod";
+import { openUplinks } from "@ndn/cli-common";
 import { CertificateName } from "@ndn/keychain";
 import { CaProfile, Server, ServerChallenge, ServerNopChallenge, ServerPinChallenge } from "@ndn/ndncert";
 import { Data } from "@ndn/packet";

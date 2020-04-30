@@ -1,7 +1,7 @@
 import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
-import { NackReason } from "./an";
-import { Interest, TT } from "./mod";
+import { NackReason, TT } from "./an";
+import { Interest } from "./interest";
 
 const EVD = new EvDecoder<NackHeader>("NackHeader", TT.Nack)
   .add(TT.NackReason, (t, { nni }) => t.reason = nni);

@@ -12,7 +12,7 @@
     "lib"
   ],
   "type": "module",
-  "main": "src/mod.ts",
+  "main": "src/main.ts",
   "bin": {
     "ndntsrepo": "cli.cjs"
   },
@@ -24,7 +24,7 @@
     "directory": "packages/repo-cli"
   },
   "publishConfig": {
-    "main": "lib/mod.js"
+    "main": "lib/main.js"
   },
   "dependencies": {
     "@ndn/cli-common": "workspace:*",
@@ -36,7 +36,6 @@
     "@ndn/packet": "workspace:*",
     "@ndn/repo": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "esm": "^3.2.25",
     "hard-rejection": "^2.1.0",
     "leveldown": "^5.6.0",
     "minimalistic-assert": "^1.0.1",

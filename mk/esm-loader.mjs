@@ -1,10 +1,9 @@
-import { dynamicInstantiate as tsesnodeDynamicInstantiate, resolve as tsesnodeResolve } from "@k-foss/ts-esnode";
 export { getFormat, transformSource } from "@k-foss/ts-esnode";
 import { getTSConfig } from "@k-foss/ts-esnode/out/dist/Utils.js";
-import * as fs from "fs";
+import { promises as fs } from "fs";
 import { createRequire } from "module";
 import { dirname, resolve as pathResolve } from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 
 const baseDir = pathResolve(dirname(fileURLToPath(import.meta.url)), "../");
 getTSConfig(`${baseDir}/mk/literate-tsconfig/`);
@@ -19,14 +18,16 @@ getTSConfig(`${baseDir}/mk/literate-tsconfig/`);
 export async function resolve(specifier, context, defaultResolve) {
   if (specifier.startsWith("@ndn/")) {
     specifier = specifier.replace(/^@ndn\//, `${baseDir}/packages/`);
+    try {
+      const j = JSON.parse(await fs.readFile(`${specifier}/package.json`, "utf-8"));
+      Object.assign(j, j.publishConfig);
+      if (j.main) {
+        specifier = pathResolve(specifier, j.main);
+      }
+    } catch {}
+    specifier = pathToFileURL(specifier).toString();
   }
-  try {
-    const j = JSON.parse(fs.readFileSync(`${specifier}/package.json`, "utf-8"));
-    if (j.main) {
-      specifier = pathResolve(specifier, j.main);
-    }
-  } catch (err) {}
-  return tsesnodeResolve(specifier, context, defaultResolve);
+  return defaultResolve(specifier, context, defaultResolve);
 }
 
 /**
@@ -37,10 +38,7 @@ export async function resolve(specifier, context, defaultResolve) {
 export async function dynamicInstantiate(url) {
   const urlParts = url.split("/node_modules/");
   urlParts.pop();
-  const require = createRequire(
-    `${urlParts.join("/node_modules/").replace("file://", "")}/node_modules/`,
-  );
-
+  const require = createRequire(`${urlParts.join("/node_modules/")}/noop.js`);
   let dynModule = require(url.replace(/.*\/node_modules\//, ""));
   if (dynModule.default && dynModule !== dynModule.default) {
     dynModule = {
@@ -56,7 +54,9 @@ export async function dynamicInstantiate(url) {
     exports,
     execute: (module) => {
       module.default.set(dynModule);
-      for (const linkKey of linkKeys) {module[linkKey].set(dynModule[linkKey]);}
+      for (const linkKey of linkKeys) {
+        module[linkKey].set(dynModule[linkKey]);
+      }
     },
   };
 }

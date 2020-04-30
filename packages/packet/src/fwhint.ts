@@ -1,6 +1,7 @@
 import { Decoder, Encoder, EvDecoder, NNI, toHex } from "@ndn/tlv";
 
-import { Name, NameLike, TT } from "./mod";
+import { TT } from "./an";
+import { Name, NameLike } from "./name";
 
 const EVD = new EvDecoder<FwHint.Delegation>("Delegation", TT.Delegation)
   .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))

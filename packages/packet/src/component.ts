@@ -1,7 +1,8 @@
 import { Decoder, Encoder, fromUtf8, toUtf8 } from "@ndn/tlv";
 import bufferCompare from "buffer-compare";
 
-import { NamingConvention, TT } from "./mod";
+import { TT } from "./an";
+import { NamingConvention } from "./convention";
 
 function checkType(n: number) {
   if (n < 0x01 || n > 0xFFFF) {

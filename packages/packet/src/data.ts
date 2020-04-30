@@ -1,7 +1,12 @@
 import { Decoder, Encodable, EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
-import { Component, ImplicitDigest, LLSign, LLVerify, Name, NameLike, SigInfo, SigType, TT } from "./mod";
+import { SigType, TT } from "./an";
+import { Component } from "./component";
+import { ImplicitDigest } from "./digest-comp";
+import { LLSign, LLVerify } from "./llsign";
+import { Name, NameLike } from "./name";
 import { sha256 } from "./platform/mod";
+import { SigInfo } from "./sig-info";
 
 const FAKE_SIGINFO = new SigInfo(SigType.Sha256);
 const FAKE_SIGVALUE = new Uint8Array(32);

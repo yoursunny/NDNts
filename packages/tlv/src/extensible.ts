@@ -1,4 +1,5 @@
-import { Decoder, Encodable } from "./mod";
+import { Decoder } from "./decoder";
+import { Encodable } from "./encoder";
 
 /** An TLV element that allows extension sub element. */
 export interface Extensible {

@@ -1,7 +1,9 @@
 {
   "extends": "./mk/tsconfig-base.json",
   "compilerOptions": {
+    "declarationMap": true,
     "module": "commonjs",
-    "rootDir": "."
+    "rootDir": ".",
+    "sourceMap": true
   }
 }

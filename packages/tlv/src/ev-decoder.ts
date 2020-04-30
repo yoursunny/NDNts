@@ -1,4 +1,5 @@
-import { Decoder, printTT } from "./mod";
+import { Decoder } from "./decoder";
+import { printTT } from "./string";
 
 /** Invoked when a matching TLV element is found. */
 type ElementCallback<T> = (target: T, tlv: Decoder.Tlv) => void;

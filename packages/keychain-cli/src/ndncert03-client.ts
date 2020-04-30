@@ -1,4 +1,4 @@
-import { closeUplinks, openUplinks } from "@ndn/cli-common/src/mod";
+import { closeUplinks, openUplinks } from "@ndn/cli-common";
 import { KeyName } from "@ndn/keychain";
 import { CaProfile, ClientChallenge, ClientNopChallenge, ClientPinChallenge, requestCertificate } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";

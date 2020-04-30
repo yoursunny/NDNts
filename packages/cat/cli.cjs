@@ -1,2 +1,3 @@
 #!/usr/bin/env node
-require("esm")(module)("./lib/mod.js");
+require("hard-rejection")();
+import("./lib/main.js"); // eslint-disable-line no-unused-expressions

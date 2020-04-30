@@ -12,7 +12,7 @@
     "lib"
   ],
   "type": "module",
-  "main": "src/mod.ts",
+  "main": "src/main.ts",
   "bin": {
     "ndntssec": "cli.cjs"
   },
@@ -24,7 +24,7 @@
     "directory": "packages/keychain-cli"
   },
   "publishConfig": {
-    "main": "lib/mod.js"
+    "main": "lib/main.js"
   },
   "dependencies": {
     "@ndn/cli-common": "workspace:*",
@@ -34,7 +34,6 @@
     "@ndn/packet": "workspace:*",
     "@ndn/repo": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "esm": "^3.2.25",
     "fast-chunk-string": "^1.0.1",
     "get-stdin": "^7.0.0",
     "graceful-fs": "^4.2.4",

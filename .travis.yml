@@ -4,20 +4,18 @@ dist: bionic
 language: node_js
 jobs:
   include:
-  - node_js: '12.15'
-  - node_js: '14'
-  allow_failures:
+  - node_js: '12'
   - node_js: '14'
 
-addons:
-  apt:
-    sources:
-      - sourceline: 'ppa:named-data/ppa-dev'
-    packages:
-      - build-essential
-      - clang-format-6.0
-      - libndn-cxx-dev
-      - ndnsec
+# addons:
+#   apt:
+#     sources:
+#       - sourceline: 'ppa:named-data/ppa-dev'
+#     packages:
+#       - build-essential
+#       - clang-format-6.0
+#       - libndn-cxx-dev
+#       - ndnsec
 
 cache:
   npm: false
@@ -37,14 +35,13 @@ script:
   - npm run lint-ci
   - npm run cover -- --colors
   - cd $TRAVIS_BUILD_DIR/integ/browser-tests && npm test
-  - cd $TRAVIS_BUILD_DIR/integ/ndncxx-tests && npm test
+  # - cd $TRAVIS_BUILD_DIR/integ/ndncxx-tests && npm test
   - cd $TRAVIS_BUILD_DIR
 
 after_success:
-  - coveralls <$TRAVIS_BUILD_DIR/coverage/lcov.info
+  - coveralls <coverage/lcov.info
 
 before_deploy:
-  - npm run build -- strip
   - bash mk/publish-nightly.sh
 
 deploy:
@@ -57,3 +54,4 @@ deploy:
     prod: true
     on:
       branch: develop
+      node_js: '14'

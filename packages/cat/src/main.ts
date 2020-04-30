@@ -1,5 +1,3 @@
-import "hard-rejection/register.js";
-
 import yargs from "yargs";
 
 import { applyCommonArgs } from "./common-args";

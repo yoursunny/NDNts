@@ -1,4 +1,4 @@
-import { Component } from "./mod";
+import { Component } from "./component";
 
 /** Naming convention, constructible from A and convertible to R. */
 export interface NamingConvention<A, R = A> {

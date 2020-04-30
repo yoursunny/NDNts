@@ -12,7 +12,7 @@
     "lib"
   ],
   "type": "module",
-  "main": "lib/mod.js",
+  "main": "src/main.ts",
   "bin": {
     "ndncat": "cli.cjs"
   },
@@ -23,6 +23,9 @@
     "url": "https://github.com/yoursunny/NDNts.git",
     "directory": "packages/cat"
   },
+  "publishConfig": {
+    "main": "lib/main.js"
+  },
   "dependencies": {
     "@ndn/cli-common": "workspace:*",
     "@ndn/keychain": "workspace:*",
@@ -31,7 +34,6 @@
     "@ndn/packet": "workspace:*",
     "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
-    "esm": "^3.2.25",
     "hard-rejection": "^2.1.0",
     "stdout-stream": "^1.4.1",
     "tslib": "*",

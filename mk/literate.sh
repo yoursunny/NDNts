@@ -14,14 +14,10 @@ literate_extract() {
 }
 
 literate_run() {
+  echo -e '\n\e[96m'RUNNING EXAMPLES IN $1/README.md'\e[39m'
+  local LOADER=$(realpath --relative-to=$1 $ROOTDIR/mk/esm-loader.mjs)
   pushd $1 >/dev/null
-  NODEVERSION=$(node --version)
-  if [[ $NODEVERSION = v12* ]] && [[ $(echo $NODEVERSION | sed -e 's/^[^.]*\.//' -e 's/\.[^.]*$//') -le 15 ]]; then
-    export TS_NODE_PROJECT=$ROOTDIR/mk/tsconfig-literate.json
-    node -r esm -r ts-node/register -r tsconfig-paths/register literate-temp.ts
-  else
-    node --experimental-modules --loader $ROOTDIR/mk/literate-loader.mjs --experimental-specifier-resolution=node literate-temp.ts
-  fi
+  node --experimental-modules --loader $LOADER --experimental-specifier-resolution=node literate-temp.ts
   popd >/dev/null
 }
 

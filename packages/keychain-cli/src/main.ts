@@ -1,5 +1,3 @@
-import "hard-rejection/register.js";
-
 import yargs from "yargs";
 
 import { AddCertCommand } from "./add-cert";

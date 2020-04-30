@@ -1,4 +1,5 @@
-import { fromUtf8, NNI } from "./mod";
+import { NNI } from "./nni";
+import { fromUtf8 } from "./string";
 
 export interface Decodable<R> {
   decodeFrom: (decoder: Decoder) => R;
