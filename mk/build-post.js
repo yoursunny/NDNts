@@ -90,8 +90,8 @@ pipeline(process.stdin, lines,
   (err) => { if (err) { console.error(err); } });
 
 lines.on("data", async (/** @type string */line) => {
-  process.stdout.write(`${line}\n`);
   if (!line.startsWith("TSFILE: ")) {
+    process.stdout.write(`${line}\n`);
     return;
   }
   const filename = line.slice(8);
