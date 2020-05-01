@@ -183,13 +183,7 @@ export class Transaction {
     const json = toUtf8(JSON.stringify(record));
     const encoder = new Encoder();
     encoder.prependRoom(json.byteLength).set(json);
-
-    try {
-      const wire = Data.getWire(data);
-      encoder.prependRoom(wire.byteLength).set(wire);
-    } catch {
-      encoder.encode(data);
-    }
+    encoder.encode(data);
 
     const buf = encoder.output;
     record.encodedBuffer = Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);

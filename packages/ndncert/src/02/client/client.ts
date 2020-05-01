@@ -48,7 +48,7 @@ export class Client {
       await makeInterestParams(value));
     const data = await this.consume(interest);
     const json = (await readDataPayload(data.content)) as ProbeResponse;
-    const res = new Client.ProbeResult(new Name(json.name), Data.getWire(data));
+    const res = new Client.ProbeResult(new Name(json.name), Encoder.encode(data));
     log.debug("PROBE response", res.subjectName.toString());
     return res;
   }

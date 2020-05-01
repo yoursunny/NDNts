@@ -1,6 +1,7 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Advertise, FwFace, TapFace } from "@ndn/fw";
 import { Name } from "@ndn/packet";
+import throat from "throat";
 
 import { ControlCommand } from "./control-command";
 import { ControlParameters } from "./control-parameters";
@@ -12,6 +13,7 @@ type Options = CommandOptions & RouteOptions;
 class NfdAdvertise extends Advertise {
   private commandOptions: CommandOptions;
   private routeOptions: RouteOptions;
+  private mutex = throat(1);
 
   constructor(face: FwFace, opts: Options) {
     super(face);
@@ -37,24 +39,36 @@ class NfdAdvertise extends Advertise {
   }
 
   protected async doAdvertise(name: Name) {
-    const [opts, untap] = this.tap();
-    const cr = await ControlCommand.call("rib/register", {
-      name,
-      origin: this.routeOptions.origin,
-      cost: this.routeOptions.cost,
-      flags: this.routeOptions.flags,
-    }, opts).finally(untap);
+    const cr = await this.mutex(async () => {
+      const [opts, untap] = this.tap();
+      try {
+        return await ControlCommand.call("rib/register", {
+          name,
+          origin: this.routeOptions.origin,
+          cost: this.routeOptions.cost,
+          flags: this.routeOptions.flags,
+        }, opts);
+      } finally {
+        untap();
+      }
+    });
     if (cr.statusCode !== 200) {
       throw new Error(`${cr.statusCode} ${cr.statusText}`);
     }
   }
 
   protected async doWithdraw(name: Name) {
-    const [opts, untap] = this.tap();
-    const cr = await ControlCommand.call("rib/unregister", {
-      name,
-      origin: this.routeOptions.origin,
-    }, opts).finally(untap);
+    const cr = await this.mutex(async () => {
+      const [opts, untap] = this.tap();
+      try {
+        return await ControlCommand.call("rib/unregister", {
+          name,
+          origin: this.routeOptions.origin,
+        }, opts);
+      } finally {
+        untap();
+      }
+    });
     if (cr.statusCode !== 200) {
       throw new Error(`${cr.statusCode} ${cr.statusText}`);
     }

@@ -44,7 +44,11 @@ export namespace ControlCommand {
   /** Invoke a command and wait for response. */
   export async function call<C extends keyof Commands>(
       command: C, params: Commands[C], opts: Options = {}): Promise<ControlResponse> {
-    const prefix = opts.commandPrefix ?? localhostPrefix;
+    const {
+      endpoint = new Endpoint(),
+      commandPrefix: prefix = localhostPrefix,
+    } = opts;
+
     const name = new Name([
       ...prefix.comps,
       ...command.split("/"),
@@ -52,7 +56,6 @@ export namespace ControlCommand {
     ]);
     const interest = await signInterest02(new Interest(name), opts);
 
-    const endpoint = opts.endpoint ?? new Endpoint();
     const data = await endpoint.consume(interest);
     return new Decoder(data.content).decode(ControlResponse);
   }

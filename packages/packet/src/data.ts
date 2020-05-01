@@ -34,11 +34,64 @@ const EVD = new EvDecoder<Data>("Data", TT.Data)
 
 /** Data packet. */
 export class Data {
+  /**
+   * Construct from flexible arguments.
+   *
+   * Arguments can include:
+   * - Data to copy from
+   * - Name or name URI
+   * - Data.ContentType(v)
+   * - Data.FreshnessPeriod(v)
+   * - Data.FinalBlock (must appear after Name)
+   * - Uint8Array as Content
+   */
+  constructor(...args: Array<Data | Data.CtorArg>) {
+    args.forEach((arg) => {
+      if (Name.isNameLike(arg)) {
+        this.name_ = new Name(arg);
+      } else if (arg instanceof Uint8Array) {
+        this.content_ = arg;
+      } else if (arg instanceof ContentTypeTag) {
+        this.contentType_ = arg.v;
+      } else if (arg instanceof FreshnessPeriodTag) {
+        this.freshnessPeriod_ = arg.v;
+      } else if (arg === Data.FinalBlock) {
+        this.isFinalBlock = true;
+      } else if (arg instanceof Data) {
+        Object.assign(this, arg);
+      } else {
+        throw new Error("unknown Data constructor argument");
+      }
+    });
+  }
+
+  public get name() { return this.name_; }
+  public set name(v) {
+    this[TopTlv] = undefined;
+    this[SignedPortion] = undefined;
+    this.name_ = v;
+  }
+
   public get contentType() { return this.contentType_; }
-  public set contentType(v) { this.contentType_ = NNI.constrain(v, "ContentType"); }
+  public set contentType(v) {
+    this[TopTlv] = undefined;
+    this[SignedPortion] = undefined;
+    this.contentType_ = NNI.constrain(v, "ContentType");
+  }
 
   public get freshnessPeriod() { return this.freshnessPeriod_; }
-  public set freshnessPeriod(v) { this.freshnessPeriod_ = NNI.constrain(v, "FreshnessPeriod"); }
+  public set freshnessPeriod(v) {
+    this[TopTlv] = undefined;
+    this[SignedPortion] = undefined;
+    this.freshnessPeriod_ = NNI.constrain(v, "FreshnessPeriod");
+  }
+
+  public get finalBlockId() { return this.finalBlockId_; }
+  public set finalBlockId(v) {
+    this[TopTlv] = undefined;
+    this[SignedPortion] = undefined;
+    this.finalBlockId_ = v;
+  }
 
   public get isFinalBlock(): boolean {
     return !!this.finalBlockId &&
@@ -57,53 +110,45 @@ export class Data {
     this.finalBlockId = this.name.at(-1);
   }
 
+  public get content() { return this.content_; }
+  public set content(v) {
+    this[TopTlv] = undefined;
+    this[SignedPortion] = undefined;
+    this.content_ = v;
+  }
+
+  public get sigInfo() { return this.sigInfo_; }
+  public set sigInfo(v) {
+    this[TopTlv] = undefined;
+    this[SignedPortion] = undefined;
+    this.sigInfo_ = v;
+  }
+
+  public get sigValue() { return this.sigValue_; }
+  public set sigValue(v) {
+    this[TopTlv] = undefined;
+    this.sigValue_ = v;
+  }
+
   public static decodeFrom(decoder: Decoder): Data {
     return EVD.decode(new Data(), decoder);
   }
 
-  public name: Name = new Name();
-  public finalBlockId?: Component;
-  public content: Uint8Array = new Uint8Array();
-  public sigInfo?: SigInfo;
-  public sigValue?: Uint8Array;
+  private name_: Name = new Name();
+  private contentType_ = 0;
+  private freshnessPeriod_ = 0;
+  private finalBlockId_?: Component;
+  private content_: Uint8Array = new Uint8Array();
+  private sigInfo_?: SigInfo;
+  private sigValue_?: Uint8Array;
   public [SignedPortion]?: Uint8Array;
   public [TopTlv]?: Uint8Array & {[TopTlvDigest]?: Uint8Array}; // for implicit digest
 
-  private contentType_ = 0;
-  private freshnessPeriod_ = 0;
-
-  /**
-   * Construct from flexible arguments.
-   *
-   * Arguments can include:
-   * - Data to copy from
-   * - Name or name URI
-   * - Data.ContentType(v)
-   * - Data.FreshnessPeriod(v)
-   * - Data.FinalBlock (must appear after Name)
-   * - Uint8Array as Content
-   */
-  constructor(...args: Array<Data | Data.CtorArg>) {
-    args.forEach((arg) => {
-      if (Name.isNameLike(arg)) {
-        this.name = new Name(arg);
-      } else if (arg instanceof Uint8Array) {
-        this.content = arg;
-      } else if (arg instanceof ContentTypeTag) {
-        this.contentType = arg.v;
-      } else if (arg instanceof FreshnessPeriodTag) {
-        this.freshnessPeriod = arg.v;
-      } else if (arg === Data.FinalBlock) {
-        this.isFinalBlock = true;
-      } else if (arg instanceof Data) {
-        Object.assign(this, arg);
-      } else {
-        throw new Error("unknown Data constructor argument");
-      }
-    });
-  }
-
   public encodeTo(encoder: Encoder) {
+    if (this[TopTlv]) {
+      encoder.encode(this[TopTlv]);
+      return;
+    }
     encoder.encode(Encoder.extract(
       [
         TT.Data,
@@ -122,12 +167,12 @@ export class Data {
       this.name,
       [
         TT.MetaInfo, Encoder.OmitEmpty,
-        this.contentType > 0 ? [TT.ContentType, NNI(this.contentType)] : undefined,
-        this.freshnessPeriod > 0 ? [TT.FreshnessPeriod, NNI(this.freshnessPeriod)] : undefined,
-        this.finalBlockId ? [TT.FinalBlockId, this.finalBlockId] : undefined,
+        this.contentType_ > 0 ? [TT.ContentType, NNI(this.contentType_)] : undefined,
+        this.freshnessPeriod_ > 0 ? [TT.FreshnessPeriod, NNI(this.freshnessPeriod_)] : undefined,
+        this.finalBlockId_ ? [TT.FinalBlockId, this.finalBlockId_] : undefined,
       ],
-      this.content.byteLength > 0 ? [TT.Content, this.content] : undefined,
-      (this.sigInfo ?? FAKE_SIGINFO).encodeAs(TT.DSigInfo),
+      this.content_.byteLength > 0 ? [TT.Content, this.content_] : undefined,
+      (this.sigInfo_ ?? FAKE_SIGINFO).encodeAs(TT.DSigInfo),
     ];
   }
 
@@ -167,14 +212,14 @@ export class Data {
   }
 
   public async [LLVerify.OP](verify: LLVerify) {
-    if (!this.sigValue) {
+    if (!this.sigValue_) {
       throw new Error("SigValue is missing");
     }
     const signedPortion = this[SignedPortion];
     if (!signedPortion) {
       throw new Error("SignedPortion is missing");
     }
-    await verify(signedPortion, this.sigValue);
+    await verify(signedPortion, this.sigValue_);
   }
 }
 
@@ -201,13 +246,4 @@ export namespace Data {
 
   export type CtorArg = NameLike | ContentTypeTag | FreshnessPeriodTag |
                         typeof FinalBlock | Uint8Array;
-
-  /** Obtain original encoding. */
-  export function getWire(data: Data): Uint8Array {
-    const wire = data[TopTlv];
-    if (!wire) {
-      throw new Error("wire encoding unavailable");
-    }
-    return wire;
-  }
 }
