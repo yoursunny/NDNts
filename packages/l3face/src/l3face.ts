@@ -31,7 +31,7 @@ const REOPENED = Symbol("L3Face.REOPENED");
 /** Network layer face for sending and receiving L3 packets. */
 export class L3Face extends (EventEmitter as new() => Emitter) {
   public readonly attributes: L3Face.Attributes;
-  public readonly lp = new LpService();
+  public readonly lp: LpService;
   public readonly numericPitToken = new NumericPitToken();
   public readonly rx: AsyncIterable<Packet>;
   public get state() { return this.state_; }
@@ -39,7 +39,7 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
   private transport: Transport;
   private state_: L3Face.State = L3Face.State.UP;
 
-  constructor(transport: Transport, attributes: L3Face.Attributes = {}) {
+  constructor(transport: Transport, attributes: L3Face.Attributes = {}, lpOptions: LpService.Options = {}) {
     super();
     this.transport = transport;
     this.attributes = {
@@ -47,6 +47,7 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
       ...transport.attributes,
       ...attributes,
     };
+    this.lp = new LpService(lpOptions);
     this.rx = this.makeRx();
     (this.rx as any).return = undefined;
   }

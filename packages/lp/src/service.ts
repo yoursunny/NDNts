@@ -1,10 +1,25 @@
 import { Data, Interest, Nack, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
+import itKeepAlive from "it-keepalive";
 
 import { LpPacket, TT } from "./mod";
 import { PitToken } from "./pit-token";
 
+const IDLE = Encoder.encode(new LpPacket());
+
 export class LpService {
+  constructor({
+    keepAlive = 60000,
+  }: LpService.Options = {}) {
+    if (keepAlive === false || keepAlive <= 0) {
+      this.keepAlive = -1;
+    } else {
+      this.keepAlive = keepAlive;
+    }
+  }
+
+  private keepAlive: number;
+
   public rx = (iterable: AsyncIterable<Decoder.Tlv>) => {
     return this.rx_(iterable);
   };
@@ -54,12 +69,23 @@ export class LpService {
   }
 
   public tx = (iterable: AsyncIterable<LpService.L3Pkt>) => {
-    return this.tx_(iterable);
+    let iterable1: AsyncIterable<LpService.L3Pkt|false> = iterable;
+    if (this.keepAlive > 0) {
+      iterable1 = itKeepAlive<LpService.L3Pkt|false>(
+        () => false,
+        { timeout: this.keepAlive },
+      )(iterable);
+    }
+    return this.tx_(iterable1);
   };
 
-  private async *tx_(iterable: AsyncIterable<LpService.L3Pkt>): AsyncIterable<Uint8Array|LpService.TxError> {
+  private async *tx_(iterable: AsyncIterable<LpService.L3Pkt|false>): AsyncIterable<Uint8Array|LpService.TxError> {
     for await (const pkt of iterable) {
-      yield* this.encode(pkt);
+      if (pkt === false) {
+        yield IDLE;
+      } else {
+        yield* this.encode(pkt);
+      }
     }
   }
 
@@ -94,6 +120,15 @@ export class LpService {
 }
 
 export namespace LpService {
+  export interface Options {
+    /**
+     * How often to send IDLE packets if nothing else was sent, in millis.
+     * Set false or zero to disable keep-alive.
+     * @default 60000
+     */
+    keepAlive?: false|number;
+  }
+
   export type L3Pkt = Interest|Data|Nack;
 
   export class RxError extends Error {

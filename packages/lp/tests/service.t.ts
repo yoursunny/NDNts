@@ -70,22 +70,35 @@ test("rx", async () => {
 });
 
 test("tx", async () => {
-  const input = [
-    new Data("/D"),
-    new Interest("/I"),
-    new Nack(new Interest("/N", Interest.Nonce(0xA0A1A2A3))),
-    new Interest("/P"),
-  ];
-  await theDigestKey.sign(input[0] as Data);
-  PitToken.set(input[3] as Interest, Uint8Array.of(0xD4, 0xD5));
+  async function* input() {
+    await new Promise((r) => setTimeout(r, 10));
+    const pkt0 = new Data("/D");
+    await theDigestKey.sign(pkt0);
+    yield pkt0;
+
+    await new Promise((r) => setTimeout(r, 10));
+    const pkt1 = new Interest("/I");
+    yield pkt1;
+
+    await new Promise((r) => setTimeout(r, 10));
+    const pkt2 = new Nack(new Interest("/N", Interest.Nonce(0xA0A1A2A3)));
+    yield pkt2;
+
+    // pkt3 IDLE
+
+    await new Promise((r) => setTimeout(r, 200));
+    const pkt4 = new Interest("/P");
+    PitToken.set(pkt4, Uint8Array.of(0xD4, 0xD5));
+    yield pkt4;
+  }
 
   const output = await pipeline(
-    async function*() { yield* input; },
-    new LpService().tx,
+    input,
+    new LpService({ keepAlive: 130 }).tx,
     collect,
   );
 
-  expect(output).toHaveLength(4);
+  expect(output).toHaveLength(5);
   expect(output[0]).toMatchTlv(({ type }) => expect(type).toBe(l3TT.Data));
   expect(output[1]).toMatchTlv(({ type }) => expect(type).toBe(l3TT.Interest));
   expect(output[2]).toMatchTlv(({ type, value }) => {
@@ -104,7 +117,8 @@ test("tx", async () => {
       },
     );
   });
-  expect(output[3]).toMatchTlv(({ type, value }) => {
+  expect(output[3]).toEqualUint8Array([0x64, 0x00]);
+  expect(output[4]).toMatchTlv(({ type, value }) => {
     expect(type).toBe(TT.LpPacket);
     expect(value).toMatchTlv(
       ({ type, length, value }) => {
