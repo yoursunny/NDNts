@@ -1,5 +1,5 @@
 import { closeUplinks, openUplinks } from "@ndn/cli-common";
-import { Client, clientLogger, makeMailsacClientEmailChallenge, schema } from "@ndn/ndncert/02";
+import { Client, clientLogger, makeMailsacClientEmailChallenge, schema } from "@ndn/ndncert/02.js";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import readJsonSync from "read-json-sync";
 import stdout from "stdout-stream";

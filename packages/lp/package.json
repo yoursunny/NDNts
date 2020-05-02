@@ -26,7 +26,7 @@
   "dependencies": {
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "it-keepalive": "yoursunny/it-keepalive#eeb391f41885883cf29495c1d761589b158de99b",
+    "it-keepalive": "^1.2.0",
     "tslib": "*"
   },
   "devDependencies": {
