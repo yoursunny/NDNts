@@ -16,7 +16,10 @@ export class BulkInserter {
   public accept(face: L3Face): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises, require-yield
     face.tx((async function*() {
-      await new Promise((r) => face.once("down", r));
+      await Promise.race([
+        new Promise((r) => face.once("down", r)),
+        new Promise((r) => face.once("close", r)),
+      ]);
     })());
     return pipeline(
       () => face.rx,
