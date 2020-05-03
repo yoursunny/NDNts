@@ -3,7 +3,7 @@ import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 import DefaultMap from "mnemonist/default-map";
 
-import { FaceImpl } from "./face";
+import type { FaceImpl } from "./face";
 
 class FibEntry {
   public readonly nexthops = new Set<FaceImpl>();

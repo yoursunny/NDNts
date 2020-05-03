@@ -29,7 +29,6 @@
     "@ndn/keychain": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "throat": "^5.0.0",
     "tslib": "*"
   }
 }

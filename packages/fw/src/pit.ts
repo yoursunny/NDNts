@@ -4,7 +4,7 @@ import hirestime from "hirestime";
 import DefaultMap from "mnemonist/default-map";
 import { filter, flatMap, pipeline, reduce, tap } from "streaming-iterables";
 
-import { FaceImpl } from "./face";
+import type { FaceImpl } from "./face";
 import { InterestToken, RejectInterest } from "./reqres";
 
 const getNow = hirestime();

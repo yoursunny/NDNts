@@ -7,8 +7,7 @@ import Fifo from "p-fifo";
 import { buffer, filter, pipeline, tap } from "streaming-iterables";
 import StrictEventEmitter from "strict-event-emitter-types";
 
-import { Advertise } from "./advertise";
-import { ForwarderImpl } from "./forwarder";
+import type { ForwarderImpl } from "./forwarder";
 import { CancelInterest, isL3Pkt, L3Pkt, RejectInterest } from "./reqres";
 
 interface Events {
@@ -34,7 +33,6 @@ function computeAnnouncement(name: Name, announcement: Face.RouteAnnouncement): 
 
 export class FaceImpl extends (EventEmitter as new() => Emitter) {
   public readonly attributes: Face.Attributes;
-  public advertise?: Advertise;
   private readonly routes = new MultiSet<string>();
   private readonly announcements = new MultiSet<string>();
   private readonly stopping = pDefer<typeof STOP>();
@@ -77,7 +75,7 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
       this.fw.fib.delete(this, nameHex);
     }
     for (const nameHex of this.announcements.keys()) {
-      this.fw.removeAnnouncement(this, undefined, nameHex);
+      this.fw.readvertise.removeAnnouncement(this, undefined, nameHex);
     }
     this.stopping.resolve(STOP);
     this.emit("close");
@@ -126,7 +124,7 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
     const nameHex = toHex(name.value);
     this.announcements.add(nameHex);
     if (this.announcements.count(nameHex) === 1) {
-      this.fw.addAnnouncement(this, name, nameHex);
+      this.fw.readvertise.addAnnouncement(this, name, nameHex);
     }
   }
 
@@ -138,7 +136,7 @@ export class FaceImpl extends (EventEmitter as new() => Emitter) {
     const nameHex = toHex(name.value);
     this.announcements.remove(nameHex);
     if (this.announcements.count(nameHex) === 0) {
-      this.fw.removeAnnouncement(this, name, nameHex);
+      this.fw.readvertise.removeAnnouncement(this, name, nameHex);
     }
   }
 
@@ -230,7 +228,7 @@ export namespace FaceImpl {
 
 /** A socket or network interface associated with forwarding plane. */
 export interface Face extends Pick<FaceImpl,
-"fw"|"advertise"|"attributes"|"close"|"toString"|"addRoute"|"removeRoute"|
+"fw"|"attributes"|"close"|"toString"|"addRoute"|"removeRoute"|"addAnnouncement"|"removeAnnouncement"|
 Exclude<keyof Emitter, "emit">> {
   readonly running: boolean;
   readonly txQueueLength: number;

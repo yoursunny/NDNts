@@ -1,12 +1,11 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Endpoint } from "@ndn/endpoint";
-import { InterestToken } from "@ndn/fw";
+import { Forwarder, InterestToken } from "@ndn/fw";
+import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, Interest, Name } from "@ndn/packet";
+import { Encoder, NNI } from "@ndn/tlv";
 
 import { ControlCommand, enableNfdPrefixReg } from "..";
-
-afterEach(() => Endpoint.deleteDefaultForwarder());
 
 interface Row {
   faceIsLocal?: boolean;
@@ -30,22 +29,23 @@ const TABLE = [
 ] as Row[];
 
 test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }) => {
-  const endpoint = new Endpoint();
+  const fw = Forwarder.create();
 
-  const remoteProcess = jest.fn((interest: Interest) => {
+  const verbs: string[] = [];
+  const remoteProcess = (interest: Interest) => {
     expect(interest.name).toHaveLength(expectedPrefix.length + 7);
+    verbs.push(interest.name.at(-6).text);
     expect(interest.name.at(-5).value).toMatchTlv(({ type, vd }) => {
       expect(type).toBe(0x68);
       expect(vd.decode(Name)).toEqualName("/R");
     });
-    const data = new Data(interest.name, Uint8Array.of(
-      0x65, 0x07,
-      0x66, 0x01, 0xC8, // 200
-      0x67, 0x02, 0x4F, 0x4B, // 'OK'
-    ));
+    const status = verbs.length === 1 ? 400 : 200;
+    const data = new Data(interest.name, Encoder.encode([0x65,
+      [0x66, NNI(status)],
+      [0x67]]));
     return InterestToken.copy(interest, data);
-  });
-  const face = endpoint.fw.addFace({
+  };
+  const uplink = fw.addFace({
     async *transform(iterable) {
       for await (const pkt of iterable) {
         expect(pkt).toBeInstanceOf(Interest);
@@ -53,17 +53,33 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
       }
     },
   }, { local: faceIsLocal });
-  enableNfdPrefixReg(face, { commandPrefix });
+  enableNfdPrefixReg(uplink, {
+    commandPrefix,
+    retry: {
+      minTimeout: 1,
+      maxTimeout: 1,
+    },
+    refreshInterval: 100,
+  });
 
-  const producer = endpoint.produce("/R", async () => false);
-  await new Promise((r) => setTimeout(r, 50));
-  expect(remoteProcess).toHaveBeenCalledTimes(1);
-  expect(remoteProcess.mock.calls[0][0].name.getPrefix(expectedPrefix.length + 2))
-    .toEqualName(`${expectedPrefix}/rib/register`);
+  const appFace = fw.addFace(new NoopFace());
+  appFace.addAnnouncement(new Name("/R"));
+  await new Promise((r) => setTimeout(r, 40));
+  expect(verbs).toHaveLength(2);
+  expect(verbs[0]).toBe("register");
+  expect(verbs[1]).toBe("register");
 
-  producer.close();
-  await new Promise((r) => setTimeout(r, 50));
-  expect(remoteProcess).toHaveBeenCalledTimes(2);
-  expect(remoteProcess.mock.calls[1][0].name.getPrefix(expectedPrefix.length + 2))
-    .toEqualName(`${expectedPrefix}/rib/unregister`);
+  await new Promise((r) => setTimeout(r, 110));
+  expect(verbs).toHaveLength(3);
+  expect(verbs[2]).toBe("register");
+
+  appFace.removeAnnouncement(new Name("/R"));
+  await new Promise((r) => setTimeout(r, 40));
+  expect(verbs).toHaveLength(4);
+  expect(verbs[3]).toBe("unregister");
+
+  await new Promise((r) => setTimeout(r, 110));
+  expect(verbs).toHaveLength(4);
+
+  uplink.close();
 });
