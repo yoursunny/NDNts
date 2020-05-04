@@ -11,6 +11,10 @@ class KeyNameBase {
     this.subjectName = new Name(subjectName);
     this.keyId = Component.from(keyId);
   }
+
+  protected toKeyName(): Name {
+    return this.subjectName.append(KEY, this.keyId);
+  }
 }
 
 /** Key name in NDN Certificate Format v2. */
@@ -38,8 +42,8 @@ export class KeyName extends KeyNameBase {
   }
 
   /** Retrieve complete name. */
-  public toName(): Name {
-    return this.subjectName.append(KEY, this.keyId);
+  public get name(): Name {
+    return this.toKeyName();
   }
 }
 
@@ -65,12 +69,17 @@ export class CertificateName extends KeyNameBase {
   }
 
   /** Retrieve complete name. */
-  public toName(): Name {
+  public get name(): Name {
     return this.subjectName.append(KEY, this.keyId, this.issuerId, this.version);
   }
 
-  /** Derive key name. */
-  public toKeyName(): KeyName {
+  /** Derive key name as KeyName. */
+  public get keyName(): KeyName {
     return new KeyName(this.subjectName, this.keyId);
+  }
+
+  /** Derive key name as Name. */
+  public get key(): Name {
+    return this.toKeyName();
   }
 }

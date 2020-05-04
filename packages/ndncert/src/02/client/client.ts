@@ -22,8 +22,8 @@ export class Client {
   /** Construct client from CA information. */
   public static async create(caInfo: CaInfo, opts: Options = {}): Promise<Client> {
     const certData = new Decoder(Buffer.from(caInfo.certificate, "base64")).decode(Data);
-    const cert = new Certificate(certData);
-    const publicKey = await Certificate.loadPublicKey(cert);
+    const cert = Certificate.fromData(certData);
+    const publicKey = await cert.loadPublicKey();
     return new Client(caInfo, cert, publicKey, opts);
   }
 
@@ -118,7 +118,7 @@ export class Client {
     const certData = new Decoder(downloadData.content).decode(Data);
     await this.publicKey.verify(certData);
     log.debug("DOWNLOAD", certData.name.toString());
-    return new Certificate(certData);
+    return Certificate.fromData(certData);
   }
 
   private async consume(interest: Interest): Promise<Data> {

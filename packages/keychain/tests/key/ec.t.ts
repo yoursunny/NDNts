@@ -43,7 +43,7 @@ test.each(EC_CURVES)("load %p", async (curve) => {
   expect(pvt).toBeInstanceOf(EcPrivateKey);
 
   const cert = await Certificate.selfSign({ privateKey: pvt, publicKey: pub });
-  const pub2 = await Certificate.loadPublicKey(cert);
+  const pub2 = await cert.loadPublicKey();
   expect(pub2).toBeInstanceOf(EcPublicKey);
   expect(pub2.name).toEqualName(pvt.name);
 });

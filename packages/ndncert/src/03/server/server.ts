@@ -45,7 +45,7 @@ export class Server {
       private readonly issuerId: Component,
   ) {
     const { cert, prefix, data: { name: infoName } } = profile;
-    assert(cert.certName.toKeyName().toName().equals(key.name));
+    assert(cert.certName.key.equals(key.name));
     const infoVersion = infoName.getPrefix(-1);
 
     this.producers = [

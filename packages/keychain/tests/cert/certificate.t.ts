@@ -9,9 +9,10 @@ test("encode decode", async () => {
   const cert = await Certificate.build({
     name: new CertificateName("/operator", "key-1", "self", "%FD%01"),
     validity: new ValidityPeriod(new Date(1542099529000), new Date(1602434283000)),
-    publicKey: Uint8Array.of(0xC0, 0xC1),
+    publicKeySpki: Uint8Array.of(0xC0, 0xC1),
     signer: theDigestKey,
   });
+  expect(cert.issuer).toBeUndefined();
 
   let data = cert.data;
   expect(data.name).toEqualName("/operator/KEY/key-1/self/%FD%01");
@@ -21,19 +22,19 @@ test("encode decode", async () => {
   const wire = Encoder.encode(cert.data);
   data = new Decoder(wire).decode(Data);
   data.name = new Name("/operator/not-KEY/key-1/self/%FD%01");
-  expect(() => new Certificate(data)).toThrow(/invalid/);
+  expect(() => Certificate.fromData(data)).toThrow(/invalid/);
 
   data = new Decoder(wire).decode(Data);
   data.contentType = 0x00;
-  expect(() => new Certificate(data)).toThrow(/ContentType/);
+  expect(() => Certificate.fromData(data)).toThrow(/ContentType/);
 
   data = new Decoder(wire).decode(Data);
   data.sigInfo = undefined;
-  expect(() => new Certificate(data)).toThrow(/SigInfo/);
+  expect(() => Certificate.fromData(data)).toThrow(/SigInfo/);
 
   data = new Decoder(wire).decode(Data);
   ValidityPeriod.set(data.sigInfo!, undefined);
-  expect(() => new Certificate(data)).toThrow(/ValidityPeriod/);
+  expect(() => Certificate.fromData(data)).toThrow(/ValidityPeriod/);
 });
 
 const NDN_TESTBED_ROOT_V2_NDNCERT = Buffer.from(`
@@ -68,7 +69,7 @@ const NDN_TESTBED_ARIZONA_20190312 = Buffer.from(`
 
 test("decode testbed certs", async () => {
   const data0 = new Decoder(NDN_TESTBED_ROOT_V2_NDNCERT).decode(Data);
-  const cert0 = new Certificate(data0);
+  const cert0 = Certificate.fromData(data0);
   expect(cert0.name).toEqualName("/ndn/KEY/e%9D%7F%A5%C5%81%10%7D/ndn/%FD%00%00%01%60qJQ%9B");
   expect(cert0.certName.subjectName).toEqualName("/ndn");
   expect(cert0.certName.keyId).toEqualComponent("e%9D%7F%A5%C5%81%10%7D");
@@ -76,7 +77,7 @@ test("decode testbed certs", async () => {
   expect(cert0.certName.version).toEqualComponent("%FD%00%00%01%60qJQ%9B");
   expect(cert0.validity.notBefore).toEqual(new Date(1513729179000));
   expect(cert0.validity.notAfter).toEqual(new Date(1609459199000));
-  expect(cert0.publicKey).toEqualUint8Array(Buffer.from(`
+  expect(cert0.publicKeySpki).toEqualUint8Array(Buffer.from(`
     MIIBSzCCAQMGByqGSM49AgEwgfcCAQEwLAYHKoZIzj0BAQIhAP////8AAAABAAAA
     AAAAAAAAAAAA////////////////MFsEIP////8AAAABAAAAAAAAAAAAAAAA////
     ///////////8BCBaxjXYqjqT57PrvVV2mIa8ZR0GsMxTsPY7zjw+J9JgSwMVAMSd
@@ -84,10 +85,15 @@ test("decode testbed certs", async () => {
     RdiYwpZP40Li/hp/m47n60p8D54WK84zV2sxXs7LtkBoN79R9QIhAP////8AAAAA
     //////////+85vqtpxeehPO5ysL8YyVRAgEBA0IABAUIdqatSflni6u9XO2ZSmBA
     +MjDwkx2RiPtCCLsm4oKVn2Jyfa/yOSgZseGqnTEdbN1rDWvlIgAmxI0MUXVM1g=`, "base64"));
-  const pub0 = await Certificate.loadPublicKey(cert0);
+  expect(cert0.isSelfSigned).toBeTruthy();
+  const pub0 = await cert0.loadPublicKey();
   expect(pub0).toBeInstanceOf(EcPublicKey);
 
   const data1 = new Decoder(NDN_TESTBED_ARIZONA_20190312).decode(Data);
   await pub0.verify(data1);
-  // await expect(pub0.verify(data1)).resolves.toBeUndefined();
+  await expect(pub0.verify(data1)).resolves.toBeUndefined();
+
+  const cert1 = Certificate.fromData(data1);
+  expect(cert1.isSelfSigned).toBeFalsy();
+  expect(cert1.issuer).toEqualName(cert0.certName.key);
 });

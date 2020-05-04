@@ -13,7 +13,7 @@ export class JsonCertStore extends StoreBase<Item> implements CertStore {
   public async get(name: Name): Promise<Certificate> {
     const item = await this.getImpl(name);
     const wire = Buffer.from(item.certBase64, "base64") as Uint8Array;
-    return new Certificate(new Decoder(wire).decode(Data));
+    return Certificate.fromData(new Decoder(wire).decode(Data));
   }
 
   public async insert(cert: Certificate): Promise<void> {

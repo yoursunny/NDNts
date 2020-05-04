@@ -41,7 +41,7 @@ export class IssueCertCommand implements CommandModule<{}, Args> {
     const issuerPrivateKey = await keyChain.getPrivateKey(keyNames[0]);
 
     const certReq = await inputCertBase64();
-    const publicKey = await Certificate.loadPublicKey(certReq);
+    const publicKey = await certReq.loadPublicKey();
 
     const issuerId = Component.from(issuerIdStr);
 

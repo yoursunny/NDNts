@@ -12,7 +12,7 @@ interface Item {
 export class SCloneCertStore extends StoreBase<Item> implements CertStore {
   public async get(name: Name): Promise<Certificate> {
     const { certBuffer } = await this.getImpl(name);
-    return new Certificate(new Decoder(certBuffer).decode(Data));
+    return Certificate.fromData(new Decoder(certBuffer).decode(Data));
   }
 
   public async insert(cert: Certificate): Promise<void> {

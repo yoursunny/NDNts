@@ -6,7 +6,8 @@ export function addManualTest(title: string, f: () => Promise<string|string[]>) 
         if (Array.isArray(result)) {
           result = result.join("\n");
         }
-        document.body.textContent = result;
+        document.body.innerHTML = "<pre></pre>";
+        document.body.querySelector("pre")!.textContent = result;
       },
       (err) => document.body.textContent = err,
     );

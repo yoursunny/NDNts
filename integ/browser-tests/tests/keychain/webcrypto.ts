@@ -60,7 +60,7 @@ async function checkWebCrypto() {
       try {
         if (canMakeCert) {
           const cert = await Certificate.selfSign({ privateKey: pvt!, publicKey: pub });
-          await Certificate.loadPublicKey(cert);
+          await cert.loadPublicKey();
         }
         let pkt = new Data("/D");
         await pvt!.sign(pkt);

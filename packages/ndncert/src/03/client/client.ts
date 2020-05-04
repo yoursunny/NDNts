@@ -79,6 +79,6 @@ export async function requestCertificate({
   }
 
   const issuedCertData = await endpoint.consume(new Interest(issuedCertName), { describe });
-  const issuedCert = new Certificate(issuedCertData);
+  const issuedCert = Certificate.fromData(issuedCertData);
   return issuedCert;
 }

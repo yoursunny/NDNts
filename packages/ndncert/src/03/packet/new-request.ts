@@ -8,7 +8,7 @@ import { CaProfile } from "./ca-profile";
 
 const EVD = new EvDecoder<NewRequest.Fields>("NewRequest", undefined)
   .add(TT.EcdhPub, (t, { value }) => t.ecdhPubRaw = value, { required: true })
-  .add(TT.CertRequest, (t, { vd }) => t.certRequest = new Certificate(vd.decode(Data)), { required: true });
+  .add(TT.CertRequest, (t, { vd }) => t.certRequest = Certificate.fromData(vd.decode(Data)), { required: true });
 
 export class NewRequest {
   public static async fromInterest(interest: Interest, profile: CaProfile): Promise<NewRequest> {
@@ -27,7 +27,7 @@ export class NewRequest {
     }
 
     request.ecdhPub_ = await crypto.importEcdhPub(request.ecdhPubRaw);
-    request.publicKey_ = await Certificate.loadPublicKey(request.certRequest);
+    request.publicKey_ = await request.certRequest.loadPublicKey();
     await request.publicKey.verify(interest);
     return request;
   }

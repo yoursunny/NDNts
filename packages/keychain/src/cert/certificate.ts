@@ -1,5 +1,5 @@
 import { Version } from "@ndn/naming-convention2";
-import { Component, Data, SigInfo } from "@ndn/packet";
+import { Component, Data, Name, SigInfo } from "@ndn/packet";
 
 import { loadSpki } from "../key/load";
 import { CertificateName, KeyName, PrivateKey, PublicKey } from "../mod";
@@ -11,59 +11,88 @@ import { ValidityPeriod } from "./mod";
  * This type is immutable.
  */
 export class Certificate {
-  public readonly certName: CertificateName;
-  public readonly validity: ValidityPeriod;
-
-  public get name() { return this.data.name; }
-
-  /** Public key in SubjectPublicKeyInfo binary format. */
-  public get publicKey() { return this.data.content; }
-
-  constructor(public readonly data: Data) {
-    this.certName = CertificateName.from(data.name);
-    if (this.data.contentType !== ContentTypeKEY) {
+  public static fromData(data: Data): Certificate {
+    const { name, contentType, sigInfo } = data;
+    if (contentType !== ContentTypeKEY) {
       throw new Error("ContentType must be KEY");
     }
-    const si = data.sigInfo;
-    if (typeof si === "undefined") {
+    if (!sigInfo) {
       throw new Error("SigInfo is missing");
     }
-    const validity = ValidityPeriod.get(si);
+    const validity = ValidityPeriod.get(sigInfo);
     if (typeof validity === "undefined") {
       throw new Error("ValidityPeriod is missing");
     }
-    this.validity = validity;
+    const certName = CertificateName.from(name);
+    const cert = new Certificate(data, certName, validity);
+    return cert;
   }
+
+  private constructor(
+      public readonly data: Data,
+      public readonly certName: CertificateName,
+      public readonly validity: ValidityPeriod,
+  ) {
+  }
+
+  public get name() { return this.data.name; }
+
+  public get issuer(): Name|undefined {
+    if (!this.data.sigInfo || !(this.data.sigInfo.keyLocator instanceof Name)) {
+      return undefined;
+    }
+    return this.data.sigInfo.keyLocator;
+  }
+
+  public get isSelfSigned() {
+    return this.issuer?.isPrefixOf(this.name) ?? false;
+  }
+
+  /** Public key in SubjectPublicKeyInfo binary format. */
+  public get publicKeySpki() { return this.data.content; }
+
+  /** Load public key. */
+  public async loadPublicKey(): Promise<PublicKey> {
+    if (!this.publicKey) {
+      this.publicKey = await loadSpki(this.certName.key, this.publicKeySpki);
+    }
+    return this.publicKey;
+  }
+
+  private publicKey?: PublicKey;
 }
 
 const DEFAULT_FRESHNESS = 3600000;
+const SELF_ISSUER = Component.from("self");
 
 export namespace Certificate {
   interface BuildOptions {
     name: CertificateName;
     freshness?: number;
     validity: ValidityPeriod;
-    publicKey: Uint8Array;
+    publicKeySpki: Uint8Array;
     signer: PrivateKey;
   }
 
   export async function build({
-    name,
+    name: { name },
     freshness = DEFAULT_FRESHNESS,
     validity,
-    publicKey,
+    publicKeySpki,
     signer,
   }: BuildOptions): Promise<Certificate> {
-    const data = new Data(name.toName(), Data.ContentType(ContentTypeKEY), Data.FreshnessPeriod(freshness));
+    const data = new Data(name, Data.ContentType(ContentTypeKEY), Data.FreshnessPeriod(freshness));
     const si = new SigInfo();
     ValidityPeriod.set(si, validity);
     data.sigInfo = si;
-    data.content = publicKey;
+    data.content = publicKeySpki;
     await signer.sign(data);
-    return new Certificate(data);
+    return Certificate.fromData(data);
   }
 
-  interface IssueOptions extends Omit<BuildOptions, "name"|"publicKey"|"signer"> {
+  interface IssueOptions {
+    freshness?: number;
+    validity: ValidityPeriod;
     issuerId: Component;
     issuerPrivateKey: PrivateKey;
     publicKey: PublicKey;
@@ -73,17 +102,17 @@ export namespace Certificate {
     const { issuerPrivateKey: pvt, issuerId, publicKey: pub } = options;
     const kn = KeyName.from(pub.name);
     const cn = new CertificateName(kn.subjectName, kn.keyId, issuerId, Version.create(Date.now()));
-    const publicKey = await pub.exportAsSpki();
-    const opts: BuildOptions = { ...options, name: cn, publicKey, signer: pvt };
+    const publicKeySpki = await pub.exportAsSpki();
+    const opts: BuildOptions = { ...options, name: cn, publicKeySpki, signer: pvt };
     return build(opts);
   }
 
-  interface SelfSignOptions extends Omit<IssueOptions, "validity"|"issuerId"|"issuerPrivateKey"> {
+  interface SelfSignOptions {
+    freshness?: number;
     validity?: ValidityPeriod;
     privateKey: PrivateKey;
+    publicKey: PublicKey;
   }
-
-  const SELF_ISSUER = Component.from("self");
 
   export async function selfSign(options: SelfSignOptions): Promise<Certificate> {
     const { privateKey: { name: pvtName }, publicKey: { name: pubName } } = options;
@@ -97,9 +126,5 @@ export namespace Certificate {
       issuerPrivateKey: options.privateKey,
     };
     return issue(opts);
-  }
-
-  export async function loadPublicKey(cert: Certificate): Promise<PublicKey> {
-    return loadSpki(cert.certName.toKeyName().toName(), cert.publicKey);
   }
 }

@@ -57,10 +57,9 @@ export class NdnsecKeyChain implements KeyChain {
         keyCerts.set(keyName, []);
       } else if (line.startsWith("       +->")) {
         const certName = CertificateName.from(new Name(line.split(" ").pop()));
-        const keyName = certName.toKeyName();
-        const certList = keyCerts.get(keyName.toName().toString());
+        const certList = keyCerts.get(certName.key.toString());
         if (typeof certList !== "undefined" && !certName.issuerId.equals(IMPORTING_ISSUER)) {
-          certList.push(certName.toName().toString());
+          certList.push(certName.name.toString());
         }
       }
     }
@@ -76,7 +75,7 @@ export class NdnsecKeyChain implements KeyChain {
       for (const certName of certList) {
         const certdump = await this.invokeNdnsec(["cert-dump", "-n", certName]);
         const data = certdump.decode(Data);
-        await dest.insertCert(new Certificate(data));
+        await dest.insertCert(Certificate.fromData(data));
       }
     }
 

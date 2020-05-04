@@ -86,8 +86,7 @@ class KeyChainImpl implements KeyChain {
   }
 
   public async insertCert(cert: Certificate): Promise<void> {
-    const keyName = cert.certName.toKeyName().toName();
-    await this.getKeyPair(keyName); // ensure key exists
+    await this.getKeyPair(cert.certName.key); // ensure key exists
     await this.certs.insert(cert);
   }
 

@@ -21,7 +21,7 @@ export async function saveKey<T extends { type: string }>(
     nameInput: NameLike, type: T, algo: any, keyChain: KeyChain|undefined,
     makeKeys: (extractable: boolean, crypto: Crypto) => PromiseLike<CryptoKey|CryptoKeyPair>,
 ): Promise<[Name, CryptoKey, CryptoKey|undefined]> {
-  const name = KeyName.create(nameInput).toName();
+  const { name } = KeyName.create(nameInput);
 
   const needJwk = keyChain?.canSCloneKeys === false;
   const pvtOrPair = await makeKeys(needJwk, crypto);

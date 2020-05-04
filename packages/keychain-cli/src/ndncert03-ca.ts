@@ -47,7 +47,7 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
 
     const profile = await CaProfile.fromData(new Decoder(await fs.readFile(args.profile)).decode(Data));
     const certName = CertificateName.from(profile.cert.name);
-    const key = await keyChain.getPrivateKey(certName.toKeyName().toName());
+    const key = await keyChain.getPrivateKey(certName.key);
 
     const repo = new DataStore(leveldown(args.store));
     RepoProducer.create(repo, { reg: RepoProducer.PrefixRegShorter(2) });

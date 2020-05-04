@@ -15,7 +15,7 @@ export async function inputBase64<R>(d: Decodable<R>): Promise<R> {
 
 export async function inputCertBase64(): Promise<Certificate> {
   const data = await inputBase64(Data);
-  return new Certificate(data);
+  return Certificate.fromData(data);
 }
 
 export function printCertBase64(cert: Certificate) {

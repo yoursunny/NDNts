@@ -28,6 +28,7 @@ test("self-sign", async () => {
   expect(cert.name).toHaveLength(5);
   expect(cert.name.getPrefix(-1)).toEqualName("/EC/KEY/x/self");
   expect(cert.name.at(-1).is(Version)).toBeTruthy();
+  expect(cert.isSelfSigned).toBeTruthy();
 
   const [, publicKeyY] = await EcPrivateKey.generate("/EC/KEY/y", "P-256");
 

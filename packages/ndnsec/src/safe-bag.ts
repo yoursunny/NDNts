@@ -11,7 +11,7 @@ interface SafeBagFields {
 }
 
 const EVD = new EvDecoder<SafeBagFields>("SafeBag", TT.SafeBag)
-  .add(l3TT.Data, (t, { decoder }) => t.certificate = new Certificate(decoder.decode(Data)))
+  .add(l3TT.Data, (t, { decoder }) => t.certificate = Certificate.fromData(decoder.decode(Data)))
   .add(TT.EncryptedKeyBag, (t, { value }) => t.encryptedKey = value);
 
 /** ndn-cxx private key export. */
@@ -69,7 +69,7 @@ export class SafeBag {
    * @param keyChain destination KeyChain.
    */
   public async saveKeyPair(passphrase: string, keyChain: KeyChain): Promise<void> {
-    const pub = await Certificate.loadPublicKey(this.certificate);
+    const pub = await this.certificate.loadPublicKey();
     switch (pub.sigType) {
       case SigType.Sha256WithEcdsa: {
         const curve = (pub as EcPublicKey).curve;

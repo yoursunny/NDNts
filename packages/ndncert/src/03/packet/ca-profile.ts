@@ -11,7 +11,7 @@ const EVD = new EvDecoder<CaProfile.Fields>("CaProfile", undefined)
   .add(TT.CaInfo, (t, { text }) => t.info = text, { required: true })
   .add(TT.ParameterKey, (t, { text }) => t.probeKeys.push(text), { repeat: true })
   .add(TT.MaxValidityPeriod, (t, { nni }) => t.maxValidityPeriod = nni * 1000, { required: true })
-  .add(TT.CaCertificate, (t, { vd }) => t.cert = new Certificate(vd.decode(Data)), { required: true });
+  .add(TT.CaCertificate, (t, { vd }) => t.cert = Certificate.fromData(vd.decode(Data)), { required: true });
 
 export class CaProfile {
   public static async fromData(data: Data): Promise<CaProfile> {
@@ -22,7 +22,7 @@ export class CaProfile {
           data.name.at(-1).is(Segment))) {
       throw new Error("bad Name");
     }
-    profile.publicKey_ = await Certificate.loadPublicKey(profile.cert);
+    profile.publicKey_ = await profile.cert.loadPublicKey();
     await profile.publicKey.verify(data);
     profile.certDigest_ = await profile.cert.data.computeImplicitDigest();
     return profile;
