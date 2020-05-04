@@ -1,6 +1,7 @@
 import "../test-fixture/expect";
 
 import { Decoder, Encoder } from "@ndn/tlv";
+import { createHash } from "crypto";
 
 import { Interest, LLSign, LLVerify, Name, ParamsDigest, SigInfo, SigType, TT } from "..";
 import { FwHint } from "../src/fwhint";
@@ -186,7 +187,7 @@ test("encode signed", async () => {
   // other tests in llsign.t.ts
 });
 
-test("decode signed", () => {
+test("decode signed", async () => {
   let decoder = new Decoder(Encoder.encode([
     TT.Interest,
     new Name("/A").append(ParamsDigest, new Uint8Array(32)),
@@ -211,16 +212,36 @@ test("decode signed", () => {
   ]));
   expect(() => decoder.decode(Interest)).toThrow(/out of place/);
 
-  decoder = new Decoder(Encoder.encode([
-    TT.Interest,
-    new Name("/A").append(ParamsDigest, new Uint8Array(32)),
+  const name = new Name("/A");
+  const signedParamsWire = Encoder.encode([
     [TT.AppParameters, Uint8Array.of(0xC0, 0xC1)],
     new SigInfo(SigType.Sha256).encodeAs(TT.ISigInfo),
-    [TT.ISigValue, new Uint8Array(4)],
-  ]));
+    [0xF0, 0x00], // unrecognized non-critical
+  ]);
+  const sigValueWire = Encoder.encode([TT.ISigValue, new Uint8Array(4)]);
+  const paramsDigest = createHash("sha256")
+    .update(signedParamsWire)
+    .update(sigValueWire)
+    .digest();
+  const wire = Encoder.encode([
+    TT.Interest,
+    name.append(ParamsDigest, paramsDigest),
+    signedParamsWire,
+    sigValueWire,
+  ]);
+  decoder = new Decoder(wire);
   const interest = decoder.decode(Interest);
   expect(interest.name.length).toBe(2);
   expect(interest.appParameters).not.toBeUndefined();
   expect(interest.sigInfo).not.toBeUndefined();
   expect(interest.sigValue).not.toBeUndefined();
+
+  // unrecognized elements should be preserved until modified
+  const verify = jest.fn().mockResolvedValue(undefined);
+  await expect(interest[LLVerify.OP](verify)).resolves.toBeUndefined();
+  expect(verify).toHaveBeenCalledTimes(1);
+  expect(verify.mock.calls[0][0]).toEqualUint8Array(Buffer.concat([name.value, signedParamsWire]));
+  interest.sigInfo = interest.sigInfo; // eslint-disable-line no-self-assign
+  await expect(interest[LLVerify.OP](verify)).rejects.toThrow(); // ParamsDigest is now wrong
+  expect(verify).toHaveBeenCalledTimes(1);
 });

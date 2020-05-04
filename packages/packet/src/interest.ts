@@ -10,89 +10,9 @@ import { sha256 } from "./platform/mod";
 import { SigInfo } from "./sig-info";
 
 const HOPLIMIT_MAX = 255;
-const SignedPortion = Symbol("Interest.SignedPortion");
-const ParamsPortion = Symbol("Interest.ParamsPortion");
+const FIELDS = Symbol("Interest.FIELDS");
 
-const EVD = new EvDecoder<Interest>("Interest", TT.Interest)
-  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
-  .add(TT.CanBePrefix, (t) => t.canBePrefix = true)
-  .add(TT.MustBeFresh, (t) => t.mustBeFresh = true)
-  .add(TT.ForwardingHint, (t, { value }) => t.fwHint = FwHint.decodeValue(value))
-  .add(TT.Nonce, (t, { value }) => t.nonce = NNI.decode(value, 4))
-  .add(TT.InterestLifetime, (t, { nni }) => t.lifetime = nni)
-  .add(TT.HopLimit, (t, { value }) => t.hopLimit = NNI.decode(value, 1))
-  .add(TT.AppParameters, (t, { value, tlv, after }) => {
-    if (ParamsDigest.findIn(t.name, false) < 0) {
-      throw new Error("ParamsDigest missing in parameterized Interest");
-    }
-    t.appParameters = value;
-    t[ParamsPortion] = new Uint8Array(tlv.buffer, tlv.byteOffset,
-      tlv.byteLength + after.byteLength);
-  })
-  .add(TT.ISigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(SigInfo))
-  .add(TT.ISigValue, (t, { value, tlv }) => {
-    if (!ParamsDigest.match(t.name.at(-1))) {
-      throw new Error("ParamsDigest missing or out of place in signed Interest");
-    }
-    const params = t[ParamsPortion];
-    if (!params) {
-      throw new Error("AppParameters missing in signed Interest");
-    }
-    if (typeof t.sigInfo === "undefined") {
-      throw new Error("ISigInfo missing in signed Interest");
-    }
-
-    assert(tlv.buffer === params.buffer);
-    t.sigValue = value;
-    t[SignedPortion] = Encoder.encode([
-      t.name.getPrefix(-1).value,
-      new Uint8Array(tlv.buffer, params.byteOffset, tlv.byteOffset - params.byteOffset),
-    ]);
-  });
-
-/** Interest packet. */
-export class Interest implements LLSign.Signable, LLVerify.Verifiable {
-  public get nonce() { return this.nonce_; }
-  public set nonce(v) { this.nonce_ = v && NNI.constrain(v, "Nonce", 0xFFFFFFFF); }
-
-  public get lifetime() { return this.lifetime_; }
-  public set lifetime(v) { this.lifetime_ = NNI.constrain(v, "InterestLifetime"); }
-
-  public get hopLimit() { return this.hopLimit_; }
-  public set hopLimit(v) { this.hopLimit_ = NNI.constrain(v, "HopLimit", HOPLIMIT_MAX); }
-
-  public static decodeFrom(decoder: Decoder): Interest {
-    return EVD.decode(new Interest(), decoder);
-  }
-
-  public name: Name = new Name();
-  public canBePrefix = false;
-  public mustBeFresh = false;
-  public fwHint?: FwHint;
-  public appParameters?: Uint8Array;
-  public sigInfo?: SigInfo;
-  public sigValue?: Uint8Array;
-
-  public [SignedPortion]?: Uint8Array;
-  public [ParamsPortion]?: Uint8Array;
-
-  private nonce_: number|undefined;
-  private lifetime_: number = Interest.DefaultLifetime;
-  private hopLimit_: number = HOPLIMIT_MAX;
-
-  /**
-   * Construct from flexible arguments.
-   *
-   * Arguments can include, in any order:
-   * - Interest to copy from
-   * - Name or name URI
-   * - Interest.CanBePrefix
-   * - Interest.MustBeFresh
-   * - Interest.Nonce(v)
-   * - Interest.Lifetime(v)
-   * - Interest.HopLimit(v)
-   * - Uint8Array as AppParameters
-   */
+class Fields {
   constructor(...args: Array<Interest | Interest.CtorArg>) {
     args.forEach((arg) => {
       if (Name.isNameLike(arg)) {
@@ -112,76 +32,170 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable {
       } else if (arg instanceof Uint8Array) {
         this.appParameters = arg;
       } else if (arg instanceof Interest) {
-        Object.assign(this, arg);
+        Object.assign(this, arg[FIELDS]);
       } else {
         throw new Error("unknown Interest constructor argument");
       }
     });
   }
 
+  public name: Name = new Name();
+  public canBePrefix = false;
+  public mustBeFresh = false;
+  public fwHint?: FwHint;
+  public get nonce() { return this.nonce_; }
+  public set nonce(v) { this.nonce_ = v && NNI.constrain(v, "Nonce", 0xFFFFFFFF); }
+  public get lifetime() { return this.lifetime_; }
+  public set lifetime(v) { this.lifetime_ = NNI.constrain(v, "InterestLifetime"); }
+  public get hopLimit() { return this.hopLimit_; }
+  public set hopLimit(v) { this.hopLimit_ = NNI.constrain(v, "HopLimit", HOPLIMIT_MAX); }
+  public appParameters?: Uint8Array;
+  public sigInfo?: SigInfo;
+  public sigValue?: Uint8Array;
+
+  private nonce_: number|undefined;
+  private lifetime_: number = Interest.DefaultLifetime;
+  private hopLimit_: number = HOPLIMIT_MAX;
+
+  public signedPortion?: Uint8Array;
+  public paramsPortion?: Uint8Array;
+}
+const FIELD_LIST: Array<keyof Fields> = ["name", "canBePrefix", "mustBeFresh", "fwHint", "nonce", "lifetime", "hopLimit", "appParameters", "sigInfo", "sigValue"];
+const FIELD_SIGNED_LIST = new Set<keyof Fields>(["name", "appParameters", "sigInfo"]);
+const FIELD_PARAMS_LIST = new Set<keyof Fields>(["appParameters", "sigInfo", "sigValue"]);
+
+const EVD = new EvDecoder<Fields>("Interest", TT.Interest)
+  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
+  .add(TT.CanBePrefix, (t) => t.canBePrefix = true)
+  .add(TT.MustBeFresh, (t) => t.mustBeFresh = true)
+  .add(TT.ForwardingHint, (t, { value }) => t.fwHint = FwHint.decodeValue(value))
+  .add(TT.Nonce, (t, { value }) => t.nonce = NNI.decode(value, 4))
+  .add(TT.InterestLifetime, (t, { nni }) => t.lifetime = nni)
+  .add(TT.HopLimit, (t, { value }) => t.hopLimit = NNI.decode(value, 1))
+  .add(TT.AppParameters, (t, { value, tlv, after }) => {
+    if (ParamsDigest.findIn(t.name, false) < 0) {
+      throw new Error("ParamsDigest missing in parameterized Interest");
+    }
+    t.appParameters = value;
+    t.paramsPortion = new Uint8Array(tlv.buffer, tlv.byteOffset,
+      tlv.byteLength + after.byteLength);
+  })
+  .add(TT.ISigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(SigInfo))
+  .add(TT.ISigValue, (t, { value, tlv }) => {
+    if (!ParamsDigest.match(t.name.at(-1))) {
+      throw new Error("ParamsDigest missing or out of place in signed Interest");
+    }
+    if (!t.paramsPortion) {
+      throw new Error("AppParameters missing in signed Interest");
+    }
+    if (typeof t.sigInfo === "undefined") {
+      throw new Error("ISigInfo missing in signed Interest");
+    }
+
+    assert(tlv.buffer === t.paramsPortion.buffer);
+    t.sigValue = value;
+
+    const signedPart0 = t.name.getPrefix(-1).value;
+    const signedPart1 = new Uint8Array(tlv.buffer, t.paramsPortion.byteOffset,
+      tlv.byteOffset - t.paramsPortion.byteOffset);
+    t.signedPortion = new Uint8Array(signedPart0.byteLength + signedPart1.byteLength);
+    t.signedPortion.set(signedPart0, 0);
+    t.signedPortion.set(signedPart1, signedPart0.byteLength);
+  });
+
+/** Interest packet. */
+export class Interest implements LLSign.Signable, LLVerify.Verifiable {
+  /**
+   * Construct from flexible arguments.
+   *
+   * Arguments can include, in any order:
+   * - Interest to copy from
+   * - Name or name URI
+   * - Interest.CanBePrefix
+   * - Interest.MustBeFresh
+   * - Interest.Nonce(v)
+   * - Interest.Lifetime(v)
+   * - Interest.HopLimit(v)
+   * - Uint8Array as AppParameters
+   */
+  constructor(...args: Array<Interest | Interest.CtorArg>) {
+    this[FIELDS] = new Fields(...args);
+  }
+
+  public readonly [FIELDS]: Fields;
+
+  public static decodeFrom(decoder: Decoder): Interest {
+    const interest = new Interest();
+    EVD.decode(interest[FIELDS], decoder);
+    return interest;
+  }
+
   public encodeTo(encoder: Encoder) {
-    if (this.name.length === 0) {
+    const f = this[FIELDS];
+    if (f.name.length === 0) {
       throw new Error("invalid empty Interest name");
     }
-    if (this.appParameters && ParamsDigest.findIn(this.name, false) < 0) {
+    if (f.appParameters && ParamsDigest.findIn(f.name, false) < 0) {
       throw new Error("ParamsDigest missing");
     }
 
     encoder.prependTlv(TT.Interest,
-      this.name,
-      this.canBePrefix ? [TT.CanBePrefix] : undefined,
-      this.mustBeFresh ? [TT.MustBeFresh] : undefined,
-      this.fwHint,
-      [TT.Nonce, NNI(this.nonce ?? Interest.generateNonce(), 4)],
-      this.lifetime === Interest.DefaultLifetime ?
-        undefined : [TT.InterestLifetime, NNI(this.lifetime)],
-      this.hopLimit === HOPLIMIT_MAX ?
-        undefined : [TT.HopLimit, NNI(this.hopLimit, 1)],
-      this.appParameters ?
-        [TT.AppParameters, this.appParameters] : undefined,
-      this.sigInfo ?
-        this.sigInfo.encodeAs(TT.ISigInfo) : undefined,
-      this.sigValue ?
-        [TT.ISigValue, this.sigValue] : undefined,
+      f.name,
+      f.canBePrefix ? [TT.CanBePrefix] : undefined,
+      f.mustBeFresh ? [TT.MustBeFresh] : undefined,
+      f.fwHint,
+      [TT.Nonce, NNI(f.nonce ?? Interest.generateNonce(), 4)],
+      f.lifetime === Interest.DefaultLifetime ?
+        undefined : [TT.InterestLifetime, NNI(f.lifetime)],
+      f.hopLimit === HOPLIMIT_MAX ?
+        undefined : [TT.HopLimit, NNI(f.hopLimit, 1)],
+      f.appParameters ?
+        [TT.AppParameters, f.appParameters] : undefined,
+      f.sigInfo ?
+        f.sigInfo.encodeAs(TT.ISigInfo) : undefined,
+      f.sigValue ?
+        [TT.ISigValue, f.sigValue] : undefined,
     );
   }
 
   private appendParamsDigestPlaceholder(): number {
-    this.name = this.name.append(ParamsDigest.PLACEHOLDER);
-    return this.name.length - 1;
+    const f = this[FIELDS];
+    this.name = f.name.append(ParamsDigest.PLACEHOLDER);
+    return f.name.length - 1;
   }
 
   public async updateParamsDigest(): Promise<void> {
-    let pdIndex = ParamsDigest.findIn(this.name);
+    const f = this[FIELDS];
+    let pdIndex = ParamsDigest.findIn(f.name);
     if (pdIndex < 0) {
       pdIndex = this.appendParamsDigestPlaceholder();
     }
-    if (!this.appParameters) {
-      this.appParameters = new Uint8Array();
+    if (!f.appParameters) {
+      f.appParameters = new Uint8Array();
     }
 
-    const params = Encoder.encode([
-      [TT.AppParameters, this.appParameters],
-      this.sigInfo ?
-        this.sigInfo.encodeAs(TT.ISigInfo) : undefined,
-      [TT.ISigValue, Encoder.OmitEmpty, this.sigValue],
+    f.paramsPortion = Encoder.encode([
+      [TT.AppParameters, f.appParameters],
+      f.sigInfo ?
+        f.sigInfo.encodeAs(TT.ISigInfo) : undefined,
+      [TT.ISigValue, Encoder.OmitEmpty, f.sigValue],
     ]);
-    this[ParamsPortion] = params;
-    const d = await sha256(params);
-    this.name = this.name.replaceAt(pdIndex, ParamsDigest.create(d));
+    const d = await sha256(f.paramsPortion);
+    f.name = f.name.replaceAt(pdIndex, ParamsDigest.create(d));
   }
 
   public async validateParamsDigest(): Promise<void> {
-    if (typeof this.appParameters === "undefined") {
+    const f = this[FIELDS];
+    if (typeof f.appParameters === "undefined") {
       return;
     }
 
-    const params = this[ParamsPortion];
+    const params = f.paramsPortion;
     if (typeof params === "undefined") {
       throw new Error("parameters portion is empty");
     }
 
-    const pdComp = this.name.at(ParamsDigest.findIn(this.name, false));
+    const pdComp = f.name.at(ParamsDigest.findIn(f.name, false));
     const d = await sha256(params);
     // This is not a constant-time comparison. It's for integrity purpose only.
     if (!pdComp.equals(ParamsDigest.create(d))) {
@@ -190,35 +204,52 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable {
   }
 
   public async [LLSign.OP](sign: LLSign) {
-    let pdIndex = ParamsDigest.findIn(this.name);
+    const f = this[FIELDS];
+    let pdIndex = ParamsDigest.findIn(f.name);
     if (pdIndex < 0) {
       pdIndex = this.appendParamsDigestPlaceholder();
-    } else if (pdIndex !== this.name.length - 1) {
+    } else if (pdIndex !== f.name.length - 1) {
       throw new Error("ParamsDigest out of place for signed Interest");
     }
 
-    const signedPortion = Encoder.encode([
-      this.name.getPrefix(-1).value,
-      [TT.AppParameters, this.appParameters],
-      this.sigInfo ?
-        this.sigInfo.encodeAs(TT.ISigInfo) : undefined,
+    f.signedPortion = Encoder.encode([
+      f.name.getPrefix(-1).value,
+      [TT.AppParameters, f.appParameters],
+      f.sigInfo ? f.sigInfo.encodeAs(TT.ISigInfo) : undefined,
     ]);
-    this[SignedPortion] = signedPortion;
-    this.sigValue = await sign(signedPortion);
+    this.sigValue = await sign(f.signedPortion);
     return this.updateParamsDigest();
   }
 
   public async [LLVerify.OP](verify: LLVerify) {
+    const f = this[FIELDS];
     await this.validateParamsDigest();
-    if (!this.sigValue) {
+    if (!f.sigValue) {
       throw new Error("SigValue is missing");
     }
-    const signedPortion = this[SignedPortion];
+    const signedPortion = f.signedPortion;
     if (!signedPortion) {
       throw new Error("SignedPortion is missing");
     }
-    await verify(signedPortion, this.sigValue);
+    await verify(signedPortion, f.sigValue);
   }
+}
+export interface Interest extends Fields {}
+for (const field of FIELD_LIST) {
+  Object.defineProperty(Interest.prototype, field, {
+    enumerable: true,
+    get(this: Interest) { return this[FIELDS][field]; },
+    set(this: Interest, v: any) {
+      const f = this[FIELDS];
+      (f[field] as any) = v;
+      if (FIELD_SIGNED_LIST.has(field)) {
+        f.signedPortion = undefined;
+      }
+      if (FIELD_PARAMS_LIST.has(field)) {
+        f.paramsPortion = undefined;
+      }
+    },
+  });
 }
 
 class NonceTag {

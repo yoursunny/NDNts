@@ -100,8 +100,8 @@ test("decode", () => {
   expect(data.name).toEqualName("/A");
   expect(data.content).toHaveLength(0);
 
-  decoder = new Decoder(Uint8Array.of(
-    0x06, 0x21,
+  const wire = Uint8Array.of(
+    0x06, 0x23,
     // Name
     0x07, 0x06, 0x08, 0x01, 0x42, 0x08, 0x01, 0x30,
     // MetaInfo
@@ -116,9 +116,12 @@ test("decode", () => {
     0x15, 0x02, 0xC0, 0xC1,
     // DSigInfo
     0x16, 0x03, 0x1B, 0x01, 0x00,
+    // unrecognized non-critical
+    0xF0, 0x00,
     // DSigValue
     0x17, 0x00,
-  ));
+  );
+  decoder = new Decoder(wire);
   data = decoder.decode(Data);
   expect(data.name).toEqualName("/B/0");
   expect(data.contentType).toBe(3);
@@ -127,6 +130,11 @@ test("decode", () => {
   expect(data.finalBlockId).toEqualComponent("1");
   expect(data.isFinalBlock).toBeFalsy();
   expect(data.content).toHaveLength(2);
+
+  // unrecognized elements should be preserved until modified
+  expect(Encoder.encode(data)).toEqualUint8Array(wire);
+  data.name = data.name; // eslint-disable-line no-self-assign
+  expect(Encoder.encode(data)).not.toEqualUint8Array(wire);
 });
 
 test("ImplicitDigest", async () => {

@@ -10,87 +10,27 @@ import { SigInfo } from "./sig-info";
 
 const FAKE_SIGINFO = new SigInfo(SigType.Sha256);
 const FAKE_SIGVALUE = new Uint8Array(32);
-const TopTlv = Symbol("Data.TopTlv");
-const TopTlvDigest = Symbol("Data.TopTlvDigest");
-const SignedPortion = Symbol("Data.SignedPortion");
+const FIELDS = Symbol("Data.FIELDS");
 
-const EVD = new EvDecoder<Data>("Data", TT.Data)
-  .setTop((t, { tlv }) => t[TopTlv] = tlv)
-  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
-  .add(TT.MetaInfo,
-    new EvDecoder<Data>("MetaInfo")
-      .add(TT.ContentType, (t, { nni }) => t.contentType = nni)
-      .add(TT.FreshnessPeriod, (t, { nni }) => t.freshnessPeriod = nni)
-      .add(TT.FinalBlockId, (t, { vd }) => t.finalBlockId = vd.decode(Component)),
-  )
-  .add(TT.Content, (t, { value }) => t.content = value)
-  .add(TT.DSigInfo, (t, { decoder }) => {
-    t.sigInfo = decoder.decode(SigInfo);
-  }, { required: true })
-  .add(TT.DSigValue, (t, { value, before }) => {
-    t.sigValue = value;
-    t[SignedPortion] = before;
-  }, { required: true });
-
-/** Data packet. */
-export class Data {
-  /**
-   * Construct from flexible arguments.
-   *
-   * Arguments can include:
-   * - Data to copy from
-   * - Name or name URI
-   * - Data.ContentType(v)
-   * - Data.FreshnessPeriod(v)
-   * - Data.FinalBlock (must appear after Name)
-   * - Uint8Array as Content
-   */
+class Fields {
   constructor(...args: Array<Data | Data.CtorArg>) {
     args.forEach((arg) => {
       if (Name.isNameLike(arg)) {
-        this.name_ = new Name(arg);
+        this.name = new Name(arg);
       } else if (arg instanceof Uint8Array) {
-        this.content_ = arg;
+        this.content = arg;
       } else if (arg instanceof ContentTypeTag) {
-        this.contentType_ = arg.v;
+        this.contentType = arg.v;
       } else if (arg instanceof FreshnessPeriodTag) {
-        this.freshnessPeriod_ = arg.v;
+        this.freshnessPeriod = arg.v;
       } else if (arg === Data.FinalBlock) {
         this.isFinalBlock = true;
       } else if (arg instanceof Data) {
-        Object.assign(this, arg);
+        Object.assign(this, arg[FIELDS]);
       } else {
         throw new Error("unknown Data constructor argument");
       }
     });
-  }
-
-  public get name() { return this.name_; }
-  public set name(v) {
-    this[TopTlv] = undefined;
-    this[SignedPortion] = undefined;
-    this.name_ = v;
-  }
-
-  public get contentType() { return this.contentType_; }
-  public set contentType(v) {
-    this[TopTlv] = undefined;
-    this[SignedPortion] = undefined;
-    this.contentType_ = NNI.constrain(v, "ContentType");
-  }
-
-  public get freshnessPeriod() { return this.freshnessPeriod_; }
-  public set freshnessPeriod(v) {
-    this[TopTlv] = undefined;
-    this[SignedPortion] = undefined;
-    this.freshnessPeriod_ = NNI.constrain(v, "FreshnessPeriod");
-  }
-
-  public get finalBlockId() { return this.finalBlockId_; }
-  public set finalBlockId(v) {
-    this[TopTlv] = undefined;
-    this[SignedPortion] = undefined;
-    this.finalBlockId_ = v;
   }
 
   public get isFinalBlock(): boolean {
@@ -110,43 +50,72 @@ export class Data {
     this.finalBlockId = this.name.at(-1);
   }
 
-  public get content() { return this.content_; }
-  public set content(v) {
-    this[TopTlv] = undefined;
-    this[SignedPortion] = undefined;
-    this.content_ = v;
-  }
+  public name = new Name();
+  public get contentType() { return this.contentType_; }
+  public set contentType(v) { this.contentType_ = NNI.constrain(v, "ContentType"); }
+  public get freshnessPeriod() { return this.freshnessPeriod_; }
+  public set freshnessPeriod(v) { this.freshnessPeriod_ = NNI.constrain(v, "FreshnessPeriod"); }
+  public finalBlockId?: Component;
+  public content = new Uint8Array();
+  public sigInfo?: SigInfo;
+  public sigValue?: Uint8Array;
 
-  public get sigInfo() { return this.sigInfo_; }
-  public set sigInfo(v) {
-    this[TopTlv] = undefined;
-    this[SignedPortion] = undefined;
-    this.sigInfo_ = v;
-  }
-
-  public get sigValue() { return this.sigValue_; }
-  public set sigValue(v) {
-    this[TopTlv] = undefined;
-    this.sigValue_ = v;
-  }
-
-  public static decodeFrom(decoder: Decoder): Data {
-    return EVD.decode(new Data(), decoder);
-  }
-
-  private name_: Name = new Name();
   private contentType_ = 0;
   private freshnessPeriod_ = 0;
-  private finalBlockId_?: Component;
-  private content_: Uint8Array = new Uint8Array();
-  private sigInfo_?: SigInfo;
-  private sigValue_?: Uint8Array;
-  public [SignedPortion]?: Uint8Array;
-  public [TopTlv]?: Uint8Array & {[TopTlvDigest]?: Uint8Array}; // for implicit digest
+
+  public signedPortion?: Uint8Array;
+  public topTlv?: Uint8Array;
+  public topTlvDigest?: Uint8Array;
+}
+const FIELD_LIST: Array<keyof Fields> = ["name", "contentType", "freshnessPeriod", "finalBlockId", "isFinalBlock", "content", "sigInfo", "sigValue"];
+
+const EVD = new EvDecoder<Fields>("Data", TT.Data)
+  .setTop((t, { tlv }) => t.topTlv = tlv)
+  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
+  .add(TT.MetaInfo,
+    new EvDecoder<Fields>("MetaInfo")
+      .add(TT.ContentType, (t, { nni }) => t.contentType = nni)
+      .add(TT.FreshnessPeriod, (t, { nni }) => t.freshnessPeriod = nni)
+      .add(TT.FinalBlockId, (t, { vd }) => t.finalBlockId = vd.decode(Component)),
+  )
+  .add(TT.Content, (t, { value }) => t.content = value)
+  .add(TT.DSigInfo, (t, { decoder }) => {
+    t.sigInfo = decoder.decode(SigInfo);
+  }, { required: true })
+  .add(TT.DSigValue, (t, { value, before }) => {
+    t.sigValue = value;
+    t.signedPortion = before;
+  }, { required: true });
+
+/** Data packet. */
+export class Data {
+  /**
+   * Construct from flexible arguments.
+   *
+   * Arguments can include:
+   * - Data to copy from
+   * - Name or name URI
+   * - Data.ContentType(v)
+   * - Data.FreshnessPeriod(v)
+   * - Data.FinalBlock (must appear after Name)
+   * - Uint8Array as Content
+   */
+  constructor(...args: Array<Data | Data.CtorArg>) {
+    this[FIELDS] = new Fields(...args);
+  }
+
+  public readonly [FIELDS]: Fields;
+
+  public static decodeFrom(decoder: Decoder): Data {
+    const data = new Data();
+    EVD.decode(data[FIELDS], decoder);
+    return data;
+  }
 
   public encodeTo(encoder: Encoder) {
-    if (this[TopTlv]) {
-      encoder.encode(this[TopTlv]);
+    const f = this[FIELDS];
+    if (f.topTlv) {
+      encoder.encode(f.topTlv);
       return;
     }
     encoder.encode(Encoder.extract(
@@ -154,40 +123,42 @@ export class Data {
         TT.Data,
         Encoder.extract(
           this.encodeSignedPortion(),
-          (output) => this[SignedPortion] = output,
+          (output) => f.signedPortion = output,
         ),
-        [TT.DSigValue, this.sigValue ?? FAKE_SIGVALUE],
+        [TT.DSigValue, f.sigValue ?? FAKE_SIGVALUE],
       ] as EncodableTlv,
-      (output) => this[TopTlv] = output,
+      (output) => f.topTlv = output,
     ));
   }
 
   private encodeSignedPortion(): Encodable[] {
+    const f = this[FIELDS];
     return [
-      this.name,
+      f.name,
       [
         TT.MetaInfo, Encoder.OmitEmpty,
-        this.contentType_ > 0 ? [TT.ContentType, NNI(this.contentType_)] : undefined,
-        this.freshnessPeriod_ > 0 ? [TT.FreshnessPeriod, NNI(this.freshnessPeriod_)] : undefined,
-        this.finalBlockId_ ? [TT.FinalBlockId, this.finalBlockId_] : undefined,
+        f.contentType > 0 ? [TT.ContentType, NNI(f.contentType)] : undefined,
+        f.freshnessPeriod > 0 ? [TT.FreshnessPeriod, NNI(f.freshnessPeriod)] : undefined,
+        f.finalBlockId ? [TT.FinalBlockId, f.finalBlockId] : undefined,
       ],
-      this.content_.byteLength > 0 ? [TT.Content, this.content_] : undefined,
-      (this.sigInfo_ ?? FAKE_SIGINFO).encodeAs(TT.DSigInfo),
+      f.content.byteLength > 0 ? [TT.Content, f.content] : undefined,
+      (f.sigInfo ?? FAKE_SIGINFO).encodeAs(TT.DSigInfo),
     ];
   }
 
   public getImplicitDigest(): Uint8Array|undefined {
-    return this[TopTlv]?.[TopTlvDigest];
+    return this[FIELDS].topTlvDigest;
   }
 
   public async computeImplicitDigest(): Promise<Uint8Array> {
     let digest = this.getImplicitDigest();
     if (!digest) {
-      if (!this[TopTlv]) {
+      const f = this[FIELDS];
+      if (!f.topTlv) {
         Encoder.encode(this);
       }
-      digest = await sha256(this[TopTlv]!);
-      this[TopTlv]![TopTlvDigest] = digest;
+      digest = await sha256(f.topTlv!);
+      f.topTlvDigest = digest;
     }
     return digest;
   }
@@ -197,7 +168,7 @@ export class Data {
     if (!digest) {
       return undefined;
     }
-    return this.name.append(ImplicitDigest, digest);
+    return this[FIELDS].name.append(ImplicitDigest, digest);
   }
 
   public async computeFullName(): Promise<Name> {
@@ -207,20 +178,36 @@ export class Data {
 
   public async [LLSign.OP](sign: LLSign) {
     const signedPortion = Encoder.encode(this.encodeSignedPortion());
-    this[SignedPortion] = signedPortion;
+    this[FIELDS].signedPortion = signedPortion;
     this.sigValue = await sign(signedPortion);
   }
 
   public async [LLVerify.OP](verify: LLVerify) {
-    if (!this.sigValue_) {
+    const f = this[FIELDS];
+    if (!f.sigValue) {
       throw new Error("SigValue is missing");
     }
-    const signedPortion = this[SignedPortion];
-    if (!signedPortion) {
+    if (!f.signedPortion) {
       throw new Error("SignedPortion is missing");
     }
-    await verify(signedPortion, this.sigValue_);
+    await verify(f.signedPortion, f.sigValue);
   }
+}
+export interface Data extends Fields {}
+for (const field of FIELD_LIST) {
+  Object.defineProperty(Data.prototype, field, {
+    enumerable: true,
+    get(this: Data) { return this[FIELDS][field]; },
+    set(this: Data, v: any) {
+      const f = this[FIELDS];
+      (f[field] as any) = v;
+      f.topTlv = undefined;
+      f.topTlvDigest = undefined;
+      if (field !== "sigValue") {
+        f.signedPortion = undefined;
+      }
+    },
+  });
 }
 
 class ContentTypeTag {
