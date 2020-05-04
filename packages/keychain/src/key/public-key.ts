@@ -33,7 +33,7 @@ export namespace PublicKeyBase {
   }
 }
 
-export type PublicKey = PublicKeyBase;
+export interface PublicKey extends PublicKeyBase {}
 
 export namespace PublicKey {
   export function isPublicKey(obj: unknown): obj is PublicKey {

@@ -24,7 +24,7 @@
     "main": "lib/mod.js"
   },
   "dependencies": {
-    "@types/retry": "^0.10.2",
+    "@types/retry": "^0.12.0",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "hirestime": "^6.0.1",

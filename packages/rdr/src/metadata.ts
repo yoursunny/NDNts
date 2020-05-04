@@ -1,9 +1,9 @@
 import { Keyword } from "@ndn/naming-convention2";
-import { Name, TT } from "@ndn/packet";
+import { Component, Name, TT } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 /** 32=metadata component. */
-export const MetadataKeyword = Keyword.create("metadata");
+export const MetadataKeyword: Component = Keyword.create("metadata");
 
 /** RDR metadata packet content. */
 export interface Metadata {

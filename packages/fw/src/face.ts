@@ -1,6 +1,6 @@
 import { Data, Interest, Nack, Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
-import EventEmitter from "events";
+import { EventEmitter } from "events";
 import MultiSet from "mnemonist/multi-set";
 import pDefer from "p-defer";
 import Fifo from "p-fifo";

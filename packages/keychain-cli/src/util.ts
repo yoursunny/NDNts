@@ -1,12 +1,12 @@
 import { openKeyChain } from "@ndn/cli-common";
-import { Certificate } from "@ndn/keychain";
+import { Certificate, KeyChain } from "@ndn/keychain";
 import { Data } from "@ndn/packet";
 import { Decodable, Decoder, Encoder } from "@ndn/tlv";
 import fastChunkString from "fast-chunk-string";
 import getStdin from "get-stdin";
 import stdout from "stdout-stream";
 
-export const keyChain = openKeyChain();
+export const keyChain: KeyChain = openKeyChain();
 
 export async function inputBase64<R>(d: Decodable<R>): Promise<R> {
   const wire = Buffer.from(await getStdin(), "base64");

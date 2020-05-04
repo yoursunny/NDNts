@@ -1,5 +1,5 @@
 import { Data, Interest, Nack, Name } from "@ndn/packet";
-import EventEmitter from "events";
+import { EventEmitter } from "events";
 import StrictEventEmitter from "strict-event-emitter-types";
 
 import { Face, FaceImpl } from "./face";

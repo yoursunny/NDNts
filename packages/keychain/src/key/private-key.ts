@@ -18,7 +18,7 @@ export abstract class PrivateKeyBase extends NamedKey {
   protected abstract llSign(input: Uint8Array): Promise<Uint8Array>;
 }
 
-export type PrivateKey = PrivateKeyBase;
+export interface PrivateKey extends PrivateKeyBase {}
 
 export namespace PrivateKey {
   export function isPrivateKey(obj: unknown): obj is PrivateKey {
