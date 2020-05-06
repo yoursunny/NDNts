@@ -41,7 +41,8 @@ export class ChallengeRequest {
     const { sessionKey, certRequestPub } = context;
     await certRequestPub.verify(interest);
 
-    const plaintext = await crypto.sessionDecrypt(sessionKey, encrypted_payload.decode(interest.appParameters));
+    const plaintext = await crypto.sessionDecrypt(requestId, sessionKey,
+      encrypted_payload.decode(interest.appParameters));
     const request = new ChallengeRequest(interest, plaintext);
     return request;
   }
@@ -87,7 +88,8 @@ export namespace ChallengeRequest {
     const interest = new Interest();
     interest.name = profile.prefix.append(Verb.CHALLENGE, new Component(undefined, requestId));
     interest.mustBeFresh = true;
-    interest.appParameters = encrypted_payload.encode(await crypto.sessionEncrypt(sessionKey, payload));
+    interest.appParameters = encrypted_payload.encode(
+      await crypto.sessionEncrypt(requestId, sessionKey, payload));
     interest.sigInfo = new SigInfo(SigInfo.Nonce(), SigInfo.Time());
     await privateKey.sign(interest);
     return ChallengeRequest.fromInterest(interest, profile,

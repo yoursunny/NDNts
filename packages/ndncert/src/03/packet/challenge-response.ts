@@ -16,10 +16,11 @@ const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse", undefin
   .add(TT.IssuedCertName, (t, { vd }) => t.issuedCertName = vd.decode(Name));
 
 export class ChallengeResponse {
-  public static async fromData(data: Data, profile: CaProfile, sessionKey: CryptoKey): Promise<ChallengeResponse> {
+  public static async fromData(data: Data, profile: CaProfile, requestId: Uint8Array, sessionKey: CryptoKey): Promise<ChallengeResponse> {
     await profile.publicKey.verify(data);
 
-    const plaintext = await crypto.sessionDecrypt(sessionKey, encrypted_payload.decode(data.content));
+    const plaintext = await crypto.sessionDecrypt(requestId, sessionKey,
+      encrypted_payload.decode(data.content));
     const request = new ChallengeResponse(data, plaintext);
     return request;
   }
@@ -49,7 +50,7 @@ export namespace ChallengeResponse {
   export async function build({
     profile,
     sessionKey,
-    request: { interest: { name } },
+    request: { requestId, interest: { name } },
     status,
     challengeStatus,
     remainingTries,
@@ -68,8 +69,9 @@ export namespace ChallengeResponse {
     const data = new Data();
     data.name = name;
     data.freshnessPeriod = 4000;
-    data.content = encrypted_payload.encode(await crypto.sessionEncrypt(sessionKey, payload));
+    data.content = encrypted_payload.encode(
+      await crypto.sessionEncrypt(requestId, sessionKey, payload));
     await signer.sign(data);
-    return ChallengeResponse.fromData(data, profile, sessionKey);
+    return ChallengeResponse.fromData(data, profile, requestId, sessionKey);
   }
 }

@@ -24,6 +24,7 @@ export const TT = {
   IssuedCertName: 0xA9,
   ErrorCode: 0xAB,
   ErrorInfo: 0xAD,
+  AuthenticationTag: 0xAF,
 };
 
 export const Verb = {

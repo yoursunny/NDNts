@@ -64,7 +64,7 @@ export async function requestCertificate({
     });
     const challengeData = await endpoint.consume(challengeRequest.interest, { describe });
     ErrorMsg.throwOnError(challengeData);
-    const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, sessionKey);
+    const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, requestId, sessionKey);
     const { status, challengeStatus, remainingTries, remainingTime } = challengeResponse;
     if (status === Status.SUCCESS) {
       issuedCertName = challengeResponse.issuedCertName!;

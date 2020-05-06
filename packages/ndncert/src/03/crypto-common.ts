@@ -69,16 +69,40 @@ export async function makeSessionKey(
 
 export interface Encrypted {
   iv: Uint8Array;
-  ciphertext: Uint8Array;
+  c: Uint8Array;
+  t: Uint8Array;
 }
 
-export async function sessionEncrypt(key: CryptoKey, plaintext: Uint8Array): Promise<Encrypted> {
+export async function sessionEncrypt(requestId: Uint8Array, key: CryptoKey, plaintext: Uint8Array): Promise<Encrypted> {
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
-  return { iv, ciphertext: new Uint8Array(ciphertext) };
+  const algo: AesGcmParams = {
+    name: "AES-GCM",
+    iv,
+    additionalData: requestId,
+    tagLength: 128,
+  };
+  const ct = await crypto.subtle.encrypt(algo, key, plaintext);
+  const cLen = ct.byteLength - algo.tagLength! / 8;
+  return {
+    iv,
+    c: new Uint8Array(ct, 0, cLen),
+    t: new Uint8Array(ct, cLen),
+  };
 }
 
-export async function sessionDecrypt(key: CryptoKey, { iv, ciphertext }: Encrypted): Promise<Uint8Array> {
-  const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+export async function sessionDecrypt(requestId: Uint8Array, key: CryptoKey, { iv, c, t }: Encrypted): Promise<Uint8Array> {
+  const algo: AesGcmParams = {
+    name: "AES-GCM",
+    iv,
+    additionalData: requestId,
+    tagLength: 128,
+  };
+  if (t.byteLength !== algo.tagLength! / 8) {
+    throw new Error("bad AuthenticationTag");
+  }
+  const ct = new Uint8Array(c.byteLength + t.byteLength);
+  ct.set(c, 0);
+  ct.set(t, c.byteLength);
+  const plaintext = await crypto.subtle.decrypt(algo, key, ct);
   return new Uint8Array(plaintext);
 }

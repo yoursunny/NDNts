@@ -19,8 +19,8 @@ test("crypto", async () => {
   const aesB = await crypto.makeSessionKey(ecdhPvtB, ecdhPubA, salt, requestId);
 
   const plaintext = Uint8Array.of(0xA0, 0xA1, 0xA2, 0xA3);
-  const encrypted = await crypto.sessionEncrypt(aesA, plaintext);
-  const decrypted = await crypto.sessionDecrypt(aesB, encrypted);
+  const encrypted = await crypto.sessionEncrypt(requestId, aesA, plaintext);
+  const decrypted = await crypto.sessionDecrypt(requestId, aesB, encrypted);
   expect(decrypted).toEqualUint8Array(plaintext);
 });
 
@@ -116,7 +116,7 @@ test("packets", async () => {
   });
   await expect(canSatisfy(challengeInterest, challengeData)).resolves.toBeTruthy();
 
-  const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, reqSessionKey);
+  const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, requestId, reqSessionKey);
   expect(challengeResponse.status).toBe(Status.SUCCESS);
   expect(challengeResponse.challengeStatus).toBe("OK");
   expect(challengeResponse.remainingTries).toBe(1);
