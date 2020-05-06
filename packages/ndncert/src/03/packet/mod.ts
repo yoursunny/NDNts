@@ -1,3 +1,4 @@
+export type { ParameterKV } from "./parameter-kv";
 export * from "./an";
 export * from "./ca-profile";
 export * from "./new-request";

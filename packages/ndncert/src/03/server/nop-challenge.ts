@@ -1,6 +1,7 @@
 import { ChallengeRequest } from "../packet/mod";
 import { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";
 
+/** The "nop" challenge where the server would approve every request. */
 export class ServerNopChallenge implements ServerChallenge {
   public readonly challengeId = "nop";
   public readonly timeLimit = 1;

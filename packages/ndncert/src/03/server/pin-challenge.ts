@@ -7,6 +7,7 @@ import { ChallengeRequest } from "../packet/mod";
 import { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";
 
 interface Events {
+  /** Emitted when a pin code has been generated. */
   newpin: (requestId: Uint8Array, pin: string) => void;
 }
 
@@ -27,6 +28,7 @@ class State {
   }
 }
 
+/** The "pin" challenge where client must submit a server-generated pin code to the server. */
 export class ServerPinChallenge extends (EventEmitter as new() => Emitter) implements ServerChallenge {
   public readonly challengeId = "pin";
   public readonly timeLimit = 60000;

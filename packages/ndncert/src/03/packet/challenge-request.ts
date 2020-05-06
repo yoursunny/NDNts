@@ -60,7 +60,7 @@ export interface ChallengeRequest extends Readonly<ChallengeRequest.Fields> {}
 export namespace ChallengeRequest {
   export interface Fields {
     selectedChallenge: string;
-    parameters: Record<string, Uint8Array>;
+    parameters: parameter_kv.ParameterKV;
   }
 
   export interface Options extends Fields {

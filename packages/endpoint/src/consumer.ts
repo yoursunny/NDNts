@@ -30,7 +30,7 @@ export class EndpointConsumer {
   public consume(interest: Interest, opts: Options = {}): Context {
     const {
       retx,
-      describe,
+      describe = `consume(${interest.name})`,
     } = { ...this.opts, ...opts };
     let nRetx = -1;
     const retxGen = makeRetxGenerator(retx)(interest.lifetime)[Symbol.iterator]();
@@ -70,7 +70,7 @@ export class EndpointConsumer {
           cancelRetx();
           rx.end();
         },
-        toString: () => describe ?? `consume(${interest.name})`,
+        toString() { return describe; },
       } as FwFace.Base & FwFace.RxTxExtended,
       {
         local: true,
@@ -86,7 +86,7 @@ export class EndpointConsumer {
 
     return Object.defineProperties(promise, {
       interest: { value: interest },
-      nRetx: { get: () => nRetx },
+      nRetx: { get() { return nRetx; } },
     });
   }
 }

@@ -1,8 +1,15 @@
+import { ParameterKV } from "../packet/mod";
+
+/** Client side of a challenge. */
 export interface ClientChallenge {
+  /** Challenge module identifier. */
   readonly challengeId: string;
 
-  start: (context: ClientChallengeStartContext) => Promise<Record<string, Uint8Array>>;
-  next: (context: ClientChallengeContext) => Promise<Record<string, Uint8Array>>;
+  /** Create a message to select and start the challenge. */
+  start: (context: ClientChallengeStartContext) => Promise<ParameterKV>;
+
+  /** Create a message to continue the challenge. */
+  next: (context: ClientChallengeContext) => Promise<ParameterKV>;
 }
 
 export interface ClientChallengeStartContext {

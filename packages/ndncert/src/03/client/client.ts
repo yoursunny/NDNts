@@ -1,4 +1,4 @@
-import { Endpoint } from "@ndn/endpoint";
+import { ConsumerOptions, Endpoint, RetxPolicy } from "@ndn/endpoint";
 import { Certificate, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
 import { Interest, Name } from "@ndn/packet";
 
@@ -7,23 +7,37 @@ import { CaProfile, ChallengeRequest, ChallengeResponse, ErrorMsg, NewRequest, N
 import { ClientChallenge } from "./challenge";
 
 export interface ClientOptions {
+  /** Endpoint for communication. */
   endpoint?: Endpoint;
+
+  /** Interest retransmission policy, default is 4 retransmissions. */
+  retx?: RetxPolicy;
+
   profile: CaProfile;
   privateKey: PrivateKey;
   publicKey: PublicKey;
+
+  /** ValidityPeriod, will be truncated to the maximum allowed by CA profile. */
   validity?: ValidityPeriod;
+
+  /** Challenges in preferred order. */
   challenges: ClientChallenge[];
 }
 
+/** Request a certificate for the given key. */
 export async function requestCertificate({
   endpoint = new Endpoint(),
+  retx = 4,
   profile,
   privateKey,
   publicKey,
   validity,
   challenges,
 }: ClientOptions): Promise<Certificate> {
-  const describe = `NDNCERT-CLIENT(${privateKey.name})`;
+  const consumerOptions: ConsumerOptions = {
+    describe: `NDNCERT-CLIENT(${privateKey.name})`,
+    retx,
+  };
 
   const { privateKey: ecdhPvt, publicKey: ecdhPub } = await crypto.generateEcdhKey();
   const newRequest = await NewRequest.build({
@@ -33,7 +47,7 @@ export async function requestCertificate({
     privateKey,
     validity,
   });
-  const newData = await endpoint.consume(newRequest.interest, { describe });
+  const newData = await endpoint.consume(newRequest.interest, consumerOptions);
   ErrorMsg.throwOnError(newData);
   const newResponse = await NewResponse.fromData(newData, profile);
   const { ecdhPub: caEcdhPub, salt, requestId, challenges: serverChallenges } = newResponse;
@@ -62,7 +76,7 @@ export async function requestCertificate({
       selectedChallenge: challenge.challengeId,
       parameters: challengeParameters,
     });
-    const challengeData = await endpoint.consume(challengeRequest.interest, { describe });
+    const challengeData = await endpoint.consume(challengeRequest.interest, consumerOptions);
     ErrorMsg.throwOnError(challengeData);
     const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, requestId, sessionKey);
     const { status, challengeStatus, remainingTries, remainingTime } = challengeResponse;
@@ -78,7 +92,7 @@ export async function requestCertificate({
     });
   }
 
-  const issuedCertData = await endpoint.consume(new Interest(issuedCertName), { describe });
+  const issuedCertData = await endpoint.consume(new Interest(issuedCertName), consumerOptions);
   const issuedCert = Certificate.fromData(issuedCertData);
   return issuedCert;
 }

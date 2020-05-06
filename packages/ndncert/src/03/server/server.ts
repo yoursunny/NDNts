@@ -10,11 +10,22 @@ import { CaProfile, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, Ne
 import { ServerChallenge } from "./challenge";
 
 export interface ServerOptions {
+  /** Endpoint for communication. */
   endpoint?: Endpoint;
+
+  /** Repo for storing issued certificates. */
   repo: RepoDataStore;
+
+  /** The CA profile. */
   profile: CaProfile;
+
+  /** CA private key, must match the certificate in the CA profile. */
   key: PrivateKey;
+
+  /** Supported challenges. */
   challenges: ServerChallenge[];
+
+  /** IssuerId on issued certificates. */
   issuerId?: ComponentLike;
 }
 
@@ -22,6 +33,7 @@ interface RepoDataStore {
   insert: (data: Data) => Promise<void>;
 }
 
+/** NDNCERT server. */
 export class Server {
   public static create({
     endpoint = new Endpoint(),
