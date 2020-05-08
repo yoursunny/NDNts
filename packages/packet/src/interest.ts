@@ -69,9 +69,9 @@ const EVD = new EvDecoder<Fields>("Interest", TT.Interest)
   .add(TT.CanBePrefix, (t) => t.canBePrefix = true)
   .add(TT.MustBeFresh, (t) => t.mustBeFresh = true)
   .add(TT.ForwardingHint, (t, { value }) => t.fwHint = FwHint.decodeValue(value))
-  .add(TT.Nonce, (t, { value }) => t.nonce = NNI.decode(value, 4))
+  .add(TT.Nonce, (t, { value }) => t.nonce = NNI.decode(value, { len: 4 }))
   .add(TT.InterestLifetime, (t, { nni }) => t.lifetime = nni)
-  .add(TT.HopLimit, (t, { value }) => t.hopLimit = NNI.decode(value, 1))
+  .add(TT.HopLimit, (t, { value }) => t.hopLimit = NNI.decode(value, { len: 1 }))
   .add(TT.AppParameters, (t, { value, tlv, after }) => {
     if (ParamsDigest.findIn(t.name, false) < 0) {
       throw new Error("ParamsDigest missing in parameterized Interest");
@@ -144,11 +144,11 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable {
       f.canBePrefix ? [TT.CanBePrefix] : undefined,
       f.mustBeFresh ? [TT.MustBeFresh] : undefined,
       f.fwHint,
-      [TT.Nonce, NNI(f.nonce ?? Interest.generateNonce(), 4)],
+      [TT.Nonce, NNI(f.nonce ?? Interest.generateNonce(), { len: 4 })],
       f.lifetime === Interest.DefaultLifetime ?
         undefined : [TT.InterestLifetime, NNI(f.lifetime)],
       f.hopLimit === HOPLIMIT_MAX ?
-        undefined : [TT.HopLimit, NNI(f.hopLimit, 1)],
+        undefined : [TT.HopLimit, NNI(f.hopLimit, { len: 1 })],
       f.appParameters ?
         [TT.AppParameters, f.appParameters] : undefined,
       f.sigInfo ?

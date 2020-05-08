@@ -23,7 +23,7 @@ const EVD = new EvDecoder<SigInfo>("SigInfo", [TT.ISigInfo, TT.DSigInfo])
       .add(TT.Name, (t, { decoder }) => t.keyLocator = decoder.decode(Name), { order: 0 })
       .add(TT.KeyDigest, (t, { value }) => t.keyLocator = new KeyDigest(value), { order: 0 }),
   )
-  .add(TT.SigNonce, (t, { value }) => t.nonce = NNI.decode(value, 4))
+  .add(TT.SigNonce, (t, { value }) => t.nonce = NNI.decode(value, { len: 4 }))
   .add(TT.SigTime, (t, { nni }) => t.time = nni)
   .add(TT.SigSeqNum, (t, { nni }) => t.seqNum = nni)
   .setUnknown(EXTENSIONS.decodeUnknown);
@@ -87,7 +87,7 @@ export class SigInfo {
       [TT.SigType, NNI(this.type)],
       [TT.KeyLocator, Encoder.OmitEmpty, this.keyLocator],
       [TT.SigNonce, Encoder.OmitEmpty,
-        typeof this.nonce === "undefined" ? undefined : NNI(this.nonce, 4)],
+        typeof this.nonce === "undefined" ? undefined : NNI(this.nonce, { len: 4 })],
       [TT.SigTime, Encoder.OmitEmpty,
         typeof this.time === "undefined" ? undefined : NNI(this.time)],
       [TT.SigSeqNum, Encoder.OmitEmpty,

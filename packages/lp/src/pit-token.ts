@@ -1,3 +1,5 @@
+import { Encoder } from "@ndn/tlv";
+
 import { LpService } from "./service";
 
 /** PIT token field of NDNLP packet. */
@@ -23,10 +25,6 @@ export namespace PitToken {
 
 let lastPrefix = 0;
 
-function toDataView(token: PitToken): DataView {
-  return new DataView(token.buffer, token.byteOffset, token.byteLength);
-}
-
 /** PIT tokens in a 32-bit numeric range. */
 export class NumericPitToken {
   constructor(public readonly prefix = ++lastPrefix) {
@@ -38,7 +36,7 @@ export class NumericPitToken {
       return undefined;
     }
 
-    const dv = toDataView(token);
+    const dv = Encoder.asDataView(token);
     if (dv.getUint32(0) !== this.prefix) {
       return undefined;
     }
@@ -47,7 +45,7 @@ export class NumericPitToken {
 
   public set(pkt: LpService.L3Pkt, suffix: number): number {
     const token = new Uint8Array(8);
-    const dv = toDataView(token);
+    const dv = Encoder.asDataView(token);
     dv.setUint32(0, this.prefix);
     dv.setUint32(4, suffix);
     PitToken.set(pkt, token);
