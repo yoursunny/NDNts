@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -o pipefail
 ACT=$1
 
 if [[ $ACT == clean ]]; then

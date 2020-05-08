@@ -1,8 +1,8 @@
 import { Forwarder, FwFace } from "@ndn/fw";
+import { L3Face } from "@ndn/l3face";
 import { UdpTransport } from "@ndn/node-transport";
 import * as dgram from "dgram";
 
-import { L3Face } from "@ndn/l3face";
 import { NdndpdkPrefixReg } from "./prefix-reg";
 import { RpcClient } from "./rpc-client";
 
@@ -10,7 +10,7 @@ export interface CreateFaceOptions {
   /** NDNts forwarder. */
   fw?: Forwarder;
   /** NDNts face attributes. */
-  attributes?: L3Face.Attributes,
+  attributes?: L3Face.Attributes;
 
   /** Local IP address. */
   localHost?: string;
