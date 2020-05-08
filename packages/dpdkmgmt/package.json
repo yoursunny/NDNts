@@ -1,0 +1,35 @@
+{
+  "name": "@ndn/dpdkmgmt",
+  "version": "0.0.0",
+  "description": "NDNts: NDN-DPDK Management",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "main": "src/mod.ts",
+  "sideEffects": false,
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/dpdkmgmt"
+  },
+  "publishConfig": {
+    "main": "lib/mod.js"
+  },
+  "dependencies": {
+    "@ndn/fw": "workspace:*",
+    "@ndn/l3face": "workspace:*",
+    "@ndn/node-transport": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "mole-rpc": "koorchik/node-mole-rpc#ffa46f755d5dfba80a74bac5dba9d050b440eb4e",
+    "mole-rpc-transport-tcp": "^0.0.20200417",
+    "tslib": "*"
+  }
+}
