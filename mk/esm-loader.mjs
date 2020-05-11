@@ -6,7 +6,7 @@ import { dirname, resolve as pathResolve } from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 
 const baseDir = pathResolve(dirname(fileURLToPath(import.meta.url)), "../");
-getTSConfig(`${baseDir}/mk/literate-tsconfig/`);
+getTSConfig(`${baseDir}/mk/esm-loader-tsconfig/`);
 
 /**
  *

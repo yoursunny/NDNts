@@ -40,9 +40,8 @@ script:
 
 after_success:
   - coveralls <coverage/lcov.info
-
-before_deploy:
   - bash mk/publish-nightly.sh
+  - npm run typedoc -- --gaId UA-935676-11
 
 deploy:
   - provider: netlify
@@ -50,6 +49,16 @@ deploy:
     site: 11d6303b-b200-4b5c-b2c2-4ace41795b20
     auth: $NETLIFY_AUTH
     dir: "mk/nightly-output/"
+    message: $TRAVIS_COMMIT
+    prod: true
+    on:
+      branch: develop
+      node_js: '14'
+  - provider: netlify
+    edge: true
+    site: 8987d2bb-7638-4d6b-adff-806fe3b7309a
+    auth: $NETLIFY_AUTH
+    dir: "docs/"
     message: $TRAVIS_COMMIT
     prod: true
     on:

@@ -1,6 +1,7 @@
 .env
 .vscode/
 coverage/
+docs/typedoc/
 node_modules/
 npm-debug.log
 packages/*/lib/
@@ -9,3 +10,6 @@ packages/*/tsconfig.json
 pnpm-debug.log
 pnpm-lock.yaml
 tsconfig.tsbuildinfo
+
+# Local Netlify folder
+.netlify
