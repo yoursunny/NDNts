@@ -1,6 +1,6 @@
 import "web-bluetooth";
 
-import { rxFromPacketIterable, Transport } from "@ndn/l3face";
+import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 import { EventIterator } from "event-iterator";
 
 const UUID_SVC = "099577e3-0788-412a-8824-395084d97391";
@@ -53,6 +53,7 @@ export class WebBluetoothTransport extends Transport {
     this.close();
   };
 
+  /** Request for a connection. */
   public static async request() {
     const device = await navigator.bluetooth.requestDevice({
       filters: [
@@ -69,4 +70,9 @@ export class WebBluetoothTransport extends Transport {
     await sc.startNotifications();
     return new WebBluetoothTransport(server, cs, sc);
   }
+}
+
+export namespace WebBluetoothTransport {
+  /** Create a transport and add to forwarder. */
+  export const createFace = L3Face.makeCreateFace(WebBluetoothTransport.request);
 }

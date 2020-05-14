@@ -9,7 +9,7 @@ import { TcpTransport, UdpTransport } from "@ndn/node-transport";
 
 // other imports for examples
 import { L3Face, Transport } from "@ndn/l3face";
-import { Data, Interest } from "@ndn/packet";
+import { Data, Interest, Name } from "@ndn/packet";
 (async () => {
 if (process.env.CI) { return; }
 ```
@@ -32,6 +32,14 @@ await useInL3Face(tcp);
 // It supports IPv4 only.
 const udp = await UdpTransport.connect({ host: "hobo.cs.arizona.edu" });
 await useInL3Face(udp);
+
+// UnixTransport.createFace(), TcpTransport.createFace(), and UdpTransport.createFace()
+// creates a forwarder face using the named transport.
+// First argument allows setting L3Face attributes and NDNLP service options.
+// Subsequent arguments are same as the corresponding connect() function.
+const face = await UdpTransport.createFace({}, "hobo.cs.arizona.edu");
+face.addRoute(new Name("/ndn"));
+face.close();
 
 })();
 ```

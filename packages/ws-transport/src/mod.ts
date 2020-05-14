@@ -1,4 +1,4 @@
-import { rxFromPacketIterable, Transport } from "@ndn/l3face";
+import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 import { EventIterator } from "event-iterator";
 import PCancelable from "p-cancelable";
 import pTimeout from "p-timeout";
@@ -77,6 +77,11 @@ export namespace WsTransport {
     lowWaterMark?: number;
   }
 
+  /**
+   * Create a transport and connect to remote endpoint.
+   * @param uri server URI.
+   * @param opts other options.
+   */
   export function connect(uri: string, opts: WsTransport.Options = {}): Promise<WsTransport> {
     return pTimeout(new PCancelable<WsTransport>((resolve, reject, onCancel) => {
       const sock = makeWebSocket(uri);
@@ -92,4 +97,7 @@ export namespace WsTransport {
       onCancel(() => sock.close());
     }), opts.connectTimeout ?? 10000);
   }
+
+  /** Create a transport and add to forwarder. */
+  export const createFace = L3Face.makeCreateFace(WsTransport.connect);
 }

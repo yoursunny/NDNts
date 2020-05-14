@@ -10,9 +10,8 @@ import { enableNfdPrefixReg, signInterest02 } from "@ndn/nfdmgmt";
 
 // other imports for examples
 import { Endpoint } from "@ndn/endpoint";
-import { Forwarder } from "@ndn/fw";
+import { Forwarder, FwFace } from "@ndn/fw";
 import { EcPrivateKey } from "@ndn/keychain";
-import { L3Face } from "@ndn/l3face";
 import { UnixTransport } from "@ndn/node-transport";
 import { Data, Interest, Name } from "@ndn/packet";
 import { fromUtf8, toUtf8 } from "@ndn/tlv";
@@ -44,18 +43,16 @@ const fwC = Forwarder.create();
 const fwP = Forwarder.create();
 
 // Connect to NFD using Unix socket transport.
-let transportC: UnixTransport;
+let uplinkC: FwFace;
 try {
-  transportC = await UnixTransport.connect("/run/nfd.sock");
+  uplinkC = await UnixTransport.createFace({ fw: fwC }, "/run/nfd.sock");
 } catch {
   // Skip the example if NFD is not running.
   console.warn("NFD not running");
   return;
 }
-const uplinkC = fwC.addFace(new L3Face(transportC));
 uplinkC.addRoute(new Name("/"));
-const transportP = await UnixTransport.connect("/run/nfd.sock");
-const uplinkP = fwP.addFace(new L3Face(transportP));
+const uplinkP = await UnixTransport.createFace({ fw: fwP }, "/run/nfd.sock");
 
 // Enable NFD prefix registration.
 enableNfdPrefixReg(uplinkP, { signer: privateKey });

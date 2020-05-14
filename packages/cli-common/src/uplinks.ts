@@ -1,6 +1,5 @@
 import { connectToTestbed } from "@ndn/autoconfig";
-import { Forwarder, FwFace, FwTracer } from "@ndn/fw";
-import { L3Face, Transport } from "@ndn/l3face";
+import { FwFace, FwTracer } from "@ndn/fw";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { TcpTransport, UdpTransport, UnixTransport } from "@ndn/node-transport";
 import { Name } from "@ndn/packet";
@@ -12,14 +11,15 @@ if (env.pkttrace) {
   FwTracer.enable();
 }
 
-function connectTcpUdp(typ: typeof TcpTransport|typeof UdpTransport): Promise<Transport> {
+function parseHostPort(): { host: string; port: number|undefined } {
   const { hostname, port } = env.uplink;
-  const portNum = port.length > 0 ? Number.parseInt(port, 10) : undefined;
-  return typ.connect(hostname, portNum);
+  return {
+    host: hostname,
+    port: port.length > 0 ? Number.parseInt(port, 10) : undefined,
+  };
 }
 
 async function makeFace(): Promise<FwFace> {
-  let transport: Transport;
   switch (env.uplink.protocol) {
     case "autoconfig:": {
       const faces = await connectToTestbed({ preferFastest: true });
@@ -29,19 +29,14 @@ async function makeFace(): Promise<FwFace> {
       return faces[0];
     }
     case "tcp:":
-      transport = await connectTcpUdp(TcpTransport);
-      break;
+      return TcpTransport.createFace({}, parseHostPort());
     case "udp:":
-      transport = await connectTcpUdp(UdpTransport);
-      break;
+      return UdpTransport.createFace({}, parseHostPort());
     case "unix:":
-      transport = await UnixTransport.connect(env.uplink.pathname);
-      break;
+      return UnixTransport.createFace({}, env.uplink.pathname);
     default:
       throw new Error(`unknown protocol ${env.uplink.protocol} in NDNTS_UPLINK`);
   }
-
-  return Forwarder.getDefault().addFace(new L3Face(transport));
 }
 
 let theUplinks: FwFace[]|undefined;

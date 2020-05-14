@@ -1,4 +1,4 @@
-import { StreamTransport } from "@ndn/l3face";
+import { L3Face, StreamTransport } from "@ndn/l3face";
 import * as net from "net";
 
 /** Unix socket transport. */
@@ -16,6 +16,10 @@ export class UnixTransport extends StreamTransport {
 }
 
 export namespace UnixTransport {
+  /**
+   * Create a transport and connect to remote endpoint.
+   * @param pathOrOpts Unix socket path.
+   */
   export function connect(pathOrOpts: string|net.IpcNetConnectOpts): Promise<UnixTransport> {
     const connectOpts: net.IpcNetConnectOpts =
       typeof pathOrOpts === "string" ? { path: pathOrOpts } :
@@ -31,4 +35,7 @@ export namespace UnixTransport {
       });
     });
   }
+
+  /** Create a transport and add to forwarder. */
+  export const createFace = L3Face.makeCreateFace(UnixTransport.connect);
 }

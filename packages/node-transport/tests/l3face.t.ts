@@ -1,4 +1,6 @@
+import { Forwarder } from "@ndn/fw";
 import { L3Face } from "@ndn/l3face";
+import { Interest } from "@ndn/packet";
 import * as net from "net";
 import { collect } from "streaming-iterables";
 
@@ -30,4 +32,24 @@ test("RX error", async () => {
     })()),
     expect(new Promise((r) => face.once("rxerror", r))).resolves.toThrow(/F000/),
   ]);
+});
+
+test("createFace", async () => {
+  const fw = Forwarder.create();
+  const [face2, [sock0, sock1]] = await Promise.all([
+    UnixTransport.createFace({ fw }, NetServerTest.ipcPath),
+    NetServerTest.waitNClients(2),
+  ]);
+  NetServerTest.enableDuplex(sock0, sock1);
+
+  const rx = jest.fn();
+  fw.on("pktrx", rx);
+  await Promise.all([
+    new Promise((r) => setTimeout(r, 100)),
+    face.tx((async function*() {
+      yield new Interest("/Z", Interest.Lifetime(50));
+    })()),
+  ]);
+  expect(rx).toHaveBeenCalledTimes(1);
+  face2.close();
 });

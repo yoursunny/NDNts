@@ -31,6 +31,7 @@
     "tslib": "*"
   },
   "devDependencies": {
+    "@ndn/fw": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@types/readable-stream": "^2.3.6",
     "@types/tmp": "^0.2.0",

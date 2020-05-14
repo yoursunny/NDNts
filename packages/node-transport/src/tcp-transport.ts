@@ -1,4 +1,4 @@
-import { StreamTransport } from "@ndn/l3face";
+import { L3Face, StreamTransport } from "@ndn/l3face";
 import * as net from "net";
 import PCancelable from "p-cancelable";
 import pTimeout from "p-timeout";
@@ -23,8 +23,18 @@ export namespace TcpTransport {
     connectTimeout?: number;
   }
 
+  /**
+   * Create a transport and connect to remote endpoint.
+   * @param host remote host, default is "localhost".
+   * @param port remote port, default is 6363.
+   * @param opts other options.
+   */
   export function connect(host?: string, port?: number, opts?: Options): Promise<TcpTransport>;
 
+  /**
+   * Create a transport and connect to remote endpoint.
+   * @param opts remote endpoint and other options.
+   */
   export function connect(opts: net.TcpNetConnectOpts&Options): Promise<TcpTransport>;
 
   export function connect(arg1?: string|(net.TcpNetConnectOpts&Options), port = 6363,
@@ -48,4 +58,7 @@ export namespace TcpTransport {
       onCancel(() => sock.destroy());
     }), connectTimeout);
   }
+
+  /** Create a transport and add to forwarder. */
+  export const createFace = L3Face.makeCreateFace(TcpTransport.connect);
 }

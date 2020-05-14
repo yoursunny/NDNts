@@ -22,4 +22,6 @@ test("l3face", async () => {
   transport.close();
   await new Promise((r) => setTimeout(r, 50));
   expect(close).toHaveBeenCalledTimes(1);
+
+  // other tests in node-transport/tests/l3face.t.ts
 });

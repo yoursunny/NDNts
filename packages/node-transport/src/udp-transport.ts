@@ -1,4 +1,4 @@
-import { rxFromPacketIterable, Transport } from "@ndn/l3face";
+import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 import * as dgram from "dgram";
 import { EventIterator } from "event-iterator";
 import { AddressInfo } from "net";
@@ -49,8 +49,17 @@ export namespace UdpTransport {
     sendBufferSize?: number;
   }
 
+  /**
+   * Create a transport and connect to remote endpoint.
+   * @param host remote host.
+   * @param port remote port, default is 6363.
+   */
   export function connect(host: string, port?: number): Promise<UdpTransport>;
 
+  /**
+   * Create a transport and connect to remote endpoint.
+   * @param opts remote endpoint and other options.
+   */
   export function connect(opts: TunnelOptions): Promise<UdpTransport>;
 
   export async function connect(arg1: string|TunnelOptions, port1?: number): Promise<UdpTransport> {
@@ -72,4 +81,7 @@ export namespace UdpTransport {
       sock.bind(bind, () => sock.connect(port, host));
     });
   }
+
+  /** Create a transport and add to forwarder. */
+  export const createFace = L3Face.makeCreateFace(UdpTransport.connect);
 }

@@ -20,6 +20,15 @@ export class BufferBreaker extends Transform {
 
   public _flush(callback: (err?: Error) => void) {
     this.flushBuf();
+    callback();
+  }
+
+  public _destroy(err: Error, callback: (err: Error|null) => void) {
+    clearInterval(this.timer);
+    callback(err);
+  }
+
+  public _final(callback: () => void) {
     clearInterval(this.timer);
     callback();
   }

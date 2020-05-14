@@ -1,15 +1,11 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Forwarder } from "@ndn/fw";
-import { L3Face } from "@ndn/l3face";
 import { Interest, Name } from "@ndn/packet";
 import { WebBluetoothTransport } from "@ndn/web-bluetooth-transport";
 
 import { addManualTest } from "../../test-fixture/manual";
 
 async function testWebBluetooth() {
-  const transport = await WebBluetoothTransport.request();
-  const l3face = new L3Face(transport);
-  const face = Forwarder.getDefault().addFace(l3face);
+  const face = await WebBluetoothTransport.createFace({});
   face.addRoute(new Name("/"));
 
   const endpoint = new Endpoint();

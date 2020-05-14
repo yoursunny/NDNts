@@ -1,4 +1,4 @@
-import { InterestToken } from "@ndn/fw";
+import { Forwarder, FwFace, InterestToken } from "@ndn/fw";
 import { LpService, NumericPitToken, PitToken } from "@ndn/lp";
 import { Interest } from "@ndn/packet";
 import { EventEmitter } from "events";
@@ -172,4 +172,35 @@ export namespace L3Face {
 
   export type RxError = LpService.RxError;
   export type TxError = LpService.TxError;
+
+  export interface CreateFaceOptions {
+    fw?: Forwarder;
+    l3?: Attributes;
+    lp?: LpService.Options;
+  }
+
+  /**
+   * A function to create a transport then add to forwarder.
+   * First argument is CreateFaceOptions.
+   * Subsequent arguments are passed to Transport.connect() function.
+   * Returns FwFace.
+   */
+  export type CreateFaceFunc<
+    C extends (...args: any) => Promise<Transport>,
+  > = <U extends any[] = C extends (...args: infer P) => any ? P : never>
+  (opts: CreateFaceOptions, ...args: U) => Promise<FwFace>;
+
+  export function makeCreateFace<
+    C extends (...args: any) => Promise<Transport>,
+  >(connect: C): CreateFaceFunc<C> {
+    return async (opts: CreateFaceOptions, ...args: any[]) => {
+      const transport: Transport = await connect(...args);
+      const {
+        fw = Forwarder.getDefault(),
+        l3,
+        lp,
+      } = opts;
+      return fw.addFace(new L3Face(transport, l3, lp));
+    };
+  }
 }
