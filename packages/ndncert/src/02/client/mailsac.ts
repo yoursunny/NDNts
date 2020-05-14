@@ -48,7 +48,7 @@ export async function makeMailsacClientEmailChallenge(): Promise<ClientEmailChal
   let nMessages = -1;
   while (nMessages !== 0) {
     email = makeRandomInbox();
-    try { nMessages = (await listMessages(email)).length; } catch (err) {}
+    try { nMessages = (await listMessages(email)).length; } catch {}
   }
   return new ClientEmailChallenge(email, () => getCode(email));
 }

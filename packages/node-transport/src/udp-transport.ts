@@ -29,7 +29,7 @@ export class UdpTransport extends Transport {
   }
 
   public close() {
-    try { this.sock.close(); } catch (err) {}
+    try { this.sock.close(); } catch {}
   }
 
   public tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {

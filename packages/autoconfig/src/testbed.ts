@@ -23,7 +23,7 @@ export async function connectToTestbed(opts: connectToTestbed.Options = {}): Pro
   } = opts;
   const hosts = await queryFch(opts).catch(() => fchFallback);
   if (tryDefaultGateway) {
-    try { hosts.unshift(await getDefaultGateway()); } catch (err) {}
+    try { hosts.unshift(await getDefaultGateway()); } catch {}
   }
   const faces = await pipeline(
     () => hosts,

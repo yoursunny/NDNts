@@ -47,7 +47,7 @@ const fwP = Forwarder.create();
 let transportC: UnixTransport;
 try {
   transportC = await UnixTransport.connect("/run/nfd.sock");
-} catch (err) {
+} catch {
   // Skip the example if NFD is not running.
   console.warn("NFD not running");
   return;

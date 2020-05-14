@@ -7,13 +7,13 @@ export async function* rxFromPacketIterable(iterable: AsyncIterable<Uint8Array>)
   for await (const pkt of iterable) {
     const decoder = new Decoder(pkt);
     let tlv: Decoder.Tlv;
-    try { tlv = decoder.read(); } catch (err) { continue; }
+    try { tlv = decoder.read(); } catch { continue; }
     yield tlv;
   }
 }
 
 async function* fromStreamSafe(conn: NodeJS.ReadableStream) {
-  try { yield* fromStream<Buffer>(conn); } catch (err) {}
+  try { yield* fromStream<Buffer>(conn); } catch {}
 }
 
 export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.Rx {
@@ -28,7 +28,7 @@ export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.Rx {
     let consumed = 0;
     while (true) {
       let tlv: Decoder.Tlv;
-      try { tlv = decoder.read(); } catch (err) { break; }
+      try { tlv = decoder.read(); } catch { break; }
       yield tlv;
       consumed += tlv.size;
     }

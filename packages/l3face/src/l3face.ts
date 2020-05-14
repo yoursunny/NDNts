@@ -141,7 +141,7 @@ export class L3Face extends (EventEmitter as new() => Emitter) {
       await new Promise((r) => setTimeout(r, randDelay));
       try {
         this.transport = await this.transport.reopen();
-      } catch (err) {
+      } catch {
         // reopen error, try again
         continue;
       }

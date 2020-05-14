@@ -22,6 +22,7 @@ module.exports = {
     "unicorn/consistent-function-scoping": "off",
     "unicorn/no-fn-reference-in-iterator": "off",
     "unicorn/no-nested-ternary": "off",
+    "unicorn/no-useless-undefined": "off",
     "unicorn/prefer-spread": "off",
     "unicorn/prefer-type-error": "off",
     "unicorn/prevent-abbreviations": "off",

@@ -18,7 +18,7 @@ function handleNewClient(sock: net.Socket) {
     interval = setInterval(() => {
       try {
         sock.write(Uint8Array.of(0x64, 0x00)); // NDNLPv2 IDLE packet
-      } catch (err) {
+      } catch {
         sock.destroy();
       }
     }, 10);
