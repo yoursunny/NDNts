@@ -35,7 +35,7 @@
     "@ndn/repo": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "fast-chunk-string": "^1.0.1",
-    "get-stdin": "^7.0.0",
+    "get-stdin": "^8.0.0",
     "graceful-fs": "^4.2.4",
     "hard-rejection": "^2.1.0",
     "leveldown": "^5.6.0",
@@ -52,6 +52,6 @@
     "@types/prompts": "^2.0.8",
     "@types/read-json-sync": "^2.0.0",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^15.0.4"
+    "@types/yargs": "^15.0.5"
   }
 }

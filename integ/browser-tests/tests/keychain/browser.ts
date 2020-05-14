@@ -23,7 +23,7 @@ async function testKey(pvtA: PrivateKey, pubA: PublicKey,
   return serializeInBrowser(await Promise.all([
     testSignVerify(Interest, pvtA, pubA, pvtB, pubB),
     testSignVerify(Data, pvtA, pubA, pvtB, pubB),
-  ]) as SignVerifyTestResult);
+  ]));
 }
 
 window.testDigestKey = () => {

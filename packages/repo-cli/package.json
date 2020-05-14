@@ -49,6 +49,6 @@
     "@types/leveldown": "^4.0.2",
     "@types/minimalistic-assert": "^1.0.0",
     "@types/progress": "^2.0.3",
-    "@types/yargs": "^15.0.4"
+    "@types/yargs": "^15.0.5"
   }
 }
