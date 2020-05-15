@@ -1,87 +1,109 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
-import * as dgram from "dgram";
-import { EventIterator } from "event-iterator";
 import { AddressInfo } from "net";
+import pEvent from "p-event";
+
+import * as udp from "./udp-helper";
 
 /** UDP socket transport. */
 export class UdpTransport extends Transport {
   public readonly rx: Transport.Rx;
 
-  public get laddr(): AddressInfo { return this.sock.address(); }
-  public get raddr(): AddressInfo { return this.sock.remoteAddress(); }
+  public readonly isMulticast: boolean;
+  public readonly laddr: AddressInfo;
+  public readonly raddr: AddressInfo;
+  private readonly rxSock: udp.Socket;
+  private readonly txSock: udp.Socket;
 
-  constructor(private readonly sock: dgram.Socket) {
+  constructor(unicast: udp.Socket);
+  constructor(multicastTx: udp.Socket, multicastRx: udp.Socket);
+  constructor(txSock: udp.Socket, rxSock?: udp.Socket) {
     super({
-      describe: `UDP(${sock.remoteAddress().address})`,
+      describe: rxSock ? `UDPm(${txSock.address().address})` : `UDP(${txSock.remoteAddress().address})`,
+      multicast: !!rxSock,
     });
-    this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(
-      (push, stop, fail) => {
-        sock.addListener("message", push);
-        sock.addListener("close", stop);
-        sock.addListener("error", fail);
-      },
-      (push, stop, fail) => {
-        sock.removeListener("message", push);
-        sock.removeListener("close", stop);
-        sock.removeListener("error", fail);
-      },
-    ));
+
+    if (rxSock) {
+      this.isMulticast = true;
+      this.rxSock = rxSock;
+      this.txSock = txSock;
+      txSock.once("error", () => this.rxSock.close());
+      this.laddr = this.txSock.address();
+      this.raddr = this.rxSock.address();
+    } else {
+      this.isMulticast = false;
+      this.rxSock = txSock;
+      this.txSock = txSock;
+      this.laddr = this.txSock.address();
+      this.raddr = this.txSock.remoteAddress();
+    }
+
+    this.rx = rxFromPacketIterable(
+      pEvent.iterator(this.rxSock, "message", {
+        resolutionEvents: ["close"],
+      }));
   }
 
   public close() {
-    try { this.sock.close(); } catch {}
+    try {
+      this.rxSock.close();
+      if (this.txSock !== this.rxSock) {
+        this.txSock.close();
+      }
+    } catch {}
   }
 
   public tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
     for await (const pkt of iterable) {
-      this.sock.send(pkt);
+      this.txSock.send(pkt);
     }
     this.close();
   };
 }
 
 export namespace UdpTransport {
-  export interface TunnelOptions {
-    host: string;
-    port?: number;
-    bind?: dgram.BindOptions;
-    recvBufferSize?: number;
-    sendBufferSize?: number;
-  }
-
   /**
-   * Create a transport and connect to remote endpoint.
+   * Create a unicast transport.
    * @param host remote host.
    * @param port remote port, default is 6363.
    */
   export function connect(host: string, port?: number): Promise<UdpTransport>;
 
-  /**
-   * Create a transport and connect to remote endpoint.
-   * @param opts remote endpoint and other options.
-   */
-  export function connect(opts: TunnelOptions): Promise<UdpTransport>;
+  /** Create a unicast transport. */
+  export function connect(opts: udp.UnicastOptions): Promise<UdpTransport>;
 
-  export async function connect(arg1: string|TunnelOptions, port1?: number): Promise<UdpTransport> {
-    const { host, port = 6363, bind = {}, recvBufferSize, sendBufferSize }: TunnelOptions =
-      typeof arg1 === "string" ? { host: arg1, port: port1 } :
-      arg1;
-    return new Promise<UdpTransport>((resolve, reject) => {
-      const sock = dgram.createSocket({
-        type: "udp4",
-        reuseAddr: true,
-        recvBufferSize,
-        sendBufferSize,
-      });
-      sock.on("error", reject);
-      sock.on("connect", () => {
-        sock.off("error", reject);
-        resolve(new UdpTransport(sock));
-      });
-      sock.bind(bind, () => sock.connect(port, host));
-    });
+  export async function connect(arg1: string|udp.UnicastOptions, arg2?: number): Promise<UdpTransport> {
+    const opts = typeof arg1 === "string" ? { host: arg1, port: arg2 } : arg1;
+    const sock = await udp.openUnicast(opts);
+    return new UdpTransport(sock);
   }
 
-  /** Create a transport and add to forwarder. */
-  export const createFace = L3Face.makeCreateFace(UdpTransport.connect);
+  /** Create a unicast transport and add to forwarder. */
+  export const createFace = L3Face.makeCreateFace(connect);
+
+  /** Create a multicast transport. */
+  export async function multicast(opts: udp.MulticastOptions): Promise<UdpTransport> {
+    const tx = await udp.openMulticastTx(opts);
+    let rx: udp.Socket;
+    try {
+      rx = await udp.openMulticastRx(opts);
+    } catch (err) {
+      tx.close();
+      throw err;
+    }
+    return new UdpTransport(tx, rx);
+  }
+
+  /** Create a multicast transport and add to forwarder. */
+  export const createMulticastFace = L3Face.makeCreateFace(multicast);
+
+  /** Create multicast transports on every interface. */
+  export async function multicasts(opts: Omit<udp.MulticastOptions, "intf"> = {}): Promise<UdpTransport[]> {
+    const intfs = await udp.listMulticastIntfs();
+    return (await Promise.allSettled(intfs.map((intf) => multicast({ ...opts, intf }))))
+      .filter((res): res is PromiseFulfilledResult<UdpTransport> => res.status === "fulfilled")
+      .map(({ value }) => value);
+  }
+
+  /** Create multicast transports on every interface. */
+  export const createMulticastFaces = L3Face.makeCreateFace(multicasts);
 }

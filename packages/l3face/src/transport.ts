@@ -27,6 +27,7 @@ export namespace Transport {
   export interface Attributes extends Record<string, any> {
     describe?: string;
     local?: boolean;
+    multicast?: boolean;
   }
 
   /** RX iterable for incoming packets. */
