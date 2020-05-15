@@ -181,8 +181,8 @@ export namespace L3Face {
 
   /**
    * A function to create a transport then add to forwarder.
-   * First argument is CreateFaceOptions.
-   * Subsequent arguments are passed to Transport.connect() function.
+   * First parameter is CreateFaceOptions.
+   * Subsequent parameters are passed to Transport.connect() function.
    * Returns FwFace.
    */
   export type CreateFaceFunc<

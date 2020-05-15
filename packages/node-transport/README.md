@@ -67,11 +67,13 @@ multicasts.forEach(async (transport, i) => {
 Transports are normally used to construct **L3Face** objects (from `@ndn/l3face` package), which are in turned add to the **Forwarder** (from `@ndn/fw` package).
 Each transport provides a `createFace` convenience function to construct a transport and add it to the forwarder.
 
+See `@ndn/ws-transport` package documentation for a complete example of `createFace` function.
+
 ```ts
 // UdpTransport.createFace() constructs a UDP unicast transport, and adds it to a forwarder.
-// First argument allows setting L3Face attributes and NDNLP service options, or attaching
+// First parameters allows setting L3Face attributes and NDNLP service options, or attaching
 // the face to a non-default Forwarder instance. This argument is required.
-// Rest arguments are same as the corresponding connect() function.
+// Subsequent parameters are same as the corresponding connect() function.
 // It returns a FwFace instance (from @ndn/fw package).
 const face = await UdpTransport.createFace({}, "hobo.cs.arizona.edu");
 face.addRoute(new Name("/ndn"));
