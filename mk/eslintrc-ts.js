@@ -29,6 +29,7 @@ module.exports = {
     "@typescript-eslint/indent": jsRc.rules.indent,
     "@typescript-eslint/member-ordering": "off",
     "@typescript-eslint/no-base-to-string": "off",
+    "@typescript-eslint/no-invalid-void-type": "off", // https://github.com/typescript-eslint/typescript-eslint/issues/2044
     "@typescript-eslint/no-unnecessary-qualifier": "off",
     "@typescript-eslint/no-unsafe-member-access": "off",
     "@typescript-eslint/no-unsafe-return": "off",

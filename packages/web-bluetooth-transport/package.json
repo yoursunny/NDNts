@@ -32,6 +32,6 @@
     "tslib": "*"
   },
   "devDependencies": {
-    "@types/web-bluetooth": "^0.0.5"
+    "@types/web-bluetooth": "^0.0.6"
   }
 }

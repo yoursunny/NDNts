@@ -1,4 +1,5 @@
 import { TcpTransportClient } from "mole-rpc-transport-tcp";
+// eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error
 // @ts-ignore
 import MoleClient from "mole-rpc/MoleClient.js";
 
