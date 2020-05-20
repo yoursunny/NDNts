@@ -61,9 +61,12 @@ describe("file source", () => {
 
 test("iterable to unordered", async () => {
   const server = serve("/R", makeChunkSource((async function*() {
-    const yieldSize = 5000;
-    for (let i = 0; i < objectBody.length; i += yieldSize) {
-      yield objectBody.subarray(i, i + yieldSize);
+    const yieldSizes = [5000, 7000, 3000];
+    let i = -1;
+    for (let offset = 0; offset < objectBody.length;) {
+      const end = offset + yieldSizes[++i % yieldSizes.length];
+      yield objectBody.subarray(offset, end);
+      offset = end;
     }
   })(), {
     chunkSize: 6000,

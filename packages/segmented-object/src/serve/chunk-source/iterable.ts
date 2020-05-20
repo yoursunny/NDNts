@@ -19,6 +19,16 @@ class ScatteredChunk {
     if (!ignoreMinSize && this.length < this.minSize) {
       return undefined;
     }
+    if (this.length === 0) { // implies ignoreMinSize
+      return new Uint8Array();
+    }
+
+    // fast path when first buffer has acceptable size
+    const firstSize = this.vector[0].byteLength;
+    if (firstSize >= this.minSize && firstSize <= this.maxSize) {
+      this.length -= firstSize;
+      return this.vector.shift()!;
+    }
 
     const output = new Uint8Array(Math.min(this.maxSize, this.length));
     for (let offset = 0; offset < output.byteLength;) {

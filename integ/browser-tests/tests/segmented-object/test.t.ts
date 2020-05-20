@@ -11,7 +11,7 @@ let objectBody: Buffer;
 let objectBodyDigest: string;
 let filename: string;
 beforeAll(() => {
-  objectBody = makeObjectBody(16 * 1024);
+  objectBody = makeObjectBody(128 * 1024);
   objectBodyDigest = toHex(createHash("sha256").update(objectBody).digest());
   filename = writeTmpFile(objectBody);
 });

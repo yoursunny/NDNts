@@ -44,6 +44,7 @@ export abstract class KnownSizeChunkSource implements ChunkSource {
   protected readonly final: number;
   protected readonly finalChunkSize: number;
 
+  /* istanbul ignore next: not used when getChunk is present */
   public async *listChunks(): AsyncIterable<Chunk> {
     for (let i = 0; i <= this.final; ++i) {
       yield this.makeChunk(i);
