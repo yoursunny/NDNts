@@ -64,7 +64,7 @@ export async function openUnicast(opts: UnicastOptions): Promise<Socket> {
   return connect(sock, opts);
 }
 
-export async function listMulticastIntfs(): Promise<string[]> {
+export function listMulticastIntfs(): string[] {
   return Object.values(os.networkInterfaces())
     .flatMap((addrs) => {
       if (!addrs) {
@@ -82,6 +82,10 @@ export type MulticastOptions = SocketOptions & {
   group?: string;
   /** Local and group port. */
   port?: number;
+  /** Multicast TTL (for unit testing). */
+  multicastTtl?: number;
+  /** MulticastLoopback flag (for unit testing). */
+  multicastLoopback?: boolean;
 };
 
 export async function openMulticastRx(opts: MulticastOptions): Promise<Socket> {
@@ -89,6 +93,7 @@ export async function openMulticastRx(opts: MulticastOptions): Promise<Socket> {
     intf,
     group = DEFAULT_MULTICAST_GROUP,
     port = DEFAULT_MULTICAST_PORT,
+    multicastLoopback = false,
   } = opts;
   const sock = await openSocket({
     ...opts,
@@ -96,7 +101,7 @@ export async function openMulticastRx(opts: MulticastOptions): Promise<Socket> {
   });
   try {
     sock.setBroadcast(true);
-    sock.setMulticastLoopback(false);
+    sock.setMulticastLoopback(multicastLoopback);
     sock.addMembership(group, intf);
   } catch (err) {
     sock.close();
@@ -110,13 +115,14 @@ export async function openMulticastTx(opts: MulticastOptions): Promise<Socket> {
     intf,
     group = DEFAULT_MULTICAST_GROUP,
     port = DEFAULT_MULTICAST_PORT,
+    multicastTtl = 1,
   } = opts;
   const sock = await openSocket({
     ...opts,
     bind: { address: intf, port },
   });
   try {
-    sock.setMulticastTTL(1);
+    sock.setMulticastTTL(multicastTtl);
     sock.setMulticastInterface(intf);
     sock.connect(port, group);
     await pEvent(sock, "connect");
