@@ -47,6 +47,7 @@
     "tslib": "*"
   },
   "devDependencies": {
+    "@ndn/l3face": "workspace:*",
     "@ndn/naming-convention1": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@types/graceful-fs": "^4.1.3",

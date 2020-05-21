@@ -2,6 +2,7 @@ import "@ndn/tlv/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
+import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Segment as Segment1 } from "@ndn/naming-convention1";
 import { Segment as Segment2 } from "@ndn/naming-convention2";
 import { Interest, Name } from "@ndn/packet";
@@ -147,4 +148,27 @@ test("abort", async () => {
   ]);
 
   server.close();
+});
+
+test("congestion avoidance", async () => {
+  const fw = Forwarder.create();
+  const server = serve("/R", new BufferChunkSource(objectBody), { endpoint: new Endpoint({ fw }) });
+
+  const relay: Bridge.RelayOptions = {
+    minDelay: 10,
+    maxDelay: 90,
+    loss: 0.02,
+  };
+  const bridge = Bridge.create({
+    fwA: Forwarder.getDefault(),
+    fwB: fw,
+    relayAB: relay,
+    relayBA: relay,
+  });
+  bridge.faceA.addRoute(new Name("/"));
+
+  const fetched = fetch.promise(new Name("/R"));
+  await expect(fetched).resolves.toEqualUint8Array(objectBody);
+  server.close();
+  bridge.close();
 });
