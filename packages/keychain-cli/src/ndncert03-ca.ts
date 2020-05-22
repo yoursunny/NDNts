@@ -2,7 +2,7 @@ import { openUplinks } from "@ndn/cli-common";
 import { CertificateName } from "@ndn/keychain";
 import { CaProfile, Server, ServerChallenge, ServerNopChallenge, ServerPinChallenge } from "@ndn/ndncert";
 import { Data } from "@ndn/packet";
-import { DataStore, RepoProducer } from "@ndn/repo";
+import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
 import { Decoder, toHex } from "@ndn/tlv";
 import { promises as fs } from "graceful-fs";
 import leveldown from "leveldown";
@@ -50,7 +50,7 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
     const key = await keyChain.getPrivateKey(certName.key);
 
     const repo = new DataStore(leveldown(args.store));
-    RepoProducer.create(repo, { reg: RepoProducer.PrefixRegShorter(2) });
+    RepoProducer.create(repo, { reg: PrefixRegShorter(2) });
 
     const challenges: ServerChallenge[] = [];
     for (const challengeId of args.challenge) {

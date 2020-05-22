@@ -8,7 +8,7 @@ Data ingestion is mainly supported through APIs, not command packets.
 Data retrieval is on par with other repo implementations.
 
 ```ts
-import { DataStore, RepoProducer } from "@ndn/repo";
+import { DataStore, RepoProducer, PrefixRegShorter } from "@ndn/repo";
 
 // other imports for examples
 import { Name, Interest, Data } from "@ndn/packet";
@@ -19,8 +19,8 @@ import memdown from "memdown";
 
 ## DataStore
 
-**DataStore** is a Data packet storage, based on LevelDB or other [abstract-leveldown](https://www.npmjs.com/package/abstract-leveldown) compatible key-value store.
-It offers APIs to insert and delete Data packets.
+**DataStore** is a Data packet storage, based on [LevelDB](https://www.npmjs.com/package/leveldown) or other [abstract-leveldown](https://www.npmjs.com/package/abstract-leveldown) compatible key-value store.
+It is an implemented of `DataStore` interface defined in `@ndn/repo-api` package, which offers APIs to insert and delete Data packets.
 
 ```ts
 // DataStore constructor accepts an abstract-leveldown instance.
@@ -66,7 +66,7 @@ assert.equal(rA3, undefined);
 // See test cases for more options.
 // These registrations stay with NDNts forwarding plane. Typically you'll want a package such as
 // '@ndn/nfdmgmt' to propagate them to the uplink(s).
-const p = RepoProducer.create(store, { reg: RepoProducer.PrefixRegShorter(1) });
+const p = RepoProducer.create(store, { reg: PrefixRegShorter(1) });
 
 // Close the RepoProducer and the DataStore.
 p.close();

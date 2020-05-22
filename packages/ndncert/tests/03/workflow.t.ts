@@ -1,6 +1,6 @@
 import { Certificate, EcPrivateKey, RsaPrivateKey } from "@ndn/keychain";
 import { Name } from "@ndn/packet";
-import { DataStore, RepoProducer } from "@ndn/repo";
+import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
 import memdown from "memdown";
 
 import { CaProfile, ClientChallenge, ClientNopChallenge, ClientPinChallenge, requestCertificate, Server, ServerChallenge, ServerNopChallenge, ServerPinChallenge } from "../..";
@@ -56,7 +56,7 @@ test.each(TABLE)("workflow %#", async ({
   clientShouldFail = false,
 }) => {
   const repo = new DataStore(memdown());
-  const repoProducer = RepoProducer.create(repo, { reg: RepoProducer.PrefixRegShorter(2) });
+  const repoProducer = RepoProducer.create(repo, { reg: PrefixRegShorter(2) });
 
   const [caPvt, caPub] = await RsaPrivateKey.generate("/authority", 1024);
   const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });

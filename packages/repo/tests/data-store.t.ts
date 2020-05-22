@@ -35,7 +35,7 @@ test("list find expire", async () => {
     store.insert(new Data("/C/3"), { expireTime }),
   ]);
 
-  let names = await collect(map((data) => data.name.toString(), store.list()));
+  let names = await collect(map((data) => data.name.toString(), store.listData()));
   names.sort((a, b) => a.localeCompare(b));
   expect(names).toEqual(["/8=A/8=1", "/8=A/8=2", "/8=B/8=1", "/8=B/8=2", "/8=C/8=1", "/8=C/8=2", "/8=C/8=3"]);
 

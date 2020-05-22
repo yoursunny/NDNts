@@ -1,0 +1,37 @@
+{
+  "name": "@ndn/repo-api",
+  "version": "0.0.0",
+  "description": "NDNts: Data Repository API",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "main": "src/mod.ts",
+  "sideEffects": false,
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/repo-api"
+  },
+  "publishConfig": {
+    "main": "lib/mod.js"
+  },
+  "dependencies": {
+    "@ndn/keychain": "workspace:*",
+    "@ndn/l3face": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "@ndn/rdr": "workspace:*",
+    "it-pushable": "^1.4.0",
+    "p-defer": "^3.0.0",
+    "streaming-iterables": "^4.1.2",
+    "tslib": "*"
+  }
+}

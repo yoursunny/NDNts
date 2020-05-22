@@ -2,15 +2,19 @@ import { L3Face } from "@ndn/l3face";
 import { Data } from "@ndn/packet";
 import { batch, consume, filter, pipeline, transform } from "streaming-iterables";
 
-import { DataStore } from "./mod";
+import type { DataStore } from "./data-store";
 
-export class BulkInserter {
+/** Accept packets into DataStore via bulk insertion protocol. */
+export class BulkInsertTarget {
   private readonly batchSize: number;
   private readonly parallelism: number;
 
-  constructor(private readonly store: DataStore, opts: BulkInserter.Options = {}) {
-    this.batchSize = opts.batch ?? 64;
-    this.parallelism = opts.parallel ?? 1;
+  constructor(private readonly store: Pick<DataStore, "insert">, {
+    batch = 64,
+    parallel = 1,
+  }: BulkInserter.Options = {}) {
+    this.batchSize = batch;
+    this.parallelism = parallel;
   }
 
   public accept(face: L3Face): Promise<void> {

@@ -1,4 +1,5 @@
 import { canSatisfy, Data, ImplicitDigest, Interest, Name } from "@ndn/packet";
+import { DataStore as IDataStore } from "@ndn/repo-api";
 import { Encoder, toHex, toUtf8 } from "@ndn/tlv";
 import { AbstractLevelDOWN } from "abstract-leveldown";
 import { EventEmitter } from "events";
@@ -18,7 +19,7 @@ interface Events {
 type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
 /** Data packet storage based on LevelDB or other abstract-leveldown store. */
-export class DataStore extends (EventEmitter as new() => Emitter) {
+export class DataStore extends (EventEmitter as new() => Emitter) implements IDataStore {
   private readonly db: Db;
   public readonly mutex = throat(1);
 
@@ -48,21 +49,21 @@ export class DataStore extends (EventEmitter as new() => Emitter) {
     }
   }
 
-  /** List Data packets, optionally filtered by name prefix. */
-  public list(prefix?: Name): AsyncIterable<Data> {
-    return pipeline(
-      () => this.iterRecords(prefix),
-      filter(filterExpired(false)),
-      map(({ data }) => data),
-    );
-  }
-
   /** List Data names, optionally filtered by name prefix. */
   public listNames(prefix?: Name): AsyncIterable<Name> {
     return pipeline(
       () => this.iterRecords(prefix),
       filter(filterExpired(false)),
       map(({ name }) => name),
+    );
+  }
+
+  /** List Data packets, optionally filtered by name prefix. */
+  public listData(prefix?: Name): AsyncIterable<Data> {
+    return pipeline(
+      () => this.iterRecords(prefix),
+      filter(filterExpired(false)),
+      map(({ data }) => data),
     );
   }
 
@@ -131,7 +132,7 @@ export class DataStore extends (EventEmitter as new() => Emitter) {
   }
 
   /** Delete Data packets with given names. */
-  public delete(...names: readonly Name[]): Promise<void> {
+  public delete(...names: Name[]): Promise<void> {
     const tx = this.tx();
     for (const name of names) {
       tx.delete(name);

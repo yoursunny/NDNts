@@ -7,7 +7,7 @@ import { Component, Data, Interest, Name, NameLike } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import memdown from "memdown";
 
-import { DataStore, RepoProducer, respondRdr } from "..";
+import { DataStore, PrefixRegShorter, PrefixRegStatic, PrefixRegStrip, RepoProducer, respondRdr } from "..";
 
 let store: DataStore;
 const announced = new Set<string>();
@@ -36,7 +36,7 @@ function listAnnounced(): string[] {
 test("simple", async () => {
   await insertData("/A/1", "/A/2", "/A/3", "/B/4");
   const producer = RepoProducer.create(store, {
-    reg: RepoProducer.PrefixRegStatic(new Name("/A"), new Name("/B")),
+    reg: PrefixRegStatic(new Name("/A"), new Name("/B")),
   });
   await new Promise((r) => setTimeout(r, 50));
   expect(listAnnounced()).toEqual(["/8=A", "/8=B"]);
@@ -56,7 +56,7 @@ test("simple", async () => {
 test("prefixreg shorter", async () => {
   await insertData("/A/B/1", "/A/B/2", "/C/D/3");
   const producer = RepoProducer.create(store, {
-    reg: RepoProducer.PrefixRegShorter(1),
+    reg: PrefixRegShorter(1),
   });
   await new Promise((r) => setTimeout(r, 50));
   expect(listAnnounced()).toEqual(["/8=A/8=B", "/8=C/8=D"]);
@@ -96,7 +96,7 @@ test("prefixreg strip custom", async () => {
     "/8=J/8=K/8=L",
   );
   const producer = RepoProducer.create(store, {
-    reg: RepoProducer.PrefixRegStrip(Segment, "K", Component.from("L")),
+    reg: PrefixRegStrip(Segment, "K", Component.from("L")),
   });
   await new Promise((r) => setTimeout(r, 50));
   expect(listAnnounced()).toEqual([
@@ -119,7 +119,7 @@ test("respondRdr", async () => {
     new Name("/A").append(Version, 4),
   );
   const producer = RepoProducer.create(store, {
-    reg: RepoProducer.PrefixRegStatic(new Name("/A")),
+    reg: PrefixRegStatic(new Name("/A")),
     fallback: respondRdr(),
   });
 

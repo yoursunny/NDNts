@@ -6,17 +6,17 @@ import { Data } from "@ndn/packet";
 import memdown from "memdown";
 import { collect } from "streaming-iterables";
 
-import { BulkInserter, DataStore } from "..";
+import { BulkInsertInitiator, BulkInsertTarget, DataStore } from "..";
 
 let store: DataStore;
 beforeEach(() => store = new DataStore(memdown()));
 afterEach(() => store.close());
 
-test("simple", async () => {
+test("target", async () => {
   const storeInsert = jest.spyOn(store, "insert");
   const transport = new MockTransport();
 
-  const bi = new BulkInserter(store, {
+  const bi = new BulkInsertTarget(store, {
     batch: 32,
     parallel: 8,
   });
@@ -35,5 +35,22 @@ test("simple", async () => {
   ]);
 
   expect(storeInsert).toHaveBeenCalledTimes(16);
-  await expect(collect(store.list())).resolves.toHaveLength(500);
+  await expect(collect(store.listData())).resolves.toHaveLength(500);
+});
+
+test("initiator", async () => {
+  const transport = new MockTransport();
+  const bi = new BulkInsertInitiator(new L3Face(transport));
+  let n = 0;
+  for (let i = 0; i < 10; ++i) {
+    await new Promise((r) => setTimeout(r, Math.random() * 20));
+    const pkts: Data[] = [];
+    const count = Math.floor(Math.random() * 64);
+    for (let j = 0; j < count; ++j) {
+      pkts.push(new Data(`/D/${++n}`));
+    }
+    await bi.insert(...pkts);
+  }
+  await bi.close();
+  expect(transport.sent).toHaveLength(n);
 });
