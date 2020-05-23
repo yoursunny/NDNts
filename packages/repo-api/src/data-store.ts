@@ -23,3 +23,9 @@ export interface DataStore {
   /** Delete Data packets with given names. */
   delete: (...names: Name[]) => Promise<void>;
 }
+
+export namespace DataStore {
+  export interface InsertWithOptions<T> {
+    insert: (opts: T, ...pkts: Data[]) => Promise<void>;
+  }
+}

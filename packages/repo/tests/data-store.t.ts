@@ -31,8 +31,7 @@ test("list find expire", async () => {
     store.insert(new Data("/A/1")),
     store.insert(new Data("/A/2"), new Data("/B/1")),
     store.tx().insert(new Data("/B/2")).insert(new Data("/C/1"), { expireTime }).commit(),
-    store.insert({ expireTime }, new Data("/C/2")),
-    store.insert(new Data("/C/3"), { expireTime }),
+    store.insert({ expireTime }, new Data("/C/2"), new Data("/C/3")),
   ]);
 
   let names = await collect(map((data) => data.name.toString(), store.listData()));

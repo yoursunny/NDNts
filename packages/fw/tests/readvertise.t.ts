@@ -136,7 +136,7 @@ test("withdraw during advertising", async () => {
 
   const faceA = fw.addFace(new NoopFace());
   faceA.addAnnouncement(new Name("/M"));
-  setTimeout(() => faceA.removeAnnouncement(new Name("/M")), 10);
+  setTimeout(() => faceA.removeAnnouncement(new Name("/M")), 20);
   await new Promise((r) => setTimeout(r, 90));
   expect(dest.doAdvertise).toHaveBeenCalledTimes(1);
   expect(dest.doWithdraw).toHaveBeenCalledTimes(2);

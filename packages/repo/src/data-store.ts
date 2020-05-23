@@ -19,7 +19,8 @@ interface Events {
 type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
 /** Data packet storage based on LevelDB or other abstract-leveldown store. */
-export class DataStore extends (EventEmitter as new() => Emitter) implements IDataStore {
+export class DataStore extends (EventEmitter as new() => Emitter)
+  implements IDataStore, IDataStore.InsertWithOptions<InsertOptions> {
   private readonly db: Db;
   public readonly mutex = throat(1);
 
@@ -108,16 +109,8 @@ export class DataStore extends (EventEmitter as new() => Emitter) implements IDa
   /** Insert one or more Data packets with given options. */
   public insert(opts: InsertOptions, ...pkts: Data[]): Promise<void>;
 
-  /** Insert a Data packet with given options. */
-  public insert(data: Data, opts?: InsertOptions): Promise<void>;
-
-  public insert(arg1: Data|InsertOptions, arg2?: Data|InsertOptions, ...pkts: Data[]): Promise<void> {
-    let opts: InsertOptions|undefined;
-    if (arg2 instanceof Data) {
-      pkts.unshift(arg2);
-    } else {
-      opts = arg2;
-    }
+  public insert(arg1: Data|InsertOptions, ...pkts: Data[]): Promise<void> {
+    let opts: InsertOptions = {};
     if (arg1 instanceof Data) {
       pkts.unshift(arg1);
     } else {
