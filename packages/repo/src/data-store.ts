@@ -4,22 +4,20 @@ import { Encoder, toHex, toUtf8 } from "@ndn/tlv";
 import { AbstractLevelDOWN } from "abstract-leveldown";
 import { EventEmitter } from "events";
 import { collect, filter, fromStream, map, pipeline, transform } from "streaming-iterables";
-import StrictEventEmitter from "strict-event-emitter-types";
 import throat from "throat";
+import TypedEmitter from "typed-emitter";
 
 import { Db, DbChain, filterExpired, isExpired, openDb, Record } from "./db";
 
 interface Events {
   /** Emitted when a new record is inserted. */
-  insert: Name;
+  insert: (name: Name) => void;
   /** Emitted when an existing record is deleted. */
-  delete: Name;
+  delete: (name: Name) => void;
 }
 
-type Emitter = StrictEventEmitter<EventEmitter, Events>;
-
 /** Data packet storage based on LevelDB or other abstract-leveldown store. */
-export class DataStore extends (EventEmitter as new() => Emitter)
+export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
   implements IDataStore, IDataStore.InsertWithOptions<InsertOptions> {
   private readonly db: Db;
   public readonly mutex = throat(1);

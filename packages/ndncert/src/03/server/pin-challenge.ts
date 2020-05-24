@@ -1,7 +1,7 @@
 import { KeyChainImplWebCrypto as crypto, timingSafeEqual } from "@ndn/keychain";
 import { fromUtf8 } from "@ndn/tlv";
 import { EventEmitter } from "events";
-import StrictEventEmitter from "strict-event-emitter-types";
+import TypedEmitter from "typed-emitter";
 
 import { ChallengeRequest } from "../packet/mod";
 import { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";
@@ -10,8 +10,6 @@ interface Events {
   /** Emitted when a pin code has been generated. */
   newpin: (requestId: Uint8Array, pin: string) => void;
 }
-
-type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
 class State {
   public readonly pin: Uint8Array;
@@ -29,7 +27,7 @@ class State {
 }
 
 /** The "pin" challenge where client must submit a server-generated pin code to the server. */
-export class ServerPinChallenge extends (EventEmitter as new() => Emitter) implements ServerChallenge {
+export class ServerPinChallenge extends (EventEmitter as new() => TypedEmitter<Events>) implements ServerChallenge {
   public readonly challengeId = "pin";
   public readonly timeLimit = 60000;
   public readonly retryLimit = 3;

@@ -3,7 +3,7 @@ import { CancelInterest, Forwarder, FwFace, InterestToken } from "@ndn/fw";
 import { Data, Interest, Name } from "@ndn/packet";
 import AbortController from "abort-controller";
 import { EventEmitter } from "events";
-import StrictEventEmitter from "strict-event-emitter-types";
+import TypedEmitter from "typed-emitter";
 
 import { defaultSegmentConvention, SegmentConvention } from "../convention";
 import { FetchLogic } from "./logic";
@@ -26,14 +26,12 @@ interface Events {
   /** Emitted when a Data segment arrives. */
   segment: (segNum: number, data: Data) => void;
   /** Emitted after all data chunks arrive. */
-  end: void;
+  end: () => void;
   /** Emitted upon error. */
-  error: Error;
+  error: (err: Error) => void;
 }
 
-type Emitter = StrictEventEmitter<EventEmitter, Events>;
-
-export class Fetcher extends (EventEmitter as new() => Emitter) {
+export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
   private readonly logic: FetchLogic;
   private readonly face: FwFace;
 

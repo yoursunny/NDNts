@@ -1,16 +1,14 @@
 import { EventEmitter } from "events";
-import StrictEventEmitter from "strict-event-emitter-types";
+import TypedEmitter from "typed-emitter";
 
 interface Events {
-  cwndupdate: number;
+  cwndupdate: (cwnd: number) => void;
 }
-
-type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
 const CWND = Symbol("CongestionAvoidance.CWND");
 
 /** Congestion avoidance algorithm. */
-export abstract class CongestionAvoidance extends (EventEmitter as new() => Emitter) {
+export abstract class CongestionAvoidance extends (EventEmitter as new() => TypedEmitter<Events>) {
   private [CWND]: number;
 
   constructor(initialCwnd: number) {

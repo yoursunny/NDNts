@@ -5,17 +5,15 @@ import MultiSet from "mnemonist/multi-set";
 import pDefer from "p-defer";
 import Fifo from "p-fifo";
 import { buffer, filter, pipeline, tap } from "streaming-iterables";
-import StrictEventEmitter from "strict-event-emitter-types";
+import TypedEmitter from "typed-emitter";
 
 import type { ForwarderImpl } from "./forwarder";
 import { CancelInterest, isL3Pkt, L3Pkt, RejectInterest } from "./reqres";
 
 interface Events {
   /** Emitted upon face closing. */
-  close: void;
+  close: () => void;
 }
-
-type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
 type TransformFunc = (iterable: AsyncIterable<Face.Txable>) => AsyncIterable<Face.Rxable>;
 
@@ -31,7 +29,7 @@ function computeAnnouncement(name: Name, announcement: Face.RouteAnnouncement): 
   return announcement;
 }
 
-export class FaceImpl extends (EventEmitter as new() => Emitter) {
+export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
   public readonly attributes: Face.Attributes;
   private readonly routes = new MultiSet<string>();
   private readonly announcements = new MultiSet<string>();
@@ -229,7 +227,7 @@ export namespace FaceImpl {
 /** A socket or network interface associated with forwarding plane. */
 export interface Face extends Pick<FaceImpl,
 "fw"|"attributes"|"close"|"toString"|"addRoute"|"removeRoute"|"addAnnouncement"|"removeAnnouncement"|
-Exclude<keyof Emitter, "emit">> {
+Exclude<keyof TypedEmitter<Events>, "emit">> {
   readonly running: boolean;
   readonly txQueueLength: number;
 }

@@ -3,7 +3,7 @@ import { LpService, NumericPitToken, PitToken } from "@ndn/lp";
 import { Interest } from "@ndn/packet";
 import { EventEmitter } from "events";
 import { filter, pipeline, tap } from "streaming-iterables";
-import StrictEventEmitter from "strict-event-emitter-types";
+import TypedEmitter from "typed-emitter";
 
 import { Transport } from "./mod";
 
@@ -11,25 +11,23 @@ type Packet = LpService.L3Pkt;
 
 interface Events {
   /** Emitted upon face state change. */
-  state: L3Face.State;
+  state: (state: L3Face.State) => void;
   /** Emitted upon state becomes UP. */
-  up: void;
+  up: () => void;
   /** Emitted upon state becomes DOWN. */
-  down: Error;
+  down: (err: Error) => void;
   /** Emitted upon state becomes CLOSED. */
-  close: void;
+  close: () => void;
   /** Emitted upon RX decoding error. */
-  rxerror: L3Face.RxError;
+  rxerror: (err: L3Face.RxError) => void;
   /** Emitted upon TX preparation error. */
-  txerror: L3Face.TxError;
+  txerror: (err: L3Face.TxError) => void;
 }
-
-type Emitter = StrictEventEmitter<EventEmitter, Events>;
 
 const REOPENED = Symbol("L3Face.REOPENED");
 
 /** Network layer face for sending and receiving L3 packets. */
-export class L3Face extends (EventEmitter as new() => Emitter) {
+export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) {
   public readonly attributes: L3Face.Attributes;
   public readonly lp: LpService;
   public readonly numericPitToken = new NumericPitToken();

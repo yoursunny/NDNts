@@ -1,6 +1,6 @@
 import { Data, Interest, Nack, Name } from "@ndn/packet";
 import { EventEmitter } from "events";
-import StrictEventEmitter from "strict-event-emitter-types";
+import TypedEmitter from "typed-emitter";
 
 import { Face, FaceImpl } from "./face";
 import { Fib } from "./fib";
@@ -9,26 +9,24 @@ import { Readvertise } from "./readvertise";
 
 interface Events {
   /** Emitted before adding face. */
-  faceadd: Face;
+  faceadd: (face: Face) => void;
   /** Emitted after removing face. */
-  facerm: Face;
+  facerm: (face: Face) => void;
   /** Emitted before adding prefix to face. */
   prefixadd: (face: Face, prefix: Name) => void;
   /** Emitted after removing prefix from face. */
   prefixrm: (face: Face, prefix: Name) => void;
   /** Emitted before advertising prefix. */
-  annadd: Name;
+  annadd: (announcement: Name) => void;
   /** Emitted before withdrawing prefix. */
-  annrm: Name;
+  annrm: (announcement: Name) => void;
   /** Emitted after packet arrival. */
   pktrx: (face: Face, pkt: Face.Rxable) => void;
   /** Emitted before packet transmission. */
   pkttx: (face: Face, pkt: Face.Txable) => void;
 }
 
-type Emitter = StrictEventEmitter<EventEmitter, Events>;
-
-export class ForwarderImpl extends (EventEmitter as new() => Emitter) {
+export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
   public readonly faces = new Set<FaceImpl>();
   public readonly fib = new Fib();
   public readonly pit = new Pit();
@@ -78,7 +76,8 @@ export class ForwarderImpl extends (EventEmitter as new() => Emitter) {
 }
 
 /** Forwarding plane. */
-export interface Forwarder extends Pick<ForwarderImpl, "addFace"|Exclude<keyof Emitter, "emit">> {
+export interface Forwarder extends Pick<ForwarderImpl,
+"addFace"|Exclude<keyof TypedEmitter<Events>, "emit">> {
   readonly faces: Set<Face>;
   readonly pit: Pick<Pit, "dataNoTokenMatch">;
 }

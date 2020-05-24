@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import hirestime from "hirestime";
 import assert from "minimalistic-assert";
-import StrictEventEmitter from "strict-event-emitter-types";
+import TypedEmitter from "typed-emitter";
 
 import { CongestionAvoidance } from "./congestion-avoidance";
 import { RttEstimator } from "./rtt-estimator";
@@ -55,19 +55,17 @@ type SegRequest<T> = Pick<Readonly<SegState>, "segNum"|"isRetx"|"rto"> & {
 const UNBLOCK = Symbol("UNBLOCK");
 
 interface Events {
-  [UNBLOCK]: void;
+  [UNBLOCK]: () => void;
 
   /** Fetching finished. */
-  end: void;
+  end: () => void;
 
   /** A segment request has exceeded maximum retx limit and will not be retried. */
-  exceedRetxLimit: number;
+  exceedRetxLimit: (segNum: number) => void;
 }
 
-type Emitter = StrictEventEmitter<EventEmitter, Events>;
-
 /** Congestion control logic. */
-export class FetchLogic extends (EventEmitter as new() => Emitter) {
+export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) {
   private readonly rtte: RttEstimator;
   private readonly ca: CongestionAvoidance;
   private readonly tl: TokenLimiter;
