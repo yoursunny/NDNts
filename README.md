@@ -7,7 +7,7 @@
 **NDNts** enables [Named Data Networking](https://named-data.net/) in modern web applications.
 
 * [NDNts homepage](https://yoursunny.com/p/NDNts/)
-* [TypeDoc documentation](https://ndnts.netlify.app/typedoc/index.html)
+* [TypeDoc documentation](https://ndnts-docs.ndn.today/typedoc/index.html)
 * [NDNts nightly builds](https://ndnts-nightly.ndn.today/)
 * [#NDNts on Twitter](https://twitter.com/hashtag/NDNts?f=live) for announcements
 
