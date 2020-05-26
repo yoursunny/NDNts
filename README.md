@@ -8,7 +8,7 @@
 
 * [NDNts homepage](https://yoursunny.com/p/NDNts/)
 * [TypeDoc documentation](https://ndnts.netlify.app/typedoc/index.html)
-* [NDNts nightly builds](https://ndnts-nightly.netlify.app/)
+* [NDNts nightly builds](https://ndnts-nightly.ndn.today/)
 * [#NDNts on Twitter](https://twitter.com/hashtag/NDNts?f=live) for announcements
 
 Supported platforms include:

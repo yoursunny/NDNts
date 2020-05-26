@@ -44,13 +44,12 @@ after_success:
   - npm run typedoc -- --gaId UA-935676-11
 
 deploy:
-  - provider: netlify
-    edge: true
-    site: 11d6303b-b200-4b5c-b2c2-4ace41795b20
-    auth: $NETLIFY_AUTH
-    dir: "mk/nightly-output/"
-    message: $TRAVIS_COMMIT
-    prod: true
+  - provider: pages
+    skip_cleanup: true
+    github_token: $GITHUB_TOKEN
+    local_dir: mk/nightly-output/
+    repo: yoursunny/NDNts-nightly
+    fqdn: ndnts-nightly.ndn.today
     on:
       branch: develop
       node_js: '14'
@@ -58,7 +57,7 @@ deploy:
     edge: true
     site: 8987d2bb-7638-4d6b-adff-806fe3b7309a
     auth: $NETLIFY_AUTH
-    dir: "docs/"
+    dir: docs/
     message: $TRAVIS_COMMIT
     prod: true
     on:
