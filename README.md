@@ -13,7 +13,6 @@
 
 Supported platforms include:
 
-* Node.js 14.x: everything works.
-* Node.js 12.x: library works, CLI needs `NODE_OPTIONS=--experimental-modules` environment variable.
+* Node.js 14.x and 12.x: requires ES Modules.
 * Firefox: supported via webpack bundler, tested on Windows/Mac.
 * Chrome: supported via webpack bundler, tested on Windows/Mac/Android/iOS.

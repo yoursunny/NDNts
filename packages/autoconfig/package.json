@@ -34,7 +34,7 @@
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/ws-transport": "workspace:*",
-    "default-gateway": "^6.0.0",
+    "default-gateway": "^6.0.1",
     "hirestime": "^6.0.1",
     "node-fetch": "^2.6.0",
     "streaming-iterables": "^4.1.2",

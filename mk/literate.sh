@@ -17,7 +17,7 @@ literate_run() {
   echo -e '\n\e[96m'RUNNING EXAMPLES IN $1/README.md'\e[39m'
   local LOADER=$(realpath --relative-to=$1 $ROOTDIR/mk/esm-loader.mjs)
   pushd $1 >/dev/null
-  node --experimental-modules --loader $LOADER --experimental-specifier-resolution=node literate-temp.ts
+  node --loader $LOADER --experimental-specifier-resolution=node literate-temp.ts
   popd >/dev/null
 }
 
