@@ -43,7 +43,7 @@
     "minimalistic-assert": "^1.0.1",
     "node-fetch": "^2.6.0",
     "tslib": "*",
-    "typed-emitter": "^1.1.0"
+    "typed-emitter": "^1.2.0"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",

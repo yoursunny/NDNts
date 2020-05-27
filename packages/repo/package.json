@@ -37,7 +37,7 @@
     "streaming-iterables": "^4.1.2",
     "throat": "^5.0.0",
     "tslib": "*",
-    "typed-emitter": "^1.1.0"
+    "typed-emitter": "^1.2.0"
   },
   "devDependencies": {
     "@ndn/naming-convention2": "workspace:*",
