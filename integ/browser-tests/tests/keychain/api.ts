@@ -1,6 +1,6 @@
 import { TestRecord as CertStoreRecord } from "@ndn/keychain/test-fixture/cert-store";
 import { TestRecord as KeyStoreRecord } from "@ndn/keychain/test-fixture/key-store";
-import { TestRecord as SignVerifyRecord } from "@ndn/keychain/test-fixture/sign-verify";
+import { TestRecord as SignVerifyRecord } from "@ndn/packet/test-fixture/sign-verify";
 
 import { SerializedInBrowser } from "../../test-fixture/serialize";
 

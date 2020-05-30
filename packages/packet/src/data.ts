@@ -3,10 +3,10 @@ import { Decoder, Encodable, EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/
 import { SigType, TT } from "./an";
 import { Component } from "./component";
 import { ImplicitDigest } from "./digest-comp";
-import { LLSign, LLVerify } from "./llsign";
 import { Name, NameLike } from "./name";
 import { sha256 } from "./platform/mod";
 import { SigInfo } from "./sig-info";
+import { LLSign, LLVerify, Signer, Verifier } from "./signing";
 
 const FAKE_SIGINFO = new SigInfo(SigType.Sha256);
 const FAKE_SIGVALUE = new Uint8Array(32);
@@ -88,7 +88,7 @@ const EVD = new EvDecoder<Fields>("Data", TT.Data)
   }, { required: true });
 
 /** Data packet. */
-export class Data {
+export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signable, Verifier.Verifiable {
   /**
    * Construct from flexible arguments.
    *

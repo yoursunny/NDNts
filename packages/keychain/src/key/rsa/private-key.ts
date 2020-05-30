@@ -2,13 +2,13 @@ import { Name, NameLike, SigType } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
 import { KeyChain, RsaModulusLength, RsaPublicKey } from "../../mod";
+import { PrivateKey } from "../base";
 import { crypto } from "../platform/mod";
-import { PrivateKeyBase } from "../private-key";
 import { generateKey, LoadedKey, StoredKey } from "../save";
 import { ALGO, GEN_PARAMS, IMPORT_PARAMS } from "./internal";
 
 /** RSA private key. */
-export class RsaPrivateKey extends PrivateKeyBase {
+export class RsaPrivateKey extends PrivateKey {
   constructor(name: Name, private readonly key: CryptoKey) {
     super(name, SigType.Sha256WithRsa, name);
   }

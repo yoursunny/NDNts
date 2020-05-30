@@ -30,7 +30,6 @@
   "dependencies": {
     "@ndn/endpoint": "workspace:*",
     "@ndn/fw": "workspace:*",
-    "@ndn/keychain": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "abort-controller": "^3.0.0",

@@ -1,8 +1,6 @@
-export { crypto as KeyChainImplWebCrypto, timingSafeEqual } from "./platform/mod";
-export { PrivateKey } from "./private-key";
-export { PublicKey } from "./public-key";
-export * from "./digest";
+export { crypto as KeyChainImplWebCrypto } from "./platform/mod";
+export * from "./base";
 export * from "./rsa/mod";
 export * from "./ec/mod";
-export * from "./hmac";
+export * from "./hmac/mod";
 export { saveKey } from "./save";

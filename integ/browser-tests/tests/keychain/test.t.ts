@@ -1,6 +1,6 @@
 import * as TestCertStore from "@ndn/keychain/test-fixture/cert-store";
 import * as TestKeyStore from "@ndn/keychain/test-fixture/key-store";
-import * as TestSignVerify from "@ndn/keychain/test-fixture/sign-verify";
+import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 import { deserializeInBrowser } from "../../test-fixture/serialize";
@@ -42,6 +42,6 @@ test("RSA", async () => {
 test("HMAC", async () => {
   const [rI, rD] = deserializeInBrowser(await pageInvoke<typeof window.testHmacKey>(
     page, "testHmacKey")) as SignVerifyTestResult;
-  TestSignVerify.check(rI, { deterministic: true, alwaysMatch: true });
-  TestSignVerify.check(rD, { deterministic: true, alwaysMatch: true });
+  TestSignVerify.check(rI, { deterministic: true });
+  TestSignVerify.check(rD, { deterministic: true });
 });

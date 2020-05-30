@@ -26,7 +26,6 @@
   "dependencies": {
     "@ndn/endpoint": "workspace:*",
     "@ndn/fw": "workspace:*",
-    "@ndn/keychain": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "tslib": "*"

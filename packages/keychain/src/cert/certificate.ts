@@ -99,6 +99,9 @@ export namespace Certificate {
   }
 
   export async function issue(options: IssueOptions): Promise<Certificate> {
+    if (!PublicKey.isExportable(options.publicKey)) {
+      throw new Error("publicKey is not exportable");
+    }
     const { issuerPrivateKey: pvt, issuerId, publicKey: pub } = options;
     const kn = KeyName.from(pub.name);
     const cn = new CertificateName(kn.subjectName, kn.keyId, issuerId, Version.create(Date.now()));

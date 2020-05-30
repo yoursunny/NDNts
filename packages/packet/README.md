@@ -5,13 +5,12 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 This package implements **Name**, **Interest**, and **Data** types as specified in [NDN Packet Format v0.3](https://named-data.net/doc/NDN-packet-spec/0.3/).
 
 ```ts
-import { TT, Name, Component, ImplicitDigest, AltUri,
-  Interest, Data, LLSign, LLVerify, canSatisfy, canSatisfySync } from "@ndn/packet";
+import { TT, Name, Component, ImplicitDigest, AltUri, Interest, Data,
+  canSatisfy, canSatisfySync, digestSigning } from "@ndn/packet";
 
 // other imports for examples
 import { Decoder, Encoder, fromUtf8, toUtf8 } from "@ndn/tlv";
 import { strict as assert } from "assert";
-import { timingSafeEqual } from "crypto";
 (async () => {
 ```
 
@@ -161,42 +160,34 @@ const data = new Data(interest.name, Data.FreshnessPeriod(5000));
 data.content = toUtf8("hello NDNts");
 ```
 
-## Low-Level Signing
+## Signing and Verification
 
 ```ts
 // Every NDN Data must be signed.
-// This package only provides a low-level API, which is crude to use directly.
-// Nevertheless, this is how it works.
+// This package provides the low-level API, and an implementation of SHA256 digest signing.
+// Other signature types are in @ndn/keychain package.
 
-// Our signature would be 'DDDD'.
-const expectedSignature = Uint8Array.of(0xDD, 0xDD);
+// Sign the Data. The API is asynchronous as required by WebCrypto.
+await digestSigning.sign(data);
 
-// Invoke [LLVerify.OP] with a crypto signer function.
-await data[LLSign.OP](async (input: Uint8Array): Promise<Uint8Array> => {
-  return Promise.resolve(expectedSignature);
-});
-
-// Finally, we can encode the Data and then decode it.
+// After signing, we can encode the Data.
 const dataWire = Encoder.encode(data);
+
+// And then decode it.
 const data2 = new Decoder(dataWire).decode(Data);
 
 // Data signature should be verified.
-// Again, this is a low-level API, so it would look difficult.
-
-// Invoke [LLVerify.OP] with a crypto verification function.
-await data2[LLVerify.OP]((input: Uint8Array, sig: Uint8Array) => {
-  return new Promise<void>((resolve, reject) => {
-    if (timingSafeEqual(sig, expectedSignature)) {
-      resolve();
-    } else {
-      reject();
-    }
-  });
-});
+// If the verify() function does not throw, it means the signature is good.
+try {
+  await digestSigning.verify(data);
+} catch (err) {
+  console.log(err);
+  return;
+}
 // It's very important that you do not modify the Data if you need to verify its signature.
 // Otherwise, you'll get errors or incorrect results.
 
-// Now we can access the Content.
+// After verifying, we can access the Content.
 assert.equal(fromUtf8(data2.content), "hello NDNts");
 ```
 

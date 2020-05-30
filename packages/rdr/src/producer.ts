@@ -1,7 +1,6 @@
 import { Endpoint, Producer } from "@ndn/endpoint";
-import { PrivateKey, theDigestKey } from "@ndn/keychain";
 import { Segment, Version } from "@ndn/naming-convention2";
-import { Data, Interest, Name, NameLike } from "@ndn/packet";
+import { Data, digestSigning, Interest, Name, NameLike, Signer } from "@ndn/packet";
 
 import { encodeMetadataContent, Metadata, MetadataKeyword } from "./metadata";
 
@@ -27,7 +26,7 @@ interface Options {
   freshnessPeriod?: number;
 
   /** Signing key. */
-  signer?: PrivateKey;
+  signer?: Signer;
 
   /** Endpoint to run producer. */
   endpoint?: Endpoint;
@@ -40,7 +39,7 @@ interface Options {
 export async function makeMetadataPacket(m: Metadata, {
   freshnessPeriod = 1,
   prefix,
-  signer = theDigestKey,
+  signer = digestSigning,
 }: Options = {}): Promise<Data> {
   let name = prefix ? new Name(prefix) : m.name.getPrefix(-1);
   name = name.append(MetadataKeyword, Version.create(Date.now()), Segment.create(0));

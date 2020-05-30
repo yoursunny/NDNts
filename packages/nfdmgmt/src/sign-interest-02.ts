@@ -1,8 +1,7 @@
-import { PrivateKey, theDigestKey } from "@ndn/keychain";
-import { Interest, LLSign, Name, SigInfo, TT } from "@ndn/packet";
+import { digestSigning, Interest, LLSign, Name, SigInfo, Signer, TT } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
 
-class SignedInterest02 {
+class SignedInterest02 implements Signer.Signable {
   public sigInfo?: SigInfo;
   public sigValue?: Uint8Array;
 
@@ -34,7 +33,7 @@ class SignedInterest02 {
  */
 export async function signInterest02(
     interest: Interest,
-    { signer = theDigestKey, timestamp = Date.now() }: signInterest02.Options = {},
+    { signer = digestSigning, timestamp = Date.now() }: signInterest02.Options = {},
 ): Promise<Interest> {
   const si = new SignedInterest02(interest.name, timestamp);
   await signer.sign(si);
@@ -44,7 +43,7 @@ export async function signInterest02(
 
 export namespace signInterest02 {
   export interface Options {
-    signer?: PrivateKey;
+    signer?: Signer;
     timestamp?: number;
   }
 }

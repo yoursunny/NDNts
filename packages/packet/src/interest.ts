@@ -4,10 +4,10 @@ import assert from "minimalistic-assert";
 import { TT } from "./an";
 import { ParamsDigest } from "./digest-comp";
 import { FwHint } from "./fwhint";
-import { LLSign, LLVerify } from "./llsign";
 import { Name, NameLike } from "./name";
 import { sha256 } from "./platform/mod";
 import { SigInfo } from "./sig-info";
+import { LLSign, LLVerify, Signer, Verifier } from "./signing";
 
 const HOPLIMIT_MAX = 255;
 const FIELDS = Symbol("Interest.FIELDS");
@@ -104,7 +104,7 @@ const EVD = new EvDecoder<Fields>("Interest", TT.Interest)
   });
 
 /** Interest packet. */
-export class Interest implements LLSign.Signable, LLVerify.Verifiable {
+export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Signable, Verifier.Verifiable {
   /**
    * Construct from flexible arguments.
    *

@@ -1,7 +1,7 @@
 import { Name } from "@ndn/packet";
 import { DERElement } from "asn1-ts";
 
-import { HmacKey } from "./hmac";
+import { HmacKey } from "./hmac/mod";
 import { EcPrivateKey, EcPublicKey, PublicKey, RsaPrivateKey, RsaPublicKey } from "./mod";
 import { LoadedKey, StoredKey } from "./save";
 

@@ -184,7 +184,7 @@ test("encode signed", async () => {
   const sign = jest.fn();
   await expect(interest[LLSign.OP](sign)).rejects.toThrow(/out of place/);
 
-  // other tests in llsign.t.ts
+  // other tests in signing.t.ts
 });
 
 test("decode signed", async () => {

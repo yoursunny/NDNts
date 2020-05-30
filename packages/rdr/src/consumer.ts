@@ -1,6 +1,5 @@
 import { Endpoint, RetxPolicy } from "@ndn/endpoint";
-import { PublicKey } from "@ndn/keychain";
-import { Interest, Name, NameLike } from "@ndn/packet";
+import { Interest, Name, NameLike, Verifier } from "@ndn/packet";
 import PCancelable from "p-cancelable";
 
 import { decodeMetadataContent, Metadata, MetadataKeyword } from "./metadata";
@@ -20,7 +19,7 @@ export function makeDiscoveryInterest(prefix: NameLike): Interest {
 interface Options {
   endpoint?: Endpoint;
   retx?: RetxPolicy;
-  verifier?: PublicKey;
+  verifier?: Verifier;
 }
 
 /** Retrieve RDR metadata packet. */

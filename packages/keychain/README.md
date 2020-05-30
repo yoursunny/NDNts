@@ -8,7 +8,7 @@ This package provides basic signing algorithms and certificate management featur
 
 This package implements signature types defined in [NDN Packet Format 0.3](https://named-data.net/doc/NDN-packet-spec/0.3/signature.html):
 
-* [X] DigestSha256
+* [X] DigestSha256 (in `@ndn/packet` package)
   * [X] signing and verification
 * [X] SignatureSha256WithRsa (RSASSA-PKCS1-v1\_5)
   * [X] signing and verification

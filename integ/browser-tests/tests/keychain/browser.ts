@@ -1,14 +1,13 @@
 import "./ndncert";
 import "./webcrypto";
 
-import { EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RsaPrivateKey, theDigestKey } from "@ndn/keychain";
+import { EcPrivateKey, HmacKey, KeyChain, RsaPrivateKey } from "@ndn/keychain";
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";
 import { execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
-import { execute as testSignVerify } from "@ndn/keychain/test-fixture/sign-verify";
-import { Data, Interest } from "@ndn/packet";
+import { Data, digestSigning, Interest, Signer, Verifier } from "@ndn/packet";
+import { execute as testSignVerify } from "@ndn/packet/test-fixture/sign-verify";
 
 import { SerializedInBrowser, serializeInBrowser } from "../../test-fixture/serialize";
-import { SignVerifyTestResult } from "./api";
 
 window.testKeyStore = () => {
   return testKeyStore(KeyChain.open("296616c2-7abb-4d9e-94b3-a97e4fd327b5"));
@@ -18,8 +17,8 @@ window.testCertStore = () => {
   return testCertStore(KeyChain.open("005a04be-9752-4f1f-adaf-b52f31742b37"));
 };
 
-async function testKey(pvtA: PrivateKey, pubA: PublicKey,
-    pvtB: PrivateKey, pubB: PublicKey): Promise<SerializedInBrowser> {
+async function testKey(pvtA: Signer, pubA: Verifier,
+    pvtB: Signer, pubB: Verifier): Promise<SerializedInBrowser> {
   return serializeInBrowser(await Promise.all([
     testSignVerify(Interest, pvtA, pubA, pvtB, pubB),
     testSignVerify(Data, pvtA, pubA, pvtB, pubB),
@@ -27,7 +26,7 @@ async function testKey(pvtA: PrivateKey, pubA: PublicKey,
 }
 
 window.testDigestKey = () => {
-  return testKey(theDigestKey, theDigestKey, theDigestKey, theDigestKey);
+  return testKey(digestSigning, digestSigning, digestSigning, digestSigning);
 };
 
 window.testEcKey = async () => {

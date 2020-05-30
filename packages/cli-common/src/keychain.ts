@@ -1,5 +1,5 @@
-import { KeyChain, PrivateKey, theDigestKey } from "@ndn/keychain";
-import { Name } from "@ndn/packet";
+import { KeyChain } from "@ndn/keychain";
+import { digestSigning, Name, Signer } from "@ndn/packet";
 
 import { env } from "./env";
 
@@ -16,15 +16,15 @@ export function openKeyChain(): KeyChain {
   return theKeyChain;
 }
 
-export async function getSignerImpl(prefix: Name|undefined): Promise<PrivateKey> {
+export async function getSignerImpl(prefix: Name|undefined): Promise<Signer> {
   const keyChain = openKeyChain();
   const keys = await keyChain.listKeys(prefix);
   if (keys.length > 0) {
     return keyChain.getPrivateKey(keys[0]);
   }
-  return theDigestKey;
+  return digestSigning;
 }
 
-export async function getSigner(): Promise<PrivateKey> {
+export async function getSigner(): Promise<Signer> {
   return getSignerImpl(env.key);
 }

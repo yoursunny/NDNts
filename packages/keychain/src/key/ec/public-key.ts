@@ -1,31 +1,26 @@
-import { Name, SigInfo, SigType } from "@ndn/packet";
+import { Name, SigType, Verifier } from "@ndn/packet";
 import { ASN1UniversalType, DERElement } from "asn1-ts";
 
+import { PublicKey } from "../base";
 import { crypto } from "../platform/mod";
-import { PublicKeyBase } from "../public-key";
 import { makeGenParams, sigDerToRaw, SIGN_PARAMS } from "./internal";
 import { EcCurve } from "./mod";
 
 /** ECDSA public key. */
-export class EcPublicKey extends PublicKeyBase {
+export class EcPublicKey extends PublicKey implements PublicKey.Exportable {
   constructor(name: Name, public readonly curve: EcCurve, public readonly key: CryptoKey) {
     super(name, SigType.Sha256WithEcdsa, name);
-  }
-
-  public async exportAsSpki(): Promise<Uint8Array> {
-    const spki = await crypto.subtle.exportKey("spki", this.key);
-    return new Uint8Array(spki);
-  }
-
-  protected doMatch(si: SigInfo): boolean {
-    // TODO match KeyDigest
-    return si.keyLocator instanceof Name && si.keyLocator.isPrefixOf(this.name);
   }
 
   protected async llVerify(input: Uint8Array, sig: Uint8Array): Promise<void> {
     const rawSig = sigDerToRaw(sig, this.curve);
     const ok = await crypto.subtle.verify(SIGN_PARAMS, this.key, rawSig, input);
-    PublicKeyBase.throwOnIncorrectSig(ok);
+    Verifier.throwOnBadSig(ok);
+  }
+
+  public async exportAsSpki(): Promise<Uint8Array> {
+    const spki = await crypto.subtle.exportKey("spki", this.key);
+    return new Uint8Array(spki);
   }
 }
 

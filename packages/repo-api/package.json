@@ -24,7 +24,6 @@
     "main": "lib/mod.js"
   },
   "dependencies": {
-    "@ndn/keychain": "workspace:*",
     "@ndn/l3face": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",

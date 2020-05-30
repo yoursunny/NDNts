@@ -3,16 +3,17 @@ import "@ndn/packet/test-fixture/expect";
 import { Data, Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { Certificate, CertificateName, EcPublicKey, theDigestKey, ValidityPeriod } from "../..";
+import { Certificate, CertificateName, EcPrivateKey, EcPublicKey, ValidityPeriod } from "../..";
 
 test("encode decode", async () => {
+  const [pvt] = await EcPrivateKey.generate("/operator/key-1", "P-256");
   const cert = await Certificate.build({
     name: new CertificateName("/operator", "key-1", "self", "%FD%01"),
     validity: new ValidityPeriod(new Date(1542099529000), new Date(1602434283000)),
     publicKeySpki: Uint8Array.of(0xC0, 0xC1),
-    signer: theDigestKey,
+    signer: pvt,
   });
-  expect(cert.issuer).toBeUndefined();
+  expect(cert.issuer).toEqualName(pvt.name);
 
   let data = cert.data;
   expect(data.name).toEqualName("/operator/KEY/key-1/self/%FD%01");

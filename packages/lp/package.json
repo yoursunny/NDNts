@@ -30,7 +30,6 @@
     "tslib": "*"
   },
   "devDependencies": {
-    "@ndn/keychain": "workspace:*",
     "streaming-iterables": "^4.1.2"
   }
 }

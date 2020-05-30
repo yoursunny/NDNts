@@ -35,7 +35,6 @@
     "@ndn/tlv": "workspace:*",
     "@types/minimalistic-assert": "^1.0.0",
     "@peculiar/webcrypto": "^1.1.1",
-    "applymixins": "^1.1.0",
     "asn1-ts": "^3.1.1",
     "data-store": "jonschlinkert/data-store#4.1.0",
     "minimalistic-assert": "^1.0.1",

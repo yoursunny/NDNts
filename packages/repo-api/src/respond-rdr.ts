@@ -1,6 +1,5 @@
-import { PrivateKey, theDigestKey } from "@ndn/keychain";
 import { Version } from "@ndn/naming-convention2";
-import type { Data, Interest, Name, NamingConvention } from "@ndn/packet";
+import { Data, digestSigning, Interest, Name, NamingConvention, Signer } from "@ndn/packet";
 import { isDiscoveryInterest, makeMetadataPacket, Metadata } from "@ndn/rdr";
 
 import type { DataStore } from "./data-store";
@@ -11,7 +10,7 @@ import type { DataStore } from "./data-store";
  */
 export async function respondRdr(interest: Interest, store: Pick<DataStore, "listNames">, {
   versionConvention = Version,
-  signer = theDigestKey,
+  signer = digestSigning,
 }: respondRdr.Options = {}): Promise<Data|false> {
   if (!isDiscoveryInterest(interest)) {
     return false;
@@ -42,6 +41,6 @@ export async function respondRdr(interest: Interest, store: Pick<DataStore, "lis
 export namespace respondRdr {
   export interface Options {
     versionConvention?: NamingConvention<any, number>;
-    signer?: PrivateKey;
+    signer?: Signer;
   }
 }

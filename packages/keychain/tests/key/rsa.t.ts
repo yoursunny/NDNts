@@ -1,10 +1,9 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Name, SigType } from "@ndn/packet";
+import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 
-import { Certificate, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength,
-  RsaPrivateKey, RsaPublicKey } from "../..";
-import * as TestSignVerify from "../../test-fixture/sign-verify";
+import { Certificate, KeyChain, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength, RsaPrivateKey, RsaPublicKey } from "../..";
 
 interface Row extends TestSignVerify.Row {
   modulusLength: RsaModulusLength;
@@ -16,12 +15,9 @@ const TABLE = TestSignVerify.TABLE.flatMap((row) =>
 
 test.each(TABLE)("sign-verify %p", async ({ cls, modulusLength }) => {
   const [pvtA, pubA] = await RsaPrivateKey.generate("/RSAKEY-A/KEY/x", modulusLength);
+  expect(PublicKey.isExportable(pubA)).toBeTruthy();
   const [pvtB, pubB] = await RsaPrivateKey.generate("/RSAKEY-B/KEY/x", modulusLength);
 
-  expect(PrivateKey.isPrivateKey(pvtA)).toBeTruthy();
-  expect(PrivateKey.isPrivateKey(pubA)).toBeFalsy();
-  expect(PublicKey.isPublicKey(pvtA)).toBeFalsy();
-  expect(PublicKey.isPublicKey(pubA)).toBeTruthy();
   expect(pvtA.name).toEqualName("/RSAKEY-A/KEY/x");
   expect(pubA.name).toEqualName("/RSAKEY-A/KEY/x");
   expect(pvtB.name).toEqualName("/RSAKEY-B/KEY/x");

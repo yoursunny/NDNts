@@ -1,10 +1,9 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Name, SigType } from "@ndn/packet";
+import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 
-import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, EcPublicKey, KeyChain,
-  PrivateKey, PublicKey } from "../..";
-import * as TestSignVerify from "../../test-fixture/sign-verify";
+import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, EcPublicKey, KeyChain, PublicKey } from "../..";
 
 interface Row extends TestSignVerify.Row {
   curve: EcCurve;
@@ -16,12 +15,9 @@ const TABLE = TestSignVerify.TABLE.flatMap((row) =>
 
 test.each(TABLE)("sign-verify %p", async ({ cls, curve }) => {
   const [pvtA, pubA] = await EcPrivateKey.generate("/ECKEY-A/KEY/x", curve);
+  expect(PublicKey.isExportable(pubA)).toBeTruthy();
   const [pvtB, pubB] = await EcPrivateKey.generate("/ECKEY-B/KEY/x", curve);
 
-  expect(PrivateKey.isPrivateKey(pvtA)).toBeTruthy();
-  expect(PrivateKey.isPrivateKey(pubA)).toBeFalsy();
-  expect(PublicKey.isPublicKey(pvtA)).toBeFalsy();
-  expect(PublicKey.isPublicKey(pubA)).toBeTruthy();
   expect(pvtA.name).toEqualName("/ECKEY-A/KEY/x");
   expect(pubA.name).toEqualName("/ECKEY-A/KEY/x");
   expect(pvtB.name).toEqualName("/ECKEY-B/KEY/x");

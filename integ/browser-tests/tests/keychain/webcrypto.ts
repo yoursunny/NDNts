@@ -1,5 +1,5 @@
-import { Certificate, EC_CURVES, EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaPrivateKey, theDigestKey } from "@ndn/keychain";
-import { Data, LLSign } from "@ndn/packet";
+import { Certificate, EC_CURVES, EcPrivateKey, HmacKey, KeyChain, PublicKey, RSA_MODULUS_LENGTHS, RsaPrivateKey } from "@ndn/keychain";
+import { Data, digestSigning, Signer, Verifier } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { addManualTest } from "../../test-fixture/manual";
@@ -7,22 +7,23 @@ import { addManualTest } from "../../test-fixture/manual";
 interface GenResult {
   title: string;
   err?: Error;
-  pvt?: PrivateKey;
-  pub?: PublicKey;
+  pvt?: Signer;
+  pub?: Verifier;
   canMakeCert?: boolean;
 }
 
 async function* genKeys(keyChain: KeyChain): AsyncGenerator<GenResult> {
   yield {
     title: "digest",
-    pvt: theDigestKey,
+    pvt: digestSigning,
     canMakeCert: false,
   };
   for (const curve of EC_CURVES) {
     const res: GenResult = { title: `ECDSA ${curve}` };
     try {
-      [res.pvt, res.pub] = await EcPrivateKey.generate("/S", curve, keyChain);
-      await keyChain.deleteKey(res.pvt.name);
+      const [pvt, pub] = await EcPrivateKey.generate("/S", curve, keyChain);
+      await keyChain.deleteKey(pvt.name);
+      [res.pvt, res.pub] = [pvt, pub];
     } catch (err) {
       res.err = err;
     }
@@ -31,8 +32,9 @@ async function* genKeys(keyChain: KeyChain): AsyncGenerator<GenResult> {
   for (const modulusLength of RSA_MODULUS_LENGTHS) {
     const res: GenResult = { title: `RSA ${modulusLength}` };
     try {
-      [res.pvt, res.pub] = await RsaPrivateKey.generate("/S", modulusLength, keyChain);
-      await keyChain.deleteKey(res.pvt.name);
+      const [pvt, pub] = await RsaPrivateKey.generate("/S", modulusLength, keyChain);
+      await keyChain.deleteKey(pvt.name);
+      [res.pvt, res.pub] = [pvt, pub];
     } catch (err) {
       res.err = err;
     }
@@ -41,8 +43,9 @@ async function* genKeys(keyChain: KeyChain): AsyncGenerator<GenResult> {
   {
     const res: GenResult = { title: "HMAC", canMakeCert: false };
     try {
-      res.pvt = await HmacKey.generate("/S", keyChain);
-      await keyChain.deleteKey(res.pvt.name);
+      const pvt = await HmacKey.generate("/S", keyChain);
+      await keyChain.deleteKey(pvt.name);
+      res.pvt = pvt;
     } catch (err) {
       res.err = err;
     }

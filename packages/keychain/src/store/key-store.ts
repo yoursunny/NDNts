@@ -1,8 +1,8 @@
-import { Name } from "@ndn/packet";
+import type { Name } from "@ndn/packet";
 
 import { loadFromStored as loadFromStored_ } from "../key/load";
+import { PrivateKey, PublicKey } from "../key/mod";
 import { StoredKey as StoredKey_ } from "../key/save";
-import { PrivateKey, PublicKey } from "../mod";
 import { StoreBase } from "./store-base";
 
 /** Storage of private keys. */

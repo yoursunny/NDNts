@@ -2,13 +2,13 @@ import { Name, NameLike, SigType } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
 import { EcCurve, EcPublicKey, KeyChain } from "../../mod";
+import { PrivateKey } from "../base";
 import { crypto } from "../platform/mod";
-import { PrivateKeyBase } from "../private-key";
 import { generateKey, LoadedKey, StoredKey } from "../save";
 import { makeGenParams, SIGN_PARAMS, sigRawToDer } from "./internal";
 
 /** ECDSA private key. */
-export class EcPrivateKey extends PrivateKeyBase {
+export class EcPrivateKey extends PrivateKey {
   constructor(name: Name, public readonly curve: EcCurve, private readonly key: CryptoKey) {
     super(name, SigType.Sha256WithEcdsa, name);
   }

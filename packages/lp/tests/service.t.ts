@@ -1,7 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { theDigestKey } from "@ndn/keychain";
-import { Data, Interest, Nack, NackReason, TT as l3TT } from "@ndn/packet";
+import { Data, digestSigning, Interest, Nack, NackReason, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { collect, map, pipeline } from "streaming-iterables";
 
@@ -73,7 +72,7 @@ test("tx", async () => {
   async function* input() {
     await new Promise((r) => setTimeout(r, 10));
     const pkt0 = new Data("/D");
-    await theDigestKey.sign(pkt0);
+    await digestSigning.sign(pkt0);
     yield pkt0;
 
     await new Promise((r) => setTimeout(r, 10));

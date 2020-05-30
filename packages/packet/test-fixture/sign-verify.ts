@@ -1,7 +1,6 @@
-import { Data, Interest, SigInfo } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { PrivateKey, PublicKey } from "..";
+import { Data, Interest, SigInfo, Signer, Verifier } from "..";
 
 type Packet = Interest | Data;
 type PacketCtor = typeof Interest | typeof Data;
@@ -22,7 +21,6 @@ interface SignRecord {
 }
 
 interface VerifyRecord {
-  matched: boolean;
   verified: boolean;
 }
 
@@ -40,7 +38,7 @@ export interface TestRecord {
   vMc: VerifyRecord; // verify mutated pktA (changed bit) with pubA
 }
 
-async function sign(cls: PacketCtor, pvt: PrivateKey): Promise<[Packet, SignRecord]> {
+async function sign(cls: PacketCtor, pvt: Signer): Promise<[Packet, SignRecord]> {
   const src = new cls("/NAME");
   await pvt.sign(src);
   const wire = Encoder.encode(src);
@@ -54,8 +52,7 @@ async function sign(cls: PacketCtor, pvt: PrivateKey): Promise<[Packet, SignReco
   }];
 }
 
-async function verify(pkt: Packet, pub: PublicKey): Promise<VerifyRecord> {
-  const matched = pub.match(pkt);
+async function verify(pkt: Packet, pub: Verifier): Promise<VerifyRecord> {
   let verified: boolean;
   try {
     await pub.verify(pkt);
@@ -63,11 +60,11 @@ async function verify(pkt: Packet, pub: PublicKey): Promise<VerifyRecord> {
   } catch {
     verified = false;
   }
-  return { matched, verified };
+  return { verified };
 }
 
-export async function execute(cls: PacketCtor, pvtA: PrivateKey, pubA: PublicKey,
-    pvtB: PrivateKey, pubB: PublicKey): Promise<TestRecord> {
+export async function execute(cls: PacketCtor, pvtA: Signer, pubA: Verifier,
+    pvtB: Signer, pubB: Verifier): Promise<TestRecord> {
   const [pktA, sA0] = await sign(cls, pvtA);
   const [pktB, sB0] = await sign(cls, pvtB);
 
@@ -119,11 +116,9 @@ export async function execute(cls: PacketCtor, pvtA: PrivateKey, pubA: PublicKey
 export function check(record: TestRecord, {
   deterministic = false,
   sameAB = false,
-  alwaysMatch = false,
 }: {
   deterministic?: boolean;
   sameAB?: boolean;
-  alwaysMatch?: boolean;
 } = {}) {
   // If signing algorithm is deterministic, both signatures should be the same.
   // Otherwise, they should be different.
@@ -136,23 +131,16 @@ export function check(record: TestRecord, {
   }
 
   // Verification using counterpart of the signing key should succeed.
-  expect(record.vAA.matched).toBeTruthy();
   expect(record.vAA.verified).toBeTruthy();
-  expect(record.vBB.matched).toBeTruthy();
   expect(record.vBB.verified).toBeTruthy();
 
   // Verification using a different key should fail, unless A and B are the same (i.e. theDigestKey).
-  expect(record.vAB.matched).toBe(sameAB || alwaysMatch);
   expect(record.vAB.verified).toBe(sameAB);
-  expect(record.vBA.matched).toBe(sameAB || alwaysMatch);
   expect(record.vBA.verified).toBe(sameAB);
 
   // Verification on a mutated signature should fail.
-  expect(record.vMi.matched).toBe(true);
   expect(record.vMi.verified).toBe(false);
-  expect(record.vMd.matched).toBe(true);
   expect(record.vMd.verified).toBe(false);
-  expect(record.vMc.matched).toBe(true);
   expect(record.vMc.verified).toBe(false);
 
   // Caller is responsible for checking SigInfo.

@@ -25,11 +25,13 @@
   },
   "dependencies": {
     "@ndn/endpoint": "workspace:*",
-    "@ndn/keychain": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "p-cancelable": "^2.0.0",
     "tslib": "*"
+  },
+  "devDependencies": {
+    "@ndn/keychain": "workspace:*"
   }
 }

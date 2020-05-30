@@ -1,4 +1,5 @@
-import { KeyChainImplWebCrypto as crypto, timingSafeEqual } from "@ndn/keychain";
+import { KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
+import { LLVerify } from "@ndn/packet";
 import { fromUtf8 } from "@ndn/tlv";
 import { EventEmitter } from "events";
 import TypedEmitter from "typed-emitter";
@@ -22,7 +23,7 @@ class State {
   }
 
   public verify(code: Uint8Array): boolean {
-    return timingSafeEqual(this.pin, code);
+    return LLVerify.timingSafeEqual(this.pin, code);
   }
 }
 

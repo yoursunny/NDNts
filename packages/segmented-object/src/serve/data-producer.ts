@@ -1,6 +1,5 @@
 import type { ProducerHandler } from "@ndn/endpoint";
-import { PrivateKey, theDigestKey } from "@ndn/keychain";
-import { Data, Interest, Name } from "@ndn/packet";
+import { Data, digestSigning, Interest, Name, Signer } from "@ndn/packet";
 import assert from "minimalistic-assert";
 import pDefer from "p-defer";
 import { getIterator } from "streaming-iterables";
@@ -31,7 +30,7 @@ interface DataProducerOptions {
    * A private key to sign Data.
    * Default is SHA256 digest.
    */
-  signer?: PrivateKey;
+  signer?: Signer;
 }
 
 /** Produce Data for requested segment. */
@@ -39,14 +38,14 @@ export abstract class DataProducer {
   segmentNumConvention: SegmentConvention;
   contentType: ReturnType<typeof Data["ContentType"]>;
   freshnessPeriod: ReturnType<typeof Data["FreshnessPeriod"]>;
-  signer: PrivateKey;
+  signer: Signer;
 
   constructor(protected readonly source: ChunkSource, protected readonly prefix: Name,
       {
         segmentNumConvention = defaultSegmentConvention,
         contentType = 0,
         freshnessPeriod = 60000,
-        signer = theDigestKey,
+        signer = digestSigning,
       }: DataProducerOptions = {}) {
     this.segmentNumConvention = segmentNumConvention;
     this.contentType = Data.ContentType(contentType);
