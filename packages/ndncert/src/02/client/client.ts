@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Certificate, KeyChainImplWebCrypto as crypto, KeyName, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, KeyChainImplWebCrypto as crypto, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, Interest, Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
@@ -56,7 +56,7 @@ export class Client {
   /** Request a certificate. */
   public async request(opts: Client.RequestOptions): Promise<Certificate> {
     if (opts.probeResult) {
-      if (!opts.probeResult.subjectName.equals(KeyName.from(opts.privateKey.name).subjectName)) {
+      if (!opts.probeResult.subjectName.equals(CertNaming.parseKeyName(opts.privateKey.name).subjectName)) {
         throw new Error("SubjectName does not match probe result");
       }
     }

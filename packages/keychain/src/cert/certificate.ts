@@ -1,8 +1,9 @@
-import { Version } from "@ndn/naming-convention2";
 import { Component, Data, Name, SigInfo } from "@ndn/packet";
+import assert from "minimalistic-assert";
 
 import { loadSpki } from "../key/load";
-import { CertificateName, KeyName, PrivateKey, PublicKey } from "../mod";
+import { PrivateKey, PublicKey } from "../key/mod";
+import * as CertNaming from "../naming";
 import { ContentTypeKEY } from "./an";
 import { ValidityPeriod } from "./mod";
 
@@ -13,6 +14,9 @@ import { ValidityPeriod } from "./mod";
 export class Certificate {
   public static fromData(data: Data): Certificate {
     const { name, contentType, sigInfo } = data;
+    if (!CertNaming.isCertName(name)) {
+      throw new Error(`${name} is not a certificate name`);
+    }
     if (contentType !== ContentTypeKEY) {
       throw new Error("ContentType must be KEY");
     }
@@ -23,16 +27,11 @@ export class Certificate {
     if (typeof validity === "undefined") {
       throw new Error("ValidityPeriod is missing");
     }
-    const certName = CertificateName.from(name);
-    const cert = new Certificate(data, certName, validity);
+    const cert = new Certificate(data, validity);
     return cert;
   }
 
-  private constructor(
-      public readonly data: Data,
-      public readonly certName: CertificateName,
-      public readonly validity: ValidityPeriod,
-  ) {
+  private constructor(public readonly data: Data, public readonly validity: ValidityPeriod) {
   }
 
   public get name() { return this.data.name; }
@@ -53,7 +52,7 @@ export class Certificate {
   /** Load public key. */
   public async loadPublicKey(): Promise<PublicKey> {
     if (!this.publicKey) {
-      this.publicKey = await loadSpki(this.certName.key, this.publicKeySpki);
+      this.publicKey = await loadSpki(CertNaming.toKeyName(this.name), this.publicKeySpki);
     }
     return this.publicKey;
   }
@@ -62,11 +61,10 @@ export class Certificate {
 }
 
 const DEFAULT_FRESHNESS = 3600000;
-const SELF_ISSUER = Component.from("self");
 
 export namespace Certificate {
   export interface BuildOptions {
-    name: CertificateName;
+    name: Name;
     freshness?: number;
     validity: ValidityPeriod;
     publicKeySpki: Uint8Array;
@@ -74,16 +72,16 @@ export namespace Certificate {
   }
 
   export async function build({
-    name: { name },
+    name,
     freshness = DEFAULT_FRESHNESS,
     validity,
     publicKeySpki,
     signer,
   }: BuildOptions): Promise<Certificate> {
+    assert(CertNaming.isCertName(name));
     const data = new Data(name, Data.ContentType(ContentTypeKEY), Data.FreshnessPeriod(freshness));
-    const si = new SigInfo();
-    ValidityPeriod.set(si, validity);
-    data.sigInfo = si;
+    data.sigInfo = new SigInfo();
+    ValidityPeriod.set(data.sigInfo, validity);
     data.content = publicKeySpki;
     await signer.sign(data);
     return Certificate.fromData(data);
@@ -102,10 +100,9 @@ export namespace Certificate {
       throw new Error("publicKey is not exportable");
     }
     const { issuerPrivateKey: pvt, issuerId, publicKey: pub } = options;
-    const kn = KeyName.from(pub.name);
-    const cn = new CertificateName(kn.subjectName, kn.keyId, issuerId, Version.create(Date.now()));
+    const name = CertNaming.makeCertName(pub.name, { issuerId });
     const publicKeySpki = await pub.exportAsSpki();
-    const opts: BuildOptions = { ...options, name: cn, publicKeySpki, signer: pvt };
+    const opts: BuildOptions = { ...options, name, publicKeySpki, signer: pvt };
     return build(opts);
   }
 
@@ -124,7 +121,7 @@ export namespace Certificate {
     const opts: IssueOptions = {
       validity: ValidityPeriod.MAX,
       ...options,
-      issuerId: SELF_ISSUER,
+      issuerId: CertNaming.ISSUER_SELF,
       issuerPrivateKey: options.privateKey,
     };
     return issue(opts);

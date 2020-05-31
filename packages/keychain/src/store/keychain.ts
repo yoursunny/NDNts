@@ -2,7 +2,7 @@ import { Name, Signer } from "@ndn/packet";
 
 import { Certificate } from "../cert/mod";
 import { PrivateKey, PublicKey } from "../key/mod";
-import { CertificateName, KeyName } from "../name";
+import * as CertNaming from "../naming";
 import { CertStore, KeyStore, SCloneCertStore } from "./mod";
 import { openStores } from "./platform/mod";
 import { MemoryStoreImpl } from "./store-impl";
@@ -49,20 +49,81 @@ export abstract class KeyChain {
   /** Delete certificate. */
   abstract deleteCert(name: Name): Promise<void>;
 
-  /** Create a Signer by key name or certificate name. */
-  public async createSigner(name: Name): Promise<Signer> {
-    let keyName: KeyName|undefined;
-    try { keyName = KeyName.from(name); } catch {}
-    if (keyName) {
-      return this.getPrivateKey(name);
+  /**
+   * Create a signer from keys and certificates in the KeyChain.
+   * @param name subject name, key name, or certificate name.
+   * @param fallback invoked when no matching key or certificate is found.
+   *
+   * @li If name is a certificate name, sign with the corresponding private key,
+   *     and use the specified certificate name as KeyLocator.
+   * @li If name is a key name, sign with the specified private key.
+   *     If a non-self-signed certificate exists for this key, use the certificate name as KeyLocator.
+   *     Otherwise, use the key name as KeyLocator.
+   * @li If name is neither certificate name nor key name, it is interpreted as a subject name.
+   *     A non-self-signed certificate of this subject name is preferred.
+   *     If such a certificate does not exist, use any key of this subject name.
+   * @li If prefixMatch is true, name can also be interpreted as a prefix of the subject name.
+   */
+  public async getSigner<Fallback extends Signer = never>(
+      name: Name,
+      {
+        prefixMatch = false,
+        fallback = (name, keyChain, err) => Promise.reject(new Error(`signer ${name} not found ${err}`)),
+      }: {
+        prefixMatch?: boolean;
+        fallback?: Signer | ((name: Name, keyChain: KeyChain, err?: Error) => Promise<Fallback>);
+      } = {},
+  ): Promise<Signer|Fallback> {
+    const invokeFallback = (err?: Error) => {
+      if (typeof fallback === "function") {
+        return fallback(name, this, err);
+      }
+      return fallback;
+    };
+
+    if (CertNaming.isCertName(name)) {
+      let key: PrivateKey;
+      try { key = await this.getPrivateKey(CertNaming.toKeyName(name)); } catch (err) { return invokeFallback(err); }
+      return key.withKeyLocator(name);
     }
 
-    const certName = CertificateName.from(name);
-    const [key, cert] = await Promise.all([
-      this.getPrivateKey(certName.keyName.name),
-      this.getCert(name),
-    ]);
-    return key.withKeyLocator(cert.name);
+    if (CertNaming.isKeyName(name)) {
+      let key: PrivateKey;
+      let certName: Name|undefined;
+      try {
+        [key, certName] = await Promise.all([
+          this.getPrivateKey(name),
+          this.findSignerCertName(name, ({ keyName }) => name.equals(keyName)),
+        ]);
+      } catch (err) { return invokeFallback(err); }
+      return certName ? key.withKeyLocator(certName) : key;
+    }
+
+    const certName = await this.findSignerCertName(name,
+      ({ subjectName }) => prefixMatch || name.equals(subjectName));
+    if (certName) {
+      const key = await this.getPrivateKey(CertNaming.toKeyName(certName));
+      return key.withKeyLocator(certName);
+    }
+    let keyNames = await this.listKeys(name);
+    if (!prefixMatch) {
+      keyNames = keyNames.filter((keyName) => {
+        const { subjectName } = CertNaming.parseKeyName(keyName);
+        return name.equals(subjectName);
+      });
+    }
+    if (keyNames.length > 0) {
+      return this.getPrivateKey(keyNames[0]);
+    }
+    return invokeFallback();
+  }
+
+  private async findSignerCertName(prefix: Name, filter: (certName: CertNaming.CertNameFields) => boolean): Promise<Name|undefined> {
+    const certNames = (await this.listCerts(prefix)).filter((certName) => {
+      const parsed = CertNaming.parseCertName(certName);
+      return !parsed.issuerId.equals(CertNaming.ISSUER_SELF) && filter(parsed);
+    });
+    return certNames.length === 0 ? undefined : certNames[0];
   }
 }
 
@@ -100,7 +161,7 @@ class KeyChainImpl extends KeyChain {
   }
 
   public async insertCert(cert: Certificate): Promise<void> {
-    await this.getKeyPair(cert.certName.key); // ensure key exists
+    await this.getKeyPair(CertNaming.toKeyName(cert.name)); // ensure key exists
     await this.certs.insert(cert);
   }
 

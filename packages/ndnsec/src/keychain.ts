@@ -1,4 +1,4 @@
-import { Certificate, CertificateName, KeyChain, KeyChainImplWebCrypto as crypto, KeyName, KeyStore, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, KeyChain, KeyChainImplWebCrypto as crypto, KeyStore, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, Name } from "@ndn/packet";
 import { Decodable, Decoder, Encoder } from "@ndn/tlv";
 import execa from "execa";
@@ -57,16 +57,17 @@ export class NdnsecKeyChain extends KeyChain {
         const keyName = line.split(" ").pop()!;
         keyCerts.set(keyName, []);
       } else if (line.startsWith("       +->")) {
-        const certName = CertificateName.from(new Name(line.split(" ").pop()));
-        const certList = keyCerts.get(certName.key.toString());
-        if (typeof certList !== "undefined" && !certName.issuerId.equals(IMPORTING_ISSUER)) {
-          certList.push(certName.name.toString());
+        const certName = new Name(line.split(" ").pop());
+        const { issuerId, keyName } = CertNaming.parseCertName(certName);
+        const certList = keyCerts.get(keyName.toString());
+        if (typeof certList !== "undefined" && !issuerId.equals(IMPORTING_ISSUER)) {
+          certList.push(certName.toString());
         }
       }
     }
 
     for (const keyName of keyCerts.keys()) {
-      const { subjectName } = KeyName.from(new Name(keyName));
+      const { subjectName } = CertNaming.parseKeyName(new Name(keyName));
       const exported = await this.invokeNdnsec(["export", "-P", PASSPHRASE, "-i", `${subjectName}`]);
       const safeBag = exported.decode(SafeBag);
       await safeBag.saveKeyPair(PASSPHRASE, dest);

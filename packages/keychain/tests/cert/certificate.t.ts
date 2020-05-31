@@ -3,17 +3,18 @@ import "@ndn/packet/test-fixture/expect";
 import { Data, Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { Certificate, CertificateName, EcPrivateKey, EcPublicKey, ValidityPeriod } from "../..";
+import { Certificate, CertNaming, EcPrivateKey, EcPublicKey, ValidityPeriod } from "../..";
 
 test("encode decode", async () => {
-  const [pvt] = await EcPrivateKey.generate("/operator/key-1", "P-256");
+  const [pvt] = await EcPrivateKey.generate("/operator/KEY/key-1", "P-256");
   const cert = await Certificate.build({
-    name: new CertificateName("/operator", "key-1", "self", "%FD%01"),
+    name: new Name("/operator/KEY/key-1/self/%FD%01"),
     validity: new ValidityPeriod(new Date(1542099529000), new Date(1602434283000)),
     publicKeySpki: Uint8Array.of(0xC0, 0xC1),
     signer: pvt,
   });
   expect(cert.issuer).toEqualName(pvt.name);
+  expect(cert.isSelfSigned).toBeTruthy();
 
   let data = cert.data;
   expect(data.name).toEqualName("/operator/KEY/key-1/self/%FD%01");
@@ -23,7 +24,7 @@ test("encode decode", async () => {
   const wire = Encoder.encode(cert.data);
   data = new Decoder(wire).decode(Data);
   data.name = new Name("/operator/not-KEY/key-1/self/%FD%01");
-  expect(() => Certificate.fromData(data)).toThrow(/invalid/);
+  expect(() => Certificate.fromData(data)).toThrow(/name/);
 
   data = new Decoder(wire).decode(Data);
   data.contentType = 0x00;
@@ -72,10 +73,11 @@ test("decode testbed certs", async () => {
   const data0 = new Decoder(NDN_TESTBED_ROOT_V2_NDNCERT).decode(Data);
   const cert0 = Certificate.fromData(data0);
   expect(cert0.name).toEqualName("/ndn/KEY/e%9D%7F%A5%C5%81%10%7D/ndn/%FD%00%00%01%60qJQ%9B");
-  expect(cert0.certName.subjectName).toEqualName("/ndn");
-  expect(cert0.certName.keyId).toEqualComponent("e%9D%7F%A5%C5%81%10%7D");
-  expect(cert0.certName.issuerId).toEqualComponent("ndn");
-  expect(cert0.certName.version).toEqualComponent("%FD%00%00%01%60qJQ%9B");
+  const certName0 = CertNaming.parseCertName(cert0.name);
+  expect(certName0.subjectName).toEqualName("/ndn");
+  expect(certName0.keyId).toEqualComponent("e%9D%7F%A5%C5%81%10%7D");
+  expect(certName0.issuerId).toEqualComponent("ndn");
+  expect(certName0.version).toEqualComponent("%FD%00%00%01%60qJQ%9B");
   expect(cert0.validity.notBefore).toEqual(new Date(1513729179000));
   expect(cert0.validity.notAfter).toEqual(new Date(1609459199000));
   expect(cert0.publicKeySpki).toEqualUint8Array(Buffer.from(`
@@ -96,5 +98,5 @@ test("decode testbed certs", async () => {
 
   const cert1 = Certificate.fromData(data1);
   expect(cert1.isSelfSigned).toBeFalsy();
-  expect(cert1.issuer).toEqualName(cert0.certName.key);
+  expect(cert1.issuer).toEqualName(certName0.keyName);
 });

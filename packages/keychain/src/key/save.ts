@@ -1,6 +1,6 @@
 import { Name, NameLike } from "@ndn/packet";
 
-import { KeyName } from "../name";
+import * as CertNaming from "../naming";
 import { KeyChain } from "../store/mod";
 import { PrivateKey, PublicKey } from "./base";
 import { crypto } from "./platform/mod";
@@ -23,7 +23,7 @@ export async function saveKey<T extends { type: string }>(
     nameInput: NameLike, type: T, algo: any, keyChain: KeyChain|undefined,
     makeKeys: (extractable: boolean, crypto: Crypto) => PromiseLike<CryptoKey|CryptoKeyPair>,
 ): Promise<[Name, CryptoKey, CryptoKey|undefined]> {
-  const { name } = KeyName.create(nameInput);
+  const name = CertNaming.makeKeyName(new Name(nameInput));
 
   const needJwk = keyChain?.canSCloneKeys === false;
   const pvtOrPair = await makeKeys(needJwk, crypto);

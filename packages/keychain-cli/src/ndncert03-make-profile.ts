@@ -1,4 +1,4 @@
-import { CertificateName } from "@ndn/keychain";
+import { CertNaming } from "@ndn/keychain";
 import { CaProfile } from "@ndn/ndncert";
 import { Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
@@ -45,13 +45,15 @@ export class Ndncert03MakeProfileCommand implements CommandModule<{}, Args> {
         default: 30,
         desc: "maximum validity period",
         type: "number",
+      })
+      .check(({ cert }) => {
+        return CertNaming.isCertName(new Name(cert));
       });
   }
 
   public async handler(args: Arguments<Args>) {
-    const certName = CertificateName.from(new Name(args.cert));
-    const cert = await keyChain.getCert(certName.name);
-    const signer = await keyChain.getPrivateKey(certName.key);
+    const cert = await keyChain.getCert(new Name(args.cert));
+    const signer = await keyChain.getPrivateKey(CertNaming.toKeyName(cert.name));
 
     const profile = await CaProfile.build({
       prefix: new Name(args.prefix),

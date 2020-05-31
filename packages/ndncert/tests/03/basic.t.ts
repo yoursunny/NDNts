@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Certificate, EcPrivateKey, RsaPrivateKey } from "@ndn/keychain";
+import { Certificate, CertNaming, EcPrivateKey, RsaPrivateKey } from "@ndn/keychain";
 import { canSatisfy, Name } from "@ndn/packet";
 import { toUtf8 } from "@ndn/tlv";
 
@@ -57,7 +57,7 @@ test("packets", async () => {
   expect(newInterest.name).toHaveLength(4);
   expect(newInterest.name.getPrefix(3)).toEqualName("/authority/CA/NEW");
   expect(newInterest.sigInfo).not.toBeUndefined();
-  expect(newRequest.certRequest.certName.subjectName).toEqualName("/requester");
+  expect(CertNaming.parseCertName(newRequest.certRequest.name).subjectName).toEqualName("/requester");
 
   const caEcdh = await crypto.generateEcdhKey();
   const salt = crypto.makeSalt();

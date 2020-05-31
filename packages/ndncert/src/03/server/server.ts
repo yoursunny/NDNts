@@ -1,5 +1,5 @@
 import { Endpoint, Producer } from "@ndn/endpoint";
-import { Certificate, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
 import { Component, ComponentLike, Data, Interest } from "@ndn/packet";
 import { serveMetadata } from "@ndn/rdr";
 import { toHex } from "@ndn/tlv";
@@ -57,7 +57,7 @@ export class Server {
       private readonly issuerId: Component,
   ) {
     const { cert, prefix, data: { name: infoName } } = profile;
-    assert(cert.certName.key.equals(key.name));
+    assert(CertNaming.toKeyName(cert.name).equals(key.name));
     const infoVersion = infoName.getPrefix(-1);
 
     this.producers = [

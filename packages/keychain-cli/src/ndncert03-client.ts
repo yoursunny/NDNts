@@ -1,8 +1,8 @@
 import { closeUplinks, openUplinks } from "@ndn/cli-common";
-import { KeyName } from "@ndn/keychain";
+import { CertNaming } from "@ndn/keychain";
 import { CaProfile, ClientChallenge, ClientNopChallenge, ClientPinChallenge, requestCertificate } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
-import { Data } from "@ndn/packet";
+import { Data, Name } from "@ndn/packet";
 import { Decoder, toHex } from "@ndn/tlv";
 import { promises as fs } from "graceful-fs";
 import prompts from "prompts";
@@ -45,6 +45,9 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
         choices: ["nop", "pin"],
         desc: "supported challenges",
         type: "string",
+      })
+      .check(({ key }) => {
+        return CertNaming.isKeyName(new Name(key));
       });
   }
 
@@ -52,7 +55,7 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
     await openUplinks();
     const keyChain = args.ndnsec ? new NdnsecKeyChain() : defaultKeyChain;
     const profile = await CaProfile.fromData(new Decoder(await fs.readFile(args.profile)).decode(Data));
-    const [privateKey, publicKey] = await keyChain.getKeyPair(KeyName.create(args.key).name);
+    const [privateKey, publicKey] = await keyChain.getKeyPair(new Name(args.key));
 
     const challenges: ClientChallenge[] = [];
     for (const challengeId of args.challenge) {

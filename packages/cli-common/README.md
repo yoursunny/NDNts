@@ -12,9 +12,10 @@ These can be configured via environment variables.
 If empty, a temporary in-memory KeyChain will be used.
 `openKeyChain` function returns this KeyChain.
 
-`NDNTS_KEY` environment variable specifies (a prefix of) the default signing key.
+`NDNTS_KEY` environment variable specifies the default signing key.
+It may be a certificate name, a key name, or prefix of a subject name.
 If empty, any key in the KeyChain may be used.
-If the specified prefix does not match any existing key, the DigestKey will be used.
+If the specified prefix does not match any existing key, digest signing will be used.
 `getSigner` function returns the private key.
 
 ## Forwarder Setup
@@ -29,5 +30,5 @@ The default is `unix:///run/nfd.sock`.
 `NDNTS_NFDREG=1` environment variable enables prefix registration on the uplink using NFD management protocol.
 If this is set, prefix registration feature will be enabled by `openUplinks` function.
 
-`NDNTS_NFDREGKEY` environment variable specifies (a prefix of) the signing key for prefix registration commands.
+`NDNTS_NFDREGKEY` environment variable specifies the signing key for prefix registration commands.
 The default is using the same key as `NDNTS_KEY`.

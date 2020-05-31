@@ -22,12 +22,18 @@ This package implements signature types defined in [NDN Packet Format 0.3](https
   * [X] signing and verification
   * [ ] KeyLocator matching
 
-The `PrivateKey` interface contains signing operators.
-The `PublicKey` interface contains verification operators.
-For asymmetric crypto algorithms, they are implemented by distinct classes.
-For symmetric crypto algorithms, they are generally implemented by the same class.
-
 Both Interest and Data are signable.
+
+* [X] sign Interest
+  * [X] put certificate name in KeyLocator
+  * [ ] generate SigNonce, SigTime, SigSeqNum
+* [X] verify Interest
+  * [X] check ParametersSha256DigestComponent
+  * [ ] check SigNonce, SigTime, SigSeqNum
+* [X] sign Data
+  * [X] put certificate name in KeyLocator
+* [X] verify Data
+
 The implementation uses [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API).
 
 * Modern browsers natively support WebCrypto.
@@ -37,7 +43,7 @@ The implementation uses [Web Crypto API](https://developer.mozilla.org/en-US/doc
 
 ## Certificate Management and Storage
 
-`Certificate` class provides basic operations with [NDN Certificate Format 2.0](https://named-data.net/doc/ndn-cxx/0.6.6/specs/certificate-format.html).
+`Certificate` class provides basic operations with [NDN Certificate Format 2.0](https://named-data.net/doc/ndn-cxx/0.7.0/specs/certificate-format.html).
 
 * [X] generate self-signed certificate
 * [X] issue certificate to another public key
@@ -61,5 +67,5 @@ Known issues:
 
 * In Firefox, certificates created from ECDSA keys have wrong OID, due to [Mozilla Bug 1410403](https://bugzilla.mozilla.org/show_bug.cgi?id=1410403).
 * In Firefox, ECDSA private keys cannot be saved in persistent keychain, due to [Mozilla Bug 1545813](https://bugzilla.mozilla.org/show_bug.cgi?id=1545813).
-* In Firefox, persistent keychain is unusable in a Private Browsing window, due to [Mozilla Bug 781982](https://bugzilla.mozilla.org/show_bug.cgi?id=781982).
+* In Firefox, persistent keychain is unusable in a Private Browsing window, due to [Mozilla Bug 781982](https://bugzilla.mozilla.org/show_bug.cgi?id=1639542).
 * In iOS, ECDSA P-521 curve is not supported.

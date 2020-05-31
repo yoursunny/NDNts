@@ -16,13 +16,12 @@ export function openKeyChain(): KeyChain {
   return theKeyChain;
 }
 
-export async function getSignerImpl(prefix: Name|undefined): Promise<Signer> {
+export async function getSignerImpl(prefix = new Name()): Promise<Signer> {
   const keyChain = openKeyChain();
-  const keys = await keyChain.listKeys(prefix);
-  if (keys.length > 0) {
-    return keyChain.getPrivateKey(keys[0]);
-  }
-  return digestSigning;
+  return keyChain.getSigner(prefix, {
+    prefixMatch: true,
+    fallback: digestSigning,
+  });
 }
 
 export async function getSigner(): Promise<Signer> {

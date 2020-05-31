@@ -1,5 +1,5 @@
 import { ConsumerOptions, Endpoint, RetxPolicy } from "@ndn/endpoint";
-import { Certificate } from "@ndn/keychain";
+import { Certificate, CertNaming } from "@ndn/keychain";
 import { Interest, KeyLocator, Name, Verifier } from "@ndn/packet";
 
 /** Verify packets according to hierarchical trust model. */
@@ -63,8 +63,8 @@ export class HierarchicalVerifier implements Verifier {
     return Certificate.fromData(data);
   }
 
-  private checkHierarchial({ name, certName }: Certificate, signed: Name): void {
-    if (!certName.subjectName.isPrefixOf(signed)) {
+  private checkHierarchial({ name }: Certificate, signed: Name): void {
+    if (!CertNaming.parseCertName(name).subjectName.isPrefixOf(signed)) {
       throw new Error(`${name} cannot sign ${signed} in hierarchial model`);
     }
   }

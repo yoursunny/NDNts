@@ -1,5 +1,5 @@
 import { openUplinks } from "@ndn/cli-common";
-import { CertificateName } from "@ndn/keychain";
+import { CertNaming } from "@ndn/keychain";
 import { CaProfile, Server, ServerChallenge, ServerNopChallenge, ServerPinChallenge } from "@ndn/ndncert";
 import { Data } from "@ndn/packet";
 import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
@@ -46,8 +46,7 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
     await openUplinks();
 
     const profile = await CaProfile.fromData(new Decoder(await fs.readFile(args.profile)).decode(Data));
-    const certName = CertificateName.from(profile.cert.name);
-    const key = await keyChain.getPrivateKey(certName.key);
+    const key = await keyChain.getPrivateKey(CertNaming.toKeyName(profile.cert.name));
 
     const repo = new DataStore(leveldown(args.store));
     RepoProducer.create(repo, { reg: PrefixRegShorter(2) });

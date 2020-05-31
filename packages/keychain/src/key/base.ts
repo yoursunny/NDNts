@@ -1,10 +1,11 @@
 import { KeyLocator, LLSign, LLVerify, Name, SigInfo, Signer, Verifier } from "@ndn/packet";
+import assert from "minimalistic-assert";
 
-import { KeyName } from "../name";
+import * as CertNaming from "../naming";
 
 abstract class NamedKey {
   constructor(public readonly name: Name, public readonly sigType: number) {
-    KeyName.from(name);
+    assert(CertNaming.isKeyName(name), `bad key name ${name}`);
   }
 }
 
