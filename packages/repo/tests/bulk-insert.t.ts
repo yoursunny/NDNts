@@ -3,13 +3,13 @@ import "@ndn/packet/test-fixture/expect";
 import { L3Face } from "@ndn/l3face";
 import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
 import { Data } from "@ndn/packet";
-import memdown from "memdown";
 import { collect } from "streaming-iterables";
 
 import { BulkInsertInitiator, BulkInsertTarget, DataStore } from "..";
+import { makeEmptyDataStore } from "../test-fixture/data-store";
 
 let store: DataStore;
-beforeEach(() => store = new DataStore(memdown()));
+beforeEach(() => store = makeEmptyDataStore());
 afterEach(() => store.close());
 
 test("target", async () => {

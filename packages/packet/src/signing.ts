@@ -1,4 +1,5 @@
 import { SigType } from "./an";
+import { Name } from "./name";
 import { sha256, timingSafeEqual as timingSafeEqual_ } from "./platform/mod";
 import { KeyLocator, SigInfo } from "./sig-info";
 
@@ -34,6 +35,7 @@ export namespace LLVerify {
 }
 
 interface PacketWithSignature {
+  readonly name: Name;
   sigInfo?: SigInfo;
   sigValue?: Uint8Array;
 }

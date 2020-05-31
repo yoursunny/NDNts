@@ -1,5 +1,5 @@
 import { digestSigning, Interest, LLSign, Name, SigInfo, Signer, TT } from "@ndn/packet";
-import { Decoder, Encoder, NNI } from "@ndn/tlv";
+import { Encoder, NNI } from "@ndn/tlv";
 
 class SignedInterest02 implements Signer.Signable {
   public sigInfo?: SigInfo;
@@ -17,11 +17,10 @@ class SignedInterest02 implements Signer.Signable {
       [TT.GenericNameComponent, this.sigInfo!.encodeAs(TT.DSigInfo)],
     ]);
     this.sigValue = await sign(signedPortion);
-    this.name = new Decoder(Encoder.encode([
-      TT.Name,
+    this.name = new Name(Encoder.encode([
       signedPortion,
       [TT.GenericNameComponent, [TT.DSigValue, this.sigValue]],
-    ])).decode(Name);
+    ]));
   }
 }
 

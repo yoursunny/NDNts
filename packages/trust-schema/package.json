@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/endpoint",
-  "version": "0.0.20191223-beta.1",
-  "description": "NDNts: Client Endpoint",
+  "name": "@ndn/trust-schema",
+  "version": "0.0.0",
+  "description": "NDNts: Trust Schema",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -18,24 +18,19 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/endpoint"
+    "directory": "packages/trust-schema"
   },
   "publishConfig": {
     "main": "lib/mod.js"
   },
   "dependencies": {
-    "@ndn/fw": "workspace:*",
+    "@ndn/endpoint": "workspace:*",
+    "@ndn/keychain": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "applymixins": "^1.1.0",
-    "it-pushable": "^1.4.0",
-    "minimalistic-assert": "^1.0.1",
-    "p-cancelable": "^2.0.0",
-    "streaming-iterables": "^4.1.2",
     "tslib": "*"
   },
   "devDependencies": {
-    "@ndn/repo": "workspace:*",
-    "@types/minimalistic-assert": "^1.0.0"
+    "@ndn/repo": "workspace:*"
   }
 }

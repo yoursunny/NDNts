@@ -66,7 +66,7 @@ const DEFAULT_FRESHNESS = 3600000;
 const SELF_ISSUER = Component.from("self");
 
 export namespace Certificate {
-  interface BuildOptions {
+  export interface BuildOptions {
     name: CertificateName;
     freshness?: number;
     validity: ValidityPeriod;
@@ -90,7 +90,7 @@ export namespace Certificate {
     return Certificate.fromData(data);
   }
 
-  interface IssueOptions {
+  export interface IssueOptions {
     freshness?: number;
     validity: ValidityPeriod;
     issuerId: Component;
@@ -110,7 +110,7 @@ export namespace Certificate {
     return build(opts);
   }
 
-  interface SelfSignOptions {
+  export interface SelfSignOptions {
     freshness?: number;
     validity?: ValidityPeriod;
     privateKey: PrivateKey;

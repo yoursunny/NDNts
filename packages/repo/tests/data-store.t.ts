@@ -1,13 +1,13 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Data, Interest, Name } from "@ndn/packet";
-import memdown from "memdown";
 import { collect, map } from "streaming-iterables";
 
 import { DataStore } from "..";
+import { makeEmptyDataStore } from "../test-fixture/data-store";
 
 let store: DataStore;
-beforeEach(() => store = new DataStore(memdown()));
+beforeEach(() => store = makeEmptyDataStore());
 afterEach(() => store.close());
 
 test("insert get delete", async () => {

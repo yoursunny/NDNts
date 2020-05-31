@@ -5,14 +5,14 @@ import { Forwarder } from "@ndn/fw";
 import { Segment, SequenceNum, Version } from "@ndn/naming-convention2";
 import { Component, Data, Interest, Name, NameLike } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
-import memdown from "memdown";
 
 import { DataStore, PrefixRegShorter, PrefixRegStatic, PrefixRegStrip, RepoProducer, respondRdr } from "..";
+import { makeEmptyDataStore } from "../test-fixture/data-store";
 
 let store: DataStore;
 const announced = new Set<string>();
 beforeEach(() => {
-  store = new DataStore(memdown());
+  store = makeEmptyDataStore();
   const fw = Forwarder.getDefault();
   fw.on("annadd", (name) => announced.add(name.toString()));
   fw.on("annrm", (name) => announced.delete(name.toString()));

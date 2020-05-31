@@ -1,15 +1,14 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Data, Interest } from "@ndn/packet";
-import { DataStore } from "@ndn/repo";
-import memdown from "memdown";
+import { makeEmptyDataStore } from "@ndn/repo/test-fixture/data-store";
 
 import { DataStoreBuffer, Endpoint, Producer, ProducerHandler } from "..";
 
 afterEach(() => Endpoint.deleteDefaultForwarder());
 
 function makeEndpointBuffered(ttl?: number, autoBuffer?: boolean): [Endpoint, DataStoreBuffer] {
-  const dataStoreBuffer = new DataStoreBuffer(new DataStore(memdown()), ttl);
+  const dataStoreBuffer = new DataStoreBuffer(makeEmptyDataStore(), ttl);
   const ep = new Endpoint({ dataBuffer: dataStoreBuffer, autoBuffer });
   return [ep, dataStoreBuffer];
 }
