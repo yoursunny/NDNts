@@ -1,16 +1,13 @@
 #!/bin/bash
-rm -rf mk/nightly-temp/
-verdaccio -c mk/verdaccio-nightly.yaml &
-VERDACCIO_PID=$!
-export npm_config_registry=http://127.0.0.1:64448
-VERSION=0.0.$(date +%Y%m%d)-nightly.$(git log --pretty=format:'%h' -n 1)
-pnpm recursive exec --filter ./packages -- bash -c 'node ../../mk/edit-packagejson.js VCDN '$VERSION' && pnpm publish'
-kill $VERDACCIO_PID
+set -e
+set -o pipefail
+ROOTDIR=$(pwd)
 
+rm -rf mk/nightly-output/
 mkdir -p mk/nightly-output/
-for TARBALL in $(find mk/nightly-temp/ -name '*.tgz'); do
-  cp $TARBALL mk/nightly-output/$(basename $(dirname $TARBALL)).tgz
-done
+
+VERSION=0.0.$(date +%Y%m%d)-nightly.$(git log --pretty=format:'%h' -n 1)
+pnpm recursive exec --filter ./packages -- bash -c 'node '$ROOTDIR'/mk/edit-packagejson.js VCDN '$VERSION' && mv $(npm pack .) '$ROOTDIR'/mk/nightly-output/$(basename $(pwd)).tgz'
 
 pushd mk/nightly-output/ >/dev/null
 (
@@ -21,6 +18,6 @@ pushd mk/nightly-output/ >/dev/null
   echo '<pre>'
   ls *.tgz
   echo '</pre>'
-) > index.html
+) >index.html
 popd >/dev/null
 cp docs/favicon.ico mk/nightly-output/

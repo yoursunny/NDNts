@@ -23,7 +23,7 @@ cache:
     - $HOME/.pnpm-store
 
 install:
-  - npm install -g coveralls pnpm verdaccio
+  - npm install -g coveralls pnpm
 
 before_script:
   - npm run bootstrap
