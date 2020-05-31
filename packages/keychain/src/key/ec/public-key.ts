@@ -9,7 +9,7 @@ import { EcCurve } from "./mod";
 /** ECDSA public key. */
 export class EcPublicKey extends PublicKey implements PublicKey.Exportable {
   constructor(name: Name, public readonly curve: EcCurve, public readonly key: CryptoKey) {
-    super(name, SigType.Sha256WithEcdsa, name);
+    super(name, SigType.Sha256WithEcdsa);
   }
 
   protected async llVerify(input: Uint8Array, sig: Uint8Array): Promise<void> {

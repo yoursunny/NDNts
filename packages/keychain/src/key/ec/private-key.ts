@@ -10,7 +10,7 @@ import { makeGenParams, SIGN_PARAMS, sigRawToDer } from "./internal";
 /** ECDSA private key. */
 export class EcPrivateKey extends PrivateKey {
   constructor(name: Name, public readonly curve: EcCurve, private readonly key: CryptoKey) {
-    super(name, SigType.Sha256WithEcdsa, name);
+    super(name, SigType.Sha256WithEcdsa);
   }
 
   protected async llSign(input: Uint8Array): Promise<Uint8Array> {

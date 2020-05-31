@@ -6,6 +6,7 @@ export * from "./data";
 export * from "./digest-comp";
 export * from "./fwhint";
 export * from "./interest";
+export * from "./key-locator";
 export * from "./signing";
 export * from "./nack";
 export * from "./name";

@@ -1,6 +1,6 @@
 import { ConsumerOptions, Endpoint, RetxPolicy } from "@ndn/endpoint";
 import { Certificate } from "@ndn/keychain";
-import { Interest, Name, Verifier } from "@ndn/packet";
+import { Interest, KeyLocator, Name, Verifier } from "@ndn/packet";
 
 /** Verify packets according to hierarchical trust model. */
 export class HierarchicalVerifier implements Verifier {
@@ -26,14 +26,14 @@ export class HierarchicalVerifier implements Verifier {
     let hasTrustAnchor = false;
     const chain: Certificate[] = [];
     while (!hasTrustAnchor) {
-      const keyLocator = this.getKeyLocatorName(lastPkt);
-      const trustAnchor = this.findTrustAnchor(keyLocator);
+      const klName = KeyLocator.mustGetName(lastPkt.sigInfo?.keyLocator);
+      const trustAnchor = this.findTrustAnchor(klName);
       let cert: Certificate;
       if (trustAnchor) {
         hasTrustAnchor = true;
         cert = trustAnchor;
       } else {
-        cert = await this.fetchCert(keyLocator);
+        cert = await this.fetchCert(klName);
       }
       this.checkHierarchial(cert, lastPkt.name);
       this.checkValidity(cert, now);
@@ -46,13 +46,6 @@ export class HierarchicalVerifier implements Verifier {
       const signed = i === 0 ? pkt : chain[i - 1].data;
       return key.verify(signed);
     }));
-  }
-
-  private getKeyLocatorName(pkt: Verifier.Verifiable): Name {
-    if (!(pkt.sigInfo?.keyLocator instanceof Name)) {
-      throw new Error("KeyLocator is not a Name");
-    }
-    return pkt.sigInfo.keyLocator;
   }
 
   private findTrustAnchor(keyLocator: Name): Certificate|undefined {

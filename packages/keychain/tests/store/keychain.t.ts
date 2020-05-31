@@ -1,6 +1,9 @@
+import "@ndn/packet/test-fixture/expect";
+
+import { Data } from "@ndn/packet";
 import { dirSync as tmpDir } from "tmp";
 
-import { KeyChain } from "../..";
+import { Certificate, EcPrivateKey, KeyChain } from "../..";
 import * as TestCertStore from "../../test-fixture/cert-store";
 import * as TestKeyStore from "../../test-fixture/key-store";
 
@@ -39,4 +42,24 @@ describe("persistent", () => {
     const record = await TestCertStore.execute(keyChain);
     TestCertStore.check(record);
   });
+});
+
+test("createSigner", async () => {
+  const keyChain = KeyChain.createTemp();
+  const [pvt, pub] = await EcPrivateKey.generate("/K", "P-256", keyChain);
+  const cert = await Certificate.selfSign({
+    privateKey: pvt,
+    publicKey: pub,
+  });
+  await keyChain.insertCert(cert);
+
+  const keySigner = await keyChain.createSigner(pvt.name);
+  let data = new Data("/D");
+  await keySigner.sign(data);
+  expect(data.sigInfo?.keyLocator?.name).toEqualName(pub.name);
+
+  const certSigner = await keyChain.createSigner(cert.name);
+  data = new Data("/D");
+  await certSigner.sign(data);
+  expect(data.sigInfo?.keyLocator?.name).toEqualName(cert.name);
 });

@@ -3,29 +3,45 @@ import { KeyLocator, LLSign, LLVerify, Name, SigInfo, Signer, Verifier } from "@
 import { KeyName } from "../name";
 
 abstract class NamedKey {
-  constructor(public readonly name: Name, public readonly sigType: number,
-      public readonly keyLocator: KeyLocator|undefined) {
+  constructor(public readonly name: Name, public readonly sigType: number) {
     KeyName.from(name);
   }
 }
 
 /** Named private key. */
 export abstract class PrivateKey extends NamedKey implements Signer {
-  public sign(pkt: Signer.Signable): Promise<void> {
-    this.putSigInfo(pkt);
+  /**
+   * Sign a packet.
+   * @param pkt the packet.
+   * @param keyLocator KeyLocator in SigInfo; if omitted, the key name will be used.
+   */
+  public sign(pkt: Signer.Signable, keyLocator = new KeyLocator(this.name)): Promise<void> {
+    Signer.putSigInfo(pkt, this.sigType, keyLocator);
     return pkt[LLSign.OP]((input) => this.llSign(input));
   }
 
-  /** Override to modify SigInfo field. */
-  protected putSigInfo(pkt: Signer.Signable): void {
-    Signer.putSigInfo(pkt, this.sigType, this.keyLocator);
-  }
-
   protected abstract llSign(input: Uint8Array): Promise<Uint8Array>;
+
+  /** Create a Signer that uses this PrivateKey and specified KeyLocator. */
+  public withKeyLocator(keyLocator: KeyLocator.CtorArg): PrivateKey.WithKeyLocator {
+    return new PrivateKey.WithKeyLocator(this, new KeyLocator(keyLocator));
+  }
+}
+
+export namespace PrivateKey {
+  export class WithKeyLocator implements Signer {
+    constructor(public readonly key: PrivateKey, public readonly keyLocator: KeyLocator) {
+    }
+
+    public sign(pkt: Signer.Signable): Promise<void> {
+      return this.key.sign(pkt, this.keyLocator);
+    }
+  }
 }
 
 /** Named public key. */
 export abstract class PublicKey extends NamedKey implements Verifier {
+  /** Verify a packet. */
   public verify(pkt: Verifier.Verifiable): Promise<void> {
     Verifier.checkSigType(pkt, this.sigType);
     this.checkSigInfo(pkt.sigInfo!);
@@ -40,9 +56,10 @@ export abstract class PublicKey extends NamedKey implements Verifier {
 }
 
 export namespace PublicKey {
-  export function checkKeyLocator(si: SigInfo|undefined, name: Name) {
-    if (!si || !(si.keyLocator instanceof Name) || !name.equals(si.keyLocator)) {
-      throw new Error(`KeyLocator does not match key ${name}`);
+  export function checkKeyLocator(si: SigInfo|undefined, keyName: Name) {
+    const klName = KeyLocator.mustGetName(si?.keyLocator);
+    if (!keyName.isPrefixOf(klName)) {
+      throw new Error(`KeyLocator ${klName} does not match key ${keyName}`);
     }
   }
 

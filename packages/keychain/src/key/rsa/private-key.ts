@@ -10,7 +10,7 @@ import { ALGO, GEN_PARAMS, IMPORT_PARAMS } from "./internal";
 /** RSA private key. */
 export class RsaPrivateKey extends PrivateKey {
   constructor(name: Name, private readonly key: CryptoKey) {
-    super(name, SigType.Sha256WithRsa, name);
+    super(name, SigType.Sha256WithRsa);
   }
 
   protected async llSign(input: Uint8Array): Promise<Uint8Array> {

@@ -1,3 +1,5 @@
+import "@ndn/packet/test-fixture/expect";
+
 import { Data, SigType } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 import { Decoder, fromHex } from "@ndn/tlv";
@@ -11,7 +13,7 @@ test.each(TestSignVerify.TABLE)("%p", async ({ cls }) => {
   const record = await TestSignVerify.execute(cls, keyA, keyA, keyB, keyB);
   TestSignVerify.check(record, { deterministic: true });
   expect(record.sA0.sigInfo.type).toBe(SigType.HmacWithSha256);
-  // expect(record.sA0.sigInfo.keyLocator).toBeUndefined();
+  expect(record.sA0.sigInfo.keyLocator?.name).toEqualName(keyA.name);
 });
 
 /*

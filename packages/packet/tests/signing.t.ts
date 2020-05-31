@@ -3,7 +3,7 @@ import "@ndn/tlv/test-fixture/expect";
 import { Decodable, Decoder, Encodable, Encoder } from "@ndn/tlv";
 import * as crypto from "crypto";
 
-import { Data, digestSigning, Interest, KeyDigest, LLSign, LLVerify, Name, SigInfo, SigType, TT } from "../src/mod";
+import { Data, digestSigning, Interest, LLSign, LLVerify, Name, SigInfo, SigType, TT } from "../src/mod";
 import * as TestSignVerify from "../test-fixture/sign-verify";
 
 class TestAlgo {
@@ -95,7 +95,7 @@ const TABLE = [
 
 test.each(TABLE)("sign %#", async ({ cls }) => {
   const pkt = new cls(new Name("/A"));
-  pkt.sigInfo = new SigInfo(SigType.HmacWithSha256, new KeyDigest(Uint8Array.of(0xA0, 0xA1)));
+  pkt.sigInfo = new SigInfo(SigType.HmacWithSha256, Uint8Array.of(0xA0, 0xA1));
   await expect(ALGO1.sign(pkt)).rejects.toThrow(/mock-signing-error/);
 
   await ALGO0.sign(pkt);

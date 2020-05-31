@@ -1,28 +1,13 @@
 import { Decoder, EncodableObj, Encoder, EvDecoder, Extensible, ExtensionRegistry, NNI } from "@ndn/tlv";
 
 import { TT } from "./an";
-import { Name, NameLike } from "./name";
-
-export class KeyDigest {
-  constructor(public readonly value: Uint8Array) {
-  }
-
-  public encodeTo(encoder: Encoder) {
-    encoder.prependTlv(TT.KeyDigest, this.value);
-  }
-}
-
-export type KeyLocator = Name|KeyDigest;
+import { KeyLocator } from "./key-locator";
 
 const EXTENSIONS = new ExtensionRegistry<SigInfo>();
 
 const EVD = new EvDecoder<SigInfo>("SigInfo", [TT.ISigInfo, TT.DSigInfo])
   .add(TT.SigType, (t, { nni }) => t.type = nni, { required: true })
-  .add(TT.KeyLocator,
-    new EvDecoder<SigInfo>("KeyLocator")
-      .add(TT.Name, (t, { decoder }) => t.keyLocator = decoder.decode(Name), { order: 0 })
-      .add(TT.KeyDigest, (t, { value }) => t.keyLocator = new KeyDigest(value), { order: 0 }),
-  )
+  .add(TT.KeyLocator, (t, { decoder }) => t.keyLocator = decoder.decode(KeyLocator))
   .add(TT.SigNonce, (t, { value }) => t.nonce = NNI.decode(value, { len: 4 }))
   .add(TT.SigTime, (t, { nni }) => t.time = nni)
   .add(TT.SigSeqNum, (t, { nni }) => t.seqNum = nni)
@@ -47,29 +32,32 @@ export class SigInfo {
    * Arguments can include, in any order:
    * - SigInfo to copy from
    * - number as SigType
-   * - Name or URI or KeyDigest as KeyLocator
+   * - KeyLocator, or Name/URI/KeyDigest to construct KeyLocator
+   * - Nonce, Time, SeqNum
    */
-  constructor(...args: Array<SigInfo | SigInfo.CtorArg>) {
-    args.forEach((arg) => {
+  constructor(...args: SigInfo.CtorArg[]) {
+    const klArgs: KeyLocator.CtorArg[] = [];
+    for (const arg of args) {
       if (typeof arg === "number") {
         this.type = arg;
-      } else if (Name.isNameLike(arg)) {
-        this.keyLocator = new Name(arg);
-      } else if (arg instanceof KeyDigest) {
-        this.keyLocator = arg;
-      } else if (arg instanceof SigInfo) {
-        Object.assign(this, arg);
-        this[Extensible.TAG] = { ...arg[Extensible.TAG] };
+      } else if (KeyLocator.isCtorArg(arg)) {
+        klArgs.push(arg);
       } else if (arg instanceof NonceTag) {
         this.nonce = arg.v;
       } else if (arg instanceof TimeTag) {
         this.time = arg.v;
       } else if (arg instanceof SeqNumTag) {
         this.seqNum = arg.v;
+      } else if (arg instanceof SigInfo) {
+        Object.assign(this, arg);
+        this[Extensible.TAG] = { ...arg[Extensible.TAG] };
       } else {
         throw new Error("unknown SigInfo constructor argument");
       }
-    });
+    }
+    if (klArgs.length > 0) {
+      this.keyLocator = new KeyLocator(...klArgs);
+    }
   }
 
   public encodeAs(tt: number): EncodableObj {
@@ -85,7 +73,7 @@ export class SigInfo {
 
     encoder.prependTlv(tt,
       [TT.SigType, NNI(this.type)],
-      [TT.KeyLocator, Encoder.OmitEmpty, this.keyLocator],
+      this.keyLocator,
       [TT.SigNonce, Encoder.OmitEmpty,
         typeof this.nonce === "undefined" ? undefined : NNI(this.nonce, { len: 4 })],
       [TT.SigTime, Encoder.OmitEmpty,
@@ -130,7 +118,7 @@ export namespace SigInfo {
     return new SeqNumTag(v);
   }
 
-  export type CtorArg = number | NameLike | KeyDigest | NonceTag | TimeTag | SeqNumTag;
+  export type CtorArg = SigInfo | number | KeyLocator.CtorArg | NonceTag | TimeTag | SeqNumTag;
 
   export const registerExtension = EXTENSIONS.registerExtension;
   export const unregisterExtension = EXTENSIONS.unregisterExtension;

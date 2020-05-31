@@ -1,52 +1,74 @@
-import { Name } from "@ndn/packet";
+import { Name, Signer } from "@ndn/packet";
 
-import { StoredKey } from "../key/save";
-import { Certificate, PrivateKey, PublicKey } from "../mod";
+import { Certificate } from "../cert/mod";
+import { PrivateKey, PublicKey } from "../key/mod";
+import { CertificateName, KeyName } from "../name";
 import { CertStore, KeyStore, SCloneCertStore } from "./mod";
 import { openStores } from "./platform/mod";
 import { MemoryStoreImpl } from "./store-impl";
 
 /** Storage of own private keys and certificates. */
-export interface KeyChain {
+export abstract class KeyChain {
   /**
    * Return whether KeyStore supports structured clone of CryptoKey.
    * If this returns false, StoredKey must contain JsonWebKey instead of CryptoKey.
    */
-  readonly canSCloneKeys: boolean;
+  abstract readonly canSCloneKeys: boolean;
 
   /** List keys, filtered by name prefix. */
-  listKeys: (prefix?: Name) => Promise<Name[]>;
+  abstract listKeys(prefix?: Name): Promise<Name[]>;
 
   /** Retrieve key pair by key name. */
-  getKeyPair: (name: Name) => Promise<[PrivateKey, PublicKey]>;
+  abstract getKeyPair(name: Name): Promise<[PrivateKey, PublicKey]>;
 
   /** Retrieve private key by key name. */
-  getPrivateKey: (name: Name) => Promise<PrivateKey>;
+  public async getPrivateKey(name: Name): Promise<PrivateKey> {
+    return (await this.getKeyPair(name))[0];
+  }
 
   /** Retrieve public key by key name. */
-  getPublicKey: (name: Name) => Promise<PublicKey>;
+  public async getPublicKey(name: Name): Promise<PublicKey> {
+    return (await this.getKeyPair(name))[1];
+  }
 
   /** Insert key pair. */
-  insertKey: (name: Name, stored: StoredKey) => Promise<void>;
+  abstract insertKey(name: Name, stored: KeyStore.StoredKey): Promise<void>;
 
   /** Delete key pair and associated certificates. */
-  deleteKey: (name: Name) => Promise<void>;
+  abstract deleteKey(name: Name): Promise<void>;
 
   /** List certificates, filtered by name prefix. */
-  listCerts: (prefix?: Name) => Promise<Name[]>;
+  abstract listCerts(prefix?: Name): Promise<Name[]>;
 
   /** Retrieve certificate by cert name. */
-  getCert: (name: Name) => Promise<Certificate>;
+  abstract getCert(name: Name): Promise<Certificate>;
 
   /** Insert certificate; key must exist. */
-  insertCert: (cert: Certificate) => Promise<void>;
+  abstract insertCert(cert: Certificate): Promise<void>;
 
   /** Delete certificate. */
-  deleteCert: (name: Name) => Promise<void>;
+  abstract deleteCert(name: Name): Promise<void>;
+
+  /** Create a Signer by key name or certificate name. */
+  public async createSigner(name: Name): Promise<Signer> {
+    let keyName: KeyName|undefined;
+    try { keyName = KeyName.from(name); } catch {}
+    if (keyName) {
+      return this.getPrivateKey(name);
+    }
+
+    const certName = CertificateName.from(name);
+    const [key, cert] = await Promise.all([
+      this.getPrivateKey(certName.keyName.name),
+      this.getCert(name),
+    ]);
+    return key.withKeyLocator(cert.name);
+  }
 }
 
-class KeyChainImpl implements KeyChain {
+class KeyChainImpl extends KeyChain {
   constructor(private readonly keys: KeyStore, private readonly certs: CertStore) {
+    super();
   }
 
   public get canSCloneKeys() { return this.keys.canSClone; }
@@ -59,15 +81,7 @@ class KeyChainImpl implements KeyChain {
     return this.keys.get(name);
   }
 
-  public async getPrivateKey(name: Name): Promise<PrivateKey> {
-    return (await this.getKeyPair(name))[0];
-  }
-
-  public async getPublicKey(name: Name): Promise<PublicKey> {
-    return (await this.getKeyPair(name))[1];
-  }
-
-  public async insertKey(name: Name, stored: StoredKey): Promise<void> {
+  public async insertKey(name: Name, stored: KeyStore.StoredKey): Promise<void> {
     await this.keys.insert(name, stored);
   }
 

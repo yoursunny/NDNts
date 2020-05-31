@@ -26,8 +26,7 @@ test.each(TABLE)("sign-verify %p", async ({ cls, modulusLength }) => {
   const record = await TestSignVerify.execute(cls, pvtA, pubA, pvtB, pubB);
   TestSignVerify.check(record, { deterministic: true });
   expect(record.sA0.sigInfo.type).toBe(SigType.Sha256WithRsa);
-  expect(record.sA0.sigInfo.keyLocator).toBeInstanceOf(Name);
-  expect(record.sA0.sigInfo.keyLocator).toEqualName(pvtA.name);
+  expect(record.sA0.sigInfo.keyLocator?.name).toEqualName(pvtA.name);
 });
 
 test.each(RSA_MODULUS_LENGTHS)("load %p", async (modulusLength) => {

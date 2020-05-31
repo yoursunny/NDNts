@@ -38,18 +38,17 @@ export class Certificate {
   public get name() { return this.data.name; }
 
   public get issuer(): Name|undefined {
-    if (!this.data.sigInfo || !(this.data.sigInfo.keyLocator instanceof Name)) {
-      return undefined;
-    }
-    return this.data.sigInfo.keyLocator;
+    return this.data.sigInfo?.keyLocator?.name;
   }
 
-  public get isSelfSigned() {
+  public get isSelfSigned(): boolean {
     return this.issuer?.isPrefixOf(this.name) ?? false;
   }
 
   /** Public key in SubjectPublicKeyInfo binary format. */
-  public get publicKeySpki() { return this.data.content; }
+  public get publicKeySpki(): Uint8Array {
+    return this.data.content;
+  }
 
   /** Load public key. */
   public async loadPublicKey(): Promise<PublicKey> {

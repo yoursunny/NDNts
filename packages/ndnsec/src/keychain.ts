@@ -10,7 +10,7 @@ const IMPORTING_ISSUER = Component.from("08c5a687-7be5-43ee-a966-2683fb339c1d");
 const PASSPHRASE = "PASSPHRASE";
 
 /** Access ndn-cxx KeyChain. */
-export class NdnsecKeyChain implements KeyChain {
+export class NdnsecKeyChain extends KeyChain {
   constructor();
 
   constructor(home: string);
@@ -18,6 +18,7 @@ export class NdnsecKeyChain implements KeyChain {
   constructor(pibLocator: string, tpmLocator: string);
 
   constructor(arg1?: string, arg2?: string) {
+    super();
     if (arg2) {
       this.env.NDN_CLIENT_PIB = arg1;
       this.env.NDN_CLIENT_TPM = arg2;

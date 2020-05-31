@@ -2,9 +2,34 @@ import "../test-fixture/expect";
 
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { KeyDigest, Name, SigInfo, SigType, TT } from "..";
+import { KeyLocator, Name, SigInfo, SigType, TT } from "..";
 
-test("encode", () => {
+test("KeyLocator", () => {
+  expect(() => new KeyLocator({} as any)).toThrow();
+
+  let kl = new KeyLocator("/KL", Uint8Array.of(0xA0, 0xA1));
+  expect(kl).toEncodeAs(({ type, value }) => {
+    expect(type).toBe(TT.KeyLocator);
+    expect(value).toMatchTlv(
+      ({ decoder }) => expect(decoder.decode(Name)).toEqualName("/KL"),
+      ({ type, value }) => {
+        expect(type).toBe(TT.KeyDigest);
+        expect(value).toEqualUint8Array([0xA0, 0xA1]);
+      },
+    );
+  });
+
+  kl = new KeyLocator(kl);
+  expect(kl.name).toEqualName("/KL");
+  expect(kl.digest).toEqualUint8Array([0xA0, 0xA1]);
+  expect(KeyLocator.mustGetName(kl)).toEqualName("/KL");
+
+  kl.name = undefined;
+  expect(() => KeyLocator.mustGetName(kl)).toThrow();
+  expect(() => KeyLocator.mustGetName(undefined)).toThrow();
+});
+
+test("SigInfo encode", () => {
   expect(() => new SigInfo({} as any)).toThrow();
 
   let si = new SigInfo();
@@ -53,7 +78,7 @@ test("encode", () => {
   });
 
   si.type = SigType.HmacWithSha256;
-  si.keyLocator = new KeyDigest(new Uint8Array(32));
+  si.keyLocator = new KeyLocator(new Uint8Array(32));
   si.nonce = undefined;
   si.time = undefined;
   si.seqNum = undefined;
@@ -78,7 +103,7 @@ test("encode", () => {
   });
 });
 
-test("decode", () => {
+test("SigInfo decode", () => {
   let decoder = new Decoder(Uint8Array.of(
     0x16, 0x03,
     0x1B, 0x01, 0x00,
@@ -93,8 +118,8 @@ test("decode", () => {
   ));
   si = decoder.decode(SigInfo);
   expect(si.type).toBe(SigType.Sha256WithEcdsa);
-  expect(si.keyLocator).toBeInstanceOf(Name);
-  expect(si.keyLocator).toEqualName("/KL");
+  expect(si.keyLocator?.name).toEqualName("/KL");
+  expect(si.keyLocator?.digest).toBeUndefined();
 
   decoder = new Decoder(Uint8Array.of(
     0x2C, 0x18,
@@ -106,8 +131,7 @@ test("decode", () => {
   ));
   si = decoder.decode(SigInfo);
   expect(si.type).toBe(SigType.HmacWithSha256);
-  expect(si.keyLocator).toBeInstanceOf(KeyDigest);
-  expect((si.keyLocator as KeyDigest).value).toHaveLength(3);
+  expect(si.keyLocator?.digest).toEqualUint8Array([0xA0, 0xA1, 0xA2]);
   expect(si.nonce).toBe(0xB0B1B2B3);
   expect(si.time).toEqual(0xC0C1);
   expect(si.seqNum).toBe(0xD0D1);

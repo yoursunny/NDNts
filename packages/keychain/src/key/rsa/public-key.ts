@@ -7,7 +7,7 @@ import { ALGO, IMPORT_PARAMS } from "./internal";
 /** RSA public key. */
 export class RsaPublicKey extends PublicKey implements PublicKey.Exportable {
   constructor(name: Name, public readonly key: CryptoKey) {
-    super(name, SigType.Sha256WithRsa, name);
+    super(name, SigType.Sha256WithRsa);
   }
 
   protected async llVerify(input: Uint8Array, sig: Uint8Array): Promise<void> {

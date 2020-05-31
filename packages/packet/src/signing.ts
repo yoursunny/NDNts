@@ -1,7 +1,8 @@
 import { SigType } from "./an";
+import { KeyLocator } from "./key-locator";
 import { Name } from "./name";
 import { sha256, timingSafeEqual as timingSafeEqual_ } from "./platform/mod";
-import { KeyLocator, SigInfo } from "./sig-info";
+import { SigInfo } from "./sig-info";
 
 /**
  * Low level signing function.
@@ -55,7 +56,7 @@ export namespace Signer {
    * @param sigType optionally set sigType.
    * @param keyLocator optionally set keyLocator; false to unset KeyLocator.
    */
-  export function putSigInfo(pkt: PacketWithSignature, sigType?: number, keyLocator?: KeyLocator|false): SigInfo {
+  export function putSigInfo(pkt: PacketWithSignature, sigType?: number, keyLocator?: KeyLocator.CtorArg|false): SigInfo {
     if (!pkt.sigInfo) {
       pkt.sigInfo = new SigInfo();
     }
@@ -69,7 +70,7 @@ export namespace Signer {
         pkt.sigInfo.keyLocator = undefined;
         break;
       default:
-        pkt.sigInfo.keyLocator = keyLocator;
+        pkt.sigInfo.keyLocator = new KeyLocator(keyLocator);
         break;
     }
     return pkt.sigInfo;
