@@ -68,4 +68,4 @@ Known issues:
 * In Firefox, certificates created from ECDSA keys have wrong OID, due to [Mozilla Bug 1410403](https://bugzilla.mozilla.org/show_bug.cgi?id=1410403).
 * In Firefox, ECDSA private keys cannot be saved in persistent keychain, due to [Mozilla Bug 1545813](https://bugzilla.mozilla.org/show_bug.cgi?id=1545813).
 * In Firefox, persistent keychain is unusable in a Private Browsing window, due to [Mozilla Bug 781982](https://bugzilla.mozilla.org/show_bug.cgi?id=1639542).
-* In iOS, ECDSA P-521 curve is not supported.
+* In iOS and macOS Safari, ECDSA P-521 curve is not supported.

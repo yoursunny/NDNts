@@ -1,1 +1,1 @@
-export const crypto = self.crypto;
+export const crypto = globalThis.crypto;

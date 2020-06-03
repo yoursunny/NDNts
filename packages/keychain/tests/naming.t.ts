@@ -5,14 +5,21 @@ import { Component, Name } from "@ndn/packet";
 
 import { CertNaming } from "..";
 
+test("toSubjectName", () => {
+  expect(CertNaming.toSubjectName(new Name("/owner"))).toEqualName("/owner");
+  expect(CertNaming.toSubjectName(new Name("/owner/KEY/key-id"))).toEqualName("/owner");
+  expect(CertNaming.toSubjectName(new Name("/owner/KEY/key-id/issuer-id/version"))).toEqualName("/owner");
+});
+
 test("isKeyName parseKeyName", () => {
   expect(CertNaming.isKeyName(new Name("/owner"))).toBeFalsy();
   expect(CertNaming.isKeyName(new Name("/owner/KEY"))).toBeFalsy();
   expect(CertNaming.isKeyName(new Name("/owner/KEY/key-id/issuer-id"))).toBeFalsy();
   expect(CertNaming.isKeyName(new Name("/owner/KEY/key-id/issuer-id/version"))).toBeFalsy();
 
-  expect(CertNaming.isKeyName(new Name("/owner/KEY/key-id"))).toBeTruthy();
-  const parsed = CertNaming.parseKeyName(new Name("/owner/KEY/key-id"));
+  const name = new Name("/owner/KEY/key-id");
+  expect(CertNaming.isKeyName(name)).toBeTruthy();
+  const parsed = CertNaming.parseKeyName(name);
   expect(parsed.subjectName).toEqualName("/owner");
   expect(parsed.keyId.equals("key-id")).toBeTruthy();
 });
@@ -48,8 +55,9 @@ test("isCertName parseCertName", () => {
   expect(CertNaming.isCertName(new Name("/owner/KEY/key-id"))).toBeFalsy();
   expect(CertNaming.isCertName(new Name("/owner/KEY/key-id/issuer-id"))).toBeFalsy();
 
-  expect(CertNaming.isCertName(new Name("/owner/KEY/key-id/issuer-id/version"))).toBeTruthy();
-  const parsed = CertNaming.parseCertName(new Name("/owner/KEY/key-id/issuer-id/version"));
+  const name = new Name("/owner/KEY/key-id/issuer-id/version");
+  expect(CertNaming.isCertName(name)).toBeTruthy();
+  const parsed = CertNaming.parseCertName(name);
   expect(parsed.subjectName).toEqualName("/owner");
   expect(parsed.keyId.equals("key-id")).toBeTruthy();
   expect(parsed.issuerId.equals("issuer-id")).toBeTruthy();

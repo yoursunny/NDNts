@@ -56,7 +56,7 @@ export class Client {
   /** Request a certificate. */
   public async request(opts: Client.RequestOptions): Promise<Certificate> {
     if (opts.probeResult) {
-      if (!opts.probeResult.subjectName.equals(CertNaming.parseKeyName(opts.privateKey.name).subjectName)) {
+      if (!opts.probeResult.subjectName.equals(CertNaming.toSubjectName(opts.privateKey.name))) {
         throw new Error("SubjectName does not match probe result");
       }
     }

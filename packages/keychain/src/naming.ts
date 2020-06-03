@@ -22,6 +22,13 @@ export interface CertNameFields extends KeyNameFields {
   keyName: Name;
 }
 
+/** Get subject name from subject name, key name, or certificate name. */
+export function toSubjectName(name: Name): Name {
+  return isKeyName(name) ? name.getPrefix(-2) :
+    isCertName(name) ? name.getPrefix(-4) :
+    name;
+}
+
 /** Determine whether the name is a key name. */
 export function isKeyName(name: Name): boolean {
   return name.length >= 2 && name.get(-2)!.equals(KEY);
@@ -48,7 +55,6 @@ function getKeyNameImpl(name: Name): Name|undefined {
 
 /**
  * Get key name from key name or certificate name.
- * @param name key name or certificate name.
  * @throws input name is neither key name nor certificate name.
  */
 export function toKeyName(name: Name): Name {

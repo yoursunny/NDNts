@@ -1,6 +1,7 @@
 module.exports = {
   extends: [
     "xo/esnext",
+    "xo/browser",
     "plugin:unicorn/recommended",
   ],
   plugins: [

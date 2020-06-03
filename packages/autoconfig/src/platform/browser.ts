@@ -3,7 +3,7 @@ import { WsTransport } from "@ndn/ws-transport";
 
 import { connect } from "../mod";
 
-export const fetch = self.fetch;
+export const fetch = globalThis.fetch;
 
 export const FCH_ALWAYS_CAPABILITIES = ["wss"];
 

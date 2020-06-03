@@ -1,4 +1,4 @@
-const crypto = self.crypto;
+const crypto = globalThis.crypto;
 
 export async function sha256(input: Uint8Array): Promise<Uint8Array> {
   const digest = await crypto.subtle.digest("SHA-256", input);
