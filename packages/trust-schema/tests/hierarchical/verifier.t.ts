@@ -1,12 +1,16 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Certificate, EcPrivateKey, PrivateKey, PublicKey, RsaPrivateKey, ValidityPeriod } from "@ndn/keychain";
-import { Component, Data, digestSigning, NameLike } from "@ndn/packet";
+import { Component, Data, digestSigning, NameLike, Verifier } from "@ndn/packet";
 import { PrefixRegShorter } from "@ndn/repo";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
 
-import { HierarchicalVerifier } from "..";
+import { HierarchicalVerifier, pattern as P, TrustSchema, TrustSchemaPolicy, TrustSchemaVerifier } from "../..";
 
 afterEach(Endpoint.deleteDefaultForwarder);
+
+interface Row {
+  makeVerifier: (ctx: IContext) => Verifier;
+}
 
 interface IContext extends Context {}
 
@@ -21,26 +25,26 @@ class Context {
   public pvt1!: PrivateKey;
   public pub1!: PublicKey;
   public cert1!: Certificate;
-  public name2: NameLike = "/root/site/user";
+  public name2: NameLike = "/root/site/group/user";
   public opts2: Partial<Certificate.IssueOptions> = {};
   public pvt2!: PrivateKey;
   public pub2!: PublicKey;
   public cert2!: Certificate;
-  public dataName: NameLike = "/root/site/user/data";
+  public dataName: NameLike = "/root/site/group/user/path/data";
   public data!: Data;
 
   constructor(opts: Partial<IContext> = {}) {
     Object.assign(this, opts);
   }
 
-  public async execute(f: (verifier: HierarchicalVerifier, data: Data) => Promise<void>) {
+  public async execute({ makeVerifier }: Row, f: (verifier: Verifier, data: Data) => Promise<void>) {
     await this.makeCert0();
     await this.makeCert1();
     await this.makeCert2();
     await this.makeData();
     const certProducer = await makeRepoProducer([this.cert1.data, this.cert2.data],
       { reg: PrefixRegShorter(4) });
-    const verifier = new HierarchicalVerifier({ trustAnchors: [this.cert0] });
+    const verifier = makeVerifier(this);
     try {
       await f(verifier, this.data);
     } finally {
@@ -85,32 +89,56 @@ class Context {
   }
 }
 
-test("success", async () => {
+const hPolicy = new TrustSchemaPolicy();
+hPolicy.addPattern("packet", new P.ConcatPattern([
+  new P.VariablePattern("prefix", { minComps: 0, maxComps: Infinity }),
+  new P.VariablePattern("suffix", { minComps: 0, maxComps: Infinity }),
+]));
+hPolicy.addPattern("signer", new P.ConcatPattern([
+  new P.VariablePattern("prefix", { minComps: 0, maxComps: Infinity }),
+  new P.CertNamePattern(),
+]));
+hPolicy.addRule("packet", "signer");
+
+const TABLE: Row[] = [
+  {
+    makeVerifier(ctx: IContext) {
+      return new HierarchicalVerifier({ trustAnchors: [ctx.cert0] });
+    },
+  },
+  {
+    makeVerifier(ctx: IContext) {
+      return new TrustSchemaVerifier({ schema: new TrustSchema(hPolicy, [ctx.cert0]) });
+    },
+  },
+];
+
+test.each(TABLE)("success %#", async (row) => {
   const ctx = new Context();
-  await ctx.execute(async (verifier, data) => {
+  await ctx.execute(row, async (verifier, data) => {
     await expect(verifier.verify(data)).resolves.toBeUndefined();
   });
 });
 
-test("data non-hierarchical", async () => {
+test.each(TABLE)("data non-hierarchical %#", async (row) => {
   const ctx = new Context({
     dataName: "/data",
   });
-  await ctx.execute(async (verifier, data) => {
-    await expect(verifier.verify(data)).rejects.toThrow(/hierarchial/);
+  await ctx.execute(row, async (verifier, data) => {
+    await expect(verifier.verify(data)).rejects.toThrow();
   });
 });
 
-test("cert non-hierarchical", async () => {
+test.each(TABLE)("cert non-hierarchical %#", async (row) => {
   const ctx = new Context({
     name1: "/root/other-site",
   });
-  await ctx.execute(async (verifier, data) => {
-    await expect(verifier.verify(data)).rejects.toThrow(/hierarchial/);
+  await ctx.execute(row, async (verifier, data) => {
+    await expect(verifier.verify(data)).rejects.toThrow();
   });
 });
 
-test("bad signature", async () => {
+test.each(TABLE)("bad signature %#", async (row) => {
   const [fakePvt1] = await RsaPrivateKey.generate("/root/site", 1024);
   const ctx = new Context({
     name1: fakePvt1.name,
@@ -118,43 +146,43 @@ test("bad signature", async () => {
       issuerPrivateKey: fakePvt1,
     },
   });
-  await ctx.execute(async (verifier, data) => {
+  await ctx.execute(row, async (verifier, data) => {
     await expect(verifier.verify(data)).rejects.toThrow(/bad/);
   });
 });
 
-test("root expired", async () => {
+test.each(TABLE)("root expired %#", async (row) => {
   const now = Date.now();
   const ctx = new Context({
     opts0: {
       validity: new ValidityPeriod(new Date(now - 5 * 86400000), new Date(now - 2 * 86400000)),
     },
   });
-  await ctx.execute(async (verifier, data) => {
+  await ctx.execute(row, async (verifier, data) => {
     await expect(verifier.verify(data)).rejects.toThrow(/expired/);
   });
 });
 
-test("cert expired", async () => {
+test.each(TABLE)("cert expired %#", async (row) => {
   const now = Date.now();
   const ctx = new Context({
     opts2: {
       validity: new ValidityPeriod(new Date(now - 5 * 86400000), new Date(now - 2 * 86400000)),
     },
   });
-  await ctx.execute(async (verifier, data) => {
+  await ctx.execute(row, async (verifier, data) => {
     await expect(verifier.verify(data)).rejects.toThrow(/expired/);
   });
 });
 
-test("no KeyLocator", async () => {
+test.each(TABLE)("no KeyLocator %#", async (row) => {
   const ctx = new (class extends Context {
     public async makeData() {
       await super.makeData();
       await digestSigning.sign(this.data);
     }
   })();
-  await ctx.execute(async (verifier, data) => {
+  await ctx.execute(row, async (verifier, data) => {
     await expect(verifier.verify(data)).rejects.toThrow(/KeyLocator/);
   });
 });

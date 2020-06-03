@@ -28,6 +28,7 @@
     "@ndn/keychain": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "mnemonist": "^0.36.1",
     "tslib": "*"
   },
   "devDependencies": {

@@ -1,22 +1,22 @@
 import { ConsumerOptions, Endpoint, RetxPolicy } from "@ndn/endpoint";
-import { Certificate, CertNaming } from "@ndn/keychain";
+import { Certificate } from "@ndn/keychain";
 import { Interest, KeyLocator, Name, Verifier } from "@ndn/packet";
 
-/** Verify packets according to hierarchical trust model. */
-export class HierarchicalVerifier implements Verifier {
-  private readonly trustAnchors: Certificate[];
-  private readonly endpoint: Endpoint;
-  private readonly consumerOpts: ConsumerOptions;
+/** Policy based verifier. */
+export abstract class PolicyVerifier<Context = unknown> implements Verifier {
+  protected readonly trustAnchors: Certificate[];
+  protected readonly endpoint: Endpoint;
+  protected readonly consumerOpts: ConsumerOptions;
 
   constructor({
     trustAnchors,
     endpoint = new Endpoint(),
     retx = 2,
-  }: HierarchicalVerifier.Options) {
+  }: PolicyVerifier.Options) {
     this.trustAnchors = trustAnchors;
     this.endpoint = endpoint;
     this.consumerOpts = {
-      describe: "HierarchicalVerifier",
+      describe: "PolicyVerifier",
       retx,
     };
   }
@@ -27,6 +27,7 @@ export class HierarchicalVerifier implements Verifier {
     const chain: Certificate[] = [];
     while (!hasTrustAnchor) {
       const klName = KeyLocator.mustGetName(lastPkt.sigInfo?.keyLocator);
+      const ctx = this.checkKeyLocatorPolicy(lastPkt, klName);
       const trustAnchor = this.findTrustAnchor(klName);
       let cert: Certificate;
       if (trustAnchor) {
@@ -35,8 +36,8 @@ export class HierarchicalVerifier implements Verifier {
       } else {
         cert = await this.fetchCert(klName);
       }
-      this.checkHierarchial(cert, lastPkt.name);
       this.checkValidity(cert, now);
+      this.checkCertPolicy(lastPkt, cert, ctx);
       chain.push(cert);
       lastPkt = cert.data;
     }
@@ -47,6 +48,23 @@ export class HierarchicalVerifier implements Verifier {
       return key.verify(signed);
     }));
   }
+
+  /**
+   * Check policy on KeyLocator name, before certificate retrieval.
+   * @param pkt packet carrying KeyLocator.
+   * @param klName KeyLocator name.
+   * @throws violating policy.
+   * @returns arbitrary value to be passed to checkCertPolicy.
+   */
+  protected abstract checkKeyLocatorPolicy(pkt: Verifier.Verifiable, klName: Name): Context;
+
+  /**
+   * Check policy on certificate name.
+   * @param pkt packet carrying KeyLocator that triggered certificate retrieval.
+   * @param cert retrieved certificate.
+   * @param ctx return value of checkKeyLocatorPolicy.
+   */
+  protected abstract checkCertPolicy(pkt: Verifier.Verifiable, cert: Certificate, ctx: Context): void;
 
   private findTrustAnchor(keyLocator: Name): Certificate|undefined {
     for (const cert of this.trustAnchors) {
@@ -63,12 +81,6 @@ export class HierarchicalVerifier implements Verifier {
     return Certificate.fromData(data);
   }
 
-  private checkHierarchial({ name }: Certificate, signed: Name): void {
-    if (!CertNaming.parseCertName(name).subjectName.isPrefixOf(signed)) {
-      throw new Error(`${name} cannot sign ${signed} in hierarchial model`);
-    }
-  }
-
   private checkValidity({ name, validity }: Certificate, now: Date): void {
     if (!validity.includes(now)) {
       throw new Error(`${name} has expired`);
@@ -76,13 +88,16 @@ export class HierarchicalVerifier implements Verifier {
   }
 }
 
-export namespace HierarchicalVerifier {
-  export interface Options {
-    /** List of trust anchors that are trusted unconditionally. */
-    trustAnchors: Certificate[];
+export namespace PolicyVerifier {
+  export interface RetrieveOptions {
     /** Endpoint for certificate retrieval. */
     endpoint?: Endpoint;
     /** RetxPolicy for certificate retrieval. */
     retx?: RetxPolicy;
+  }
+
+  export interface Options extends RetrieveOptions {
+    /** List of trust anchors that are trusted unconditionally. */
+    trustAnchors: Certificate[];
   }
 }
