@@ -80,17 +80,17 @@ class StatefulDest extends ReadvertiseDestination<{ S: true }> {
   public makeState = jest.fn().mockReturnValue({ S: true });
 
   public doAdvertise = jest.fn().mockImplementationOnce(async () => {
-    await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => setTimeout(r, 90));
     throw new Error("advertise error");
   }).mockImplementation(async () => {
-    await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => setTimeout(r, 90));
   });
 
   public doWithdraw = jest.fn().mockImplementationOnce(async () => {
-    await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => setTimeout(r, 90));
     throw new Error("withdraw error");
   }).mockImplementation(async () => {
-    await new Promise((r) => setTimeout(r, 30));
+    await new Promise((r) => setTimeout(r, 90));
   });
 }
 
@@ -100,11 +100,11 @@ test("disable", async () => {
 
   const faceA = fw.addFace(new NoopFace());
   faceA.addAnnouncement(new Name("/M"));
-  await new Promise((r) => setTimeout(r, 70));
+  await new Promise((r) => setTimeout(r, 210));
   expect(dest.doAdvertise).toHaveBeenCalledTimes(2);
 
   dest.disable();
-  await new Promise((r) => setTimeout(r, 70));
+  await new Promise((r) => setTimeout(r, 210));
   expect(dest.doWithdraw).toHaveBeenCalledTimes(1);
   // no retry after closing
 });
@@ -115,16 +115,16 @@ test("retry", async () => {
 
   const faceA = fw.addFace(new NoopFace());
   faceA.addAnnouncement(new Name("/M"));
-  await new Promise((r) => setTimeout(r, 20));
+  await new Promise((r) => setTimeout(r, 60));
   expect(dest.makeState).toHaveBeenCalledTimes(1);
   expect(dest.doAdvertise).toHaveBeenCalledTimes(1);
-  await new Promise((r) => setTimeout(r, 60));
+  await new Promise((r) => setTimeout(r, 180));
   expect(dest.doAdvertise).toHaveBeenCalledTimes(2);
 
   faceA.removeAnnouncement(new Name("/M"));
-  await new Promise((r) => setTimeout(r, 20));
-  expect(dest.doWithdraw).toHaveBeenCalledTimes(1);
   await new Promise((r) => setTimeout(r, 60));
+  expect(dest.doWithdraw).toHaveBeenCalledTimes(1);
+  await new Promise((r) => setTimeout(r, 180));
   expect(dest.doWithdraw).toHaveBeenCalledTimes(2);
 
   expect(dest.makeState).toHaveBeenCalledTimes(1);
@@ -136,8 +136,8 @@ test("withdraw during advertising", async () => {
 
   const faceA = fw.addFace(new NoopFace());
   faceA.addAnnouncement(new Name("/M"));
-  setTimeout(() => faceA.removeAnnouncement(new Name("/M")), 20);
-  await new Promise((r) => setTimeout(r, 90));
+  setTimeout(() => faceA.removeAnnouncement(new Name("/M")), 60);
+  await new Promise((r) => setTimeout(r, 270));
   expect(dest.doAdvertise).toHaveBeenCalledTimes(1);
   expect(dest.doWithdraw).toHaveBeenCalledTimes(2);
 });

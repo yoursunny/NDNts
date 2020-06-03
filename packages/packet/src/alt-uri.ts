@@ -21,19 +21,19 @@ export class AltUriPrinter {
   }
 
   /** Print component in alternate URI syntax */
-  public ofComponent(comp: Component): string {
+  public ofComponent = (comp: Component): string => {
     for (const conv of this.conventions) {
       if (conv.match(comp)) {
         return conv.toAltUri(comp);
       }
     }
     return comp.toString();
-  }
+  };
 
   /** Print name in alternate URI syntax. */
-  public ofName(name: Name): string {
+  public ofName = (name: Name): string => {
     return `/${name.comps.map((comp) => this.ofComponent(comp)).join("/")}`;
-  }
+  };
 }
 
 class Generic implements NamingConvention<never>, NamingConvention.WithAltUri {

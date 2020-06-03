@@ -37,22 +37,27 @@ test("Version", () => {
 });
 
 test("Timestamp", () => {
-  const name = new Name().append(Timestamp, new Date(540167400000))
-    .append(Timestamp, 1570239360127447);
+  const name = new Name().append(Timestamp, new Date(540167400_000))
+    .append(Timestamp.us, 1570239360_127447)
+    .append(Timestamp.us, Number.MAX_SAFE_INTEGER);
 
   expect(name.at(0)).toEqualComponent("36=%00%01%eb%47%85%ff%0a%00");
   expect(name.at(0).is(Timestamp)).toBeTruthy();
-  expect(name.at(0).as(Timestamp)).toEqual(540167400000000);
-  expect(name.at(0).as(Timestamp.Date)).toEqual(new Date(540167400000));
-  expect(name.at(0).as(Timestamp.DateInexact)).toEqual(new Date(540167400000));
+  expect(name.at(0).as(Timestamp)).toEqual(540167400_000);
+  expect(name.at(0).as(Timestamp.ms)).toEqual(540167400_000);
+  expect(name.at(0).as(Timestamp.us)).toEqual(540167400_000000);
 
   expect(name.at(1)).toEqualComponent("36=%00%05%94%1f%d7%45%d1%d7");
   expect(name.at(1).is(Timestamp)).toBeTruthy();
-  expect(name.at(1).as(Timestamp)).toEqual(1570239360127447);
-  expect(() => name.at(1).as(Timestamp.Date)).toThrow(/milliseconds/);
-  expect(name.at(1).as(Timestamp.DateInexact)).toEqual(new Date(1570239360127));
+  expect(name.at(1).as(Timestamp)).toEqual(1570239360_127.447);
+  expect(name.at(1).as(Timestamp.ms)).toEqual(1570239360_127.447);
+  expect(name.at(1).as(Timestamp.us)).toEqual(1570239360_127447);
 
-  expect(AltUri.ofName(name)).toBe("/t=540167400000000/t=1570239360127447");
+  expect(name.at(2).is(Timestamp.ms)).toBeTruthy();
+  expect(() => name.at(2).as(Timestamp.ms)).toThrow(/large/);
+  expect(name.at(2).as(Timestamp.us)).toBe(Number.MAX_SAFE_INTEGER);
+
+  expect(AltUri.ofName(name.getPrefix(2))).toBe("/t=540167400000000/t=1570239360127447");
 });
 
 test("SequenceNum", () => {
