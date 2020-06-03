@@ -21,7 +21,7 @@ export abstract class PolicyVerifier<Context = unknown> implements Verifier {
     };
   }
 
-  public async verify(pkt: Verifier.Verifiable, now = new Date()): Promise<void> {
+  public async verify(pkt: Verifier.Verifiable, now = Date.now()): Promise<void> {
     let lastPkt = pkt;
     let hasTrustAnchor = false;
     const chain: Certificate[] = [];
@@ -81,7 +81,7 @@ export abstract class PolicyVerifier<Context = unknown> implements Verifier {
     return Certificate.fromData(data);
   }
 
-  private checkValidity({ name, validity }: Certificate, now: Date): void {
+  private checkValidity({ name, validity }: Certificate, now: number): void {
     if (!validity.includes(now)) {
       throw new Error(`${name} has expired`);
     }

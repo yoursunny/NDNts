@@ -19,7 +19,9 @@
     "./src/key/platform/mod.ts": "./src/key/platform/browser.ts",
     "./src/store/platform/mod.ts": "./src/store/platform/browser.ts"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "**/validity-period.[jt]s"
+  ],
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",

@@ -8,7 +8,7 @@ test("decode", async () => {
   const [, publicKey] = await EcPrivateKey.generate("/A", "P-256");
   const [issuerPrivateKey] = await EcPrivateKey.generate("/B", "P-256");
 
-  const validity = new ValidityPeriod(new Date(1542099529000), new Date(1602434283000));
+  const validity = new ValidityPeriod(1542099529000, 1602434283000);
   const cert = await Certificate.issue({
     validity,
     issuerId: Component.from("i"),
@@ -23,6 +23,6 @@ test("decode", async () => {
   expect(identity).toBe(certName.subjectName.toString());
   expect(keyId).toBe(certName.keyId.toString());
   expect(issuerId).toBe(certName.issuerId.toString());
-  expect(Number.parseInt(validityNotBefore, 10)).toBe(validity.notBefore.getTime());
-  expect(Number.parseInt(validityNotAfter, 10)).toBe(validity.notAfter.getTime());
+  expect(Number.parseInt(validityNotBefore, 10)).toBe(validity.notBefore);
+  expect(Number.parseInt(validityNotAfter, 10)).toBe(validity.notAfter);
 });

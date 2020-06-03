@@ -3,18 +3,26 @@ import { Decoder, Encodable, Encoder, EvDecoder, Extension, toUtf8 } from "@ndn/
 
 import { TT } from "./an";
 
+function toTimestamp(input: ValidityPeriod.TimestampInput): number {
+  if (typeof input === "object") {
+    return input.getTime();
+  }
+  return input;
+}
+
 const timestampRe = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/;
 
-function decodeTimestamp(str: string): Date {
+function decodeTimestamp(str: string): number {
   const match = timestampRe.exec(str);
   if (!match) {
     throw new Error("invalid ISO8601 compact timestamp");
   }
   const [y, m, d, h, i, s] = match.slice(1).map((c) => Number.parseInt(c, 10));
-  return new Date(Date.UTC(y, m - 1, d, h, i, s));
+  return Date.UTC(y, m - 1, d, h, i, s);
 }
 
-function encodeTimestampString(d: Date): string {
+function encodeTimestampString(timestamp: number): string {
+  const d = new Date(timestamp);
   return [
     d.getUTCFullYear().toString().padStart(4, "0"),
     (d.getUTCMonth() + 1).toString().padStart(2, "0"),
@@ -26,8 +34,8 @@ function encodeTimestampString(d: Date): string {
   ].join("");
 }
 
-function encodeTimestamp(d: Date): Uint8Array {
-  return toUtf8(encodeTimestampString(d));
+function encodeTimestamp(timestamp: number): Uint8Array {
+  return toUtf8(encodeTimestampString(timestamp));
 }
 
 const EVD = new EvDecoder<ValidityPeriod>("ValidityPeriod", TT.ValidityPeriod)
@@ -41,11 +49,17 @@ export class ValidityPeriod {
   }
 
   constructor();
-
-  constructor(notBefore: Date, notAfter: Date);
-
-  constructor(public notBefore = new Date(0), public notAfter = new Date(0)) {
+  constructor(notBefore: ValidityPeriod.TimestampInput, notAfter: ValidityPeriod.TimestampInput);
+  constructor(
+      notBefore: ValidityPeriod.TimestampInput = 0,
+      notAfter: ValidityPeriod.TimestampInput = 0,
+  ) {
+    this.notBefore = toTimestamp(notBefore);
+    this.notAfter = toTimestamp(notAfter);
   }
+
+  public notBefore: number;
+  public notAfter: number;
 
   public encodeTo(encoder: Encoder) {
     return encoder.prependTlv(TT.ValidityPeriod,
@@ -54,15 +68,24 @@ export class ValidityPeriod {
     );
   }
 
-  /** Determine whether dt is within validity period. */
-  public includes(dt: Date): boolean {
-    const t = dt.getTime();
-    return this.notBefore.getTime() <= t && t <= this.notAfter.getTime();
+  /** Determine whether the specified timestamp is within validity period. */
+  public includes(t: ValidityPeriod.TimestampInput = Date.now()): boolean {
+    t = toTimestamp(t);
+    return this.notBefore <= t && t <= this.notAfter;
   }
 
+  /** Determine whether this validity period equals another. */
   public equals({ notBefore, notAfter }: ValidityPeriod): boolean {
-    return this.notBefore.getTime() === notBefore.getTime() &&
-           this.notAfter.getTime() === notAfter.getTime();
+    return this.notBefore === notBefore &&
+           this.notAfter === notAfter;
+  }
+
+  /** Compute the intersection of this and other validity periods. */
+  public intersect(...validityPeriods: ValidityPeriod[]): ValidityPeriod {
+    return new ValidityPeriod(
+      Math.max(this.notBefore, ...validityPeriods.map(({ notBefore }) => notBefore)),
+      Math.min(this.notAfter, ...validityPeriods.map(({ notAfter }) => notAfter)),
+    );
   }
 
   public toString(): string {
@@ -81,13 +104,15 @@ SigInfo.registerExtension({
 });
 
 export namespace ValidityPeriod {
+  export type TimestampInput = number|Date;
+
   export const MAX = new ValidityPeriod(
-    new Date(540109800000),
-    new Date(253402300799000),
+    540109800000,
+    253402300799000,
   );
 
   export function daysFromNow(n: number): ValidityPeriod {
-    const notBefore = new Date();
+    const notBefore = Date.now();
     const notAfter = new Date(notBefore);
     notAfter.setUTCDate(notAfter.getUTCDate() + n);
     return new ValidityPeriod(notBefore, notAfter);

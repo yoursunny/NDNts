@@ -78,8 +78,8 @@ test("decode testbed certs", async () => {
   expect(certName0.keyId).toEqualComponent("e%9D%7F%A5%C5%81%10%7D");
   expect(certName0.issuerId).toEqualComponent("ndn");
   expect(certName0.version).toEqualComponent("%FD%00%00%01%60qJQ%9B");
-  expect(cert0.validity.notBefore).toEqual(new Date(1513729179000));
-  expect(cert0.validity.notAfter).toEqual(new Date(1609459199000));
+  expect(cert0.validity.notBefore).toBe(1513729179000);
+  expect(cert0.validity.notAfter).toBe(1609459199000);
   expect(cert0.publicKeySpki).toEqualUint8Array(Buffer.from(`
     MIIBSzCCAQMGByqGSM49AgEwgfcCAQEwLAYHKoZIzj0BAQIhAP////8AAAABAAAA
     AAAAAAAAAAAA////////////////MFsEIP////8AAAABAAAAAAAAAAAAAAAA////

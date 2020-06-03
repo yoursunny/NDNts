@@ -48,24 +48,17 @@ export class NewRequest {
 export interface NewRequest extends Readonly<NewRequest.Fields> {}
 
 function truncateValidity(
-    { notBefore, notAfter }: ValidityPeriod,
+    validity: ValidityPeriod,
     {
       maxValidityPeriod,
-      cert: { validity: { notBefore: caNotBefore, notAfter: caNotAfter } },
+      cert: { validity: caValidity },
     }: CaProfile,
     enableNotBeforeGracePeriod = false): ValidityPeriod {
   const now = Date.now();
-  const notBeforeT = Math.max(
-    notBefore.getTime(),
-    now - (enableNotBeforeGracePeriod ? 120000 : 0),
-    caNotBefore.getTime(),
+  return validity.intersect(
+    caValidity,
+    new ValidityPeriod(now - (enableNotBeforeGracePeriod ? 120000 : 0), now + maxValidityPeriod),
   );
-  const notAfterT = Math.min(
-    notAfter.getTime(),
-    now + maxValidityPeriod,
-    caNotAfter.getTime(),
-  );
-  return new ValidityPeriod(new Date(notBeforeT), new Date(notAfterT));
 }
 
 export namespace NewRequest {

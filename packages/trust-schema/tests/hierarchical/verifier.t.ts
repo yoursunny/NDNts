@@ -155,7 +155,7 @@ test.each(TABLE)("root expired %#", async (row) => {
   const now = Date.now();
   const ctx = new Context({
     opts0: {
-      validity: new ValidityPeriod(new Date(now - 5 * 86400000), new Date(now - 2 * 86400000)),
+      validity: new ValidityPeriod(now - 5 * 86400000, now - 2 * 86400000),
     },
   });
   await ctx.execute(row, async (verifier, data) => {
@@ -167,7 +167,7 @@ test.each(TABLE)("cert expired %#", async (row) => {
   const now = Date.now();
   const ctx = new Context({
     opts2: {
-      validity: new ValidityPeriod(new Date(now - 5 * 86400000), new Date(now - 2 * 86400000)),
+      validity: new ValidityPeriod(now - 5 * 86400000, now - 2 * 86400000),
     },
   });
   await ctx.execute(row, async (verifier, data) => {
