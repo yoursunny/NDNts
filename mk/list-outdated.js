@@ -1,5 +1,5 @@
 // This script lists dependencies where pnpm installed version differs from package.json specifier.
-const { readFileSync } = require("fs");
+const { readFileSync } = require("graceful-fs");
 const { safeLoad } = require("js-yaml");
 
 const doc = safeLoad(readFileSync("pnpm-lock.yaml"));

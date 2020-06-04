@@ -1,5 +1,5 @@
 const builtins = require("builtins")();
-const { promises: fs } = require("fs");
+const { promises: fs } = require("graceful-fs");
 const { pipeline } = require("stream");
 const split2 = require("split2");
 

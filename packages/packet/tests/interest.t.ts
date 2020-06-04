@@ -108,7 +108,7 @@ test("encode parameterized", async () => {
     expect(value).toMatchTlv(
       ({ decoder }) => {
         const name = decoder.decode(Name);
-        expect(name.length).toBe(3);
+        expect(name).toHaveLength(3);
         expect(name.at(1).is(ParamsDigest)).toBeTruthy();
       },
       ({ type }) => expect(type).toBe(TT.Nonce),
@@ -122,7 +122,7 @@ test("encode parameterized", async () => {
   // append ParamsDigest
   interest = new Interest(new Name("/A"), Uint8Array.of(0xC0, 0xC1));
   await interest.updateParamsDigest();
-  expect(interest.name.length).toBe(2);
+  expect(interest.name).toHaveLength(2);
   expect(interest.name.at(1).is(ParamsDigest)).toBeTruthy();
   expect(Encoder.encode(interest)).toBeInstanceOf(Uint8Array);
 
@@ -151,7 +151,7 @@ test("decode parameterized", async () => {
     [TT.AppParameters, Uint8Array.of(0xC0, 0xC1)],
   ]));
   let interest = decoder.decode(Interest);
-  expect(interest.name.length).toBe(2);
+  expect(interest.name).toHaveLength(2);
   expect(interest.appParameters).not.toBeUndefined();
 
   interest = new Interest(
@@ -162,7 +162,7 @@ test("decode parameterized", async () => {
   const wire = Encoder.encode(interest);
   decoder = new Decoder(wire);
   interest = decoder.decode(Interest);
-  expect(interest.name.length).toBe(3);
+  expect(interest.name).toHaveLength(3);
   expect(interest.appParameters).not.toBeUndefined();
 
   const verify = jest.fn();
@@ -231,7 +231,7 @@ test("decode signed", async () => {
   ]);
   decoder = new Decoder(wire);
   const interest = decoder.decode(Interest);
-  expect(interest.name.length).toBe(2);
+  expect(interest.name).toHaveLength(2);
   expect(interest.appParameters).not.toBeUndefined();
   expect(interest.sigInfo).not.toBeUndefined();
   expect(interest.sigValue).not.toBeUndefined();

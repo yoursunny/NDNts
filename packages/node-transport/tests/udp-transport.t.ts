@@ -61,6 +61,7 @@ describe("unicast", () => {
 describe("multicast", () => {
   const intfs = udp_helper.listMulticastIntfs();
   if (intfs.length === 0) {
+    // eslint-disable-next-line jest/no-disabled-tests
     test.skip("no multicast interface", () => undefined);
     return;
   }

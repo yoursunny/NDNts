@@ -128,10 +128,10 @@ export class Pit {
    * true: try to match Data without token.
    * false: Data without token.
    * callback function: invoked when Data without token matches PIT entry.
-   * return true or nothing: deliver matched PIT entry.
-   * return false: drop Data.
+   *   return true: deliver matched PIT entry.
+   *   return false: drop Data.
    */
-  public dataNoTokenMatch: boolean|((data: Data, key: string) => boolean|void) = true;
+  public dataNoTokenMatch: boolean|((data: Data, key: string) => boolean) = true;
 
   private generateToken(): number {
     do {
@@ -212,7 +212,7 @@ export class Pit {
         const entry = this.byName.get(key);
         if (entry) {
           if (typeof this.dataNoTokenMatch === "function" &&
-              this.dataNoTokenMatch(data, key) === false) {
+              !this.dataNoTokenMatch(data, key)) {
             return;
           }
           yield entry;

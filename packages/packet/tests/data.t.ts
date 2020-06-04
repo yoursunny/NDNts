@@ -3,8 +3,7 @@ import "../test-fixture/expect";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { createHash } from "crypto";
 
-import { Component, ImplicitDigest, Name } from "..";
-import { Data, TT } from "..";
+import { Component, Data, ImplicitDigest, Name, TT } from "..";
 
 test("encode", () => {
   expect(() => new Data({} as any)).toThrow();

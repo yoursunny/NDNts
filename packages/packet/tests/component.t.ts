@@ -38,30 +38,30 @@ test("error on decode TLV-TYPE out of range", () => {
 test("from URI or string", () => {
   let comp = Component.from("A");
   expect(comp.type).toBe(0x08);
-  expect(comp.length).toBe(1);
+  expect(comp).toHaveLength(1);
   expect(comp.value).toEqualUint8Array([0x41]);
   expect(comp.text).toBe("A");
 
   comp = Component.from("20=A%00B");
   expect(comp.type).toBe(0x14);
-  expect(comp.length).toBe(3);
+  expect(comp).toHaveLength(3);
   expect(comp.value).toEqualUint8Array([0x41, 0x00, 0x42]);
 
   comp = new Component(0x14, "A%00B");
   expect(comp.type).toBe(0x14);
-  expect(comp.length).toBe(5);
+  expect(comp).toHaveLength(5);
   expect(comp.value).toEqualUint8Array([0x41, 0x25, 0x30, 0x30, 0x42]);
   expect(comp.text).toBe("A%00B");
 
   comp = Component.from(".....");
   expect(comp.type).toBe(0x08);
-  expect(comp.length).toBe(2);
+  expect(comp).toHaveLength(2);
   expect(comp.value).toEqualUint8Array([0x2E, 0x2E]);
   expect(comp.text).toBe("..");
 
   comp = Component.from("36=%0f%a0");
   expect(comp.type).toBe(0x24);
-  expect(comp.length).toBe(2);
+  expect(comp).toHaveLength(2);
   expect(comp.value).toEqualUint8Array([0x0F, 0xA0]);
 });
 

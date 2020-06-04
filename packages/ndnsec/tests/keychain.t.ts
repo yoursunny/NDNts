@@ -6,6 +6,7 @@ import { NdnsecKeyChain } from "..";
 
 describe("ndn-cxx keychain", () => {
   if (execa.sync("which", ["ndnsec"], { reject: false }).exitCode !== 0) {
+    // eslint-disable-next-line jest/no-disabled-tests
     test.skip("ndnsec is not installed", () => undefined);
     return;
   }
