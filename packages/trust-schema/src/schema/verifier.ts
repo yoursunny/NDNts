@@ -27,7 +27,7 @@ export class TrustSchemaVerifier extends PolicyVerifier<Context> {
   }
 
   protected checkCertPolicy({ name }: Verifier.Verifiable, { name: certName }: Certificate, { packet }: Context): void {
-    /** istanbul ignore if: cannot happen after checking KeyLocator */
+    /* istanbul ignore if: cannot happen after checking KeyLocator */
     if (!this.policy.canSign(packet, certName)) {
       throw new Error(`${certName} cannot sign ${name}`);
     }
@@ -35,7 +35,7 @@ export class TrustSchemaVerifier extends PolicyVerifier<Context> {
 }
 
 export namespace TrustSchemaVerifier {
-  export interface Options extends PolicyVerifier.RetrieveOptions {
+  export interface Options extends Omit<PolicyVerifier.Options, "trustAnchors"> {
     /** The trust schema. */
     schema: TrustSchema;
   }

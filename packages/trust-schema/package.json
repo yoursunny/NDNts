@@ -32,6 +32,7 @@
     "tslib": "*"
   },
   "devDependencies": {
-    "@ndn/repo": "workspace:*"
+    "@ndn/repo": "workspace:*",
+    "streaming-iterables": "^4.1.2"
   }
 }

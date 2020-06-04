@@ -1,51 +1,75 @@
-import { ConsumerOptions, Endpoint, RetxPolicy } from "@ndn/endpoint";
 import { Certificate } from "@ndn/keychain";
-import { Interest, KeyLocator, Name, Verifier } from "@ndn/packet";
+import { KeyLocator, Name, Verifier } from "@ndn/packet";
+
+import { CertSources } from "./cert-source/mod";
+
+async function cryptoVerifyUncached(cert: Certificate, packet: Verifier.Verifiable): Promise<void> {
+  const key = await cert.loadPublicKey();
+  return key.verify(packet);
+}
+
+const cryptoVerifyCache = new WeakMap<Certificate, WeakMap<Verifier.Verifiable, Promise<void>>>();
+
+function cryptoVerifyCached(cert: Certificate, packet: Verifier.Verifiable): Promise<void> {
+  let certVerifyCache = cryptoVerifyCache.get(cert);
+  if (!certVerifyCache) {
+    certVerifyCache = new WeakMap<Verifier.Verifiable, Promise<void>>();
+    cryptoVerifyCache.set(cert, certVerifyCache);
+  }
+
+  let p = certVerifyCache.get(packet);
+  if (!p) {
+    p = cryptoVerifyUncached(cert, packet);
+    certVerifyCache.set(packet, p);
+  }
+  return p;
+}
 
 /** Policy based verifier. */
 export abstract class PolicyVerifier<Context = unknown> implements Verifier {
-  protected readonly trustAnchors: Certificate[];
-  protected readonly endpoint: Endpoint;
-  protected readonly consumerOpts: ConsumerOptions;
+  protected readonly certSources: CertSources;
 
-  constructor({
-    trustAnchors,
-    endpoint = new Endpoint(),
-    retx = 2,
-  }: PolicyVerifier.Options) {
-    this.trustAnchors = trustAnchors;
-    this.endpoint = endpoint;
-    this.consumerOpts = {
-      describe: "PolicyVerifier",
-      retx,
-    };
+  constructor(opts: PolicyVerifier.Options) {
+    this.certSources = new CertSources(opts);
   }
 
   public async verify(pkt: Verifier.Verifiable, now = Date.now()): Promise<void> {
     let lastPkt = pkt;
-    let hasTrustAnchor = false;
     const chain: Certificate[] = [];
+    let hasTrustAnchor = false;
     while (!hasTrustAnchor) {
       const klName = KeyLocator.mustGetName(lastPkt.sigInfo?.keyLocator);
       const ctx = this.checkKeyLocatorPolicy(lastPkt, klName);
-      const trustAnchor = this.findTrustAnchor(klName);
-      let cert: Certificate;
-      if (trustAnchor) {
-        hasTrustAnchor = true;
-        cert = trustAnchor;
-      } else {
-        cert = await this.fetchCert(klName);
+      let hasCert = false;
+      const certErrors: string[] = [];
+      for await (const cert of this.certSources.findCerts(klName)) {
+        try {
+          this.checkValidity(cert, now);
+          this.checkCertPolicy(lastPkt, cert, ctx);
+        } catch (err) {
+          certErrors.push(`${cert.name}:${"\n\t"}${err}`);
+          continue;
+        }
+        chain.push(cert);
+        lastPkt = cert.data;
+        hasTrustAnchor = this.certSources.isTrustAnchor(cert);
+        hasCert = true;
+        break;
       }
-      this.checkValidity(cert, now);
-      this.checkCertPolicy(lastPkt, cert, ctx);
-      chain.push(cert);
-      lastPkt = cert.data;
+      if (!hasCert) {
+        if (certErrors.length === 0) {
+          throw new Error(`cannot retrieve certificate for ${klName}`);
+        } else {
+          throw new Error(`no acceptable certificate for ${klName}${"\n\n"}${certErrors.join("\n")}`);
+        }
+      }
     }
 
     await Promise.all(chain.map(async (cert, i) => {
-      const key = await cert.loadPublicKey();
-      const signed = i === 0 ? pkt : chain[i - 1].data;
-      return key.verify(signed);
+      if (i === 0) {
+        return cryptoVerifyUncached(cert, pkt);
+      }
+      return cryptoVerifyCached(cert, chain[i - 1].data);
     }));
   }
 
@@ -66,21 +90,6 @@ export abstract class PolicyVerifier<Context = unknown> implements Verifier {
    */
   protected abstract checkCertPolicy(pkt: Verifier.Verifiable, cert: Certificate, ctx: Context): void;
 
-  private findTrustAnchor(keyLocator: Name): Certificate|undefined {
-    for (const cert of this.trustAnchors) {
-      if (keyLocator.isPrefixOf(cert.name)) {
-        return cert;
-      }
-    }
-    return undefined;
-  }
-
-  private async fetchCert(keyLocator: Name): Promise<Certificate> {
-    const interest = new Interest(keyLocator, Interest.CanBePrefix);
-    const data = await this.endpoint.consume(interest, this.consumerOpts);
-    return Certificate.fromData(data);
-  }
-
   private checkValidity({ name, validity }: Certificate, now: number): void {
     if (!validity.includes(now)) {
       throw new Error(`${name} has expired`);
@@ -89,15 +98,6 @@ export abstract class PolicyVerifier<Context = unknown> implements Verifier {
 }
 
 export namespace PolicyVerifier {
-  export interface RetrieveOptions {
-    /** Endpoint for certificate retrieval. */
-    endpoint?: Endpoint;
-    /** RetxPolicy for certificate retrieval. */
-    retx?: RetxPolicy;
-  }
-
-  export interface Options extends RetrieveOptions {
-    /** List of trust anchors that are trusted unconditionally. */
-    trustAnchors: Certificate[];
+  export interface Options extends CertSources.Options {
   }
 }
