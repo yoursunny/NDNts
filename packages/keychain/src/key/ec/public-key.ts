@@ -1,9 +1,10 @@
 import { Name, SigType, Verifier } from "@ndn/packet";
-import { ASN1UniversalType, DERElement } from "asn1-ts";
+import { toHex } from "@ndn/tlv";
+import * as asn1 from "@root/asn1";
 
 import { PublicKey } from "../base";
 import { crypto } from "../platform/mod";
-import { makeGenParams, sigDerToRaw, SIGN_PARAMS } from "./internal";
+import { EC_POINT_SIZE, makeGenParams, SIGN_PARAMS } from "./algo";
 import { EcCurve } from "./mod";
 
 /** ECDSA public key. */
@@ -13,8 +14,20 @@ export class EcPublicKey extends PublicKey implements PublicKey.Exportable {
   }
 
   protected async llVerify(input: Uint8Array, sig: Uint8Array): Promise<void> {
-    const rawSig = sigDerToRaw(sig, this.curve);
-    const ok = await crypto.subtle.verify(SIGN_PARAMS, this.key, rawSig, input);
+    const pointSize = EC_POINT_SIZE[this.curve];
+
+    const der = asn1.parseVerbose(sig);
+    const r = der.children?.[0].value;
+    const s = der.children?.[1].value;
+    if (!r || !s || r.byteLength > pointSize || s.byteLength > pointSize) {
+      Verifier.throwOnBadSig(false);
+    }
+
+    const raw = new Uint8Array(2 * pointSize);
+    raw.set(r, pointSize - r.byteLength);
+    raw.set(s, 2 * pointSize - s.byteLength);
+
+    const ok = await crypto.subtle.verify(SIGN_PARAMS, this.key, raw, input);
     Verifier.throwOnBadSig(ok);
   }
 
@@ -24,33 +37,27 @@ export class EcPublicKey extends PublicKey implements PublicKey.Exportable {
   }
 }
 
-function determineEcCurve(der: DERElement): EcCurve {
-  const {
-    sequence: [
-      { sequence: [, paramsDer] },
-    ],
-  } = der;
-
-  if (paramsDer.tagNumber === ASN1UniversalType.objectIdentifier) {
-    const namedCurveOid = paramsDer.objectIdentifier.dotDelimitedNotation;
+function determineEcCurve(der: asn1.ElementBuffer): EcCurve {
+  const params = der.children?.[0].children?.[1];
+  if (params && params.type === 0x06 && params.value) {
+    const namedCurveOid = toHex(params.value);
     switch (namedCurveOid) {
-      case "1.2.840.10045.3.1.7":
+      case "2A8648CE3D030107": // 1.2.840.10045.3.1.7
         return "P-256";
-      case "1.3.132.0.34":
+      case "2B81040022": // 1.3.132.0.34
         return "P-384";
-      case "1.3.132.0.35":
+      case "2B81040023": // 1.3.132.0.35
         return "P-521";
     }
     /* istanbul ignore next */
     throw new Error(`unknown namedCurve OID ${namedCurveOid}`);
   }
-
   // Some certificates are using specifiedCurve. Assume they are P-256.
   return "P-256";
 }
 
 export namespace EcPublicKey {
-  export async function importSpki(name: Name, spki: Uint8Array, der: DERElement): Promise<EcPublicKey> {
+  export async function importSpki(name: Name, spki: Uint8Array, der: asn1.ElementBuffer): Promise<EcPublicKey> {
     const curve = determineEcCurve(der);
     const key = await crypto.subtle.importKey("spki", spki, makeGenParams(curve), true, ["verify"]);
     return new EcPublicKey(name, curve, key);

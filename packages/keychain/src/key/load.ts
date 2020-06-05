@@ -1,5 +1,6 @@
 import { Name } from "@ndn/packet";
-import { DERElement } from "asn1-ts";
+import { toHex } from "@ndn/tlv";
+import * as asn1 from "@root/asn1";
 
 import { HmacKey } from "./hmac/mod";
 import { EcPrivateKey, EcPublicKey, PublicKey, RsaPrivateKey, RsaPublicKey } from "./mod";
@@ -18,18 +19,16 @@ export async function loadFromStored(name: Name, stored: StoredKey, extractable 
 }
 
 export async function loadSpki(name: Name, spki: Uint8Array): Promise<PublicKey> {
-  const der = new DERElement();
-  der.fromBytes(spki);
-  const {
-    sequence: [
-      { sequence: [{ objectIdentifier: { dotDelimitedNotation: algoOid } }] },
-    ],
-  } = der;
-
+  const der = asn1.parseVerbose(spki);
+  const algo = der.children?.[0].children?.[0];
+  if (!(algo && algo.type === 0x06 && algo.value)) {
+    throw new Error("SubjectPublicKeyInfo.algorithm.algorithm not found");
+  }
+  const algoOid = toHex(algo.value);
   switch (algoOid) {
-    case "1.2.840.10045.2.1":
+    case "2A8648CE3D0201": // 1.2.840.10045.2.1
       return EcPublicKey.importSpki(name, spki, der);
-    case "1.2.840.113549.1.1.1":
+    case "2A864886F70D010101": // 1.2.840.113549.1.1.1
       return RsaPublicKey.importSpki(name, spki);
   }
   /* istanbul ignore next */

@@ -1,11 +1,13 @@
 import { Name, NameLike, SigType } from "@ndn/packet";
+import { fromHex, toHex } from "@ndn/tlv";
+import * as asn1 from "@root/asn1";
 import assert from "minimalistic-assert";
 
 import { EcCurve, EcPublicKey, KeyChain } from "../../mod";
 import { PrivateKey } from "../base";
 import { crypto } from "../platform/mod";
 import { generateKey, LoadedKey, StoredKey } from "../save";
-import { makeGenParams, SIGN_PARAMS, sigRawToDer } from "./internal";
+import { EC_POINT_SIZE, makeGenParams, SIGN_PARAMS } from "./algo";
 
 /** ECDSA private key. */
 export class EcPrivateKey extends PrivateKey {
@@ -14,9 +16,23 @@ export class EcPrivateKey extends PrivateKey {
   }
 
   protected async llSign(input: Uint8Array): Promise<Uint8Array> {
-    const rawSig = await crypto.subtle.sign(SIGN_PARAMS, this.key, input);
-    return sigRawToDer(new Uint8Array(rawSig), this.curve);
+    const raw = new Uint8Array(await crypto.subtle.sign(SIGN_PARAMS, this.key, input));
+    const pointSize = EC_POINT_SIZE[this.curve];
+    return fromHex(asn1.Any("30",
+      asn1.UInt(toUintHex(raw, 0, pointSize)),
+      asn1.UInt(toUintHex(raw, pointSize, 2 * pointSize)),
+    ));
   }
+}
+
+function toUintHex(array: Uint8Array, start: number, end: number): string {
+  let msb: number;
+  for (msb = start; msb < end; ++msb) {
+    if (array[msb]) {
+      break;
+    }
+  }
+  return toHex(array.slice(msb, end));
 }
 
 interface StoredEcKey extends StoredKey {

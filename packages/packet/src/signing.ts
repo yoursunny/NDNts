@@ -97,7 +97,7 @@ export namespace Verifier {
   }
 
   /** Throw bad signature error if not OK. */
-  export function throwOnBadSig(ok: boolean) {
+  export function throwOnBadSig(ok: boolean): asserts ok {
     if (!ok) {
       throw new Error("bad signature value");
     }

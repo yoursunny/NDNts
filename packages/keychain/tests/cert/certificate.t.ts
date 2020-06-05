@@ -3,13 +3,13 @@ import "@ndn/packet/test-fixture/expect";
 import { Data, Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { Certificate, CertNaming, EcPrivateKey, EcPublicKey, ValidityPeriod } from "../..";
+import { Certificate, CertNaming, EcPrivateKey, EcPublicKey, RsaPublicKey, ValidityPeriod } from "../..";
 
 test("encode decode", async () => {
   const [pvt] = await EcPrivateKey.generate("/operator/KEY/key-1", "P-256");
   const cert = await Certificate.build({
     name: new Name("/operator/KEY/key-1/self/%FD%01"),
-    validity: new ValidityPeriod(new Date(1542099529000), new Date(1602434283000)),
+    validity: new ValidityPeriod(1542099529000, 1602434283000),
     publicKeySpki: Uint8Array.of(0xC0, 0xC1),
     signer: pvt,
   });
@@ -99,4 +99,6 @@ test("decode testbed certs", async () => {
   const cert1 = Certificate.fromData(data1);
   expect(cert1.isSelfSigned).toBeFalsy();
   expect(cert1.issuer).toEqualName(certName0.keyName);
+  const pub1 = await cert1.loadPublicKey();
+  expect(pub1).toBeInstanceOf(RsaPublicKey);
 });

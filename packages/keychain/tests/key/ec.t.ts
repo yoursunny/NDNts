@@ -41,4 +41,5 @@ test.each(EC_CURVES)("load %p", async (curve) => {
   const pub2 = await cert.loadPublicKey();
   expect(pub2).toBeInstanceOf(EcPublicKey);
   expect(pub2.name).toEqualName(pvt.name);
+  await expect(pub2.verify(cert.data)).resolves.toBeUndefined();
 });
