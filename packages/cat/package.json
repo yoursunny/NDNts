@@ -1,6 +1,6 @@
 {
   "name": "@ndn/cat",
-  "version": "0.0.20191223-beta.1",
+  "version": "0.0.20200606",
   "description": "NDNts: ndncat - netcat for NDN",
   "keywords": [
     "NDN",

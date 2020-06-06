@@ -1,6 +1,6 @@
 {
   "name": "@ndn/nfdmgmt",
-  "version": "0.0.20191223-beta.1",
+  "version": "0.0.20200606",
   "description": "NDNts: NFD Management",
   "keywords": [
     "NDN",
