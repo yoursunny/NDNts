@@ -90,22 +90,20 @@ export abstract class Pattern {
   protected abstract matchState(state: MatchState): Iterable<MatchState>;
 
   /**
-   * Build a name following the structure of this pattern.
-   * When multiple names are possible, any one may be returned.
+   * Build names following the structure of this pattern.
    *
    * @param vars variables to be replaced into the name.
-   * @throws given variables are insufficient for building the name.
+   * @returns an iterable of possible names.
    */
-  public build(vars: VarsLike = {}): Name {
+  public *build(vars: VarsLike = {}): Iterable<Name> {
     const varsM = new Map<string, Name>();
     for (const [key, value] of Object.entries(vars)) {
       varsM.set(key, new Name(value));
     }
     const initial = new BuildState(new Name(), varsM);
     for (const final of this.buildState(initial)) {
-      return final.name;
+      yield final.name;
     }
-    throw new Error("cannot build name");
   }
 
   /**

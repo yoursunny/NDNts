@@ -1,4 +1,4 @@
-import { Component, Data, Name, SigInfo } from "@ndn/packet";
+import { Component, Data, Name, SigInfo, Signer } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
 import { loadSpki } from "../key/load";
@@ -68,7 +68,7 @@ export namespace Certificate {
     freshness?: number;
     validity: ValidityPeriod;
     publicKeySpki: Uint8Array;
-    signer: PrivateKey;
+    signer: Signer;
   }
 
   export async function build({
@@ -91,7 +91,7 @@ export namespace Certificate {
     freshness?: number;
     validity: ValidityPeriod;
     issuerId: Component;
-    issuerPrivateKey: PrivateKey;
+    issuerPrivateKey: Signer;
     publicKey: PublicKey;
   }
 

@@ -64,17 +64,17 @@ export abstract class KeyChain {
    *     If such a certificate does not exist, use any key of this subject name.
    * @li If prefixMatch is true, name can also be interpreted as a prefix of the subject name.
    */
-  public async getSigner<Fallback extends Signer = never>(
+  public async getSigner(
       name: Name,
       {
         prefixMatch = false,
         fallback = (name, keyChain, err) => Promise.reject(new Error(`signer ${name} not found ${err}`)),
       }: {
         prefixMatch?: boolean;
-        fallback?: Signer | ((name: Name, keyChain: KeyChain, err?: Error) => Promise<Fallback>);
+        fallback?: Signer | ((name: Name, keyChain: KeyChain, err?: Error) => Promise<Signer>);
       } = {},
-  ): Promise<Signer|Fallback> {
-    const invokeFallback = (err?: Error) => {
+  ): Promise<Signer> {
+    const useFallback = (err?: Error) => {
       if (typeof fallback === "function") {
         return fallback(name, this, err);
       }
@@ -83,7 +83,11 @@ export abstract class KeyChain {
 
     if (CertNaming.isCertName(name)) {
       let key: PrivateKey;
-      try { key = await this.getPrivateKey(CertNaming.toKeyName(name)); } catch (err) { return invokeFallback(err); }
+      try {
+        key = await this.getPrivateKey(CertNaming.toKeyName(name));
+      } catch (err) {
+        return useFallback(err);
+      }
       return key.withKeyLocator(name);
     }
 
@@ -95,7 +99,7 @@ export abstract class KeyChain {
           this.getPrivateKey(name),
           this.findSignerCertName(name, ({ keyName }) => name.equals(keyName)),
         ]);
-      } catch (err) { return invokeFallback(err); }
+      } catch (err) { return useFallback(err); }
       return certName ? key.withKeyLocator(certName) : key;
     }
 
@@ -115,7 +119,7 @@ export abstract class KeyChain {
     if (keyNames.length > 0) {
       return this.getPrivateKey(keyNames[0]);
     }
-    return invokeFallback();
+    return useFallback();
   }
 
   private async findSignerCertName(prefix: Name, filter: (certName: CertNaming.CertNameFields) => boolean): Promise<Name|undefined> {

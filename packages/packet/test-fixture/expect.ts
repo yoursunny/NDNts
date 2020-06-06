@@ -5,9 +5,9 @@ import expect from "expect";
 import { Component, ComponentLike, Name, NameLike } from "..";
 
 expect.extend({
-  toEqualComponent(received: Component, comp: ComponentLike) {
+  toEqualComponent(received: Component|undefined, comp: ComponentLike) {
     const c = Component.from(comp);
-    if (received.equals(c)) {
+    if (received instanceof Component && received.equals(c)) {
       return {
         message: () => `expected ${received} not to equal ${c}`,
         pass: true,
@@ -18,9 +18,9 @@ expect.extend({
       pass: false,
     };
   },
-  toEqualName(received: Name, name: NameLike) {
+  toEqualName(received: Name|undefined, name: NameLike) {
     const n = new Name(name);
-    if (received.equals(n)) {
+    if (received instanceof Name && received.equals(n)) {
       return {
         message: () => `expected ${received} not to equal ${n}`,
         pass: true,
@@ -31,9 +31,9 @@ expect.extend({
       pass: false,
     };
   },
-  toHaveName(received: { readonly name?: Name }, name: NameLike) {
+  toHaveName(received: { readonly name?: Name }|undefined, name: NameLike) {
     const n = new Name(name);
-    if (received.name?.equals(n)) {
+    if (received?.name?.equals(n)) {
       return {
         message: () => `expected ${received} not to have name ${n}`,
         pass: true,

@@ -64,7 +64,7 @@ test("KeyChainCertSource", async () => {
 
   let found = await findIn(c, pubA);
   expect(found).toHaveLength(1);
-  expect(found[0].name).toEqualName(selfA.name);
+  expect(found[0]).toHaveName(selfA.name);
 
   found = await findIn(c, pubB);
   expect(found).toHaveLength(2);
@@ -73,7 +73,7 @@ test("KeyChainCertSource", async () => {
 
   found = await findIn(c, certB);
   expect(found).toHaveLength(1);
-  expect(found[0].name).toEqualName(certB.name);
+  expect(found[0]).toHaveName(certB.name);
 
   found = await findIn(c, "/C");
   expect(found).toHaveLength(0);
@@ -108,32 +108,32 @@ describe("CertFetcher", () => {
   test("positive", async () => {
     let found = await findIn(fetcher0, pubB);
     expect(found).toHaveLength(1);
-    expect(found[0].name).toEqualName(certB.name);
+    expect(found[0]).toHaveName(certB.name);
     expect(consumeFn).toHaveBeenCalledTimes(1);
     let interest = consumeFn.mock.calls[0][0];
-    expect(interest.name).toEqualName(pubB.name);
+    expect(interest).toHaveName(pubB.name);
     expect(interest.canBePrefix).toBeTruthy();
     expect(interest.mustBeFresh).toBeTruthy();
 
     found = await findIn(fetcher1, certB);
     expect(found).toHaveLength(1);
-    expect(found[0].name).toEqualName(certB.name);
+    expect(found[0]).toHaveName(certB.name);
     expect(consumeFn).toHaveBeenCalledTimes(1); // cached positive response
 
     await new Promise((r) => setTimeout(r, 300)); // cache expired
 
     found = await findIn(fetcher1, certB);
     expect(found).toHaveLength(1);
-    expect(found[0].name).toEqualName(certB.name);
+    expect(found[0]).toHaveName(certB.name);
     expect(consumeFn).toHaveBeenCalledTimes(2);
     interest = consumeFn.mock.calls[1][0];
-    expect(interest.name).toEqualName(certB.name);
+    expect(interest).toHaveName(certB.name);
     expect(interest.canBePrefix).toBeFalsy();
     expect(interest.mustBeFresh).toBeFalsy();
 
     found = await findIn(fetcher0, pubB);
     expect(found).toHaveLength(1);
-    expect(found[0].name).toEqualName(certB.name);
+    expect(found[0]).toHaveName(certB.name);
     expect(consumeFn).toHaveBeenCalledTimes(2); // cached positive response
   });
 

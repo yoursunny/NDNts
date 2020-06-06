@@ -83,16 +83,13 @@ export class TrustSchemaPolicy {
     return false;
   }
 
-  public getSignerName(packet: TrustSchemaPolicy.MatchInput, vars: VarsLike = {}): Name {
+  public *buildSignerNames(packet: TrustSchemaPolicy.MatchInput, vars: VarsLike = {}): Iterable<Name> {
     packet = this.match(packet);
     for (const { id: pId, vars: pVars } of packet) {
       for (const signerId of this.rules.get(pId) ?? []) {
-        try {
-          return this.getPattern(signerId).build({ ...vars, ...pVars });
-        } catch {}
+        yield* this.getPattern(signerId).build({ ...vars, ...pVars });
       }
     }
-    throw new Error("no valid rule to build signer name");
   }
 }
 

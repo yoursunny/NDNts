@@ -8,6 +8,12 @@ function match(p: P.Pattern, name: NameLike): P.Vars[] {
   return Array.from(p.match(new Name(name)));
 }
 
+function build(p: P.Pattern, vars: P.VarsLike): Name[] {
+  const list = Array.from(p.build(vars));
+  list.sort((a, b) => a.compare(b));
+  return list;
+}
+
 test("const variable concat", () => {
   const p = new P.ConcatPattern([
     new P.ConstPattern("/P/Q"),
@@ -44,10 +50,16 @@ test("const variable concat", () => {
 
   expect(match(p, "/P/Q/a/b/b/c/cc")).toHaveLength(0);
 
-  expect(() => p.build()).toThrow();
-  expect(p.build({ a: "/a", b: "/", c: "/c/c" })).toEqualName("/P/Q/a/c/c");
-  expect(p.build({ a: "/a", b: "/b", c: "/c/c" })).toEqualName("/P/Q/a/b/c/c");
-  expect(() => p.build({ a: "/a", b: "/b", c: "/c/cc" })).toThrow();
+  let b = build(p, { a: "/a", b: "/", c: "/c/c" });
+  expect(b).toHaveLength(1);
+  expect(b[0]).toEqualName("/P/Q/a/c/c");
+
+  b = build(p, { a: "/a", b: "/b", c: "/c/c" });
+  expect(b).toHaveLength(1);
+  expect(b[0]).toEqualName("/P/Q/a/b/c/c");
+
+  expect(build(p, {})).toHaveLength(0);
+  expect(build(p, { a: "/a", b: "/b", c: "/c/cc" })).toHaveLength(0);
 });
 
 test("certname", () => {
@@ -68,7 +80,9 @@ test("certname", () => {
   expect(m).toHaveLength(1);
   expect(m[0].subject).toEqualName("/identity");
 
-  expect(p.build({ subject: "/identity" })).toEqualName("/identity");
+  const b = build(p, { subject: "/identity" });
+  expect(b).toHaveLength(1);
+  expect(b[0]).toEqualName("/identity");
 });
 
 test("alternate", () => {
@@ -95,9 +109,20 @@ test("alternate", () => {
   expect(m).toHaveLength(1);
   expect(m[0].b).toEqualName("/b");
 
-  expect(() => p.build({ c: "/c" })).toThrow();
-  expect(p.build({ a: "/a" })).toEqualName("/P/a/A");
-  expect(p.build({ b: "/b" })).toEqualName("/P/b/B");
+  expect(build(p, { c: "/c" })).toHaveLength(0);
+
+  let b = build(p, { a: "/a" });
+  expect(b).toHaveLength(1);
+  expect(b[0]).toEqualName("/P/a/A");
+
+  b = build(p, { b: "/b" });
+  expect(b).toHaveLength(1);
+  expect(b[0]).toEqualName("/P/b/B");
+
+  b = build(p, { a: "/a", b: "/b" });
+  expect(b).toHaveLength(2);
+  expect(b[0]).toEqualName("/P/a/A");
+  expect(b[1]).toEqualName("/P/b/B");
 });
 
 test("simplify", () => {
