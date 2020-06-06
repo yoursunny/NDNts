@@ -26,14 +26,14 @@
   "dependencies": {
     "@ndn/l3face": "workspace:*",
     "p-cancelable": "^2.0.0",
-    "p-event": "^4.1.0",
+    "p-event": "^4.2.0",
     "p-timeout": "^3.2.0",
     "tslib": "*"
   },
   "devDependencies": {
     "@ndn/fw": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "@types/readable-stream": "^2.3.6",
+    "@types/readable-stream": "^2.3.7",
     "@types/tmp": "^0.2.0",
     "readable-stream": "^3.6.0",
     "stream-mock": "^2.0.5",

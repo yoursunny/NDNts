@@ -92,8 +92,8 @@ describe("CertFetcher", () => {
     fetcher0 = new CertFetcher({
       interestLifetime: 50,
       endpoint,
-      positiveTtl: 300,
-      negativeTtl: 300,
+      positiveTtl: 200,
+      negativeTtl: 200,
     });
     fetcher1 = new CertFetcher({
       interestLifetime: 50,

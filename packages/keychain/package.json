@@ -35,7 +35,7 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@root/asn1": "^1.0.0",
+    "@root/asn1": "git+https://git.coolaj86.com/yoursunny/asn1.js.git#075ac62a8fcb7657e8964e723e5dae6738613a51",
     "@types/minimalistic-assert": "^1.0.0",
     "@types/root__asn1": "gist:521816e1294bba33a1ffc367cb141490",
     "@peculiar/webcrypto": "^1.1.1",
