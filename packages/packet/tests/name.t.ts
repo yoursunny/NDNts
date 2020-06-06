@@ -4,16 +4,25 @@ import { Decoder } from "@ndn/tlv";
 
 import { AltUri, Component, Name } from "..";
 
-test("simple", () => {
+test("construct", () => {
   let name = new Name();
   expect(name).toHaveLength(0);
   expect(name.value).toEqualUint8Array([]);
   expect(name.toString()).toBe("/");
   expect(AltUri.ofName(name)).toEqual("/");
 
-  name = new Name("/");
-  expect(name).toHaveLength(0);
-  expect(name.toString()).toBe("/");
+  for (const uri of ["", "ndn:", "/", "ndn:/"]) {
+    name = new Name(uri);
+    expect(name).toHaveLength(0);
+    expect(name.toString()).toBe("/");
+  }
+
+  for (const uri of ["A", "ndn:/A", "/A", "/%41", "8=A", "ndn:/8=A", "/8=A", "/8=%41"]) {
+    name = new Name(uri);
+    expect(name).toHaveLength(1);
+    expect(name.at(0)).toEqualComponent("A");
+    expect(name.toString()).toBe("/8=A");
+  }
 
   const decoder = new Decoder(Uint8Array.of(
     0x07, 0x07,

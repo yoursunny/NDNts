@@ -1,4 +1,4 @@
-import { toHex } from "@ndn/tlv";
+import { fromHex, toHex } from "@ndn/tlv";
 
 import { TT } from "./an";
 import { Component } from "./component";
@@ -8,7 +8,10 @@ import { Name } from "./name";
 const DIGEST_LENGTH = 32;
 
 class DigestComp implements NamingConvention<Uint8Array>, NamingConvention.WithAltUri {
+  private readonly altUriRegex: RegExp;
+
   constructor(private readonly tt: number, private readonly altUriPrefix: string) {
+    this.altUriRegex = new RegExp(`^${altUriPrefix}=([0-9a-fA-F]{64})$`);
   }
 
   public match(comp: Component): boolean {
@@ -29,6 +32,14 @@ class DigestComp implements NamingConvention<Uint8Array>, NamingConvention.WithA
   public toAltUri(comp: Component): string {
     return `${this.altUriPrefix}=${toHex(comp.value).toLowerCase()}`;
   }
+
+  public fromAltUri(input: string): Component|undefined {
+    const m = this.altUriRegex.exec(input);
+    if (!m) {
+      return undefined;
+    }
+    return new Component(this.tt, fromHex(m[1]));
+  }
 }
 
 class ImplicitDigestComp extends DigestComp {
@@ -38,8 +49,7 @@ class ImplicitDigestComp extends DigestComp {
 
   /** Remove ImplicitDigest if present at last component. */
   public strip(name: Name): Name {
-    const lastComp = name.get(-1);
-    if (!!lastComp && this.match(lastComp)) {
+    if (name.get(-1)?.is(this)) {
       return name.getPrefix(-1);
     }
     return name;

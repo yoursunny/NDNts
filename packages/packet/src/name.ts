@@ -24,13 +24,19 @@ export class Name {
   /** Create empty name, or copy from other name, or parse from URI. */
   constructor(input?: NameLike);
 
+  /** Parse from URI, with specific component parser. */
+  constructor(uri: string, parseComponent?: (input: string) => Component);
+
   /** Construct from TLV-VALUE. */
   constructor(value: Uint8Array);
 
   /** Construct from components. */
   constructor(comps: readonly ComponentLike[]);
 
-  constructor(arg1?: NameLike|Uint8Array|readonly ComponentLike[]) {
+  constructor(
+      arg1?: NameLike|Uint8Array|readonly ComponentLike[],
+      parseComponentUri = Component.from as any,
+  ) {
     let valueEncoderBufSize = 256;
     switch (true) {
       case arg1 instanceof Name: {
@@ -41,8 +47,8 @@ export class Name {
       }
       case typeof arg1 === "string": {
         const uri = arg1 as string;
-        this.comps = uri.replace(/^(?:ndn)?\//, "").split("/")
-          .filter((comp) => comp !== "").map(Component.from);
+        this.comps = uri.replace(/^(?:ndn:)?\/?/, "").split("/")
+          .filter((comp) => comp !== "").map(parseComponentUri);
         valueEncoderBufSize = uri.length + 4 * this.comps.length;
         break;
       }
@@ -167,9 +173,7 @@ export namespace Name {
     return obj instanceof Name || typeof obj === "string";
   }
 
-  /**
-   * Name compare result.
-   */
+  /** Name compare result. */
   export enum CompareResult {
     /** lhs is less than, but not a prefix of rhs */
     LT = Component.CompareResult.LT,

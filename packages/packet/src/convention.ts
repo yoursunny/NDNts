@@ -1,6 +1,10 @@
-import { Component } from "./component";
+import type { Component } from "./component";
 
-/** Naming convention, constructible from A and convertible to R. */
+/**
+ * Naming convention, which interprets a name component in a specific way.
+ * @template A input type to construct component.
+ * @template R output type to interpret component.
+ */
 export interface NamingConvention<A, R = A> {
   /** Determine if a component follows this naming convention. */
   match: (comp: Component) => boolean;
@@ -13,9 +17,16 @@ export interface NamingConvention<A, R = A> {
 }
 
 export namespace NamingConvention {
+  /** A naming convention that supports alternate/pretty URI. */
   export interface WithAltUri {
-    /** Get alternate/pretty URI of a matched component. */
+    /** Convert to alternate URI. */
     toAltUri: (comp: Component) => string;
+
+    /**
+     * Parse from alternate URI.
+     * @returns component, or undefined if it cannot be parsed.
+     */
+    fromAltUri: (input: string) => Component|undefined;
   }
 
   export function isConvention(obj: any): obj is NamingConvention<any> {

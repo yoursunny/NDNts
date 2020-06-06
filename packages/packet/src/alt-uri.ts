@@ -5,7 +5,7 @@ import { ImplicitDigest, ParamsDigest } from "./digest-comp";
 import { Name } from "./name";
 
 /**
- * Functions to print name or component in alternate/pretty URI syntax.
+ * Functions to print and parse names in alternate/pretty URI syntax.
  *
  * This class is constructed with a sequence of NamingConventions. Each component is matched
  * against these conventions in order, and the first matching convention can determine how to
@@ -16,7 +16,7 @@ import { Name } from "./name";
  * component that happens to match a convention that your application did not adopt is not
  * mistakenly interpreted with that convention.
  */
-export class AltUriPrinter {
+export class AltUriConverter {
   constructor(public readonly conventions: ReadonlyArray<NamingConvention<any>&NamingConvention.WithAltUri>) {
   }
 
@@ -34,17 +34,34 @@ export class AltUriPrinter {
   public ofName = (name: Name): string => {
     return `/${name.comps.map((comp) => this.ofComponent(comp)).join("/")}`;
   };
+
+  /** Parse component from alternate URI syntax */
+  public parseComponent = (input: string): Component => {
+    for (const conv of this.conventions) {
+      const comp = conv.fromAltUri(input);
+      if (comp) {
+        return comp;
+      }
+    }
+    return Component.from(input);
+  };
+
+  /** Parse name from alternate URI syntax. */
+  public parseName = (input: string): Name => {
+    return new Name(input, this.parseComponent);
+  };
 }
 
 class Generic implements NamingConvention<never>, NamingConvention.WithAltUri {
   public match(comp: Component) { return comp.type === TT.GenericNameComponent; }
-  public create(): Component { /* istanbul ignore next */ throw new TypeError("not supported"); }
+  public create(): never { /* istanbul ignore next */ throw new TypeError("not supported"); }
   public parse(): never { /* istanbul ignore next */ throw new TypeError("not supported"); }
   public toAltUri(comp: Component) { return comp.toString().slice(2); }
+  public fromAltUri() { return undefined; }
 }
 
 /** Print Generic, ImplicitDigest, ParamsDigest in alternate URI syntax. */
-export const AltUri = new AltUriPrinter([
+export const AltUri = new AltUriConverter([
   new Generic(),
   ImplicitDigest,
   ParamsDigest,

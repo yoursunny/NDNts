@@ -22,6 +22,8 @@ test.each(TABLE)("DigestComp %#", ({ compType, tt, altUriPrefix }) => {
   expect(comp.is(compType)).toBeTruthy();
   expect(comp.as(compType)).toEqual(digest);
   expect(AltUri.ofComponent(comp)).toBe(`${altUriPrefix}=00aa${"00".repeat(30)}`);
+  expect(AltUri.parseComponent(`${altUriPrefix}=00aa${"00".repeat(30)}`)).toEqualComponent(comp);
+  expect(AltUri.parseName(`/${altUriPrefix}=00AA${"00".repeat(30)}`)).toEqualName(new Name([comp]));
 
   expect(() => compType.create(new Uint8Array(7))).toThrow();
   expect(() => new Component().as(compType)).toThrow();

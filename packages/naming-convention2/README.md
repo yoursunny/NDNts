@@ -50,4 +50,8 @@ assert.equal(AltUri.ofComponent(name.at(2)), "v=3");
 // It is incorrect to interpret "35=%03" as a "version 3" everywhere, because in some application
 // it could mean something completely different.
 // Using AltUri from this package indicates you have adopted these naming conventions.
+
+// Use AltUri.parseName() and AltUri.parseComponent() to parse from alternate URI syntax.
+assert(AltUri.parseName("/A/32=metadata/v=3/seg=0").equals(name));
+assert(AltUri.parseComponent("v=3").equals(name.at(2)));
 ```

@@ -63,6 +63,8 @@ test("from URI or string", () => {
   expect(comp.type).toBe(0x24);
   expect(comp).toHaveLength(2);
   expect(comp.value).toEqualUint8Array([0x0F, 0xA0]);
+
+  expect(() => Component.from("x=A")).toThrow();
 });
 
 test("compare", () => {

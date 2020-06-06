@@ -4,9 +4,9 @@ import bufferCompare from "buffer-compare";
 import { TT } from "./an";
 import { NamingConvention } from "./convention";
 
-function checkType(n: number) {
-  if (n < 0x01 || n > 0xFFFF) {
-    throw new Error("Component TLV-TYPE out of range");
+function checkType(t: number) {
+  if (Number.isNaN(t) || t < 0x01 || t > 0xFFFF) {
+    throw new Error(`Component TLV-TYPE ${t} out of range`);
   }
 }
 
@@ -55,6 +55,7 @@ export class Component {
       [sType, sValue] = ["", sType];
     } else {
       type = Number.parseInt(sType, 10);
+      checkType(type);
     }
     if (/^\.*$/.test(sValue)) {
       sValue = sValue.slice(3);

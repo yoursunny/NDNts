@@ -10,6 +10,7 @@ test("Keyword", () => {
   expect(name.at(0).is(Keyword)).toBeTruthy();
   expect(name.at(0).as(Keyword)).toBe("hello");
   expect(AltUri.ofName(name)).toBe("/32=hello");
+  expect(AltUri.parseName("/32=hello")).toEqualName(name);
 });
 
 test("Segment", () => {
@@ -18,6 +19,7 @@ test("Segment", () => {
   expect(name.at(0).is(Segment)).toBeTruthy();
   expect(name.at(0).as(Segment)).toBe(0x0101);
   expect(AltUri.ofName(name)).toBe("/seg=257");
+  expect(AltUri.parseName("/seg=257")).toEqualName(name);
 });
 
 test("ByteOffset", () => {
@@ -26,6 +28,7 @@ test("ByteOffset", () => {
   expect(name.at(0).is(ByteOffset)).toBeTruthy();
   expect(name.at(0).as(ByteOffset)).toBe(0x0102);
   expect(AltUri.ofName(name)).toBe("/off=258");
+  expect(AltUri.parseName("/off=258")).toEqualName(name);
 });
 
 test("Version", () => {
@@ -34,6 +37,7 @@ test("Version", () => {
   expect(name.at(0).is(Version)).toBeTruthy();
   expect(name.at(0).as(Version)).toBe(0x0103);
   expect(AltUri.ofName(name)).toBe("/v=259");
+  expect(AltUri.parseName("/v=259")).toEqualName(name);
 });
 
 test("Timestamp", () => {
@@ -57,7 +61,9 @@ test("Timestamp", () => {
   expect(() => name.at(2).as(Timestamp.ms)).toThrow(/large/);
   expect(name.at(2).as(Timestamp.us)).toBe(Number.MAX_SAFE_INTEGER);
 
-  expect(AltUri.ofName(name.getPrefix(2))).toBe("/t=540167400000000/t=1570239360127447");
+  const name2 = name.getPrefix(2);
+  expect(AltUri.ofName(name2)).toBe("/t=540167400000000/t=1570239360127447");
+  expect(AltUri.parseName("/t=540167400000000/t=1570239360127447")).toEqualName(name2);
 });
 
 test("SequenceNum", () => {
@@ -66,4 +72,5 @@ test("SequenceNum", () => {
   expect(name.at(0).is(SequenceNum)).toBeTruthy();
   expect(name.at(0).as(SequenceNum)).toBe(0x0105);
   expect(AltUri.ofName(name)).toBe("/seq=261");
+  expect(AltUri.parseName("/seq=261")).toEqualName(name);
 });
