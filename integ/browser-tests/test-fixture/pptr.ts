@@ -21,9 +21,7 @@ export async function navigateToPage(testcaseDirname: string, delay = 200) {
   await new Promise((r) => setTimeout(r, delay));
 }
 
-/**
- * Invoke JavaScript function (in global scope) on page.
- */
+/** Invoke JavaScript function (in global scope) on page. */
 export function pageInvoke<F extends (...args: any[]) => any>(
     page: Page,
     funcName: string, ...args: Parameters<F>): ReturnType<F> {

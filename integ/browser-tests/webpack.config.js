@@ -1,17 +1,17 @@
-import "webpack-dev-server";
+const { FileMatcher } = require("file-matcher");
+const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const path = require("path");
 
-import { FileMatcher } from "file-matcher";
-import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
-import HtmlWebpackPlugin from "html-webpack-plugin";
-import * as path from "path";
-import webpack from "webpack";
+const jestPuppeteerConfig = require("./jest-puppeteer.config.js");
 
-import jestPuppeteerConfig from "./jest-puppeteer.config.js";
+/** @type {import("webpack").Entry} */
+const entry = {};
+/** @type {import("webpack").Plugin[]} */
+const plugins = [];
 
-const entry: webpack.Entry = {};
-const plugins: webpack.Plugin[] = [];
-
-const config: webpack.Configuration = {
+/** @type {import("webpack").Configuration} */
+const config = {
   mode: "development",
   devtool: "cheap-module-eval-source-map",
   output: {
@@ -43,7 +43,8 @@ const config: webpack.Configuration = {
   ],
 };
 
-(config as any).devServer = {
+/** @type {import("webpack-dev-server").Configuration} */
+config.devServer = {
   allowedHosts: [
     ".ngrok.io",
   ],
@@ -52,7 +53,7 @@ const config: webpack.Configuration = {
   port: jestPuppeteerConfig.server.port,
 };
 
-export = async () => {
+module.exports = async () => {
   const list = await new FileMatcher().find({
     path: path.resolve(__dirname, "tests"),
     fileFilter: {

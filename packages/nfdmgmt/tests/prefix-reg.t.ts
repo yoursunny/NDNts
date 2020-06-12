@@ -33,7 +33,7 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
 
   const verbs: string[] = [];
   const remoteProcess = (interest: Interest) => {
-    expect(interest.name).toHaveLength(expectedPrefix.length + 7);
+    expect(interest.name).toHaveLength(expectedPrefix.length as number + 7);
     verbs.push(interest.name.at(-6).text);
     expect(interest.name.at(-5).value).toMatchTlv(({ type, vd }) => {
       expect(type).toBe(0x68);

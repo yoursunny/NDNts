@@ -4,7 +4,10 @@
     "declarationMap": true,
     "module": "commonjs",
     "rootDir": ".",
-    "sourceMap": true
+    "sourceMap": true,
+    "types": [
+      "jest"
+    ]
   },
   "typedocOptions": {
     "inputFiles": ["./packages"],
