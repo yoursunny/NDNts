@@ -4,8 +4,7 @@ import * as asn1 from "@root/asn1";
 
 import { PublicKey } from "../base";
 import { crypto } from "../platform/mod";
-import { EC_POINT_SIZE, makeGenParams, SIGN_PARAMS } from "./algo";
-import { EcCurve } from "./mod";
+import { EC_POINT_SIZE, EcCurve, makeGenParams, SIGN_PARAMS } from "./algo";
 
 /** ECDSA public key. */
 export class EcPublicKey extends PublicKey implements PublicKey.Exportable {

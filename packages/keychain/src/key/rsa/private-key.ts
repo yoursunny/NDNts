@@ -1,11 +1,12 @@
 import { Name, NameLike, SigType } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
-import { KeyChain, RsaModulusLength, RsaPublicKey } from "../../mod";
+import type { KeyChain } from "../../store/mod";
 import { PrivateKey } from "../base";
 import { crypto } from "../platform/mod";
 import { generateKey, LoadedKey, StoredKey } from "../save";
-import { ALGO, GEN_PARAMS, IMPORT_PARAMS } from "./internal";
+import { ALGO, GEN_PARAMS, IMPORT_PARAMS, RsaModulusLength } from "./algo";
+import { RsaPublicKey } from "./public-key";
 
 /** RSA private key. */
 export class RsaPrivateKey extends PrivateKey {

@@ -5,7 +5,7 @@ import { loadSpki } from "../key/load";
 import { PrivateKey, PublicKey } from "../key/mod";
 import * as CertNaming from "../naming";
 import { ContentTypeKEY } from "./an";
-import { ValidityPeriod } from "./mod";
+import { ValidityPeriod } from "./validity-period";
 
 /**
  * NDN Certificate v2.

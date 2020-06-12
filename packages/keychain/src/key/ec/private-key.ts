@@ -3,11 +3,12 @@ import { fromHex, toHex } from "@ndn/tlv";
 import * as asn1 from "@root/asn1";
 import assert from "minimalistic-assert";
 
-import { EcCurve, EcPublicKey, KeyChain } from "../../mod";
+import type { KeyChain } from "../../store/mod";
 import { PrivateKey } from "../base";
 import { crypto } from "../platform/mod";
 import { generateKey, LoadedKey, StoredKey } from "../save";
-import { EC_POINT_SIZE, makeGenParams, SIGN_PARAMS } from "./algo";
+import { EC_POINT_SIZE, EcCurve, makeGenParams, SIGN_PARAMS } from "./algo";
+import { EcPublicKey } from "./public-key";
 
 /** ECDSA private key. */
 export class EcPrivateKey extends PrivateKey {

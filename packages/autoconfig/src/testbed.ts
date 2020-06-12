@@ -1,7 +1,8 @@
 import { FwFace } from "@ndn/fw";
 import { collect, filter, pipeline, transform } from "streaming-iterables";
 
-import { connect, queryFch } from "./mod";
+import { connect } from "./connect";
+import { queryFch } from "./fch";
 import { getDefaultGateway } from "./platform/mod";
 
 interface Options {

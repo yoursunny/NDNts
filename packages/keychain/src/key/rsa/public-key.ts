@@ -2,7 +2,7 @@ import { Name, SigType, Verifier } from "@ndn/packet";
 
 import { PublicKey } from "../base";
 import { crypto } from "../platform/mod";
-import { ALGO, IMPORT_PARAMS } from "./internal";
+import { ALGO, IMPORT_PARAMS } from "./algo";
 
 /** RSA public key. */
 export class RsaPublicKey extends PublicKey implements PublicKey.Exportable {

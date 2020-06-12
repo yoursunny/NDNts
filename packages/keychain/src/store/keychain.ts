@@ -1,10 +1,12 @@
 import { Name, Signer } from "@ndn/packet";
 
-import { Certificate } from "../cert/mod";
+import type { Certificate } from "../cert/mod";
 import { PrivateKey, PublicKey } from "../key/mod";
 import * as CertNaming from "../naming";
-import { CertStore, KeyStore, SCloneCertStore } from "./mod";
+import { KeyStore } from "./key-store";
 import { openStores } from "./platform/mod";
+import { SCloneCertStore } from "./sclone-cert-store";
+import type { CertStore } from "./store-base";
 import { MemoryStoreImpl } from "./store-impl";
 
 /** Storage of own private keys and certificates. */
