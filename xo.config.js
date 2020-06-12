@@ -1,3 +1,6 @@
+/** @typedef {import("xo").Options} XoOptions */
+
+/** @type {XoOptions} */
 const js = {
   envs: ["es2020"],
   space: 2,
@@ -55,6 +58,7 @@ const js = {
   },
 };
 
+/** @type {XoOptions} */
 const ts = {
   extends: [
     "xo-typescript",
@@ -90,6 +94,7 @@ const ts = {
   },
 };
 
+/** @type {XoOptions} */
 const jest = {
   extends: [
     "plugin:jest/recommended",
@@ -102,6 +107,7 @@ const jest = {
   },
 };
 
+/** @type {XoOptions} */
 const web = {
   envs: ["browser"],
   globals: [
@@ -109,6 +115,7 @@ const web = {
   ],
 };
 
+/** @type {XoOptions} */
 const pptr = {
   globals: [
     "browser",
@@ -118,6 +125,7 @@ const pptr = {
   ],
 };
 
+/** @type {XoOptions} */
 const literate = {
   rules: {
     "@typescript-eslint/no-unsafe-call": "off",
@@ -164,6 +172,7 @@ function makePackageOverrides(config, ...pkgs) {
   ];
 }
 
+/** @type {XoOptions} */
 module.exports = {
   ...js,
   overrides: [
