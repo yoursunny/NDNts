@@ -1,7 +1,7 @@
 import { Transport } from "@ndn/l3face";
 import { WsTransport } from "@ndn/ws-transport";
 
-import { connect } from "../mod";
+import type { connect } from "./connect";
 
 export const fetch = globalThis.fetch;
 

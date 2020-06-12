@@ -13,13 +13,7 @@
   ],
   "type": "module",
   "main": "src/mod.ts",
-  "browser": {
-    "./lib/platform/mod.js": "./lib/platform/browser.js",
-    "./src/platform/mod.ts": "./src/platform/browser.ts"
-  },
-  "sideEffects": [
-    "./test-fixture/expect.ts"
-  ],
+  "module": "lib/browser-bundle.js",
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",

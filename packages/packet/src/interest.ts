@@ -2,10 +2,10 @@ import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 
 import { TT } from "./an";
+import { sha256 } from "./digest_node";
 import { ParamsDigest } from "./digest-comp";
 import { FwHint } from "./fwhint";
 import { Name, NameLike } from "./name";
-import { sha256 } from "./platform/mod";
 import { SigInfo } from "./sig-info";
 import { LLSign, LLVerify, Signer, Verifier } from "./signing";
 

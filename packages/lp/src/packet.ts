@@ -1,7 +1,8 @@
 import { NackHeader, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 
-import { PitToken, TT } from "./mod";
+import { TT } from "./an";
+import type { PitToken } from "./pit-token";
 
 function isCritical(tt: number): boolean {
   return !(tt >= 800 && tt <= 959 && tt % 4 === 0);

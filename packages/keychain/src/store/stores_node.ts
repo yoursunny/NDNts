@@ -1,9 +1,9 @@
 import Store from "data-store";
 
-import { JsonCertStore } from "../json-cert-store";
-import { KeyStore } from "../key-store";
-import type { CertStore } from "../store-base";
-import { StoreImpl } from "../store-impl";
+import { JsonCertStore } from "./json-cert-store";
+import { KeyStore } from "./key-store";
+import type { CertStore } from "./store-base";
+import { StoreImpl } from "./store-impl";
 
 export class FileStoreImpl<T> implements StoreImpl<T> {
   public readonly storableKind = "json";

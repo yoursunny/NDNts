@@ -3,7 +3,7 @@ import assert from "minimalistic-assert";
 
 import { KeyChain } from "../../store/mod";
 import { PrivateKey, PublicKey } from "../base";
-import { crypto } from "../platform/mod";
+import { crypto } from "../crypto_node";
 import { generateKey, LoadedKey, saveKey, StoredKey } from "../save";
 import { PlainHmacKey } from "./plain";
 

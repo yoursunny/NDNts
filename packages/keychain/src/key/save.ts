@@ -3,7 +3,7 @@ import { Name, NameLike } from "@ndn/packet";
 import * as CertNaming from "../naming";
 import { KeyChain } from "../store/mod";
 import { PrivateKey, PublicKey } from "./base";
-import { crypto } from "./platform/mod";
+import { crypto } from "./crypto_node";
 
 export interface StoredKey {
   type: string;

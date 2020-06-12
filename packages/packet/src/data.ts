@@ -2,9 +2,9 @@ import { Decoder, Encodable, EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/
 
 import { SigType, TT } from "./an";
 import { Component } from "./component";
+import { sha256 } from "./digest_node";
 import { ImplicitDigest } from "./digest-comp";
 import { Name, NameLike } from "./name";
-import { sha256 } from "./platform/mod";
 import { SigInfo } from "./sig-info";
 import { LLSign, LLVerify, Signer, Verifier } from "./signing";
 

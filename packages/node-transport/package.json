@@ -13,7 +13,6 @@
   ],
   "type": "module",
   "main": "src/mod.ts",
-  "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",

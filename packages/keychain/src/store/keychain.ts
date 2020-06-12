@@ -4,10 +4,10 @@ import type { Certificate } from "../cert/mod";
 import { PrivateKey, PublicKey } from "../key/mod";
 import * as CertNaming from "../naming";
 import { KeyStore } from "./key-store";
-import { openStores } from "./platform/mod";
 import { SCloneCertStore } from "./sclone-cert-store";
 import type { CertStore } from "./store-base";
 import { MemoryStoreImpl } from "./store-impl";
+import { openStores } from "./stores_node";
 
 /** Storage of own private keys and certificates. */
 export abstract class KeyChain {

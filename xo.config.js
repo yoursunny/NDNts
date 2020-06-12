@@ -17,6 +17,7 @@ const js = {
     "simple-import-sort/sort": "error",
     "unicorn/catch-error-name": ["error", { name: "err", caughtErrorsIgnorePattern: "^err" }],
     "unicorn/consistent-function-scoping": "off",
+    "unicorn/filename-case": "off",
     "unicorn/no-fn-reference-in-iterator": "off",
     "unicorn/no-nested-ternary": "off",
     "unicorn/prefer-spread": "off",

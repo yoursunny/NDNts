@@ -13,10 +13,10 @@
   ],
   "type": "module",
   "main": "src/mod.ts",
+  "module": "lib/browser-bundle.js",
   "browser": {
     "web-bluetooth": false
   },
-  "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",

@@ -1,6 +1,6 @@
 import { LLSign, LLVerify, Signer, SigType, Verifier } from "@ndn/packet";
 
-import { crypto } from "../platform/mod";
+import { crypto } from "../crypto_node";
 
 export class PlainHmacKey implements Signer, Verifier {
   constructor(private readonly key: CryptoKey) {

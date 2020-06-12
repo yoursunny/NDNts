@@ -1,4 +1,4 @@
-import { fetch } from "../../platform/mod";
+import { fetch } from "../fetch_node";
 import { ClientEmailChallenge } from "./email";
 
 interface MailsacError {

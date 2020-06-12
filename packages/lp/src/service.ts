@@ -2,7 +2,8 @@ import { Data, Interest, Nack, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
 import itKeepAlive from "it-keepalive";
 
-import { LpPacket, TT } from "./mod";
+import { TT } from "./an";
+import { LpPacket } from "./packet";
 import { PitToken } from "./pit-token";
 
 const IDLE = Encoder.encode(new LpPacket());

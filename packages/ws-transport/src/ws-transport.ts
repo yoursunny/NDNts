@@ -3,7 +3,7 @@ import { EventIterator } from "event-iterator";
 import PCancelable from "p-cancelable";
 import pTimeout from "p-timeout";
 
-import { makeWebSocket } from "./platform/mod";
+import { makeWebSocket } from "./ws_node";
 
 const pushHandlers = new WeakMap<object, (evt: MessageEvent) => void>();
 

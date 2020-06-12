@@ -1,7 +1,7 @@
 import { Name, SigType, Verifier } from "@ndn/packet";
 
 import { PublicKey } from "../base";
-import { crypto } from "../platform/mod";
+import { crypto } from "../crypto_node";
 import { ALGO, IMPORT_PARAMS } from "./algo";
 
 /** RSA public key. */

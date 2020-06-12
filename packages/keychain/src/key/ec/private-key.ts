@@ -5,7 +5,7 @@ import assert from "minimalistic-assert";
 
 import type { KeyChain } from "../../store/mod";
 import { PrivateKey } from "../base";
-import { crypto } from "../platform/mod";
+import { crypto } from "../crypto_node";
 import { generateKey, LoadedKey, StoredKey } from "../save";
 import { EC_POINT_SIZE, EcCurve, makeGenParams, SIGN_PARAMS } from "./algo";
 import { EcPublicKey } from "./public-key";

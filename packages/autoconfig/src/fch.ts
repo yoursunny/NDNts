@@ -1,4 +1,4 @@
-import { FCH_ALWAYS_CAPABILITIES, fetch } from "./platform/mod";
+import { FCH_ALWAYS_CAPABILITIES, fetch } from "./platform_node";
 
 export async function queryFch(opts: queryFch.Options = {}): Promise<string[]> {
   const {

@@ -3,7 +3,7 @@ import { collect, filter, pipeline, transform } from "streaming-iterables";
 
 import { connect } from "./connect";
 import { queryFch } from "./fch";
-import { getDefaultGateway } from "./platform/mod";
+import { getDefaultGateway } from "./platform_node";
 
 interface Options {
   /** List of routers to use in case FCH request fails. */

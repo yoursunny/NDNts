@@ -3,7 +3,7 @@ import assert from "minimalistic-assert";
 
 import type { KeyChain } from "../../store/mod";
 import { PrivateKey } from "../base";
-import { crypto } from "../platform/mod";
+import { crypto } from "../crypto_node";
 import { generateKey, LoadedKey, StoredKey } from "../save";
 import { ALGO, GEN_PARAMS, IMPORT_PARAMS, RsaModulusLength } from "./algo";
 import { RsaPublicKey } from "./public-key";

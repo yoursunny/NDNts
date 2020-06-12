@@ -13,11 +13,7 @@
   ],
   "type": "module",
   "main": "src/mod.ts",
-  "browser": {
-    "./lib/serve/chunk-source/file.js": false,
-    "./src/serve/chunk-source/file.ts": false
-  },
-  "sideEffects": false,
+  "module": "lib/browser-bundle.js",
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",

@@ -3,7 +3,7 @@ import { toHex } from "@ndn/tlv";
 import * as asn1 from "@root/asn1";
 
 import { PublicKey } from "../base";
-import { crypto } from "../platform/mod";
+import { crypto } from "../crypto_node";
 import { EC_POINT_SIZE, EcCurve, makeGenParams, SIGN_PARAMS } from "./algo";
 
 /** ECDSA public key. */
