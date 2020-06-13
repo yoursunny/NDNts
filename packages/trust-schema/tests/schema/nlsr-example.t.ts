@@ -4,8 +4,7 @@ import { Certificate, CertNaming, EcPrivateKey, KeyChain, PrivateKey, ValidityPe
 import { Component, Data, Name } from "@ndn/packet";
 import { collect, take } from "streaming-iterables";
 
-import { pattern as P, TrustSchema, TrustSchemaPolicy, versec2019 } from "../..";
-import { TrustSchemaSigner } from "../../src/schema/signer";
+import { pattern as P, TrustSchema, TrustSchemaPolicy, TrustSchemaSigner, versec2019 } from "../..";
 
 const NLSR_POLICY = `
 # adapted from https://pollere.net/Pdfdocs/BuildingBridge.pdf

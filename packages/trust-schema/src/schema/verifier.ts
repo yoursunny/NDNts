@@ -1,9 +1,9 @@
-import { Certificate } from "@ndn/keychain";
+import type { Certificate } from "@ndn/keychain";
 import { Name, Verifier } from "@ndn/packet";
 
 import { PolicyVerifier } from "../policy-verifier";
-import { TrustSchemaPolicy } from "./policy";
-import { TrustSchema } from "./schema";
+import type { TrustSchemaPolicy } from "./policy";
+import type { TrustSchema } from "./schema";
 
 interface Context {
   packet: TrustSchemaPolicy.Match[];

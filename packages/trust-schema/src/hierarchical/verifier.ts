@@ -1,5 +1,5 @@
 import { Certificate, CertNaming } from "@ndn/keychain";
-import { Name, Verifier } from "@ndn/packet";
+import type { Name, Verifier } from "@ndn/packet";
 
 import { PolicyVerifier } from "../policy-verifier";
 

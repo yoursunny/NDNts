@@ -1,6 +1,6 @@
-import { Certificate } from "@ndn/keychain";
+import type { Certificate } from "@ndn/keychain";
 
-import { TrustSchemaPolicy } from "./policy";
+import type { TrustSchemaPolicy } from "./policy";
 
 /** A trust schema. */
 export class TrustSchema {
