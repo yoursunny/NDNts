@@ -1,4 +1,3 @@
-import "./ndncert";
 import "./webcrypto";
 
 import { EcPrivateKey, HmacKey, KeyChain, RsaPrivateKey } from "@ndn/keychain";

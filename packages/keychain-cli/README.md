@@ -128,32 +128,6 @@ This command copies keys and certificates from ndn-cxx KeyChain using `ndnsec` e
 
 See `@ndn/ndnsec` package for more information.
 
-## `ndntssec ndncert02-client`: Request Certificate from NDNCERT 0.2 CA
-
-```sh
-nfd-start
-ndn-autoconfig
-ndnpeek -p /ndn/edu/ucla/yufeng/CA/_PROBE/INFO > ndncert-ucla.json
-
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec ndncert02-client --type ec --curve P-384 --ca ndncert-ucla.json --valid-days 10 --verbose
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec ndncert02-client --ndnsec --ca ndncert-ucla.json
-```
-
-This command requests a certificate from NDNCERT 0.2 certificate authority, and prints certificate name to standard output.
-
-* `--ca` specifies NDNCERT CA config file.
-  This argument is required.
-* `--verbose` enables NDNCERT client logging.
-* `--type`, `--curve`, and `--modulus-length` specify crypto key properties.
-  They are same as `ndntssec gen-key` command.
-* `--valid-days` specifies certificate ValidityPeriod.
-  It is same as `ndntssec issue-cert` command.
-* `--ndnsec` generates key pair and saves certificate in ndn-cxx KeyChain using `ndnsec` executable.
-  The crypto key is RSA-2048; `--type`, `--curve`, and `--modulus-length` are ignored.
-
-This command by default connects to local NFD forwarder.
-You may setup a different uplink using `NDNTS_UPLINK` environment variable, as explained in `@ndn/cli-common` documentation.
-
 ## `ndntssec ndncert03-*`: NDNCERT 0.3
 
 `ndntssec ndncert03-make-profile` command generates a CA profile.

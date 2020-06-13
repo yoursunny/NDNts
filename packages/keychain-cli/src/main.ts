@@ -8,7 +8,6 @@ import { ImportSafeBagCommand } from "./import-safebag";
 import { IssueCertCommand } from "./issue-cert";
 import { ListCertsCommand } from "./list-certs";
 import { ListKeysCommand } from "./list-keys";
-import { Ndncert02ClientCommand } from "./ndncert02-client";
 import { Ndncert03CaCommand } from "./ndncert03-ca";
 import { Ndncert03ClientCommand } from "./ndncert03-client";
 import { Ndncert03MakeProfileCommand } from "./ndncert03-make-profile";
@@ -26,7 +25,6 @@ yargs
   .command(new AddCertCommand())
   .command(new ImportSafeBagCommand())
   .command(new ImportNdnsecCommand())
-  .command(new Ndncert02ClientCommand())
   .command(new Ndncert03MakeProfileCommand())
   .command(new Ndncert03ShowProfileCommand())
   .command(new Ndncert03CaCommand())

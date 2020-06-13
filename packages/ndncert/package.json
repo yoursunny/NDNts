@@ -9,9 +9,7 @@
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
   "files": [
-    "lib",
-    "02.js",
-    "02.d.ts"
+    "lib"
   ],
   "type": "module",
   "main": "src/mod.ts",
@@ -29,15 +27,11 @@
     "@ndn/endpoint": "workspace:*",
     "@ndn/keychain": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
-    "@ndn/nfdmgmt": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/rdr": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "fast-chunk-string": "^1.0.1",
     "indent-string": "^4.0.0",
-    "loglevel": "^1.6.8",
     "minimalistic-assert": "^1.0.1",
-    "node-fetch": "^2.6.0",
     "tslib": "*",
     "typed-emitter": "^1.2.0"
   },
@@ -45,8 +39,6 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/repo": "workspace:*",
-    "@types/fast-chunk-string": "^1.0.0",
-    "@types/minimalistic-assert": "^1.0.0",
-    "@types/node-fetch": "^2.5.7"
+    "@types/minimalistic-assert": "^1.0.0"
   }
 }
