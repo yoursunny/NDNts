@@ -1,4 +1,5 @@
-import { Certificate, EC_CURVES, EcPrivateKey, HmacKey, KeyChain, PublicKey, RSA_MODULUS_LENGTHS, RsaPrivateKey } from "@ndn/keychain";
+import { Certificate, EC_CURVES, EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaPrivateKey } from "@ndn/keychain";
+import * as ndn_testbed_certs from "@ndn/keychain/test-fixture/ndn-testbed-certs";
 import { Data, digestSigning, Signer, Verifier } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
@@ -62,7 +63,10 @@ async function checkWebCrypto() {
       pub = pub ?? pvt as unknown as PublicKey;
       try {
         if (canMakeCert) {
-          const cert = await Certificate.selfSign({ privateKey: pvt!, publicKey: pub });
+          const cert = await Certificate.selfSign({
+            publicKey: pub as PublicKey,
+            privateKey: pvt as PrivateKey,
+          });
           await cert.loadPublicKey();
         }
         let pkt = new Data("/D");
@@ -74,6 +78,24 @@ async function checkWebCrypto() {
       }
     }
     lines.push(`${title}: ${err ? err.toString() : "OK"}`);
+  }
+
+  let testbedRootKey: PublicKey|undefined;
+  try {
+    const cert = Certificate.fromData(new Decoder(ndn_testbed_certs.ROOT_V2_NDNCERT).decode(Data));
+    testbedRootKey = await cert.loadPublicKey();
+    lines.push("import testbed root certificate: OK");
+  } catch (err) {
+    lines.push(`import testbed root certificate: ${err}`);
+  }
+
+  try {
+    const cert = Certificate.fromData(new Decoder(ndn_testbed_certs.ARIZONA_20190312).decode(Data));
+    await cert.loadPublicKey();
+    await testbedRootKey?.verify(cert.data);
+    lines.push("import and verify testbed site certificate: OK");
+  } catch (err) {
+    lines.push(`import and verify testbed site certificate: ${err}`);
   }
   return lines;
 }

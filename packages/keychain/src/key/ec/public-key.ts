@@ -36,7 +36,7 @@ export class EcPublicKey extends PublicKey implements PublicKey.Exportable {
   }
 }
 
-function determineEcCurve(der: asn1.ElementBuffer): EcCurve {
+function determineEcCurve(der: asn1.ElementBuffer): EcCurve|false {
   const params = der.children?.[0].children?.[1];
   if (params && params.type === 0x06 && params.value) {
     const namedCurveOid = toHex(params.value);
@@ -51,14 +51,34 @@ function determineEcCurve(der: asn1.ElementBuffer): EcCurve {
     /* istanbul ignore next */
     throw new Error(`unknown namedCurve OID ${namedCurveOid}`);
   }
-  // Some certificates are using specifiedCurve. Assume they are P-256.
-  return "P-256";
+  // Some older certificates are using specifiedCurve.
+  // https://redmine.named-data.net/issues/5037
+  return false;
+}
+
+async function importNamedCurve(curve: EcCurve, spki: Uint8Array): Promise<CryptoKey> {
+  return crypto.subtle.importKey("spki", spki, makeGenParams(curve), true, ["verify"]);
+}
+
+async function importSpecificCurve(curve: EcCurve, der: asn1.ElementBuffer): Promise<CryptoKey> {
+  const subjectPublicKey = der.children?.[1];
+  if (!subjectPublicKey || subjectPublicKey.type !== 0x03) {
+    throw new Error("subjectPublicKey not found");
+  }
+  return crypto.subtle.importKey("raw", subjectPublicKey.value!,
+    makeGenParams(curve), true, ["verify"]);
 }
 
 export namespace EcPublicKey {
   export async function importSpki(name: Name, spki: Uint8Array, der: asn1.ElementBuffer): Promise<EcPublicKey> {
-    const curve = determineEcCurve(der);
-    const key = await crypto.subtle.importKey("spki", spki, makeGenParams(curve), true, ["verify"]);
+    let curve = determineEcCurve(der);
+    let key: CryptoKey;
+    if (curve) {
+      key = await importNamedCurve(curve, spki);
+    } else {
+      curve = "P-256";
+      key = await importSpecificCurve(curve, der);
+    }
     return new EcPublicKey(name, curve, key);
   }
 }
