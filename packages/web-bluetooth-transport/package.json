@@ -13,7 +13,8 @@
   ],
   "type": "module",
   "main": "src/mod.ts",
-  "module": "lib/browser-bundle.js",
+  "module": "lib/mod_browser.js",
+  "sideEffects": false,
   "browser": {
     "web-bluetooth": false
   },
@@ -24,7 +25,8 @@
     "directory": "packages/web-bluetooth-transport"
   },
   "publishConfig": {
-    "main": "lib/mod.js"
+    "main": "lib/mod_node.js",
+    "types": "lib/mod.d.ts"
   },
   "dependencies": {
     "@ndn/l3face": "workspace:*",

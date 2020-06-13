@@ -4,14 +4,22 @@ const { pipeline } = require("stream");
 const split2 = require("split2");
 
 /**
+ * Write to a file later, to avoid conflicts with tsc.
  * @param {string} filename
- * @param {string[]} lines
+ * @param {false|string[]} lines
  */
 function delayedWrite(filename, lines) {
-  setTimeout(() => fs.writeFile(filename, lines.join("\n")), 2000);
+  setTimeout(() => {
+    if (lines === false) {
+      fs.unlink(filename);
+    } else {
+      fs.writeFile(filename, lines.join("\n"));
+    }
+  }, 2000);
 }
 
 /**
+ * Transform a declaration file: delete source map.
  * @param {string} filename
  */
 async function transformDeclaration(filename) {
@@ -20,100 +28,126 @@ async function transformDeclaration(filename) {
   delayedWrite(filename, lines);
 }
 
-/**
- * @param {string} nodeLine
- * @param {string} browserLine
- * @return {string[]}
- */
-function writeConditional(nodeLine, browserLine) {
-  return [
-    "/// #if false",
-    nodeLine,
-    "/*",
-    "/// #else",
-    browserLine,
-    "/// #endif",
-    "/// #if false",
-    "*/",
-    "/// #endif",
-  ];
-}
-
 // Allowlist of packages published with ES Module entrypoint.
 const ESM_IMPORTS = new Set([...builtins]);
 
-/**
- * @param {string} line
- * @param {{ needRequire: boolean }} ctx
- * @return {string|string[]]}
- */
-function transformImportExportLine(line, ctx) {
-  const m = line.match(/^(import|export) (\* as )?(.*) from "(.*)";$/);
-  if (!m) {
-    return line;
+/** Transform a JavaScript file. */
+class TransformJs {
+  /**
+   * @param {string} filename
+   */
+  constructor(filename) {
+    this.filename = filename;
+
+    /** Is createRequire needed? */
+    this.needRequire = false;
+
+    /**
+     * Output lines for Node.
+     * @type {string[]}
+     */
+    this.nodeOutput = [];
+
+    /**
+     * Output lines for browser.
+     * @type {string[]}
+     */
+    this.browserOutput = [];
   }
 
-  let [, action, allAs = "", imports, specifier] = m;
-  if (specifier.startsWith(".")) {
-    line = `${action} ${allAs}${imports} from "${specifier}.js";`;
-    if (specifier.endsWith("_node")) {
-      return writeConditional(
-        line,
-        `${action} ${allAs}${imports} from "${specifier.replace(/_node$/, "_browser")}.js";`,
+  async execute() {
+    const input = (await fs.readFile(this.filename, { encoding: "utf-8" })).split("\n");
+    for (let line of input) {
+      line = line.replace(/\r$/, "");
+      switch (true) {
+        case line.startsWith("import ") || line.startsWith("export "):
+          this.transformImportExport(line);
+          break;
+        case line.startsWith("//# sourceMappingURL="):
+          break;
+        default:
+          this.emitLine(line);
+          break;
+      }
+    }
+
+    if (this.needRequire) {
+      this.nodeOutput.unshift(
+        "import { createRequire } from \"module\";",
+        "const require = createRequire(import.meta.url);",
+        "const { __importDefault } = require(\"tslib\");",
       );
     }
-    return line;
-  }
 
-  const pkg = specifier.split("/").slice(0, specifier.startsWith("@") ? 2 : 1).join("/");
-  if (pkg.startsWith("@ndn/") || ESM_IMPORTS.has(pkg)) {
-    return line;
-  }
-
-  ctx.needRequire = true;
-
-  let requirePrefix = "";
-  let requireSuffix = "";
-  if (imports.startsWith("* as ")) {
-    imports = imports.slice(5);
-  } else if (imports.startsWith("{")) {
-    imports = imports.replace(/ as /g, ": ");
-  } else {
-    requirePrefix = "__importDefault(";
-    requireSuffix = ").default";
-  }
-  return writeConditional(
-    `const ${imports} = ${requirePrefix}require("${specifier}")${requireSuffix};`,
-    line,
-  );
-}
-
-/**
- * @param {string} filename
- */
-async function transformJs(filename) {
-  let lines = (await fs.readFile(filename, { encoding: "utf-8" })).split("\n");
-  const ctx = { needRequire: false };
-  lines = lines.flatMap((/** @type string */line) => {
-    line = line.replace(/\r$/, "");
-    if (line.startsWith("import ") || line.startsWith("export ")) {
-      return transformImportExportLine(line, ctx);
+    const basename = this.filename.replace(/(_node|_browser)?\.js$/, "");
+    const nodeOnly = this.filename.endsWith("_node.js");
+    const browserOnly = this.filename.endsWith("_browser.js");
+    if (!browserOnly) {
+      delayedWrite(`${basename}_node.js`, this.nodeOutput);
     }
-    if (line.startsWith("//# sourceMappingURL=")) {
-      return [];
+    if (!nodeOnly) {
+      delayedWrite(`${basename}_browser.js`, this.browserOutput);
     }
-    return line;
-  });
-  if (ctx.needRequire) {
-    lines.unshift(
-      "/// #if false",
-      "import { createRequire } from \"module\";",
-      "const require = createRequire(import.meta.url);",
-      "const { __importDefault } = require(\"tslib\");",
-      "/// #endif",
+    if (!nodeOnly && !browserOnly) {
+      delayedWrite(this.filename, false);
+    }
+  }
+
+  /**
+   * Output a line.
+   * @param {string} node line for Node
+   * @param {string|undefined} browser line for browser
+   */
+  emitLine(node, browser) {
+    if (typeof browser === "undefined") {
+      browser = node;
+    }
+    this.nodeOutput.push(node);
+    this.browserOutput.push(browser);
+  }
+
+  /**
+   * Process an import/export line
+   * @param {string} line
+   */
+  transformImportExport(line) {
+    const m = line.match(/^(import|export) (\* as )?(.*) from "(.*)";$/);
+    if (!m) {
+      return this.emitLine(line);
+    }
+
+    let [, action, allAs = "", imports, specifier] = m;
+    if (specifier.startsWith(".")) {
+      if (specifier.endsWith("_node")) {
+        specifier = specifier.slice(0, -5); // trim "_node"
+      }
+      return this.emitLine(
+        `${action} ${allAs}${imports} from "${specifier}_node.js";`,
+        `${action} ${allAs}${imports} from "${specifier}_browser.js";`,
+      );
+    }
+
+    const pkg = specifier.split("/").slice(0, specifier.startsWith("@") ? 2 : 1).join("/");
+    if (pkg.startsWith("@ndn/") || ESM_IMPORTS.has(pkg)) {
+      return this.emitLine(line);
+    }
+
+    this.needRequire = true;
+
+    let requirePrefix = "";
+    let requireSuffix = "";
+    if (imports.startsWith("{")) {
+      imports = imports.replace(/ as /g, ": ");
+    } else {
+      requirePrefix = "__importDefault(";
+      requireSuffix = ").default";
+    }
+
+    return this.emitLine(
+      `const ${imports} = ${requirePrefix}require("${specifier}")${requireSuffix};`,
+      line,
     );
   }
-  delayedWrite(filename, lines);
 }
 
 (async () => {
@@ -133,7 +167,7 @@ lines.on("data", async (/** @type string */line) => {
     } else if (filename.endsWith(".d.ts")) {
       await transformDeclaration(filename);
     } else if (filename.endsWith(".js")) {
-      await transformJs(filename);
+      await new TransformJs(filename).execute();
     }
   } catch (err) {
     console.warn(filename, err);

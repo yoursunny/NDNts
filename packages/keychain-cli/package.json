@@ -12,7 +12,6 @@
     "lib"
   ],
   "type": "module",
-  "main": "src/main.ts",
   "bin": {
     "ndntssec": "cli.cjs"
   },
@@ -21,9 +20,6 @@
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
     "directory": "packages/keychain-cli"
-  },
-  "publishConfig": {
-    "main": "lib/main.js"
   },
   "dependencies": {
     "@ndn/cli-common": "workspace:*",

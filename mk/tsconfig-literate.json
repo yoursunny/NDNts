@@ -3,8 +3,8 @@
   "compilerOptions": {
     "baseUrl": "..",
     "paths": {
-      "@ndn/*": ["./packages/*/lib/mod.js"],
-      "ndn": ["./packages/ndn/lib/mod.js"]
+      "@ndn/*": ["./packages/*/lib/mod_node.js"],
+      "ndn": ["./packages/ndn/lib/mod_node.js"]
     }
   }
 }

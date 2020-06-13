@@ -13,7 +13,8 @@
   ],
   "type": "module",
   "main": "src/mod.ts",
-  "module": "lib/browser-bundle.js",
+  "module": "lib/mod_browser.js",
+  "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
@@ -21,7 +22,8 @@
     "directory": "packages/trust-schema"
   },
   "publishConfig": {
-    "main": "lib/mod.js"
+    "main": "lib/mod_node.js",
+    "types": "lib/mod.d.ts"
   },
   "dependencies": {
     "@ndn/endpoint": "workspace:*",

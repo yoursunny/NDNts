@@ -20,7 +20,8 @@
     "directory": "packages/ndnsec"
   },
   "publishConfig": {
-    "main": "lib/mod.js"
+    "main": "lib/mod_node.js",
+    "types": "lib/mod.d.ts"
   },
   "dependencies": {
     "@ndn/keychain": "workspace:*",

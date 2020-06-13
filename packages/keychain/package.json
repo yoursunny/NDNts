@@ -13,7 +13,10 @@
   ],
   "type": "module",
   "main": "src/mod.ts",
-  "module": "lib/browser-bundle.js",
+  "module": "lib/mod_browser.js",
+  "sideEffects": [
+    "**/validity-period*"
+  ],
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
@@ -21,7 +24,8 @@
     "directory": "packages/keychain"
   },
   "publishConfig": {
-    "main": "lib/mod.js"
+    "main": "lib/mod_node.js",
+    "types": "lib/mod.d.ts"
   },
   "dependencies": {
     "@ndn/naming-convention2": "workspace:*",

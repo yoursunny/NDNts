@@ -34,7 +34,6 @@ script:
   - npm run literate
   - npm run lint-ci
   - npm run cover -- --colors
-  - npm run bundle
   - cd $TRAVIS_BUILD_DIR/integ/browser-tests && npm test
   - cd $TRAVIS_BUILD_DIR/integ/ndncxx-tests && npm test
   - cd $TRAVIS_BUILD_DIR
