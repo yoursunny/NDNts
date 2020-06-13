@@ -6,7 +6,7 @@ This package implements **Endpoint** type, which is the basic abstraction throug
 
 An endpoint is similar to a "client face" in other NDN libraries, with the enhancement that it handles these details automatically:
 
-* [ ] Outgoing packets are signed and incoming packets are verified, if trust schema is provided.
+* [X] Outgoing packets are signed and incoming packets are verified, if trust schema is provided.
 * [X] Outgoing Interests are retransmitted periodically, if retransmission policy is specified.
 * [X] Outgoing Data buffer, if enabled, allows the producer to reply to one Interest with multiple Data (e.g. segments), or push generated Data without receiving an Interest.
       Data will be sent automatically upon Interest arrival.

@@ -15,7 +15,7 @@ The consumer functionality:
 * [ ] supports byte offsets.
 * [X] supports multiple naming conventions.
 * [X] has Interest pipelining, congestion control, and loss recovery.
-* [ ] verifies packets with trust schema.
+* [X] verifies packets with a `Verifier` (fixed key or trust schema).
 * [X] emits events as segments arrive.
 * [X] outputs in-order data chunks as a readable stream.
 * [X] outputs completely reassembled object via Promise.
@@ -33,6 +33,5 @@ The producer functionality:
 * [X] supports segment numbers.
 * [ ] supports byte offsets.
 * [X] supports multiple naming conventions.
-* [X] signs packets with fixed key.
-* [ ] signs packets with trust schema.
+* [X] signs packets with a `Signer` (fixed key or trust schema).
 * [ ] reports when all segments have been retrieved at least once.

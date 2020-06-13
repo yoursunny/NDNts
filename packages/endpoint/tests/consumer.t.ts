@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Data, Interest } from "@ndn/packet";
+import { Data, Interest, Verifier } from "@ndn/packet";
 
 import { Endpoint, ProducerHandler, RetxPolicy } from "..";
 
@@ -64,4 +64,20 @@ describe("retx limit", () => {
     expect(producer).toHaveBeenCalledTimes(1);
     expect(promise.nRetx).toBe(0);
   });
+});
+
+test("verify", async () => {
+  const producer = jest.fn<ReturnType<ProducerHandler>, Parameters<ProducerHandler>>()
+    .mockResolvedValueOnce(new Data("/A"));
+  ep.produce("/A", producer);
+
+  const verify = jest.fn<ReturnType<Verifier["verify"]>, Parameters<Verifier["verify"]>>()
+    .mockRejectedValue(new Error("mock-verify-error"));
+
+  const promise = ep.consume(
+    new Interest("/A", Interest.Lifetime(200)),
+    { verifier: { verify } },
+  );
+  await expect(promise).rejects.toThrow(/mock-verify-error/);
+  expect(producer).toHaveBeenCalledTimes(1);
 });

@@ -1,5 +1,5 @@
 import { CancelInterest, Forwarder, FwFace, RejectInterest } from "@ndn/fw";
-import { Data, Interest } from "@ndn/packet";
+import { Data, Interest, Verifier } from "@ndn/packet";
 import pushable from "it-pushable";
 import PCancelable from "p-cancelable";
 
@@ -7,6 +7,7 @@ import { makeRetxGenerator, RetxPolicy } from "./retx";
 
 export interface Options {
   retx?: RetxPolicy;
+  verifier?: Verifier;
   describe?: string;
 }
 
@@ -30,6 +31,7 @@ export class EndpointConsumer {
   public consume(interest: Interest, opts: Options = {}): Context {
     const {
       retx,
+      verifier,
       describe = `consume(${interest.name})`,
     } = { ...this.opts, ...opts };
     let nRetx = -1;
@@ -58,6 +60,12 @@ export class EndpointConsumer {
         async tx(iterable) {
           for await (const pkt of iterable) {
             if (pkt instanceof Data) {
+              try {
+                await verifier?.verify(pkt);
+              } catch (err) {
+                reject(new Error(`Data verify failed: ${err} @${this}`));
+                break;
+              }
               resolve(pkt);
               break;
             }

@@ -1,6 +1,6 @@
 import { Endpoint } from "@ndn/endpoint";
 import { CancelInterest, Forwarder, FwFace, InterestToken } from "@ndn/fw";
-import { Data, Interest, Name } from "@ndn/packet";
+import { Data, Interest, Name, Verifier } from "@ndn/packet";
 import AbortController from "abort-controller";
 import { EventEmitter } from "events";
 import TypedEmitter from "typed-emitter";
@@ -20,6 +20,9 @@ interface Options extends FetchLogic.Options {
 
   /** Allow aborting fetching process. */
   abort?: AbortController;
+
+  /** If specified, verify received Data. */
+  verifier?: Verifier;
 }
 
 interface Events {
@@ -82,14 +85,21 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
   private rx = async (iterable: AsyncIterable<FwFace.Txable>) => {
     for await (const pkt of iterable) {
       if (pkt instanceof Data) {
-        this.handleData(pkt);
+        void this.handleData(pkt);
       }
     }
   };
 
-  private handleData(data: Data) {
+  private async handleData(data: Data) {
     const segNum = InterestToken.get<number>(data);
     if (typeof segNum === "undefined") {
+      return;
+    }
+    try {
+      await this.opts.verifier?.verify(data);
+    } catch (err) {
+      this.emit("error", new Error(`cannot verify segment ${segNum}: ${err}`));
+      this.close();
       return;
     }
     this.logic.satisfy(segNum);

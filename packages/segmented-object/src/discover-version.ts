@@ -12,10 +12,11 @@ export function discoverVersion(name: Name, opts: discoverVersion.Options = {}):
     versionConvention = defaultVersionConvention,
     segmentNumConvention = defaultSegmentConvention,
     retxLimit = 2,
+    verifier,
   } = opts;
 
   const interest = new Interest(name, Interest.CanBePrefix, Interest.MustBeFresh);
-  const consumer = endpoint.consume(interest, { retx: retxLimit });
+  const consumer = endpoint.consume(interest, { retx: retxLimit, verifier });
   return new PCancelable((resolve, reject, onCancel) => {
     onCancel(() => consumer.cancel());
     consumer.then(async (data) => {

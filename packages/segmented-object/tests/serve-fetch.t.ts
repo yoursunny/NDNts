@@ -5,12 +5,12 @@ import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Segment as Segment1 } from "@ndn/naming-convention1";
 import { Segment as Segment2 } from "@ndn/naming-convention2";
-import { Interest, Name } from "@ndn/packet";
+import { Interest, Name, Verifier } from "@ndn/packet";
 import { AbortController } from "abort-controller";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { consume } from "streaming-iterables";
 
-import { BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, makeChunkSource, serve } from "..";
+import { BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, makeChunkSource, serve, Server } from "..";
 import { makeObjectBody } from "../test-fixture/object-body";
 import { deleteTmpFiles, writeTmpFile } from "../test-fixture/tmpfile";
 
@@ -103,17 +103,34 @@ test("ranged", async () => {
   server.close();
 });
 
-test("empty object", async () => {
-  const fw = Forwarder.create();
-  const server = serve("/R", new BufferChunkSource(new Uint8Array()), { endpoint: new Endpoint({ fw }), segmentNumConvention: Segment1 });
+describe("empty object", () => {
+  let server: Server;
+  beforeEach(() => {
+    server = serve("/R", new BufferChunkSource(new Uint8Array()));
+  });
+  afterEach(() => {
+    server.close();
+  });
 
-  const ep = new Endpoint({ fw });
-  await expect(ep.consume(new Interest(new Name("/R").append(Segment1, 1), Interest.Lifetime(50))))
-    .rejects.toThrow();
-  const data = await ep.consume(new Interest(new Name("/R").append(Segment1, 0)));
-  expect(data.content).toHaveLength(0);
+  test("consume single", async () => {
+    const ep = new Endpoint();
+    await expect(ep.consume(new Interest(new Name("/R").append(Segment2, 1), Interest.Lifetime(50))))
+      .rejects.toThrow();
+    const data = await ep.consume(new Interest(new Name("/R").append(Segment2, 0)));
+    expect(data.content).toHaveLength(0);
+  });
 
-  server.close();
+  test("fetch", async () => {
+    await expect(fetch.promise(new Name("/R"))).resolves.toHaveLength(0);
+  });
+
+  test("verify error", async () => {
+    const verify = jest.fn<ReturnType<Verifier["verify"]>, Parameters<Verifier["verify"]>>()
+      .mockRejectedValue(new Error("mock-verify-error"));
+    await expect(fetch.promise(new Name("/R"), { verifier: { verify }, retxLimit: 0 }))
+      .rejects.toThrow(/mock-verify-error/);
+    expect(verify).toHaveBeenCalledTimes(1);
+  });
 });
 
 test("segment number convention mismatch", async () => {
