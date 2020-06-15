@@ -1,5 +1,6 @@
 import pushable from "it-pushable";
 import assert from "minimalistic-assert";
+import MultiMap from "mnemonist/multi-map";
 
 import { Face, FaceImpl } from "./face";
 import { Forwarder } from "./forwarder";
@@ -11,12 +12,12 @@ class TapRxController {
     return TapRxController.instances.get(fw) ?? new TapRxController(fw);
   }
 
-  private readonly taps = new Map<Face, TapFace>();
+  private readonly taps = new MultiMap<Face, TapFace>(Set);
 
   private constructor(private readonly fw: Forwarder) {
     TapRxController.instances.set(fw, this);
     this.fw.on("pktrx", this.pktrx);
-    this.fw.on("facerm", this.remove);
+    this.fw.on("facerm", this.facerm);
   }
 
   public add(src: Face, dst: TapFace) {
@@ -24,18 +25,36 @@ class TapRxController {
     this.taps.set(src, dst);
   }
 
-  public remove = (src: Face) => {
-    this.taps.get(src)?.rx.end();
-    this.taps.delete(src);
-    if (this.taps.size === 0) {
-      this.fw.off("pktrx", this.pktrx);
-      this.fw.off("facerm", this.remove);
-      TapRxController.instances.delete(this.fw);
+  public remove(src: Face, dst: TapFace) {
+    this.taps.remove(src, dst);
+    this.detachIfIdle();
+  }
+
+  private facerm = (src: Face) => {
+    const dst = this.taps.get(src);
+    if (dst) {
+      for (const { rx } of dst) {
+        rx.end();
+      }
     }
+    this.detachIfIdle();
   };
 
-  private pktrx = (face: Face, pkt: Face.Rxable) => {
-    this.taps.get(face)?.rx.push(pkt);
+  private detachIfIdle() {
+    if (this.taps.size === 0) {
+      this.fw.off("pktrx", this.pktrx);
+      this.fw.off("facerm", this.facerm);
+      TapRxController.instances.delete(this.fw);
+    }
+  }
+
+  private pktrx = (src: Face, pkt: Face.Rxable) => {
+    const dst = this.taps.get(src);
+    if (dst) {
+      for (const { rx } of dst) {
+        rx.push(pkt);
+      }
+    }
   };
 }
 
@@ -62,7 +81,7 @@ export class TapFace {
     for await (const pkt of iterable) {
       (this.face as FaceImpl).send(pkt);
     }
-    this.ctrl.remove(this.face);
+    this.ctrl.remove(this.face, this);
   }
 
   public toString() {

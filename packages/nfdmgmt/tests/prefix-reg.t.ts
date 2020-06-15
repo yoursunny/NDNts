@@ -59,26 +59,26 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
       minTimeout: 1,
       maxTimeout: 1,
     },
-    refreshInterval: 100,
+    refreshInterval: 200,
   });
 
   const appFace = fw.addFace(new NoopFace());
   appFace.addAnnouncement(new Name("/R"));
-  await new Promise((r) => setTimeout(r, 40));
+  await new Promise((r) => setTimeout(r, 70));
   expect(verbs).toHaveLength(2);
   expect(verbs[0]).toBe("register");
   expect(verbs[1]).toBe("register");
 
-  await new Promise((r) => setTimeout(r, 110));
+  await new Promise((r) => setTimeout(r, 230));
   expect(verbs).toHaveLength(3);
   expect(verbs[2]).toBe("register");
 
   appFace.removeAnnouncement(new Name("/R"));
-  await new Promise((r) => setTimeout(r, 40));
+  await new Promise((r) => setTimeout(r, 70));
   expect(verbs).toHaveLength(4);
   expect(verbs[3]).toBe("unregister");
 
-  await new Promise((r) => setTimeout(r, 110));
+  await new Promise((r) => setTimeout(r, 230));
   expect(verbs).toHaveLength(4);
 
   uplink.close();

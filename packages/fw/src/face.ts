@@ -7,7 +7,7 @@ import Fifo from "p-fifo";
 import { buffer, filter, pipeline, tap } from "streaming-iterables";
 import TypedEmitter from "typed-emitter";
 
-import type { ForwarderImpl } from "./forwarder";
+import type { Forwarder, ForwarderImpl } from "./forwarder";
 import { CancelInterest, isL3Pkt, L3Pkt, RejectInterest } from "./reqres";
 
 interface Events {
@@ -226,8 +226,9 @@ export namespace FaceImpl {
 
 /** A socket or network interface associated with forwarding plane. */
 export interface Face extends Pick<FaceImpl,
-"fw"|"attributes"|"close"|"toString"|"addRoute"|"removeRoute"|"addAnnouncement"|"removeAnnouncement"|
+"attributes"|"close"|"toString"|"addRoute"|"removeRoute"|"addAnnouncement"|"removeAnnouncement"|
 Exclude<keyof TypedEmitter<Events>, "emit">> {
+  readonly fw: Forwarder;
   readonly running: boolean;
   readonly txQueueLength: number;
 }

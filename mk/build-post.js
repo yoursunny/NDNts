@@ -111,7 +111,7 @@ class TransformJs {
    * @param {string} line
    */
   transformImportExport(line) {
-    const m = line.match(/^(import|export) (\* as )?(.*) from "(.*)";$/);
+    const m = line.match(/^(import|export) (\* as )?(.*) from ["'](.*)["'];$/);
     if (!m) {
       return this.emitLine(line);
     }

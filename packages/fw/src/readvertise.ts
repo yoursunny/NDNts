@@ -68,7 +68,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
   }
 
   /** Enable and attach to a forwarder. */
-  public enable(fw: Forwarder) {
+  public enable(fw: Forwarder): void {
     this.readvertise = (fw as ForwarderImpl).readvertise;
     this.readvertise.destinations.add(this);
     for (const nameHex of this.readvertise.announcements.keys()) {
@@ -82,7 +82,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
    *
    * Once detached, this instance is no longer usable.
    */
-  public disable() {
+  public disable(): void {
     this.readvertise?.destinations.delete(this);
     this.readvertise = undefined;
     for (const [nameHex, record] of this.table) {
