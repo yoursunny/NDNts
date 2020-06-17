@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@ndn/l3face": "workspace:*",
-    "event-iterator": "^1.2.0",
+    "event-iterator": "^2.0.0",
     "tslib": "*"
   },
   "devDependencies": {

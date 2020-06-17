@@ -7,8 +7,6 @@ const UUID_SVC = "099577e3-0788-412a-8824-395084d97391";
 const UUID_CS = "cc5abb89-a541-46d8-a351-2f95a6a81f49";
 const UUID_SC = "972f9527-0d83-4261-b95d-b1b2fc73bde4";
 
-const pushHandlers = new WeakMap();
-
 /** Web Bluetooth transport. */
 export class WebBluetoothTransport extends Transport {
   public readonly rx: Transport.Rx;
@@ -22,7 +20,7 @@ export class WebBluetoothTransport extends Transport {
       describe: `WebBluetoothTransport(${server.device.id})`,
     });
     this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(
-      (push, stop) => {
+      ({ push, stop }) => {
         const pushHandler = (evt: Event) => {
           const value = (evt.target as BluetoothRemoteGATTCharacteristic).value;
           if (!value) {
@@ -30,14 +28,13 @@ export class WebBluetoothTransport extends Transport {
           }
           push(new Uint8Array(value.buffer, value.byteOffset, value.byteLength));
         };
-        pushHandlers.set(push, pushHandler);
-
         sc.addEventListener("characteristicvaluechanged", pushHandler);
         server.device.addEventListener("gattserverdisconnected", stop);
-      },
-      (push, stop) => {
-        sc.removeEventListener("characteristicvaluechanged", pushHandlers.get(push));
-        server.device.removeEventListener("gattserverdisconnected", stop);
+
+        return () => {
+          sc.removeEventListener("characteristicvaluechanged", pushHandler);
+          server.device.removeEventListener("gattserverdisconnected", stop);
+        };
       },
     ));
   }

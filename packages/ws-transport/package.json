@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@ndn/l3face": "workspace:*",
-    "event-iterator": "^1.2.0",
+    "event-iterator": "^2.0.0",
     "p-cancelable": "^2.0.0",
     "p-timeout": "^3.2.0",
     "tslib": "*",

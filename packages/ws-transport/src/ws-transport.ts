@@ -5,8 +5,6 @@ import pTimeout from "p-timeout";
 
 import { makeWebSocket } from "./ws_node";
 
-const pushHandlers = new WeakMap<object, (evt: MessageEvent) => void>();
-
 /** WebSocket transport. */
 export class WsTransport extends Transport {
   public readonly rx: Transport.Rx;
@@ -19,15 +17,14 @@ export class WsTransport extends Transport {
     });
     sock.binaryType = "arraybuffer";
     this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(
-      (push, stop) => {
+      ({ push, stop }) => {
         const pushHandler = (evt: MessageEvent) => push(new Uint8Array(evt.data as ArrayBuffer));
-        pushHandlers.set(push, pushHandler);
         sock.addEventListener("message", pushHandler);
         sock.addEventListener("close", stop);
-      },
-      (push, stop) => {
-        sock.removeEventListener("message", pushHandlers.get(push)!);
-        sock.removeEventListener("close", stop);
+        return () => {
+          sock.removeEventListener("message", pushHandler);
+          sock.removeEventListener("close", stop);
+        };
       },
     ));
     this.highWaterMark = opts.highWaterMark ?? 1024 * 1024;

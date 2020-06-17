@@ -35,7 +35,11 @@ const config = {
     symlinks: true,
   },
   plugins: [
-    new ForkTsCheckerWebpackPlugin({ tsconfig: "tsconfig.webpack.json" }),
+    new ForkTsCheckerWebpackPlugin({
+      typescript: {
+        configFile: "tsconfig.webpack.json",
+      },
+    }),
   ],
 };
 
