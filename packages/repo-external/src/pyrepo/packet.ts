@@ -25,6 +25,8 @@ const TT = {
   StatusCode: 0xD0,
   InsertNum: 0xD1,
   DeleteNum: 0xD2,
+  ForwardingHint: 0xD3,
+  RegisterPrefix: 0xD4,
   NotifyNonce: 0x80,
 };
 
@@ -52,13 +54,16 @@ export class CommandParameter {
   }
 
   public processId = 0;
+  public forwardingHint?: Name;
 
   public encodeTo(encoder: Encoder) {
     encoder.prependValue(
       this.name,
+      [TT.ForwardingHint, Encoder.OmitEmpty, this.forwardingHint],
       typeof this.startBlockId === "number" ? [TT.StartBlockId, NNI(this.startBlockId)] : undefined,
       typeof this.endBlockId === "number" ? [TT.EndBlockId, NNI(this.endBlockId)] : undefined,
       [TT.ProcessId, NNI(this.processId)],
+      [TT.RegisterPrefix],
     );
   }
 }

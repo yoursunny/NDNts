@@ -4,8 +4,8 @@ import { TT } from "./an";
 import { Name, NameLike } from "./name";
 
 const EVD = new EvDecoder<FwHint.Delegation>("Delegation", TT.Delegation)
-  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name))
-  .add(TT.Preference, (t, { nni }) => t.preference = nni);
+  .add(TT.Preference, (t, { nni }) => t.preference = nni)
+  .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name));
 
 export class FwHint {
   public static decodeValue(value: Uint8Array): FwHint {
@@ -55,8 +55,8 @@ export namespace FwHint {
 
     public encodeTo(encoder: Encoder) {
       encoder.prependTlv(TT.Delegation,
-        this.name,
         [TT.Preference, NNI(this.preference)],
+        this.name,
       );
     }
   }

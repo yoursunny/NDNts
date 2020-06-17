@@ -21,9 +21,10 @@ export class PyRepoClient {
     this.commandSigner = commandSigner;
     this.notifyInterestLifetime = notifyInterestLifetime;
     this.notifyRetx = notifyRetx;
-    this.messagePrefix = localPrefix.append(MsgSuffix);
+    this.messagePrefix = localPrefix.append(MsgSuffix, ...repoPrefix.comps);
     this.messageProducer = this.endpoint.produce(this.messagePrefix, this.handleMessageInterest, {
       describe: `pyrepo-command(${this.repoPrefix})`,
+      announcement: localPrefix,
     });
   }
 
@@ -71,6 +72,7 @@ export class PyRepoClient {
       id = Math.floor(Math.random() * 1000000000000);
     } while (this.ongoing.has(id));
     parameter.processId = id;
+    parameter.forwardingHint = this.localPrefix;
 
     const progress: Progress = {
       id,
@@ -95,12 +97,13 @@ export class PyRepoClient {
   }
 
   private handleMessageInterest: ProducerHandler = async (interest) => {
-    if (interest.name.length !== this.messagePrefix.length + 1) {
+    if (interest.name.length !== this.messagePrefix.length + 2) {
       return false;
     }
+    const verbComp = interest.name.get(-2)!;
     const id = Number.parseInt(interest.name.get(-1)!.text, 10);
     const progress = this.ongoing.get(id);
-    if (!progress) {
+    if (!progress || !progress.verb.notifySuffix[0].equals(verbComp)) {
       return false;
     }
 

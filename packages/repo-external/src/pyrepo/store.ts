@@ -51,6 +51,7 @@ export class PyRepoStore implements Pick<DataStore, "close"|"insert"|"delete"> {
           return data;
         }, {
           describe: `pyrepo-insert(${data.name})`,
+          announcement: false,
         });
         await new Promise((r) => setTimeout(r, 100));
         try {
