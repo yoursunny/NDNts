@@ -1,5 +1,6 @@
 import { Certificate } from "@ndn/keychain";
 import { KeyLocator, Name, Verifier } from "@ndn/packet";
+import DefaultWeakMap from "mnemonist/default-weak-map";
 
 import { CertSources } from "./cert-source/mod";
 
@@ -8,21 +9,13 @@ async function cryptoVerifyUncached(cert: Certificate, packet: Verifier.Verifiab
   return key.verify(packet);
 }
 
-const cryptoVerifyCache = new WeakMap<Certificate, WeakMap<Verifier.Verifiable, Promise<void>>>();
+const cryptoVerifyCache = new DefaultWeakMap<Certificate, DefaultWeakMap<Verifier.Verifiable, Promise<void>>>(
+  (cert) => new DefaultWeakMap<Verifier.Verifiable, Promise<void>>(
+    (pkt) => cryptoVerifyUncached(cert, pkt),
+  ));
 
 function cryptoVerifyCached(cert: Certificate, packet: Verifier.Verifiable): Promise<void> {
-  let certVerifyCache = cryptoVerifyCache.get(cert);
-  if (!certVerifyCache) {
-    certVerifyCache = new WeakMap<Verifier.Verifiable, Promise<void>>();
-    cryptoVerifyCache.set(cert, certVerifyCache);
-  }
-
-  let p = certVerifyCache.get(packet);
-  if (!p) {
-    p = cryptoVerifyUncached(cert, packet);
-    certVerifyCache.set(packet, p);
-  }
-  return p;
+  return cryptoVerifyCache.get(cert).get(packet);
 }
 
 /** Policy based verifier. */

@@ -1,6 +1,7 @@
 import { EventEmitter } from "events";
 import hirestime from "hirestime";
 import assert from "minimalistic-assert";
+import DefaultWeakMap from "mnemonist/default-weak-map";
 import TypedEmitter from "typed-emitter";
 
 import { CongestionAvoidance } from "./congestion-avoidance";
@@ -33,7 +34,12 @@ interface Options {
   retxLimit?: number;
 }
 
-const tokenLimiters = new WeakMap<CongestionAvoidance, TokenLimiter>();
+const tokenLimiters = new DefaultWeakMap<CongestionAvoidance, TokenLimiter>((ca) => {
+  const tl = new TokenLimiter();
+  tl.capacity = ca.cwnd;
+  ca.on("cwndupdate", (cwnd) => tl.capacity = cwnd);
+  return tl;
+});
 
 class SegState {
   constructor(public readonly segNum: number) {
@@ -86,14 +92,7 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
     super();
     this.rtte = opts.rtte instanceof RttEstimator ? opts.rtte : new RttEstimator(opts.rtte);
     this.ca = opts.ca ?? new TcpCubic();
-    let tl = tokenLimiters.get(this.ca);
-    if (!tl) {
-      tl = new TokenLimiter();
-      tl.capacity = this.ca.cwnd;
-      this.ca.on("cwndupdate", (cwnd) => tl!.capacity = cwnd);
-      tokenLimiters.set(this.ca, tl);
-    }
-    this.tl = tl;
+    this.tl = tokenLimiters.get(this.ca);
 
     this.hiInterestSegNum = (opts.segmentRange?.[0] ?? 0) - 1;
     this.finalSegNum = (opts.segmentRange?.[1] ?? Number.MAX_SAFE_INTEGER) - 1;

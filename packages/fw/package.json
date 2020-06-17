@@ -33,7 +33,7 @@
     "it-pushable": "^1.4.0",
     "loglevel": "^1.6.8",
     "minimalistic-assert": "^1.0.1",
-    "mnemonist": "^0.36.1",
+    "mnemonist": "Yomguithereal/mnemonist#6618acd002af2a090ec1caff60514f7a0961e9cf",
     "p-defer": "^3.0.0",
     "p-fifo": "^1.0.0",
     "retry": "^0.12.0",

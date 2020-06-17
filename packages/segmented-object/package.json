@@ -35,6 +35,7 @@
     "hirestime": "^6.0.1",
     "is-stream": "^2.0.0",
     "it-pushable": "^1.4.0",
+    "mnemonist": "Yomguithereal/mnemonist#6618acd002af2a090ec1caff60514f7a0961e9cf",
     "minimalistic-assert": "^1.0.1",
     "p-cancelable": "^2.0.0",
     "p-defer": "^3.0.0",

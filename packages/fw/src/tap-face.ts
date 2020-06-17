@@ -1,21 +1,21 @@
 import pushable from "it-pushable";
 import assert from "minimalistic-assert";
+import DefaultWeakMap from "mnemonist/default-weak-map";
 import MultiMap from "mnemonist/multi-map";
 
 import { Face, FaceImpl } from "./face";
 import { Forwarder } from "./forwarder";
 
 class TapRxController {
-  private static instances = new WeakMap<Forwarder, TapRxController>();
+  private static instances = new DefaultWeakMap<Forwarder, TapRxController>((fw) => new TapRxController(fw));
 
   public static lookup(fw: Forwarder): TapRxController {
-    return TapRxController.instances.get(fw) ?? new TapRxController(fw);
+    return TapRxController.instances.get(fw);
   }
 
   private readonly taps = new MultiMap<Face, TapFace>(Set);
 
   private constructor(private readonly fw: Forwarder) {
-    TapRxController.instances.set(fw, this);
     this.fw.on("pktrx", this.pktrx);
     this.fw.on("facerm", this.facerm);
   }
