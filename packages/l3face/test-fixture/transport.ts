@@ -1,3 +1,4 @@
+import { FwPacket } from "@ndn/fw";
 import { Data, Interest } from "@ndn/packet";
 import AbortController from "abort-controller";
 import abortable from "abortable-iterator";
@@ -26,7 +27,7 @@ export async function execute<T extends Transport>(
     faceA.tx({ async *[Symbol.asyncIterator]() {
       for (let i = 0; i < COUNT; ++i) {
         await new Promise((r) => setTimeout(r, 1));
-        yield new Interest(`/A/${i}`);
+        yield FwPacket.create(new Interest(`/A/${i}`));
       }
       await new Promise((r) => setTimeout(r, 200));
       abortFaceB.abort();
@@ -34,19 +35,19 @@ export async function execute<T extends Transport>(
     faceB.tx({ async *[Symbol.asyncIterator]() {
       const it = faceB.rx[Symbol.asyncIterator]();
       it.return = undefined;
-      for await (const pkt of abortable({ [Symbol.asyncIterator]() { return it; } },
+      for await (const { l3 } of abortable({ [Symbol.asyncIterator]() { return it; } },
         abortFaceB.signal, { returnOnAbort: true })) {
-        if (pkt instanceof Interest) {
-          const name = pkt.name.toString();
+        if (l3 instanceof Interest) {
+          const name = l3.name.toString();
           record.namesB.push(name);
-          yield new Data(pkt.name, Uint8Array.of(0xC0, 0xC1));
+          yield FwPacket.create(new Data(l3.name, Uint8Array.of(0xC0, 0xC1)));
         }
       }
     } }),
     (async () => {
-      for await (const pkt of faceA.rx) {
-        if (pkt instanceof Data) {
-          const name = pkt.name.toString();
+      for await (const { l3 } of faceA.rx) {
+        if (l3 instanceof Data) {
+          const name = l3.name.toString();
           record.namesA.push(name);
         }
       }

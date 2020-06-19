@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { CancelInterest, Forwarder, FwFace, FwTracer, InterestToken, RejectInterest } from "@ndn/fw";
+import { CancelInterest, Forwarder, FwPacket, FwTracer } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, Interest, Name } from "@ndn/packet";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
@@ -101,32 +101,31 @@ test("aggregate & retransmit", async () => {
   const rxDataTokens = new Set<number>();
   let nRxRejects = 0;
   const face = fw.addFace({
-    extendedTx: true,
     rx: (async function*() {
-      yield InterestToken.set(new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0xC91585F2)), 1);
-      yield InterestToken.set(new Interest("/P", Interest.CanBePrefix), 4);
-      yield InterestToken.set(new Interest("/L", Interest.Lifetime(100)), 5); // no route other than self
+      yield FwPacket.create(new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0xC91585F2)), 1);
+      yield FwPacket.create(new Interest("/P", Interest.CanBePrefix), 4);
+      yield FwPacket.create(new Interest("/L", Interest.Lifetime(100)), 5); // no route other than self
       await new Promise((r) => setTimeout(r, 20));
-      yield InterestToken.set(new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0x7B5BD99A)), 2);
-      yield InterestToken.set(new Interest("/P/Q/R/S", Interest.Lifetime(400)), 3);
+      yield FwPacket.create(new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0x7B5BD99A)), 2);
+      yield FwPacket.create(new Interest("/P/Q/R/S", Interest.Lifetime(400)), 3);
       yield new CancelInterest(new Interest("/P", Interest.CanBePrefix)); // cancel 4
       yield new CancelInterest(new Interest("/P/Q", Interest.CanBePrefix)); // no PitDn
       yield new CancelInterest(new Interest("/P/Q/R/S", Interest.MustBeFresh)); // no PitEntry
       await new Promise((r) => setTimeout(r, 120));
     })(),
     async tx(iterable) {
-      for await (const pkt of iterable) {
-        if (pkt instanceof Data) {
-          const token = InterestToken.get<number>(pkt) ?? -1;
+      for await (const { l3, reject, token: tokenU } of iterable) {
+        const token = (tokenU as number|undefined) ?? -1;
+        if (l3 instanceof Data) {
           expect(rxDataTokens.has(token)).toBeFalsy();
           rxDataTokens.add(token);
-        } else if (pkt instanceof RejectInterest) {
-          switch (InterestToken.get(pkt)) {
+        } else if (reject) {
+          switch (token) {
             case 4:
-              expect(pkt.reason).toBe("cancel");
+              expect(reject).toBe("cancel");
               break;
             case 5:
-              expect(pkt.reason).toBe("expire");
+              expect(reject).toBe("expire");
               break;
             default:
               expect(true).toBeFalsy();
@@ -138,7 +137,7 @@ test("aggregate & retransmit", async () => {
         }
       }
     },
-  } as FwFace.RxTxExtended);
+  });
   face.addRoute(new Name("/L"));
 
   await Promise.all([
@@ -161,13 +160,12 @@ test("Data without token", async () => {
   fw.pit.dataNoTokenMatch = jest.fn<boolean, [Data, string]>().mockReturnValue(true);
 
   const face = fw.addFace({
-    extendedTx: true,
     rx: (async function*() {
       await new Promise((r) => setTimeout(r, 50));
-      yield new Data("/P/Q/R/S", Data.FreshnessPeriod(500));
+      yield FwPacket.create(new Data("/P/Q/R/S", Data.FreshnessPeriod(500)));
     })(),
     tx: consume,
-  } as FwFace.RxTxExtended);
+  });
   face.addRoute(new Name("/P"));
 
   await Promise.all([

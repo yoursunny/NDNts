@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { CancelInterest, Forwarder, FwFace, InterestToken } from "@ndn/fw";
+import { CancelInterest, Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { Data, Interest, Name, Verifier } from "@ndn/packet";
 import AbortController from "abort-controller";
 import { EventEmitter } from "events";
@@ -48,11 +48,11 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
     });
 
     this.face = (opts.endpoint?.fw ?? Forwarder.getDefault()).addFace({
-      extendedTx: true,
       rx: this.tx(),
       tx: this.rx,
-      toString() { return `fetch(${name})`; },
-    } as FwFace.RxTxExtended);
+    }, {
+      describe: `fetch(${name})`,
+    });
 
     opts.abort?.signal.addEventListener("abort", () => {
       this.emit("error", new Error("abort"));
@@ -65,36 +65,31 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
     this.face.close();
   }
 
-  private tx(): AsyncIterable<FwFace.Rxable> {
+  private tx(): AsyncIterable<FwPacket> {
     const {
       segmentNumConvention = defaultSegmentConvention,
     } = this.opts;
     return this.logic.outgoing(
       ({ segNum, rto }) => {
-        return InterestToken.set(
-          new Interest(this.name.append(segmentNumConvention, segNum),
-            Interest.Lifetime(rto + 200)),
-          segNum);
+        const interest = new Interest(this.name.append(segmentNumConvention, segNum),
+          Interest.Lifetime(rto + 200));
+        return FwPacket.create(interest, segNum);
       },
-      ({ interest }) => {
-        return new CancelInterest(interest);
+      ({ interest: { l3, token } }) => {
+        return new CancelInterest(l3, token);
       },
     );
   }
 
-  private rx = async (iterable: AsyncIterable<FwFace.Txable>) => {
-    for await (const pkt of iterable) {
-      if (pkt instanceof Data) {
-        void this.handleData(pkt);
+  private rx = async (iterable: AsyncIterable<FwPacket>) => {
+    for await (const { l3, token } of iterable) {
+      if (l3 instanceof Data && typeof token === "number") {
+        void this.handleData(l3, token);
       }
     }
   };
 
-  private async handleData(data: Data) {
-    const segNum = InterestToken.get<number>(data);
-    if (typeof segNum === "undefined") {
-      return;
-    }
+  private async handleData(data: Data, segNum: number) {
     try {
       await this.opts.verifier?.verify(data);
     } catch (err) {

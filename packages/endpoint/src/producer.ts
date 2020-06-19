@@ -1,4 +1,4 @@
-import { Forwarder, FwFace, InterestToken } from "@ndn/fw";
+import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { canSatisfy, Data, Interest, Name, NameLike } from "@ndn/packet";
 import { flatTransform } from "streaming-iterables";
 
@@ -89,20 +89,19 @@ export class EndpointProducer {
     }
 
     const face = this.fw.addFace({
-      transform: flatTransform(concurrency, async function*(interest: FwFace.Txable) {
+      transform: flatTransform(concurrency, async function*({ l3: interest, token }: FwPacket) {
         if (!(interest instanceof Interest)) {
           return;
         }
-        // TODO return Nack upon rejected Promise
         const data = await processInterest(interest).catch(() => undefined);
         if (!data) {
           return;
         }
-        yield InterestToken.copyProxied(interest, data);
+        yield FwPacket.create(data, token);
       }),
-      toString: () => describe,
     },
     {
+      describe,
       local: true,
     });
     if (prefix) {

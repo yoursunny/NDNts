@@ -1,6 +1,6 @@
 import { L3Face } from "@ndn/l3face";
 import { Data } from "@ndn/packet";
-import { batch, consume, filter, pipeline, transform } from "streaming-iterables";
+import { batch, consume, filter, map, pipeline, transform } from "streaming-iterables";
 
 import type { DataStore } from "./data-store";
 
@@ -27,6 +27,7 @@ export class BulkInsertTarget {
     })());
     return pipeline(
       () => face.rx,
+      map((pkt) => pkt.l3),
       filter((pkt): pkt is Data => pkt instanceof Data),
       batch(this.batchSize),
       transform(this.parallelism, (pkts) => this.store.insert(...pkts)),

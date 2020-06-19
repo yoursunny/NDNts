@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Forwarder, InterestToken } from "@ndn/fw";
+import { Forwarder, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, Interest, Name } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
@@ -32,7 +32,7 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
   const fw = Forwarder.create();
 
   const verbs: string[] = [];
-  const remoteProcess = (interest: Interest) => {
+  const remoteProcess = (interest: Interest, token: unknown) => {
     expect(interest.name).toHaveLength(expectedPrefix.length as number + 7);
     verbs.push(interest.name.at(-6).text);
     expect(interest.name.at(-5).value).toMatchTlv(({ type, vd }) => {
@@ -43,13 +43,13 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
     const data = new Data(interest.name, Encoder.encode([0x65,
       [0x66, NNI(status)],
       [0x67]]));
-    return InterestToken.copy(interest, data);
+    return FwPacket.create(data, token);
   };
   const uplink = fw.addFace({
     async *transform(iterable) {
-      for await (const pkt of iterable) {
-        expect(pkt).toBeInstanceOf(Interest);
-        yield remoteProcess(pkt as Interest);
+      for await (const { l3, token } of iterable) {
+        expect(l3).toBeInstanceOf(Interest);
+        yield remoteProcess(l3 as Interest, token);
       }
     },
   }, { local: faceIsLocal });

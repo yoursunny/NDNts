@@ -1,4 +1,4 @@
-import { Forwarder } from "@ndn/fw";
+import { Forwarder, FwPacket } from "@ndn/fw";
 import { L3Face } from "@ndn/l3face";
 import { Interest } from "@ndn/packet";
 import * as net from "net";
@@ -47,7 +47,7 @@ test("createFace", async () => {
   await Promise.all([
     new Promise((r) => setTimeout(r, 100)),
     face.tx((async function*() {
-      yield new Interest("/Z", Interest.Lifetime(50));
+      yield FwPacket.create(new Interest("/Z", Interest.Lifetime(50)));
     })()),
   ]);
   expect(rx).toHaveBeenCalledTimes(1);

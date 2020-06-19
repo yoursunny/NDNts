@@ -3,8 +3,9 @@ import assert from "minimalistic-assert";
 import DefaultWeakMap from "mnemonist/default-weak-map";
 import MultiMap from "mnemonist/multi-map";
 
-import { Face, FaceImpl } from "./face";
+import { FaceImpl, FwFace } from "./face";
 import { Forwarder } from "./forwarder";
+import type { FwPacket } from "./packet";
 
 class TapRxController {
   private static instances = new DefaultWeakMap<Forwarder, TapRxController>((fw) => new TapRxController(fw));
@@ -13,24 +14,24 @@ class TapRxController {
     return TapRxController.instances.get(fw);
   }
 
-  private readonly taps = new MultiMap<Face, TapFace>(Set);
+  private readonly taps = new MultiMap<FwFace, TapFace>(Set);
 
   private constructor(private readonly fw: Forwarder) {
     this.fw.on("pktrx", this.pktrx);
     this.fw.on("facerm", this.facerm);
   }
 
-  public add(src: Face, dst: TapFace) {
+  public add(src: FwFace, dst: TapFace) {
     assert.equal(src.fw, this.fw);
     this.taps.set(src, dst);
   }
 
-  public remove(src: Face, dst: TapFace) {
+  public remove(src: FwFace, dst: TapFace) {
     this.taps.remove(src, dst);
     this.detachIfIdle();
   }
 
-  private facerm = (src: Face) => {
+  private facerm = (src: FwFace) => {
     const dst = this.taps.get(src);
     if (dst) {
       for (const { rx } of dst) {
@@ -48,7 +49,7 @@ class TapRxController {
     }
   }
 
-  private pktrx = (src: Face, pkt: Face.Rxable) => {
+  private pktrx = (src: FwFace, pkt: FwPacket) => {
     const dst = this.taps.get(src);
     if (dst) {
       for (const { rx } of dst) {
@@ -66,32 +67,33 @@ class TapRxController {
  * face, but allows independent FIB and PIT settings. The primary Forwarder will see RX packets,
  * but does not see TX packets.
  */
-export class TapFace {
-  public get attributes() { return this.face.attributes; }
-  public readonly extendedTx = true;
-  public readonly rx = pushable<Face.Rxable>();
+export class TapFace implements FwFace.RxTx {
+  public get attributes() {
+    return {
+      describe: `tap(${this.face})`,
+      ...this.face.attributes,
+    };
+  }
+
+  public readonly rx = pushable<FwPacket>();
   private readonly ctrl: TapRxController;
 
-  constructor(public readonly face: Face) {
+  constructor(public readonly face: FwFace) {
     this.ctrl = TapRxController.lookup(face.fw);
     this.ctrl.add(this.face, this);
   }
 
-  public async tx(iterable: AsyncIterable<Face.Txable>) {
+  public tx = async (iterable: AsyncIterable<FwPacket>) => {
     for await (const pkt of iterable) {
       (this.face as FaceImpl).send(pkt);
     }
     this.ctrl.remove(this.face, this);
-  }
-
-  public toString() {
-    return `tap(${this.face})`;
-  }
+  };
 }
 
 export namespace TapFace {
   /** Create a new Forwarder and add a TapFace. */
-  export function create(face: Face): Face {
+  export function create(face: FwFace): FwFace {
     const fw = Forwarder.create();
     return fw.addFace(new TapFace(face));
   }

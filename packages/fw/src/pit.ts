@@ -5,7 +5,7 @@ import DefaultMap from "mnemonist/default-map";
 import { filter, flatMap, pipeline, reduce, tap } from "streaming-iterables";
 
 import type { FaceImpl } from "./face";
-import { InterestToken, RejectInterest } from "./reqres";
+import { FwPacket, RejectInterest } from "./packet";
 
 const getNow = hirestime();
 
@@ -31,7 +31,7 @@ export class PitEntry {
   public dnRecords = new DefaultMap<FaceImpl, PitDn>(
     () => ({ nRx: 0, expire: 0, nonce: 0, token: undefined }));
 
-  /** Last expiration time among downstreams. */
+  /** Last expiration time among downstream. */
   public lastExpire = 0;
   /** Entry expiration timer; should match this.lastExpire. */
   public expireTimer?: NodeJS.Timer|number;
@@ -41,11 +41,10 @@ export class PitEntry {
   }
 
   /** Record Interest from downstream. */
-  public receiveInterest(face: FaceImpl, interest: Interest) {
+  public receiveInterest(face: FaceImpl, { l3: interest, token }: FwPacket<Interest>) {
     const now = getNow();
     const expire = now + interest.lifetime;
     const nonce = interest.nonce ?? Interest.generateNonce();
-    const token = InterestToken.get(interest);
 
     const dnR = this.dnRecords.get(face);
     ++dnR.nRx;
@@ -70,9 +69,7 @@ export class PitEntry {
   public forwardInterest(face: FaceImpl) {
     const now = getNow();
     this.interest.lifetime = this.lastExpire - now;
-    const upInterest = new Proxy(this.interest, {});
-    InterestToken.set(upInterest, this.token);
-    face.send(upInterest);
+    face.send(FwPacket.create(this.interest, this.token));
   }
 
   /** Determine which downstream faces should receive Data from upstream. */
@@ -157,12 +154,12 @@ export class Pit {
   }
 
   /** Find or insert entry. */
-  public lookup(interest: Interest): PitEntry;
+  public lookup(interest: FwPacket<Interest>): PitEntry;
 
   /** Find entry, disallow insertion. */
-  public lookup(interest: Interest, canInsert: false): PitEntry|undefined;
+  public lookup(interest: FwPacket<Interest>, canInsert: false): PitEntry|undefined;
 
-  public lookup(interest: Interest, canInsert = true) {
+  public lookup({ l3: interest }: FwPacket<Interest>, canInsert = true) {
     const key = `${toHex(interest.name.value)} ${interest.canBePrefix ? "+" : "-"}${interest.mustBeFresh ? "+" : "-"}`;
     let entry = this.byName.get(key);
     if (!entry && canInsert) {
@@ -175,13 +172,13 @@ export class Pit {
    * Satisfy pending Interests with incoming Data.
    * @returns true if Data satisfies any pending Interest, or false if Data is unsolicited.
    */
-  public async satisfy(face: FaceImpl, data: Data): Promise<boolean> {
+  public async satisfy(face: FaceImpl, { l3: data, token }: FwPacket<Data>): Promise<boolean> {
     const nSentData = await pipeline(
-      () => this.findPotentialMatches(data),
+      () => this.findPotentialMatches(data, token),
       filter(({ interest }: PitEntry) => canSatisfy(interest, data)),
       flatMap((entry) => entry.returnData(face)),
-      tap(({ dn, token }) => {
-        dn.send(InterestToken.set(new Proxy(data, {}), token));
+      tap(({ dn, token: dnToken }) => {
+        dn.send(FwPacket.create(data, dnToken));
         // this Promise resolves when packet is sent, don't wait for it
       }),
       reduce((count) => count + 1, 0),
@@ -189,8 +186,7 @@ export class Pit {
     return nSentData > 0;
   }
 
-  private *findPotentialMatches(data: Data): Iterable<PitEntry> {
-    const token = InterestToken.get(data);
+  private *findPotentialMatches(data: Data, token: unknown): Iterable<PitEntry> {
     if (typeof token === "number") {
       const entry = this.byToken.get(token);
       if (entry) {

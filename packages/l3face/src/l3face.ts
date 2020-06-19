@@ -1,13 +1,11 @@
-import { Forwarder, FwFace, InterestToken } from "@ndn/fw";
-import { LpService, NumericPitToken, PitToken } from "@ndn/lp";
+import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
+import { LpService, NumericPitToken } from "@ndn/lp";
 import { Interest } from "@ndn/packet";
 import { EventEmitter } from "events";
-import { filter, pipeline, tap } from "streaming-iterables";
+import { filter, map, pipeline } from "streaming-iterables";
 import TypedEmitter from "typed-emitter";
 
 import { Transport } from "./mod";
-
-type Packet = LpService.L3Pkt;
 
 interface Events {
   /** Emitted upon face state change. */
@@ -27,20 +25,23 @@ interface Events {
 const REOPENED = Symbol("L3Face.REOPENED");
 
 /** Network layer face for sending and receiving L3 packets. */
-export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) {
+export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) implements FwFace.RxTx {
   public readonly attributes: L3Face.Attributes;
   public readonly lp: LpService;
   public readonly numericPitToken = new NumericPitToken();
-  public readonly rx: AsyncIterable<Packet>;
+  public readonly rx: AsyncIterable<FwPacket>;
   public get state() { return this.state_; }
 
-  private transport: Transport;
   private state_: L3Face.State = L3Face.State.UP;
 
-  constructor(transport: Transport, attributes: L3Face.Attributes = {}, lpOptions: LpService.Options = {}) {
+  constructor(
+      private transport: Transport,
+      attributes: L3Face.Attributes = {},
+      lpOptions: LpService.Options = {},
+  ) {
     super();
-    this.transport = transport;
     this.attributes = {
+      describe: `L3Face(${transport})`,
       advertiseFrom: false,
       ...transport.attributes,
       ...attributes,
@@ -56,19 +57,21 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) {
       yield* pipeline(
         () => this.transport.rx,
         this.lp.rx,
-        filter((pkt): pkt is Packet => {
+        filter((pkt): pkt is LpService.Packet => {
           if (pkt instanceof LpService.RxError) {
             this.emit("rxerror", pkt);
             return false;
           }
           return true;
         }),
-        tap((pkt) => {
-          if (pkt instanceof Interest) {
-            InterestToken.set(pkt, PitToken.get(pkt));
+        map(({ l3, token }: LpService.Packet) => {
+          let internalToken: Uint8Array|number|undefined;
+          if (l3 instanceof Interest) {
+            internalToken = token;
           } else {
-            InterestToken.set(pkt, this.numericPitToken.get(pkt));
+            internalToken = this.numericPitToken.toNumber(token);
           }
+          return FwPacket.create(l3, internalToken);
         }),
       );
       await Promise.race([
@@ -78,23 +81,25 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) {
     }
   }
 
-  public tx = async (iterable: AsyncIterable<Packet>) => {
+  public tx = async (iterable: AsyncIterable<FwPacket>) => {
     await this.txImpl(iterable);
     this.state_ = L3Face.State.CLOSED;
     this.emit("state", this.state_);
     this.emit("close");
   };
 
-  private async txImpl(iterable: AsyncIterable<Packet>): Promise<void> {
+  private async txImpl(iterable: AsyncIterable<FwPacket>): Promise<void> {
     const iterator = pipeline(
       () => iterable,
-      tap((pkt) => {
-        const token = InterestToken.get(pkt);
+      filter((pkt: FwPacket) => FwPacket.isEncodable(pkt)),
+      map(({ l3, token }: FwPacket) => {
+        let wireToken: Uint8Array|undefined;
         if (typeof token === "number") {
-          this.numericPitToken.set(pkt, token);
+          wireToken = this.numericPitToken.toToken(token);
         } else if (token instanceof Uint8Array) {
-          PitToken.set(pkt, token);
+          wireToken = token;
         }
+        return { l3, token: wireToken };
       }),
       this.lp.tx,
     )[Symbol.asyncIterator]();
@@ -149,11 +154,6 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) {
     }
     // either reopened or closed
     return REOPENED;
-  }
-
-  public toString() {
-    /* istanbul ignore next */
-    return this.attributes.describe as string ?? `L3Face(${this.transport})`;
   }
 }
 

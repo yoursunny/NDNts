@@ -4,7 +4,7 @@ import { Data, digestSigning, Interest, Nack, NackReason, TT as l3TT } from "@nd
 import { Decoder, Encoder } from "@ndn/tlv";
 import { collect, map, pipeline } from "streaming-iterables";
 
-import { LpService, PitToken, TT } from "..";
+import { LpService, TT } from "..";
 
 test("rx", async () => {
   const input = [
@@ -55,40 +55,46 @@ test("rx", async () => {
   );
 
   expect(output).toHaveLength(5);
-  expect(output[0]).toBeInstanceOf(Data);
-  expect(output[0]).toHaveName("/D");
-  expect(PitToken.get(output[0] as Data)).toEqualUint8Array([0xD0, 0xD1, 0xD2, 0xD3]);
-  expect(output[1]).toBeInstanceOf(Interest);
-  expect(output[1]).toHaveName("/I");
-  expect(PitToken.get(output[1] as Interest)).toBeUndefined();
+  expect(output[0]).not.toBeInstanceOf(LpService.RxError);
+  const output0 = output[0] as LpService.Packet;
+  expect(output0.l3).toBeInstanceOf(Data);
+  expect(output0.l3).toHaveName("/D");
+  expect(output0.token).toEqualUint8Array([0xD0, 0xD1, 0xD2, 0xD3]);
+  expect(output[1]).not.toBeInstanceOf(LpService.RxError);
+  const output1 = output[1] as LpService.Packet;
+  expect(output1.l3).toBeInstanceOf(Interest);
+  expect(output1.l3).toHaveName("/I");
+  expect(output1.token).toBeUndefined();
   expect(output[2]).toBeInstanceOf(LpService.RxError);
-  expect(output[3]).toBeInstanceOf(Nack);
-  expect((output[3] as Nack).interest).toHaveName("/N");
-  expect((output[3] as Nack).reason).toBe(NackReason.Duplicate);
+  expect(output[3]).not.toBeInstanceOf(LpService.RxError);
+  const output3 = output[3] as LpService.Packet;
+  expect(output3.l3).toBeInstanceOf(Nack);
+  const nack3 = output3.l3 as Nack;
+  expect(nack3.interest).toHaveName("/N");
+  expect(nack3.reason).toBe(NackReason.Duplicate);
   expect(output[4]).toBeInstanceOf(LpService.RxError);
 });
 
 test("tx", async () => {
-  async function* input() {
+  async function* input(): AsyncIterable<LpService.Packet> {
     await new Promise((r) => setTimeout(r, 10));
     const pkt0 = new Data("/D");
     await digestSigning.sign(pkt0);
-    yield pkt0;
+    yield { l3: pkt0 };
 
     await new Promise((r) => setTimeout(r, 10));
     const pkt1 = new Interest("/I");
-    yield pkt1;
+    yield { l3: pkt1 };
 
     await new Promise((r) => setTimeout(r, 10));
     const pkt2 = new Nack(new Interest("/N", Interest.Nonce(0xA0A1A2A3)));
-    yield pkt2;
+    yield { l3: pkt2 };
 
     // pkt3 IDLE
 
     await new Promise((r) => setTimeout(r, 200));
     const pkt4 = new Interest("/P");
-    PitToken.set(pkt4, Uint8Array.of(0xD4, 0xD5));
-    yield pkt4;
+    yield { l3: pkt4, token: Uint8Array.of(0xD4, 0xD5) };
   }
 
   const output = await pipeline(

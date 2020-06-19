@@ -7,7 +7,7 @@ import { consume } from "streaming-iterables";
 import type { DataStore } from "./data-store";
 
 interface InsertJob {
-  pkts: Data[];
+  pkts: Array<{ l3: Data }>;
   promise: DeferredPromise<undefined>;
 }
 
@@ -34,14 +34,14 @@ export class BulkInsertInitiator implements Pick<DataStore, "close"|"insert"> {
    */
   public insert(...pkts: Data[]): Promise<void> {
     const job: InsertJob = {
-      pkts,
+      pkts: pkts.map((pkt) => ({ l3: pkt })),
       promise: pDefer(),
     };
     this.jobs.push(job);
     return job.promise.promise;
   }
 
-  private async *tx(): AsyncIterable<Data> {
+  private async *tx(): AsyncIterable<{ l3: Data }> {
     for await (const job of this.jobs) {
       yield* job.pkts;
       job.promise.resolve();

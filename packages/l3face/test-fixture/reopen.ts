@@ -1,3 +1,4 @@
+import { FwPacket } from "@ndn/fw";
 import { Interest } from "@ndn/packet";
 
 import { L3Face, Transport } from "..";
@@ -25,7 +26,7 @@ export async function run<ServerSocket>(
   face.tx((async function*() {
     // eslint-disable-next-line no-unmodified-loop-condition
     for (let i = 0; !end; ++i) {
-      yield new Interest(`/A/${i}`);
+      yield FwPacket.create(new Interest(`/A/${i}`));
       await new Promise((r) => setTimeout(r, 10));
     }
   })());

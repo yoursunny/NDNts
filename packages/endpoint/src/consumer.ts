@@ -1,4 +1,4 @@
-import { CancelInterest, Forwarder, FwFace, RejectInterest } from "@ndn/fw";
+import { CancelInterest, Forwarder, FwPacket } from "@ndn/fw";
 import { Data, Interest, Verifier } from "@ndn/packet";
 import pushable from "it-pushable";
 import PCancelable from "p-cancelable";
@@ -38,7 +38,7 @@ export class EndpointConsumer {
     const retxGen = makeRetxGenerator(retx)(interest.lifetime)[Symbol.iterator]();
 
     const promise = new PCancelable<Data>((resolve, reject, onCancel) => {
-      const rx = pushable<FwFace.Rxable>();
+      const rx = pushable<FwPacket>();
       let timer: NodeJS.Timeout|undefined;
       const cancelRetx = () => {
         if (timer) { clearTimeout(timer); }
@@ -50,37 +50,35 @@ export class EndpointConsumer {
         if (!done) {
           timer = setTimeout(sendInterest, value);
         }
-        rx.push(interest);
+        rx.push(FwPacket.create(interest));
         ++nRetx;
       };
 
       this.fw.addFace({
-        extendedTx: true,
         rx,
         async tx(iterable) {
           for await (const pkt of iterable) {
-            if (pkt instanceof Data) {
+            if (pkt.l3 instanceof Data) {
               try {
-                await verifier?.verify(pkt);
+                await verifier?.verify(pkt.l3);
               } catch (err) {
                 reject(new Error(`Data verify failed: ${err} @${this}`));
                 break;
               }
-              resolve(pkt);
+              resolve(pkt.l3);
               break;
             }
-            if (!timer) {
-              const rej = pkt as RejectInterest;
-              reject(new Error(`Interest rejected: ${rej.reason} @${this}`));
+            if (pkt.reject && !timer) {
+              reject(new Error(`Interest rejected: ${pkt.reject} @${this}`));
               break;
             }
           }
           cancelRetx();
           rx.end();
         },
-        toString() { return describe; },
-      } as FwFace.Base & FwFace.RxTxExtended,
+      },
       {
+        describe,
         local: true,
       });
 

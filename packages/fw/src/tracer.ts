@@ -1,9 +1,9 @@
-import { Data, Interest, Name } from "@ndn/packet";
+import { Data, Interest, Nack, Name } from "@ndn/packet";
 import log from "loglevel";
 
-import { Face } from "./face";
+import { FwFace } from "./face";
 import { Forwarder } from "./forwarder";
-import { CancelInterest, RejectInterest } from "./reqres";
+import type { FwPacket } from "./packet";
 
 export const logger = log.getLogger("@ndn/fw");
 logger.setLevel(log.levels.TRACE);
@@ -14,10 +14,6 @@ interface Options {
   prefix?: boolean;
   ann?: boolean;
   pkt?: boolean;
-}
-
-function interestToString(pkt: Interest) {
-  return `${pkt.name}${pkt.canBePrefix ? "[P]" : ""}${pkt.mustBeFresh ? "[F]" : ""}`;
 }
 
 export class Tracer {
@@ -62,69 +58,63 @@ export class Tracer {
     this.fw.off("pkttx", this.pkttx);
   }
 
-  private faceadd(face: Face) {
+  private faceadd = (face: FwFace) => {
     logger.debug(`+Face ${face}`);
-  }
+  };
 
-  private facerm(face: Face) {
+  private facerm = (face: FwFace) => {
     logger.debug(`-Face ${face}`);
-  }
+  };
 
-  private prefixadd(face: Face, prefix: Name) {
+  private prefixadd = (face: FwFace, prefix: Name) => {
     logger.debug(`${face} +Prefix ${prefix}`);
-  }
+  };
 
-  private prefixrm(face: Face, prefix: Name) {
+  private prefixrm = (face: FwFace, prefix: Name) => {
     logger.debug(`${face} -Prefix ${prefix}`);
-  }
+  };
 
-  private annadd(name: Name) {
+  private annadd = (name: Name) => {
     logger.debug(`+Announcement ${name}`);
-  }
+  };
 
-  private annrm(name: Name) {
+  private annrm = (name: Name) => {
     logger.debug(`-Announcement ${name}`);
-  }
+  };
 
-  private pktrx(face: Face, pkt: Face.Rxable) {
+  private pktrx =(face: FwFace, pkt: FwPacket) => {
+    this.pkt(face, pkt, ">");
+  };
+
+  private pkttx = (face: FwFace, pkt: FwPacket) => {
+    this.pkt(face, pkt, "<");
+  };
+
+  private pkt(face: FwFace, pkt: FwPacket, dir: string) {
     switch (true) {
-      case pkt instanceof Interest: {
-        const interest = pkt as Interest;
-        logger.debug(`${face} >I ${interestToString(interest)}`);
+      case pkt.l3 instanceof Interest: {
+        const act = pkt.cancel ? "Cancel" :
+          pkt.reject ? `Reject(${pkt.reject})` :
+          "I";
+        logger.debug(`${face} ${dir}${act} ${interestToString(pkt.l3 as Interest)}`);
         break;
       }
-      case pkt instanceof Data: {
-        const data = pkt as Interest;
-        logger.debug(`${face} >D ${data.name}`);
+      case pkt.l3 instanceof Data: {
+        const { name } = pkt.l3 as Data;
+        logger.debug(`${face} ${dir}D ${name}`);
         break;
       }
-      case pkt instanceof CancelInterest: {
-        const cancel = pkt as CancelInterest;
-        logger.debug(`${face} >Cancel ${interestToString(cancel.interest)}`);
+      case pkt.l3 instanceof Nack: {
+        const { interest, reason } = pkt.l3 as Nack;
+        logger.debug(`${face} ${dir}N ${interestToString(interest)}~${reason}`);
         break;
       }
     }
   }
+}
 
-  private pkttx(face: Face, pkt: Face.Txable) {
-    switch (true) {
-      case pkt instanceof Interest: {
-        const interest = pkt as Interest;
-        logger.debug(`${face} <I ${interestToString(interest)}`);
-        break;
-      }
-      case pkt instanceof Data: {
-        const data = pkt as Interest;
-        logger.debug(`${face} <D ${data.name}`);
-        break;
-      }
-      case pkt instanceof RejectInterest: {
-        const rej = pkt as RejectInterest;
-        logger.debug(`${face} <Reject(${rej.reason}) ${interestToString(rej.interest)}`);
-        break;
-      }
-    }
-  }
+function interestToString({ name, canBePrefix, mustBeFresh }: Interest): string {
+  return `${name}${canBePrefix ? "[P]" : ""}${mustBeFresh ? "[F]" : ""}`;
 }
 
 export namespace Tracer {

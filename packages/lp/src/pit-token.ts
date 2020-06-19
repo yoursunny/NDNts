@@ -1,27 +1,7 @@
 import { Encoder } from "@ndn/tlv";
 
-import { LpService } from "./service";
-
 /** PIT token field of NDNLP packet. */
 export type PitToken = Uint8Array;
-
-export namespace PitToken {
-  const map = new WeakMap<LpService.L3Pkt, PitToken>();
-
-  /** Retrieve PIT token of L3 packet. */
-  export function get(pkt: LpService.L3Pkt): PitToken|undefined {
-    return map.get(pkt);
-  }
-
-  /** Store PIT token of L3 packet. */
-  export function set(pkt: LpService.L3Pkt, token?: PitToken) {
-    if (token) {
-      map.set(pkt, token);
-    } else {
-      map.delete(pkt);
-    }
-  }
-}
 
 let lastPrefix = 0;
 
@@ -30,8 +10,7 @@ export class NumericPitToken {
   constructor(public readonly prefix = ++lastPrefix) {
   }
 
-  public get(pkt: LpService.L3Pkt): number|undefined {
-    const token = PitToken.get(pkt);
+  public toNumber(token?: PitToken): number|undefined {
     if (!token || token.byteLength !== 8) {
       return undefined;
     }
@@ -43,12 +22,11 @@ export class NumericPitToken {
     return dv.getUint32(4);
   }
 
-  public set(pkt: LpService.L3Pkt, suffix: number): number {
+  public toToken(suffix: number): PitToken {
     const token = new Uint8Array(8);
     const dv = Encoder.asDataView(token);
     dv.setUint32(0, this.prefix);
     dv.setUint32(4, suffix);
-    PitToken.set(pkt, token);
-    return suffix;
+    return token;
   }
 }

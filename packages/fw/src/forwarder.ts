@@ -2,28 +2,29 @@ import { Data, Interest, Nack, Name } from "@ndn/packet";
 import { EventEmitter } from "events";
 import TypedEmitter from "typed-emitter";
 
-import { Face, FaceImpl } from "./face";
+import { FaceImpl, FwFace } from "./face";
 import { Fib } from "./fib";
+import type { FwPacket } from "./packet";
 import { Pit } from "./pit";
 import { Readvertise } from "./readvertise";
 
 interface Events {
   /** Emitted before adding face. */
-  faceadd: (face: Face) => void;
+  faceadd: (face: FwFace) => void;
   /** Emitted after removing face. */
-  facerm: (face: Face) => void;
+  facerm: (face: FwFace) => void;
   /** Emitted before adding prefix to face. */
-  prefixadd: (face: Face, prefix: Name) => void;
+  prefixadd: (face: FwFace, prefix: Name) => void;
   /** Emitted after removing prefix from face. */
-  prefixrm: (face: Face, prefix: Name) => void;
+  prefixrm: (face: FwFace, prefix: Name) => void;
   /** Emitted before advertising prefix. */
   annadd: (announcement: Name) => void;
   /** Emitted before withdrawing prefix. */
   annrm: (announcement: Name) => void;
   /** Emitted after packet arrival. */
-  pktrx: (face: Face, pkt: Face.Rxable) => void;
+  pktrx: (face: FwFace, pkt: FwPacket) => void;
   /** Emitted before packet transmission. */
-  pkttx: (face: Face, pkt: Face.Txable) => void;
+  pkttx: (face: FwFace, pkt: FwPacket) => void;
 }
 
 export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
@@ -37,16 +38,16 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
   }
 
   /** Add a face to the forwarding plane. */
-  public addFace(face: Face.Base, attributes: Face.Attributes = {}): Face {
+  public addFace(face: FwFace.RxTx|FwFace.RxTxTransform, attributes: FwFace.Attributes = {}): FwFace {
     return new FaceImpl(this, face, attributes);
   }
 
   /** Process incoming Interest. */
-  public processInterest(face: FaceImpl, interest: Interest) {
-    const pi = this.pit.lookup(interest);
-    pi.receiveInterest(face, interest);
+  public processInterest(face: FaceImpl, pkt: FwPacket<Interest>) {
+    const pi = this.pit.lookup(pkt);
+    pi.receiveInterest(face, pkt);
 
-    const fibEntry = this.fib.lpm(interest.name);
+    const fibEntry = this.fib.lpm(pkt.l3.name);
     if (!fibEntry) {
       return;
     }
@@ -58,19 +59,19 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
   }
 
   /** Process incoming cancel Interest request. */
-  public cancelInterest(face: FaceImpl, interest: Interest) {
-    const pi = this.pit.lookup(interest, false);
+  public cancelInterest(face: FaceImpl, pkt: FwPacket<Interest>) {
+    const pi = this.pit.lookup(pkt, false);
     pi?.cancelInterest(face);
   }
 
   /** Process incoming Data. */
-  public processData(face: FaceImpl, data: Data) {
+  public processData(face: FaceImpl, pkt: FwPacket<Data>) {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.pit.satisfy(face, data);
+    this.pit.satisfy(face, pkt);
   }
 
   /** Process incoming Nack. */
-  public processNack(face: FaceImpl, nack: Nack) {
+  public processNack(face: FaceImpl, nack: FwPacket<Nack>) {
     // ignore Nack
   }
 }
@@ -78,7 +79,7 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
 /** Forwarding plane. */
 export interface Forwarder extends Pick<ForwarderImpl,
 "addFace"|Exclude<keyof TypedEmitter<Events>, "emit">> {
-  readonly faces: Set<Face>;
+  readonly faces: Set<FwFace>;
   readonly pit: Pick<Pit, "dataNoTokenMatch">;
 }
 

@@ -8,18 +8,16 @@ import { buffer, filter, pipeline, tap } from "streaming-iterables";
 import TypedEmitter from "typed-emitter";
 
 import type { Forwarder, ForwarderImpl } from "./forwarder";
-import { CancelInterest, isL3Pkt, L3Pkt, RejectInterest } from "./reqres";
+import type { FwPacket } from "./packet";
 
 interface Events {
   /** Emitted upon face closing. */
   close: () => void;
 }
 
-type TransformFunc = (iterable: AsyncIterable<Face.Txable>) => AsyncIterable<Face.Rxable>;
-
 const STOP = Symbol("FaceImpl.Stop");
 
-function computeAnnouncement(name: Name, announcement: Face.RouteAnnouncement): Name|undefined {
+function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement): Name|undefined {
   switch (typeof announcement) {
     case "number":
       return name.getPrefix(announcement);
@@ -30,32 +28,43 @@ function computeAnnouncement(name: Name, announcement: Face.RouteAnnouncement): 
 }
 
 export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
-  public readonly attributes: Face.Attributes;
+  public readonly attributes: FwFace.Attributes;
   private readonly routes = new MultiSet<string>();
   private readonly announcements = new MultiSet<string>();
   private readonly stopping = pDefer<typeof STOP>();
   public running = true;
-  private readonly txQueue = new Fifo<Face.Txable>();
+  private readonly txQueue = new Fifo<FwPacket>();
   public txQueueLength = 0;
 
-  constructor(public readonly fw: ForwarderImpl,
-      public readonly inner: Face.Base,
-      attributes: Face.Attributes) {
+  constructor(
+      public readonly fw: ForwarderImpl,
+      rxtx: FwFace.RxTx|FwFace.RxTxTransform,
+      attributes: FwFace.Attributes,
+  ) {
     super();
     this.attributes = {
       local: false,
       advertiseFrom: true,
-      ...inner.attributes,
+      ...rxtx.attributes,
       ...attributes,
     };
     fw.emit("faceadd", this);
     fw.faces.add(this);
+
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     pipeline(
       () => this.txLoop(),
       buffer(this.fw.options.faceTxBuffer),
       tap((pkt) => fw.emit("pkttx", this, pkt)),
-      this.getTransform(),
+      (iterable: AsyncIterable<FwPacket>) => {
+        const rxtxT = rxtx as FwFace.RxTxTransform;
+        if (typeof rxtxT.transform === "function") {
+          return rxtxT.transform(iterable);
+        }
+        const rxtxS = rxtx as FwFace.RxTx;
+        rxtxS.tx(iterable);
+        return rxtxS.rx;
+      },
       tap((pkt) => fw.emit("pktrx", this, pkt)),
       buffer(this.fw.options.faceRxBuffer),
       this.rxLoop,
@@ -81,11 +90,11 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
   }
 
   public toString() {
-    return this.inner.toString();
+    return this.attributes.describe ?? "FwFace";
   }
 
   /** Add a route toward the face. */
-  public addRoute(name: Name, announcement: Face.RouteAnnouncement = true) {
+  public addRoute(name: Name, announcement: FwFace.RouteAnnouncement = true) {
     this.fw.emit("prefixadd", this, name);
     const nameHex = toHex(name.value);
     this.routes.add(nameHex);
@@ -100,7 +109,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
   }
 
   /** Remove a route toward the face. */
-  public removeRoute(name: Name, announcement: Face.RouteAnnouncement = true) {
+  public removeRoute(name: Name, announcement: FwFace.RouteAnnouncement = true) {
     const ann = computeAnnouncement(name, announcement);
     if (ann) {
       this.removeAnnouncement(ann);
@@ -139,7 +148,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
   }
 
   /** Transmit a packet on the face. */
-  public send(pkt: Face.Txable): void {
+  public send(pkt: FwPacket): void {
     (async () => {
       ++this.txQueueLength;
       await this.txQueue.push(pkt);
@@ -147,49 +156,19 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
     })();
   }
 
-  /** Convert base RX/TX to a TransformFunc. */
-  private getTransform(): TransformFunc {
-    const rtT = this.inner as Face.RxTxTransform;
-    if (rtT.transform) {
-      return rtT.transform;
-    }
-
-    const rtE = this.inner as Face.RxTxExtended;
-    if (rtE.extendedTx) {
-      return (iterable) => {
-        rtE.tx(iterable);
-        return rtE.rx;
-      };
-    }
-
-    const rtS = this.inner as Face.RxTxBasic;
-    return (iterable) => {
-      rtS.tx(filter(isL3Pkt, iterable));
-      return rtS.rx;
-    };
-  }
-
-  private rxLoop = async (input: AsyncIterable<Face.Rxable>) => {
+  private rxLoop = async (input: AsyncIterable<FwPacket>) => {
     for await (const pkt of filter(() => this.running, input)) {
       switch (true) {
-        case pkt instanceof Interest: {
-          const interest = pkt as Interest;
-          this.fw.processInterest(this, interest);
+        case pkt.l3 instanceof Interest: {
+          this.fw[pkt.cancel ? "cancelInterest" : "processInterest"](this, pkt as FwPacket<Interest>);
           break;
         }
-        case pkt instanceof Data: {
-          const data = pkt as Data;
-          this.fw.processData(this, data);
+        case pkt.l3 instanceof Data: {
+          this.fw.processData(this, pkt as FwPacket<Data>);
           break;
         }
-        case pkt instanceof Nack: {
-          const nack = pkt as Nack;
-          this.fw.processNack(this, nack);
-          break;
-        }
-        case pkt instanceof CancelInterest: {
-          const canceled = pkt as CancelInterest;
-          this.fw.cancelInterest(this, canceled.interest);
+        case pkt.l3 instanceof Nack: {
+          this.fw.processNack(this, pkt as FwPacket<Nack>);
           break;
         }
       }
@@ -225,7 +204,7 @@ export namespace FaceImpl {
 }
 
 /** A socket or network interface associated with forwarding plane. */
-export interface Face extends Pick<FaceImpl,
+export interface FwFace extends Pick<FaceImpl,
 "attributes"|"close"|"toString"|"addRoute"|"removeRoute"|"addAnnouncement"|"removeAnnouncement"|
 Exclude<keyof TypedEmitter<Events>, "emit">> {
   readonly fw: Forwarder;
@@ -233,8 +212,10 @@ Exclude<keyof TypedEmitter<Events>, "emit">> {
   readonly txQueueLength: number;
 }
 
-export namespace Face {
+export namespace FwFace {
   export interface Attributes extends Record<string, any> {
+    /** Short string to identify the face. */
+    describe?: string;
     /** Whether face is local. Default is false. */
     local?: boolean;
     /** Whether to readvertise registered routes. Default is true. */
@@ -243,41 +224,20 @@ export namespace Face {
 
   export type RouteAnnouncement = boolean | number | Name;
 
-  /** Item that can be received on face. */
-  export type Rxable = L3Pkt|CancelInterest;
-  /** Item that can be transmitted on face, when extendedTx is enabled. */
-  export type Txable = L3Pkt|RejectInterest;
-
-  /** Underlying face RX/TX that can only transmit encodable packets. */
-  export interface RxTxBasic {
-    /** Receive packets by forwarder. */
-    rx: AsyncIterable<Rxable>;
-    /** Transmit packets from forwarder. */
-    tx: (iterable: AsyncIterable<L3Pkt>) => void;
-  }
-
-  /** Underlying face RX/TX that can transmit all Txable items. */
-  export interface RxTxExtended {
-    extendedTx: true;
-    /** Receive packets by forwarder. */
-    rx: AsyncIterable<Rxable>;
-    /** Transmit packets from forwarder. */
-    tx: (iterable: AsyncIterable<Txable>) => void;
-  }
-
-  /** Underlying face RX/TX implemented as a transform function. */
-  export interface RxTxTransform {
-    transform: TransformFunc;
-  }
-
-  /** Underlying face RX/TX module. */
-  export type RxTx = RxTxBasic|RxTxExtended|RxTxTransform;
-
-  /** Underlying face. */
-  export type Base = RxTx & {
+  interface RxTxBase {
     readonly attributes?: Attributes;
+  }
 
-    /** Return short string to identify this face. */
-    toString?: () => string;
-  };
+  export interface RxTx extends RxTxBase {
+    rx: AsyncIterable<FwPacket>;
+    tx: (iterable: AsyncIterable<FwPacket>) => void;
+  }
+
+  export interface RxTxTransform extends RxTxBase {
+    /**
+     * The transform function takes an iterable of packets sent by the forwarder,
+     * and returns an iterable of packets received by the forwarder.
+     */
+    transform: (iterable: AsyncIterable<FwPacket>) => AsyncIterable<FwPacket>;
+  }
 }
