@@ -52,7 +52,7 @@ test("encode", () => {
             expect(nni).toBe(2500);
           },
           ({ type, vd }) => {
-            expect(type).toBe(TT.FinalBlockId);
+            expect(type).toBe(TT.FinalBlock);
             expect(vd.decode(Component)).toEqualComponent("B");
           },
         );

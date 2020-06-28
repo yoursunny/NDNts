@@ -32,7 +32,7 @@ async function makeFace(): Promise<FwFace> {
     case "tcp:":
       return TcpTransport.createFace({}, parseHostPort());
     case "udp:":
-      return UdpTransport.createFace({}, parseHostPort());
+      return UdpTransport.createFace({ lp: { mtu: env.mtu } }, parseHostPort());
     case "unix:":
       return UnixTransport.createFace({}, env.uplink.pathname);
     default:

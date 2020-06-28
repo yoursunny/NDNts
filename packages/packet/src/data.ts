@@ -76,7 +76,7 @@ const EVD = new EvDecoder<Fields>("Data", TT.Data)
     new EvDecoder<Fields>("MetaInfo")
       .add(TT.ContentType, (t, { nni }) => t.contentType = nni)
       .add(TT.FreshnessPeriod, (t, { nni }) => t.freshnessPeriod = nni)
-      .add(TT.FinalBlockId, (t, { vd }) => t.finalBlockId = vd.decode(Component)),
+      .add(TT.FinalBlock, (t, { vd }) => t.finalBlockId = vd.decode(Component)),
   )
   .add(TT.Content, (t, { value }) => t.content = value)
   .add(TT.DSigInfo, (t, { decoder }) => {
@@ -139,7 +139,7 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
         TT.MetaInfo, Encoder.OmitEmpty,
         f.contentType > 0 ? [TT.ContentType, NNI(f.contentType)] : undefined,
         f.freshnessPeriod > 0 ? [TT.FreshnessPeriod, NNI(f.freshnessPeriod)] : undefined,
-        f.finalBlockId ? [TT.FinalBlockId, f.finalBlockId] : undefined,
+        f.finalBlockId ? [TT.FinalBlock, f.finalBlockId] : undefined,
       ],
       f.content.byteLength > 0 ? [TT.Content, f.content] : undefined,
       (f.sigInfo ?? FAKE_SIGINFO).encodeAs(TT.DSigInfo),

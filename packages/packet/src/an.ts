@@ -8,6 +8,8 @@ export const TT = {
   CanBePrefix: 0x21,
   MustBeFresh: 0x12,
   ForwardingHint: 0x1E,
+  Delegation: 0x1F,
+  Preference: 0x1E,
   Nonce: 0x0A,
   InterestLifetime: 0x0C,
   HopLimit: 0x22,
@@ -19,7 +21,7 @@ export const TT = {
   MetaInfo: 0x14,
   ContentType: 0x18,
   FreshnessPeriod: 0x19,
-  FinalBlockId: 0x1A,
+  FinalBlock: 0x1A,
   Content: 0x15,
   DSigInfo: 0x16,
   DSigValue: 0x17,
@@ -31,9 +33,6 @@ export const TT = {
   SigTime: 0x28,
   SigSeqNum: 0x2A,
 
-  Delegation: 0x1F,
-  Preference: 0x1E,
-
   Nack: 0x0320,
   NackReason: 0x0321,
 };
@@ -43,6 +42,7 @@ export const SigType = {
   Sha256WithRsa: 0x01,
   Sha256WithEcdsa: 0x03,
   HmacWithSha256: 0x04,
+  Null: 0xC8,
 };
 
 export const NackReason = {

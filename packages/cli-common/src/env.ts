@@ -30,6 +30,12 @@ export const env = makeEnv({
     required: false,
     defaultValue: new URL("unix:///run/nfd.sock"),
   },
+  mtu: {
+    envVarName: "NDNTS_MTU",
+    parser: parsers.positiveInteger,
+    required: false,
+    defaultValue: 1450,
+  },
   nfdreg: {
     envVarName: "NDNTS_NFDREG",
     parser: parsers.boolean,

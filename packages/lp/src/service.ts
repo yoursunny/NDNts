@@ -3,22 +3,34 @@ import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
 import itKeepAlive from "it-keepalive";
 
 import { TT } from "./an";
+import { Fragmenter } from "./fragmenter";
 import { LpPacket } from "./packet";
+import { Reassembler } from "./reassembler";
 
 const IDLE = Encoder.encode(new LpPacket());
 
 export class LpService {
   constructor({
     keepAlive = 60000,
+    mtu = Infinity,
+    reassemblerCapacity = 16,
   }: LpService.Options = {}) {
     if (keepAlive === false || keepAlive <= 0) {
       this.keepAlive = -1;
     } else {
       this.keepAlive = keepAlive;
     }
+    if (Number.isFinite(mtu)) {
+      this.mtu = mtu;
+      this.fragmenter = new Fragmenter(mtu);
+    }
+    this.reassembler = new Reassembler(reassemblerCapacity);
   }
 
-  private keepAlive: number;
+  private readonly keepAlive: number;
+  private readonly mtu = Infinity;
+  private readonly fragmenter?: Fragmenter;
+  private readonly reassembler: Reassembler;
 
   public rx = (iterable: AsyncIterable<Decoder.Tlv>) => {
     return this.rx_(iterable);
@@ -37,12 +49,13 @@ export class LpService {
         return yield this.decodeL3(tlv);
       }
 
-      const lpp = decoder.decode(LpPacket);
-      if (!lpp.fragment) {
+      const fragment = decoder.decode(LpPacket);
+      const lpp = this.reassembler.accept(fragment);
+      if (!lpp || !lpp.payload) {
         return;
       }
 
-      const l3pkt = this.decodeL3(new Decoder(lpp.fragment).read());
+      const l3pkt = this.decodeL3(new Decoder(lpp.payload).read());
       if (lpp.nack) {
         if (l3pkt.l3 instanceof Interest) {
           l3pkt.l3 = new Nack(l3pkt.l3, lpp.nack);
@@ -89,31 +102,40 @@ export class LpService {
     }
   }
 
-  private async *encode({ l3, token }: LpService.Packet) {
+  private *encode({ l3, token }: LpService.Packet): Iterable<Uint8Array|LpService.TxError> {
+    let lpp: LpPacket;
     try {
       switch (true) {
         case l3 instanceof Interest:
         case l3 instanceof Data: {
-          const l3pkt = l3 as Interest|Data;
-          if (!token) {
-            return yield Encoder.encode(l3pkt);
+          const payload = Encoder.encode(l3 as Interest|Data);
+          if (!token && payload.length <= this.mtu) {
+            return yield payload;
           }
-          const lpp = new LpPacket();
+          lpp = new LpPacket();
           lpp.pitToken = token;
-          lpp.fragment = Encoder.encode(l3pkt);
-          return yield Encoder.encode(lpp);
+          lpp.payload = payload;
+          break;
         }
         case l3 instanceof Nack: {
           const nack = l3 as Nack;
-          const lpp = new LpPacket();
+          lpp = new LpPacket();
           lpp.pitToken = token;
           lpp.nack = nack.header;
-          lpp.fragment = Encoder.encode(nack.interest);
-          return yield Encoder.encode(lpp);
+          lpp.payload = Encoder.encode(nack.interest);
+          break;
         }
+        default:
+          return;
       }
     } catch (err) {
       return yield new LpService.TxError(err, l3);
+    }
+
+    if (this.fragmenter) {
+      yield* this.fragmenter.fragment(lpp).map((fragment) => Encoder.encode(fragment, this.mtu));
+    } else {
+      yield Encoder.encode(lpp);
     }
   }
 }
@@ -126,6 +148,19 @@ export namespace LpService {
      * @default 60000
      */
     keepAlive?: false|number;
+
+    /**
+     * MTU for fragmentation.
+     * Set Infinity to disable fragmentation.
+     * @default Infinity
+     */
+    mtu?: number;
+
+    /**
+     * Maximum number of partial packets kept in the reassembler.
+     * @default 16
+     */
+    reassemblerCapacity?: number;
   }
 
   type L3Pkt = Interest|Data|Nack;

@@ -3,7 +3,7 @@ import "@ndn/tlv/test-fixture/expect";
 import { Decodable, Decoder, Encodable, Encoder } from "@ndn/tlv";
 import * as crypto from "crypto";
 
-import { Data, digestSigning, Interest, LLSign, LLVerify, Name, SigInfo, SigType, TT } from "../src/mod";
+import { Data, digestSigning, Interest, LLSign, LLVerify, Name, SigInfo, SigType, TT } from "..";
 import * as TestSignVerify from "../test-fixture/sign-verify";
 
 class TestAlgo {

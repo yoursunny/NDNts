@@ -105,6 +105,7 @@ const EncodeNniClass = {
   1: Nni1,
   2: Nni2,
   4: Nni4,
+  8: Nni8Number,
 };
 
 /** Create Encodable from non-negative integer. */
@@ -113,6 +114,9 @@ export function NNI(n: number|bigint, {
   unsafe = false,
 }: Options<Extract<Len, keyof typeof EncodeNniClass>> = {}): Encodable {
   if (len) {
+    if (len === 8 && typeof n === "bigint") {
+      return new Nni8Big(n);
+    }
     return new EncodeNniClass[len](Number(n));
   }
 

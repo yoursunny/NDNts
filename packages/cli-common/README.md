@@ -27,6 +27,10 @@ It supports Unix (e.g. `unix:///run/nfd.sock`), TCP (e.g. `tcp://192.0.2.1:6363`
 The default is `unix:///run/nfd.sock`.
 `openUplinks` function creates the uplink, and `closeUplinks` function closes the uplink.
 
+`NDNTS_MTU` environment variable sets the MTU for fragmentation of outgoing packets.
+It must be a positive integer, and the default value is 1450.
+It applies to UDP uplinks only.
+
 `NDNTS_NFDREG=1` environment variable enables prefix registration on the uplink using NFD management protocol.
 If this is set, prefix registration feature will be enabled by `openUplinks` function.
 

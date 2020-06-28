@@ -3,8 +3,7 @@ import "../test-fixture/expect";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { createHash } from "crypto";
 
-import { Interest, LLSign, LLVerify, Name, ParamsDigest, SigInfo, SigType, TT } from "..";
-import { FwHint } from "../src/fwhint";
+import { FwHint, Interest, LLSign, LLVerify, Name, ParamsDigest, SigInfo, SigType, TT } from "..";
 
 test("encode", () => {
   expect(() => new Interest({} as any)).toThrow();
