@@ -4,8 +4,12 @@ import bufferCompare from "buffer-compare";
 import { TT } from "./an";
 import { NamingConvention } from "./convention";
 
-function checkType(t: number) {
-  if (Number.isNaN(t) || t < 0x01 || t > 0xFFFF) {
+function checkType(t: number): boolean {
+  return !Number.isNaN(t) && t >= 0x01 && t <= 0xFFFF;
+}
+
+function assertType(t: number): void {
+  if (!checkType(t)) {
     throw new Error(`Component TLV-TYPE ${t} out of range`);
   }
 }
@@ -51,11 +55,13 @@ export class Component {
 
     let [sType, sValue] = input.split("=", 2);
     let type = TT.GenericNameComponent;
+    let iType: number;
     if (typeof sValue === "undefined") {
       [sType, sValue] = ["", sType];
+    } else if (checkType(iType = Number.parseInt(sType, 10))) {
+      type = iType;
     } else {
-      type = Number.parseInt(sType, 10);
-      checkType(type);
+      [sType, sValue] = ["", input];
     }
     if (/^\.*$/.test(sValue)) {
       sValue = sValue.slice(3);
@@ -65,8 +71,9 @@ export class Component {
     let length = 0;
     for (let i = 0; i < sValue.length;) {
       let ch = sValue.charCodeAt(i);
-      if (ch === CHARCODE_PERCENT) {
-        ch = Number.parseInt(sValue.slice(i + 1, i + 3), 16);
+      let hex: string;
+      if (ch === CHARCODE_PERCENT && /^[\da-f]{2}$/i.test(hex = sValue.slice(i + 1, i + 3))) {
+        ch = Number.parseInt(hex, 16);
         i += 3;
       } else {
         ++i;
@@ -97,7 +104,7 @@ export class Component {
         this.tlv = arg1;
         const decoder = new Decoder(arg1);
         ({ type: this.type, value: this.value } = decoder.read());
-        checkType(this.type);
+        assertType(this.type);
         return;
       }
       case "undefined":
@@ -105,7 +112,7 @@ export class Component {
         break;
       case "number":
         this.type = arg1;
-        checkType(this.type);
+        assertType(this.type);
         break;
     }
     switch (typeof arg2) {

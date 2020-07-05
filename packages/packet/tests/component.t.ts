@@ -64,7 +64,32 @@ test("from URI or string", () => {
   expect(comp).toHaveLength(2);
   expect(comp.value).toEqualUint8Array([0x0F, 0xA0]);
 
-  expect(() => Component.from("x=A")).toThrow();
+  // best effort parsing of invalid inputs
+
+  comp = Component.from("x=A");
+  expect(comp.type).toBe(0x08);
+  expect(comp).toHaveLength(3);
+  expect(comp.value).toEqualUint8Array([0x78, 0x3D, 0x41]);
+
+  comp = Component.from("0=A");
+  expect(comp.type).toBe(0x08);
+  expect(comp).toHaveLength(3);
+  expect(comp.value).toEqualUint8Array([0x30, 0x3D, 0x41]);
+
+  comp = Component.from("65536=A");
+  expect(comp.type).toBe(0x08);
+  expect(comp).toHaveLength(7);
+  expect(comp.value).toEqualUint8Array([0x36, 0x35, 0x35, 0x33, 0x36, 0x3D, 0x41]);
+
+  comp = Component.from("%0Q");
+  expect(comp.type).toBe(0x08);
+  expect(comp).toHaveLength(3);
+  expect(comp.value).toEqualUint8Array([0x25, 0x30, 0x51]);
+
+  comp = Component.from("%Q0");
+  expect(comp.type).toBe(0x08);
+  expect(comp).toHaveLength(3);
+  expect(comp.value).toEqualUint8Array([0x25, 0x51, 0x30]);
 });
 
 test("compare", () => {
