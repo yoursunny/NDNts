@@ -20,7 +20,7 @@ function readBlobFileReader(blob: Blob): Promise<ArrayBuffer> {
   });
 }
 
-/** Generate chunks from a Blob (from W3C File API). */
+/** Generate chunks from a Blob (from W3C File API, browser only). */
 export class BlobChunkSource extends KnownSizeChunkSource implements ChunkSource {
   constructor(private readonly blob: Blob, opts: ChunkOptions = {}) {
     super(getMaxChunkSize(opts), blob.size);

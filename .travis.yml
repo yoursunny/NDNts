@@ -47,6 +47,7 @@ deploy:
   - provider: pages
     edge: true
     token: $GITHUB_TOKEN
+    keep_history: false
     repo: yoursunny/NDNts-nightly
     commit_message: $TRAVIS_COMMIT $TRAVIS_BUILD_WEB_URL
     local_dir: mk/nightly-output/
