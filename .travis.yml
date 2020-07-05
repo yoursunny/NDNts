@@ -5,7 +5,7 @@ language: node_js
 jobs:
   include:
   - node_js: '12'
-  - node_js: '14'
+  - node_js: '14.4'
 
 addons:
   apt:
@@ -45,14 +45,15 @@ after_success:
 
 deploy:
   - provider: pages
-    skip_cleanup: true
-    github_token: $GITHUB_TOKEN
-    local_dir: mk/nightly-output/
+    edge: true
+    token: $GITHUB_TOKEN
     repo: yoursunny/NDNts-nightly
+    commit_message: $TRAVIS_COMMIT $TRAVIS_BUILD_WEB_URL
+    local_dir: mk/nightly-output/
     fqdn: ndnts-nightly.ndn.today
     on:
       branch: develop
-      node_js: '14'
+      node_js: '14.4'
   - provider: netlify
     edge: true
     site: 8987d2bb-7638-4d6b-adff-806fe3b7309a
@@ -62,4 +63,4 @@ deploy:
     prod: true
     on:
       branch: develop
-      node_js: '14'
+      node_js: '14.4'

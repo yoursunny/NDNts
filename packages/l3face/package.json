@@ -31,7 +31,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "it-pushable": "^1.4.0",
-    "streaming-iterables": "^4.1.2",
+    "streaming-iterables": "^5.0.2",
     "tslib": "*",
     "typed-emitter": "^1.2.0"
   },

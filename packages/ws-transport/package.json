@@ -31,11 +31,11 @@
     "p-cancelable": "^2.0.0",
     "p-timeout": "^3.2.0",
     "tslib": "*",
-    "ws": "^7.3.0"
+    "ws": "^7.3.1"
   },
   "devDependencies": {
     "@ndn/packet": "workspace:*",
-    "@types/ws": "^7.2.5",
+    "@types/ws": "^7.2.6",
     "it-pushable": "^1.4.0"
   }
 }

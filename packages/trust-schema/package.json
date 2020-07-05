@@ -30,11 +30,11 @@
     "@ndn/keychain": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "mnemonist": "Yomguithereal/mnemonist#6618acd002af2a090ec1caff60514f7a0961e9cf",
+    "mnemonist": "^0.38.0",
     "tslib": "*"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:*",
-    "streaming-iterables": "^4.1.2"
+    "streaming-iterables": "^5.0.2"
   }
 }
