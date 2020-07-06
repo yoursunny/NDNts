@@ -3,15 +3,6 @@ import { fromStream, writeToStream } from "streaming-iterables";
 
 import { Transport } from "./mod";
 
-export async function* rxFromPacketIterable(iterable: AsyncIterable<Uint8Array>): Transport.Rx {
-  for await (const pkt of iterable) {
-    const decoder = new Decoder(pkt);
-    let tlv: Decoder.Tlv;
-    try { tlv = decoder.read(); } catch { continue; }
-    yield tlv;
-  }
-}
-
 async function* fromStreamSafe(conn: NodeJS.ReadableStream) {
   try { yield* fromStream<Buffer>(conn); } catch {}
 }

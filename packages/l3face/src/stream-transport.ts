@@ -1,4 +1,4 @@
-import { rxFromStream, txToStream } from "./rxtx";
+import { rxFromStream, txToStream } from "./rxtx-stream";
 import { Transport } from "./transport";
 
 /** Stream-oriented transport. */
