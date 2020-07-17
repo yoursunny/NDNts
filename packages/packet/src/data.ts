@@ -8,8 +8,6 @@ import { Name, NameLike } from "./name";
 import { SigInfo } from "./sig-info";
 import { LLSign, LLVerify, Signer, Verifier } from "./signing";
 
-const FAKE_SIGINFO = new SigInfo(SigType.Sha256);
-const FAKE_SIGVALUE = new Uint8Array(32);
 const FIELDS = Symbol("Data.FIELDS");
 
 class Fields {
@@ -57,8 +55,8 @@ class Fields {
   public set freshnessPeriod(v) { this.freshnessPeriod_ = NNI.constrain(v, "FreshnessPeriod"); }
   public finalBlockId?: Component;
   public content = new Uint8Array();
-  public sigInfo?: SigInfo;
-  public sigValue?: Uint8Array;
+  public sigInfo = new SigInfo(SigType.Null);
+  public sigValue = new Uint8Array();
 
   private contentType_ = 0;
   private freshnessPeriod_ = 0;
@@ -125,7 +123,7 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
           this.encodeSignedPortion(),
           (output) => f.signedPortion = output,
         ),
-        [TT.DSigValue, f.sigValue ?? FAKE_SIGVALUE],
+        [TT.DSigValue, f.sigValue],
       ] as EncodableTlv,
       (output) => f.topTlv = output,
     ));
@@ -142,7 +140,7 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
         f.finalBlockId ? [TT.FinalBlock, f.finalBlockId] : undefined,
       ],
       f.content.byteLength > 0 ? [TT.Content, f.content] : undefined,
-      (f.sigInfo ?? FAKE_SIGINFO).encodeAs(TT.DSigInfo),
+      f.sigInfo.encodeAs(TT.DSigInfo),
     ];
   }
 

@@ -93,7 +93,7 @@ test("decode", async () => {
   expect(interest.hopLimit).toBe(220);
   expect(interest.appParameters).toBeUndefined();
   expect(interest.sigInfo).toBeUndefined();
-  expect(interest.sigValue).toBeUndefined();
+  expect(interest.sigValue).toHaveLength(0);
 
   // noop for non parameterized Interest
   await expect(interest.validateParamsDigest()).resolves.toBeUndefined();

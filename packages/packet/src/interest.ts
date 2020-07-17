@@ -1,4 +1,4 @@
-import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { Decoder, Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 
 import { TT } from "./an";
@@ -51,7 +51,7 @@ class Fields {
   public set hopLimit(v) { this.hopLimit_ = NNI.constrain(v, "HopLimit", HOPLIMIT_MAX); }
   public appParameters?: Uint8Array;
   public sigInfo?: SigInfo;
-  public sigValue?: Uint8Array;
+  public sigValue = new Uint8Array();
 
   private nonce_: number|undefined;
   private lifetime_: number = Interest.DefaultLifetime;
@@ -149,13 +149,22 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
         undefined : [TT.InterestLifetime, NNI(f.lifetime)],
       f.hopLimit === HOPLIMIT_MAX ?
         undefined : [TT.HopLimit, NNI(f.hopLimit, { len: 1 })],
-      f.appParameters ?
-        [TT.AppParameters, f.appParameters] : undefined,
-      f.sigInfo ?
-        f.sigInfo.encodeAs(TT.ISigInfo) : undefined,
-      f.sigValue ?
-        [TT.ISigValue, f.sigValue] : undefined,
+      ...this.encodeParamsPortion(),
     );
+  }
+
+  private encodeParamsPortion(): Encodable[] {
+    if (!this.appParameters) {
+      return [];
+    }
+    const w: Encodable[] = [[TT.AppParameters, this.appParameters]];
+    if (this.sigInfo) {
+      w.push(
+        this.sigInfo.encodeAs(TT.ISigInfo),
+        [TT.ISigValue, this.sigValue],
+      );
+    }
+    return w;
   }
 
   private appendParamsDigestPlaceholder(): number {
@@ -174,12 +183,7 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
       f.appParameters = new Uint8Array();
     }
 
-    f.paramsPortion = Encoder.encode([
-      [TT.AppParameters, f.appParameters],
-      f.sigInfo ?
-        f.sigInfo.encodeAs(TT.ISigInfo) : undefined,
-      [TT.ISigValue, Encoder.OmitEmpty, f.sigValue],
-    ]);
+    f.paramsPortion = Encoder.encode(this.encodeParamsPortion());
     const d = await sha256(f.paramsPortion);
     f.name = f.name.replaceAt(pdIndex, ParamsDigest.create(d));
   }

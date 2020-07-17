@@ -194,7 +194,7 @@ test("signer", async () => {
 
   const lsaData = new Data(lsa.name);
   await expect(signer.sign(lsaData)).resolves.toBeUndefined();
-  expect(lsaData.sigInfo?.keyLocator).toHaveName(nlsrCertName);
+  expect(lsaData.sigInfo.keyLocator).toHaveName(nlsrCertName);
 
   const unrelatedData = new Data("/U");
   await expect(signer.sign(unrelatedData)).rejects.toThrow(/no signer/);

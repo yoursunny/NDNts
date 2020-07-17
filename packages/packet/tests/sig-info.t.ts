@@ -1,6 +1,6 @@
 import "../test-fixture/expect";
 
-import { Decoder, Encoder } from "@ndn/tlv";
+import { Decoder } from "@ndn/tlv";
 
 import { KeyLocator, Name, SigInfo, SigType, TT } from "..";
 
@@ -33,7 +33,7 @@ test("SigInfo encode", () => {
   expect(() => new SigInfo({} as any)).toThrow();
 
   let si = new SigInfo();
-  expect(() => Encoder.encode(si.encodeAs(TT.ISigInfo))).toThrow();
+  expect(si.type).toBe(SigType.Null);
 
   si.type = SigType.Sha256;
   expect(si.encodeAs(TT.ISigInfo)).toEncodeAs(({ type, value }) => {

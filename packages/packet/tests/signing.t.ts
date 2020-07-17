@@ -3,7 +3,7 @@ import "@ndn/tlv/test-fixture/expect";
 import { Decodable, Decoder, Encodable, Encoder } from "@ndn/tlv";
 import * as crypto from "crypto";
 
-import { Data, digestSigning, Interest, LLSign, LLVerify, Name, SigInfo, SigType, TT } from "..";
+import { Data, digestSigning, Interest, LLSign, LLVerify, Name, nullSigner, SigInfo, SigType, TT } from "..";
 import * as TestSignVerify from "../test-fixture/sign-verify";
 
 class TestAlgo {
@@ -120,18 +120,32 @@ test.each(TABLE)("verify %#", async ({ cls, checkWire }) => {
 test("digestSigning simple", async () => {
   const data = new Data("/D");
   await expect(digestSigning.sign(data)).resolves.toBeUndefined();
-  expect(data.sigInfo?.type).toBe(SigType.Sha256);
+  expect(data.sigInfo.type).toBe(SigType.Sha256);
   await expect(digestSigning.verify(data)).resolves.toBeUndefined();
 
-  data.sigInfo!.type = SigType.HmacWithSha256;
+  data.sigInfo.type = SigType.HmacWithSha256;
   await expect(digestSigning.verify(data)).rejects.toThrow();
-  data.sigInfo!.type = SigType.Sha256;
+  data.sigInfo.type = SigType.Sha256;
 
-  data.sigValue = data.sigValue!.slice(1);
+  data.sigValue = data.sigValue.slice(1);
   await expect(digestSigning.verify(data)).rejects.toThrow();
 });
 
 test.each(TestSignVerify.TABLE)("digestSigning %p", async ({ cls }) => {
   const record = await TestSignVerify.execute(cls, digestSigning, digestSigning, digestSigning, digestSigning);
   TestSignVerify.check(record, { deterministic: true, sameAB: true });
+});
+
+test("nullSigner", async () => {
+  const data = new Data("/D");
+  expect(data.sigInfo.type).toBe(SigType.Null);
+  expect(data.sigValue).toHaveLength(0);
+
+  await expect(digestSigning.sign(data)).resolves.toBeUndefined();
+  expect(data.sigInfo.type).not.toBe(SigType.Null);
+  expect(data.sigValue).not.toHaveLength(0);
+
+  await expect(nullSigner.sign(data)).resolves.toBeUndefined();
+  expect(data.sigInfo.type).toBe(SigType.Null);
+  expect(data.sigValue).toHaveLength(0);
 });

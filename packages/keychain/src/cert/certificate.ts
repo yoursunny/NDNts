@@ -20,9 +20,6 @@ export class Certificate {
     if (contentType !== ContentTypeKEY) {
       throw new Error("ContentType must be KEY");
     }
-    if (!sigInfo) {
-      throw new Error("SigInfo is missing");
-    }
     const validity = ValidityPeriod.get(sigInfo);
     if (typeof validity === "undefined") {
       throw new Error("ValidityPeriod is missing");
@@ -37,7 +34,7 @@ export class Certificate {
   public get name() { return this.data.name; }
 
   public get issuer(): Name|undefined {
-    return this.data.sigInfo?.keyLocator?.name;
+    return this.data.sigInfo.keyLocator?.name;
   }
 
   public get isSelfSigned(): boolean {

@@ -1,6 +1,6 @@
 import { Decoder, EncodableObj, Encoder, EvDecoder, Extensible, ExtensionRegistry, NNI } from "@ndn/tlv";
 
-import { TT } from "./an";
+import { SigType, TT } from "./an";
 import { KeyLocator } from "./key-locator";
 
 const EXTENSIONS = new ExtensionRegistry<SigInfo>();
@@ -19,7 +19,7 @@ export class SigInfo {
     return EVD.decode(new SigInfo(), decoder);
   }
 
-  public type?: number;
+  public type = SigType.Null;
   public keyLocator?: KeyLocator;
   public nonce?: number;
   public time?: number;
@@ -67,10 +67,6 @@ export class SigInfo {
   }
 
   private encodeTo(encoder: Encoder, tt: number) {
-    if (typeof this.type === "undefined") {
-      throw new Error("cannot encode SigInfo without SigType");
-    }
-
     encoder.prependTlv(tt,
       [TT.SigType, NNI(this.type)],
       this.keyLocator,

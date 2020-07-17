@@ -38,7 +38,7 @@ export namespace LLVerify {
 interface PacketWithSignature {
   readonly name: Name;
   sigInfo?: SigInfo;
-  sigValue?: Uint8Array;
+  sigValue: Uint8Array;
 }
 
 /** High level signer, such as a private key. */
@@ -118,5 +118,17 @@ export const digestSigning: Signer&Verifier = {
       const ok = LLVerify.timingSafeEqual(sig, h);
       Verifier.throwOnBadSig(ok);
     });
+  },
+};
+
+/**
+ * Signer for SigType.Null, a packet that is not signed.
+ * @see https://redmine.named-data.net/projects/ndn-tlv/wiki/NullSignature
+ */
+export const nullSigner: Signer = {
+  sign(pkt: Signer.Signable): Promise<void> {
+    Signer.putSigInfo(pkt, SigType.Null, false);
+    pkt.sigValue = new Uint8Array();
+    return Promise.resolve();
   },
 };

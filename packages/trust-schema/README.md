@@ -175,7 +175,7 @@ assert.equal(authorCert.issuer?.toString(), adminCert.name.toString());
 const articleData = new Data("/a/blog/article/food/2015/1");
 await schemaSigner.sign(articleData);
 // article should be signed by author key
-assert.equal(articleData.sigInfo?.keyLocator?.name?.toString(), authorCert.name.toString());
+assert.equal(articleData.sigInfo.keyLocator?.name?.toString(), authorCert.name.toString());
 
 // Data that does not match the policy cannot be signed.
 const otherData = new Data("/a/blog/not-article/poison/2015/13");

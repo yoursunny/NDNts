@@ -87,7 +87,7 @@ describe("getSigner", () => {
     const signer = await keyChain.getSigner(...args);
     const data = new Data("/D");
     await signer.sign(data);
-    return KeyLocator.mustGetName(data.sigInfo?.keyLocator);
+    return KeyLocator.mustGetName(data.sigInfo.keyLocator);
   }
 
   test("from cert name", async () => {
