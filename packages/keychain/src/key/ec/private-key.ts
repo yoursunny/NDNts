@@ -1,6 +1,6 @@
 import { Name, NameLike, SigType } from "@ndn/packet";
 import { fromHex, toHex } from "@ndn/tlv";
-import * as asn1 from "@root/asn1";
+import * as asn1 from "@yoursunny/asn1";
 import assert from "minimalistic-assert";
 
 import type { KeyChain } from "../../store/mod";

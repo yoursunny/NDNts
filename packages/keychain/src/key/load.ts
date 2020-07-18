@@ -1,6 +1,6 @@
 import { Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
-import * as asn1 from "@root/asn1";
+import * as asn1 from "@yoursunny/asn1";
 
 import { HmacKey } from "./hmac/mod";
 import { EcPrivateKey, EcPublicKey, PublicKey, RsaPrivateKey, RsaPublicKey } from "./mod";

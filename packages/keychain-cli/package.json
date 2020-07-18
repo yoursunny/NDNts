@@ -37,7 +37,7 @@
     "prompts": "^2.3.2",
     "stdout-stream": "^1.4.1",
     "tslib": "*",
-    "yargs": "^15.4.0"
+    "yargs": "^15.4.1"
   },
   "devDependencies": {
     "@types/fast-chunk-string": "^1.0.0",

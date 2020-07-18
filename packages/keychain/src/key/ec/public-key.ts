@@ -1,6 +1,6 @@
 import { Name, SigType, Verifier } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
-import * as asn1 from "@root/asn1";
+import * as asn1 from "@yoursunny/asn1";
 
 import { PublicKey } from "../base";
 import { crypto } from "../crypto_node";
