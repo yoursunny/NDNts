@@ -25,7 +25,7 @@ export class PyRepoStore implements Pick<DataStore, "close"|"insert"|"delete"> {
       this.ownsClient = true;
       opts = arg1;
     }
-    this.throttle = throat(opts.parallel ?? 4);
+    this.throttle = throat(opts.parallel ?? 16);
     this.endpoint = this.client.endpoint;
   }
 
@@ -79,7 +79,7 @@ export class PyRepoStore implements Pick<DataStore, "close"|"insert"|"delete"> {
 
 export namespace PyRepoStore {
   export interface StoreOptions {
-    /** Maximum number of parallel insertions. Default is 4. */
+    /** Maximum number of parallel insertions. Default is 16. */
     parallel?: number;
   }
 

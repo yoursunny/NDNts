@@ -1,22 +1,9 @@
 import { Component, Name } from "@ndn/packet";
-import { Encoder, NNI } from "@ndn/tlv";
+import { Decoder, Encoder, NNI } from "@ndn/tlv";
 
-export interface Verb {
-  notifySuffix: Component[];
-  checkSuffix: Component[];
-}
-
-export const InsertVerb: Verb = {
-  notifySuffix: [Component.from("insert"), Component.from("notify")],
-  checkSuffix: [Component.from("insert%20check")],
-};
-
-export const DeleteVerb: Verb = {
-  notifySuffix: [Component.from("delete"), Component.from("notify")],
-  checkSuffix: [Component.from("delete%20check")],
-};
-
-export const MsgSuffix = Component.from("msg");
+export const InsertVerb = Component.from("insert");
+export const DeleteVerb = Component.from("delete");
+export const CheckVerb = Component.from("check");
 
 const TT = {
   StartBlockId: 0xCC,
@@ -27,23 +14,8 @@ const TT = {
   DeleteNum: 0xD2,
   ForwardingHint: 0xD3,
   RegisterPrefix: 0xD4,
-  NotifyNonce: 0x80,
+  CheckPrefix: 0xD5,
 };
-
-export class NotifyParams {
-  constructor(
-      public publisher: Name,
-      public nonce: number,
-  ) {
-  }
-
-  public encodeTo(encoder: Encoder) {
-    encoder.prependValue(
-      this.publisher,
-      [TT.NotifyNonce, NNI(this.nonce)],
-    );
-  }
-}
 
 export class CommandParameter {
   constructor(
@@ -53,17 +25,34 @@ export class CommandParameter {
   ) {
   }
 
-  public processId = 0;
-  public forwardingHint?: Name;
+  public processId = new Uint8Array();
+  public fwHint?: Name;
+  public checkPrefix = new Name();
 
   public encodeTo(encoder: Encoder) {
     encoder.prependValue(
       this.name,
-      [TT.ForwardingHint, Encoder.OmitEmpty, this.forwardingHint],
+      [TT.ForwardingHint, Encoder.OmitEmpty, this.fwHint],
       typeof this.startBlockId === "number" ? [TT.StartBlockId, NNI(this.startBlockId)] : undefined,
       typeof this.endBlockId === "number" ? [TT.EndBlockId, NNI(this.endBlockId)] : undefined,
-      [TT.ProcessId, NNI(this.processId)],
-      [TT.RegisterPrefix],
+      [TT.ProcessId, this.processId],
+      // [TT.RegisterPrefix],
+      [TT.CheckPrefix, this.checkPrefix],
     );
   }
+}
+
+export class CommandResponse {
+  public static decodeFrom(decoder: Decoder): CommandResponse {
+    const t = new CommandResponse();
+    while (!decoder.eof) {
+      const { type, nni } = decoder.read();
+      if (type === TT.StatusCode) {
+        t.statusCode = nni;
+      }
+    }
+    return t;
+  }
+
+  public statusCode = 0;
 }

@@ -2,12 +2,8 @@
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-This package allows inserting and deleting Data in [ndn-python-repo](https://github.com/JonnyKong/ndn-python-repo).
-
+This package allows inserting and deleting Data in [ndn-python-repo](https://github.com/JonnyKong/ndn-python-repo), version 0.2a5.
 `PyRepoClient` type is a client for [ndn-python-repo protocol](https://ndn-python-repo.readthedocs.io/en/latest/src/specification/specification.html).
-Currently, it does not implement "check" commands due to [ndn-python-repo issue 39](https://github.com/JonnyKong/ndn-python-repo/issues/39).
-Consequently, a success only indicates the repo has acknowledged the request, but does not wait until the request has been processed.
-
 `PyRepoStore` type implements a subset of `DataStore` interface defined in `@ndn/repo-api` package.
 
 ```ts
@@ -35,7 +31,7 @@ import { Data, digestSigning, Name } from "@ndn/packet";
   enableNfdPrefixReg(face);
 
   const store = new PyRepoStore({
-    repoPrefix: new Name("/testrepo"),
+    repoPrefix: new Name(repoPrefix),
   });
 
   const packets: Data[] = [];
