@@ -1,4 +1,4 @@
-import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, HmacKey, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength, RsaPrivateKey } from "@ndn/keychain";
+import { Certificate, EcCurve, EcPrivateKey, HmacKey, PrivateKey, PublicKey, RsaModulusLength, RsaPrivateKey } from "@ndn/keychain";
 import { NameLike } from "@ndn/packet";
 import stdout from "stdout-stream";
 import { Arguments, Argv, CommandModule } from "yargs";
@@ -54,13 +54,13 @@ export namespace GenKeyCommand {
         desc: "key type",
       })
       .option("curve", {
-        choices: EC_CURVES,
-        default: "P-256" as EcCurve,
+        choices: EcCurve.Choices,
+        default: EcCurve.Default,
         desc: "EC curve",
       })
       .option("modulus-length", {
-        choices: RSA_MODULUS_LENGTHS,
-        default: 2048 as RsaModulusLength,
+        choices: RsaModulusLength.Choices,
+        default: RsaModulusLength.Default,
         desc: "RSA modulus length",
       });
   }

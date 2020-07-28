@@ -29,14 +29,14 @@ window.testDigestKey = () => {
 };
 
 window.testEcKey = async () => {
-  const [pvtA, pubA] = await EcPrivateKey.generate("/EC-A", "P-256");
-  const [pvtB, pubB] = await EcPrivateKey.generate("/EC-B", "P-256");
+  const [pvtA, pubA] = await EcPrivateKey.generate("/EC-A");
+  const [pvtB, pubB] = await EcPrivateKey.generate("/EC-B");
   return testKey(pvtA, pubA, pvtB, pubB);
 };
 
 window.testRsaKey = async () => {
-  const [pvtA, pubA] = await RsaPrivateKey.generate("/RSA-A", 2048);
-  const [pvtB, pubB] = await RsaPrivateKey.generate("/RSA-B", 2048);
+  const [pvtA, pubA] = await RsaPrivateKey.generate("/RSA-A");
+  const [pvtB, pubB] = await RsaPrivateKey.generate("/RSA-B");
   return testKey(pvtA, pubA, pvtB, pubB);
 };
 

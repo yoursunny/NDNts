@@ -4,7 +4,7 @@ import * as asn1 from "@yoursunny/asn1";
 
 import { PublicKey } from "../base";
 import { crypto } from "../crypto_node";
-import { EC_POINT_SIZE, EcCurve, makeGenParams, SIGN_PARAMS } from "./algo";
+import { CurveParams, EcCurve, makeGenParams, SIGN_PARAMS } from "./algo";
 
 /** ECDSA public key. */
 export class EcPublicKey extends PublicKey implements PublicKey.Exportable {
@@ -13,7 +13,7 @@ export class EcPublicKey extends PublicKey implements PublicKey.Exportable {
   }
 
   protected async llVerify(input: Uint8Array, sig: Uint8Array): Promise<void> {
-    const pointSize = EC_POINT_SIZE[this.curve];
+    const pointSize = CurveParams[this.curve].pointSize;
 
     const der = asn1.parseVerbose(sig);
     const r = der.children?.[0].value;
@@ -40,13 +40,10 @@ function determineEcCurve(der: asn1.ElementBuffer): EcCurve|false {
   const params = der.children?.[0].children?.[1];
   if (params && params.type === 0x06 && params.value) {
     const namedCurveOid = toHex(params.value);
-    switch (namedCurveOid) {
-      case "2A8648CE3D030107": // 1.2.840.10045.3.1.7
-        return "P-256";
-      case "2B81040022": // 1.3.132.0.34
-        return "P-384";
-      case "2B81040023": // 1.3.132.0.35
-        return "P-521";
+    for (const [curve, { oid }] of Object.entries(CurveParams)) {
+      if (oid === namedCurveOid) {
+        return curve as EcCurve;
+      }
     }
     /* istanbul ignore next */
     throw new Error(`unknown namedCurve OID ${namedCurveOid}`);
@@ -76,7 +73,7 @@ export namespace EcPublicKey {
     if (curve) {
       key = await importNamedCurve(curve, spki);
     } else {
-      curve = "P-256";
+      curve = EcCurve.Default;
       key = await importSpecificCurve(curve, der);
     }
     return new EcPublicKey(name, curve, key);

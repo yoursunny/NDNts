@@ -85,7 +85,7 @@ beforeAll(async () => {
   siteCert = buildName("siteCert", {});
   netCert = buildName("netCert", {});
 
-  const [netPvt, netPub] = await EcPrivateKey.generate(netCert.name, "P-256");
+  const [netPvt, netPub] = await EcPrivateKey.generate(netCert.name);
   trustAnchor = await Certificate.selfSign({ publicKey: netPub, privateKey: netPvt });
   trustAnchorPvt = netPvt;
   netCert.cert = trustAnchor.name;
@@ -163,7 +163,7 @@ test("buildSignerNames", () => {
 test("signer", async () => {
   const keyChain = KeyChain.createTemp();
 
-  const [, sitePub] = await EcPrivateKey.generate(siteCert.name, "P-256", keyChain);
+  const [, sitePub] = await EcPrivateKey.generate(siteCert.name, keyChain);
   const siteCertificate = await Certificate.issue({
     publicKey: sitePub,
     issuerPrivateKey: trustAnchorPvt,
@@ -176,7 +176,7 @@ test("signer", async () => {
   const signer = new TrustSchemaSigner({ keyChain, schema });
 
   async function issueCertificate({ name: subject }: NameVars, expectIssuer: Name): Promise<Name> {
-    const [, pub] = await EcPrivateKey.generate(subject, "P-256", keyChain);
+    const [, pub] = await EcPrivateKey.generate(subject, keyChain);
     const cert = await Certificate.issue({
       publicKey: pub,
       issuerPrivateKey: await signer.findSigner(pub.name),

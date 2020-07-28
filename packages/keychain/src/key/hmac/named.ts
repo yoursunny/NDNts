@@ -7,6 +7,7 @@ import { crypto } from "../crypto_node";
 import { generateKey, LoadedKey, saveKey, StoredKey } from "../save";
 import { PlainHmacKey } from "./plain";
 
+/** Named HMAC key. */
 export class HmacKey extends PlainHmacKey {
   constructor(public readonly name: Name, key: CryptoKey) {
     super(key);

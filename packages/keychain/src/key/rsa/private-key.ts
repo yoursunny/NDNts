@@ -31,9 +31,32 @@ export namespace RsaPrivateKey {
     return { type: STORED_TYPE };
   }
 
+  /**
+   * Generate RSA key pair.
+   * @param nameInput subject name or key name.
+   * @param modulusLength key size.
+   * @param keyChain save the key pair to KeyChain, if supplied.
+   */
   export async function generate(
-      nameInput: NameLike, modulusLength: RsaModulusLength,
+    nameInput: NameLike, modulusLength?: RsaModulusLength,
+    keyChain?: KeyChain): Promise<[RsaPrivateKey, RsaPublicKey]>;
+
+  export async function generate(
+    nameInput: NameLike, keyChain: KeyChain): Promise<[RsaPrivateKey, RsaPublicKey]>;
+
+  export async function generate(
+      nameInput: NameLike, arg2?: RsaModulusLength|KeyChain,
       keyChain?: KeyChain): Promise<[RsaPrivateKey, RsaPublicKey]> {
+    let modulusLength = RsaModulusLength.Default;
+    switch (typeof arg2) {
+      case "object":
+        keyChain = arg2;
+        break;
+      case "number":
+        modulusLength = arg2;
+        break;
+    }
+
     const [name, pvt, pub] = await generateKey(nameInput, makeStoredKeyBase(),
       { ...GEN_PARAMS, modulusLength } as RsaHashedKeyGenParams|RsaHashedImportParams, keyChain);
     return [
@@ -48,10 +71,8 @@ export namespace RsaPrivateKey {
     let cryptoPub: CryptoKey;
     if (isJwk) {
       [cryptoPvt, cryptoPub] = await Promise.all([
-        crypto.subtle.importKey("jwk", pvt as JsonWebKey,
-          IMPORT_PARAMS, false, ["sign"]),
-        crypto.subtle.importKey("jwk", pub as JsonWebKey,
-          IMPORT_PARAMS, true, ["verify"]),
+        crypto.subtle.importKey("jwk", pvt as JsonWebKey, IMPORT_PARAMS, extractable, ["sign"]),
+        crypto.subtle.importKey("jwk", pub as JsonWebKey, IMPORT_PARAMS, true, ["verify"]),
       ]);
     } else {
       cryptoPvt = pvt as CryptoKey;

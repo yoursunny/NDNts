@@ -15,10 +15,10 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
 
   const gen = await Promise.all(Array.from((function*(): Generator<Promise<[PrivateKey, PublicKey]>> {
     for (let i = 0; i < 16; ++i) {
-      yield EcPrivateKey.generate(`/${i}`, "P-256", keyChain);
+      yield EcPrivateKey.generate(`/${i}`, keyChain);
     }
     for (let i = 16; i < 32; ++i) {
-      yield RsaPrivateKey.generate(`/${i}`, 2048, keyChain);
+      yield RsaPrivateKey.generate(`/${i}`, keyChain);
     }
     for (let i = 32; i < 40; ++i) {
       yield HmacKey.generate(`/${i}`, keyChain).then((key) => [key, key]);

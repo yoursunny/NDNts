@@ -10,7 +10,7 @@ import { retrieveMetadata, serveMetadata } from "..";
 let signer: PrivateKey;
 let verifier: PublicKey;
 beforeAll(async () => {
-  [signer, verifier] = await EcPrivateKey.generate("/K", "P-256");
+  [signer, verifier] = await EcPrivateKey.generate("/K");
 });
 
 const theMetadata = {

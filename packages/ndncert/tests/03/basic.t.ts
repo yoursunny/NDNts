@@ -25,7 +25,7 @@ test("crypto", async () => {
 });
 
 test("packets", async () => {
-  const [caPvt, caPub] = await RsaPrivateKey.generate("/authority", 1024);
+  const [caPvt, caPub] = await RsaPrivateKey.generate("/authority");
   const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
   const profile = await CaProfile.build({
     prefix: new Name("/authority/CA"),
@@ -45,7 +45,7 @@ test("packets", async () => {
   expect(profile.maxValidityPeriod).toBe(86400000);
   expect(profile.cert.name).toEqualName(caCert.name);
 
-  const [reqPvt, reqPub] = await EcPrivateKey.generate("/requester", "P-256");
+  const [reqPvt, reqPub] = await EcPrivateKey.generate("/requester");
   const reqEcdh = await crypto.generateEcdhKey();
   const newRequest = await NewRequest.build({
     profile,

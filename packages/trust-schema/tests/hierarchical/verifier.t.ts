@@ -65,7 +65,7 @@ class Context {
   }
 
   protected async makeCert1() {
-    [this.pvt1, this.pub1] = await RsaPrivateKey.generate(this.name1, 1024, this.keyChain);
+    [this.pvt1, this.pub1] = await RsaPrivateKey.generate(this.name1, this.keyChain);
     this.cert1 = await Certificate.issue({
       publicKey: this.pub1,
       issuerPrivateKey: this.pvt0,
@@ -77,7 +77,7 @@ class Context {
   }
 
   protected async makeCert2() {
-    [this.pvt2, this.pub2] = await EcPrivateKey.generate(this.name2, "P-256", this.keyChain);
+    [this.pvt2, this.pub2] = await EcPrivateKey.generate(this.name2, this.keyChain);
     this.cert2 = await Certificate.issue({
       publicKey: this.pub2,
       issuerPrivateKey: this.pvt1,
@@ -191,7 +191,7 @@ describe("bad signature", () => {
   let fakePvt1: PrivateKey;
   let ctx: Context;
   beforeAll(async () => {
-    [fakePvt1] = await RsaPrivateKey.generate("/root/site", 1024);
+    [fakePvt1] = await RsaPrivateKey.generate("/root/site");
     ctx = await Context.create({
       name1: fakePvt1.name,
       opts2: {

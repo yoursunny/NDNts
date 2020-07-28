@@ -26,7 +26,7 @@ While `@ndn/keychain` package only supports 2019 Signed Interest format, NFD Man
 
 ```ts
 // Generate a key.
-const [privateKey] = await EcPrivateKey.generate("/K", "P-256");
+const [privateKey] = await EcPrivateKey.generate("/K");
 
 // Prepare the Interest.
 const interest = new Interest("/I");

@@ -22,13 +22,13 @@ This command prints a list of key names to standard output.
 ```sh
 NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec gen-key /A
 NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec gen-key /A --type ec --curve P-384
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec gen-key /A --type rsa --modulus-length 1024
+NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec gen-key /A --type rsa --modulus-length 2048
 ```
 
 * The name can either be a subject name (called "identity" in other tools), or a key name.
 * `--type` specifies key type: "ec" or "rsa".
 * `--curve` specifies ECDSA curve: "P-256", "P-384", or "P-521".
-* `--modulus-length` specifies RSA modulus length: 1024, 2048, 4096.
+* `--modulus-length` specifies RSA modulus length: 2048, 4096.
 * Default is ECDSA key with P-256 curve.
 
 This command adds a self-signed certificate to the KeyChain, and prints the certificate name to stdout.

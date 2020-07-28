@@ -137,7 +137,7 @@ With the policy in place, we can generate a root key and make the trust schema o
 
 ```ts
 const keyChain = KeyChain.createTemp();
-const [rootPvt, rootPub] = await EcPrivateKey.generate("/a/blog", "P-256", keyChain);
+const [rootPvt, rootPub] = await EcPrivateKey.generate("/a/blog", keyChain);
 const rootCert = await Certificate.selfSign({ publicKey: rootPub, privateKey: rootPvt });
 await keyChain.insertCert(rootCert);
 const schema = new TrustSchema(policy, [rootCert]);
@@ -150,7 +150,7 @@ const schema = new TrustSchema(policy, [rootCert]);
 ```ts
 const schemaSigner = new TrustSchemaSigner({ keyChain, schema });
 
-const [adminPvt, adminPub] = await EcPrivateKey.generate("/a/blog/admin/Lixia", "P-256", keyChain);
+const [adminPvt, adminPub] = await EcPrivateKey.generate("/a/blog/admin/Lixia", keyChain);
 const adminCert = await Certificate.issue({
   publicKey: adminPub,
   validity: ValidityPeriod.daysFromNow(30),
@@ -161,7 +161,7 @@ await keyChain.insertCert(adminCert);
 // admin certificate should be signed by root key
 assert.equal(adminCert.issuer?.toString(), rootCert.name.toString());
 
-const [authorPvt, authorPub] = await EcPrivateKey.generate("/a/blog/author/Yingdi", "P-256", keyChain);
+const [authorPvt, authorPub] = await EcPrivateKey.generate("/a/blog/author/Yingdi", keyChain);
 const authorCert = await Certificate.issue({
   publicKey: authorPub,
   validity: ValidityPeriod.daysFromNow(30),

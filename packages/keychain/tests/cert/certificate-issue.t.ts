@@ -6,8 +6,8 @@ import { Component } from "@ndn/packet";
 import { Certificate, EcPrivateKey, ValidityPeriod } from "../..";
 
 test("issue", async () => {
-  const [issuerPrivateKey] = await EcPrivateKey.generate("/issuer", "P-384");
-  const [, publicKey] = await EcPrivateKey.generate("/rp", "P-256");
+  const [issuerPrivateKey] = await EcPrivateKey.generate("/issuer");
+  const [, publicKey] = await EcPrivateKey.generate("/rp");
 
   const cert = await Certificate.issue({
     validity: ValidityPeriod.daysFromNow(1),
@@ -22,7 +22,7 @@ test("issue", async () => {
 });
 
 test("self-sign", async () => {
-  const [privateKey, publicKey] = await EcPrivateKey.generate("/EC/KEY/x", "P-256");
+  const [privateKey, publicKey] = await EcPrivateKey.generate("/EC/KEY/x");
 
   const cert = await Certificate.selfSign({ privateKey, publicKey });
   expect(cert.name).toHaveLength(5);
@@ -30,7 +30,7 @@ test("self-sign", async () => {
   expect(cert.name.at(-1).is(Version)).toBeTruthy();
   expect(cert.isSelfSigned).toBeTruthy();
 
-  const [, publicKeyY] = await EcPrivateKey.generate("/EC/KEY/y", "P-256");
+  const [, publicKeyY] = await EcPrivateKey.generate("/EC/KEY/y");
 
   await expect(Certificate.selfSign({
     validity: ValidityPeriod.daysFromNow(1),

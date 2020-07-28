@@ -58,7 +58,7 @@ test.each(TABLE)("workflow %#", async ({
   const repo = makeEmptyDataStore();
   const repoProducer = RepoProducer.create(repo, { reg: PrefixRegShorter(2) });
 
-  const [caPvt, caPub] = await RsaPrivateKey.generate("/authority", 1024);
+  const [caPvt, caPub] = await RsaPrivateKey.generate("/authority");
   const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
   const profile = await CaProfile.build({
     prefix: new Name("/authority/CA"),
@@ -79,7 +79,7 @@ test.each(TABLE)("workflow %#", async ({
     challenges: serverChallenges,
   });
 
-  const [reqPvt, reqPub] = await EcPrivateKey.generate("/requester", "P-256");
+  const [reqPvt, reqPub] = await EcPrivateKey.generate("/requester");
   const reqPromise = requestCertificate({
     profile,
     privateKey: reqPvt,

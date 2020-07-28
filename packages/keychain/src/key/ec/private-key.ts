@@ -7,7 +7,7 @@ import type { KeyChain } from "../../store/mod";
 import { PrivateKey } from "../base";
 import { crypto } from "../crypto_node";
 import { generateKey, LoadedKey, StoredKey } from "../save";
-import { EC_POINT_SIZE, EcCurve, makeGenParams, SIGN_PARAMS } from "./algo";
+import { CurveParams, EcCurve, makeGenParams, SIGN_PARAMS } from "./algo";
 import { EcPublicKey } from "./public-key";
 
 /** ECDSA private key. */
@@ -18,7 +18,7 @@ export class EcPrivateKey extends PrivateKey {
 
   protected async llSign(input: Uint8Array): Promise<Uint8Array> {
     const raw = new Uint8Array(await crypto.subtle.sign(SIGN_PARAMS, this.key, input));
-    const pointSize = EC_POINT_SIZE[this.curve];
+    const pointSize = CurveParams[this.curve].pointSize;
     return fromHex(asn1.Any("30",
       asn1.UInt(toUintHex(raw, 0, pointSize)),
       asn1.UInt(toUintHex(raw, pointSize, 2 * pointSize)),
@@ -48,9 +48,32 @@ export namespace EcPrivateKey {
     return { type: STORED_TYPE, curve };
   }
 
+  /**
+   * Generate ECDSA key pair.
+   * @param nameInput subject name or key name.
+   * @param curve EC curve.
+   * @param keyChain save the key pair to KeyChain, if supplied.
+   */
   export async function generate(
-      nameInput: NameLike, curve: EcCurve,
+    nameInput: NameLike, curve?: EcCurve,
+    keyChain?: KeyChain): Promise<[EcPrivateKey, EcPublicKey]>;
+
+  export async function generate(
+    nameInput: NameLike, keyChain: KeyChain): Promise<[EcPrivateKey, EcPublicKey]>;
+
+  export async function generate(
+      nameInput: NameLike, arg2?: EcCurve|KeyChain,
       keyChain?: KeyChain): Promise<[EcPrivateKey, EcPublicKey]> {
+    let curve = EcCurve.Default;
+    switch (typeof arg2) {
+      case "object":
+        keyChain = arg2;
+        break;
+      case "string":
+        curve = arg2;
+        break;
+    }
+
     const [name, pvt, pub] = await generateKey(nameInput, makeStoredKeyBase(curve),
       makeGenParams(curve), keyChain);
     return [

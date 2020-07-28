@@ -13,7 +13,7 @@ export interface TestRecord {
 
 export async function execute(keyChain: KeyChain): Promise<TestRecord> {
   const [issuerPrivateKey] = await EcPrivateKey.generate("/I", "P-384");
-  const [privateKey, publicKey] = await EcPrivateKey.generate("/K", "P-256", keyChain);
+  const [privateKey, publicKey] = await EcPrivateKey.generate("/K", keyChain);
   const selfSigned = await Certificate.selfSign({ privateKey, publicKey });
   const issued = await Certificate.issue({
     publicKey, issuerPrivateKey,

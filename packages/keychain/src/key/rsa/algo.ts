@@ -10,5 +10,14 @@ export const GEN_PARAMS: Omit<RsaHashedKeyGenParams, "modulusLength"> = {
   publicExponent: Uint8Array.of(0x01, 0x00, 0x01),
 };
 
-export type RsaModulusLength = 1024 | 2048 | 4096;
-export const RSA_MODULUS_LENGTHS: readonly RsaModulusLength[] = [1024, 2048, 4096];
+const ModulusLengths = {
+  2048: true,
+  4096: true,
+};
+
+export type RsaModulusLength = keyof typeof ModulusLengths;
+
+export namespace RsaModulusLength {
+  export const Default: RsaModulusLength = 2048;
+  export const Choices = Object.keys(ModulusLengths).map((v) => Number.parseInt(v, 10)) as readonly RsaModulusLength[];
+}

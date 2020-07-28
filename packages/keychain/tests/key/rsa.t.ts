@@ -3,14 +3,14 @@ import "@ndn/packet/test-fixture/expect";
 import { Name, SigType } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 
-import { Certificate, KeyChain, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength, RsaPrivateKey, RsaPublicKey } from "../..";
+import { Certificate, KeyChain, PublicKey, RsaModulusLength, RsaPrivateKey, RsaPublicKey } from "../..";
 
 interface Row extends TestSignVerify.Row {
   modulusLength: RsaModulusLength;
 }
 
 const TABLE = TestSignVerify.TABLE.flatMap((row) =>
-  RSA_MODULUS_LENGTHS.map((modulusLength) => ({ ...row, modulusLength })),
+  RsaModulusLength.Choices.map((modulusLength) => ({ ...row, modulusLength })),
 ) as Row[];
 
 test.each(TABLE)("sign-verify %p", async ({ cls, modulusLength }) => {
@@ -29,7 +29,7 @@ test.each(TABLE)("sign-verify %p", async ({ cls, modulusLength }) => {
   expect(record.sA0.sigInfo.keyLocator?.name).toEqualName(pvtA.name);
 });
 
-test.each(RSA_MODULUS_LENGTHS)("load %p", async (modulusLength) => {
+test.each(RsaModulusLength.Choices)("load %p", async (modulusLength) => {
   const keyChain = KeyChain.createTemp();
   const name = new Name("/RSAKEY/KEY/x");
   await RsaPrivateKey.generate(name, modulusLength, keyChain);

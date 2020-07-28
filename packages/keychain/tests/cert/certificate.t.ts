@@ -7,7 +7,7 @@ import { Certificate, CertNaming, EcPrivateKey, EcPublicKey, RsaPublicKey, Valid
 import * as ndn_testbed_certs from "../../test-fixture/ndn-testbed-certs";
 
 test("encode decode", async () => {
-  const [pvt] = await EcPrivateKey.generate("/operator/KEY/key-1", "P-256");
+  const [pvt] = await EcPrivateKey.generate("/operator/KEY/key-1");
   const cert = await Certificate.build({
     name: new Name("/operator/KEY/key-1/self/%FD%01"),
     validity: new ValidityPeriod(1542099529000, 1602434283000),

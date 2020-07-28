@@ -1,4 +1,4 @@
-import { Certificate, EC_CURVES, EcCurve, EcPrivateKey, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaModulusLength, RsaPrivateKey } from "@ndn/keychain";
+import { Certificate, EcCurve, EcPrivateKey, PrivateKey, PublicKey, RsaModulusLength, RsaPrivateKey } from "@ndn/keychain";
 import { Data } from "@ndn/packet";
 import { deleteTmpFiles, writeTmpFile } from "@ndn/segmented-object/test-fixture/tmpfile";
 import { Encoder } from "@ndn/tlv";
@@ -16,8 +16,8 @@ type Row = {
 };
 
 const TABLE = ([] as Row[]).concat(
-  EC_CURVES.map((curve) => ({ cls: EcPrivateKey, arg: curve })),
-  RSA_MODULUS_LENGTHS.map((modulusLength) => ({ cls: RsaPrivateKey, arg: modulusLength })),
+  EcCurve.Choices.map((curve) => ({ cls: EcPrivateKey, arg: curve })),
+  RsaModulusLength.Choices.map((modulusLength) => ({ cls: RsaPrivateKey, arg: modulusLength })),
 );
 
 type KeyGenFunc = (...args: unknown[]) => Promise<[PrivateKey, PublicKey]>;

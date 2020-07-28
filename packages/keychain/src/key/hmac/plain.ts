@@ -2,6 +2,7 @@ import { LLSign, LLVerify, Signer, SigType, Verifier } from "@ndn/packet";
 
 import { crypto } from "../crypto_node";
 
+/** Unnamed HMAC key. */
 export class PlainHmacKey implements Signer, Verifier {
   constructor(private readonly key: CryptoKey) {
   }

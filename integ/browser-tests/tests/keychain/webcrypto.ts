@@ -1,4 +1,4 @@
-import { Certificate, EC_CURVES, EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RSA_MODULUS_LENGTHS, RsaPrivateKey } from "@ndn/keychain";
+import { Certificate, EcCurve, EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RsaModulusLength, RsaPrivateKey } from "@ndn/keychain";
 import * as ndn_testbed_certs from "@ndn/keychain/test-fixture/ndn-testbed-certs";
 import { Data, digestSigning, Signer, Verifier } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
@@ -19,7 +19,7 @@ async function* genKeys(keyChain: KeyChain): AsyncGenerator<GenResult> {
     pvt: digestSigning,
     canMakeCert: false,
   };
-  for (const curve of EC_CURVES) {
+  for (const curve of EcCurve.Choices) {
     const res: GenResult = { title: `ECDSA ${curve}` };
     try {
       const [pvt, pub] = await EcPrivateKey.generate("/S", curve, keyChain);
@@ -30,7 +30,7 @@ async function* genKeys(keyChain: KeyChain): AsyncGenerator<GenResult> {
     }
     yield res;
   }
-  for (const modulusLength of RSA_MODULUS_LENGTHS) {
+  for (const modulusLength of RsaModulusLength.Choices) {
     const res: GenResult = { title: `RSA ${modulusLength}` };
     try {
       const [pvt, pub] = await RsaPrivateKey.generate("/S", modulusLength, keyChain);

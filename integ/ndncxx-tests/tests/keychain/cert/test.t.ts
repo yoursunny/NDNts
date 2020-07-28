@@ -5,8 +5,8 @@ import { Encoder } from "@ndn/tlv";
 import { execute } from "../../../test-fixture/cxxprogram";
 
 test("decode", async () => {
-  const [, publicKey] = await EcPrivateKey.generate("/A", "P-256");
-  const [issuerPrivateKey] = await EcPrivateKey.generate("/B", "P-256");
+  const [, publicKey] = await EcPrivateKey.generate("/A");
+  const [issuerPrivateKey] = await EcPrivateKey.generate("/B");
 
   const validity = new ValidityPeriod(1542099529000, 1602434283000);
   const cert = await Certificate.issue({

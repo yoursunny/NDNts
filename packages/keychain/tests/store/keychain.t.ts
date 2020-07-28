@@ -57,9 +57,9 @@ describe("getSigner", () => {
   let pubC: PublicKey;
 
   beforeAll(async () => {
-    const [pvtR] = await EcPrivateKey.generate("/root", "P-256", keyChain);
+    const [pvtR] = await EcPrivateKey.generate("/root", keyChain);
 
-    [pvtA, pubA] = await EcPrivateKey.generate("/C/A", "P-256", keyChain);
+    [pvtA, pubA] = await EcPrivateKey.generate("/C/A", keyChain);
     selfA = await Certificate.selfSign({
       publicKey: pubA,
       privateKey: pvtA,
@@ -73,14 +73,14 @@ describe("getSigner", () => {
     });
     await keyChain.insertCert(certA);
 
-    [pvtB, pubB] = await EcPrivateKey.generate("/B", "P-256", keyChain);
+    [pvtB, pubB] = await EcPrivateKey.generate("/B", keyChain);
     selfB = await Certificate.selfSign({
       publicKey: pubB,
       privateKey: pvtB,
     });
     await keyChain.insertCert(selfB);
 
-    [pvtC, pubC] = await EcPrivateKey.generate("/C", "P-256", keyChain);
+    [pvtC, pubC] = await EcPrivateKey.generate("/C", keyChain);
   });
 
   async function getSignerKeyLocator(...args: Parameters<KeyChain["getSigner"]>): Promise<Name> {

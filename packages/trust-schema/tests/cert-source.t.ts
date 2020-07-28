@@ -19,10 +19,10 @@ let certB: Certificate;
 
 beforeAll(async () => {
   keyChain = KeyChain.createTemp();
-  [pvtA, pubA] = await EcPrivateKey.generate("/A", "P-256", keyChain);
+  [pvtA, pubA] = await EcPrivateKey.generate("/A", keyChain);
   selfA = await Certificate.selfSign({ publicKey: pubA, privateKey: pvtA });
   await keyChain.insertCert(selfA);
-  [pvtB, pubB] = await EcPrivateKey.generate("/B", "P-256", keyChain);
+  [pvtB, pubB] = await EcPrivateKey.generate("/B", keyChain);
   selfB = await Certificate.selfSign({ publicKey: pubB, privateKey: pvtB });
   await keyChain.insertCert(selfB);
   certB = await Certificate.issue({
