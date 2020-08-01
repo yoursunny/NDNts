@@ -1,11 +1,10 @@
-import { PrivateKey } from "@ndn/keychain";
-import { Data } from "@ndn/packet";
+import { Data, Signer } from "@ndn/packet";
 import { Decoder, EncodableTlv, Encoder, EvDecoder, toUtf8 } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
 import { TT } from "./an";
-import { CaProfile } from "./ca-profile";
-import { NewRequest } from "./new-request";
+import type { CaProfile } from "./ca-profile";
+import type { NewRequest } from "./new-request";
 
 const EVD = new EvDecoder<NewResponse.Fields>("NewResponse", undefined)
   .add(TT.EcdhPub, (t, { value }) => t.ecdhPubRaw = value, { required: true })
@@ -47,7 +46,7 @@ export namespace NewResponse {
     profile: CaProfile;
     request: NewRequest;
     ecdhPub: CryptoKey;
-    signer: PrivateKey;
+    signer: Signer;
   };
 
   export async function build({

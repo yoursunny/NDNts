@@ -76,7 +76,7 @@ export function makeKeyName(name: Name, opts: Partial<Omit<KeyNameFields, "subje
     return keyName;
   }
   const {
-    keyId = Timestamp.create(new Date()),
+    keyId = Timestamp.create(Date.now()),
   } = opts;
   return name.append(KEY, keyId);
 }

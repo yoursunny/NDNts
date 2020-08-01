@@ -1,10 +1,10 @@
 import { ConsumerOptions, Endpoint, RetxPolicy } from "@ndn/endpoint";
-import { Certificate, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, NamedSigner, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
 import { Interest, Name } from "@ndn/packet";
 
 import * as crypto from "../crypto-common";
 import { CaProfile, ChallengeRequest, ChallengeResponse, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
-import { ClientChallenge } from "./challenge";
+import type { ClientChallenge } from "./challenge";
 
 export interface ClientOptions {
   /** Endpoint for communication. */
@@ -14,8 +14,8 @@ export interface ClientOptions {
   retx?: RetxPolicy;
 
   profile: CaProfile;
-  privateKey: PrivateKey;
-  publicKey: PublicKey;
+  privateKey: NamedSigner.PrivateKey;
+  publicKey: NamedVerifier.PublicKey;
 
   /** ValidityPeriod, will be truncated to the maximum allowed by CA profile. */
   validity?: ValidityPeriod;

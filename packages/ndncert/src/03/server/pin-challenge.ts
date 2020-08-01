@@ -4,8 +4,8 @@ import { fromUtf8 } from "@ndn/tlv";
 import { EventEmitter } from "events";
 import TypedEmitter from "typed-emitter";
 
-import { ChallengeRequest } from "../packet/mod";
-import { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";
+import type { ChallengeRequest } from "../packet/mod";
+import type { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";
 
 interface Events {
   /** Emitted when a pin code has been generated. */

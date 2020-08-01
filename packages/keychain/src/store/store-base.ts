@@ -2,7 +2,6 @@ import { Name } from "@ndn/packet";
 import { fromHex, toHex } from "@ndn/tlv";
 import throat from "throat";
 
-import { Certificate } from "../mod";
 import { StoreImpl } from "./store-impl";
 
 export abstract class StoreBase<T> {
@@ -31,10 +30,18 @@ export abstract class StoreBase<T> {
   protected insertImpl(name: Name, value: T): Promise<void> {
     return this.throttle(() => this.impl.insert(toHex(name.value), value));
   }
-}
 
-/** Storage of certificates. */
-export interface CertStore extends StoreBase<any> {
-  get: (name: Name) => Promise<Certificate>;
-  insert: (cert: Certificate) => Promise<void>;
+  protected bufferToStorable(input: Uint8Array|string): Uint8Array|string {
+    if (!this.canSClone && ArrayBuffer.isView(input)) {
+      return toHex(input);
+    }
+    return input;
+  }
+
+  protected bufferFromStorable(input: Uint8Array|string): Uint8Array {
+    if (ArrayBuffer.isView(input)) {
+      return input;
+    }
+    return fromHex(input);
+  }
 }

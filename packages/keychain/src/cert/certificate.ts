@@ -1,8 +1,9 @@
 import { Component, Data, Name, SigInfo, Signer } from "@ndn/packet";
+import * as asn1 from "@yoursunny/asn1";
 import assert from "minimalistic-assert";
 
-import { loadSpki } from "../key/load";
-import { PrivateKey, PublicKey } from "../key/mod";
+import { CryptoAlgorithm, NamedSigner, NamedVerifier, PublicKey, SigningAlgorithmList } from "../key/mod";
+import { createVerifier } from "../key/signing";
 import * as CertNaming from "../naming";
 import { ContentTypeKEY } from "./an";
 import { ValidityPeriod } from "./validity-period";
@@ -41,20 +42,37 @@ export class Certificate {
     return this.issuer?.isPrefixOf(this.name) ?? false;
   }
 
-  /** Public key in SubjectPublicKeyInfo binary format. */
+  /** Public key in SubjectPublicKeyInfo (SPKI) binary format. */
   public get publicKeySpki(): Uint8Array {
     return this.data.content;
   }
 
-  /** Load public key. */
-  public async loadPublicKey(): Promise<PublicKey> {
-    if (!this.publicKey) {
-      this.publicKey = await loadSpki(CertNaming.toKeyName(this.name), this.publicKeySpki);
+  /** Import SPKI as public key. */
+  public async importPublicKey<I, A extends CryptoAlgorithm<I>>(
+      algoList: readonly A[],
+  ): Promise<[A, CryptoAlgorithm.PublicKey<I>]> {
+    const der = asn1.parseVerbose(this.publicKeySpki);
+    for (const algo of algoList) {
+      if (!algo.importSpki) {
+        continue;
+      }
+      try {
+        return [algo, await algo.importSpki(this.publicKeySpki, der)];
+      } catch {}
     }
-    return this.publicKey;
+    throw new Error("cannot import key");
   }
 
-  private publicKey?: PublicKey;
+  /** Create verifier from SPKI. */
+  public async createVerifier(): Promise<NamedVerifier.PublicKey> {
+    if (!this.verifier) {
+      const [algo, key] = await this.importPublicKey(SigningAlgorithmList);
+      this.verifier = createVerifier(CertNaming.toKeyName(this.name), algo, key);
+    }
+    return this.verifier;
+  }
+
+  private verifier?: NamedVerifier.PublicKey;
 }
 
 const DEFAULT_FRESHNESS = 3600000;
@@ -93,20 +111,19 @@ export namespace Certificate {
   }
 
   export async function issue(options: IssueOptions): Promise<Certificate> {
-    if (!PublicKey.isExportable(options.publicKey)) {
-      throw new Error("publicKey is not exportable");
+    let { issuerPrivateKey: pvt, issuerId, publicKey: { name, spki } } = options;
+    name = CertNaming.makeCertName(name, { issuerId });
+    if (!spki) {
+      throw new Error("options.publicKey.spki unavailable");
     }
-    const { issuerPrivateKey: pvt, issuerId, publicKey: pub } = options;
-    const name = CertNaming.makeCertName(pub.name, { issuerId });
-    const publicKeySpki = await pub.exportAsSpki();
-    const opts: BuildOptions = { ...options, name, publicKeySpki, signer: pvt };
+    const opts: BuildOptions = { ...options, name, publicKeySpki: spki, signer: pvt };
     return build(opts);
   }
 
   export interface SelfSignOptions {
     freshness?: number;
     validity?: ValidityPeriod;
-    privateKey: PrivateKey;
+    privateKey: NamedSigner;
     publicKey: PublicKey;
   }
 

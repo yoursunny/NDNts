@@ -1,12 +1,12 @@
-import { Certificate, CertNaming, EcPrivateKey, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, generateSigningKey, ValidityPeriod } from "@ndn/keychain";
 import { Component } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 
 import { execute } from "../../../test-fixture/cxxprogram";
 
 test("decode", async () => {
-  const [, publicKey] = await EcPrivateKey.generate("/A");
-  const [issuerPrivateKey] = await EcPrivateKey.generate("/B");
+  const [, publicKey] = await generateSigningKey("/A");
+  const [issuerPrivateKey] = await generateSigningKey("/B");
 
   const validity = new ValidityPeriod(1542099529000, 1602434283000);
   const cert = await Certificate.issue({

@@ -1,5 +1,5 @@
-import { ChallengeRequest } from "../packet/mod";
-import { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";
+import type { ChallengeRequest } from "../packet/mod";
+import type { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";
 
 /** The "nop" challenge where the server would approve every request. */
 export class ServerNopChallenge implements ServerChallenge {

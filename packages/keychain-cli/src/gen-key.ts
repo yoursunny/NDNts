@@ -1,4 +1,4 @@
-import { Certificate, EcCurve, EcPrivateKey, HmacKey, PrivateKey, PublicKey, RsaModulusLength, RsaPrivateKey } from "@ndn/keychain";
+import { Certificate, EcCurve, ECDSA, generateSigningKey, NamedSigner, NamedVerifier, PrivateKey, PublicKey, RSA, RsaModulusLength } from "@ndn/keychain";
 import { NameLike } from "@ndn/packet";
 import stdout from "stdout-stream";
 import { Arguments, Argv, CommandModule } from "yargs";
@@ -30,7 +30,10 @@ export class GenKeyCommand implements CommandModule<{}, Args> {
     const { pvt, pub, canSelfSign } = await GenKeyCommand.generateKey(args.name, args);
 
     if (canSelfSign) {
-      const cert = await Certificate.selfSign({ privateKey: pvt, publicKey: pub });
+      const cert = await Certificate.selfSign({
+        privateKey: pvt as NamedSigner.PrivateKey,
+        publicKey: pub as NamedVerifier.PublicKey,
+      });
       await keyChain.insertCert(cert);
       stdout.write(`${cert.name}\n`);
     } else {
@@ -74,16 +77,16 @@ export namespace GenKeyCommand {
       }> {
     switch (type) {
       case "ec": {
-        const [pvt, pub] = await EcPrivateKey.generate(name, curve, keyChain);
+        const [pvt, pub] = await generateSigningKey(keyChain, name, ECDSA, { curve });
         return { pvt, pub, canSelfSign: true };
       }
       case "rsa": {
-        const [pvt, pub] = await RsaPrivateKey.generate(name, modulusLength, keyChain);
+        const [pvt, pub] = await generateSigningKey(keyChain, name, RSA, { modulusLength });
         return { pvt, pub, canSelfSign: true };
       }
       case "hmac": {
-        const key = await HmacKey.generate(name, keyChain);
-        return { pvt: key, pub: key, canSelfSign: false };
+        const [pvt, pub] = await generateSigningKey(keyChain, name);
+        return { pvt, pub, canSelfSign: false };
       }
       default:
         /* istanbul ignore next */

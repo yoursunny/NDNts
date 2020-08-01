@@ -1,4 +1,4 @@
-import { Certificate, CertNaming, KeyChain, KeyChainImplWebCrypto as crypto, KeyStore, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, KeyChain, KeyChainImplWebCrypto as crypto, KeyStore, NamedSigner, NamedVerifier, PublicKey, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, Name } from "@ndn/packet";
 import { Decodable, Decoder, Encoder } from "@ndn/tlv";
 import execa from "execa";
@@ -93,7 +93,7 @@ export class NdnsecKeyChain extends KeyChain {
     return this.cached;
   }
 
-  public readonly canSCloneKeys = false;
+  public readonly needJwk = true;
 
   public async listKeys(prefix = new Name()): Promise<Name[]> {
     return this.mutex(async () => {
@@ -102,21 +102,21 @@ export class NdnsecKeyChain extends KeyChain {
     });
   }
 
-  public async getKeyPair(name: Name): Promise<[PrivateKey, PublicKey]> {
+  public async getKeyPair(name: Name): Promise<[NamedSigner, NamedVerifier]> {
     return this.mutex(async () => {
       const keyChain = await this.load();
       return keyChain.getKeyPair(name);
     });
   }
 
-  public async getPrivateKey(name: Name): Promise<PrivateKey> {
+  public async getPrivateKey(name: Name): Promise<NamedSigner> {
     return this.mutex(async () => {
       const keyChain = await this.load();
       return keyChain.getPrivateKey(name);
     });
   }
 
-  public async getPublicKey(name: Name): Promise<PublicKey> {
+  public async getPublicKey(name: Name): Promise<NamedVerifier> {
     return this.mutex(async () => {
       const keyChain = await this.load();
       return keyChain.getPublicKey(name);
@@ -125,16 +125,17 @@ export class NdnsecKeyChain extends KeyChain {
 
   public async insertKey(name: Name, stored: KeyStore.StoredKey): Promise<void> {
     return this.mutex(async () => {
-      const { cryptoPvt, privateKey, publicKey } = await KeyStore.loadFromStored(name, stored, true);
+      const [pvt, pub, [cryptoPvt]] = await new KeyStoreLoadHelper().loadKey(name, stored);
       const selfSigned = await Certificate.issue({
-        publicKey,
+        publicKey: pub as PublicKey,
         validity: ValidityPeriod.MAX,
-        issuerPrivateKey: privateKey,
+        issuerPrivateKey: pvt,
         issuerId: IMPORTING_ISSUER,
       });
-      const pvt = await crypto.subtle.exportKey("pkcs8", cryptoPvt);
-      const safeBag = SafeBag.create(selfSigned, new Uint8Array(pvt), PASSPHRASE);
+      const pkcs8 = new Uint8Array(await crypto.subtle.exportKey("pkcs8", cryptoPvt));
+      const safeBag = SafeBag.create(selfSigned, pkcs8, PASSPHRASE);
       await this.invokeNdnsec(["import", "-P", PASSPHRASE, "-i-"], Encoder.encode(safeBag));
+      this.cached = undefined;
     });
   }
 
@@ -171,5 +172,16 @@ export class NdnsecKeyChain extends KeyChain {
       await this.invokeNdnsec(["delete", "-c", name.toString()]);
       this.cached = undefined;
     });
+  }
+}
+
+class KeyStoreLoadHelper extends KeyStore {
+  constructor() {
+    super({} as any);
+    this.loadKeyExtractable = true;
+  }
+
+  public loadKey(...a: Parameters<KeyStore["loadKey"]>): ReturnType<KeyStore["loadKey"]> {
+    return super.loadKey(...a);
   }
 }

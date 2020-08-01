@@ -1,4 +1,4 @@
-import { Certificate, EcCurve, EcPrivateKey, PrivateKey, PublicKey, RsaModulusLength, RsaPrivateKey } from "@ndn/keychain";
+import { Certificate, EcCurve, ECDSA, generateSigningKey, RSA, RsaModulusLength, SigningAlgorithm } from "@ndn/keychain";
 import { Data } from "@ndn/packet";
 import { deleteTmpFiles, writeTmpFile } from "@ndn/segmented-object/test-fixture/tmpfile";
 import { Encoder } from "@ndn/tlv";
@@ -7,23 +7,18 @@ import { execute } from "../../../test-fixture/cxxprogram";
 
 afterEach(deleteTmpFiles);
 
-type Row = {
-  cls: typeof EcPrivateKey;
-  arg: EcCurve;
-} | {
-  cls: typeof RsaPrivateKey;
-  arg: RsaModulusLength;
+type Row<G> = {
+  algo: SigningAlgorithm<any, true, G>;
+  genParam: G;
 };
 
-const TABLE = ([] as Row[]).concat(
-  EcCurve.Choices.map((curve) => ({ cls: EcPrivateKey, arg: curve })),
-  RsaModulusLength.Choices.map((modulusLength) => ({ cls: RsaPrivateKey, arg: modulusLength })),
+const TABLE = ([] as Array<Row<any>>).concat(
+  EcCurve.Choices.map((curve) => ({ algo: ECDSA, genParam: { curve } })),
+  RsaModulusLength.Choices.map((modulusLength) => ({ algo: RSA, genParam: { modulusLength } })),
 );
 
-type KeyGenFunc = (...args: unknown[]) => Promise<[PrivateKey, PublicKey]>;
-
-test.each(TABLE)("%p", async ({ cls, arg }) => {
-  const [privateKey, publicKey] = await (cls.generate as KeyGenFunc)("/A", arg);
+test.each(TABLE)("%p", async ({ algo, genParam }) => {
+  const [privateKey, publicKey] = await generateSigningKey("/A", algo, genParam);
   const cert = await Certificate.selfSign({ privateKey, publicKey });
 
   const packet = new Data("/D", Uint8Array.of(0xC0, 0xC1));

@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Component, Data, digestSigning, KeyLocator, Name } from "@ndn/packet";
 import { dirSync as tmpDir } from "tmp";
 
-import { Certificate, CertNaming, EcPrivateKey, KeyChain, PrivateKey, PublicKey, ValidityPeriod } from "../..";
+import { Certificate, CertNaming, generateSigningKey, KeyChain, NamedSigner, NamedVerifier, ValidityPeriod } from "../..";
 import * as TestCertStore from "../../test-fixture/cert-store";
 import * as TestKeyStore from "../../test-fixture/key-store";
 
@@ -46,20 +46,20 @@ describe("persistent", () => {
 
 describe("getSigner", () => {
   const keyChain = KeyChain.createTemp();
-  let pvtA: PrivateKey;
-  let pubA: PublicKey;
+  let pvtA: NamedSigner.PrivateKey;
+  let pubA: NamedVerifier.PublicKey;
   let selfA: Certificate;
   let certA: Certificate;
-  let pvtB: PrivateKey;
-  let pubB: PublicKey;
+  let pvtB: NamedSigner.PrivateKey;
+  let pubB: NamedVerifier.PublicKey;
   let selfB: Certificate;
-  let pvtC: PrivateKey;
-  let pubC: PublicKey;
+  let pvtC: NamedSigner.PrivateKey;
+  let pubC: NamedVerifier.PublicKey;
 
   beforeAll(async () => {
-    const [pvtR] = await EcPrivateKey.generate("/root", keyChain);
+    const [pvtR] = await generateSigningKey(keyChain, "/root");
 
-    [pvtA, pubA] = await EcPrivateKey.generate("/C/A", keyChain);
+    [pvtA, pubA] = await generateSigningKey(keyChain, "/C/A");
     selfA = await Certificate.selfSign({
       publicKey: pubA,
       privateKey: pvtA,
@@ -73,14 +73,14 @@ describe("getSigner", () => {
     });
     await keyChain.insertCert(certA);
 
-    [pvtB, pubB] = await EcPrivateKey.generate("/B", keyChain);
+    [pvtB, pubB] = await generateSigningKey(keyChain, "/B");
     selfB = await Certificate.selfSign({
       publicKey: pubB,
       privateKey: pvtB,
     });
     await keyChain.insertCert(selfB);
 
-    [pvtC, pubC] = await EcPrivateKey.generate("/C", keyChain);
+    [pvtC, pubC] = await generateSigningKey(keyChain, "/C");
   });
 
   async function getSignerKeyLocator(...args: Parameters<KeyChain["getSigner"]>): Promise<Name> {

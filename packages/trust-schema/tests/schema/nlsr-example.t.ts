@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Certificate, CertNaming, EcPrivateKey, KeyChain, PrivateKey, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, generateSigningKey, KeyChain, NamedSigner, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, Name } from "@ndn/packet";
 import { collect, take } from "streaming-iterables";
 
@@ -31,7 +31,7 @@ packet <= nlsrCert <= rtrCert <= opCert <= siteCert <= netCert
 
 let policy: TrustSchemaPolicy;
 let trustAnchor: Certificate;
-let trustAnchorPvt: PrivateKey;
+let trustAnchorPvt: NamedSigner.PrivateKey;
 
 interface NameVars {
   name: Name;
@@ -85,7 +85,7 @@ beforeAll(async () => {
   siteCert = buildName("siteCert", {});
   netCert = buildName("netCert", {});
 
-  const [netPvt, netPub] = await EcPrivateKey.generate(netCert.name);
+  const [netPvt, netPub] = await generateSigningKey(netCert.name);
   trustAnchor = await Certificate.selfSign({ publicKey: netPub, privateKey: netPvt });
   trustAnchorPvt = netPvt;
   netCert.cert = trustAnchor.name;
@@ -163,7 +163,7 @@ test("buildSignerNames", () => {
 test("signer", async () => {
   const keyChain = KeyChain.createTemp();
 
-  const [, sitePub] = await EcPrivateKey.generate(siteCert.name, keyChain);
+  const [, sitePub] = await generateSigningKey(keyChain, siteCert.name);
   const siteCertificate = await Certificate.issue({
     publicKey: sitePub,
     issuerPrivateKey: trustAnchorPvt,
@@ -176,7 +176,7 @@ test("signer", async () => {
   const signer = new TrustSchemaSigner({ keyChain, schema });
 
   async function issueCertificate({ name: subject }: NameVars, expectIssuer: Name): Promise<Name> {
-    const [, pub] = await EcPrivateKey.generate(subject, keyChain);
+    const [, pub] = await generateSigningKey(keyChain, subject);
     const cert = await Certificate.issue({
       publicKey: pub,
       issuerPrivateKey: await signer.findSigner(pub.name),

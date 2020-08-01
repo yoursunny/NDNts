@@ -1,11 +1,10 @@
-import { PrivateKey } from "@ndn/keychain";
-import { Data, Name } from "@ndn/packet";
+import { Data, Name, Signer } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
 import { Status, TT } from "./an";
-import { CaProfile } from "./ca-profile";
-import { ChallengeRequest } from "./challenge-request";
+import type { CaProfile } from "./ca-profile";
+import type { ChallengeRequest } from "./challenge-request";
 import * as encrypted_payload from "./encrypted";
 
 const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse", undefined)
@@ -44,7 +43,7 @@ export namespace ChallengeResponse {
     profile: CaProfile;
     sessionKey: CryptoKey;
     request: ChallengeRequest;
-    signer: PrivateKey;
+    signer: Signer;
   }
 
   export async function build({

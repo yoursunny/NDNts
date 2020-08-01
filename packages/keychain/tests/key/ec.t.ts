@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Name, SigType } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 
-import { Certificate, EcCurve, EcPrivateKey, EcPublicKey, KeyChain, PublicKey } from "../..";
+import { Certificate, EcCurve, ECDSA, generateSigningKey, KeyChain, PublicKey } from "../..";
 
 interface Row extends TestSignVerify.Row {
   curve: EcCurve;
@@ -14,9 +14,8 @@ const TABLE = TestSignVerify.TABLE.flatMap((row) =>
 ) as Row[];
 
 test.each(TABLE)("sign-verify %p", async ({ cls, curve }) => {
-  const [pvtA, pubA] = await EcPrivateKey.generate("/ECKEY-A/KEY/x", curve);
-  expect(PublicKey.isExportable(pubA)).toBeTruthy();
-  const [pvtB, pubB] = await EcPrivateKey.generate("/ECKEY-B/KEY/x", curve);
+  const [pvtA, pubA] = await generateSigningKey("/ECKEY-A/KEY/x", ECDSA, { curve });
+  const [pvtB, pubB] = await generateSigningKey("/ECKEY-B/KEY/x", ECDSA, { curve });
 
   expect(pvtA.name).toEqualName("/ECKEY-A/KEY/x");
   expect(pubA.name).toEqualName("/ECKEY-A/KEY/x");
@@ -32,14 +31,14 @@ test.each(TABLE)("sign-verify %p", async ({ cls, curve }) => {
 test.each(EcCurve.Choices)("load %p", async (curve) => {
   const keyChain = KeyChain.createTemp();
   const name = new Name("/ECKEY/KEY/x");
-  await EcPrivateKey.generate(name, curve, keyChain);
+  await generateSigningKey(keyChain, name, ECDSA, { curve });
 
   const [pvt, pub] = await keyChain.getKeyPair(name);
-  expect(pvt).toBeInstanceOf(EcPrivateKey);
+  expect(pvt.sigType).toBe(SigType.Sha256WithEcdsa);
 
-  const cert = await Certificate.selfSign({ privateKey: pvt, publicKey: pub });
-  const pub2 = await cert.loadPublicKey();
-  expect(pub2).toBeInstanceOf(EcPublicKey);
+  const cert = await Certificate.selfSign({ privateKey: pvt, publicKey: pub as PublicKey });
+  const pub2 = await cert.createVerifier();
   expect(pub2.name).toEqualName(pvt.name);
+  expect(pub2.sigType).toBe(SigType.Sha256WithEcdsa);
   await expect(pub2.verify(cert.data)).resolves.toBeUndefined();
 });

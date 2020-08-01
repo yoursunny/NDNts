@@ -1,16 +1,16 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint, Producer } from "@ndn/endpoint";
-import { EcPrivateKey, PrivateKey, PublicKey } from "@ndn/keychain";
+import { generateSigningKey } from "@ndn/keychain";
 import { Version } from "@ndn/naming-convention2";
-import { Name } from "@ndn/packet";
+import { Name, Signer, Verifier } from "@ndn/packet";
 
 import { retrieveMetadata, serveMetadata } from "..";
 
-let signer: PrivateKey;
-let verifier: PublicKey;
+let signer: Signer;
+let verifier: Verifier;
 beforeAll(async () => {
-  [signer, verifier] = await EcPrivateKey.generate("/K");
+  [signer, verifier] = await generateSigningKey("/K");
 });
 
 const theMetadata = {

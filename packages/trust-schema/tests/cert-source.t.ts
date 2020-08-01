@@ -1,7 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
-import { Certificate, EcPrivateKey, KeyChain, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, generateSigningKey, KeyChain, NamedSigner, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
 import { Name, NameLike } from "@ndn/packet";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
 import { collect } from "streaming-iterables";
@@ -9,20 +9,20 @@ import { collect } from "streaming-iterables";
 import { CertFetcher, CertSource, KeyChainCertSource, TrustAnchorContainer } from "..";
 
 let keyChain: KeyChain;
-let pvtA: PrivateKey;
-let pubA: PublicKey;
+let pvtA: NamedSigner.PrivateKey;
+let pubA: NamedVerifier.PublicKey;
 let selfA: Certificate;
-let pvtB: PrivateKey;
-let pubB: PublicKey;
+let pvtB: NamedSigner.PrivateKey;
+let pubB: NamedVerifier.PublicKey;
 let selfB: Certificate;
 let certB: Certificate;
 
 beforeAll(async () => {
   keyChain = KeyChain.createTemp();
-  [pvtA, pubA] = await EcPrivateKey.generate("/A", keyChain);
+  [pvtA, pubA] = await generateSigningKey(keyChain, "/A");
   selfA = await Certificate.selfSign({ publicKey: pubA, privateKey: pvtA });
   await keyChain.insertCert(selfA);
-  [pvtB, pubB] = await EcPrivateKey.generate("/B", keyChain);
+  [pvtB, pubB] = await generateSigningKey(keyChain, "/B");
   selfB = await Certificate.selfSign({ publicKey: pubB, privateKey: pvtB });
   await keyChain.insertCert(selfB);
   certB = await Certificate.issue({

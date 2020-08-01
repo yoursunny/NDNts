@@ -1,5 +1,4 @@
-import { PrivateKey } from "@ndn/keychain";
-import { Data, Interest } from "@ndn/packet";
+import { Data, Interest, Signer } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 
 import { ErrorCode, TT } from "./an";
@@ -14,7 +13,7 @@ const EVD = new EvDecoder<ErrorMsg>("ErrorMsg", undefined)
   .add(TT.ErrorInfo, (t, { text }) => t.errorInfo = text, { required: true });
 
 export namespace ErrorMsg {
-  export async function makeData(errorCode: ErrorCode, { name }: Interest, signer: PrivateKey) {
+  export async function makeData(errorCode: ErrorCode, { name }: Interest, signer: Signer) {
     const errorInfo = ErrorCode[errorCode];
     const payload = Encoder.encode([
       [TT.ErrorCode, NNI(errorCode)],

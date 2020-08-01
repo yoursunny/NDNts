@@ -1,6 +1,6 @@
 import "./webcrypto";
 
-import { EcPrivateKey, HmacKey, KeyChain, RsaPrivateKey } from "@ndn/keychain";
+import { ECDSA, generateSigningKey, HMAC, KeyChain, RSA } from "@ndn/keychain";
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";
 import { execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
 import { Data, digestSigning, Interest, Signer, Verifier } from "@ndn/packet";
@@ -29,19 +29,19 @@ window.testDigestKey = () => {
 };
 
 window.testEcKey = async () => {
-  const [pvtA, pubA] = await EcPrivateKey.generate("/EC-A");
-  const [pvtB, pubB] = await EcPrivateKey.generate("/EC-B");
+  const [pvtA, pubA] = await generateSigningKey("/EC-A", ECDSA);
+  const [pvtB, pubB] = await generateSigningKey("/EC-B", ECDSA);
   return testKey(pvtA, pubA, pvtB, pubB);
 };
 
 window.testRsaKey = async () => {
-  const [pvtA, pubA] = await RsaPrivateKey.generate("/RSA-A");
-  const [pvtB, pubB] = await RsaPrivateKey.generate("/RSA-B");
+  const [pvtA, pubA] = await generateSigningKey("/RSA-A", RSA);
+  const [pvtB, pubB] = await generateSigningKey("/RSA-B", RSA);
   return testKey(pvtA, pubA, pvtB, pubB);
 };
 
 window.testHmacKey = async () => {
-  const keyA = await HmacKey.generate("/HMAC-A");
-  const keyB = await HmacKey.generate("/HMAC-B");
-  return testKey(keyA, keyA, keyB, keyB);
+  const [pvtA, pubA] = await generateSigningKey("/HMAC-A", HMAC);
+  const [pvtB, pubB] = await generateSigningKey("/HMAC-B", HMAC);
+  return testKey(pvtA, pubA, pvtB, pubB);
 };

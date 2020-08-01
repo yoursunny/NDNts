@@ -1,4 +1,4 @@
-import { ChallengeRequest } from "../packet/mod";
+import type { ChallengeRequest } from "../packet/mod";
 
 /** Server side of a challenge. */
 export interface ServerChallenge {

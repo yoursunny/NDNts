@@ -1,5 +1,5 @@
 import { Endpoint, Producer } from "@ndn/endpoint";
-import { Certificate, CertNaming, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, NamedSigner, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
 import { Component, ComponentLike, Data, Interest } from "@ndn/packet";
 import { serveMetadata } from "@ndn/rdr";
 import { toHex } from "@ndn/tlv";
@@ -7,7 +7,7 @@ import assert from "minimalistic-assert";
 
 import * as crypto from "../crypto-common";
 import { CaProfile, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, NewRequest, NewResponse, Status, Verb } from "../packet/mod";
-import { ServerChallenge } from "./challenge";
+import type { ServerChallenge } from "./challenge";
 
 export interface ServerOptions {
   /** Endpoint for communication. */
@@ -20,7 +20,7 @@ export interface ServerOptions {
   profile: CaProfile;
 
   /** CA private key, must match the certificate in the CA profile. */
-  key: PrivateKey;
+  key: NamedSigner.PrivateKey;
 
   /** Supported challenges. */
   challenges: ServerChallenge[];
@@ -52,7 +52,7 @@ export class Server {
       endpoint: Endpoint,
       private readonly repo: RepoDataStore,
       private readonly profile: CaProfile,
-      private readonly key: PrivateKey,
+      private readonly key: NamedSigner.PrivateKey,
       private readonly challenges: Map<string, ServerChallenge>,
       private readonly issuerId: Component,
   ) {
@@ -248,7 +248,7 @@ const BEFORE_CHALLENGE_EXPIRY = 60000;
 interface Context {
   expiry: number;
   sessionKey: CryptoKey;
-  certRequestPub: PublicKey;
+  certRequestPub: NamedVerifier.PublicKey;
   validityPeriod: ValidityPeriod;
   status: Status;
   challengeId?: string;

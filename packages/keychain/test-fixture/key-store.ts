@@ -1,6 +1,10 @@
-import { Name } from "@ndn/packet";
+import { Name, SigType } from "@ndn/packet";
 
-import { EcPrivateKey, HmacKey, KeyChain, PrivateKey, PublicKey, RsaPrivateKey } from "..";
+import { ECDSA, generateSigningKey, HMAC, KeyChain, NamedSigner, NamedVerifier, RSA } from "..";
+
+interface Options {
+  skipHmac?: boolean;
+}
 
 export interface TestRecord {
   keys0: string[];
@@ -10,18 +14,23 @@ export interface TestRecord {
   keys4: string[];
 }
 
-export async function execute(keyChain: KeyChain): Promise<TestRecord> {
+export async function execute(
+    keyChain: KeyChain,
+    { skipHmac = false }: Options = {},
+): Promise<TestRecord> {
   const keys0 = (await keyChain.listKeys()).map(String);
 
-  const gen = await Promise.all(Array.from((function*(): Generator<Promise<[PrivateKey, PublicKey]>> {
+  const gen = await Promise.all(Array.from((function*(): Generator<Promise<[NamedSigner, NamedVerifier]>> {
     for (let i = 0; i < 16; ++i) {
-      yield EcPrivateKey.generate(`/${i}`, keyChain);
+      yield generateSigningKey(keyChain, `/${i}`, ECDSA);
     }
     for (let i = 16; i < 32; ++i) {
-      yield RsaPrivateKey.generate(`/${i}`, keyChain);
+      yield generateSigningKey(keyChain, `/${i}`, RSA);
     }
-    for (let i = 32; i < 40; ++i) {
-      yield HmacKey.generate(`/${i}`, keyChain).then((key) => [key, key]);
+    if (!skipHmac) {
+      for (let i = 32; i < 40; ++i) {
+        yield generateSigningKey(keyChain, `/${i}`, HMAC);
+      }
     }
   })()));
   const keys1 = gen.map(([pvt]) => pvt.name).map(String);
@@ -42,14 +51,14 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
   for (let i = 0; i < 40; ++i) {
     try {
       const key = await keyChain.getPrivateKey(new Name(keys2[i]));
-      switch (true) {
-        case key instanceof EcPrivateKey:
+      switch (key.sigType) {
+        case SigType.Sha256WithEcdsa:
           keys4.push("EC");
           break;
-        case key instanceof RsaPrivateKey:
+        case SigType.Sha256WithRsa:
           keys4.push("RSA");
           break;
-        case key instanceof HmacKey:
+        case SigType.HmacWithSha256:
           keys4.push("HMAC");
           break;
         default:
@@ -70,17 +79,20 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
   };
 }
 
-export function check(record: TestRecord) {
+export function check(
+    record: TestRecord,
+    { skipHmac = false }: Options = {},
+) {
   expect(record.keys0).toHaveLength(0);
-  expect(record.keys1).toHaveLength(40);
-  expect(record.keys2).toHaveLength(40);
-  expect(record.keys3).toHaveLength(30);
+  expect(record.keys1).toHaveLength(skipHmac ? 32 : 40);
+  expect(record.keys2).toHaveLength(skipHmac ? 32 : 40);
+  expect(record.keys3).toHaveLength(skipHmac ? 24 : 30);
   expect(record.keys4).toHaveLength(40);
 
   expect(record.keys4.filter((v) => v === "EC")).toHaveLength(12);
   expect(record.keys4.filter((v) => v === "RSA")).toHaveLength(12);
-  expect(record.keys4.filter((v) => v === "HMAC")).toHaveLength(6);
-  expect(record.keys4.filter((v) => v === "")).toHaveLength(10);
+  expect(record.keys4.filter((v) => v === "HMAC")).toHaveLength(skipHmac ? 0 : 6);
+  expect(record.keys4.filter((v) => v === "")).toHaveLength(skipHmac ? 16 : 10);
 
   record.keys1.sort((a, b) => a.localeCompare(b));
   record.keys2.sort((a, b) => a.localeCompare(b));

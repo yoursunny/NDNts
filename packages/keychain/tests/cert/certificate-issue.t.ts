@@ -3,11 +3,11 @@ import "@ndn/packet/test-fixture/expect";
 import { Version } from "@ndn/naming-convention2";
 import { Component } from "@ndn/packet";
 
-import { Certificate, EcPrivateKey, ValidityPeriod } from "../..";
+import { Certificate, generateSigningKey, ValidityPeriod } from "../..";
 
 test("issue", async () => {
-  const [issuerPrivateKey] = await EcPrivateKey.generate("/issuer");
-  const [, publicKey] = await EcPrivateKey.generate("/rp");
+  const [issuerPrivateKey] = await generateSigningKey("/issuer");
+  const [, publicKey] = await generateSigningKey("/rp");
 
   const cert = await Certificate.issue({
     validity: ValidityPeriod.daysFromNow(1),
@@ -22,15 +22,15 @@ test("issue", async () => {
 });
 
 test("self-sign", async () => {
-  const [privateKey, publicKey] = await EcPrivateKey.generate("/EC/KEY/x");
+  const [privateKey, publicKey] = await generateSigningKey("/my/KEY/x");
 
   const cert = await Certificate.selfSign({ privateKey, publicKey });
   expect(cert.name).toHaveLength(5);
-  expect(cert.name.getPrefix(-1)).toEqualName("/EC/KEY/x/self");
+  expect(cert.name.getPrefix(-1)).toEqualName("/my/KEY/x/self");
   expect(cert.name.at(-1).is(Version)).toBeTruthy();
   expect(cert.isSelfSigned).toBeTruthy();
 
-  const [, publicKeyY] = await EcPrivateKey.generate("/EC/KEY/y");
+  const [, publicKeyY] = await generateSigningKey("/my/KEY/y");
 
   await expect(Certificate.selfSign({
     validity: ValidityPeriod.daysFromNow(1),

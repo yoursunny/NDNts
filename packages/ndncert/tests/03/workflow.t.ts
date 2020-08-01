@@ -1,4 +1,4 @@
-import { Certificate, EcPrivateKey, RsaPrivateKey } from "@ndn/keychain";
+import { Certificate, ECDSA, generateSigningKey, RSA } from "@ndn/keychain";
 import { Name } from "@ndn/packet";
 import { PrefixRegShorter, RepoProducer } from "@ndn/repo";
 import { makeEmptyDataStore } from "@ndn/repo/test-fixture/data-store";
@@ -58,7 +58,7 @@ test.each(TABLE)("workflow %#", async ({
   const repo = makeEmptyDataStore();
   const repoProducer = RepoProducer.create(repo, { reg: PrefixRegShorter(2) });
 
-  const [caPvt, caPub] = await RsaPrivateKey.generate("/authority");
+  const [caPvt, caPub] = await generateSigningKey("/authority", RSA);
   const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
   const profile = await CaProfile.build({
     prefix: new Name("/authority/CA"),
@@ -79,7 +79,7 @@ test.each(TABLE)("workflow %#", async ({
     challenges: serverChallenges,
   });
 
-  const [reqPvt, reqPub] = await EcPrivateKey.generate("/requester");
+  const [reqPvt, reqPub] = await generateSigningKey("/requester", ECDSA);
   const reqPromise = requestCertificate({
     profile,
     privateKey: reqPvt,

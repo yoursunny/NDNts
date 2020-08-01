@@ -1,6 +1,6 @@
-import { Certificate, PrivateKey, PublicKey } from "@ndn/keychain";
+import { Certificate, NamedVerifier } from "@ndn/keychain";
 import { Segment, Version } from "@ndn/naming-convention2";
-import { Data, Name } from "@ndn/packet";
+import { Data, Name, Signer } from "@ndn/packet";
 import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI, toHex, toUtf8 } from "@ndn/tlv";
 import indentString from "indent-string";
 
@@ -22,7 +22,7 @@ export class CaProfile {
           data.name.at(-1).is(Segment))) {
       throw new Error("bad Name");
     }
-    profile.publicKey_ = await profile.cert.loadPublicKey();
+    profile.publicKey_ = await profile.cert.createVerifier();
     await profile.publicKey.verify(data);
     profile.certDigest_ = await profile.cert.data.computeImplicitDigest();
     return profile;
@@ -33,7 +33,7 @@ export class CaProfile {
     EVD.decodeValue(this, new Decoder(data.content));
   }
 
-  private publicKey_!: PublicKey;
+  private publicKey_!: NamedVerifier.PublicKey;
   public get publicKey() { return this.publicKey_; }
 
   private certDigest_!: Uint8Array;
@@ -63,7 +63,7 @@ export namespace CaProfile {
   }
 
   export type Options = Fields & {
-    signer: PrivateKey;
+    signer: Signer;
     version?: number;
   };
 

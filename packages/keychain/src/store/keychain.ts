@@ -1,35 +1,31 @@
 import { Name, Signer } from "@ndn/packet";
 
 import type { Certificate } from "../cert/mod";
-import { PrivateKey, PublicKey } from "../key/mod";
+import type { NamedSigner, NamedVerifier } from "../key/mod";
 import * as CertNaming from "../naming";
+import { CertStore } from "./cert-store";
 import { KeyStore } from "./key-store";
-import { SCloneCertStore } from "./sclone-cert-store";
-import type { CertStore } from "./store-base";
 import { MemoryStoreImpl } from "./store-impl";
 import { openStores } from "./stores_node";
 
 /** Storage of own private keys and certificates. */
 export abstract class KeyChain {
-  /**
-   * Return whether KeyStore supports structured clone of CryptoKey.
-   * If this returns false, StoredKey must contain JsonWebKey instead of CryptoKey.
-   */
-  abstract readonly canSCloneKeys: boolean;
+  /** Return whether insertKey function expects JsonWebKey instead of CryptoKey. */
+  abstract readonly needJwk: boolean;
 
   /** List keys, filtered by name prefix. */
   abstract listKeys(prefix?: Name): Promise<Name[]>;
 
   /** Retrieve key pair by key name. */
-  abstract getKeyPair(name: Name): Promise<[PrivateKey, PublicKey]>;
+  abstract getKeyPair(name: Name): Promise<[NamedSigner, NamedVerifier]>;
 
   /** Retrieve private key by key name. */
-  public async getPrivateKey(name: Name): Promise<PrivateKey> {
+  public async getPrivateKey(name: Name): Promise<NamedSigner> {
     return (await this.getKeyPair(name))[0];
   }
 
   /** Retrieve public key by key name. */
-  public async getPublicKey(name: Name): Promise<PublicKey> {
+  public async getPublicKey(name: Name): Promise<NamedVerifier> {
     return (await this.getKeyPair(name))[1];
   }
 
@@ -55,6 +51,7 @@ export abstract class KeyChain {
    * Create a signer from keys and certificates in the KeyChain.
    * @param name subject name, key name, or certificate name.
    * @param fallback invoked when no matching key or certificate is found.
+   * @param useKeyNameKeyLocator force KeyLocator to be key name instead of certificate name.
    *
    * @li If name is a certificate name, sign with the corresponding private key,
    *     and use the specified certificate name as KeyLocator.
@@ -71,9 +68,11 @@ export abstract class KeyChain {
       {
         prefixMatch = false,
         fallback = (name, keyChain, err) => Promise.reject(new Error(`signer ${name} not found ${err}`)),
+        useKeyNameKeyLocator = false,
       }: {
         prefixMatch?: boolean;
         fallback?: Signer | ((name: Name, keyChain: KeyChain, err?: Error) => Promise<Signer>);
+        useKeyNameKeyLocator?: boolean;
       } = {},
   ): Promise<Signer> {
     const useFallback = (err?: Error) => {
@@ -82,19 +81,25 @@ export abstract class KeyChain {
       }
       return fallback;
     };
+    const changeKeyLocator = (key: NamedSigner, certName?: Name) => {
+      if (certName && !useKeyNameKeyLocator) {
+        return key.withKeyLocator(certName);
+      }
+      return key;
+    };
 
     if (CertNaming.isCertName(name)) {
-      let key: PrivateKey;
+      let key: NamedSigner;
       try {
         key = await this.getPrivateKey(CertNaming.toKeyName(name));
       } catch (err) {
         return useFallback(err);
       }
-      return key.withKeyLocator(name);
+      return changeKeyLocator(key, name);
     }
 
     if (CertNaming.isKeyName(name)) {
-      let key: PrivateKey;
+      let key: NamedSigner;
       let certName: Name|undefined;
       try {
         [key, certName] = await Promise.all([
@@ -102,15 +107,16 @@ export abstract class KeyChain {
           this.findSignerCertName(name, ({ keyName }) => name.equals(keyName)),
         ]);
       } catch (err) { return useFallback(err); }
-      return certName ? key.withKeyLocator(certName) : key;
+      return changeKeyLocator(key, certName);
     }
 
     const certName = await this.findSignerCertName(name,
       ({ subjectName }) => prefixMatch || name.equals(subjectName));
     if (certName) {
       const key = await this.getPrivateKey(CertNaming.toKeyName(certName));
-      return key.withKeyLocator(certName);
+      return changeKeyLocator(key, certName);
     }
+
     let keyNames = await this.listKeys(name);
     if (!prefixMatch) {
       keyNames = keyNames.filter((keyName) => {
@@ -138,13 +144,13 @@ class KeyChainImpl extends KeyChain {
     super();
   }
 
-  public get canSCloneKeys() { return this.keys.canSClone; }
+  public get needJwk() { return !this.keys.canSClone; }
 
   public async listKeys(prefix: Name = new Name()): Promise<Name[]> {
     return (await this.keys.list()).filter((n) => prefix.isPrefixOf(n));
   }
 
-  public async getKeyPair(name: Name): Promise<[PrivateKey, PublicKey]> {
+  public async getKeyPair(name: Name): Promise<[NamedSigner, NamedVerifier]> {
     return this.keys.get(name);
   }
 
@@ -198,7 +204,7 @@ export namespace KeyChain {
   export function createTemp(): KeyChain {
     return new KeyChainImpl(
       new KeyStore(new MemoryStoreImpl()),
-      new SCloneCertStore(new MemoryStoreImpl()),
+      new CertStore(new MemoryStoreImpl()),
     );
   }
 }

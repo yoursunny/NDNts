@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Certificate, CertNaming, EcPrivateKey, RsaPrivateKey } from "@ndn/keychain";
+import { Certificate, CertNaming, ECDSA, generateSigningKey, RSA } from "@ndn/keychain";
 import { canSatisfy, Name } from "@ndn/packet";
 import { toUtf8 } from "@ndn/tlv";
 
@@ -25,7 +25,7 @@ test("crypto", async () => {
 });
 
 test("packets", async () => {
-  const [caPvt, caPub] = await RsaPrivateKey.generate("/authority");
+  const [caPvt, caPub] = await generateSigningKey("/authority", RSA);
   const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
   const profile = await CaProfile.build({
     prefix: new Name("/authority/CA"),
@@ -45,7 +45,7 @@ test("packets", async () => {
   expect(profile.maxValidityPeriod).toBe(86400000);
   expect(profile.cert.name).toEqualName(caCert.name);
 
-  const [reqPvt, reqPub] = await EcPrivateKey.generate("/requester");
+  const [reqPvt, reqPub] = await generateSigningKey("/requester", ECDSA);
   const reqEcdh = await crypto.generateEcdhKey();
   const newRequest = await NewRequest.build({
     profile,

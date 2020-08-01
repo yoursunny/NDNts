@@ -1,5 +1,5 @@
-import { Certificate, EcPrivateKey, EcPublicKey, KeyChain, RsaPrivateKey, RsaPublicKey, saveKey } from "@ndn/keychain";
-import { Data, SigType, TT as l3TT } from "@ndn/packet";
+import { Certificate, CertNaming, ECDSA, generateSigningKey, KeyChain, RSA, SigningAlgorithm } from "@ndn/keychain";
+import { Data, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 import { createPrivateKey } from "crypto";
 
@@ -69,37 +69,10 @@ export class SafeBag {
    * @param keyChain destination KeyChain.
    */
   public async saveKeyPair(passphrase: string, keyChain: KeyChain): Promise<void> {
-    const pub = await this.certificate.loadPublicKey();
-    switch (pub.sigType) {
-      case SigType.Sha256WithEcdsa: {
-        const curve = (pub as EcPublicKey).curve;
-        return this.saveImpl(passphrase, keyChain, pub as EcPublicKey,
-          EcPrivateKey.makeStoredKeyBase(curve), EcPrivateKey.makeWebCryptoImportParams(curve));
-      }
-      case SigType.Sha256WithRsa:
-        return this.saveImpl(passphrase, keyChain, pub as RsaPublicKey,
-          RsaPrivateKey.makeStoredKeyBase(), RsaPrivateKey.makeWebCryptoImportParams());
-      default:
-        /* istanbul ignore next */
-        throw new Error(`unknown SigType ${pub.sigType}`);
-    }
-  }
-
-  private async saveImpl<
-    Public extends EcPublicKey|RsaPublicKey,
-    StoredBase extends { type: string },
-    Param extends EcKeyImportParams|RsaHashedImportParams,
-  >(
-      passphrase: string, keyChain: KeyChain, { name, key: publicKey }: Public,
-      base: StoredBase, params: Param,
-  ): Promise<void> {
-    await saveKey(name, base, params, keyChain,
-      async (extractable, crypto): Promise<CryptoKeyPair> => {
-        const pkcs8 = this.decryptKey(passphrase);
-        return {
-          privateKey: await crypto.subtle.importKey("pkcs8", pkcs8, params, extractable, ["sign"]),
-          publicKey,
-        };
-      });
+    const [algo, key] = await this.certificate.importPublicKey([ECDSA, RSA]);
+    const pkcs8 = this.decryptKey(passphrase);
+    await generateSigningKey(keyChain, CertNaming.toKeyName(this.certificate.name),
+      algo as SigningAlgorithm<any, true, ECDSA.GenParams|RSA.GenParams>,
+      { importPkcs8: [pkcs8, key.spki] });
   }
 }

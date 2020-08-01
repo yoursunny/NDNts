@@ -1,13 +1,13 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Data, Name } from "@ndn/packet";
+import { Data, Name, SigType } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { Certificate, CertNaming, EcPrivateKey, EcPublicKey, RsaPublicKey, ValidityPeriod } from "../..";
+import { Certificate, CertNaming, generateSigningKey, ValidityPeriod } from "../..";
 import * as ndn_testbed_certs from "../../test-fixture/ndn-testbed-certs";
 
 test("encode decode", async () => {
-  const [pvt] = await EcPrivateKey.generate("/operator/KEY/key-1");
+  const [pvt] = await generateSigningKey("/operator/KEY/key-1");
   const cert = await Certificate.build({
     name: new Name("/operator/KEY/key-1/self/%FD%01"),
     validity: new ValidityPeriod(1542099529000, 1602434283000),
@@ -49,8 +49,8 @@ test("decode testbed certs", async () => {
   expect(cert0.validity.notAfter).toBe(1609459199000);
   expect(cert0.publicKeySpki).toEqualUint8Array(ndn_testbed_certs.ROOT_V2_SPKI);
   expect(cert0.isSelfSigned).toBeTruthy();
-  const pub0 = await cert0.loadPublicKey();
-  expect(pub0).toBeInstanceOf(EcPublicKey);
+  const pub0 = await cert0.createVerifier();
+  expect(pub0.sigType).toBe(SigType.Sha256WithEcdsa);
 
   const data1 = new Decoder(ndn_testbed_certs.ARIZONA_20190312).decode(Data);
   await pub0.verify(data1);
@@ -59,6 +59,6 @@ test("decode testbed certs", async () => {
   const cert1 = Certificate.fromData(data1);
   expect(cert1.isSelfSigned).toBeFalsy();
   expect(cert1.issuer).toEqualName(certName0.keyName);
-  const pub1 = await cert1.loadPublicKey();
-  expect(pub1).toBeInstanceOf(RsaPublicKey);
+  const pub1 = await cert1.createVerifier();
+  expect(pub1.sigType).toBe(SigType.Sha256WithRsa);
 });

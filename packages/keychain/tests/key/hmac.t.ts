@@ -1,19 +1,30 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Data, SigType } from "@ndn/packet";
+import { Data, Name, SigType } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 import { Decoder, fromHex } from "@ndn/tlv";
 
-import { HmacKey, PublicKey } from "../..";
+import { Certificate, generateSigningKey, HMAC, KeyChain, PublicKey } from "../..";
 
 test.each(TestSignVerify.TABLE)("%p", async ({ cls }) => {
-  const keyA = await HmacKey.generate("/A");
-  expect(PublicKey.isExportable(keyA)).toBeFalsy();
-  const keyB = await HmacKey.generate("/B");
-  const record = await TestSignVerify.execute(cls, keyA, keyA, keyB, keyB);
+  const [pvtA, pubA] = await generateSigningKey("/A", HMAC);
+  const [pvtB, pubB] = await generateSigningKey("/B", HMAC);
+  const record = await TestSignVerify.execute(cls, pvtA, pubA, pvtB, pubB);
   TestSignVerify.check(record, { deterministic: true });
   expect(record.sA0.sigInfo.type).toBe(SigType.HmacWithSha256);
-  expect(record.sA0.sigInfo.keyLocator?.name).toEqualName(keyA.name);
+  expect(record.sA0.sigInfo.keyLocator?.name).toEqualName(pvtA.name);
+});
+
+test("load", async () => {
+  const keyChain = KeyChain.createTemp();
+  const name = new Name("/HMACKEY/KEY/x");
+  await generateSigningKey(keyChain, name, HMAC);
+
+  const [pvt, pub] = await keyChain.getKeyPair(name);
+  expect(pvt.sigType).toBe(SigType.HmacWithSha256);
+  expect(pub.sigType).toBe(SigType.HmacWithSha256);
+
+  await expect(Certificate.selfSign({ privateKey: pvt, publicKey: pub as PublicKey })).rejects.toThrow();
 });
 
 /*
@@ -32,7 +43,8 @@ test("verify", async () => {
   const wire = fromHex("063b070308014116121b01041c0d070b08014808034b4559080178172097ab86d234f84a5b3224838b9a99aa0d43fc9d6313bd772fbdc05ba79c2431cb");
   const pkt = new Decoder(wire).decode(Data);
 
-  const key = await HmacKey.importRaw("/H/KEY/x",
-    Uint8Array.of(0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF));
+  const [, key] = await generateSigningKey("/H/KEY/x", HMAC, {
+    importRaw: Uint8Array.of(0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF),
+  });
   await expect(key.verify(pkt)).resolves.toBeUndefined();
 });

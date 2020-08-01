@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Certificate, EcPrivateKey, KeyChain, PrivateKey, PublicKey, RsaPrivateKey, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, ECDSA, generateSigningKey, KeyChain, NamedSigner, NamedVerifier, RSA, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, digestSigning, NameLike, Signer, Verifier } from "@ndn/packet";
 import { PrefixRegShorter } from "@ndn/repo";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
@@ -14,18 +14,18 @@ class Context {
   public keyChain = KeyChain.createTemp();
   public name0: NameLike = "/root";
   public opts0: Partial<Certificate.SelfSignOptions> = {};
-  public pvt0!: PrivateKey;
-  public pub0!: PublicKey;
+  public pvt0!: NamedSigner.PrivateKey;
+  public pub0!: NamedVerifier.PublicKey;
   public cert0!: Certificate;
   public name1: NameLike = "/root/site";
   public opts1: Partial<Certificate.IssueOptions> = {};
-  public pvt1!: PrivateKey;
-  public pub1!: PublicKey;
+  public pvt1!: NamedSigner.PrivateKey;
+  public pub1!: NamedVerifier.PublicKey;
   public cert1!: Certificate;
   public name2: NameLike = "/root/site/group/user";
   public opts2: Partial<Certificate.IssueOptions> = {};
-  public pvt2!: PrivateKey;
-  public pub2!: PublicKey;
+  public pvt2!: NamedSigner.PrivateKey;
+  public pub2!: NamedVerifier.PublicKey;
   public cert2!: Certificate;
   public dataName: NameLike = "/root/site/group/user/path/data";
   public data!: Signer.Signable & Verifier.Verifiable;
@@ -56,7 +56,7 @@ class Context {
   }
 
   protected async makeCert0() {
-    [this.pvt0, this.pub0] = await EcPrivateKey.generate(this.name0, "P-384");
+    [this.pvt0, this.pub0] = await generateSigningKey(this.name0, ECDSA, { curve: "P-384" });
     this.cert0 = await Certificate.selfSign({
       privateKey: this.pvt0,
       publicKey: this.pub0,
@@ -65,7 +65,7 @@ class Context {
   }
 
   protected async makeCert1() {
-    [this.pvt1, this.pub1] = await RsaPrivateKey.generate(this.name1, this.keyChain);
+    [this.pvt1, this.pub1] = await generateSigningKey(this.keyChain, this.name1, RSA);
     this.cert1 = await Certificate.issue({
       publicKey: this.pub1,
       issuerPrivateKey: this.pvt0,
@@ -77,7 +77,7 @@ class Context {
   }
 
   protected async makeCert2() {
-    [this.pvt2, this.pub2] = await EcPrivateKey.generate(this.name2, this.keyChain);
+    [this.pvt2, this.pub2] = await generateSigningKey(this.keyChain, this.name2, ECDSA);
     this.cert2 = await Certificate.issue({
       publicKey: this.pub2,
       issuerPrivateKey: this.pvt1,
@@ -188,10 +188,10 @@ describe("cert non-hierarchical", () => {
 });
 
 describe("bad signature", () => {
-  let fakePvt1: PrivateKey;
+  let fakePvt1: NamedSigner.PrivateKey;
   let ctx: Context;
   beforeAll(async () => {
-    [fakePvt1] = await RsaPrivateKey.generate("/root/site");
+    [fakePvt1] = await generateSigningKey("/root/site", RSA);
     ctx = await Context.create({
       name1: fakePvt1.name,
       opts2: {

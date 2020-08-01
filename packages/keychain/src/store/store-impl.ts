@@ -5,9 +5,7 @@
  */
 export type StorableKind = "json"|"sclone";
 
-/**
- * Underlying storage provider.
- */
+/** Underlying storage provider. */
 export interface StoreImpl<T> {
   readonly storableKind: StorableKind;
   list: () => Promise<string[]>;
@@ -16,6 +14,7 @@ export interface StoreImpl<T> {
   erase: (key: string) => Promise<void>;
 }
 
+/** Memory based storage provider. */
 export class MemoryStoreImpl<T> implements StoreImpl<T> {
   public readonly storableKind = "sclone";
 

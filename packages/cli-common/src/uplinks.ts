@@ -1,6 +1,5 @@
 import { connectToTestbed } from "@ndn/autoconfig";
 import { FwFace, FwTracer } from "@ndn/fw";
-import { PrivateKey } from "@ndn/keychain";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { TcpTransport, UdpTransport, UnixTransport } from "@ndn/node-transport";
 import { Name } from "@ndn/packet";
@@ -46,12 +45,10 @@ export async function openUplinks(): Promise<FwFace[]> {
   if (typeof theUplinks === "undefined") {
     const face = await makeFace();
     if (env.nfdreg) {
-      let signer = await getSignerImpl(env.nfdregkey ?? env.key);
-      if (signer instanceof PrivateKey.WithKeyLocator) {
-        // As of 2020-May, testbed rejects prefixreg command with cert name as KeyLocator.
-        // https://github.com/WU-ARL/NDN_Ansible/issues/35
-        signer = signer.key;
-      }
+      // As of 2020-May, testbed rejects prefixreg command with cert name as KeyLocator.
+      // https://github.com/WU-ARL/NDN_Ansible/issues/35
+      // Thus, set useKeyNameKeyLocator = false.
+      const signer = await getSignerImpl(env.nfdregkey ?? env.key, true);
       enableNfdPrefixReg(face, { signer });
     }
     face.addRoute(new Name("/"));

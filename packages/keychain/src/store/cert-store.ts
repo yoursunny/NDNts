@@ -2,22 +2,23 @@ import { Data, Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { Certificate } from "../cert/mod";
-import { CertStore, StoreBase } from "./store-base";
+import { StoreBase } from "./store-base";
 
-interface Item {
-  certBuffer: Uint8Array;
+interface StoredCert {
+  certBuffer: Uint8Array|string;
 }
 
-/** Certificate store where backend supports structured clone. */
-export class SCloneCertStore extends StoreBase<Item> implements CertStore {
+/** Storage of certificates. */
+export class CertStore extends StoreBase<StoredCert> {
   public async get(name: Name): Promise<Certificate> {
-    const { certBuffer } = await this.getImpl(name);
+    let { certBuffer } = await this.getImpl(name);
+    certBuffer = this.bufferFromStorable(certBuffer);
     return Certificate.fromData(new Decoder(certBuffer).decode(Data));
   }
 
   public async insert(cert: Certificate): Promise<void> {
     await this.insertImpl(cert.name, {
-      certBuffer: Encoder.encode(cert.data),
+      certBuffer: this.bufferToStorable(Encoder.encode(cert.data)),
     });
   }
 }

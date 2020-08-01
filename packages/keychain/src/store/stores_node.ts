@@ -1,11 +1,10 @@
 import Store from "data-store";
 
-import { JsonCertStore } from "./json-cert-store";
+import { CertStore } from "./cert-store";
 import { KeyStore } from "./key-store";
-import type { CertStore } from "./store-base";
 import { StoreImpl } from "./store-impl";
 
-export class FileStoreImpl<T> implements StoreImpl<T> {
+class FileStoreImpl<T> implements StoreImpl<T> {
   public readonly storableKind = "json";
   private store: Store;
 
@@ -41,7 +40,7 @@ export class FileStoreImpl<T> implements StoreImpl<T> {
 
 export function openStores(locator: string): [KeyStore, CertStore] {
   return [
-    new KeyStore(new FileStoreImpl(`${locator}/831e5c8f-9d63-40f3-8359-0f55254eeb80.json`)),
-    new JsonCertStore(new FileStoreImpl(`${locator}/c339669f-8d4b-4cb3-a8c2-09af61edd787.json`)),
+    new KeyStore(new FileStoreImpl(`${locator}/fdd08d47-ec4d-4112-a5ce-898338ab0399.json`)),
+    new CertStore(new FileStoreImpl(`${locator}/d29e6de4-d5dd-4222-b2e2-d06e4046e7f9.json`)),
   ];
 }

@@ -1,16 +1,16 @@
-import { PrivateKey, PublicKey } from "@ndn/keychain";
+import { NamedSigner, NamedVerifier } from "@ndn/keychain";
 import { Component, Interest, SigInfo } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, toUtf8 } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
 import { TT, Verb } from "./an";
-import { CaProfile } from "./ca-profile";
+import type { CaProfile } from "./ca-profile";
 import * as encrypted_payload from "./encrypted";
 import * as parameter_kv from "./parameter-kv";
 
 interface Context {
   sessionKey: CryptoKey;
-  certRequestPub: PublicKey;
+  certRequestPub: NamedVerifier.PublicKey;
 }
 
 const EVD = new EvDecoder<ChallengeRequest.Fields>("ChallengeRequest", undefined)
@@ -67,8 +67,8 @@ export namespace ChallengeRequest {
     profile: CaProfile;
     requestId: Uint8Array;
     sessionKey: CryptoKey;
-    publicKey: PublicKey;
-    privateKey: PrivateKey;
+    publicKey: NamedVerifier.PublicKey;
+    privateKey: NamedSigner.PrivateKey;
   }
 
   export async function build({

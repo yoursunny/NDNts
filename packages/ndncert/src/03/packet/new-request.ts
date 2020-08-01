@@ -1,10 +1,10 @@
-import { Certificate, PrivateKey, PublicKey, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, NamedSigner, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
 import { Data, Interest, SigInfo } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
 import { TT, Verb } from "./an";
-import { CaProfile } from "./ca-profile";
+import type { CaProfile } from "./ca-profile";
 
 const EVD = new EvDecoder<NewRequest.Fields>("NewRequest", undefined)
   .add(TT.EcdhPub, (t, { value }) => t.ecdhPubRaw = value, { required: true })
@@ -27,7 +27,7 @@ export class NewRequest {
     }
 
     request.ecdhPub_ = await crypto.importEcdhPub(request.ecdhPubRaw);
-    request.publicKey_ = await request.certRequest.loadPublicKey();
+    request.publicKey_ = await request.certRequest.createVerifier();
     await request.publicKey.verify(interest);
     return request;
   }
@@ -42,7 +42,7 @@ export class NewRequest {
   private ecdhPub_!: CryptoKey;
   public get ecdhPub() { return this.ecdhPub_; }
 
-  private publicKey_!: PublicKey;
+  private publicKey_!: NamedVerifier.PublicKey;
   public get publicKey() { return this.publicKey_; }
 }
 export interface NewRequest extends Readonly<NewRequest.Fields> {}
@@ -70,8 +70,8 @@ export namespace NewRequest {
   export interface Options {
     profile: CaProfile;
     ecdhPub: CryptoKey;
-    publicKey: PublicKey;
-    privateKey: PrivateKey;
+    publicKey: NamedVerifier.PublicKey;
+    privateKey: NamedSigner.PrivateKey;
     validity?: ValidityPeriod;
   }
 

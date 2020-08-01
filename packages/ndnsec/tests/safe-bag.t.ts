@@ -1,6 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { CertNaming, KeyChain, RsaPrivateKey } from "@ndn/keychain";
+import { CertNaming, KeyChain } from "@ndn/keychain";
+import { SigType } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
 import { SafeBag } from "..";
@@ -63,6 +64,7 @@ test("import", async () => {
 
   const keyChain = KeyChain.createTemp();
   await expect(safeBag.saveKeyPair(PASSPHRASE, keyChain)).resolves.toBeUndefined();
-  await expect(keyChain.getPrivateKey(CertNaming.toKeyName(safeBag.certificate.name)))
-    .resolves.toBeInstanceOf(RsaPrivateKey);
+
+  const pvt = await keyChain.getPrivateKey(CertNaming.toKeyName(safeBag.certificate.name));
+  expect(pvt.sigType).toBe(SigType.Sha256WithRsa);
 });

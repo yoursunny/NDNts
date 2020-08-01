@@ -1,4 +1,5 @@
 import * as TestCertStore from "@ndn/keychain/test-fixture/cert-store";
+import * as TestKeyStore from "@ndn/keychain/test-fixture/key-store";
 import execa from "execa";
 import { dirSync as tmpDir } from "tmp";
 
@@ -21,6 +22,12 @@ describe("ndn-cxx keychain", () => {
   afterEach(() => {
     deleteTmpDir();
   });
+
+  test("KeyStore", async () => {
+    const keyChain = new NdnsecKeyChain(homedir);
+    const record = await TestKeyStore.execute(keyChain, { skipHmac: true });
+    TestKeyStore.check(record, { skipHmac: true });
+  }, 10000);
 
   test("CertStore", async () => {
     const keyChain = new NdnsecKeyChain(homedir);

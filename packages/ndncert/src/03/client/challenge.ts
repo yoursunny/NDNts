@@ -1,4 +1,4 @@
-import { ParameterKV } from "../packet/mod";
+import type { ParameterKV } from "../packet/mod";
 
 /** Client side of a challenge. */
 export interface ClientChallenge {

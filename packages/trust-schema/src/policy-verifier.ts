@@ -5,7 +5,7 @@ import DefaultWeakMap from "mnemonist/default-weak-map";
 import { CertSources } from "./cert-source/mod";
 
 async function cryptoVerifyUncached(cert: Certificate, packet: Verifier.Verifiable): Promise<void> {
-  const key = await cert.loadPublicKey();
+  const key = await cert.createVerifier();
   return key.verify(packet);
 }
 

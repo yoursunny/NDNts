@@ -1,7 +1,7 @@
 import { toUtf8 } from "@ndn/tlv";
 
-import { ParameterKV } from "../packet/mod";
-import { ClientChallenge, ClientChallengeContext } from "./challenge";
+import type { ParameterKV } from "../packet/mod";
+import type { ClientChallenge, ClientChallengeContext } from "./challenge";
 
 /** The "pin" challenge where client must submit a server-generated pin code to the server. */
 export class ClientPinChallenge implements ClientChallenge {

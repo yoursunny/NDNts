@@ -1,6 +1,6 @@
 import { Component, Name } from "@ndn/packet";
 
-import { Certificate, EcPrivateKey, KeyChain, ValidityPeriod } from "..";
+import { Certificate, ECDSA, generateSigningKey, KeyChain, ValidityPeriod } from "..";
 
 export interface TestRecord {
   key: string;
@@ -12,8 +12,8 @@ export interface TestRecord {
 }
 
 export async function execute(keyChain: KeyChain): Promise<TestRecord> {
-  const [issuerPrivateKey] = await EcPrivateKey.generate("/I", "P-384");
-  const [privateKey, publicKey] = await EcPrivateKey.generate("/K", keyChain);
+  const [issuerPrivateKey] = await generateSigningKey("/I", ECDSA, { curve: "P-384" });
+  const [privateKey, publicKey] = await generateSigningKey(keyChain, "/K");
   const selfSigned = await Certificate.selfSign({ privateKey, publicKey });
   const issued = await Certificate.issue({
     publicKey, issuerPrivateKey,
