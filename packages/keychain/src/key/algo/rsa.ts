@@ -28,22 +28,24 @@ export namespace RsaModulusLength {
 export const RSA: SigningAlgorithm<{}, true, RSA.GenParams> = {
   uuid: "771b4ccd-3e8d-4ad5-9422-248f18c6fcb5",
   sigType: SigType.Sha256WithRsa,
-  privateKeyUsages: ["sign"],
-  publicKeyUsages: ["verify"],
+  keyUsages: {
+    private: ["sign"],
+    public: ["verify"],
+  },
 
   async cryptoGenerate({ modulusLength = RsaModulusLength.Default, importPkcs8 }: RSA.GenParams, extractable: boolean) {
     let pair: CryptoKeyPair;
     if (importPkcs8) {
       const [pkcs8, spki] = importPkcs8;
       const [privateKey, publicKey] = await Promise.all([
-        crypto.subtle.importKey("pkcs8", pkcs8, ImportParams, extractable, [...this.privateKeyUsages!]),
-        crypto.subtle.importKey("spki", spki, ImportParams, true, [...this.publicKeyUsages!]),
+        crypto.subtle.importKey("pkcs8", pkcs8, ImportParams, extractable, this.keyUsages.private),
+        crypto.subtle.importKey("spki", spki, ImportParams, true, this.keyUsages.public),
       ]);
       pair = { privateKey, publicKey };
     } else {
       const params = makeGenParams(modulusLength);
       pair = await crypto.subtle.generateKey(params, extractable,
-        [...this.privateKeyUsages!, ...this.publicKeyUsages!]) as CryptoKeyPair;
+        [...this.keyUsages.private, ...this.keyUsages.public]) as CryptoKeyPair;
     }
 
     const spki = new Uint8Array(await crypto.subtle.exportKey("spki", pair.publicKey));
@@ -61,7 +63,7 @@ export const RSA: SigningAlgorithm<{}, true, RSA.GenParams> = {
     if (!(algo && algo.type === 0x06 && algo.value && toHex(algo.value) === "2A864886F70D010101")) {
       throw new Error("not RSA key");
     }
-    const key = await crypto.subtle.importKey("spki", spki, ImportParams, true, [...this.publicKeyUsages!]);
+    const key = await crypto.subtle.importKey("spki", spki, ImportParams, true, this.keyUsages.public);
     return {
       publicKey: key,
       spki,

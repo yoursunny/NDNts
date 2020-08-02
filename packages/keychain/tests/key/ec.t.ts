@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Name, SigType } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 
-import { Certificate, EcCurve, ECDSA, generateSigningKey, KeyChain, PublicKey } from "../..";
+import { Certificate, EcCurve, ECDSA, generateSigningKey, KeyChain } from "../..";
 
 interface Row extends TestSignVerify.Row {
   curve: EcCurve;
@@ -33,12 +33,12 @@ test.each(EcCurve.Choices)("load %p", async (curve) => {
   const name = new Name("/ECKEY/KEY/x");
   await generateSigningKey(keyChain, name, ECDSA, { curve });
 
-  const [pvt, pub] = await keyChain.getKeyPair(name);
-  expect(pvt.sigType).toBe(SigType.Sha256WithEcdsa);
+  const { signer, publicKey } = await keyChain.getKeyPair(name);
+  expect(signer.sigType).toBe(SigType.Sha256WithEcdsa);
 
-  const cert = await Certificate.selfSign({ privateKey: pvt, publicKey: pub as PublicKey });
-  const pub2 = await cert.createVerifier();
-  expect(pub2.name).toEqualName(pvt.name);
-  expect(pub2.sigType).toBe(SigType.Sha256WithEcdsa);
-  await expect(pub2.verify(cert.data)).resolves.toBeUndefined();
+  const cert = await Certificate.selfSign({ privateKey: signer, publicKey });
+  const verifier = await cert.createVerifier();
+  expect(verifier.name).toEqualName(signer.name);
+  expect(verifier.sigType).toBe(SigType.Sha256WithEcdsa);
+  await expect(verifier.verify(cert.data)).resolves.toBeUndefined();
 });

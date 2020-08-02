@@ -55,7 +55,7 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
     await openUplinks();
     const keyChain = args.ndnsec ? new NdnsecKeyChain() : defaultKeyChain;
     const profile = await CaProfile.fromData(new Decoder(await fs.readFile(args.profile)).decode(Data));
-    const [privateKey, publicKey] = await keyChain.getKeyPair(new Name(args.key));
+    const { signer: privateKey, verifier: publicKey } = await keyChain.getKeyPair(new Name(args.key));
 
     const challenges: ClientChallenge[] = [];
     for (const challengeId of args.challenge) {

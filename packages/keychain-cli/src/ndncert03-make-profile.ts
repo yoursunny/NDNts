@@ -53,7 +53,7 @@ export class Ndncert03MakeProfileCommand implements CommandModule<{}, Args> {
 
   public async handler(args: Arguments<Args>) {
     const cert = await keyChain.getCert(new Name(args.cert));
-    const signer = await keyChain.getPrivateKey(CertNaming.toKeyName(cert.name));
+    const signer = await keyChain.getKey(CertNaming.toKeyName(cert.name), "signer");
 
     const profile = await CaProfile.build({
       prefix: new Name(args.prefix),

@@ -38,7 +38,7 @@ export class IssueCertCommand implements CommandModule<{}, Args> {
     if (keyNames.length === 0) {
       throw new Error(`issuer key ${issuer} not found`);
     }
-    const issuerPrivateKey = await keyChain.getPrivateKey(keyNames[0]);
+    const issuerPrivateKey = await keyChain.getKey(keyNames[0], "signer");
 
     const certReq = await inputCertBase64();
     const publicKey = await certReq.createVerifier();

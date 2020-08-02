@@ -2,33 +2,33 @@ import { Name } from "@ndn/packet";
 import { fromHex, toHex } from "@ndn/tlv";
 import throat from "throat";
 
-import { StoreImpl } from "./store-impl";
+import type { StoreProvider } from "./store-provider";
 
 export abstract class StoreBase<T> {
   private throttle = throat(1);
 
-  constructor(protected readonly impl: StoreImpl<T>) {
+  constructor(private readonly provider: StoreProvider<T>) {
   }
 
-  public get canSClone() { return this.impl.storableKind === "sclone"; }
+  public get canSClone() { return this.provider.canSClone; }
 
   /** List item names. */
   public list(): Promise<Name[]> {
-    return this.throttle(() => this.impl.list())
+    return this.throttle(() => this.provider.list())
       .then((keys) => keys.map((k) => new Name(fromHex(k))));
   }
 
   /** Erase item by name. */
   public erase(name: Name): Promise<void> {
-    return this.throttle(() => this.impl.erase(toHex(name.value)));
+    return this.throttle(() => this.provider.erase(toHex(name.value)));
   }
 
-  protected getImpl(name: Name): Promise<T> {
-    return this.throttle(() => this.impl.get(toHex(name.value)));
+  protected getValue(name: Name): Promise<T> {
+    return this.throttle(() => this.provider.get(toHex(name.value)));
   }
 
-  protected insertImpl(name: Name, value: T): Promise<void> {
-    return this.throttle(() => this.impl.insert(toHex(name.value), value));
+  protected insertValue(name: Name, value: T): Promise<void> {
+    return this.throttle(() => this.provider.insert(toHex(name.value), value));
   }
 
   protected bufferToStorable(input: Uint8Array|string): Uint8Array|string {
@@ -37,8 +37,10 @@ export abstract class StoreBase<T> {
     }
     return input;
   }
+}
 
-  protected bufferFromStorable(input: Uint8Array|string): Uint8Array {
+export namespace StoreBase {
+  export function bufferFromStorable(input: Uint8Array|string): Uint8Array {
     if (ArrayBuffer.isView(input)) {
       return input;
     }

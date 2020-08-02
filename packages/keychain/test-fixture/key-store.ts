@@ -36,7 +36,7 @@ export async function execute(
   const keys1 = gen.map(([pvt]) => pvt.name).map(String);
 
   const keyNames2 = await keyChain.listKeys();
-  const keys2 = (await Promise.all(keyNames2.map((n) => keyChain.getPrivateKey(n))))
+  const keys2 = (await Promise.all(keyNames2.map((n) => keyChain.getKey(n, "signer"))))
     .map((pvt) => pvt.name.toString());
 
   await Promise.all(
@@ -44,13 +44,13 @@ export async function execute(
       .map((u) => keyChain.deleteKey(new Name(u))),
   );
   const keyNames3 = await keyChain.listKeys();
-  const keys3 = (await Promise.all(keyNames3.map((n) => keyChain.getPublicKey(n))))
+  const keys3 = (await Promise.all(keyNames3.map((n) => keyChain.getKey(n, "verifier"))))
     .map((pub) => pub.name.toString());
 
   const keys4 = [] as string[];
   for (let i = 0; i < 40; ++i) {
     try {
-      const key = await keyChain.getPrivateKey(new Name(keys2[i]));
+      const key = await keyChain.getKey(new Name(keys2[i]), "signer");
       switch (key.sigType) {
         case SigType.Sha256WithEcdsa:
           keys4.push("EC");

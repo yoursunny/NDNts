@@ -1,13 +1,11 @@
-/**
- * Indicate what item can be stored.
- * "json": types that can be serialized as JSON.
- * "sclone": types compatible with the structure clone algorithm.
- */
-export type StorableKind = "json"|"sclone";
-
 /** Underlying storage provider. */
-export interface StoreImpl<T> {
-  readonly storableKind: StorableKind;
+export interface StoreProvider<T> {
+  /**
+   * Indicate whether the storage provider supports the structured clone algorithm.
+   * If false, values must be serialized as JSON.
+   */
+  readonly canSClone: boolean;
+
   list: () => Promise<string[]>;
   get: (key: string) => Promise<T>;
   insert: (key: string, value: T) => Promise<void>;
@@ -15,8 +13,8 @@ export interface StoreImpl<T> {
 }
 
 /** Memory based storage provider. */
-export class MemoryStoreImpl<T> implements StoreImpl<T> {
-  public readonly storableKind = "sclone";
+export class MemoryStoreProvider<T> implements StoreProvider<T> {
+  public readonly canSClone = true;
 
   private map = new Map<string, T>();
 

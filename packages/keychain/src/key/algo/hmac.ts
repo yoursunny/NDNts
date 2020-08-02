@@ -11,16 +11,18 @@ const GenParams: HmacKeyGenParams&HmacImportParams = {
 export const HMAC: SigningAlgorithm<{}, false, HMAC.GenParams> = {
   uuid: "d7001239-cb92-47b3-9376-2d1a781c70ac",
   sigType: SigType.HmacWithSha256,
-  secretKeyUsages: ["sign", "verify"],
+  keyUsages: {
+    secret: ["sign", "verify"],
+  },
 
   async cryptoGenerate({ importRaw }: HMAC.GenParams, extractable: boolean) {
     let secretKey: CryptoKey;
     if (importRaw) {
       secretKey = await crypto.subtle.importKey("raw", importRaw,
-        GenParams, extractable, [...this.secretKeyUsages!]);
+        GenParams, extractable, this.keyUsages.secret);
     } else {
       secretKey = await crypto.subtle.generateKey(
-        GenParams, extractable, [...this.secretKeyUsages!]) as CryptoKey;
+        GenParams, extractable, this.keyUsages.secret) as CryptoKey;
     }
     return {
       secretKey,

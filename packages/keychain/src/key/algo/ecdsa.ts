@@ -47,7 +47,7 @@ function determineEcCurve(der: asn1.ElementBuffer): EcCurve|false {
 }
 
 async function importNamedCurve(curve: EcCurve, spki: Uint8Array): Promise<CryptoKey> {
-  return crypto.subtle.importKey("spki", spki, makeGenParams(curve), true, [...ECDSA.publicKeyUsages!]);
+  return crypto.subtle.importKey("spki", spki, makeGenParams(curve), true, ECDSA.keyUsages.public);
 }
 
 async function importSpecificCurve(curve: EcCurve, der: asn1.ElementBuffer): Promise<CryptoKey> {
@@ -56,7 +56,7 @@ async function importSpecificCurve(curve: EcCurve, der: asn1.ElementBuffer): Pro
     throw new Error("subjectPublicKey not found");
   }
   return crypto.subtle.importKey("raw", subjectPublicKey.value!,
-    makeGenParams(curve), true, [...ECDSA.publicKeyUsages!]);
+    makeGenParams(curve), true, ECDSA.keyUsages.public);
 }
 
 function toUintHex(array: Uint8Array, start: number, end: number): string {
@@ -72,8 +72,10 @@ function toUintHex(array: Uint8Array, start: number, end: number): string {
 export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
   uuid: "a81b3696-65e5-4f4c-bb45-14125472321b",
   sigType: SigType.Sha256WithEcdsa,
-  privateKeyUsages: ["sign"],
-  publicKeyUsages: ["verify"],
+  keyUsages: {
+    private: ["sign"],
+    public: ["verify"],
+  },
 
   async cryptoGenerate({ curve = EcCurve.Default, importPkcs8 }: ECDSA.GenParams, extractable: boolean) {
     const params = makeGenParams(curve);
@@ -81,13 +83,13 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
     if (importPkcs8) {
       const [pkcs8, spki] = importPkcs8;
       const [privateKey, publicKey] = await Promise.all([
-        crypto.subtle.importKey("pkcs8", pkcs8, params, extractable, [...this.privateKeyUsages!]),
+        crypto.subtle.importKey("pkcs8", pkcs8, params, extractable, this.keyUsages.private),
         importNamedCurve(curve, spki),
       ]);
       pair = { privateKey, publicKey };
     } else {
       pair = await crypto.subtle.generateKey(params, extractable,
-        [...this.privateKeyUsages!, ...this.publicKeyUsages!]) as CryptoKeyPair;
+        [...this.keyUsages.private, ...this.keyUsages.public]) as CryptoKeyPair;
     }
 
     const spki = new Uint8Array(await crypto.subtle.exportKey("spki", pair.publicKey));

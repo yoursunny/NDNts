@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Name, SigType } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 
-import { Certificate, generateSigningKey, KeyChain, PublicKey, RSA, RsaModulusLength } from "../..";
+import { Certificate, generateSigningKey, KeyChain, RSA, RsaModulusLength } from "../..";
 
 interface Row extends TestSignVerify.Row {
   modulusLength: RsaModulusLength;
@@ -33,12 +33,12 @@ test.each(RsaModulusLength.Choices)("load %p", async (modulusLength) => {
   const name = new Name("/RSAKEY/KEY/x");
   await generateSigningKey(keyChain, name, RSA, { modulusLength });
 
-  const [pvt, pub] = await keyChain.getKeyPair(name);
-  expect(pvt.sigType).toBe(SigType.Sha256WithRsa);
+  const { signer, publicKey } = await keyChain.getKeyPair(name);
+  expect(signer.sigType).toBe(SigType.Sha256WithRsa);
 
-  const cert = await Certificate.selfSign({ privateKey: pvt, publicKey: pub as PublicKey });
-  const pub2 = await cert.createVerifier();
-  expect(pub2.name).toEqualName(pvt.name);
-  expect(pub2.sigType).toBe(SigType.Sha256WithRsa);
-  await expect(pub2.verify(cert.data)).resolves.toBeUndefined();
+  const cert = await Certificate.selfSign({ privateKey: signer, publicKey });
+  const verifier = await cert.createVerifier();
+  expect(verifier.name).toEqualName(signer.name);
+  expect(verifier.sigType).toBe(SigType.Sha256WithRsa);
+  await expect(verifier.verify(cert.data)).resolves.toBeUndefined();
 });

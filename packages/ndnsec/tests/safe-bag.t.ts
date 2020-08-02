@@ -65,6 +65,6 @@ test("import", async () => {
   const keyChain = KeyChain.createTemp();
   await expect(safeBag.saveKeyPair(PASSPHRASE, keyChain)).resolves.toBeUndefined();
 
-  const pvt = await keyChain.getPrivateKey(CertNaming.toKeyName(safeBag.certificate.name));
+  const pvt = await keyChain.getKey(CertNaming.toKeyName(safeBag.certificate.name), "signer");
   expect(pvt.sigType).toBe(SigType.Sha256WithRsa);
 });

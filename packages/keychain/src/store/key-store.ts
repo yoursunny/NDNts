@@ -1,95 +1,93 @@
 import type { Name } from "@ndn/packet";
 
 import { crypto } from "../key/crypto_node";
-import { createSigner, createVerifier, CryptoAlgorithm, NamedSigner, NamedVerifier, SigningAlgorithm, SigningAlgorithmList } from "../key/mod";
+import { createSigner, createVerifier, CryptoAlgorithm, CryptoAlgorithmList, KeyKind, NamedSigner, NamedVerifier, PublicKey } from "../key/mod";
 import { StoreBase } from "./store-base";
 
-/** Storage of key pairs. */
-export class KeyStore extends StoreBase<KeyStore.StoredKey> {
-  private findAlgo(uuid: string): SigningAlgorithm<unknown>|undefined {
-    for (const algo of SigningAlgorithmList) {
-      if (algo.uuid === uuid) {
-        return algo;
-      }
+function findAlgo(uuid: string): CryptoAlgorithm<unknown>|undefined {
+  for (const algo of CryptoAlgorithmList) {
+    if (algo.uuid === uuid) {
+      return algo;
     }
-    return undefined;
   }
+  return undefined;
+}
 
-  public async get(name: Name): Promise<[NamedSigner, NamedVerifier]> {
-    const stored = await this.getImpl(name);
-    const [pvt, pub] = await this.loadKey(name, stored);
-    return [pvt, pub];
-  }
+class KeyLoader {
+  constructor(private readonly extractable = false) {}
 
-  protected loadKeyExtractable = false;
-
-  protected async loadKey(name: Name, stored: KeyStore.StoredKey): Promise<[NamedSigner, NamedVerifier, CryptoKey[]]> {
-    const algo = this.findAlgo(stored.algo);
+  public async loadKey(name: Name, stored: KeyStore.StoredKey): Promise<KeyStore.KeyPair> {
+    const algo = findAlgo(stored.algo);
     if (!algo) {
       throw new Error(`unknown algorithm uuid ${stored.algo}`);
     }
 
-    if (stored.privateKey) {
-      const [pvt, pub] = await this.loadAsymmetric(algo, stored);
-      return [
-        createSigner(name, algo, pvt),
-        createVerifier(name, algo, pub),
-        [pvt.privateKey, pub.publicKey],
-      ];
+    if (CryptoAlgorithm.isAsym(algo)) {
+      return this.loadAsymmetric(name, algo, stored);
+    } if (CryptoAlgorithm.isSym(algo)) {
+      return this.loadSymmetric(name, algo as CryptoAlgorithm<any, false>, stored);
     }
-    const secret = await this.loadSymmetric(algo, stored);
-    return [
-      createSigner(name, algo, secret),
-      createVerifier(name, algo, secret),
-      [secret.secretKey],
-    ];
+    throw new Error("unreachable");
   }
 
-  private async loadAsymmetric(algo: CryptoAlgorithm<any>, {
+  private async loadAsymmetric(name: Name, algo: CryptoAlgorithm<any, true>, {
     info,
     jwkImportParams,
     privateKey,
     publicKey,
     publicKeySpki,
-  }: KeyStore.StoredKey): Promise<[CryptoAlgorithm.PrivateKey<any>, CryptoAlgorithm.PublicKey<any>]> {
-    if (!algo.privateKeyUsages || !algo.publicKeyUsages || !privateKey || !publicKey || !publicKeySpki) {
+  }: KeyStore.StoredKey) {
+    if (!privateKey || !publicKey || !publicKeySpki) {
       throw new Error("bad algorithm or key");
     }
 
     if (jwkImportParams) {
       [privateKey, publicKey] = await Promise.all([
         crypto.subtle.importKey("jwk", privateKey as JsonWebKey, jwkImportParams,
-          this.loadKeyExtractable, [...algo.privateKeyUsages]),
+          this.extractable, algo.keyUsages.private),
         crypto.subtle.importKey("jwk", publicKey as JsonWebKey, jwkImportParams,
-          this.loadKeyExtractable, [...algo.publicKeyUsages]),
+          this.extractable, algo.keyUsages.public),
       ]);
     }
 
-    return [
+    return new KeyStore.KeyPair(
+      name,
+      algo,
       { info, privateKey: privateKey as CryptoKey },
-      { info, publicKey: publicKey as CryptoKey, spki: this.bufferFromStorable(publicKeySpki) },
-    ];
+      { info, publicKey: publicKey as CryptoKey, spki: StoreBase.bufferFromStorable(publicKeySpki) },
+    );
   }
 
-  private async loadSymmetric(algo: CryptoAlgorithm<any>, {
+  private async loadSymmetric(name: Name, algo: CryptoAlgorithm<any, false>, {
     info,
     jwkImportParams,
     secretKey,
-  }: KeyStore.StoredKey): Promise<CryptoAlgorithm.SecretKey<any>> {
-    if (!algo.secretKeyUsages || !secretKey) {
+  }: KeyStore.StoredKey) {
+    if (!secretKey) {
       throw new Error("bad algorithm or key");
     }
 
     if (jwkImportParams) {
       secretKey = await crypto.subtle.importKey("jwk", secretKey as JsonWebKey,
-        jwkImportParams, this.loadKeyExtractable, [...algo.secretKeyUsages]);
+        jwkImportParams, this.extractable, algo.keyUsages.secret);
     }
 
-    return { info, secretKey: secretKey as CryptoKey };
+    const key = { info, secretKey: secretKey as CryptoKey };
+    return new KeyStore.KeyPair(name, algo, key, key);
+  }
+}
+
+/** Storage of key pairs. */
+export class KeyStore extends StoreBase<KeyStore.StoredKey> {
+  private loader = new KeyLoader();
+
+  public async get(name: Name): Promise<KeyStore.KeyPair> {
+    const stored = await this.getValue(name);
+    return this.loader.loadKey(name, stored);
   }
 
   public async insert(name: Name, stored: KeyStore.StoredKey): Promise<void> {
-    const algo = this.findAlgo(stored.algo);
+    const algo = findAlgo(stored.algo);
     if (!algo) {
       throw new Error(`unknown algorithm uuid ${stored.algo}`);
     }
@@ -97,11 +95,47 @@ export class KeyStore extends StoreBase<KeyStore.StoredKey> {
     if (stored.publicKeySpki) {
       stored.publicKeySpki = this.bufferToStorable(stored.publicKeySpki);
     }
-    await this.insertImpl(name, stored);
+    await this.insertValue(name, stored);
   }
 }
 
 export namespace KeyStore {
+  export const Loader = KeyLoader;
+
+  export class KeyPair<Asym extends boolean = any, I = any> {
+    constructor(
+        public readonly name: Name,
+        public readonly algo: CryptoAlgorithm<I, Asym>,
+        public readonly pvt: CryptoAlgorithm.PrivateSecretKey<I, Asym>,
+        public readonly pub: CryptoAlgorithm.PublicSecretKey<I, Asym>,
+    ) {}
+
+    public get signer(): NamedSigner<Asym> {
+      if (!CryptoAlgorithm.isSigning(this.algo)) {
+        throw new Error("not a signing key");
+      }
+      return createSigner(this.name, this.algo, this.pvt);
+    }
+
+    public get verifier(): NamedVerifier<Asym> {
+      if (!CryptoAlgorithm.isSigning(this.algo)) {
+        throw new Error("not a signing key");
+      }
+      return createVerifier(this.name, this.algo, this.pub);
+    }
+
+    public get publicKey(): PublicKey {
+      if (!CryptoAlgorithm.isAsym(this.algo)) {
+        throw new Error("not an asymmetric key pair");
+      }
+      return {
+        name: this.name,
+        [KeyKind]: "public",
+        spki: (this.pub as CryptoAlgorithm.PublicKey<I>).spki,
+      };
+    }
+  }
+
   export interface StoredKey {
     algo: string;
     info: any;

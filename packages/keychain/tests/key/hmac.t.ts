@@ -4,7 +4,7 @@ import { Data, Name, SigType } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 import { Decoder, fromHex } from "@ndn/tlv";
 
-import { Certificate, generateSigningKey, HMAC, KeyChain, PublicKey } from "../..";
+import { generateSigningKey, HMAC, KeyChain } from "../..";
 
 test.each(TestSignVerify.TABLE)("%p", async ({ cls }) => {
   const [pvtA, pubA] = await generateSigningKey("/A", HMAC);
@@ -20,11 +20,11 @@ test("load", async () => {
   const name = new Name("/HMACKEY/KEY/x");
   await generateSigningKey(keyChain, name, HMAC);
 
-  const [pvt, pub] = await keyChain.getKeyPair(name);
-  expect(pvt.sigType).toBe(SigType.HmacWithSha256);
-  expect(pub.sigType).toBe(SigType.HmacWithSha256);
-
-  await expect(Certificate.selfSign({ privateKey: pvt, publicKey: pub as PublicKey })).rejects.toThrow();
+  const keyPair = await keyChain.getKeyPair(name);
+  const { signer, verifier } = keyPair;
+  expect(signer.sigType).toBe(SigType.HmacWithSha256);
+  expect(verifier.sigType).toBe(SigType.HmacWithSha256);
+  expect(() => keyPair.publicKey).toThrow();
 });
 
 /*
@@ -44,7 +44,7 @@ test("verify", async () => {
   const pkt = new Decoder(wire).decode(Data);
 
   const [, key] = await generateSigningKey("/H/KEY/x", HMAC, {
-    importRaw: Uint8Array.of(0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF),
+    importRaw: fromHex("A0A1A2A3A4A5A6A7A8A9AAABACADAEAF"),
   });
   await expect(key.verify(pkt)).resolves.toBeUndefined();
 });

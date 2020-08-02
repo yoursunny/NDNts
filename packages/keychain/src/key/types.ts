@@ -59,26 +59,8 @@ export interface CryptoAlgorithm<I, Asym extends boolean = any, G = any> {
    */
   readonly uuid: string;
 
-  /**
-   * Key usages for private key.
-   *
-   * This should only appear on asymmetric algorithm.
-   */
-  readonly privateKeyUsages?: readonly KeyUsage[];
-
-  /**
-   * Key usages for public key.
-   *
-   * This should only appear on asymmetric algorithm.
-   */
-  readonly publicKeyUsages?: readonly KeyUsage[];
-
-  /**
-   * Key usages for secret key.
-   *
-   * This should only appear on symmetric algorithm.
-   */
-  readonly secretKeyUsages?: readonly KeyUsage[];
+  readonly keyUsages: Asym extends true ? Record<"private"|"public", KeyUsage[]> :
+  Asym extends false ? Record<"secret", KeyUsage[]> : {};
 
   /** Generate key pair or secret key. */
   cryptoGenerate: (params: G, extractable: boolean)
@@ -94,6 +76,21 @@ export interface CryptoAlgorithm<I, Asym extends boolean = any, G = any> {
 }
 
 export namespace CryptoAlgorithm {
+  export function isAsym<I, G>(algo: CryptoAlgorithm<I, any, G>): algo is CryptoAlgorithm<I, true, G> {
+    const t = algo as CryptoAlgorithm<I, true, G>;
+    return Array.isArray(t.keyUsages.private) && Array.isArray(t.keyUsages.public);
+  }
+
+  export function isSym<I, G>(algo: CryptoAlgorithm<I, any, G>): algo is CryptoAlgorithm<I, false, G> {
+    const t = algo as CryptoAlgorithm<I, false, G>;
+    return Array.isArray(t.keyUsages.secret);
+  }
+
+  export function isSigning<I, Asym extends boolean, G>(algo: CryptoAlgorithm<I, Asym, G>): algo is SigningAlgorithm<I, Asym, G> {
+    const t = algo as SigningAlgorithm<I, Asym, G>;
+    return typeof t.sigType === "number" && typeof t.makeLLSign === "function" && typeof t.makeLLVerify === "function";
+  }
+
   export interface PrivateKey<I> {
     privateKey: CryptoKey;
     info: I;
