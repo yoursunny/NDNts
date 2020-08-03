@@ -1,4 +1,4 @@
-import { canSatisfy, Data, ImplicitDigest, Interest, Name } from "@ndn/packet";
+import { Data, ImplicitDigest, Interest, Name } from "@ndn/packet";
 import { DataStore as IDataStore } from "@ndn/repo-api";
 import { Encoder, toHex, toUtf8 } from "@ndn/tlv";
 import { AbstractLevelDOWN } from "abstract-leveldown";
@@ -89,7 +89,7 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
     const prefix = ImplicitDigest.strip(interest.name);
     const it = filter(filterExpired(false), this.iterRecords(prefix));
     for await (const { data } of it) {
-      if (await canSatisfy(interest, data)) {
+      if (await data.canSatisfy(interest)) {
         return data;
       }
     }

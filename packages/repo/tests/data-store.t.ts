@@ -38,7 +38,7 @@ test("list find expire", async () => {
   names.sort((a, b) => a.localeCompare(b));
   expect(names).toEqual(["/8=A/8=1", "/8=A/8=2", "/8=B/8=1", "/8=B/8=2", "/8=C/8=1", "/8=C/8=2", "/8=C/8=3"]);
 
-  await expect(store.find(new Interest("/C", Interest.CanBePrefix))).resolves.not.toBeUndefined();
+  await expect(store.find(new Interest("/C", Interest.CanBePrefix))).resolves.toBeDefined();
   await new Promise((r) => setTimeout(r, 700));
 
   names = await collect(map((name) => name.toString(), store.listNames()));

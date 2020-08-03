@@ -1,7 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Certificate, CertNaming, ECDSA, generateSigningKey, RSA } from "@ndn/keychain";
-import { canSatisfy, Name } from "@ndn/packet";
+import { Name } from "@ndn/packet";
 import { toUtf8 } from "@ndn/tlv";
 
 import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, Status } from "../..";
@@ -56,7 +56,7 @@ test("packets", async () => {
   const { interest: newInterest } = newRequest;
   expect(newInterest.name).toHaveLength(4);
   expect(newInterest.name.getPrefix(3)).toEqualName("/authority/CA/NEW");
-  expect(newInterest.sigInfo).not.toBeUndefined();
+  expect(newInterest.sigInfo).toBeDefined();
   expect(CertNaming.toSubjectName(newRequest.certRequest.name)).toEqualName("/requester");
 
   const caEcdh = await crypto.generateEcdhKey();
@@ -73,7 +73,7 @@ test("packets", async () => {
     signer: caPvt,
   });
   const { data: newData } = newResponse;
-  await expect(canSatisfy(newInterest, newData)).resolves.toBeTruthy();
+  await expect(newData.canSatisfy(newInterest)).resolves.toBeTruthy();
   expect(newResponse.salt).toEqualUint8Array(salt);
   expect(newResponse.requestId).toEqualUint8Array(requestId);
   expect(newResponse.challenges).toEqual(["pin"]);
@@ -90,7 +90,7 @@ test("packets", async () => {
   });
   expect(challengeInterest.name).toHaveLength(5);
   expect(challengeInterest.name.getPrefix(3)).toEqualName("/authority/CA/CHALLENGE");
-  expect(challengeInterest.sigInfo).not.toBeUndefined();
+  expect(challengeInterest.sigInfo).toBeDefined();
 
   const lookupContext = jest.fn().mockResolvedValue({
     sessionKey: caSessionKey,
@@ -114,7 +114,7 @@ test("packets", async () => {
     issuedCertName: new Name("/issued-cert"),
     signer: caPvt,
   });
-  await expect(canSatisfy(challengeInterest, challengeData)).resolves.toBeTruthy();
+  await expect(challengeData.canSatisfy(challengeInterest)).resolves.toBeTruthy();
 
   const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, requestId, reqSessionKey);
   expect(challengeResponse.status).toBe(Status.SUCCESS);

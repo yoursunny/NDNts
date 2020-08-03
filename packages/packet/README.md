@@ -5,8 +5,7 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 This package implements **Name**, **Interest**, and **Data** types as specified in [NDN Packet Format v0.3](https://named-data.net/doc/NDN-packet-spec/0.3/).
 
 ```ts
-import { TT, Name, Component, ImplicitDigest, AltUri, Interest, Data,
-  canSatisfy, canSatisfySync, digestSigning } from "@ndn/packet";
+import { TT, Name, Component, ImplicitDigest, AltUri, Interest, Data, digestSigning } from "@ndn/packet";
 
 // other imports for examples
 import { Decoder, Encoder, fromUtf8, toUtf8 } from "@ndn/tlv";
@@ -209,8 +208,7 @@ const digest2 = data.getImplicitDigest();
 const fullName2 = data.getFullName();
 assert.equal(digest2, digest);
 assert(typeof fullName2 !== "undefined");
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-assert.equal(fullName2!.toString(), fullName.toString());
+assert.equal(fullName2.toString(), fullName.toString());
 
 // Note that you cannot modify the Data after encoding or decoding,
 // or you'll get incorrect implicit digest results.
@@ -219,21 +217,15 @@ assert.equal(fullName2!.toString(), fullName.toString());
 ## Interest-Data Matching
 
 ```ts
-// To determine whether a Data satisfy an Interest, use canSatisfy or canSatisfySync.
+// data.canSatisfy(interest) determines whether a Data satisfy an Interest.
+// This is an async function because it potentially involves computing the implicit digest.
 
-// canSatisfySync returns a boolean:
-assert.equal(canSatisfySync(interest, data), true);
+assert.equal(await data.canSatisfy(interest), true);
 const interest3 = new Interest("/B");
-assert.equal(canSatisfySync(interest3, data), false);
-// However, it does not support implicit digest, because digest computation is async:
+assert.equal(await data.canSatisfy(interest3), false);
 const data3 = new Decoder(dataWire).decode(Data);
 const interestWithFullName = new Interest(fullName);
-assert(typeof canSatisfySync(interestWithFullName, data3) === "undefined");
-// Unless the Data contains cached implicit digest:
-assert.equal(canSatisfySync(interestWithFullName, data), true);
-
-// canSatisfy returns a Promise that resolves to boolean, which can support implicit digest.
-assert.equal(await canSatisfy(interestWithFullName, data3), true);
+assert.equal(await data.canSatisfy(interestWithFullName), true);
 ```
 
 ```ts

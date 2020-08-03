@@ -4,6 +4,7 @@ import { SigType, TT } from "./an";
 import { Component } from "./component";
 import { sha256 } from "./digest_node";
 import { ImplicitDigest } from "./digest-comp";
+import type { Interest } from "./interest";
 import { Name, NameLike } from "./name";
 import { SigInfo } from "./sig-info";
 import { LLSign, LLVerify, Signer, Verifier } from "./signing";
@@ -172,6 +173,30 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
   public async computeFullName(): Promise<Name> {
     await this.computeImplicitDigest();
     return this.getFullName()!;
+  }
+
+  /**
+   * Determine if a Data can satisfy an Interest.
+   * @returns a Promise that will be resolved with the result.
+   */
+  public async canSatisfy(interest: Interest): Promise<boolean> {
+    if (interest.mustBeFresh && this.freshnessPeriod <= 0) {
+      return false;
+    }
+
+    if (interest.canBePrefix ? interest.name.isPrefixOf(this.name) : interest.name.equals(this.name)) {
+      return true;
+    }
+
+    if (interest.name.length === this.name.length + 1 && interest.name.get(-1)!.is(ImplicitDigest)) {
+      const fullName = this.getFullName();
+      if (!fullName) {
+        return interest.name.equals(await this.computeFullName());
+      }
+      return interest.name.equals(fullName);
+    }
+
+    return false;
   }
 
   public async [LLSign.OP](sign: LLSign) {

@@ -1,5 +1,5 @@
 import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
-import { canSatisfy, Data, Interest, Name, NameLike } from "@ndn/packet";
+import { Data, Interest, Name, NameLike } from "@ndn/packet";
 import { flatTransform } from "streaming-iterables";
 
 import { DataBuffer } from "./data-buffer";
@@ -65,7 +65,7 @@ export class EndpointProducer {
     const processInterestUnbuffered = async (interest: Interest) => {
       const output = await handler(interest, producer);
       if (output instanceof Data) {
-        if (!await canSatisfy(interest, output)) {
+        if (!await output.canSatisfy(interest)) {
           return undefined;
         }
         return output;

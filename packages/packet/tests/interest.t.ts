@@ -32,7 +32,7 @@ test("encode", () => {
   expect(interest.name).toEqualName("/B");
   expect(interest.canBePrefix).toBeTruthy();
   expect(interest.mustBeFresh).toBeTruthy();
-  expect(interest.nonce).not.toBeUndefined();
+  expect(interest.nonce).toBeDefined();
   expect(interest.nonce).toBe(0x85AC8579);
   expect(interest.lifetime).toBe(8198);
   expect(interest.hopLimit).toBe(5);
@@ -151,7 +151,7 @@ test("decode parameterized", async () => {
   ]));
   let interest = decoder.decode(Interest);
   expect(interest.name).toHaveLength(2);
-  expect(interest.appParameters).not.toBeUndefined();
+  expect(interest.appParameters).toBeDefined();
 
   interest = new Interest(
     new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"),
@@ -162,7 +162,7 @@ test("decode parameterized", async () => {
   decoder = new Decoder(wire);
   interest = decoder.decode(Interest);
   expect(interest.name).toHaveLength(3);
-  expect(interest.appParameters).not.toBeUndefined();
+  expect(interest.appParameters).toBeDefined();
 
   const verify = jest.fn();
   await expect(interest[LLVerify.OP](verify)).rejects.toThrow();
@@ -231,16 +231,16 @@ test("decode signed", async () => {
   decoder = new Decoder(wire);
   const interest = decoder.decode(Interest);
   expect(interest.name).toHaveLength(2);
-  expect(interest.appParameters).not.toBeUndefined();
-  expect(interest.sigInfo).not.toBeUndefined();
-  expect(interest.sigValue).not.toBeUndefined();
+  expect(interest.appParameters).toBeDefined();
+  expect(interest.sigInfo).toBeDefined();
+  expect(interest.sigValue).toBeDefined();
 
   // unrecognized elements should be preserved until modified
   const verify = jest.fn().mockResolvedValue(undefined);
   await expect(interest[LLVerify.OP](verify)).resolves.toBeUndefined();
   expect(verify).toHaveBeenCalledTimes(1);
   expect(verify.mock.calls[0][0]).toEqualUint8Array(Buffer.concat([name.value, signedParamsWire]));
-  interest.sigInfo = interest.sigInfo; // eslint-disable-line no-self-assign
+  interest.sigInfo = new SigInfo(interest.sigInfo!); // modifying
   await expect(interest[LLVerify.OP](verify)).rejects.toThrow(); // ParamsDigest is now wrong
   expect(verify).toHaveBeenCalledTimes(1);
 });

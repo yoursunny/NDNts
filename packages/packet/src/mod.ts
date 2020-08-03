@@ -10,5 +10,4 @@ export * from "./key-locator";
 export * from "./signing";
 export * from "./nack";
 export * from "./name";
-export * from "./satisfy";
 export * from "./sig-info";

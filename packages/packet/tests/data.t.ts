@@ -3,7 +3,8 @@ import "../test-fixture/expect";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { createHash } from "crypto";
 
-import { Component, Data, ImplicitDigest, Name, TT } from "..";
+import { Component, Data, ImplicitDigest, Interest, Name, TT } from "..";
+import { getDataFullName } from "../test-fixture/name";
 
 test("encode", () => {
   expect(() => new Data({} as any)).toThrow();
@@ -31,7 +32,7 @@ test("encode", () => {
   expect(data.name).toEqualName("/B");
   expect(data.contentType).toBe(3);
   expect(data.freshnessPeriod).toBe(2500);
-  expect(data.finalBlockId).not.toBeUndefined();
+  expect(data.finalBlockId).toBeDefined();
   expect(data.finalBlockId).toEqualComponent("B");
   expect(data.isFinalBlock).toBeTruthy();
   expect(data.content).toHaveLength(2);
@@ -125,7 +126,7 @@ test("decode", () => {
   expect(data.name).toEqualName("/B/0");
   expect(data.contentType).toBe(3);
   expect(data.freshnessPeriod).toBe(260);
-  expect(data.finalBlockId).not.toBeUndefined();
+  expect(data.finalBlockId).toBeDefined();
   expect(data.finalBlockId).toEqualComponent("1");
   expect(data.isFinalBlock).toBeFalsy();
   expect(data.content).toHaveLength(2);
@@ -153,4 +154,28 @@ test("ImplicitDigest", async () => {
   expect(fullName).toEqualName(`/A/${ImplicitDigest.create(expectedDigest)}`);
   const fullName2 = data.getFullName();
   expect(fullName2).toEqualName(fullName);
+});
+
+test("canSatisfy", async () => {
+  const interest = new Interest("/A");
+  const data = new Data("/A");
+  await expect(data.canSatisfy(interest)).resolves.toBe(true);
+
+  interest.mustBeFresh = true;
+  await expect(data.canSatisfy(interest)).resolves.toBe(false);
+
+  data.freshnessPeriod = 500;
+  await expect(data.canSatisfy(interest)).resolves.toBe(true);
+
+  data.name = new Name("/A/B");
+  await expect(data.canSatisfy(interest)).resolves.toBe(false);
+
+  interest.canBePrefix = true;
+  await expect(data.canSatisfy(interest)).resolves.toBe(true);
+
+  interest.name = await getDataFullName(data);
+  await expect(data.canSatisfy(interest)).resolves.toBe(true);
+
+  interest.canBePrefix = false;
+  await expect(data.canSatisfy(interest)).resolves.toBe(true);
 });

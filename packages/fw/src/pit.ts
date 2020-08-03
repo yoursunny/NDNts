@@ -1,4 +1,4 @@
-import { canSatisfy, Data, Interest } from "@ndn/packet";
+import { Data, Interest } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import hirestime from "hirestime";
 import DefaultMap from "mnemonist/default-map";
@@ -175,7 +175,7 @@ export class Pit {
   public async satisfy(face: FaceImpl, { l3: data, token }: FwPacket<Data>): Promise<boolean> {
     const nSentData = await pipeline(
       () => this.findPotentialMatches(data, token),
-      filter(({ interest }: PitEntry) => canSatisfy(interest, data)),
+      filter(({ interest }: PitEntry) => data.canSatisfy(interest)),
       flatMap((entry) => entry.returnData(face)),
       tap(({ dn, token: dnToken }) => {
         dn.send(FwPacket.create(data, dnToken));
