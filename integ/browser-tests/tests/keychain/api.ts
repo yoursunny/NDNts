@@ -1,3 +1,4 @@
+import type { EcCurve, RsaModulusLength } from "@ndn/keychain";
 import { TestRecord as CertStoreRecord } from "@ndn/keychain/test-fixture/cert-store";
 import { TestRecord as KeyStoreRecord } from "@ndn/keychain/test-fixture/key-store";
 import { TestRecord as SignVerifyRecord } from "@ndn/packet/test-fixture/sign-verify";
@@ -13,9 +14,9 @@ declare global {
   interface Window {
     testKeyStore: () => Promise<KeyStoreRecord>;
     testCertStore: () => Promise<CertStoreRecord>;
-    testDigestKey: () => Promise<SerializedInBrowser>;
-    testEcKey: () => Promise<SerializedInBrowser>;
-    testRsaKey: () => Promise<SerializedInBrowser>;
-    testHmacKey: () => Promise<SerializedInBrowser>;
+    testDigestSigning: () => Promise<SerializedInBrowser>;
+    testECDSA: (curve: EcCurve) => Promise<SerializedInBrowser>;
+    testRSA: (modulusLength: RsaModulusLength) => Promise<SerializedInBrowser>;
+    testHMAC: () => Promise<SerializedInBrowser>;
   }
 }

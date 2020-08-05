@@ -1,3 +1,4 @@
+import { EcCurve, RsaModulusLength } from "@ndn/keychain";
 import * as TestCertStore from "@ndn/keychain/test-fixture/cert-store";
 import * as TestKeyStore from "@ndn/keychain/test-fixture/key-store";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
@@ -19,29 +20,29 @@ test("CertStore", async () => {
 });
 
 test("SHA256", async () => {
-  const [rI, rD] = deserializeInBrowser(await pageInvoke<typeof window.testDigestKey>(
-    page, "testDigestKey")) as SignVerifyTestResult;
+  const [rI, rD] = deserializeInBrowser(await pageInvoke<typeof window.testDigestSigning>(
+    page, "testDigestSigning")) as SignVerifyTestResult;
   TestSignVerify.check(rI, { deterministic: true, sameAB: true });
   TestSignVerify.check(rD, { deterministic: true, sameAB: true });
 });
 
-test("ECDSA", async () => {
-  const [rI, rD] = deserializeInBrowser(await pageInvoke<typeof window.testEcKey>(
-    page, "testEcKey")) as SignVerifyTestResult;
+test.each(EcCurve.Choices)("ECDSA %p", async (curve) => {
+  const [rI, rD] = deserializeInBrowser(await pageInvoke<typeof window.testECDSA>(
+    page, "testECDSA", curve)) as SignVerifyTestResult;
   TestSignVerify.check(rI);
   TestSignVerify.check(rD);
 });
 
-test("RSA", async () => {
-  const [rI, rD] = deserializeInBrowser(await pageInvoke<typeof window.testRsaKey>(
-    page, "testRsaKey")) as SignVerifyTestResult;
+test.each(RsaModulusLength.Choices)("RSA %p", async (modulusLength) => {
+  const [rI, rD] = deserializeInBrowser(await pageInvoke<typeof window.testRSA>(
+    page, "testRSA", modulusLength)) as SignVerifyTestResult;
   TestSignVerify.check(rI, { deterministic: true });
   TestSignVerify.check(rD, { deterministic: true });
 });
 
 test("HMAC", async () => {
-  const [rI, rD] = deserializeInBrowser(await pageInvoke<typeof window.testHmacKey>(
-    page, "testHmacKey")) as SignVerifyTestResult;
+  const [rI, rD] = deserializeInBrowser(await pageInvoke<typeof window.testHMAC>(
+    page, "testHMAC")) as SignVerifyTestResult;
   TestSignVerify.check(rI, { deterministic: true });
   TestSignVerify.check(rD, { deterministic: true });
 });

@@ -1,6 +1,6 @@
 import "./webcrypto";
 
-import { ECDSA, generateSigningKey, HMAC, KeyChain, RSA } from "@ndn/keychain";
+import { EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength } from "@ndn/keychain";
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";
 import { execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
 import { Data, digestSigning, Interest, Signer, Verifier } from "@ndn/packet";
@@ -16,7 +16,7 @@ window.testCertStore = () => {
   return testCertStore(KeyChain.open("005a04be-9752-4f1f-adaf-b52f31742b37"));
 };
 
-async function testKey(pvtA: Signer, pubA: Verifier,
+async function testSigningKey(pvtA: Signer, pubA: Verifier,
     pvtB: Signer, pubB: Verifier): Promise<SerializedInBrowser> {
   return serializeInBrowser(await Promise.all([
     testSignVerify(Interest, pvtA, pubA, pvtB, pubB),
@@ -24,24 +24,24 @@ async function testKey(pvtA: Signer, pubA: Verifier,
   ]));
 }
 
-window.testDigestKey = () => {
-  return testKey(digestSigning, digestSigning, digestSigning, digestSigning);
+window.testDigestSigning = () => {
+  return testSigningKey(digestSigning, digestSigning, digestSigning, digestSigning);
 };
 
-window.testEcKey = async () => {
-  const [pvtA, pubA] = await generateSigningKey("/EC-A", ECDSA);
-  const [pvtB, pubB] = await generateSigningKey("/EC-B", ECDSA);
-  return testKey(pvtA, pubA, pvtB, pubB);
+window.testECDSA = async (curve: EcCurve) => {
+  const [pvtA, pubA] = await generateSigningKey("/EC-A", ECDSA, { curve });
+  const [pvtB, pubB] = await generateSigningKey("/EC-B", ECDSA, { curve });
+  return testSigningKey(pvtA, pubA, pvtB, pubB);
 };
 
-window.testRsaKey = async () => {
-  const [pvtA, pubA] = await generateSigningKey("/RSA-A", RSA);
-  const [pvtB, pubB] = await generateSigningKey("/RSA-B", RSA);
-  return testKey(pvtA, pubA, pvtB, pubB);
+window.testRSA = async (modulusLength: RsaModulusLength) => {
+  const [pvtA, pubA] = await generateSigningKey("/RSA-A", RSA, { modulusLength });
+  const [pvtB, pubB] = await generateSigningKey("/RSA-B", RSA, { modulusLength });
+  return testSigningKey(pvtA, pubA, pvtB, pubB);
 };
 
-window.testHmacKey = async () => {
+window.testHMAC = async () => {
   const [pvtA, pubA] = await generateSigningKey("/HMAC-A", HMAC);
   const [pvtB, pubB] = await generateSigningKey("/HMAC-B", HMAC);
-  return testKey(pvtA, pubA, pvtB, pubB);
+  return testSigningKey(pvtA, pubA, pvtB, pubB);
 };
