@@ -1,0 +1,172 @@
+import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
+
+import { crypto } from "../crypto_node";
+import type { CryptoAlgorithm, EncryptionAlgorithm } from "../types";
+
+export type KeyLength = 128|192|256;
+export namespace KeyLength {
+  export const Default: KeyLength = 128;
+  export const Choices: readonly KeyLength[] = [128, 192, 256];
+}
+
+/** Key generation parameters. */
+export interface GenParams {
+  length?: KeyLength;
+
+  /** Import raw key bits instead of generating. */
+  importRaw?: Uint8Array;
+}
+type GenParams_ = GenParams;
+
+class AES<I = {}, G extends GenParams = GenParams> implements EncryptionAlgorithm<I, false, G> {
+  constructor(
+      private readonly name: string,
+      public readonly uuid: string,
+      private readonly detail: AlgoDetail<I>,
+  ) {
+    this.keyUsages = { secret: detail.secretKeyUsages };
+  }
+
+  public readonly keyUsages: { secret: KeyUsage[] };
+
+  async cryptoGenerate(genParams: G, extractable: boolean): Promise<CryptoAlgorithm.GeneratedSecretKey<I>> {
+    const { length = KeyLength.Default, importRaw } = genParams;
+    let secretKey: CryptoKey;
+    if (importRaw) {
+      secretKey = await crypto.subtle.importKey("raw", importRaw,
+        this.name, extractable, this.keyUsages.secret);
+    } else {
+      const genParams: AesKeyGenParams = { name: this.name, length };
+      secretKey = await crypto.subtle.generateKey(
+        genParams, extractable, this.keyUsages.secret) as CryptoKey;
+    }
+
+    const info: any = Object.fromEntries(
+      Object.entries(this.detail.defaultInfo)
+        .map(([key, dflt]) => [key, (genParams as any)[key] ?? dflt]));
+
+    return {
+      secretKey,
+      jwkImportParams: this.name,
+      info,
+    };
+  }
+
+  private check(iv: Uint8Array|undefined, additionalData: Uint8Array|undefined) {
+    if (iv?.byteLength !== this.detail.ivLength) {
+      throw new Error("bad IV");
+    }
+
+    if (additionalData && !this.detail.allowAdditionalData) {
+      throw new Error("cannot use additionalData");
+    }
+  }
+
+  public makeLLEncrypt({ secretKey, info }: CryptoAlgorithm.SecretKey<I>): LLEncrypt {
+    return async ({
+      plaintext,
+      iv = crypto.getRandomValues(new Uint8Array(this.detail.ivLength)),
+      additionalData,
+    }) => {
+      this.check(iv, additionalData);
+      const params = {
+        name: this.name,
+        iv,
+        additionalData,
+      };
+      this.detail.modifyParams?.(params, info);
+
+      const encrypted = new Uint8Array(await crypto.subtle.encrypt(params, secretKey, plaintext));
+      return {
+        ciphertext: encrypted.slice(this.detail.tagSize),
+        iv,
+        authenticationTag: this.detail.tagSize ? encrypted.slice(0, this.detail.tagSize) : undefined,
+      };
+    };
+  }
+
+  public makeLLDecrypt({ secretKey, info }: CryptoAlgorithm.SecretKey<I>): LLDecrypt {
+    return async ({
+      ciphertext,
+      iv,
+      authenticationTag,
+      additionalData,
+    }) => {
+      this.check(iv, additionalData);
+      if ((authenticationTag?.byteLength ?? 0) !== this.detail.tagSize) {
+        throw new Error("bad authenticationTag");
+      }
+
+      let encrypted = ciphertext;
+      if (this.detail.tagSize > 0) {
+        encrypted = new Uint8Array(this.detail.tagSize + ciphertext.byteLength);
+        encrypted.set(authenticationTag!, 0);
+        encrypted.set(ciphertext, this.detail.tagSize);
+      }
+
+      const params = {
+        name: this.name,
+        iv,
+        additionalData,
+      };
+      this.detail.modifyParams?.(params, info);
+      const plaintext = new Uint8Array(await crypto.subtle.decrypt(params, secretKey, encrypted));
+      return { plaintext };
+    };
+  }
+}
+
+interface AlgoDetail<I> {
+  secretKeyUsages: KeyUsage[];
+  ivLength: number;
+  allowAdditionalData: boolean;
+  tagSize: number;
+  defaultInfo: I;
+  modifyParams?: (params: any, info: I) => void;
+}
+
+/** AES-CBC encryption algorithm. */
+export const CBC: EncryptionAlgorithm<{}, false, GenParams> = new AES("AES-CBC", "a3840ac4-b29d-4ab5-a255-2894ec254223", {
+  secretKeyUsages: ["encrypt", "decrypt"],
+  ivLength: 16,
+  allowAdditionalData: false,
+  tagSize: 0,
+  defaultInfo: {},
+});
+
+/** AES-CTR encryption algorithm. */
+export const CTR: EncryptionAlgorithm<CTR.Info, false, CTR.GenParams> = new AES<CTR.Info, CTR.GenParams>("AES-CTR", "0ec985f2-88c0-4dd9-8b69-2c41bd639809", {
+  secretKeyUsages: ["encrypt", "decrypt"],
+  ivLength: 16,
+  allowAdditionalData: false,
+  tagSize: 0,
+  defaultInfo: {
+    counterLength: 128,
+  },
+  modifyParams: (params: AesCtrParams & AesCbcParams, { counterLength }: CTR.Info) => {
+    params.counter = params.iv;
+    delete params.iv;
+    params.length = counterLength;
+  },
+});
+
+export namespace CTR {
+  export interface Info {
+    /**
+     * Specify number of bits in IV to use as counter.
+     * This must be between 1 and 128. Default is 128.
+     */
+    counterLength: number;
+  }
+
+  export type GenParams = GenParams_ & Partial<Info>;
+}
+
+/** AES-GCM encryption algorithm. */
+export const GCM: EncryptionAlgorithm<{}, false, GenParams> = new AES("AES-GCM", "a7e27aee-2f10-4150-bd6b-5e667c006274", {
+  secretKeyUsages: ["encrypt", "decrypt"],
+  ivLength: 12,
+  allowAdditionalData: true,
+  tagSize: 128 / 8,
+  defaultInfo: {},
+});

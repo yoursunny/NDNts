@@ -1,7 +1,7 @@
 import type { Name } from "@ndn/packet";
 
 import { crypto } from "../key/crypto_node";
-import { createSigner, createVerifier, CryptoAlgorithm, CryptoAlgorithmList, KeyKind, NamedSigner, NamedVerifier, PublicKey } from "../key/mod";
+import { createDecrypter, createEncrypter, createSigner, createVerifier, CryptoAlgorithm, CryptoAlgorithmList, KeyKind, NamedDecrypter, NamedEncrypter, NamedSigner, NamedVerifier, PublicKey } from "../key/mod";
 import { StoreBase } from "./store-base";
 
 function findAlgo(uuid: string): CryptoAlgorithm<unknown>|undefined {
@@ -122,6 +122,20 @@ export namespace KeyStore {
         throw new Error("not a signing key");
       }
       return createVerifier(this.name, this.algo, this.pub);
+    }
+
+    public get encrypter(): NamedEncrypter<Asym> {
+      if (!CryptoAlgorithm.isEncryption(this.algo)) {
+        throw new Error("not an encryption key");
+      }
+      return createEncrypter(this.name, this.algo, this.pub);
+    }
+
+    public get decrypter(): NamedDecrypter<Asym> {
+      if (!CryptoAlgorithm.isEncryption(this.algo)) {
+        throw new Error("not an encryption key");
+      }
+      return createDecrypter(this.name, this.algo, this.pvt);
     }
 
     public get publicKey(): PublicKey {

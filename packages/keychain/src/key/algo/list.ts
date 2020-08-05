@@ -1,14 +1,23 @@
-import type { CryptoAlgorithm, SigningAlgorithm } from "../types";
+import type { CryptoAlgorithm, EncryptionAlgorithm, SigningAlgorithm } from "../types";
+import * as AES from "./aes";
 import { ECDSA } from "./ecdsa";
 import { HMAC } from "./hmac";
-import { RSA } from "./rsa";
+import { RSA, RSAOAEP } from "./rsa";
 
-export const SigningAlgorithmList: Array<SigningAlgorithm<any>> = [
+export const SigningAlgorithmList: SigningAlgorithm[] = [
   ECDSA,
   RSA,
   HMAC,
 ];
 
-export const CryptoAlgorithmList: Array<CryptoAlgorithm<any>> = [
+export const EncryptionAlgorithmList: EncryptionAlgorithm[] = [
+  AES.CBC,
+  AES.CTR,
+  AES.GCM,
+  RSAOAEP,
+];
+
+export const CryptoAlgorithmList: CryptoAlgorithm[] = [
   ...SigningAlgorithmList,
+  ...EncryptionAlgorithmList,
 ];

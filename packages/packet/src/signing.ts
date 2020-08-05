@@ -1,7 +1,7 @@
 import { SigType } from "./an";
 import { sha256, timingSafeEqual as timingSafeEqual_ } from "./digest_node";
 import { KeyLocator } from "./key-locator";
-import { Name } from "./name";
+import type { Name } from "./name";
 import { SigInfo } from "./sig-info";
 
 /**

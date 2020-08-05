@@ -2,7 +2,7 @@ import { Component, Data, Name, SigInfo, Signer } from "@ndn/packet";
 import * as asn1 from "@yoursunny/asn1";
 import assert from "minimalistic-assert";
 
-import { CryptoAlgorithm, NamedSigner, NamedVerifier, PublicKey, SigningAlgorithmList } from "../key/mod";
+import { createEncrypter, CryptoAlgorithm, EncryptionAlgorithmList, NamedEncrypter, NamedSigner, NamedVerifier, PublicKey, SigningAlgorithmList } from "../key/mod";
 import { createVerifier } from "../key/signing";
 import * as CertNaming from "../naming";
 import { ContentTypeKEY } from "./an";
@@ -72,7 +72,17 @@ export class Certificate {
     return this.verifier;
   }
 
+  /** Create encrypter from SPKI. */
+  public async createEncrypter(): Promise<NamedEncrypter.PublicKey> {
+    if (!this.encrypter) {
+      const [algo, key] = await this.importPublicKey(EncryptionAlgorithmList);
+      this.encrypter = createEncrypter(CertNaming.toKeyName(this.name), algo, key);
+    }
+    return this.encrypter;
+  }
+
   private verifier?: NamedVerifier.PublicKey;
+  private encrypter?: NamedEncrypter.PublicKey;
 }
 
 const DEFAULT_FRESHNESS = 3600000;

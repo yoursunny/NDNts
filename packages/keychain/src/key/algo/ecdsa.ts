@@ -69,6 +69,7 @@ function toUintHex(array: Uint8Array, start: number, end: number): string {
   return toHex(array.slice(msb, end));
 }
 
+/** Sha256WithEcdsa signing algorithm. */
 export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
   uuid: "a81b3696-65e5-4f4c-bb45-14125472321b",
   sigType: SigType.Sha256WithEcdsa,

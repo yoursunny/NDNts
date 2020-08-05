@@ -8,6 +8,7 @@ const GenParams: HmacKeyGenParams&HmacImportParams = {
   hash: "SHA-256",
 };
 
+/** HmacWithSha256 signing algorithm. */
 export const HMAC: SigningAlgorithm<{}, false, HMAC.GenParams> = {
   uuid: "d7001239-cb92-47b3-9376-2d1a781c70ac",
   sigType: SigType.HmacWithSha256,

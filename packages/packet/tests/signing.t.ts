@@ -131,7 +131,7 @@ test("digestSigning simple", async () => {
   await expect(digestSigning.verify(data)).rejects.toThrow();
 });
 
-test.each(TestSignVerify.TABLE)("digestSigning %p", async ({ cls }) => {
+test.each(TestSignVerify.makeTable())("digestSigning %p", async ({ cls }) => {
   const record = await TestSignVerify.execute(cls, digestSigning, digestSigning, digestSigning, digestSigning);
   TestSignVerify.check(record, { deterministic: true, sameAB: true });
 });
