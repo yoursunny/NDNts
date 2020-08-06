@@ -109,7 +109,8 @@ export class Server {
 
     const salt = crypto.makeSalt();
     const { privateKey: ecdhPvt, publicKey: ecdhPub } = await crypto.generateEcdhKey();
-    const sessionKey = await crypto.makeSessionKey(ecdhPvt, request.ecdhPub, salt, requestId);
+    const sessionKey = await crypto.makeSessionKey(
+      ecdhPvt, request.ecdhPub, salt, requestId);
 
     this.state.set(requestIdHex, {
       expiry: Date.now() + BEFORE_CHALLENGE_EXPIRY,
@@ -191,14 +192,11 @@ export class Server {
     }
 
     const response = await ChallengeResponse.build({
-      profile: this.profile,
-      sessionKey: context.sessionKey,
-      request,
+      ...this.makeResponseCommon(request, context),
       status: Status.CHALLENGE,
       challengeStatus,
       remainingTries: context.challengeRemainingTries!,
       remainingTime: context.expiry - now,
-      signer: this.key,
     });
     return response.data;
   }
@@ -216,17 +214,23 @@ export class Server {
     await this.repo.insert(issuedCert.data);
 
     const response = await ChallengeResponse.build({
-      profile: this.profile,
-      sessionKey: context.sessionKey,
-      request,
+      ...this.makeResponseCommon(request, context),
       status: Status.SUCCESS,
       challengeStatus: "OK",
       remainingTries: 0,
       remainingTime: 0,
       issuedCertName,
-      signer: this.key,
     });
     return response.data;
+  }
+
+  private makeResponseCommon(request: ChallengeRequest, context: Context) {
+    return {
+      profile: this.profile,
+      ...context.sessionKey,
+      request,
+      signer: this.key,
+    };
   }
 
   private deleteContext({ requestId }: ChallengeRequest) {
@@ -247,7 +251,7 @@ const BEFORE_CHALLENGE_EXPIRY = 60000;
 
 interface Context {
   expiry: number;
-  sessionKey: CryptoKey;
+  sessionKey: crypto.SessionKey;
   certRequestPub: NamedVerifier.PublicKey;
   validityPeriod: ValidityPeriod;
   status: Status;

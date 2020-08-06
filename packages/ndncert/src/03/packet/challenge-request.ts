@@ -1,5 +1,5 @@
 import { NamedSigner, NamedVerifier } from "@ndn/keychain";
-import { Component, Interest, SigInfo } from "@ndn/packet";
+import { Component, Decrypter, Encrypter, Interest, SigInfo } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, toUtf8 } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
@@ -9,7 +9,7 @@ import * as encrypted_payload from "./encrypted";
 import * as parameter_kv from "./parameter-kv";
 
 interface Context {
-  sessionKey: CryptoKey;
+  sessionKey: Pick<crypto.SessionKey, "sessionDecrypter">;
   certRequestPub: NamedVerifier.PublicKey;
 }
 
@@ -38,11 +38,13 @@ export class ChallengeRequest {
     if (!context) {
       throw new Error("unknown requestId");
     }
-    const { sessionKey, certRequestPub } = context;
+    const { sessionKey: { sessionDecrypter }, certRequestPub } = context;
     await certRequestPub.verify(interest);
 
-    const plaintext = await crypto.sessionDecrypt(requestId, sessionKey,
-      encrypted_payload.decode(interest.appParameters));
+    const { plaintext } = await sessionDecrypter.llDecrypt({
+      ...encrypted_payload.decode(interest.appParameters),
+      additionalData: requestId,
+    });
     const request = new ChallengeRequest(interest, plaintext);
     return request;
   }
@@ -66,7 +68,8 @@ export namespace ChallengeRequest {
   export interface Options extends Fields {
     profile: CaProfile;
     requestId: Uint8Array;
-    sessionKey: CryptoKey;
+    sessionEncrypter: Encrypter;
+    sessionDecrypter: Decrypter;
     publicKey: NamedVerifier.PublicKey;
     privateKey: NamedSigner.PrivateKey;
   }
@@ -74,7 +77,8 @@ export namespace ChallengeRequest {
   export async function build({
     profile,
     requestId,
-    sessionKey,
+    sessionEncrypter,
+    sessionDecrypter,
     publicKey,
     privateKey,
     selectedChallenge,
@@ -89,10 +93,10 @@ export namespace ChallengeRequest {
     interest.name = profile.prefix.append(Verb.CHALLENGE, new Component(undefined, requestId));
     interest.mustBeFresh = true;
     interest.appParameters = encrypted_payload.encode(
-      await crypto.sessionEncrypt(requestId, sessionKey, payload));
+      await sessionEncrypter.llEncrypt({ plaintext: payload, additionalData: requestId }));
     interest.sigInfo = new SigInfo(SigInfo.Nonce(), SigInfo.Time());
     await privateKey.sign(interest);
     return ChallengeRequest.fromInterest(interest, profile,
-      () => Promise.resolve({ sessionKey, certRequestPub: publicKey }));
+      () => Promise.resolve({ sessionKey: { sessionDecrypter }, certRequestPub: publicKey }));
   }
 }

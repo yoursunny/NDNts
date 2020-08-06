@@ -1,4 +1,5 @@
-import { KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
+import { AES, createDecrypter, createEncrypter, KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
+import { Decrypter, Encrypter } from "@ndn/packet";
 
 const ECDH_PARAMS: EcKeyGenParams & EcKeyImportParams = {
   name: "ECDH",
@@ -42,15 +43,20 @@ export function checkRequestId(input: Uint8Array) {
   }
 }
 
+export interface SessionKey {
+  sessionEncrypter: Encrypter;
+  sessionDecrypter: Decrypter;
+}
+
 export async function makeSessionKey(
     ecdhPvt: CryptoKey,
     ecdhPub: CryptoKey,
     salt: Uint8Array,
     requestId: Uint8Array,
-): Promise<CryptoKey> {
+): Promise<SessionKey> {
   const hkdfBits = await crypto.subtle.deriveBits({ name: "ECDH", public: ecdhPub }, ecdhPvt, 256);
   const hkdfKey = await crypto.subtle.importKey("raw", hkdfBits, "HKDF", false, ["deriveKey"]);
-  return crypto.subtle.deriveKey(
+  const secretKey = await crypto.subtle.deriveKey(
     {
       name: "HKDF",
       salt,
@@ -58,51 +64,14 @@ export async function makeSessionKey(
       hash: "SHA-256",
     } as any,
     hkdfKey,
-    {
-      name: "AES-GCM",
-      length: 128,
-    },
+    AES.GCM.makeAesKeyGenParams({ length: 128 }),
     false,
-    ["encrypt", "decrypt"],
+    AES.GCM.keyUsages.secret,
   );
-}
 
-export interface Encrypted {
-  iv: Uint8Array;
-  c: Uint8Array;
-  t: Uint8Array;
-}
-
-export async function sessionEncrypt(requestId: Uint8Array, key: CryptoKey, plaintext: Uint8Array): Promise<Encrypted> {
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const algo: AesGcmParams = {
-    name: "AES-GCM",
-    iv,
-    additionalData: requestId,
-    tagLength: 128,
-  };
-  const ct = await crypto.subtle.encrypt(algo, key, plaintext);
-  const cLen = ct.byteLength - algo.tagLength! / 8;
+  const key = { secretKey, info: {} };
   return {
-    iv,
-    c: new Uint8Array(ct, 0, cLen),
-    t: new Uint8Array(ct, cLen),
+    sessionEncrypter: createEncrypter(AES.GCM, key),
+    sessionDecrypter: createDecrypter(AES.GCM, key),
   };
-}
-
-export async function sessionDecrypt(requestId: Uint8Array, key: CryptoKey, { iv, c, t }: Encrypted): Promise<Uint8Array> {
-  const algo: AesGcmParams = {
-    name: "AES-GCM",
-    iv,
-    additionalData: requestId,
-    tagLength: 128,
-  };
-  if (t.byteLength !== algo.tagLength! / 8) {
-    throw new Error("bad AuthenticationTag");
-  }
-  const ct = new Uint8Array(c.byteLength + t.byteLength);
-  ct.set(c, 0);
-  ct.set(t, c.byteLength);
-  const plaintext = await crypto.subtle.decrypt(algo, key, ct);
-  return new Uint8Array(plaintext);
 }

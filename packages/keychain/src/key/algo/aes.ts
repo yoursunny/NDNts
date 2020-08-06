@@ -3,6 +3,10 @@ import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
 import { crypto } from "../crypto_node";
 import type { CryptoAlgorithm, EncryptionAlgorithm } from "../types";
 
+export interface Encryption<I, G extends GenParams> extends EncryptionAlgorithm<I, false, G> {
+  makeAesKeyGenParams: (genParams: G) => AesKeyGenParams;
+}
+
 export type KeyLength = 128|192|256;
 export namespace KeyLength {
   export const Default: KeyLength = 128;
@@ -18,7 +22,7 @@ export interface GenParams {
 }
 type GenParams_ = GenParams;
 
-class AES<I = {}, G extends GenParams = GenParams> implements EncryptionAlgorithm<I, false, G> {
+class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I, G> {
   constructor(
       private readonly name: string,
       public readonly uuid: string,
@@ -29,16 +33,21 @@ class AES<I = {}, G extends GenParams = GenParams> implements EncryptionAlgorith
 
   public readonly keyUsages: { secret: KeyUsage[] };
 
-  async cryptoGenerate(genParams: G, extractable: boolean): Promise<CryptoAlgorithm.GeneratedSecretKey<I>> {
-    const { length = KeyLength.Default, importRaw } = genParams;
+  public makeAesKeyGenParams({ length = KeyLength.Default }: G): AesKeyGenParams {
+    return {
+      name: this.name,
+      length,
+    };
+  }
+
+  public async cryptoGenerate(genParams: G, extractable: boolean): Promise<CryptoAlgorithm.GeneratedSecretKey<I>> {
     let secretKey: CryptoKey;
-    if (importRaw) {
-      secretKey = await crypto.subtle.importKey("raw", importRaw,
+    if (genParams.importRaw) {
+      secretKey = await crypto.subtle.importKey("raw", genParams.importRaw,
         this.name, extractable, this.keyUsages.secret);
     } else {
-      const genParams: AesKeyGenParams = { name: this.name, length };
-      secretKey = await crypto.subtle.generateKey(
-        genParams, extractable, this.keyUsages.secret) as CryptoKey;
+      secretKey = await crypto.subtle.generateKey(this.makeAesKeyGenParams(genParams),
+        extractable, this.keyUsages.secret) as CryptoKey;
     }
 
     const info: any = Object.fromEntries(
@@ -126,7 +135,7 @@ interface AlgoDetail<I> {
 }
 
 /** AES-CBC encryption algorithm. */
-export const CBC: EncryptionAlgorithm<{}, false, GenParams> = new AES("AES-CBC", "a3840ac4-b29d-4ab5-a255-2894ec254223", {
+export const CBC: Encryption<{}, GenParams> = new AesCommon("AES-CBC", "a3840ac4-b29d-4ab5-a255-2894ec254223", {
   secretKeyUsages: ["encrypt", "decrypt"],
   ivLength: 16,
   allowAdditionalData: false,
@@ -135,7 +144,7 @@ export const CBC: EncryptionAlgorithm<{}, false, GenParams> = new AES("AES-CBC",
 });
 
 /** AES-CTR encryption algorithm. */
-export const CTR: EncryptionAlgorithm<CTR.Info, false, CTR.GenParams> = new AES<CTR.Info, CTR.GenParams>("AES-CTR", "0ec985f2-88c0-4dd9-8b69-2c41bd639809", {
+export const CTR: Encryption<CTR.Info, CTR.GenParams> = new AesCommon<CTR.Info, CTR.GenParams>("AES-CTR", "0ec985f2-88c0-4dd9-8b69-2c41bd639809", {
   secretKeyUsages: ["encrypt", "decrypt"],
   ivLength: 16,
   allowAdditionalData: false,
@@ -163,7 +172,7 @@ export namespace CTR {
 }
 
 /** AES-GCM encryption algorithm. */
-export const GCM: EncryptionAlgorithm<{}, false, GenParams> = new AES("AES-GCM", "a7e27aee-2f10-4150-bd6b-5e667c006274", {
+export const GCM: Encryption<{}, GenParams> = new AesCommon("AES-GCM", "a7e27aee-2f10-4150-bd6b-5e667c006274", {
   secretKeyUsages: ["encrypt", "decrypt"],
   ivLength: 12,
   allowAdditionalData: true,

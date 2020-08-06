@@ -15,13 +15,13 @@ test("crypto", async () => {
   const requestId = crypto.makeRequestId();
   expect(() => crypto.checkRequestId(requestId)).not.toThrow();
 
-  const aesA = await crypto.makeSessionKey(ecdhPvtA, ecdhPubB, salt, requestId);
-  const aesB = await crypto.makeSessionKey(ecdhPvtB, ecdhPubA, salt, requestId);
+  const { sessionEncrypter } = await crypto.makeSessionKey(ecdhPvtA, ecdhPubB, salt, requestId);
+  const { sessionDecrypter } = await crypto.makeSessionKey(ecdhPvtB, ecdhPubA, salt, requestId);
 
   const plaintext = Uint8Array.of(0xA0, 0xA1, 0xA2, 0xA3);
-  const encrypted = await crypto.sessionEncrypt(requestId, aesA, plaintext);
-  const decrypted = await crypto.sessionDecrypt(requestId, aesB, encrypted);
-  expect(decrypted).toEqualUint8Array(plaintext);
+  const encrypted = await sessionEncrypter.llEncrypt({ plaintext, additionalData: requestId });
+  const decrypted = await sessionDecrypter.llDecrypt({ ...encrypted, additionalData: requestId });
+  expect(decrypted.plaintext).toEqualUint8Array(plaintext);
 });
 
 test("packets", async () => {
@@ -82,7 +82,7 @@ test("packets", async () => {
   const { interest: challengeInterest } = await ChallengeRequest.build({
     profile,
     requestId,
-    sessionKey: reqSessionKey,
+    ...reqSessionKey,
     publicKey: reqPub,
     privateKey: reqPvt,
     selectedChallenge: "pin",
@@ -105,7 +105,7 @@ test("packets", async () => {
 
   const { data: challengeData } = await ChallengeResponse.build({
     profile,
-    sessionKey: caSessionKey,
+    ...caSessionKey,
     request: challengeRequest,
     status: Status.SUCCESS,
     challengeStatus: "OK",
@@ -116,7 +116,7 @@ test("packets", async () => {
   });
   await expect(challengeData.canSatisfy(challengeInterest)).resolves.toBeTruthy();
 
-  const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, requestId, reqSessionKey);
+  const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, requestId, reqSessionKey.sessionDecrypter);
   expect(challengeResponse.status).toBe(Status.SUCCESS);
   expect(challengeResponse.challengeStatus).toBe("OK");
   expect(challengeResponse.remainingTries).toBe(1);

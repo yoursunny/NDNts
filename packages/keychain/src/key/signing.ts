@@ -13,9 +13,14 @@ class PlainCryptoSigner<I> implements Signer {
       key: CryptoAlgorithm.PrivateSecretKey<I>,
   ) {
     const pvtkey = key as CryptoAlgorithm.PrivateKey<I>;
-    this[KeyKind] = pvtkey.privateKey ? "private" : "secret";
+    if (pvtkey.privateKey) {
+      this[KeyKind] = "private";
+      this.llSign = (algo as SigningAlgorithm<I, true>).makeLLSign(pvtkey);
+    } else {
+      this[KeyKind] = "secret";
+      this.llSign = (algo as SigningAlgorithm<I, false>).makeLLSign(key as CryptoAlgorithm.SecretKey<I>);
+    }
     this.sigType = algo.sigType;
-    this.llSign = algo.makeLLSign(key);
   }
 
   public readonly [KeyKind]: "private"|"secret";
@@ -61,10 +66,15 @@ class PlainCryptoVerifier<I> implements Verifier {
       key: CryptoAlgorithm.PublicSecretKey<I>,
   ) {
     const pubkey = key as CryptoAlgorithm.PublicKey<I>;
-    this[KeyKind] = pubkey.publicKey ? "public" : "secret";
+    if (pubkey.publicKey) {
+      this[KeyKind] = "public";
+      this.llVerify = (algo as SigningAlgorithm<I, true>).makeLLVerify(pubkey);
+      this.spki = pubkey.spki;
+    } else {
+      this[KeyKind] = "secret";
+      this.llVerify = (algo as SigningAlgorithm<I, false>).makeLLVerify(key as CryptoAlgorithm.SecretKey<I>);
+    }
     this.sigType = algo.sigType;
-    this.llVerify = algo.makeLLVerify(key as any);
-    this.spki = pubkey.spki;
   }
 
   public readonly [KeyKind]: "public"|"secret";

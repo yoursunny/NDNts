@@ -12,9 +12,14 @@ class PlainCryptoEncrypter<I> {
       key: CryptoAlgorithm.PublicSecretKey<I>,
   ) {
     const pubkey = key as CryptoAlgorithm.PublicKey<I>;
-    this[KeyKind] = pubkey.publicKey ? "public" : "secret";
-    this.llEncrypt = algo.makeLLEncrypt(key);
-    this.spki = pubkey.spki;
+    if (pubkey.publicKey) {
+      this[KeyKind] = "public";
+      this.llEncrypt = (algo as EncryptionAlgorithm<I, true>).makeLLEncrypt(pubkey);
+      this.spki = pubkey.spki;
+    } else {
+      this[KeyKind] = "secret";
+      this.llEncrypt = (algo as EncryptionAlgorithm<I, false>).makeLLEncrypt(key as CryptoAlgorithm.SecretKey<I>);
+    }
   }
 
   public readonly [KeyKind]: "public"|"secret";
@@ -39,8 +44,13 @@ class PlainCryptoDecrypter<I> {
       key: CryptoAlgorithm.PrivateSecretKey<I>,
   ) {
     const pvtkey = key as CryptoAlgorithm.PrivateKey<I>;
-    this[KeyKind] = pvtkey.privateKey ? "private" : "secret";
-    this.llDecrypt = algo.makeLLDecrypt(key);
+    if (pvtkey.privateKey) {
+      this[KeyKind] = "private";
+      this.llDecrypt = (algo as EncryptionAlgorithm<I, true>).makeLLDecrypt(pvtkey);
+    } else {
+      this[KeyKind] = "secret";
+      this.llDecrypt = (algo as EncryptionAlgorithm<I, false>).makeLLDecrypt(key as CryptoAlgorithm.SecretKey<I>);
+    }
   }
 
   public readonly [KeyKind]: "private"|"secret";

@@ -1,7 +1,6 @@
-import { Data, Name, Signer } from "@ndn/packet";
+import { Data, Decrypter, Encrypter, Name, Signer } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 
-import * as crypto from "../crypto-common";
 import { Status, TT } from "./an";
 import type { CaProfile } from "./ca-profile";
 import type { ChallengeRequest } from "./challenge-request";
@@ -15,11 +14,14 @@ const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse", undefin
   .add(TT.IssuedCertName, (t, { vd }) => t.issuedCertName = vd.decode(Name));
 
 export class ChallengeResponse {
-  public static async fromData(data: Data, profile: CaProfile, requestId: Uint8Array, sessionKey: CryptoKey): Promise<ChallengeResponse> {
+  public static async fromData(data: Data, profile: CaProfile, requestId: Uint8Array,
+      sessionDecrypter: Decrypter): Promise<ChallengeResponse> {
     await profile.publicKey.verify(data);
 
-    const plaintext = await crypto.sessionDecrypt(requestId, sessionKey,
-      encrypted_payload.decode(data.content));
+    const { plaintext } = await sessionDecrypter.llDecrypt({
+      ...encrypted_payload.decode(data.content),
+      additionalData: requestId,
+    });
     const request = new ChallengeResponse(data, plaintext);
     return request;
   }
@@ -41,14 +43,16 @@ export namespace ChallengeResponse {
 
   export interface Options extends Fields {
     profile: CaProfile;
-    sessionKey: CryptoKey;
+    sessionEncrypter: Encrypter;
+    sessionDecrypter: Decrypter;
     request: ChallengeRequest;
     signer: Signer;
   }
 
   export async function build({
     profile,
-    sessionKey,
+    sessionEncrypter,
+    sessionDecrypter,
     request: { requestId, interest: { name } },
     status,
     challengeStatus,
@@ -69,8 +73,8 @@ export namespace ChallengeResponse {
     data.name = name;
     data.freshnessPeriod = 4000;
     data.content = encrypted_payload.encode(
-      await crypto.sessionEncrypt(requestId, sessionKey, payload));
+      await sessionEncrypter.llEncrypt({ plaintext: payload, additionalData: requestId }));
     await signer.sign(data);
-    return ChallengeResponse.fromData(data, profile, requestId, sessionKey);
+    return ChallengeResponse.fromData(data, profile, requestId, sessionDecrypter);
   }
 }

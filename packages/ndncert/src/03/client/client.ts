@@ -52,7 +52,8 @@ export async function requestCertificate({
   const newResponse = await NewResponse.fromData(newData, profile);
   const { ecdhPub: caEcdhPub, salt, requestId, challenges: serverChallenges } = newResponse;
 
-  const sessionKey = await crypto.makeSessionKey(ecdhPvt, caEcdhPub, salt, requestId);
+  const sessionKey = await crypto.makeSessionKey(
+    ecdhPvt, caEcdhPub, salt, requestId);
   let challenge: ClientChallenge|undefined;
   for (const availChallenge of challenges) {
     if (serverChallenges.includes(availChallenge.challengeId)) {
@@ -70,7 +71,7 @@ export async function requestCertificate({
     const challengeRequest = await ChallengeRequest.build({
       profile,
       requestId,
-      sessionKey,
+      ...sessionKey,
       publicKey,
       privateKey,
       selectedChallenge: challenge.challengeId,
@@ -78,7 +79,7 @@ export async function requestCertificate({
     });
     const challengeData = await endpoint.consume(challengeRequest.interest, consumerOptions);
     ErrorMsg.throwOnError(challengeData);
-    const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, requestId, sessionKey);
+    const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, requestId, sessionKey.sessionDecrypter);
     const { status, challengeStatus, remainingTries, remainingTime } = challengeResponse;
     if (status === Status.SUCCESS) {
       issuedCertName = challengeResponse.issuedCertName!;

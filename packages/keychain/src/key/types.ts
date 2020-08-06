@@ -1,15 +1,15 @@
 import type { Decrypter, Encrypter, KeyLocator, LLDecrypt, LLEncrypt, LLSign, LLVerify, Name, Signer, Verifier } from "@ndn/packet";
 import type * as asn1 from "@yoursunny/asn1";
 
+type If<Cond, True, False, Unknown = True|False> = Cond extends true ? True : Cond extends false ? False : Unknown;
+
 /** Identify kind of key. */
 export type KeyKind = "private"|"public"|"secret";
 export namespace KeyKind {
   /** Pick "private" or "secret" based on whether the algorithm is asymmetric. */
-  export type PrivateSecret<Asym extends boolean> =
-    Asym extends true ? "private" : Asym extends false ? "secret" : "private"|"secret";
+  export type PrivateSecret<Asym extends boolean> = If<Asym, "private", "secret">;
   /** Pick "public" or "secret" based on whether the algorithm is asymmetric. */
-  export type PublicSecret<Asym extends boolean> =
-    Asym extends true ? "public" : Asym extends false ? "secret" : "public"|"secret";
+  export type PublicSecret<Asym extends boolean> = If<Asym, "public", "secret">;
 }
 export const KeyKind = Symbol("KeyChain.KeyKind");
 
@@ -79,8 +79,7 @@ export interface CryptoAlgorithm<I = any, Asym extends boolean = any, G = any> {
    */
   readonly uuid: string;
 
-  readonly keyUsages: Asym extends true ? Record<"private"|"public", KeyUsage[]> :
-  Asym extends false ? Record<"secret", KeyUsage[]> : {};
+  readonly keyUsages: If<Asym, Record<"private"|"public", KeyUsage[]>, Record<"secret", KeyUsage[]>, {}>;
 
   /** Generate key pair or secret key. */
   cryptoGenerate: (params: G, extractable: boolean)
@@ -139,11 +138,9 @@ export namespace CryptoAlgorithm {
     info: I;
   }
 
-  export type PrivateSecretKey<I = any, Asym extends boolean = any> =
-    Asym extends true ? PrivateKey<I> : Asym extends false ? SecretKey<I> : (PrivateKey<I>|SecretKey<I>);
+  export type PrivateSecretKey<I = any, Asym extends boolean = any> = If<Asym, PrivateKey<I>, SecretKey<I>>;
 
-  export type PublicSecretKey<I = any, Asym extends boolean = any> =
-    Asym extends true ? PublicKey<I> : Asym extends false ? SecretKey<I> : (PublicKey<I>|SecretKey<I>);
+  export type PublicSecretKey<I = any, Asym extends boolean = any> = If<Asym, PublicKey<I>, SecretKey<I>>;
 
   export interface GeneratedKeyPair<I = any> extends PrivateKey<I>, PublicKey<I> {
     jwkImportParams: AlgorithmIdentifier;
@@ -158,12 +155,24 @@ export namespace CryptoAlgorithm {
 export interface SigningAlgorithm<I = any, Asym extends boolean = any, G = any> extends CryptoAlgorithm<I, Asym, G> {
   readonly sigType: number;
 
-  makeLLSign: (key: CryptoAlgorithm.PrivateSecretKey<I, Asym>) => LLSign;
-  makeLLVerify: (key: CryptoAlgorithm.PublicSecretKey<I, Asym>) => LLVerify;
+  makeLLSign: If<Asym,
+  (key: CryptoAlgorithm.PrivateKey<I>) => LLSign,
+  (key: CryptoAlgorithm.SecretKey<I>) => LLSign,
+  unknown>;
+  makeLLVerify: If<Asym,
+  (key: CryptoAlgorithm.PublicKey<I>) => LLVerify,
+  (key: CryptoAlgorithm.SecretKey<I>) => LLVerify,
+  unknown>;
 }
 
 /** WebCrypto based encryption algorithm implementation. */
 export interface EncryptionAlgorithm<I = any, Asym extends boolean = any, G = any> extends CryptoAlgorithm<I, Asym, G> {
-  makeLLEncrypt: (key: CryptoAlgorithm.PublicSecretKey<I, Asym>) => LLEncrypt;
-  makeLLDecrypt: (key: CryptoAlgorithm.PrivateSecretKey<I, Asym>) => LLDecrypt;
+  makeLLEncrypt: If<Asym,
+  (key: CryptoAlgorithm.PublicKey<I>) => LLEncrypt,
+  (key: CryptoAlgorithm.SecretKey<I>) => LLEncrypt,
+  unknown>;
+  makeLLDecrypt: If<Asym,
+  (key: CryptoAlgorithm.PrivateKey<I>) => LLDecrypt,
+  (key: CryptoAlgorithm.SecretKey<I>) => LLDecrypt,
+  unknown>;
 }
