@@ -38,11 +38,11 @@
     "p-fifo": "^1.0.0",
     "retry": "^0.12.0",
     "streaming-iterables": "^5.0.2",
-    "tslib": "*",
+    "tslib": "^2.0.1",
     "typed-emitter": "^1.2.0"
   },
   "devDependencies": {
-    "@types/minimalistic-assert": "^1.0.0",
+    "@types/minimalistic-assert": "^1.0.1",
     "@types/p-fifo": "^1.0.0"
   }
 }

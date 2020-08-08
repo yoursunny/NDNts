@@ -16,7 +16,7 @@
   "devDependencies": {
     "@k-foss/ts-esnode": "^1.6.0",
     "@strictsoftware/typedoc-plugin-monorepo": "^0.3.1",
-    "@types/jest": "^26.0.8",
+    "@types/jest": "^26.0.9",
     "@types/node": "^14.0.27",
     "builtins": "^3.0.1",
     "codedown": "^2.1.6",
@@ -27,10 +27,10 @@
     "jest": "^26.2.2",
     "jest-environment-node": "^26.2.0",
     "js-yaml": "^3.14.0",
-    "pnpm": "^5.4.11",
+    "pnpm": "^5.4.12",
     "split2": "^3.1.1",
     "ts-jest": "^26.1.4",
-    "tslib": "*",
+    "tslib": "^2.0.1",
     "typedoc": "^0.17.8",
     "typescript": "^3.9.7",
     "xo": "^0.32.1"

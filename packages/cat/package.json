@@ -30,7 +30,7 @@
     "@ndn/segmented-object": "workspace:*",
     "hard-rejection": "^2.1.0",
     "stdout-stream": "^1.4.1",
-    "tslib": "*",
+    "tslib": "^2.0.1",
     "yargs": "^15.4.1"
   },
   "devDependencies": {

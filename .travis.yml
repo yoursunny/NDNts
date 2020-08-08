@@ -13,7 +13,7 @@ addons:
       - sourceline: 'ppa:named-data/ppa-dev'
     packages:
       - build-essential
-      - clang-format-6.0
+      - clang-format-8
       - libndn-cxx-dev
       - ndnsec
 

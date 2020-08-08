@@ -32,7 +32,7 @@
     "@ndn/tlv": "workspace:*",
     "it-pushable": "^1.4.0",
     "streaming-iterables": "^5.0.2",
-    "tslib": "*",
+    "tslib": "^2.0.1",
     "typed-emitter": "^1.2.0"
   },
   "devDependencies": {

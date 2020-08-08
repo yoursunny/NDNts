@@ -30,6 +30,6 @@
     "@ndn/fw": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "tslib": "*"
+    "tslib": "^2.0.1"
   }
 }

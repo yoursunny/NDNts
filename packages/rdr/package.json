@@ -31,7 +31,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "p-cancelable": "^2.0.0",
-    "tslib": "*"
+    "tslib": "^2.0.1"
   },
   "devDependencies": {
     "@ndn/keychain": "workspace:*"

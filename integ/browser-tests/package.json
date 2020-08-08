@@ -31,7 +31,7 @@
     "jest": "^26.2.2",
     "jest-environment-puppeteer": "^4.4.0",
     "puppeteer": "^5.2.1",
-    "tslib": "*",
+    "tslib": "^2.0.1",
     "ts-loader": "^8.0.2",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",

@@ -33,6 +33,6 @@
     "it-pushable": "^1.4.0",
     "p-defer": "^3.0.0",
     "streaming-iterables": "^5.0.2",
-    "tslib": "*"
+    "tslib": "^2.0.1"
   }
 }

@@ -26,6 +26,6 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "tslib": "*"
+    "tslib": "^2.0.1"
   }
 }

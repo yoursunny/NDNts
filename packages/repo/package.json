@@ -39,7 +39,7 @@
     "minimalistic-assert": "^1.0.1",
     "streaming-iterables": "^5.0.2",
     "throat": "^5.0.0",
-    "tslib": "*",
+    "tslib": "^2.0.1",
     "typed-emitter": "^1.2.0"
   },
   "devDependencies": {
@@ -48,7 +48,7 @@
     "@types/encoding-down": "^5.0.0",
     "@types/levelup": "^4.3.0",
     "@types/memdown": "^3.0.0",
-    "@types/minimalistic-assert": "^1.0.0",
+    "@types/minimalistic-assert": "^1.0.1",
     "memdown": "^5.1.0"
   }
 }

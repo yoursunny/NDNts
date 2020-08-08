@@ -34,13 +34,13 @@
     "@ndn/tlv": "workspace:*",
     "indent-string": "^4.0.0",
     "minimalistic-assert": "^1.0.1",
-    "tslib": "*",
+    "tslib": "^2.0.1",
     "typed-emitter": "^1.2.0"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/repo": "workspace:*",
-    "@types/minimalistic-assert": "^1.0.0"
+    "@types/minimalistic-assert": "^1.0.1"
   }
 }

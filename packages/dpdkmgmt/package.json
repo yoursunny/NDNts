@@ -30,6 +30,6 @@
     "@ndn/packet": "workspace:*",
     "@yoursunny/mole-rpc": "^0.0.20200718",
     "mole-rpc-transport-tcp": "^0.0.20200417",
-    "tslib": "*"
+    "tslib": "^2.0.1"
   }
 }

@@ -29,10 +29,10 @@
     "@ndn/tlv": "workspace:*",
     "buffer-compare": "^1.1.1",
     "minimalistic-assert": "^1.0.1",
-    "tslib": "*"
+    "tslib": "^2.0.1"
   },
   "devDependencies": {
     "@types/buffer-compare": "^0.0.30",
-    "@types/minimalistic-assert": "^1.0.0"
+    "@types/minimalistic-assert": "^1.0.1"
   }
 }

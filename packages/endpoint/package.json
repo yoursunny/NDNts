@@ -34,10 +34,10 @@
     "minimalistic-assert": "^1.0.1",
     "p-cancelable": "^2.0.0",
     "streaming-iterables": "^5.0.2",
-    "tslib": "*"
+    "tslib": "^2.0.1"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:*",
-    "@types/minimalistic-assert": "^1.0.0"
+    "@types/minimalistic-assert": "^1.0.1"
   }
 }

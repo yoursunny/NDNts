@@ -29,7 +29,7 @@
     "@ndn/tlv": "workspace:*",
     "execa": "^4.0.3",
     "throat": "^5.0.0",
-    "tslib": "*"
+    "tslib": "^2.0.1"
   },
   "devDependencies": {
     "@types/tmp": "^0.2.0",
