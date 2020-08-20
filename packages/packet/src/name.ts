@@ -176,14 +176,14 @@ export namespace Name {
   /** Name compare result. */
   export enum CompareResult {
     /** lhs is less than, but not a prefix of rhs */
-    LT = Component.CompareResult.LT,
+    LT = -2,
     /** lhs is a prefix of rhs */
     LPREFIX = -1,
     /** lhs and rhs are equal */
-    EQUAL = Component.CompareResult.EQUAL,
+    EQUAL = 0,
     /** rhs is a prefix of lhs */
     RPREFIX = 1,
     /** rhs is less than, but not a prefix of lhs */
-    GT = Component.CompareResult.GT,
+    GT = 2,
   }
 }

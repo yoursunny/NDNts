@@ -134,6 +134,7 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
 
       if (this.retxQueue.size > 0) {
         let segNum!: number;
+        // eslint-disable-next-line no-unreachable-loop
         for (segNum of this.retxQueue) {
           this.retxQueue.delete(segNum);
           break;

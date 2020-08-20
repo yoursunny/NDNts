@@ -92,6 +92,7 @@ export class Reassembler {
     this.partials.set(partial.seqNumBase, partial);
 
     if (this.partials.size >= this.capacity) { // exceed capacity, delete oldest
+      // eslint-disable-next-line no-unreachable-loop
       for (const key of this.partials.keys()) {
         this.partials.delete(key);
         break;

@@ -16,23 +16,23 @@
   "devDependencies": {
     "@k-foss/ts-esnode": "^1.6.0",
     "@strictsoftware/typedoc-plugin-monorepo": "^0.3.1",
-    "@types/jest": "^26.0.9",
-    "@types/node": "^14.0.27",
+    "@types/jest": "^26.0.10",
+    "@types/node": "^14.6.0",
     "builtins": "^3.0.1",
     "codedown": "^2.1.6",
     "eslint-plugin-jest": "^23.20.0",
     "eslint-plugin-simple-import-sort": "^5.0.3",
-    "expect": "^26.2.0",
+    "expect": "^26.4.0",
     "graceful-fs": "^4.2.4",
-    "jest": "^26.2.2",
-    "jest-environment-node": "^26.2.0",
+    "jest": "^26.4.0",
+    "jest-environment-node": "^26.3.0",
     "js-yaml": "^3.14.0",
-    "pnpm": "^5.4.12",
-    "split2": "^3.1.1",
-    "ts-jest": "^26.1.4",
+    "pnpm": "^5.5.2",
+    "split2": "^3.2.1",
+    "ts-jest": "^26.2.0",
     "tslib": "^2.0.1",
-    "typedoc": "^0.17.8",
+    "typedoc": "^0.18.0",
     "typescript": "^3.9.7",
-    "xo": "^0.32.1"
+    "xo": "^0.33.0"
   }
 }

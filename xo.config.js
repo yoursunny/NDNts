@@ -47,6 +47,7 @@ const js = {
     "no-implicit-coercion": ["error", { allow: ["!!"] }],
     "no-inner-declarations": "off",
     "no-mixed-operators": "off",
+    "no-promise-executor-return": "off",
     "no-return-assign": "off",
     "no-warning-comments": "off",
     "object-curly-spacing": ["error", "always"],

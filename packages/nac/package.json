@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/autoconfig",
-  "version": "0.0.20200606",
-  "description": "NDNts: automatic connection establishment",
+  "name": "@ndn/nac",
+  "version": "0.0.0",
+  "description": "NDNts: Name Based Access Control",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -19,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/autoconfig"
+    "directory": "packages/nac"
   },
   "publishConfig": {
     "main": "lib/mod_node.js",
@@ -27,19 +27,21 @@
   },
   "dependencies": {
     "@ndn/endpoint": "workspace:*",
-    "@ndn/fw": "workspace:*",
-    "@ndn/l3face": "workspace:*",
-    "@ndn/node-transport": "workspace:*",
+    "@ndn/keychain": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
+    "@ndn/ndnsec": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "@ndn/ws-transport": "workspace:*",
-    "default-gateway": "^6.0.1",
-    "hirestime": "^6.1.0",
-    "node-fetch": "^2.6.0",
-    "streaming-iterables": "^5.0.2",
+    "@ndn/repo-api": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "@types/minimalistic-assert": "^1.0.1",
+    "@yoursunny/asn1": "^0.0.20200718",
+    "minimalistic-assert": "^1.0.1",
+    "mnemonist": "^0.38.0",
     "tslib": "^2.0.1"
   },
   "devDependencies": {
-    "@types/default-gateway": "^3.0.1",
-    "@types/node-fetch": "^2.5.7"
+    "@ndn/repo": "workspace:*",
+    "@types/memdown": "^3.0.0",
+    "memdown": "^5.1.0"
   }
 }

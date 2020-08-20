@@ -73,6 +73,10 @@ test("modify", () => {
 });
 
 test("compare", () => {
+  expect(Name.CompareResult.LT).toBe(Component.CompareResult.LT);
+  expect(Name.CompareResult.EQUAL).toBe(Component.CompareResult.EQUAL);
+  expect(Name.CompareResult.GT).toBe(Component.CompareResult.GT);
+
   const name = new Name("/A/B");
   expect(name.compare("/A/C")).toBe(Name.CompareResult.LT);
   expect(name.compare("/A/B/C")).toBe(Name.CompareResult.LPREFIX);

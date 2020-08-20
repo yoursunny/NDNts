@@ -35,7 +35,7 @@
     "indent-string": "^4.0.0",
     "minimalistic-assert": "^1.0.1",
     "tslib": "^2.0.1",
-    "typed-emitter": "^1.2.0"
+    "typed-emitter": "^1.3.0"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
