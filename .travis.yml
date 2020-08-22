@@ -6,6 +6,8 @@ jobs:
   include:
   - node_js: '12'
   - node_js: '14.4'
+  - node_js: '14'
+    env: SKIP_LITERATE=1 # https://github.com/K-FOSS/TS-ESNode/issues/105
 
 addons:
   apt:
@@ -30,8 +32,8 @@ before_script:
 
 script:
   - npm run build
-  - npm run literate lint
-  - npm run literate
+  - test $SKIP_LITERATE || npm run literate lint
+  - test $SKIP_LITERATE || npm run literate
   - npm run lint-ci
   - npm run cover -- --colors
   - cd $TRAVIS_BUILD_DIR/integ/browser-tests && npm test
@@ -54,7 +56,7 @@ deploy:
     fqdn: ndnts-nightly.ndn.today
     on:
       branch: develop
-      node_js: '14.4'
+      node_js: '14'
   - provider: netlify
     edge: true
     site: 8987d2bb-7638-4d6b-adff-806fe3b7309a
@@ -64,4 +66,4 @@ deploy:
     prod: true
     on:
       branch: develop
-      node_js: '14.4'
+      node_js: '14'
