@@ -1,6 +1,6 @@
 import { Certificate, CertNaming, createEncrypter, CryptoAlgorithm, KeyChainImplWebCrypto as crypto, NamedEncrypter, RSAOAEP, ValidityPeriod } from "@ndn/keychain";
 import { SafeBag } from "@ndn/ndnsec";
-import { Component, Data, Decrypter, Name, Signer } from "@ndn/packet";
+import { Component, Data, LLDecrypt, Name, Signer } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, fromUtf8, toHex, toUtf8 } from "@ndn/tlv";
 
 import { DefaultFreshness, Keyword, TT } from "./an";
@@ -26,7 +26,7 @@ export class KeyDecryptionKey {
     return this.data.name;
   }
 
-  public async loadKeyPair(decrypter: Decrypter, extractable = false): Promise<CryptoAlgorithm.GeneratedKeyPair> {
+  public async loadKeyPair(decrypter: LLDecrypt.Key, extractable = false): Promise<CryptoAlgorithm.GeneratedKeyPair> {
     const { plaintext } = await decrypter.llDecrypt({ ciphertext: this.encryptedPassphrase });
     const pkcs8 = this.safeBag.decryptKey(fromUtf8(plaintext));
     return RSAOAEP.cryptoGenerate({ importPkcs8: [pkcs8, this.safeBag.certificate.publicKeySpki] }, extractable);

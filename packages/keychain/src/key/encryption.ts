@@ -1,4 +1,4 @@
-import { Decrypter, Encrypter, LLDecrypt, LLEncrypt, Name, NameLike } from "@ndn/packet";
+import { LLDecrypt, LLEncrypt, Name, NameLike } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
 import * as CertNaming from "../naming";
@@ -69,7 +69,7 @@ class NamedCryptoDecrypter<I> extends PlainCryptoDecrypter<I> implements NamedDe
 }
 
 /** Create a plain encrypter from crypto key. */
-export function createEncrypter<I>(algo: EncryptionAlgorithm<I>, key: CryptoAlgorithm.PublicSecretKey<I>): Encrypter;
+export function createEncrypter<I>(algo: EncryptionAlgorithm<I>, key: CryptoAlgorithm.PublicSecretKey<I>): LLEncrypt.Key;
 
 /** Create a named encrypter from crypto key. */
 export function createEncrypter<I, Asym extends boolean>(name: Name, algo: EncryptionAlgorithm<I, Asym>, key: CryptoAlgorithm.PublicSecretKey<I>): NamedEncrypter<Asym>;
@@ -82,7 +82,7 @@ export function createEncrypter(arg1: any, arg2: any, arg3?: any): any {
 }
 
 /** Create a plain decrypter from crypto key. */
-export function createDecrypter<I>(algo: EncryptionAlgorithm<I>, key: CryptoAlgorithm.PrivateSecretKey<I>): Decrypter;
+export function createDecrypter<I>(algo: EncryptionAlgorithm<I>, key: CryptoAlgorithm.PrivateSecretKey<I>): LLDecrypt.Key;
 
 /** Create a named decrypter from crypto key. */
 export function createDecrypter<I, Asym extends boolean>(name: Name, algo: EncryptionAlgorithm<I, Asym>, key: CryptoAlgorithm.PrivateSecretKey<I>): NamedDecrypter<Asym>;

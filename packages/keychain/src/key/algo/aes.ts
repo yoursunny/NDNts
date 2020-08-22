@@ -152,7 +152,7 @@ export const CTR: Encryption<CTR.Info, CTR.GenParams> = new AesCommon<CTR.Info, 
   defaultInfo: {
     counterLength: 128,
   },
-  modifyParams: (params: AesCtrParams & AesCbcParams, { counterLength }: CTR.Info) => {
+  modifyParams: (params: Partial<AesCtrParams & AesCbcParams>, { counterLength }: CTR.Info) => {
     params.counter = params.iv;
     delete params.iv;
     params.length = counterLength;

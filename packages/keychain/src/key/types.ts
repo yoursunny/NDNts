@@ -1,4 +1,4 @@
-import type { Decrypter, Encrypter, KeyLocator, LLDecrypt, LLEncrypt, LLSign, LLVerify, Name, Signer, Verifier } from "@ndn/packet";
+import type { KeyLocator, LLDecrypt, LLEncrypt, LLSign, LLVerify, Name, Signer, Verifier } from "@ndn/packet";
 import type * as asn1 from "@yoursunny/asn1";
 
 type If<Cond, True, False, Unknown = True|False> = Cond extends true ? True : Cond extends false ? False : Unknown;
@@ -52,7 +52,7 @@ export namespace NamedVerifier {
 }
 
 /** Named public key or secret key encrypter. */
-export interface NamedEncrypter<Asym extends boolean = any> extends Key<KeyKind.PublicSecret<Asym>>, Encrypter {
+export interface NamedEncrypter<Asym extends boolean = any> extends Key<KeyKind.PublicSecret<Asym>>, LLEncrypt.Key {
 }
 export namespace NamedEncrypter {
   /** Named public key encrypter. */
@@ -62,7 +62,7 @@ export namespace NamedEncrypter {
 }
 
 /** Named private key or secret key decrypter. */
-export interface NamedDecrypter<Asym extends boolean = any> extends Key<KeyKind.PrivateSecret<Asym>>, Decrypter {
+export interface NamedDecrypter<Asym extends boolean = any> extends Key<KeyKind.PrivateSecret<Asym>>, LLDecrypt.Key {
 }
 export namespace NamedDecrypter {
   /** Named private key decrypter. */

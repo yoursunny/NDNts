@@ -1,4 +1,4 @@
-import { Data, Decrypter, Encrypter, Name, Signer } from "@ndn/packet";
+import { Data, LLDecrypt, LLEncrypt, Name, Signer } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 
 import { Status, TT } from "./an";
@@ -15,7 +15,7 @@ const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse", undefin
 
 export class ChallengeResponse {
   public static async fromData(data: Data, profile: CaProfile, requestId: Uint8Array,
-      sessionDecrypter: Decrypter): Promise<ChallengeResponse> {
+      sessionDecrypter: LLDecrypt.Key): Promise<ChallengeResponse> {
     await profile.publicKey.verify(data);
 
     const { plaintext } = await sessionDecrypter.llDecrypt({
@@ -43,8 +43,8 @@ export namespace ChallengeResponse {
 
   export interface Options extends Fields {
     profile: CaProfile;
-    sessionEncrypter: Encrypter;
-    sessionDecrypter: Decrypter;
+    sessionEncrypter: LLEncrypt.Key;
+    sessionDecrypter: LLDecrypt.Key;
     request: ChallengeRequest;
     signer: Signer;
   }

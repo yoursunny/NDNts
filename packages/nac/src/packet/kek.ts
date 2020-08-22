@@ -1,5 +1,5 @@
 import { createEncrypter, NamedEncrypter, RSAOAEP } from "@ndn/keychain";
-import { Component, Data, Encrypter, Name, Signer } from "@ndn/packet";
+import { Component, Data, LLEncrypt, Name, Signer } from "@ndn/packet";
 import * as asn1 from "@yoursunny/asn1";
 
 import { ContentTypeKEY, DefaultFreshness, Keyword } from "./an";
@@ -28,7 +28,7 @@ export class KeyEncryptionKey {
     return this.data.content;
   }
 
-  private encrypter_!: Encrypter;
+  private encrypter_!: LLEncrypt.Key;
   public get encrypter() { return this.encrypter_; }
 }
 export interface KeyEncryptionKey extends Readonly<KeyEncryptionKey.NameParts> {}

@@ -104,6 +104,16 @@ export namespace Verifier {
   }
 }
 
+/** Signer and Verifier that do nothing. */
+export const noopSigning: Signer&Verifier = {
+  sign() {
+    return Promise.resolve();
+  },
+  verify() {
+    return Promise.resolve();
+  },
+};
+
 /** Signer and Verifier for SigType.Sha256 digest. */
 export const digestSigning: Signer&Verifier = {
   sign(pkt: Signer.Signable): Promise<void> {

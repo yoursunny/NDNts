@@ -1,5 +1,5 @@
 import { AES, createDecrypter, createEncrypter, KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
-import { Decrypter, Encrypter } from "@ndn/packet";
+import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
 
 const ECDH_PARAMS: EcKeyGenParams & EcKeyImportParams = {
   name: "ECDH",
@@ -44,8 +44,8 @@ export function checkRequestId(input: Uint8Array) {
 }
 
 export interface SessionKey {
-  sessionEncrypter: Encrypter;
-  sessionDecrypter: Decrypter;
+  sessionEncrypter: LLEncrypt.Key;
+  sessionDecrypter: LLDecrypt.Key;
 }
 
 export async function makeSessionKey(

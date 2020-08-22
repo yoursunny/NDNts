@@ -1,12 +1,12 @@
 import { Endpoint } from "@ndn/endpoint";
 import { AES, createDecrypter, NamedDecrypter, RSAOAEP } from "@ndn/keychain";
-import { Data, Interest, Verifier } from "@ndn/packet";
+import { Data, Decrypter, Interest, Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
 import { ContentKey, EncryptedContent, KeyDecryptionKey } from "./packet/mod";
 
 /** NAC consumer. */
-export class Consumer {
+export class Consumer implements Decrypter {
   public static create({
     endpoint = new Endpoint({ retx: 2 }),
     verifier,

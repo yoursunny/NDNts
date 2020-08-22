@@ -52,11 +52,12 @@ test("simple", async () => {
     ckPrefix: new Name("/producer/ck-prefix"),
     signer: pSigner,
   });
+  const pEncrypter = await p.createEncrypter(kek);
 
   const appContent = crypto.getRandomValues(new Uint8Array(75));
   const pP = pE.produce("/data", async (interest) => {
     const data = new Data(interest.name, appContent);
-    await p.encrypt(kek, data);
+    await pEncrypter.encrypt(data);
     await pSigner.sign(data);
     return data;
   });

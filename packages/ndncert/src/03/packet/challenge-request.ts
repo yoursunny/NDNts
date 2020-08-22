@@ -1,5 +1,5 @@
 import { NamedSigner, NamedVerifier } from "@ndn/keychain";
-import { Component, Decrypter, Encrypter, Interest, SigInfo } from "@ndn/packet";
+import { Component, Interest, LLDecrypt, LLEncrypt, SigInfo } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, toUtf8 } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
@@ -68,8 +68,8 @@ export namespace ChallengeRequest {
   export interface Options extends Fields {
     profile: CaProfile;
     requestId: Uint8Array;
-    sessionEncrypter: Encrypter;
-    sessionDecrypter: Decrypter;
+    sessionEncrypter: LLEncrypt.Key;
+    sessionDecrypter: LLDecrypt.Key;
     publicKey: NamedVerifier.PublicKey;
     privateKey: NamedSigner.PrivateKey;
   }
