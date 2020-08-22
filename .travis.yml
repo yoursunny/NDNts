@@ -42,7 +42,7 @@ script:
 
 after_success:
   - coveralls <coverage/lcov.info
-  - bash mk/publish-nightly.sh
+  - GTAGID=UA-935676-11 bash mk/publish-nightly.sh
   - npm run typedoc -- --gaId UA-935676-11
 
 deploy:
