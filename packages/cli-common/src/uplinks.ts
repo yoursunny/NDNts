@@ -22,11 +22,12 @@ function parseHostPort(): { host: string; port: number|undefined } {
 async function makeFace(): Promise<FwFace> {
   switch (env.uplink.protocol) {
     case "autoconfig:": {
-      const faces = await connectToTestbed({ preferFastest: true });
-      if (faces.length === 0) {
+      try {
+        const faces = await connectToTestbed({ preferFastest: true, addRoutes: [] });
+        return faces[0];
+      } catch {
         throw new Error("autoconfig unavailable, set uplink in NDNTS_UPLINK");
       }
-      return faces[0];
     }
     case "tcp:":
       return TcpTransport.createFace({}, parseHostPort());

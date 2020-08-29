@@ -8,8 +8,9 @@ This package enables connection to global NDN testbed using [NDN-FCH service](ht
 import { queryFch, connectToTestbed } from "@ndn/autoconfig";
 
 // other imports for examples
+import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
-import { Name } from "@ndn/packet";
+import { Interest, Name } from "@ndn/packet";
 import { strict as assert } from "assert";
 (async () => {
 if (process.env.CI) { return; }
@@ -68,10 +69,14 @@ faces = await connectToTestbed({
   tryDefaultGateway: false,
 });
 assert.equal(faces.length, 1);
-faces.forEach((face) => {
-  console.log("fastest face is", `${face}`);
-  face.close();
-});
+const [fastestFace] = faces;
+console.log("fastest face is", `${fastestFace}`);
+
+// By default, default route "/" is added to the face, so that you can send Interests right away.
+await new Endpoint({ fw }).consume(
+  new Interest(`/ndn/edu/ucla/ping/${Math.floor(Math.random() * 99999999)}`));
+
+fastestFace.close();
 ```
 
 ```ts

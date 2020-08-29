@@ -38,6 +38,10 @@ export async function connectToTestbed(opts: connectToTestbed.Options = {}): Pro
       face.close();
     }
   }
+
+  if (faces.length === 0) {
+    throw new Error("connect to testbed failed");
+  }
   return faces.map(({ face }) => face);
 }
 

@@ -21,6 +21,7 @@ export async function connect(host: string, opts: connect.Options = {}): Promise
   const {
     fw = Forwarder.getDefault(),
     testConnection: tc = testConnection,
+    addRoutes = [new Name("/")],
   } = opts;
   const transport = await createTransport(host, opts);
   const face = fw.addFace(new L3Face(transport));
@@ -39,6 +40,10 @@ export async function connect(host: string, opts: connect.Options = {}): Promise
     face.close();
     throw err;
   }
+
+  for (const routeName of addRoutes) {
+    face.addRoute(routeName, false);
+  }
   return { face, testConnectionDuration, testConnectionResult };
 }
 
@@ -51,6 +56,9 @@ export namespace connect {
 
     /** Test that the face can reach a given name, or provide custom tester function. */
     testConnection?: Name | ((face: FwFace) => Promise<any>);
+
+    /** Routes to be added on the create face. Default is ["/"]. */
+    addRoutes?: Name[];
   }
 
   export interface Result {
