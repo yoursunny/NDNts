@@ -62,14 +62,14 @@ export class EndpointConsumer {
               try {
                 await verifier?.verify(pkt.l3);
               } catch (err) {
-                reject(new Error(`Data verify failed: ${err} @${this}`));
+                reject(new Error(`Data verify failed: ${err} @${describe}`));
                 break;
               }
               resolve(pkt.l3);
               break;
             }
             if (pkt.reject && !timer) {
-              reject(new Error(`Interest rejected: ${pkt.reject} @${this}`));
+              reject(new Error(`Interest rejected: ${pkt.reject} @${describe}`));
               break;
             }
           }

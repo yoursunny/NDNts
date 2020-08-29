@@ -31,7 +31,7 @@
     "@ndn/tlv": "workspace:*",
     "hirestime": "^6.1.0",
     "it-pushable": "^1.4.0",
-    "loglevel": "^1.6.8",
+    "loglevel": "^1.7.0",
     "minimalistic-assert": "^1.0.1",
     "mnemonist": "^0.38.0",
     "p-defer": "^3.0.0",
