@@ -56,7 +56,7 @@ It could be ephemeral or persistent.
 
 Persistent keychain in Node.js uses JSON files as underlying storage.
 The *locator* argument should be a filesystem directory where these files are stored.
-Private keys are saved as [JSON Web Key](https://tools.ietf.org/html/rfc7517) format, so that it's important to protect the storage directory.
+Private keys are saved as [JSON Web Key (JWK)](https://tools.ietf.org/html/rfc7517) format, so that it's important to protect the storage directory.
 It is unsafe to create multiple `KeyChain` instances on the same storage directory, or access the same keychain from multiple Node.js processes.
 
 Persistent keychain in browser uses [IndexedDB API](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API).
@@ -65,7 +65,6 @@ Private keys are saved as non-extractable `CryptoKey` objects.
 
 Known issues:
 
-* In Firefox, certificates created from ECDSA keys have wrong OID, due to [Mozilla Bug 1410403](https://bugzilla.mozilla.org/show_bug.cgi?id=1410403).
-* In Firefox, ECDSA private keys cannot be saved in persistent keychain, due to [Mozilla Bug 1545813](https://bugzilla.mozilla.org/show_bug.cgi?id=1545813).
+* In Firefox, persistent keychain stores JWK instead of `CryptoKey`, due to [Mozilla Bug 1545813](https://bugzilla.mozilla.org/show_bug.cgi?id=1545813).
 * In Firefox, persistent keychain is unusable in a Private Browsing window, due to [Mozilla Bug 781982](https://bugzilla.mozilla.org/show_bug.cgi?id=1639542).
 * In iOS and macOS Safari, ECDSA P-521 curve is not supported.

@@ -18,6 +18,12 @@ function makePackageOverrides(config, ...pkgs) {
     },
     {
       files: [
+        pkgs.map((pkg) => `**${pkg}/**/*_browser.ts`),
+      ],
+      ...merge(config, web),
+    },
+    {
+      files: [
         pkgs.flatMap((pkg) => [`**${pkg}/test-fixture/**/*.ts`, `**${pkg}/tests/**/*.ts`]),
       ],
       ...merge(config, jest),

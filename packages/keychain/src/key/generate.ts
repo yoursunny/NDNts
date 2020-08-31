@@ -25,9 +25,9 @@ export async function generateKeyInternal<Algo extends CryptoAlgorithm>(
       info: gen.info,
     };
     if ((gen as CryptoAlgorithm.GeneratedKeyPair<unknown>).privateKey) {
-      await saveAsymmetric(stored, useJwk, gen as CryptoAlgorithm.GeneratedKeyPair<unknown>);
+      await saveAsymmetric(algo, stored, useJwk, gen as CryptoAlgorithm.GeneratedKeyPair<unknown>);
     } else {
-      await saveSymmetric(stored, useJwk, gen as CryptoAlgorithm.GeneratedSecretKey<unknown>);
+      await saveSymmetric(algo, stored, useJwk, gen as CryptoAlgorithm.GeneratedSecretKey<unknown>);
     }
     await keyChain.insertKey(keyName, stored);
   }
@@ -36,6 +36,7 @@ export async function generateKeyInternal<Algo extends CryptoAlgorithm>(
 }
 
 async function saveAsymmetric(
+    algo: CryptoAlgorithm<unknown, true>,
     stored: KeyStore.StoredKey,
     useJwk: boolean,
     gen: CryptoAlgorithm.GeneratedKeyPair<unknown>,
@@ -48,7 +49,7 @@ async function saveAsymmetric(
     stored.jwkImportParams = gen.jwkImportParams;
 
     gen.privateKey = await crypto.subtle.importKey(
-      "jwk", stored.privateKey, gen.jwkImportParams, false, ["sign"]);
+      "jwk", stored.privateKey, gen.jwkImportParams, false, algo.keyUsages.private);
   } else {
     stored.privateKey = gen.privateKey;
     stored.publicKey = gen.publicKey;
@@ -57,6 +58,7 @@ async function saveAsymmetric(
 }
 
 async function saveSymmetric(
+    algo: CryptoAlgorithm<unknown, false>,
     stored: KeyStore.StoredKey,
     useJwk: boolean,
     gen: CryptoAlgorithm.GeneratedSecretKey<unknown>,
@@ -66,7 +68,7 @@ async function saveSymmetric(
     stored.jwkImportParams = gen.jwkImportParams;
 
     gen.secretKey = await crypto.subtle.importKey(
-      "jwk", stored.secretKey, gen.jwkImportParams, false, ["sign"]);
+      "jwk", stored.secretKey, gen.jwkImportParams, false, algo.keyUsages.secret);
   } else {
     stored.secretKey = gen.secretKey;
   }
