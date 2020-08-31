@@ -42,8 +42,8 @@ test("fill buffer in handler", async () => {
   await expect(ep.consume(new Interest("/A", Interest.CanBePrefix))).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(1);
 
-  await expect(ep.consume(new Interest("/A/1"))).resolves.toHaveName("/A/1");
-  await expect(ep.consume(new Interest("/A/2"))).resolves.toHaveName("/A/2");
+  await expect(ep.consume("/A/1")).resolves.toHaveName("/A/1");
+  await expect(ep.consume("/A/2")).resolves.toHaveName("/A/2");
   expect(handler).toHaveBeenCalledTimes(1);
 });
 
@@ -55,10 +55,10 @@ test("prefill buffer", async () => {
   ep.produce("/A", handler);
 
   await dataStoreBuffer.insert(new Data("/A/0"), new Data("/A/1"));
-  await expect(ep.consume(new Interest("/A/0"))).resolves.toHaveName("/A/0");
+  await expect(ep.consume("/A/0")).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(0);
 
-  await expect(ep.consume(new Interest("/A/2"))).resolves.toHaveName("/A/2");
+  await expect(ep.consume("/A/2")).resolves.toHaveName("/A/2");
   expect(handler).toHaveBeenCalledTimes(1);
 });
 
@@ -70,13 +70,13 @@ test.each([false, true])("autoBuffer %p", async (autoBuffer) => {
   });
   ep.produce("/A", handler);
 
-  await expect(ep.consume(new Interest("/A/0"))).resolves.toHaveName("/A/0");
+  await expect(ep.consume("/A/0")).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(1);
 
-  await expect(ep.consume(new Interest("/A/1"))).resolves.toHaveName("/A/1");
+  await expect(ep.consume("/A/1")).resolves.toHaveName("/A/1");
   expect(handler).toHaveBeenCalledTimes(1);
 
-  await expect(ep.consume(new Interest("/A/0"))).resolves.toHaveName("/A/0");
+  await expect(ep.consume("/A/0")).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(autoBuffer ? 1 : 2);
 });
 
@@ -92,7 +92,7 @@ test("buffer expire", async () => {
   expect(handler).toHaveBeenCalledTimes(1);
 
   await new Promise((r) => setTimeout(r, 30));
-  await expect(ep.consume(new Interest("/A/0"))).resolves.toHaveName("/A/0");
+  await expect(ep.consume("/A/0")).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(1);
 
   await new Promise((r) => setTimeout(r, 130));
@@ -116,7 +116,7 @@ test("auto signing", async () => {
     return new Data("/A/1"); // signed by signer1
   });
 
-  await expect(ep.consume(new Interest("/A/0"), { verifier: verifier0 })).resolves.toBeInstanceOf(Data);
-  await expect(ep.consume(new Interest("/A/1"), { verifier: verifier1 })).resolves.toBeInstanceOf(Data);
-  await expect(ep.consume(new Interest("/A/2"), { verifier: verifier2 })).resolves.toBeInstanceOf(Data);
+  await expect(ep.consume("/A/0", { verifier: verifier0 })).resolves.toHaveName("/A/0");
+  await expect(ep.consume("/A/1", { verifier: verifier1 })).resolves.toHaveName("/A/1");
+  await expect(ep.consume("/A/2", { verifier: verifier2 })).resolves.toHaveName("/A/2");
 });

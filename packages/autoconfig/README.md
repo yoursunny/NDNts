@@ -10,7 +10,7 @@ import { queryFch, connectToTestbed } from "@ndn/autoconfig";
 // other imports for examples
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
-import { Interest, Name } from "@ndn/packet";
+import { Name } from "@ndn/packet";
 import { strict as assert } from "assert";
 (async () => {
 if (process.env.CI) { return; }
@@ -73,8 +73,7 @@ const [fastestFace] = faces;
 console.log("fastest face is", `${fastestFace}`);
 
 // By default, default route "/" is added to the face, so that you can send Interests right away.
-await new Endpoint({ fw }).consume(
-  new Interest(`/ndn/edu/ucla/ping/${Math.floor(Math.random() * 99999999)}`));
+await new Endpoint({ fw }).consume(`/ndn/edu/ucla/ping/${Math.floor(Math.random() * 99999999)}`);
 
 fastestFace.close();
 ```

@@ -5,7 +5,7 @@ import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Segment as Segment1 } from "@ndn/naming-convention1";
 import { Segment as Segment2 } from "@ndn/naming-convention2";
-import { Interest, Name, Verifier } from "@ndn/packet";
+import { Name, Verifier } from "@ndn/packet";
 import { AbortController } from "abort-controller";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { consume } from "streaming-iterables";
@@ -113,10 +113,10 @@ describe("empty object", () => {
   });
 
   test("consume single", async () => {
-    const ep = new Endpoint();
-    await expect(ep.consume(new Interest(new Name("/R").append(Segment2, 1), Interest.Lifetime(50))))
+    const ep = new Endpoint({ modifyInterest: { lifetime: 50 } });
+    await expect(ep.consume(new Name("/R").append(Segment2, 1)))
       .rejects.toThrow();
-    const data = await ep.consume(new Interest(new Name("/R").append(Segment2, 0)));
+    const data = await ep.consume(new Name("/R").append(Segment2, 0));
     expect(data.content).toHaveLength(0);
   });
 

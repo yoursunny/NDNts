@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
 import { Certificate, generateEncryptionKey, generateSigningKey, KeyChainImplWebCrypto as crypto, RSAOAEP, ValidityPeriod } from "@ndn/keychain";
-import { Component, Data, Interest, Name, Verifier } from "@ndn/packet";
+import { Component, Data, Name, Verifier } from "@ndn/packet";
 import { DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
 import memdown from "memdown";
 
@@ -87,7 +87,7 @@ test("simple", async () => {
     },
     memberDecrypter: cDecrypter,
   });
-  const appData = await cE.consume(new Interest("/data/part1/packet0"), { verifier: pVerifier });
+  const appData = await cE.consume("/data/part1/packet0", { verifier: pVerifier });
   expect(appData.content).not.toEqualUint8Array(appContent);
   await expect(c.decrypt(appData)).rejects.toThrow();
 

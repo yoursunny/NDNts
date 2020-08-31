@@ -1,6 +1,6 @@
 import { Endpoint } from "@ndn/endpoint";
 import { AES, createDecrypter, NamedDecrypter, RSAOAEP } from "@ndn/keychain";
-import { Data, Decrypter, Interest, Verifier } from "@ndn/packet";
+import { Data, Decrypter, Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
 import { ContentKey, EncryptedContent, KeyDecryptionKey } from "./packet/mod";
@@ -31,14 +31,12 @@ export class Consumer implements Decrypter {
 
     const [ck, kdk] = await Promise.all([
       (async () => {
-        const ckInterest = new Interest(enc.name);
-        const ckData = await this.endpoint.consume(ckInterest, { verifier: this.verifier });
+        const ckData = await this.endpoint.consume(enc.name, { verifier: this.verifier });
         return ContentKey.fromData(ckData);
       })(),
       (async () => {
         const kdkName = KeyDecryptionKey.makeName({ ...ckName, memberKeyName: this.memberDecrypter.name });
-        const kdkInterest = new Interest(kdkName);
-        const kdkData = await this.endpoint.consume(kdkInterest, { verifier: this.verifier });
+        const kdkData = await this.endpoint.consume(kdkName, { verifier: this.verifier });
         return KeyDecryptionKey.fromData(kdkData);
       })(),
     ]);

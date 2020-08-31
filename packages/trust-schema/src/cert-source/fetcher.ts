@@ -72,7 +72,7 @@ class Cache {
 interface CacheOptions {
   /** Cache lifetime for successful retrieval. Default is 1 hour. */
   positiveTtl?: number;
-  /** Cache lifetime for unsucessful retrieval. Default is 10 seconds. */
+  /** Cache lifetime for unsuccessful retrieval. Default is 10 seconds. */
   negativeTtl?: number;
   /** Cache cleanup interval. Default is 5 minutes. */
   cacheCleanupInterval?: number;
@@ -85,15 +85,19 @@ export class CertFetcher implements CertSource {
   constructor(opts: CertFetcher.Options) {
     const {
       endpoint = new Endpoint(),
-      interestLifetime = Interest.DefaultLifetime,
+      interestLifetime,
       retx = 2,
     } = opts;
     this.endpoint = endpoint;
-    this.interestLifetime = interestLifetime;
     this.consumerOpts = {
       describe: "trust-schema CertFetcher",
       retx,
     };
+    if (interestLifetime) {
+      this.consumerOpts.modifyInterest = {
+        lifetime: interestLifetime,
+      };
+    }
 
     let cache = endpointCache.get(endpoint);
     if (!cache) {
@@ -104,7 +108,6 @@ export class CertFetcher implements CertSource {
   }
 
   private readonly endpoint: Endpoint;
-  private readonly interestLifetime: number;
   private readonly consumerOpts: ConsumerOptions;
   private readonly cache: Cache;
 
@@ -118,7 +121,6 @@ export class CertFetcher implements CertSource {
     }
 
     const interest = new Interest(keyLocator);
-    interest.lifetime = this.interestLifetime;
     if (!CertNaming.isCertName(keyLocator)) {
       interest.canBePrefix = true;
       interest.mustBeFresh = true;

@@ -50,28 +50,28 @@ test("simple", async () => {
       return new Data(interest.name);
     });
 
-  const canceledInterest = ep.consume(new Interest("/Q/canceled"));
+  const canceledInterest = ep.consume("/Q/canceled");
   setTimeout(() => canceledInterest.cancel(), 50);
   await Promise.all([
-    expect(ep.consume(new Interest("/O/no-route", Interest.Lifetime(500))))
+    expect(ep.consume("/O/no-route", { modifyInterest: { lifetime: 500 } }))
       .rejects.toThrow(),
-    expect(ep.consume(new Interest("/P/exact")))
+    expect(ep.consume("/P/exact"))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume(new Interest("/P/prefix", Interest.CanBePrefix)))
+    expect(ep.consume("/P/prefix", { modifyInterest: { canBePrefix: true } }))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume(new Interest("/P/no-prefix", Interest.Lifetime(500))))
+    expect(ep.consume("/P/no-prefix", { modifyInterest: { lifetime: 500 } }))
       .rejects.toThrow(),
-    expect(ep.consume(new Interest("/P/fresh", Interest.MustBeFresh)))
+    expect(ep.consume("/P/fresh", { modifyInterest: { mustBeFresh: true } }))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume(new Interest("/P/no-fresh", Interest.MustBeFresh, Interest.Lifetime(500))))
+    expect(ep.consume("/P/no-fresh", { modifyInterest: { mustBeFresh: true, lifetime: 500 } }))
       .rejects.toThrow(),
-    expect(ep.consume(new Interest("/Q/exact")))
+    expect(ep.consume("/Q/exact"))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume(new Interest("/Q/too-slow", Interest.Lifetime(100))))
+    expect(ep.consume("/Q/too-slow", { modifyInterest: { lifetime: 100 } }))
       .rejects.toThrow(),
-    expect(ep.consume(new Interest(nameDigest)))
+    expect(ep.consume(nameDigest))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume(new Interest(nameWrongDigest, Interest.Lifetime(500))))
+    expect(ep.consume(nameWrongDigest, { modifyInterest: { lifetime: 500 } }))
       .rejects.toThrow(),
     expect(canceledInterest)
       .rejects.toThrow(),
@@ -145,7 +145,7 @@ test("aggregate & retransmit", async () => {
       .resolves.toBeInstanceOf(Data),
     expect(ep.consume(new Interest("/P/Q", Interest.CanBePrefix)))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume(new Interest("/P/Q/R/S")))
+    expect(ep.consume("/P/Q/R/S"))
       .resolves.toBeInstanceOf(Data),
     new Promise((r) => setTimeout(r, 200)),
   ]);
@@ -173,7 +173,7 @@ test("Data without token", async () => {
       .resolves.toBeInstanceOf(Data),
     expect(ep.consume(new Interest("/P/Q", Interest.CanBePrefix, Interest.MustBeFresh)))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume(new Interest("/P/Q/R/S")))
+    expect(ep.consume("/P/Q/R/S"))
       .resolves.toBeInstanceOf(Data),
     expect(ep.consume(new Interest("/P/Q/R/S", Interest.CanBePrefix)))
       .resolves.toBeInstanceOf(Data),
@@ -191,7 +191,7 @@ describe("tracer", () => {
 
   test("simple", async () => {
     const tracer = FwTracer.enable({ fw });
-    const consumerA = ep.consume(new Interest("/A"));
+    const consumerA = ep.consume("/A");
     consumerA.cancel();
     await expect(consumerA).rejects.toThrow();
 

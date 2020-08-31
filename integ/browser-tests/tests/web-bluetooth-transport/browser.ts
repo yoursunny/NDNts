@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Interest, Name } from "@ndn/packet";
+import { Name } from "@ndn/packet";
 import { WebBluetoothTransport } from "@ndn/web-bluetooth-transport";
 
 import { addManualTest } from "../../test-fixture/manual";
@@ -13,7 +13,7 @@ async function testWebBluetooth() {
   const rtts = [] as number[];
   for (let i = 0; i < 50; ++i) {
     const t0 = Date.now();
-    const data = await endpoint.consume(new Interest(`/example/esp8266/ble/ping/${Math.floor(Math.random() * 100000000)}`));
+    const data = await endpoint.consume(`/example/esp8266/ble/ping/${Math.floor(Math.random() * 100000000)}`);
     const t1 = Date.now();
     rtts.push(t1 - t0);
     names.push(data.name.toString());

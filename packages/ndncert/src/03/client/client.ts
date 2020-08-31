@@ -1,6 +1,6 @@
 import { ConsumerOptions, Endpoint, RetxPolicy } from "@ndn/endpoint";
 import { Certificate, NamedSigner, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
-import { Interest, Name } from "@ndn/packet";
+import { Name } from "@ndn/packet";
 
 import * as crypto from "../crypto-common";
 import { CaProfile, ChallengeRequest, ChallengeResponse, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
@@ -93,7 +93,7 @@ export async function requestCertificate({
     });
   }
 
-  const issuedCertData = await endpoint.consume(new Interest(issuedCertName), consumerOptions);
+  const issuedCertData = await endpoint.consume(issuedCertName, consumerOptions);
   const issuedCert = Certificate.fromData(issuedCertData);
   return issuedCert;
 }

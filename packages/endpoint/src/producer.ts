@@ -17,6 +17,9 @@ import type { DataBuffer } from "./data-buffer";
 export type Handler = (interest: Interest, producer: Producer) => Promise<Data|false>;
 
 export interface Options {
+  /** Description for debugging purpose. */
+  describe?: string;
+
   /**
    * What name to be readvertised.
    * Ignored if prefix is undefined.
@@ -28,9 +31,6 @@ export interface Options {
    * Default is 1.
    */
   concurrency?: number;
-
-  /** Description for debugging purpose. */
-  describe?: string;
 
   /**
    * If specified, automatically sign Data packets unless already signed.
@@ -74,9 +74,9 @@ export class EndpointProducer {
   public produce(prefixInput: NameLike|undefined, handler: Handler, opts: Options = {}): Producer {
     const prefix = typeof prefixInput === "undefined" ? undefined : new Name(prefixInput);
     const {
+      describe = `produce(${prefix})`,
       announcement,
       concurrency = 1,
-      describe = `produce(${prefix})`,
       dataSigner,
       dataBuffer,
       autoBuffer = true,

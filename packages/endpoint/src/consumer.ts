@@ -1,14 +1,73 @@
 import { CancelInterest, Forwarder, FwPacket } from "@ndn/fw";
-import { Data, Interest, Verifier } from "@ndn/packet";
+import { Data, FwHint, Interest, NameLike, Verifier } from "@ndn/packet";
 import pushable from "it-pushable";
 import PCancelable from "p-cancelable";
 
 import { makeRetxGenerator, RetxPolicy } from "./retx";
 
+type ModifyInterestFunc = (interest: Interest) => void;
+
+interface ModifyInterestFields {
+  canBePrefix?: boolean;
+  mustBeFresh?: boolean;
+  fwHint?: FwHint;
+  lifetime?: number;
+  hopLimit?: number;
+}
+
+type ModifyInterest = ModifyInterestFunc | ModifyInterestFields;
+
+function makeModifyInterest(input: ModifyInterest): ModifyInterestFunc {
+  if (typeof input === "function") {
+    return input;
+  }
+  const {
+    canBePrefix,
+    mustBeFresh,
+    fwHint,
+    lifetime,
+    hopLimit,
+  } = input;
+  return (interest) => {
+    if (typeof canBePrefix !== "undefined") {
+      interest.canBePrefix = canBePrefix;
+    }
+    if (typeof mustBeFresh !== "undefined") {
+      interest.mustBeFresh = mustBeFresh;
+    }
+    if (typeof fwHint !== "undefined") {
+      interest.fwHint = fwHint;
+    }
+    if (typeof lifetime !== "undefined") {
+      interest.lifetime = lifetime;
+    }
+    if (typeof hopLimit !== "undefined") {
+      interest.hopLimit = hopLimit;
+    }
+  };
+}
+
 export interface Options {
-  retx?: RetxPolicy;
-  verifier?: Verifier;
+  /** Description for debugging purpose. */
   describe?: string;
+
+  /**
+   * Modify Interest according to specified options.
+   * Default is no modification.
+   */
+  modifyInterest?: ModifyInterest;
+
+  /**
+   * Retransmission policy.
+   * Default is disabling retransmission.
+   */
+  retx?: RetxPolicy;
+
+  /**
+   * Data verifier.
+   * Default is no verification.
+   */
+  verifier?: Verifier;
 }
 
 /**
@@ -28,12 +87,19 @@ export class EndpointConsumer {
   declare public opts: Options;
 
   /** Consume a single piece of Data. */
-  public consume(interest: Interest, opts: Options = {}): Context {
+  public consume(interestInput: Interest|NameLike, opts: Options = {}): Context {
+    const interest = interestInput instanceof Interest ? interestInput : new Interest(interestInput);
     const {
+      describe = `consume(${interest.name})`,
+      modifyInterest,
       retx,
       verifier,
-      describe = `consume(${interest.name})`,
     } = { ...this.opts, ...opts };
+
+    if (modifyInterest) {
+      makeModifyInterest(modifyInterest)(interest);
+    }
+
     let nRetx = -1;
     const retxGen = makeRetxGenerator(retx)(interest.lifetime)[Symbol.iterator]();
 

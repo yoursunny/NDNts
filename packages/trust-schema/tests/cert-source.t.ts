@@ -110,10 +110,13 @@ describe("CertFetcher", () => {
     expect(found).toHaveLength(1);
     expect(found[0]).toHaveName(certB.name);
     expect(consumeFn).toHaveBeenCalledTimes(1);
-    let interest = consumeFn.mock.calls[0][0];
-    expect(interest).toHaveName(pubB.name);
-    expect(interest.canBePrefix).toBeTruthy();
-    expect(interest.mustBeFresh).toBeTruthy();
+    expect(consumeFn.mock.results[0].type).toBe("return");
+    if (consumeFn.mock.results[0].type === "return") {
+      const { interest } = consumeFn.mock.results[0].value;
+      expect(interest).toHaveName(pubB.name);
+      expect(interest.canBePrefix).toBeTruthy();
+      expect(interest.mustBeFresh).toBeTruthy();
+    }
 
     found = await findIn(fetcher1, certB);
     expect(found).toHaveLength(1);
@@ -126,10 +129,13 @@ describe("CertFetcher", () => {
     expect(found).toHaveLength(1);
     expect(found[0]).toHaveName(certB.name);
     expect(consumeFn).toHaveBeenCalledTimes(2);
-    interest = consumeFn.mock.calls[1][0];
-    expect(interest).toHaveName(certB.name);
-    expect(interest.canBePrefix).toBeFalsy();
-    expect(interest.mustBeFresh).toBeFalsy();
+    expect(consumeFn.mock.results[1].type).toBe("return");
+    if (consumeFn.mock.results[1].type === "return") {
+      const { interest } = consumeFn.mock.results[1].value;
+      expect(interest).toHaveName(certB.name);
+      expect(interest.canBePrefix).toBeFalsy();
+      expect(interest.mustBeFresh).toBeFalsy();
+    }
 
     found = await findIn(fetcher0, pubB);
     expect(found).toHaveLength(1);

@@ -44,7 +44,7 @@ test("simple", async () => {
   const endpoint = new Endpoint();
   await Promise.all([
     expect(endpoint.consume(new Interest("/A/0", Interest.Lifetime(100)))).rejects.toThrow(),
-    expect(endpoint.consume(new Interest("/A/1"))).resolves.toHaveName("/A/1"),
+    expect(endpoint.consume("/A/1")).resolves.toHaveName("/A/1"),
     expect(endpoint.consume(new Interest("/B", Interest.CanBePrefix))).resolves.toHaveName("/B/4"),
   ]);
 
