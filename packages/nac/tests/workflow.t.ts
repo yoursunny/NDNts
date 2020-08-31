@@ -58,9 +58,8 @@ test("simple", async () => {
   const pP = pE.produce("/data", async (interest) => {
     const data = new Data(interest.name, appContent);
     await pEncrypter.encrypt(data);
-    await pSigner.sign(data);
     return data;
-  });
+  }, { dataSigner: pSigner });
 
   const cE = new Endpoint();
   const cStore = new DataStore(memdown());

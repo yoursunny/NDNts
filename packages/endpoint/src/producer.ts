@@ -1,31 +1,51 @@
 import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
-import { Data, Interest, Name, NameLike } from "@ndn/packet";
+import { Data, Interest, Name, NameLike, Signer, SigType } from "@ndn/packet";
 import { flatTransform } from "streaming-iterables";
 
-import { DataBuffer } from "./data-buffer";
+import type { DataBuffer } from "./data-buffer";
 
 /**
  * Producer handler function.
  *
  * The handler can return a Data to respond to the Interest, or return 'false' to cause a timeout.
  *
- * If Options.dataBuffer is provided, the handler can have access to the DataBuffer via
- * producer.dataBuffer . The handler can return a Data to respond to the Interest, which is also
- * inserted to the DataBuffer unless Options.autoBuffer is set to false. If the handler returns
- * 'false', the Interest is used to query the DataBuffer, and any matching Data may be sent.
+ * If Options.dataBuffer is provided, the handler can access the DataBuffer via producer.dataBuffer .
+ * The handler can return a Data to respond to the Interest, which is also inserted to the DataBuffer
+ * unless Options.autoBuffer is set to false. If the handler returns 'false', the Interest is used
+ * to query the DataBuffer, and any matching Data may be sent.
  */
 export type Handler = (interest: Interest, producer: Producer) => Promise<Data|false>;
 
 export interface Options {
-  /** What name to be readvertised (ignored if prefix is unspecified). */
+  /**
+   * What name to be readvertised.
+   * Ignored if prefix is undefined.
+   */
   announcement?: EndpointProducer.RouteAnnouncement;
-  /** How many Interests to process in parallel. */
+
+  /**
+   * How many Interests to process in parallel.
+   * Default is 1.
+   */
   concurrency?: number;
+
   /** Description for debugging purpose. */
   describe?: string;
+
+  /**
+   * If specified, automatically sign Data packets unless already signed.
+   * This does not apply to Data packets manually inserted to the dataBuffer.
+   */
+  dataSigner?: Signer;
+
   /** Outgoing Data buffer. */
   dataBuffer?: DataBuffer;
-  /** Whether to add handler return value to buffer. Default is true. */
+
+  /**
+   * Whether to add handler return value to buffer.
+   * Default is true.
+   * Ignored when dataBuffer is not specified.
+   */
   autoBuffer?: boolean;
 }
 
@@ -57,21 +77,25 @@ export class EndpointProducer {
       announcement,
       concurrency = 1,
       describe = `produce(${prefix})`,
+      dataSigner,
       dataBuffer,
       autoBuffer = true,
     } = { ...this.opts, ...opts };
     let producer: Producer; // eslint-disable-line prefer-const
 
     const processInterestUnbuffered = async (interest: Interest) => {
-      const output = await handler(interest, producer);
-      if (output instanceof Data) {
-        if (!await output.canSatisfy(interest)) {
-          return undefined;
-        }
-        return output;
+      const data = await handler(interest, producer);
+      if (!(data instanceof Data)) {
+        return undefined;
       }
-      return undefined;
+
+      await signUnsignedData(data, dataSigner);
+      if (!await data.canSatisfy(interest)) {
+        return undefined;
+      }
+      return data;
     };
+
     let processInterest = processInterestUnbuffered;
     if (dataBuffer) {
       processInterest = async (interest: Interest) => {
@@ -120,4 +144,10 @@ export class EndpointProducer {
 
 export namespace EndpointProducer {
   export type RouteAnnouncement = FwFace.RouteAnnouncement;
+}
+
+export async function signUnsignedData(data: Data, dataSigner: Signer|undefined) {
+  if (dataSigner && data.sigInfo.type === SigType.Null) {
+    await dataSigner.sign(data);
+  }
 }

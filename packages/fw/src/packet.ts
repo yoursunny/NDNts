@@ -1,4 +1,4 @@
-import { Data, Interest, Nack } from "@ndn/packet";
+import type { Data, Interest, Nack } from "@ndn/packet";
 
 type L3Pkt = Interest|Data|Nack;
 

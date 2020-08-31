@@ -37,6 +37,7 @@
     "tslib": "^2.0.1"
   },
   "devDependencies": {
+    "@ndn/keychain": "workspace:*",
     "@ndn/repo": "workspace:*",
     "@types/minimalistic-assert": "^1.0.1"
   }

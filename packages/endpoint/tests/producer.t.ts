@@ -1,15 +1,16 @@
 import "@ndn/packet/test-fixture/expect";
 
+import { generateSigningKey } from "@ndn/keychain";
 import { Data, Interest } from "@ndn/packet";
 import { makeEmptyDataStore } from "@ndn/repo/test-fixture/data-store";
 
-import { DataStoreBuffer, Endpoint, Producer, ProducerHandler } from "..";
+import { DataStoreBuffer, Endpoint, Options, Producer, ProducerHandler } from "..";
 
 afterEach(() => Endpoint.deleteDefaultForwarder());
 
-function makeEndpointBuffered(ttl?: number, autoBuffer?: boolean): [Endpoint, DataStoreBuffer] {
-  const dataStoreBuffer = new DataStoreBuffer(makeEmptyDataStore(), ttl);
-  const ep = new Endpoint({ dataBuffer: dataStoreBuffer, autoBuffer });
+function makeEndpointBuffered(autoBuffer?: boolean, bo?: DataStoreBuffer.Options, eo?: Options): [Endpoint, DataStoreBuffer] {
+  const dataStoreBuffer = new DataStoreBuffer(makeEmptyDataStore(), bo);
+  const ep = new Endpoint({ ...eo, dataBuffer: dataStoreBuffer, autoBuffer });
   return [ep, dataStoreBuffer];
 }
 
@@ -62,7 +63,7 @@ test("prefill buffer", async () => {
 });
 
 test.each([false, true])("autoBuffer %p", async (autoBuffer) => {
-  const [ep] = makeEndpointBuffered(undefined, autoBuffer);
+  const [ep] = makeEndpointBuffered(autoBuffer);
   const handler = jest.fn(async (interest: Interest, { dataBuffer }: Producer) => {
     await dataBuffer!.insert(new Data("/A/1"));
     return new Data("/A/0");
@@ -80,7 +81,7 @@ test.each([false, true])("autoBuffer %p", async (autoBuffer) => {
 });
 
 test("buffer expire", async () => {
-  const [ep] = makeEndpointBuffered(150);
+  const [ep] = makeEndpointBuffered(undefined, { ttl: 150 });
   const handler = jest.fn(async (interest: Interest) => {
     if (!interest.name.equals("/A")) { return false; }
     return new Data("/A/0");
@@ -97,4 +98,25 @@ test("buffer expire", async () => {
   await new Promise((r) => setTimeout(r, 130));
   await expect(ep.consume(new Interest("/A/0", Interest.Lifetime(100)))).rejects.toThrow();
   expect(handler).toHaveBeenCalledTimes(2);
+});
+
+test("auto signing", async () => {
+  const [signer0, verifier0] = await generateSigningKey("/K0");
+  const [signer1, verifier1] = await generateSigningKey("/K1");
+  const [signer2, verifier2] = await generateSigningKey("/K2");
+  const [ep] = makeEndpointBuffered(true, { dataSigner: signer2 }, { dataSigner: signer1 });
+  ep.produce("/A", async (interest, { dataBuffer }) => {
+    if (interest.name.equals("/A/0")) {
+      const data = new Data("/A/0");
+      await signer0.sign(data);
+      return data;
+    }
+
+    await dataBuffer!.insert(new Data("/A/2")); // signed by signer2
+    return new Data("/A/1"); // signed by signer1
+  });
+
+  await expect(ep.consume(new Interest("/A/0"), { verifier: verifier0 })).resolves.toBeInstanceOf(Data);
+  await expect(ep.consume(new Interest("/A/1"), { verifier: verifier1 })).resolves.toBeInstanceOf(Data);
+  await expect(ep.consume(new Interest("/A/2"), { verifier: verifier2 })).resolves.toBeInstanceOf(Data);
 });

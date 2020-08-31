@@ -45,12 +45,13 @@ class Subscription implements PrpsSubscriber.Subscription {
       private readonly msgRetx: RetxPolicy,
       private readonly pubVerifier: Verifier|undefined,
       subAnnouncement: false|undefined,
-      private readonly subSigner: Signer,
+      subSigner: Signer,
   ) {
     this.notifyPrefix = topic.append(NotifySuffix);
     this.notifyProducer = this.endpoint.produce(this.notifyPrefix, this.handleNotifyInterest, {
       describe: `prps-sub(${topic})`,
       announcement: subAnnouncement,
+      dataSigner: subSigner,
     });
   }
 
@@ -87,9 +88,7 @@ class Subscription implements PrpsSubscriber.Subscription {
     });
     this.messages.push(messageData);
 
-    const notifyData = new Data(interest.name);
-    await this.subSigner.sign(notifyData);
-    return notifyData;
+    return new Data(interest.name);
   };
 }
 
