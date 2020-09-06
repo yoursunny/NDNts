@@ -184,21 +184,17 @@ export namespace L3Face {
    * Returns FwFace.
    */
   export type CreateFaceFunc<
-    R extends Transport|Transport[],
-    C extends (...args: any) => Promise<R>,
-  > = <U extends any[] = C extends (...args: infer P) => any ? P : never>
-  (opts: CreateFaceOptions, ...args: U) => Promise<R extends Transport ? FwFace : FwFace[]>;
+    C extends (...args: any) => Promise<Transport|Transport[]>,
+  > = <
+    U extends any[] = C extends (...args: infer P) => any ? P : never,
+  >(opts: CreateFaceOptions, ...args: U) => C extends ((...args: U) => Promise<Transport>) ? Promise<FwFace> :
+  C extends ((...args: U) => Promise<Transport[]>) ? Promise<FwFace[]> : never;
 
   export function makeCreateFace<
-    C extends (...args: any) => Promise<Transport>,
-  >(createTransport: C): CreateFaceFunc<Transport, C>;
-  export function makeCreateFace<
-    C extends (...args: any) => Promise<Transport[]>,
-  >(createTransports: C): CreateFaceFunc<Transport[], C>;
-
-  export function makeCreateFace(createTransport: any): any {
-    return async (opts: CreateFaceOptions, ...args: any[]) => {
-      const created: Transport|Transport[] = await createTransport(...args);
+    C extends (...args: any) => Promise<Transport|Transport[]>,
+  >(createTransport: C): CreateFaceFunc<C> {
+    return (async (opts: CreateFaceOptions, ...args: any[]) => {
+      const created = await createTransport(...args);
       const {
         fw = Forwarder.getDefault(),
         l3,
@@ -206,6 +202,6 @@ export namespace L3Face {
       } = opts;
       const makeFace = (transport: Transport) => fw.addFace(new L3Face(transport, l3, lp));
       return Array.isArray(created) ? created.map(makeFace) : makeFace(created);
-    };
+    }) as any;
   }
 }
