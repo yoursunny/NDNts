@@ -28,8 +28,10 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "@yoursunny/mole-rpc": "^0.0.20200718",
-    "mole-rpc-transport-tcp": "^0.0.20200821",
+    "graphql-request": "^3.1.0",
     "tslib": "^2.0.1"
+  },
+  "devDependencies": {
+    "graphql": "^15.3.0"
   }
 }

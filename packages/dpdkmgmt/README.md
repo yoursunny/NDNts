@@ -5,11 +5,6 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 This package enables interaction with [NDN-DPDK high-speed forwarder](https://github.com/usnistgov/ndn-dpdk).
 It can create faces for the NDNts application, and perform prefix registrations.
 
-NDN-DPDK forwarder should be configured as follows:
-
-* Management listener on TCP.
-* Socket faces enabled.
-
 Currently, there are several limitations using this package:
 
 * Data plane uses UDP transport, which does not deliver the best performance.
@@ -17,7 +12,7 @@ Currently, there are several limitations using this package:
 * If the application crashes, the face would not be closed on NDN-DPDK side.
 
 ```ts
-import { createFace } from "@ndn/dpdkmgmt";
+import { openFace } from "@ndn/dpdkmgmt";
 
 // other imports for examples
 import { Endpoint } from "@ndn/endpoint";
@@ -27,32 +22,40 @@ import { fromUtf8, toUtf8 } from "@ndn/tlv";
 import { strict as assert } from "assert";
 (async () => {
 
+const gqlServer = process.env.DEMO_DPDKMGMT_GQLSERVER;
 const localHost = process.env.DEMO_DPDKMGMT_LOCAL;
-const host = process.env.DEMO_DPDKMGMT_FW;
-if (!localHost || !host) {
+if (!gqlServer || !localHost) {
   console.log(`
 To run @ndn/dpdkmgmt demo, set the following environment variables:
-DEMO_DPDKMGMT_FW= IP address of NDN-DPDK forwarder
+DEMO_DPDKMGMT_GQLSERVER= NDN-DPDK forwarder GraphQL server URI
 DEMO_DPDKMGMT_LOCAL= IP address to reach local host from NDN-DPDK forwarder
 `);
   return;
 }
 
-// Create two forwarders, one as consumer and one as producer.
+// Topology of this demo
+//
+// producer                      consumer
+//    |                              |
+//   fwP                            fwC
+//    \---------- NDN-DPDK ----------/
+//       uplinkP            uplinkC
+
+// Create two logical forwarders, one as consumer and one as producer.
 const fwC = Forwarder.create();
 const fwP = Forwarder.create();
 
 // Connect to NDN-DPDK.
-const uplinkC = await createFace({
+const uplinkC = await openFace({
   fw: fwC,
   localHost,
-  host,
+  gqlServer,
 });
 uplinkC.addRoute(new Name("/"));
-const uplinkP = await createFace({
+const uplinkP = await openFace({
   fw: fwP,
   localHost,
-  host,
+  gqlServer,
 });
 console.log(`uplinkC=${uplinkC}`, `uplinkP=${uplinkP}`);
 

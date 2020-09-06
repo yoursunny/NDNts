@@ -1,31 +1,42 @@
 import { ReadvertiseDestination } from "@ndn/fw";
 import { Name } from "@ndn/packet";
+import { gql, GraphQLClient } from "graphql-request";
 
-import { RpcClient } from "./rpc-client";
+interface State {
+  fibEntryID?: string;
+}
 
-export class NdndpdkPrefixReg extends ReadvertiseDestination {
-  constructor(private readonly rpc: RpcClient, private readonly faceId: number) {
+export class NdndpdkPrefixReg extends ReadvertiseDestination<State> {
+  constructor(private readonly client: GraphQLClient, private readonly faceID: string) {
     super();
   }
 
-  protected async doAdvertise(name: Name) {
-    await this.rpc.request("Fib", "Insert", {
-      Name: name.toString(),
-      Nexthops: [this.faceId],
-    } as FibInsertArg);
+  protected async doAdvertise(name: Name, state: State) {
+    const { insertFibEntry: { id } } = await this.client.request(gql`
+      mutation insertFibEntry($name: Name!, $nexthops: [ID!]!, $strategy: ID) {
+        insertFibEntry(name: $name, nexthops: $nexthops, strategy: $strategy) {
+          id
+        }
+      }
+    `, {
+      name: name.toString(),
+      nexthops: [this.faceID],
+    });
+    state.fibEntryID = id;
+    console.log(id);
   }
 
-  protected async doWithdraw(name: Name) {
-    await this.rpc.request("Fib", "Erase", {
-      Name: name.toString(),
-    } as NameArg);
+  protected async doWithdraw(name: Name, state: State) {
+    if (!state.fibEntryID) {
+      return;
+    }
+    await this.client.request(gql`
+      mutation delete($id: ID!) {
+        delete(id: $id)
+      }
+    `, {
+      id: state.fibEntryID,
+    });
+    state.fibEntryID = undefined;
   }
-}
-
-interface NameArg {
-  Name: string;
-}
-
-interface FibInsertArg extends NameArg {
-  Nexthops: number[];
 }
