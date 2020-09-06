@@ -1,6 +1,6 @@
 import { TT } from "./an";
 import { Component } from "./component";
-import { NamingConvention } from "./convention";
+import type { NamingConvention } from "./convention";
 import { ImplicitDigest, ParamsDigest } from "./digest-comp";
 import { Name } from "./name";
 

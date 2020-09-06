@@ -1,4 +1,4 @@
-import { Decoder } from "@ndn/tlv";
+import type { Decoder } from "@ndn/tlv";
 
 /**
  * Low-level transport.

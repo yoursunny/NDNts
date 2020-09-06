@@ -1,5 +1,5 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
-import { AddressInfo } from "net";
+import type { AddressInfo } from "net";
 import pEvent from "p-event";
 
 import * as udp from "./udp-helper";

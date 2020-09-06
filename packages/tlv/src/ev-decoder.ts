@@ -1,4 +1,4 @@
-import { Decoder } from "./decoder";
+import type { Decoder } from "./decoder";
 import { printTT } from "./string";
 
 /** Invoked when a matching TLV element is found. */

@@ -2,7 +2,7 @@ import { Decoder, Encoder, fromUtf8, toUtf8 } from "@ndn/tlv";
 import bufferCompare from "buffer-compare";
 
 import { TT } from "./an";
-import { NamingConvention } from "./convention";
+import type { NamingConvention } from "./convention";
 
 function checkType(t: number): boolean {
   return !Number.isNaN(t) && t >= 0x01 && t <= 0xFFFF;

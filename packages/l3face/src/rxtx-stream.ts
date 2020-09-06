@@ -1,7 +1,7 @@
 import { Decoder } from "@ndn/tlv";
 import { fromStream, writeToStream } from "streaming-iterables";
 
-import { Transport } from "./mod";
+import type { Transport } from "./mod";
 
 async function* fromStreamSafe(conn: NodeJS.ReadableStream) {
   try { yield* fromStream<Buffer>(conn); } catch {}

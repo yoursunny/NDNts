@@ -5,7 +5,7 @@ import { EventEmitter } from "events";
 import { filter, map, pipeline } from "streaming-iterables";
 import TypedEmitter from "typed-emitter";
 
-import { Transport } from "./mod";
+import type { Transport } from "./mod";
 
 interface Events {
   /** Emitted upon face state change. */

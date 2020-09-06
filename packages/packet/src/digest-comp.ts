@@ -2,8 +2,8 @@ import { fromHex, toHex } from "@ndn/tlv";
 
 import { TT } from "./an";
 import { Component } from "./component";
-import { NamingConvention } from "./convention";
-import { Name } from "./name";
+import type { NamingConvention } from "./convention";
+import type { Name } from "./name";
 
 const DIGEST_LENGTH = 32;
 

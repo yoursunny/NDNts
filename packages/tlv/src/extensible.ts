@@ -1,5 +1,5 @@
-import { Decoder } from "./decoder";
-import { Encodable } from "./encoder";
+import type { Decoder } from "./decoder";
+import type { Encodable } from "./encoder";
 
 /** An TLV element that allows extension sub element. */
 export interface Extensible {
@@ -89,6 +89,6 @@ export class ExtensionRegistry<T extends Extensible> {
       })
       .sort(({ tt: ttA, ext: { order: orderA } },
           { tt: ttB, ext: { order: orderB } }) => (orderA ?? ttA) - (orderB ?? ttB))
-      .map(({ tt, value, ext }) => ext.encode(source, value));
+      .map(({ value, ext }) => ext.encode(source, value));
   }
 }
