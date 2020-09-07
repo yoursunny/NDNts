@@ -45,7 +45,7 @@ export class Producer {
     return {
       async encrypt(data: Data) {
         const encrypted = await llEncrypter.llEncrypt({ plaintext: data.content });
-        const enc = EncryptedContent.create(encrypted, ck.name);
+        const enc = EncryptedContent.create(encrypted, ck.locator);
         data.content = Encoder.encode(enc, data.content.length + 256);
       },
     };

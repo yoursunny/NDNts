@@ -1,6 +1,6 @@
 import { Endpoint } from "@ndn/endpoint";
 import { AES, createDecrypter, NamedDecrypter, RSAOAEP } from "@ndn/keychain";
-import { Data, Decrypter, Verifier } from "@ndn/packet";
+import { Data, Decrypter, Interest, Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
 import { ContentKey, EncryptedContent, KeyDecryptionKey } from "./packet/mod";
@@ -27,22 +27,20 @@ export class Consumer implements Decrypter {
 
   public async decrypt(data: Data): Promise<void> {
     const enc = new Decoder(data.content).decode(EncryptedContent);
-    const ckName = ContentKey.parseName(enc.name);
+    ContentKey.parseLocator(enc.name);
+    const ckData = await this.endpoint.consume(
+      new Interest(enc.name, Interest.CanBePrefix),
+      { verifier: this.verifier });
+    const ck = await ContentKey.fromData(ckData);
 
-    const [ck, kdk] = await Promise.all([
-      (async () => {
-        const ckData = await this.endpoint.consume(enc.name, { verifier: this.verifier });
-        return ContentKey.fromData(ckData);
-      })(),
-      (async () => {
-        const kdkName = KeyDecryptionKey.makeName({ ...ckName, memberKeyName: this.memberDecrypter.name });
-        const kdkData = await this.endpoint.consume(kdkName, { verifier: this.verifier });
-        return KeyDecryptionKey.fromData(kdkData);
-      })(),
-    ]);
+    const kdkName = KeyDecryptionKey.makeName({ ...ck, memberKeyName: this.memberDecrypter.name });
+    const kdkData = await this.endpoint.consume(
+      new Interest(kdkName, Interest.MustBeFresh),
+      { verifier: this.verifier });
+    const kdk = await KeyDecryptionKey.fromData(kdkData);
+
     const kdkDecrypter = createDecrypter(RSAOAEP, await kdk.loadKeyPair(this.memberDecrypter));
     const ckDecrypter = createDecrypter(AES.CBC, await ck.loadKey(kdkDecrypter));
-
     const { plaintext } = await ckDecrypter.llDecrypt(enc);
     data.content = plaintext;
   }

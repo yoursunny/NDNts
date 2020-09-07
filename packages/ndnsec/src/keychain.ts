@@ -11,24 +11,27 @@ const PASSPHRASE = "PASSPHRASE";
 
 /** Access ndn-cxx KeyChain. */
 export class NdnsecKeyChain extends KeyChain {
-  constructor();
-
-  constructor(home: string);
-
-  constructor(pibLocator: string, tpmLocator: string);
-
-  constructor(arg1?: string, arg2?: string) {
+  constructor({
+    home,
+    pibLocator,
+    tpmLocator,
+    importOptions,
+  }: NdnsecKeyChain.Options = {}) {
     super();
-    if (arg2) {
-      this.env.NDN_CLIENT_PIB = arg1;
-      this.env.NDN_CLIENT_TPM = arg2;
-    } else if (arg1) {
-      this.env.HOME = arg1;
+    if (pibLocator || tpmLocator) {
+      this.env.NDN_CLIENT_PIB = pibLocator;
+      this.env.NDN_CLIENT_TPM = tpmLocator;
+    } else if (home) {
+      this.env.HOME = home;
     }
-    this.env.NDN_NAME_ALT_URI = "0";
+    this.importOptions = importOptions;
   }
 
-  private readonly env: NodeJS.ProcessEnv = {};
+  private readonly env: NodeJS.ProcessEnv = {
+    NDN_NAME_ALT_URI: "0",
+  };
+
+  private readonly importOptions: SafeBag.ImportOptions|undefined;
 
   private async invokeNdnsec(argv: string[], input?: Uint8Array): Promise<{
     lines: string[];
@@ -70,7 +73,7 @@ export class NdnsecKeyChain extends KeyChain {
       const { subjectName } = CertNaming.parseKeyName(new Name(keyName));
       const exported = await this.invokeNdnsec(["export", "-P", PASSPHRASE, "-i", `${subjectName}`]);
       const safeBag = exported.decode(SafeBag);
-      await safeBag.saveKeyPair(PASSPHRASE, dest);
+      await safeBag.saveKeyPair(PASSPHRASE, dest, this.importOptions);
     }
 
     for (const certList of keyCerts.values()) {
@@ -162,5 +165,14 @@ export class NdnsecKeyChain extends KeyChain {
       await this.invokeNdnsec(["delete", "-c", name.toString()]);
       this.cached = undefined;
     });
+  }
+}
+
+export namespace NdnsecKeyChain {
+  export interface Options {
+    home?: string;
+    pibLocator?: string;
+    tpmLocator?: string;
+    importOptions?: SafeBag.ImportOptions;
   }
 }

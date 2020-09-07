@@ -1,7 +1,8 @@
-import { Certificate, CertNaming, ECDSA, generateSigningKey, KeyChain, RSA, SigningAlgorithm } from "@ndn/keychain";
+import { Certificate, CertNaming, CryptoAlgorithm, ECDSA, generateEncryptionKey, generateSigningKey, KeyChain, RSA, RSAOAEP } from "@ndn/keychain";
 import { Data, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 import { createPrivateKey } from "crypto";
+import assert from "minimalistic-assert";
 
 import { TT } from "./an";
 
@@ -50,12 +51,12 @@ export class SafeBag {
   }
 
   /** Decrypt private key and return unencrypted PKCS8 format. */
-  public decryptKey(passphrase: string): Uint8Array {
+  public decryptKey(passphrase: string|Uint8Array): Uint8Array {
     const key = createPrivateKey({
       key: Buffer.from(this.encryptedKey),
       type: "pkcs8",
       format: "der",
-      passphrase,
+      passphrase: Buffer.from(passphrase),
     });
     return key.export({
       type: "pkcs8",
@@ -67,12 +68,35 @@ export class SafeBag {
    * Save private key and public key to KeyChain.
    * @param passphrase SafeBag passphrase.
    * @param keyChain destination KeyChain.
+   * @param algoList use SigningAlgorithmList to import RSA key as RSASSA-PKCS1-v1_5 signing key;
+   *                 use EncryptionAlgorithmList to import RSA key as RSA-OAEP encryption key.
    */
-  public async saveKeyPair(passphrase: string, keyChain: KeyChain): Promise<void> {
-    const [algo, key] = await this.certificate.importPublicKey([ECDSA, RSA]);
+  public async saveKeyPair(
+      passphrase: string,
+      keyChain: KeyChain,
+      { preferRSAOAEP = false }: SafeBag.ImportOptions = {},
+  ): Promise<void> {
+    const algoList: CryptoAlgorithm[] = [ECDSA, preferRSAOAEP ? RSAOAEP : RSA];
+    const [algo, key] = await this.certificate.importPublicKey(algoList);
+    assert(CryptoAlgorithm.isAsym(algo));
+
+    const keyName = CertNaming.toKeyName(this.certificate.name);
     const pkcs8 = this.decryptKey(passphrase);
-    await generateSigningKey(keyChain, CertNaming.toKeyName(this.certificate.name),
-      algo as SigningAlgorithm<any, true, ECDSA.GenParams|RSA.GenParams>,
-      { importPkcs8: [pkcs8, key.spki] });
+    if (CryptoAlgorithm.isSigning(algo)) {
+      await generateSigningKey(keyChain, keyName, algo, { importPkcs8: [pkcs8, key.spki] });
+    } else if (CryptoAlgorithm.isEncryption(algo)) {
+      await generateEncryptionKey(keyChain, keyName, algo, { importPkcs8: [pkcs8, key.spki] });
+    }
+  }
+}
+
+export namespace SafeBag {
+  export interface ImportOptions {
+    /**
+     * ndn-cxx stores RSA signing key and RSA-OAEP encryption key in the same way.
+     * By default, RSA key is imported as RSASSA-PKCS1-v1_5 signing key.
+     * Set to true to import RSA key as RSA-OAEP encryption key instead.
+     */
+    preferRSAOAEP?: boolean;
   }
 }

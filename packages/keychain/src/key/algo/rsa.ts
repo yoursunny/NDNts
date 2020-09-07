@@ -16,11 +16,9 @@ class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenParams> {
       protected readonly name: string,
       public readonly uuid: string,
       public readonly keyUsages: Record<"private"|"public", KeyUsage[]>,
+      hash: AlgorithmIdentifier = "SHA-256",
   ) {
-    this.importParams = {
-      name,
-      hash: "SHA-256",
-    };
+    this.importParams = { name, hash };
     this.genParams = {
       ...this.importParams,
       publicExponent: Uint8Array.of(0x01, 0x00, 0x01),
@@ -111,7 +109,7 @@ export namespace RSA {
 export const RSAOAEP: EncryptionAlgorithm<{}, true, RSA.GenParams> = new (class extends RsaCommon implements EncryptionAlgorithm<{}, true, RSA.GenParams> {
   constructor() {
     super("RSA-OAEP", "f9c1c143-a7a5-459c-8cdf-69c5f7191cfe",
-      { private: ["decrypt"], public: ["encrypt"] });
+      { private: ["decrypt"], public: ["encrypt"] }, "SHA-1");
   }
 
   public makeLLEncrypt({ publicKey }: CryptoAlgorithm.PublicKey<{}>): LLEncrypt {

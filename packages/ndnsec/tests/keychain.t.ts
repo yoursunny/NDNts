@@ -12,11 +12,11 @@ describe("ndn-cxx keychain", () => {
     return;
   }
 
-  let homedir: string;
+  let home: string;
   let deleteTmpDir: () => void;
 
   beforeEach(async () => {
-    ({ name: homedir, removeCallback: deleteTmpDir } = tmpDir({ unsafeCleanup: true }));
+    ({ name: home, removeCallback: deleteTmpDir } = tmpDir({ unsafeCleanup: true }));
   });
 
   afterEach(() => {
@@ -24,13 +24,13 @@ describe("ndn-cxx keychain", () => {
   });
 
   test("KeyStore", async () => {
-    const keyChain = new NdnsecKeyChain(homedir);
+    const keyChain = new NdnsecKeyChain({ home });
     const record = await TestKeyStore.execute(keyChain, { skipHmac: true });
     TestKeyStore.check(record, { skipHmac: true });
   }, 10000);
 
   test("CertStore", async () => {
-    const keyChain = new NdnsecKeyChain(homedir);
+    const keyChain = new NdnsecKeyChain({ home });
     const record = await TestCertStore.execute(keyChain);
     TestCertStore.check(record);
   }, 10000);

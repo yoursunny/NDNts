@@ -21,6 +21,10 @@ export class ContentKey {
     EVD.decode(this, new Decoder(data.content));
   }
 
+  public get locator(): Name {
+    return ContentKey.makeLocator(this);
+  }
+
   public get name(): Name {
     return this.data.name;
   }
@@ -33,33 +37,57 @@ export class ContentKey {
 export interface ContentKey extends Readonly<ContentKey.NameParts>, Readonly<ContentKey.Fields> {}
 
 export namespace ContentKey {
-  export interface NameParts extends KeyEncryptionKey.NameParts {
+  export interface LocatorParts {
     ckPrefix: Name;
     ckId: Component;
+  }
+
+  export interface NameParts extends LocatorParts, KeyEncryptionKey.NameParts {
   }
 
   export interface Fields {
     encryptedKey: Uint8Array;
   }
 
+  /**
+   * Parse content key locator name.
+   * In an encrypted application packet, it appears in EncryptedPayload.Name field.
+   */
+  export function parseLocator(name: Name): LocatorParts {
+    if (!name.get(-2)?.equals(Keyword.CK)) {
+      throw new Error("bad CK locator");
+    }
+    return {
+      ckPrefix: name.getPrefix(-2),
+      ckId: name.get(-1)!,
+    };
+  }
+
+  /** Create content key locator name. */
+  export function makeLocator({ ckPrefix, ckId }: LocatorParts): Name {
+    return ckPrefix.append(Keyword.CK, ckId);
+  }
+
   /** Parse content key Data name. */
   export function parseName(name: Name): NameParts {
-    const pos1 = name.comps.findIndex((comp) => comp.equals(Keyword.CK));
-    const pos2 = name.comps.findIndex((comp) => comp.equals(Keyword.ENCRYPTED_BY));
-    if (pos1 < 0 || pos2 < 0 || pos1 + 2 !== pos2) {
+    let pos = name.length - 1;
+    for (; pos >= 0; --pos) {
+      if (name.get(pos)!.equals(Keyword.ENCRYPTED_BY)) {
+        break;
+      }
+    }
+    if (pos < 0) {
       throw new Error("bad CK name");
     }
     return {
-      ...parseKekName(name.slice(pos2 + 1), Keyword.KEK, "CK"),
-      ckPrefix: name.slice(0, pos1),
-      ckId: name.at(pos1 + 1),
+      ...parseLocator(name.getPrefix(pos)),
+      ...parseKekName(name.slice(pos + 1), Keyword.KEK, "CK"),
     };
   }
 
   /** Create content key Data name. */
   export function makeName(parts: NameParts): Name {
-    const { ckPrefix, ckId } = parts;
-    return ckPrefix.append(Keyword.CK, ckId, Keyword.ENCRYPTED_BY, ...makeKekName(parts, Keyword.KEK).comps);
+    return makeLocator(parts).append(Keyword.ENCRYPTED_BY, ...makeKekName(parts, Keyword.KEK).comps);
   }
 
   export interface Options {
