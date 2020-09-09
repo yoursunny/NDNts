@@ -35,6 +35,7 @@ export class RttEstimator {
   public get rto() { return this.rto_; }
 
   public push(rtt: number, nPending = 1) {
+    nPending = Math.max(nPending, 1);
     if (Number.isNaN(this.rttVar)) {
       this.sRtt_ = rtt;
       this.rttVar = rtt / 2;

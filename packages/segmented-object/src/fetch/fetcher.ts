@@ -21,6 +21,12 @@ interface Options extends FetchLogic.Options {
   /** Allow aborting fetching process. */
   abort?: AbortController;
 
+  /**
+   * InterestLifetime added to RTO.
+   * Default is 1000ms.
+   */
+  lifetimeAfterRto?: number;
+
   /** If specified, verify received Data. */
   verifier?: Verifier;
 }
@@ -68,11 +74,12 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
   private tx(): AsyncIterable<FwPacket> {
     const {
       segmentNumConvention = defaultSegmentConvention,
+      lifetimeAfterRto = 1000,
     } = this.opts;
     return this.logic.outgoing(
       ({ segNum, rto }) => {
         const interest = new Interest(this.name.append(segmentNumConvention, segNum),
-          Interest.Lifetime(rto + 200));
+          Interest.Lifetime(rto + lifetimeAfterRto));
         return FwPacket.create(interest, segNum);
       },
       ({ interest: { l3, token } }) => {
