@@ -1,6 +1,6 @@
 {
   "name": "@ndn/web-bluetooth-transport",
-  "version": "0.0.20200606",
+  "version": "0.0.20200909",
   "description": "NDNts: Web Bluetooth Transport",
   "keywords": [
     "NDN",
