@@ -3,7 +3,7 @@ import { LpService, NumericPitToken } from "@ndn/lp";
 import { Interest } from "@ndn/packet";
 import { EventEmitter } from "events";
 import { filter, map, pipeline } from "streaming-iterables";
-import TypedEmitter from "typed-emitter";
+import type TypedEmitter from "typed-emitter";
 
 import type { Transport } from "./mod";
 

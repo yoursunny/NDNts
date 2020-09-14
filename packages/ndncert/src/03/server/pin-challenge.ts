@@ -2,7 +2,7 @@ import { KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
 import { LLVerify } from "@ndn/packet";
 import { fromUtf8 } from "@ndn/tlv";
 import { EventEmitter } from "events";
-import TypedEmitter from "typed-emitter";
+import type TypedEmitter from "typed-emitter";
 
 import type { ChallengeRequest } from "../packet/mod";
 import type { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";

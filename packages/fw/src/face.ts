@@ -5,7 +5,7 @@ import MultiSet from "mnemonist/multi-set";
 import pDefer from "p-defer";
 import Fifo from "p-fifo";
 import { buffer, filter, pipeline, tap } from "streaming-iterables";
-import TypedEmitter from "typed-emitter";
+import type TypedEmitter from "typed-emitter";
 
 import type { Forwarder, ForwarderImpl } from "./forwarder";
 import type { FwPacket } from "./packet";

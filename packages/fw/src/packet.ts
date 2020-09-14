@@ -41,5 +41,5 @@ export class CancelInterest implements FwPacket<Interest> {
   ) {
   }
 
-  cancel = true;
+  public readonly cancel = true;
 }

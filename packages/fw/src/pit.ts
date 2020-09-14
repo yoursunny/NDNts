@@ -67,8 +67,11 @@ export class PitEntry {
 
   /** Forward Interest to upstream. */
   public forwardInterest(face: FaceImpl) {
-    const now = getNow();
-    this.interest.lifetime = this.lastExpire - now;
+    const lifetime = this.lastExpire - getNow();
+    if (lifetime <= 0) {
+      return;
+    }
+    this.interest.lifetime = lifetime;
     face.send(FwPacket.create(this.interest, this.token));
   }
 

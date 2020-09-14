@@ -1,3 +1,5 @@
+import assert from "minimalistic-assert";
+
 /** A token-based throttle limiter. */
 export class TokenLimiter {
   private queue = new Set<() => void>();
@@ -12,6 +14,7 @@ export class TokenLimiter {
 
   /** Change total number of tokens. */
   public set capacity(v) {
+    assert(v >= 0);
     this.capacity_ = Math.floor(v);
     this.unblock();
   }

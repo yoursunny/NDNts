@@ -3,33 +3,10 @@ import { CancelInterest, Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { Data, Interest, Name, Verifier } from "@ndn/packet";
 import AbortController from "abort-controller";
 import { EventEmitter } from "events";
-import TypedEmitter from "typed-emitter";
+import type TypedEmitter from "typed-emitter";
 
 import { defaultSegmentConvention, SegmentConvention } from "../convention";
 import { FetchLogic } from "./logic";
-
-interface Options extends FetchLogic.Options {
-  /** Use the specified endpoint instead of the default. */
-  endpoint?: Endpoint;
-
-  /**
-   * Choose a segment number naming convention.
-   * Default is Segment from @ndn/naming-convention2 package.
-   */
-  segmentNumConvention?: SegmentConvention;
-
-  /** Allow aborting fetching process. */
-  abort?: AbortController;
-
-  /**
-   * InterestLifetime added to RTO.
-   * Default is 1000ms.
-   */
-  lifetimeAfterRto?: number;
-
-  /** If specified, verify received Data. */
-  verifier?: Verifier;
-}
 
 interface Events {
   /** Emitted when a Data segment arrives. */
@@ -44,7 +21,7 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
   private readonly logic: FetchLogic;
   private readonly face: FwFace;
 
-  constructor(private readonly name: Name, private readonly opts: Options) {
+  constructor(private readonly name: Name, private readonly opts: Fetcher.Options) {
     super();
     this.logic = new FetchLogic(opts);
     this.logic.on("end", () => { this.emit("end"); this.close(); });
@@ -97,6 +74,7 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
   };
 
   private async handleData(data: Data, segNum: number) {
+    const now = this.logic.now();
     try {
       await this.opts.verifier?.verify(data);
     } catch (err) {
@@ -104,15 +82,43 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
       this.close();
       return;
     }
-    this.logic.satisfy(segNum);
+
+    this.logic.satisfy(segNum, now);
     if (data.isFinalBlock) {
       this.logic.setFinalSegNum(segNum);
+    } else {
+      const {
+        segmentNumConvention = defaultSegmentConvention,
+      } = this.opts;
+      if (data.finalBlockId?.is(segmentNumConvention)) {
+        this.logic.setFinalSegNum(data.finalBlockId.as(segmentNumConvention), true);
+      }
     }
     this.emit("segment", segNum, data);
   }
 }
 
-type Options_ = Options;
 export namespace Fetcher {
-  export type Options = Options_;
+  export interface Options extends FetchLogic.Options {
+    /** Use the specified endpoint instead of the default. */
+    endpoint?: Endpoint;
+
+    /**
+     * Choose a segment number naming convention.
+     * Default is Segment from @ndn/naming-convention2 package.
+     */
+    segmentNumConvention?: SegmentConvention;
+
+    /** Allow aborting fetching process. */
+    abort?: AbortController;
+
+    /**
+     * InterestLifetime added to RTO.
+     * Default is 1000ms.
+     */
+    lifetimeAfterRto?: number;
+
+    /** If specified, verify received Data. */
+    verifier?: Verifier;
+  }
 }

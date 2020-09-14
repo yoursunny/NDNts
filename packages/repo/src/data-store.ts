@@ -5,7 +5,7 @@ import { AbstractLevelDOWN } from "abstract-leveldown";
 import { EventEmitter } from "events";
 import { collect, filter, fromStream, map, pipeline, transform } from "streaming-iterables";
 import throat from "throat";
-import TypedEmitter from "typed-emitter";
+import type TypedEmitter from "typed-emitter";
 
 import { Db, DbChain, filterExpired, isExpired, openDb, Record } from "./db";
 
