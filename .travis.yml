@@ -5,9 +5,7 @@ language: node_js
 jobs:
   include:
   - node_js: '12'
-  - node_js: '14.4'
   - node_js: '14'
-    env: SKIP_LITERATE=1 # https://github.com/K-FOSS/TS-ESNode/issues/105
 
 addons:
   apt:
