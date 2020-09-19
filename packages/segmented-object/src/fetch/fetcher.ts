@@ -1,7 +1,7 @@
 import { Endpoint } from "@ndn/endpoint";
 import { CancelInterest, Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { Data, Interest, Name, Verifier } from "@ndn/packet";
-import AbortController from "abort-controller";
+import type AbortController from "abort-controller";
 import { EventEmitter } from "events";
 import type TypedEmitter from "typed-emitter";
 

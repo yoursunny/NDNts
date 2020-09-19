@@ -17,7 +17,7 @@ window.addEventListener("load", () => {
 window.testBlobChunkSource = async (): Promise<FetchedInfo> => {
   const file = upload.files![0];
   const server = serve("/R", new BlobChunkSource(file));
-  const fetched = await fetch.promise(new Name("/R"));
+  const fetched = await fetch(new Name("/R"));
   server.close();
 
   const digest = await crypto.subtle.digest("SHA-256", fetched);

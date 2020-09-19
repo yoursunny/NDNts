@@ -31,7 +31,7 @@ async function main(args: Args) {
       break;
   }
 
-  await fetch.toStream(name, stdout, { segmentNumConvention });
+  await fetch(name, { segmentNumConvention }).pipe(stdout);
 }
 
 export class GetSegmentedCommand implements CommandModule<CommonArgs, Args> {
