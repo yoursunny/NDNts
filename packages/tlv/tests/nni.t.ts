@@ -18,8 +18,12 @@ test.each([
 
 test("encode big", () => {
   expect(() => Encoder.encode(NNI(Number.MAX_SAFE_INTEGER))).not.toThrow();
-  expect(() => Encoder.encode(NNI(Number.MAX_VALUE))).toThrow();
-  expect(() => Encoder.encode(NNI(Number.MAX_VALUE, { unsafe: true }))).not.toThrow();
+  // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+  expect(() => Encoder.encode(NNI(0xFFFFFFFFFFFFFFFF))).toThrow(/large/);
+  // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+  expect(() => Encoder.encode(NNI(0xFFFFFFFFFFFFFFFF, { unsafe: true }))).not.toThrow();
+  // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+  expect(() => Encoder.encode(NNI(0x1FFFFFFFFFFFFFFFF, { unsafe: true }))).toThrow(/large/);
 
   expect(NNI(BigInt("0xFFFFFFFFFFFFFFFF"))).toEncodeAs([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
   expect(() => Encoder.encode(NNI(BigInt("0x10000000000000000")))).toThrow(/large/);
