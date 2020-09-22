@@ -20,7 +20,7 @@ import memdown from "memdown";
 ## DataStore
 
 **DataStore** is a Data packet storage, based on [LevelDB](https://www.npmjs.com/package/leveldown) or other [abstract-leveldown](https://www.npmjs.com/package/abstract-leveldown) compatible key-value store.
-It implements most of `DataStore` interface defined in `@ndn/repo-api` package, offering APIs to insert and delete Data packets.
+It implements most of `DataStore` interfaces defined in `@ndn/repo-api` package, offering APIs to insert and delete Data packets.
 
 ```ts
 // DataStore constructor accepts an abstract-leveldown instance.
@@ -33,6 +33,9 @@ await store.insert(new Data("/A/0"));
 // You can totally insert multiple Data packets in one command.
 // This is even preferred, because it bundles them into one LevelDB transaction and runs faster.
 await store.insert(new Data("/A/1"), new Data("/A/2"));
+// You can also pass the result of fetch() function from @ndn/segmented-object package directly to
+// insert() function, because it accepts AsyncIterable<Data> and Iterable<Data> types.
+
 // You can set an expiration time during insertion. Packets disappear upon expiration.
 await store.insert({ expireTime: Date.now() + 50 }, new Data("/A/3"));
 await new Promise((r) => setTimeout(r, 50)); // Poof, it's gone.

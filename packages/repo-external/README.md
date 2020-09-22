@@ -4,7 +4,7 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 
 This package allows inserting and deleting Data in [ndn-python-repo](https://github.com/JonnyKong/ndn-python-repo), version 0.2a5.
 `PyRepoClient` type is a client for [ndn-python-repo protocol](https://ndn-python-repo.readthedocs.io/en/latest/src/specification/specification.html).
-`PyRepoStore` type implements a subset of `DataStore` interface defined in `@ndn/repo-api` package.
+`PyRepoStore` type implements a subset of `DataStore` interfaces defined in `@ndn/repo-api` package.
 
 ```ts
 import { PyRepoStore } from "@ndn/repo-external";

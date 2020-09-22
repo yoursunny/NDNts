@@ -1,7 +1,8 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Data, Name } from "@ndn/packet";
-import type { DataStore as S } from "@ndn/repo-api";
+import type { Name } from "@ndn/packet";
+import { DataStore as S } from "@ndn/repo-api";
 import pDefer from "p-defer";
+import { consume, pipeline, transform } from "streaming-iterables";
 import throat from "throat";
 
 import { PyRepoClient } from "./client";
@@ -42,29 +43,35 @@ export class PyRepoStore implements S.Close, S.Insert, S.Delete {
   }
 
   /** Insert some Data packets. */
-  public async insert(...pkts: Data[]): Promise<void> {
-    await Promise.all(pkts.map((data) => {
-      return this.throttle(async () => {
-        const producerAnswered = pDefer();
-        const producer = this.endpoint.produce(data.name, async () => {
-          setTimeout(() => producerAnswered.resolve(), 100);
-          return data;
-        }, {
-          describe: `pyrepo-insert(${data.name})`,
-          announcement: false,
+  public async insert(...args: S.Insert.Args<never>): Promise<void> {
+    // TODO use client.insertRange where applicable
+    const { pkts } = S.Insert.parseArgs(args);
+    return pipeline(
+      () => pkts,
+      transform(Infinity, (data) => {
+        return this.throttle(async () => {
+          const producerAnswered = pDefer();
+          const producer = this.endpoint.produce(data.name, async () => {
+            setTimeout(() => producerAnswered.resolve(), 100);
+            return data;
+          }, {
+            describe: `pyrepo-insert(${data.name})`,
+            announcement: false,
+          });
+          await new Promise((r) => setTimeout(r, 100));
+          try {
+            await this.client.insert(data.name);
+            await Promise.race([
+              producerAnswered.promise,
+              new Promise((resolve, reject) => setTimeout(() => reject(new Error("no incoming Interest")), 5000)),
+            ]);
+          } finally {
+            producer.close();
+          }
         });
-        await new Promise((r) => setTimeout(r, 100));
-        try {
-          await this.client.insert(data.name);
-          await Promise.race([
-            producerAnswered.promise,
-            new Promise((resolve, reject) => setTimeout(() => reject(new Error("no incoming Interest")), 5000)),
-          ]);
-        } finally {
-          producer.close();
-        }
-      });
-    }));
+      }),
+      consume,
+    );
   }
 
   /** Delete some Data packets. */

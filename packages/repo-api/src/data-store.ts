@@ -1,4 +1,5 @@
-import type { Data, Interest, Name } from "@ndn/packet";
+import { Data, Interest, Name } from "@ndn/packet";
+import type { AnyIterable } from "streaming-iterables";
 
 export interface Close {
   /** Close the store. */
@@ -25,11 +26,50 @@ export interface Find {
   find: (interest: Interest) => Promise<Data|undefined>;
 }
 
-type InsertFunc = (...pkts: Data[]) => Promise<void>;
-
-export interface Insert<Options = never> {
+export interface Insert<Options extends {} = never> {
   /** Insert one or more Data packets. */
-  insert: object extends Options ? ((opts: Options, ...pkts: Data[]) => Promise<void>) | InsertFunc : InsertFunc;
+  insert: (...args: Insert.Args<Options>) => Promise<void>;
+}
+export namespace Insert {
+  export type Args<O> = [...(object extends O ? [O]|[] : []), ...Array<Data|AnyIterable<Data>>];
+
+  export interface ParsedArgs<O> {
+    readonly opts?: O;
+    readonly pkts: AsyncIterable<Data>;
+    readonly singles: Data[];
+    readonly batches: Array<AnyIterable<Data>>;
+  }
+
+  export function parseArgs<O>(args: Args<O>): ParsedArgs<O> {
+    let opts: O|undefined;
+    if (args.length > 0 && !(args[0] instanceof Data) && !isDataIterable(args[0])) {
+      opts = args.shift() as O;
+    }
+    return {
+      opts,
+      get pkts() {
+        return (async function*() {
+          for (const a of args) {
+            if (isDataIterable(a)) {
+              yield* a;
+            } else {
+              yield a as Data;
+            }
+          }
+        })();
+      },
+      get singles() {
+        return args.filter((a): a is Data => a instanceof Data);
+      },
+      get batches() {
+        return args.filter(isDataIterable);
+      },
+    };
+  }
+
+  function isDataIterable(obj: any): obj is AnyIterable<Data> {
+    return !!obj && (!!(obj as Iterable<Data>)[Symbol.iterator] || !!(obj as AsyncIterable<Data>)[Symbol.asyncIterator]);
+  }
 }
 
 export interface Delete {

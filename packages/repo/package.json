@@ -45,6 +45,7 @@
   "devDependencies": {
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/rdr": "workspace:*",
+    "@ndn/segmented-object": "workspace:*",
     "@types/encoding-down": "^5.0.0",
     "@types/levelup": "^4.3.0",
     "@types/memdown": "^3.0.0",

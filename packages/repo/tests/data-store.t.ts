@@ -1,9 +1,12 @@
 import "@ndn/packet/test-fixture/expect";
 
+import { Endpoint } from "@ndn/endpoint";
 import { Data, Interest, Name } from "@ndn/packet";
+import { BufferChunkSource, fetch, serve } from "@ndn/segmented-object";
+import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
 import { collect, map } from "streaming-iterables";
 
-import { DataStore } from "..";
+import type { DataStore } from "..";
 import { makeDataStore } from "../test-fixture/data-store";
 
 let store: DataStore;
@@ -23,6 +26,18 @@ test("insert get delete", async () => {
   await expect(store.get(new Name("/A/0"))).resolves.toBeUndefined();
   await expect(store.get(new Name("/A/1"))).resolves.toBeUndefined();
   await expect(store.get(new Name("/A/2"))).resolves.toHaveName("/A/2");
+});
+
+describe("segmented object", () => {
+  afterEach(() => Endpoint.deleteDefaultForwarder());
+
+  test("insert", async () => {
+    const body = makeObjectBody(500 * 25);
+    const producer = serve("/S", new BufferChunkSource(body, { chunkSize: 500 }));
+    await store.insert(fetch(new Name("/S")));
+    producer.close();
+    await expect(collect(store.listNames())).resolves.toHaveLength(25);
+  });
 });
 
 test("list find expire", async () => {

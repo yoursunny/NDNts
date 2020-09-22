@@ -1,6 +1,6 @@
 import { Data, Name } from "@ndn/packet";
 import { Decoder, fromUtf8 } from "@ndn/tlv";
-import { AbstractIterator, AbstractLevelDOWN } from "abstract-leveldown";
+import type { AbstractIterator, AbstractLevelDOWN } from "abstract-leveldown";
 import EncodingDown from "encoding-down";
 import level, { LevelUp, LevelUpChain } from "levelup";
 

@@ -2,17 +2,17 @@ import { L3Face } from "@ndn/l3face";
 import type { Data } from "@ndn/packet";
 import pushable from "it-pushable";
 import pDefer, { DeferredPromise } from "p-defer";
-import { consume } from "streaming-iterables";
+import { consume, map } from "streaming-iterables";
 
-import type * as DataStore from "./data-store";
+import * as S from "./data-store";
 
 interface InsertJob {
-  pkts: Array<{ l3: Data }>;
-  promise: DeferredPromise<undefined>;
+  pkts: AsyncIterable<Data>;
+  defer: DeferredPromise<undefined>;
 }
 
 /** Send packets to a bulk insertion target. */
-export class BulkInsertInitiator implements DataStore.Close, DataStore.Insert {
+export class BulkInsertInitiator implements S.Close, S.Insert {
   private readonly jobs = pushable<InsertJob>();
   private readonly faceTx: Promise<void>;
 
@@ -32,19 +32,20 @@ export class BulkInsertInitiator implements DataStore.Close, DataStore.Insert {
    * A resolved Promise means the packets are scheduled for transmission.
    * It does not imply the target has received or accepted these packets.
    */
-  public insert(...pkts: Data[]): Promise<void> {
+  public async insert(...args: S.Insert.Args<never>): Promise<void> {
+    const { pkts } = S.Insert.parseArgs(args);
     const job: InsertJob = {
-      pkts: pkts.map((pkt) => ({ l3: pkt })),
-      promise: pDefer(),
+      pkts,
+      defer: pDefer(),
     };
     this.jobs.push(job);
-    return job.promise.promise;
+    return job.defer.promise;
   }
 
   private async *tx(): AsyncIterable<{ l3: Data }> {
     for await (const job of this.jobs) {
-      yield* job.pkts;
-      job.promise.resolve();
+      yield* map((data) => ({ l3: data }), job.pkts);
+      job.defer.resolve();
     }
   }
 }

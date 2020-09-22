@@ -1,7 +1,7 @@
 import { Data, ImplicitDigest, Interest, Name } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
 import { Encoder, toHex, toUtf8 } from "@ndn/tlv";
-import { AbstractLevelDOWN } from "abstract-leveldown";
+import type { AbstractLevelDOWN } from "abstract-leveldown";
 import { EventEmitter } from "events";
 import { collect, filter, fromStream, map, pipeline, transform } from "streaming-iterables";
 import throat from "throat";
@@ -102,21 +102,10 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
   }
 
   /** Insert one or more Data packets. */
-  public insert(...pkts: Data[]): Promise<void>;
-
-  /** Insert one or more Data packets with given options. */
-  public insert(opts: InsertOptions, ...pkts: Data[]): Promise<void>;
-
-  public insert(arg1: Data|InsertOptions, ...pkts: Data[]): Promise<void> {
-    let opts: InsertOptions = {};
-    if (arg1 instanceof Data) {
-      pkts.unshift(arg1);
-    } else {
-      opts = arg1;
-    }
-
+  public async insert(...args: S.Insert.Args<InsertOptions>): Promise<void> {
+    const { opts, pkts } = S.Insert.parseArgs<InsertOptions>(args);
     const tx = this.tx();
-    for (const pkt of pkts) {
+    for await (const pkt of pkts) {
       tx.insert(pkt, opts);
     }
     return tx.commit();
