@@ -20,7 +20,7 @@ import memdown from "memdown";
 ## DataStore
 
 **DataStore** is a Data packet storage, based on [LevelDB](https://www.npmjs.com/package/leveldown) or other [abstract-leveldown](https://www.npmjs.com/package/abstract-leveldown) compatible key-value store.
-It is an implemented of `DataStore` interface defined in `@ndn/repo-api` package, which offers APIs to insert and delete Data packets.
+It implements most of `DataStore` interface defined in `@ndn/repo-api` package, offering APIs to insert and delete Data packets.
 
 ```ts
 // DataStore constructor accepts an abstract-leveldown instance.

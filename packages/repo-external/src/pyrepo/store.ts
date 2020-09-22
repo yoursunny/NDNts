@@ -1,13 +1,13 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Data, Name } from "@ndn/packet";
-import type { DataStore } from "@ndn/repo-api";
+import type { DataStore as S } from "@ndn/repo-api";
 import pDefer from "p-defer";
 import throat from "throat";
 
 import { PyRepoClient } from "./client";
 
 /** A DataStore implementation using ndn-python-repo. */
-export class PyRepoStore implements Pick<DataStore, "close"|"insert"|"delete"> {
+export class PyRepoStore implements S.Close, S.Insert, S.Delete {
   /** Construct with new PyRepoClient. */
   constructor(opts: PyRepoStore.Options);
 

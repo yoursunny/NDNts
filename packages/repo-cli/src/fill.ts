@@ -68,7 +68,7 @@ abstract class FillCommandBase {
       });
   }
 
-  protected async execute(args: BaseArgs, store: Pick<DataStore, "insert">) {
+  protected async execute(args: BaseArgs, store: DataStore.Insert) {
     const progress = new ProgressBar(":bar :current/:total :rateD/s :elapseds ETA:etas", { total: args.count });
     await pipeline(
       () => genData(args),

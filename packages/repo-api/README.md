@@ -6,10 +6,10 @@ This package defines the programming interface of an abstract Data repository, a
 
 ## DataStore
 
-**DataStore** is an abstract interface of a Data repository.
-`DataStore` type of `@ndn/repo` package is an implementation of this interface.
+**DataStore** is a group of interfaces that defines the API of a Data repository.
+`DataStore` type of `@ndn/repo` package is an implementation of these interfaces.
 
-### Loopup and Enumeration Methods
+### Lookup and Enumeration Methods
 
 **get(name)** retrieves Data by exact name.
 
@@ -21,7 +21,7 @@ This package defines the programming interface of an abstract Data repository, a
 
 ### Modifier Methods
 
-**insert(...pkts)** inserts Data packets.
+**insert(\[options\], ...pkts)** inserts Data packets.
 
 **erase(...names)** deletes Data packets.
 

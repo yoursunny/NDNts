@@ -3,8 +3,8 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { Certificate, generateEncryptionKey, generateSigningKey, KeyChainImplWebCrypto as crypto, RSAOAEP, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, Name, Verifier } from "@ndn/packet";
-import { DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
-import memdown from "memdown";
+import { PrefixRegStatic } from "@ndn/repo";
+import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
 
 import { AccessManager, Consumer, Producer } from "..";
 
@@ -14,8 +14,7 @@ test("simple", async () => {
   const [rootSigner, rootVerifier] = await generateSigningKey("/root");
 
   const amE = new Endpoint();
-  const amStore = new DataStore(memdown());
-  const amRP = RepoProducer.create(amStore, {
+  const { store: amStore, close: amClose } = await makeRepoProducer([], {
     endpoint: amE,
     reg: PrefixRegStatic(new Name("/access/manager")),
   });
@@ -41,8 +40,7 @@ test("simple", async () => {
   expect(kekHlookup.kek).toHaveName(kek.name);
 
   const pE = new Endpoint();
-  const pStore = new DataStore(memdown());
-  const pRP = RepoProducer.create(pStore, {
+  const { store: pStore, close: pClose } = await makeRepoProducer([], {
     endpoint: pE,
     reg: PrefixRegStatic(new Name("/producer/ck-prefix")),
   });
@@ -62,8 +60,7 @@ test("simple", async () => {
   }, { dataSigner: pSigner });
 
   const cE = new Endpoint();
-  const cStore = new DataStore(memdown());
-  const cRP = RepoProducer.create(cStore, {
+  const { store: cStore, close: cClose } = await makeRepoProducer([], {
     endpoint: cE,
     reg: PrefixRegStatic(new Name("/consumer")),
   });
@@ -96,7 +93,7 @@ test("simple", async () => {
   expect(appData.content).toEqualUint8Array(appContent);
 
   pP.close();
-  cRP.close();
-  pRP.close();
-  amRP.close();
+  cClose();
+  pClose();
+  amClose();
 }, 10000);

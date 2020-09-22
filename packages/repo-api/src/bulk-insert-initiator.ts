@@ -4,7 +4,7 @@ import pushable from "it-pushable";
 import pDefer, { DeferredPromise } from "p-defer";
 import { consume } from "streaming-iterables";
 
-import type { DataStore } from "./data-store";
+import type * as DataStore from "./data-store";
 
 interface InsertJob {
   pkts: Array<{ l3: Data }>;
@@ -12,7 +12,7 @@ interface InsertJob {
 }
 
 /** Send packets to a bulk insertion target. */
-export class BulkInsertInitiator implements Pick<DataStore, "close"|"insert"> {
+export class BulkInsertInitiator implements DataStore.Close, DataStore.Insert {
   private readonly jobs = pushable<InsertJob>();
   private readonly faceTx: Promise<void>;
 

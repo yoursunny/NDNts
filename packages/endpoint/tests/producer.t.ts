@@ -2,14 +2,14 @@ import "@ndn/packet/test-fixture/expect";
 
 import { generateSigningKey } from "@ndn/keychain";
 import { Data, Interest } from "@ndn/packet";
-import { makeEmptyDataStore } from "@ndn/repo/test-fixture/data-store";
+import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 
 import { DataStoreBuffer, Endpoint, Options, Producer, ProducerHandler } from "..";
 
 afterEach(() => Endpoint.deleteDefaultForwarder());
 
-function makeEndpointBuffered(autoBuffer?: boolean, bo?: DataStoreBuffer.Options, eo?: Options): [Endpoint, DataStoreBuffer] {
-  const dataStoreBuffer = new DataStoreBuffer(makeEmptyDataStore(), bo);
+async function makeEndpointBuffered(autoBuffer?: boolean, bo?: DataStoreBuffer.Options, eo?: Options): Promise<[Endpoint, DataStoreBuffer]> {
+  const dataStoreBuffer = new DataStoreBuffer(await makeDataStore(), bo);
   const ep = new Endpoint({ ...eo, dataBuffer: dataStoreBuffer, autoBuffer });
   return [ep, dataStoreBuffer];
 }
@@ -26,7 +26,7 @@ test("Data non-match", async () => {
 });
 
 test("fill buffer in handler", async () => {
-  const [ep, dataStoreBuffer] = makeEndpointBuffered();
+  const [ep, dataStoreBuffer] = await makeEndpointBuffered();
   const handler = jest.fn<ReturnType<ProducerHandler>, Parameters<ProducerHandler>>(
     async (interest: Interest, { dataBuffer }: Producer) => {
       expect(dataBuffer).toBe(dataStoreBuffer);
@@ -48,7 +48,7 @@ test("fill buffer in handler", async () => {
 });
 
 test("prefill buffer", async () => {
-  const [ep, dataStoreBuffer] = makeEndpointBuffered();
+  const [ep, dataStoreBuffer] = await makeEndpointBuffered();
   const handler = jest.fn(async (interest: Interest) => {
     return new Data(interest.name);
   });
@@ -63,7 +63,7 @@ test("prefill buffer", async () => {
 });
 
 test.each([false, true])("autoBuffer %p", async (autoBuffer) => {
-  const [ep] = makeEndpointBuffered(autoBuffer);
+  const [ep] = await makeEndpointBuffered(autoBuffer);
   const handler = jest.fn(async (interest: Interest, { dataBuffer }: Producer) => {
     await dataBuffer!.insert(new Data("/A/1"));
     return new Data("/A/0");
@@ -81,7 +81,7 @@ test.each([false, true])("autoBuffer %p", async (autoBuffer) => {
 });
 
 test("buffer expire", async () => {
-  const [ep] = makeEndpointBuffered(undefined, { ttl: 150 });
+  const [ep] = await makeEndpointBuffered(undefined, { ttl: 150 });
   const handler = jest.fn(async (interest: Interest) => {
     if (!interest.name.equals("/A")) { return false; }
     return new Data("/A/0");
@@ -104,7 +104,7 @@ test("auto signing", async () => {
   const [signer0, verifier0] = await generateSigningKey("/K0");
   const [signer1, verifier1] = await generateSigningKey("/K1");
   const [signer2, verifier2] = await generateSigningKey("/K2");
-  const [ep] = makeEndpointBuffered(true, { dataSigner: signer2 }, { dataSigner: signer1 });
+  const [ep] = await makeEndpointBuffered(true, { dataSigner: signer2 }, { dataSigner: signer1 });
   ep.produce("/A", async (interest, { dataBuffer }) => {
     if (interest.name.equals("/A/0")) {
       const data = new Data("/A/0");

@@ -6,10 +6,10 @@ import { Data } from "@ndn/packet";
 import { collect } from "streaming-iterables";
 
 import { BulkInsertInitiator, BulkInsertTarget, DataStore } from "..";
-import { makeEmptyDataStore } from "../test-fixture/data-store";
+import { makeDataStore } from "../test-fixture/data-store";
 
 let store: DataStore;
-beforeEach(() => store = makeEmptyDataStore());
+beforeEach(async () => store = await makeDataStore());
 afterEach(() => store.close());
 
 test("target", async () => {

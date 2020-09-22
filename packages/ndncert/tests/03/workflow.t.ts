@@ -1,7 +1,7 @@
 import { Certificate, ECDSA, generateSigningKey, RSA } from "@ndn/keychain";
 import { Name } from "@ndn/packet";
 import { PrefixRegShorter, RepoProducer } from "@ndn/repo";
-import { makeEmptyDataStore } from "@ndn/repo/test-fixture/data-store";
+import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 
 import { CaProfile, ClientChallenge, ClientNopChallenge, ClientPinChallenge, requestCertificate, Server, ServerChallenge, ServerNopChallenge, ServerPinChallenge } from "../..";
 
@@ -55,7 +55,7 @@ test.each(TABLE)("workflow %#", async ({
   makeChallengeLists,
   clientShouldFail = false,
 }) => {
-  const repo = makeEmptyDataStore();
+  const repo = await makeDataStore();
   const repoProducer = RepoProducer.create(repo, { reg: PrefixRegShorter(2) });
 
   const [caPvt, caPub] = await generateSigningKey("/authority", RSA);

@@ -1,6 +1,6 @@
 import { AES, createEncrypter } from "@ndn/keychain";
 import type { Data, Encrypter, LLEncrypt, Name, Signer } from "@ndn/packet";
-import type { DataStore as RepoDataStore } from "@ndn/repo-api";
+import type { DataStore as S } from "@ndn/repo-api";
 import { Encoder } from "@ndn/tlv";
 import DefaultWeakMap from "mnemonist/default-weak-map";
 
@@ -54,7 +54,8 @@ export class Producer {
 
 export namespace Producer {
   /** Subset of repo DataStore functions needed by Producer. */
-  export type DataStore = Pick<RepoDataStore, "insert">;
+  export interface DataStore extends S.Insert {
+  }
 
   export interface Options {
     /** Store for publishing CK packets. */

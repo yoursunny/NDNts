@@ -7,12 +7,12 @@ import { Component, Data, Interest, Name, NameLike } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 
 import { DataStore, PrefixRegShorter, PrefixRegStatic, PrefixRegStrip, RepoProducer, respondRdr } from "..";
-import { makeEmptyDataStore } from "../test-fixture/data-store";
+import { makeDataStore } from "../test-fixture/data-store";
 
 let store: DataStore;
 const announced = new Set<string>();
-beforeEach(() => {
-  store = makeEmptyDataStore();
+beforeEach(async () => {
+  store = await makeDataStore();
   const fw = Forwarder.getDefault();
   fw.on("annadd", (name) => announced.add(name.toString()));
   fw.on("annrm", (name) => announced.delete(name.toString()));

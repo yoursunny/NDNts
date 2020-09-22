@@ -1,5 +1,5 @@
 import { Data, ImplicitDigest, Interest, Name } from "@ndn/packet";
-import { DataStore as IDataStore } from "@ndn/repo-api";
+import { DataStore as S } from "@ndn/repo-api";
 import { Encoder, toHex, toUtf8 } from "@ndn/tlv";
 import { AbstractLevelDOWN } from "abstract-leveldown";
 import { EventEmitter } from "events";
@@ -18,7 +18,7 @@ interface Events {
 
 /** Data packet storage based on LevelDB or other abstract-leveldown store. */
 export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
-  implements IDataStore, IDataStore.InsertWithOptions<InsertOptions> {
+  implements S.Close, S.ListNames, S.ListData, S.Get, S.Find, S.Insert<InsertOptions>, S.Delete {
   private readonly db: Db;
   public readonly mutex = throat(1);
 

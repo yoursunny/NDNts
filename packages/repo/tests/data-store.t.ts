@@ -4,10 +4,10 @@ import { Data, Interest, Name } from "@ndn/packet";
 import { collect, map } from "streaming-iterables";
 
 import { DataStore } from "..";
-import { makeEmptyDataStore } from "../test-fixture/data-store";
+import { makeDataStore } from "../test-fixture/data-store";
 
 let store: DataStore;
-beforeEach(() => store = makeEmptyDataStore());
+beforeEach(async () => store = await makeDataStore());
 afterEach(() => store.close());
 
 test("insert get delete", async () => {

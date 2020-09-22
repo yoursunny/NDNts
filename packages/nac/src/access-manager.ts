@@ -1,7 +1,7 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Certificate, CertNaming, createEncrypter, CryptoAlgorithm, NamedDecrypter, NamedEncrypter, RSAOAEP } from "@ndn/keychain";
 import { Component, Interest, Name, Signer, Verifier } from "@ndn/packet";
-import type { DataStore as RepoDataStore } from "@ndn/repo-api";
+import type { DataStore as S } from "@ndn/repo-api";
 
 import { Keyword } from "./packet/an";
 import { KeyDecryptionKey, KeyEncryptionKey } from "./packet/mod";
@@ -105,7 +105,8 @@ export class AccessManager {
 
 export namespace AccessManager {
   /** Subset of repo DataStore functions needed by AccessManager. */
-  export type DataStore = Pick<RepoDataStore, "get"|"find"|"insert">;
+  export interface DataStore extends S.Get, S.Find, S.Insert {
+  }
 
   export interface Keys {
     /** Signer for KEK, KDK, and KDK SafeBag. */
