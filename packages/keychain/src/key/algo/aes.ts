@@ -24,6 +24,9 @@ export interface GenParams {
 }
 type GenParams_ = GenParams;
 
+/** AES block size. */
+export const blockSize = 16;
+
 class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I, G> {
   constructor(
       private readonly name: string,
@@ -161,7 +164,7 @@ const ctrIvGen = new DefaultWeakMap<CryptoAlgorithm.SecretKey<CTR.Info>, IvGen>(
     return new CounterIvGen({
       ivLength: 16,
       counterBits: counterLength,
-      blockLength: 16,
+      blockSize,
     });
   });
 
@@ -198,7 +201,7 @@ const gcmIvGen = new DefaultWeakMap<CryptoAlgorithm.SecretKey<{}>, IvGen>(
   () => new CounterIvGen({
     ivLength: 12,
     counterBits: 32,
-    blockLength: 16,
+    blockSize,
   }));
 
 /** AES-GCM encryption algorithm. */

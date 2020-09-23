@@ -15,8 +15,10 @@ test("crypto", async () => {
   const requestId = crypto.makeRequestId();
   expect(() => crypto.checkRequestId(requestId)).not.toThrow();
 
-  const { sessionEncrypter } = await crypto.makeSessionKey(ecdhPvtA, ecdhPubB, salt, requestId);
-  const { sessionDecrypter } = await crypto.makeSessionKey(ecdhPvtB, ecdhPubA, salt, requestId);
+  const { sessionEncrypter } = await crypto.makeSessionKey(
+    ecdhPvtA, ecdhPubB, salt, requestId, crypto.SessionRole.REQUESTER);
+  const { sessionDecrypter } = await crypto.makeSessionKey(
+    ecdhPvtB, ecdhPubA, salt, requestId, crypto.SessionRole.ISSUER);
 
   const plaintext = Uint8Array.of(0xA0, 0xA1, 0xA2, 0xA3);
   const encrypted = await sessionEncrypter.llEncrypt({ plaintext, additionalData: requestId });
@@ -62,7 +64,8 @@ test("packets", async () => {
   const caEcdh = await crypto.generateEcdhKey();
   const salt = crypto.makeSalt();
   const requestId = crypto.makeRequestId();
-  const caSessionKey = await crypto.makeSessionKey(caEcdh.privateKey, newRequest.ecdhPub, salt, requestId);
+  const caSessionKey = await crypto.makeSessionKey(
+    caEcdh.privateKey, newRequest.ecdhPub, salt, requestId, crypto.SessionRole.ISSUER);
   const newResponse = await NewResponse.build({
     profile,
     request: newRequest,
@@ -78,7 +81,8 @@ test("packets", async () => {
   expect(newResponse.requestId).toEqualUint8Array(requestId);
   expect(newResponse.challenges).toEqual(["pin"]);
 
-  const reqSessionKey = await crypto.makeSessionKey(reqEcdh.privateKey, newResponse.ecdhPub, salt, requestId);
+  const reqSessionKey = await crypto.makeSessionKey(
+    reqEcdh.privateKey, newResponse.ecdhPub, salt, requestId, crypto.SessionRole.REQUESTER);
   const { interest: challengeInterest } = await ChallengeRequest.build({
     profile,
     requestId,

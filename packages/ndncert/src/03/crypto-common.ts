@@ -1,4 +1,4 @@
-import { AES, createDecrypter, createEncrypter, KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
+import { AES, CounterIvGen, createDecrypter, createEncrypter, IvGen, KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
 import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
 
 const ECDH_PARAMS: EcKeyGenParams & EcKeyImportParams = {
@@ -46,6 +46,12 @@ export function checkRequestId(input: Uint8Array) {
 export interface SessionKey {
   sessionEncrypter: LLEncrypt.Key;
   sessionDecrypter: LLDecrypt.Key;
+  ivGen: IvGen;
+}
+
+export enum SessionRole {
+  REQUESTER = 0,
+  ISSUER = 1,
 }
 
 export async function makeSessionKey(
@@ -53,6 +59,7 @@ export async function makeSessionKey(
     ecdhPub: CryptoKey,
     salt: Uint8Array,
     requestId: Uint8Array,
+    role: SessionRole,
 ): Promise<SessionKey> {
   const hkdfBits = await crypto.subtle.deriveBits({ name: "ECDH", public: ecdhPub }, ecdhPvt, 256);
   const hkdfKey = await crypto.subtle.importKey("raw", hkdfBits, "HKDF", false, ["deriveKey"]);
@@ -73,5 +80,12 @@ export async function makeSessionKey(
   return {
     sessionEncrypter: createEncrypter(AES.GCM, key),
     sessionDecrypter: createDecrypter(AES.GCM, key),
+    ivGen: new CounterIvGen({
+      ivLength: 12,
+      fixedBits: 1,
+      fixed: Uint8Array.of(role),
+      counterBits: 32,
+      blockSize: AES.blockSize,
+    }),
   };
 }

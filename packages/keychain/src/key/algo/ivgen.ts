@@ -35,13 +35,13 @@ export class CounterIvGen implements IvGen {
     fixedBits = 0,
     fixed: fixedInput = new Uint8Array(),
     counterBits,
-    blockLength,
+    blockSize,
   }: CounterIvGen.Options) {
     assert(ivLength > 0);
     assert(fixedBits >= 0);
     assert(fixedInput.byteLength * 8 >= fixedBits);
     assert(counterBits > 0);
-    assert(blockLength > 0);
+    assert(blockSize > 0);
 
     this.ivLength = ivLength;
     const ivBits = this.ivLength * 8;
@@ -64,13 +64,13 @@ export class CounterIvGen implements IvGen {
 
     this.counterMask = BigInt(`0b${"1".repeat(counterBits)}`);
 
-    this.blockLength = blockLength;
+    this.blockSize = blockSize;
   }
 
   public readonly ivLength: number;
   private iv = BigInt(0);
   private readonly counterMask: bigint;
-  private readonly blockLength: number;
+  private readonly blockSize: number;
 
   generate() {
     return fromHex(this.iv.toString(16).padStart(2 * this.ivLength, "0"));
@@ -78,7 +78,7 @@ export class CounterIvGen implements IvGen {
 
   update(plaintextLength: number, ciphertextLength: number) {
     let counter = this.iv & this.counterMask;
-    counter += BigInt(Math.ceil(ciphertextLength / this.blockLength));
+    counter += BigInt(Math.ceil(ciphertextLength / this.blockSize));
     counter &= this.counterMask;
 
     this.iv &= ~this.counterMask;
@@ -92,6 +92,6 @@ export namespace CounterIvGen {
     fixedBits?: number;
     fixed?: Uint8Array;
     counterBits: number;
-    blockLength: number;
+    blockSize: number;
   }
 }
