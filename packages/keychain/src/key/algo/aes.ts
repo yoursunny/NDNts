@@ -1,7 +1,9 @@
 import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
+import DefaultWeakMap from "mnemonist/default-weak-map";
 
 import { crypto } from "../crypto_node";
 import type { CryptoAlgorithm, EncryptionAlgorithm } from "../types";
+import { CounterIvGen, IvGen, RandomIvGen } from "./ivgen";
 
 export interface Encryption<I, G extends GenParams> extends EncryptionAlgorithm<I, false, G> {
   makeAesKeyGenParams: (genParams: G) => AesKeyGenParams;
@@ -71,12 +73,19 @@ class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I
     }
   }
 
-  public makeLLEncrypt({ secretKey, info }: CryptoAlgorithm.SecretKey<I>): LLEncrypt {
+  public makeLLEncrypt(key: CryptoAlgorithm.SecretKey<I>): LLEncrypt {
+    const { secretKey, info } = key;
     return async ({
       plaintext,
-      iv = crypto.getRandomValues(new Uint8Array(this.detail.ivLength)),
+      iv,
       additionalData,
     }) => {
+      let ivGen: IvGen|undefined;
+      if (!iv) {
+        ivGen = this.detail.getIvGen(key);
+        iv = ivGen.generate();
+      }
+
       this.check(iv, additionalData);
       const params = {
         name: this.name,
@@ -86,8 +95,10 @@ class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I
       this.detail.modifyParams?.(params, info);
 
       const encrypted = new Uint8Array(await crypto.subtle.encrypt(params, secretKey, plaintext));
+      const ciphertext = encrypted.slice(this.detail.tagSize);
+      ivGen?.update?.(plaintext.length, ciphertext.length);
       return {
-        ciphertext: encrypted.slice(this.detail.tagSize),
+        ciphertext,
         iv,
         authenticationTag: this.detail.tagSize ? encrypted.slice(0, this.detail.tagSize) : undefined,
       };
@@ -128,6 +139,7 @@ class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I
 interface AlgoDetail<I> {
   secretKeyUsages: KeyUsage[];
   ivLength: number;
+  getIvGen: (key: CryptoAlgorithm.SecretKey<I>) => IvGen;
   allowAdditionalData: boolean;
   tagSize: number;
   defaultInfo: I;
@@ -138,15 +150,26 @@ interface AlgoDetail<I> {
 export const CBC: Encryption<{}, GenParams> = new AesCommon("AES-CBC", "a3840ac4-b29d-4ab5-a255-2894ec254223", {
   secretKeyUsages: ["encrypt", "decrypt"],
   ivLength: 16,
+  getIvGen: () => new RandomIvGen(16),
   allowAdditionalData: false,
   tagSize: 0,
   defaultInfo: {},
 });
 
+const ctrIvGen = new DefaultWeakMap<CryptoAlgorithm.SecretKey<CTR.Info>, IvGen>(
+  ({ info: { counterLength } }) => {
+    return new CounterIvGen({
+      ivLength: 16,
+      counterBits: counterLength,
+      blockLength: 16,
+    });
+  });
+
 /** AES-CTR encryption algorithm. */
 export const CTR: Encryption<CTR.Info, CTR.GenParams> = new AesCommon<CTR.Info, CTR.GenParams>("AES-CTR", "0ec985f2-88c0-4dd9-8b69-2c41bd639809", {
   secretKeyUsages: ["encrypt", "decrypt"],
   ivLength: 16,
+  getIvGen: (key) => ctrIvGen.get(key),
   allowAdditionalData: false,
   tagSize: 0,
   defaultInfo: {
@@ -171,10 +194,18 @@ export namespace CTR {
   export type GenParams = GenParams_ & Partial<Info>;
 }
 
+const gcmIvGen = new DefaultWeakMap<CryptoAlgorithm.SecretKey<{}>, IvGen>(
+  () => new CounterIvGen({
+    ivLength: 12,
+    counterBits: 32,
+    blockLength: 16,
+  }));
+
 /** AES-GCM encryption algorithm. */
 export const GCM: Encryption<{}, GenParams> = new AesCommon("AES-GCM", "a7e27aee-2f10-4150-bd6b-5e667c006274", {
   secretKeyUsages: ["encrypt", "decrypt"],
   ivLength: 12,
+  getIvGen: (key) => gcmIvGen.get(key),
   allowAdditionalData: true,
   tagSize: 128 / 8,
   defaultInfo: {},

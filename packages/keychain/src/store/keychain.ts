@@ -49,8 +49,6 @@ export abstract class KeyChain {
   /**
    * Create a signer from keys and certificates in the KeyChain.
    * @param name subject name, key name, or certificate name.
-   * @param fallback invoked when no matching key or certificate is found.
-   * @param useKeyNameKeyLocator force KeyLocator to be key name instead of certificate name.
    *
    * @li If name is a certificate name, sign with the corresponding private key,
    *     and use the specified certificate name as KeyLocator.
@@ -68,11 +66,7 @@ export abstract class KeyChain {
         prefixMatch = false,
         fallback = (name, keyChain, err) => Promise.reject(new Error(`signer ${name} not found ${err}`)),
         useKeyNameKeyLocator = false,
-      }: {
-        prefixMatch?: boolean;
-        fallback?: Signer | ((name: Name, keyChain: KeyChain, err?: Error) => Promise<Signer>);
-        useKeyNameKeyLocator?: boolean;
-      } = {},
+      }: KeyChain.GetSignerOptions = {},
   ): Promise<Signer> {
     const useFallback = (err?: Error) => {
       if (typeof fallback === "function") {
@@ -185,6 +179,45 @@ export namespace KeyChain {
   export type KeyPair<Asym extends boolean = any> = KeyStore.KeyPair<Asym>;
 
   /**
+   * Create a signer from keys and certificates in the KeyChain.
+   * @param name subject name, key name, or certificate name.
+   * @param fallback invoked when no matching key or certificate is found.
+   * @param useKeyNameKeyLocator force KeyLocator to be key name instead of certificate name.
+   *
+   * @li If name is a certificate name, sign with the corresponding private key,
+   *     and use the specified certificate name as KeyLocator.
+   * @li If name is a key name, sign with the specified private key.
+   *     If a non-self-signed certificate exists for this key, use the certificate name as KeyLocator.
+   *     Otherwise, use the key name as KeyLocator.
+   * @li If name is neither certificate name nor key name, it is interpreted as a subject name.
+   *     A non-self-signed certificate of this subject name is preferred.
+   *     If such a certificate does not exist, use any key of this subject name.
+   * @li If prefixMatch is true, name can also be interpreted as a prefix of the subject name.
+   */
+  export interface GetSignerOptions {
+    /**
+     * If false, name argument must equal subject name, key name, or certificate name.
+     * If true, name argument may be a prefix of subject name.
+     * Default is false.
+     */
+    prefixMatch?: boolean;
+
+    /**
+     * If a function, it is invoked when no matching key or certificate is found, and should
+     * either return a fallback Signer or reject the promise.
+     * If a Signer, it is used when no matching key or certificate is found.
+     */
+    fallback?: Signer | ((name: Name, keyChain: KeyChain, err?: Error) => Promise<Signer>);
+
+    /**
+     * If false, KeyLocator is a certificate name when a non-self-signed certificate exists.
+     * If true, KeyLocator is the key name.
+     * Default is false.
+     */
+    useKeyNameKeyLocator?: boolean;
+  }
+
+  /**
    * Open a persistent keychain.
    * @param locator in Node.js, a filesystem directory; in browser, a database name.
    */
@@ -194,11 +227,8 @@ export namespace KeyChain {
   export function open(keys: KeyStore, certs: CertStore): KeyChain;
 
   export function open(arg1: string|KeyStore, arg2?: CertStore): KeyChain {
-    if (typeof arg1 === "string") {
-      const [pvts, certs] = openStores(arg1);
-      return new KeyChainImpl(pvts, certs);
-    }
-    return new KeyChainImpl(arg1, arg2!);
+    const [pvts, certs] = typeof arg1 === "string" ? openStores(arg1) : [arg1, arg2!];
+    return new KeyChainImpl(pvts, certs);
   }
 
   /** Create an in-memory ephemeral keychain. */

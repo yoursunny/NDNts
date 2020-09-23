@@ -68,8 +68,6 @@ export class SafeBag {
    * Save private key and public key to KeyChain.
    * @param passphrase SafeBag passphrase.
    * @param keyChain destination KeyChain.
-   * @param algoList use SigningAlgorithmList to import RSA key as RSASSA-PKCS1-v1_5 signing key;
-   *                 use EncryptionAlgorithmList to import RSA key as RSA-OAEP encryption key.
    */
   public async saveKeyPair(
       passphrase: string,
@@ -93,7 +91,7 @@ export class SafeBag {
 export namespace SafeBag {
   export interface ImportOptions {
     /**
-     * ndn-cxx stores RSA signing key and RSA-OAEP encryption key in the same way.
+     * ndn-cxx stores RSA signing key and RSA-OAEP encryption key in the same format.
      * By default, RSA key is imported as RSASSA-PKCS1-v1_5 signing key.
      * Set to true to import RSA key as RSA-OAEP encryption key instead.
      */

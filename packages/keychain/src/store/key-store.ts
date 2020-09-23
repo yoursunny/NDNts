@@ -5,12 +5,7 @@ import { createDecrypter, createEncrypter, createSigner, createVerifier, CryptoA
 import { StoreBase } from "./store-base";
 
 function findAlgo(uuid: string): CryptoAlgorithm<unknown>|undefined {
-  for (const algo of CryptoAlgorithmList) {
-    if (algo.uuid === uuid) {
-      return algo;
-    }
-  }
-  return undefined;
+  return CryptoAlgorithmList.find((algo) => algo.uuid === uuid);
 }
 
 class KeyLoader {

@@ -36,6 +36,7 @@
     "@yoursunny/asn1": "^0.0.20200718",
     "data-store": "jonschlinkert/data-store#4.1.0",
     "minimalistic-assert": "^1.0.1",
+    "mnemonist": "^0.38.0",
     "idb-keyval": "^3.2.0",
     "throat": "^5.0.0",
     "tslib": "^2.0.1"
