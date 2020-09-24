@@ -1,4 +1,4 @@
-import { IvGen, NamedSigner, NamedVerifier } from "@ndn/keychain";
+import { NamedSigner, NamedVerifier } from "@ndn/keychain";
 import { Component, Interest, LLDecrypt, LLEncrypt, SigInfo } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, toUtf8 } from "@ndn/tlv";
 
@@ -70,7 +70,6 @@ export namespace ChallengeRequest {
     requestId: Uint8Array;
     sessionEncrypter: LLEncrypt.Key;
     sessionDecrypter: LLDecrypt.Key;
-    ivGen: IvGen;
     publicKey: NamedVerifier.PublicKey;
     privateKey: NamedSigner.PrivateKey;
   }
@@ -80,7 +79,6 @@ export namespace ChallengeRequest {
     requestId,
     sessionEncrypter,
     sessionDecrypter,
-    ivGen,
     publicKey,
     privateKey,
     selectedChallenge,
@@ -95,7 +93,7 @@ export namespace ChallengeRequest {
     interest.name = profile.prefix.append(Verb.CHALLENGE, new Component(undefined, requestId));
     interest.mustBeFresh = true;
     interest.appParameters = encrypted_payload.encode(
-      await sessionEncrypter.llEncrypt({ plaintext: payload, iv: ivGen.generate(), additionalData: requestId }));
+      await sessionEncrypter.llEncrypt({ plaintext: payload, additionalData: requestId }));
     interest.sigInfo = new SigInfo(SigInfo.Nonce(), SigInfo.Time());
     await privateKey.sign(interest);
     return ChallengeRequest.fromInterest(interest, profile,

@@ -2,8 +2,8 @@ import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
 import DefaultWeakMap from "mnemonist/default-weak-map";
 
 import { crypto } from "../crypto_node";
+import { CounterIvGen, IvGen, RandomIvGen } from "../ivgen";
 import type { CryptoAlgorithm, EncryptionAlgorithm } from "../types";
-import { CounterIvGen, IvGen, RandomIvGen } from "./ivgen";
 
 export interface Encryption<I, G extends GenParams> extends EncryptionAlgorithm<I, false, G> {
   makeAesKeyGenParams: (genParams: G) => AesKeyGenParams;
@@ -78,17 +78,11 @@ class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I
 
   public makeLLEncrypt(key: CryptoAlgorithm.SecretKey<I>): LLEncrypt {
     const { secretKey, info } = key;
-    return async ({
+    return this.detail.getIvGen(key).wrap(async ({
       plaintext,
       iv,
       additionalData,
     }) => {
-      let ivGen: IvGen|undefined;
-      if (!iv) {
-        ivGen = this.detail.getIvGen(key);
-        iv = ivGen.generate();
-      }
-
       this.check(iv, additionalData);
       const params = {
         name: this.name,
@@ -99,13 +93,12 @@ class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I
 
       const encrypted = new Uint8Array(await crypto.subtle.encrypt(params, secretKey, plaintext));
       const ciphertext = encrypted.slice(this.detail.tagSize);
-      ivGen?.update?.(plaintext.length, ciphertext.length);
       return {
         ciphertext,
         iv,
         authenticationTag: this.detail.tagSize ? encrypted.slice(0, this.detail.tagSize) : undefined,
       };
-    };
+    });
   }
 
   public makeLLDecrypt({ secretKey, info }: CryptoAlgorithm.SecretKey<I>): LLDecrypt {

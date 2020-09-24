@@ -1,4 +1,3 @@
-import { IvGen } from "@ndn/keychain/lib/mod";
 import { Data, LLDecrypt, LLEncrypt, Name, Signer } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 
@@ -46,7 +45,6 @@ export namespace ChallengeResponse {
     profile: CaProfile;
     sessionEncrypter: LLEncrypt.Key;
     sessionDecrypter: LLDecrypt.Key;
-    ivGen: IvGen;
     request: ChallengeRequest;
     signer: Signer;
   }
@@ -55,7 +53,6 @@ export namespace ChallengeResponse {
     profile,
     sessionEncrypter,
     sessionDecrypter,
-    ivGen,
     request: { requestId, interest: { name } },
     status,
     challengeStatus,
@@ -76,7 +73,7 @@ export namespace ChallengeResponse {
     data.name = name;
     data.freshnessPeriod = 4000;
     data.content = encrypted_payload.encode(
-      await sessionEncrypter.llEncrypt({ plaintext: payload, iv: ivGen.generate(), additionalData: requestId }));
+      await sessionEncrypter.llEncrypt({ plaintext: payload, additionalData: requestId }));
     await signer.sign(data);
     return ChallengeResponse.fromData(data, profile, requestId, sessionDecrypter);
   }

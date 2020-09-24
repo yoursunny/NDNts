@@ -1,4 +1,4 @@
-import { AES, CounterIvGen, createDecrypter, createEncrypter, IvGen, KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
+import { AES, CounterIvGen, createDecrypter, createEncrypter, KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
 import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
 
 const ECDH_PARAMS: EcKeyGenParams & EcKeyImportParams = {
@@ -46,7 +46,6 @@ export function checkRequestId(input: Uint8Array) {
 export interface SessionKey {
   sessionEncrypter: LLEncrypt.Key;
   sessionDecrypter: LLDecrypt.Key;
-  ivGen: IvGen;
 }
 
 export enum SessionRole {
@@ -77,15 +76,15 @@ export async function makeSessionKey(
   );
 
   const key = { secretKey, info: {} };
+  const ivGen = new CounterIvGen({
+    ivLength: 12,
+    fixedBits: 1,
+    fixed: Uint8Array.of(role),
+    counterBits: 32,
+    blockSize: AES.blockSize,
+  });
   return {
-    sessionEncrypter: createEncrypter(AES.GCM, key),
+    sessionEncrypter: ivGen.wrap(createEncrypter(AES.GCM, key)),
     sessionDecrypter: createDecrypter(AES.GCM, key),
-    ivGen: new CounterIvGen({
-      ivLength: 12,
-      fixedBits: 1,
-      fixed: Uint8Array.of(role),
-      counterBits: 32,
-      blockSize: AES.blockSize,
-    }),
   };
 }
