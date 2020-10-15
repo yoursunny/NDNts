@@ -1,6 +1,6 @@
 import { Certificate } from "@ndn/keychain";
 import { KeyLocator, Name, Verifier } from "@ndn/packet";
-import DefaultWeakMap from "mnemonist/default-weak-map";
+import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
 import { CertSources } from "./cert-source/mod";
 

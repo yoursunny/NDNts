@@ -39,10 +39,12 @@
     "mnemonist": "^0.38.0",
     "idb-keyval": "^3.2.0",
     "throat": "^5.0.0",
-    "tslib": "^2.0.1"
+    "tslib": "^2.0.3"
   },
   "devDependencies": {
+    "@types/base64-js": "^1.2.5",
     "@types/tmp": "^0.2.0",
+    "base64-js": "^1.3.1",
     "tmp": "^0.2.1"
   }
 }

@@ -28,7 +28,7 @@
     "p-cancelable": "^2.0.0",
     "p-event": "^4.2.0",
     "p-timeout": "^3.2.0",
-    "tslib": "^2.0.1"
+    "tslib": "^2.0.3"
   },
   "devDependencies": {
     "@ndn/fw": "workspace:*",
@@ -37,7 +37,7 @@
     "@types/tmp": "^0.2.0",
     "readable-stream": "^3.6.0",
     "stream-mock": "^2.0.5",
-    "streaming-iterables": "^5.0.2",
+    "streaming-iterables": "^5.0.3",
     "tmp": "^0.2.1"
   }
 }

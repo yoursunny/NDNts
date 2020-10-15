@@ -1,7 +1,7 @@
 import { Name } from "@ndn/packet";
 import { fromHex } from "@ndn/tlv";
 import pushable from "it-pushable";
-import MultiMap from "mnemonist/multi-map";
+import MultiMap from "mnemonist/multi-map.js";
 import * as retry from "retry";
 
 import type { FaceImpl } from "./face";

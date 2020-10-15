@@ -2,7 +2,7 @@ import { AES, createEncrypter } from "@ndn/keychain";
 import type { Data, Encrypter, LLEncrypt, Name, Signer } from "@ndn/packet";
 import type { DataStore as S } from "@ndn/repo-api";
 import { Encoder } from "@ndn/tlv";
-import DefaultWeakMap from "mnemonist/default-weak-map";
+import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
 import { ContentKey, EncryptedContent, KeyEncryptionKey } from "./packet/mod";
 

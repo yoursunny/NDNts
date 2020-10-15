@@ -1,6 +1,9 @@
 {
   "extends": "../../mk/tsconfig-base.json",
   "compilerOptions": {
+    "types": [
+      "jest"
+    ]
   },
   "include": [
     "./test-fixture/**/*.ts",

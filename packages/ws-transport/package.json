@@ -30,12 +30,12 @@
     "event-iterator": "^2.0.0",
     "p-cancelable": "^2.0.0",
     "p-timeout": "^3.2.0",
-    "tslib": "^2.0.1",
+    "tslib": "^2.0.3",
     "ws": "^7.3.1"
   },
   "devDependencies": {
     "@ndn/packet": "workspace:*",
-    "@types/ws": "^7.2.6",
+    "@types/ws": "^7.2.7",
     "it-pushable": "^1.4.0"
   }
 }

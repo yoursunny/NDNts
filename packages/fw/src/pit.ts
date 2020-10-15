@@ -1,7 +1,7 @@
 import { Data, Interest } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import hirestime from "hirestime";
-import DefaultMap from "mnemonist/default-map";
+import DefaultMap from "mnemonist/default-map.js";
 import { filter, flatMap, pipeline, reduce, tap } from "streaming-iterables";
 
 import type { FaceImpl } from "./face";

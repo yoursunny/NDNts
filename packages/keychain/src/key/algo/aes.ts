@@ -1,5 +1,5 @@
 import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
-import DefaultWeakMap from "mnemonist/default-weak-map";
+import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
 import { crypto } from "../crypto_node";
 import { CounterIvGen, IvGen, RandomIvGen } from "../ivgen";

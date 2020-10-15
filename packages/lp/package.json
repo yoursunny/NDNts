@@ -29,9 +29,9 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "it-keepalive": "^1.2.0",
-    "tslib": "^2.0.1"
+    "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "streaming-iterables": "^5.0.2"
+    "streaming-iterables": "^5.0.3"
   }
 }

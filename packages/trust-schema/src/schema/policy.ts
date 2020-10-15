@@ -1,5 +1,5 @@
 import type { Name } from "@ndn/packet";
-import MultiMap from "mnemonist/multi-map";
+import MultiMap from "mnemonist/multi-map.js";
 
 import type { Pattern, Vars, VarsLike } from "./pattern";
 

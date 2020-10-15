@@ -29,7 +29,7 @@
     "@ndn/tlv": "workspace:*",
     "buffer-compare": "^1.1.1",
     "minimalistic-assert": "^1.0.1",
-    "tslib": "^2.0.1"
+    "tslib": "^2.0.3"
   },
   "devDependencies": {
     "@types/buffer-compare": "^0.0.30",

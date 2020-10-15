@@ -32,7 +32,7 @@
     "@ndn/rdr": "workspace:*",
     "it-pushable": "^1.4.0",
     "p-defer": "^3.0.0",
-    "streaming-iterables": "^5.0.2",
-    "tslib": "^2.0.1"
+    "streaming-iterables": "^5.0.3",
+    "tslib": "^2.0.3"
   }
 }

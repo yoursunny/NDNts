@@ -1,7 +1,7 @@
 import { Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
-import DefaultMap from "mnemonist/default-map";
+import DefaultMap from "mnemonist/default-map.js";
 
 import type { FaceImpl } from "./face";
 

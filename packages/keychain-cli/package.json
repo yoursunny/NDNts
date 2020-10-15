@@ -36,7 +36,7 @@
     "leveldown": "^5.6.0",
     "prompts": "^2.3.2",
     "stdout-stream": "^1.4.1",
-    "tslib": "^2.0.1",
+    "tslib": "^2.0.3",
     "yargs": "^16.0.3"
   },
   "devDependencies": {
@@ -45,6 +45,6 @@
     "@types/leveldown": "^4.0.2",
     "@types/prompts": "^2.0.9",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^15.0.5"
+    "@types/yargs": "^15.0.8"
   }
 }

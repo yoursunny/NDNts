@@ -31,10 +31,10 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "mnemonist": "^0.38.0",
-    "tslib": "^2.0.1"
+    "tslib": "^2.0.3"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:*",
-    "streaming-iterables": "^5.0.2"
+    "streaming-iterables": "^5.0.3"
   }
 }
