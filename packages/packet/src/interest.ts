@@ -2,12 +2,11 @@ import { Decoder, Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 
 import { TT } from "./an";
-import { sha256 } from "./digest_node";
-import { ParamsDigest } from "./digest-comp";
 import { FwHint } from "./fwhint";
-import { Name, NameLike } from "./name";
+import { Name, NameLike, ParamsDigest } from "./name/mod";
+import { sha256 } from "./security/helper_node";
+import { LLSign, LLVerify, Signer, Verifier } from "./security/signing";
 import { SigInfo } from "./sig-info";
-import { LLSign, LLVerify, Signer, Verifier } from "./signing";
 
 const HOPLIMIT_MAX = 255;
 const FIELDS = Symbol("Interest.FIELDS");
@@ -23,16 +22,12 @@ class Fields {
         this.mustBeFresh = true;
       } else if (arg instanceof FwHint) {
         this.fwHint = new FwHint(arg);
-      } else if (arg instanceof NonceTag) {
-        this.nonce = arg.v;
-      } else if (arg instanceof LifetimeTag) {
-        this.lifetime = arg.v;
-      } else if (arg instanceof HopLimitTag) {
-        this.hopLimit = arg.v;
       } else if (arg instanceof Uint8Array) {
         this.appParameters = arg;
       } else if (arg instanceof Interest) {
         Object.assign(this, arg[FIELDS]);
+      } else if (arg[ctorAssign]) {
+        arg[ctorAssign](this);
       } else {
         throw new Error("unknown Interest constructor argument");
       }
@@ -82,7 +77,7 @@ const EVD = new EvDecoder<Fields>("Interest", TT.Interest)
   })
   .add(TT.ISigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(SigInfo))
   .add(TT.ISigValue, (t, { value, tlv }) => {
-    if (!ParamsDigest.match(t.name.at(-1))) {
+    if (!t.name.at(-1).is(ParamsDigest)) {
       throw new Error("ParamsDigest missing or out of place in signed Interest");
     }
     if (!t.paramsPortion) {
@@ -228,9 +223,6 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
   public async [LLVerify.OP](verify: LLVerify) {
     const f = this[FIELDS];
     await this.validateParamsDigest();
-    if (!f.sigValue) {
-      throw new Error("SigValue is missing");
-    }
     const signedPortion = f.signedPortion;
     if (!signedPortion) {
       throw new Error("SignedPortion is missing");
@@ -256,19 +248,9 @@ for (const field of FIELD_LIST) {
   });
 }
 
-class NonceTag {
-  constructor(public v: number) {
-  }
-}
-
-class LifetimeTag {
-  constructor(public v: number) {
-  }
-}
-
-class HopLimitTag {
-  constructor(public v: number) {
-  }
+const ctorAssign = Symbol("Interest.ctorAssign");
+interface CtorTag {
+  [ctorAssign]: (f: Fields) => void;
 }
 
 export namespace Interest {
@@ -277,23 +259,31 @@ export namespace Interest {
   export const CanBePrefix = Symbol("Interest.CanBePrefix");
   export const MustBeFresh = Symbol("Interest.MustBeFresh");
 
-  export function Nonce(v = generateNonce()): NonceTag {
-    return new NonceTag(v);
+  export function Nonce(v = generateNonce()): CtorTag {
+    return {
+      [ctorAssign](f: Fields) { f.nonce = v; },
+    };
   }
 
   /** Generate a random nonce. */
-  export const generateNonce = SigInfo.generateNonce;
+  export function generateNonce(): number {
+    return Math.floor(Math.random() * 0x100000000);
+  }
 
-  export function Lifetime(v: number): LifetimeTag {
-    return new LifetimeTag(v);
+  export function Lifetime(v: number): CtorTag {
+    return {
+      [ctorAssign](f: Fields) { f.lifetime = v; },
+    };
   }
 
   export const DefaultLifetime = 4000;
 
-  export function HopLimit(v: number): HopLimitTag {
-    return new HopLimitTag(v);
+  export function HopLimit(v: number): CtorTag {
+    return {
+      [ctorAssign](f: Fields) { f.hopLimit = v; },
+    };
   }
 
   export type CtorArg = NameLike | typeof CanBePrefix | typeof MustBeFresh | FwHint |
-  LifetimeTag | HopLimitTag | Uint8Array;
+  CtorTag | Uint8Array;
 }

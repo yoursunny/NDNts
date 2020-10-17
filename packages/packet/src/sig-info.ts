@@ -1,14 +1,16 @@
 import { Decoder, EncodableObj, Encoder, EvDecoder, Extensible, ExtensionRegistry, NNI } from "@ndn/tlv";
+import assert from "minimalistic-assert";
 
 import { SigType, TT } from "./an";
 import { KeyLocator } from "./key-locator";
+import { randBytes } from "./security/helper_node";
 
 const EXTENSIONS = new ExtensionRegistry<SigInfo>();
 
 const EVD = new EvDecoder<SigInfo>("SigInfo", [TT.ISigInfo, TT.DSigInfo])
   .add(TT.SigType, (t, { nni }) => t.type = nni, { required: true })
   .add(TT.KeyLocator, (t, { decoder }) => t.keyLocator = decoder.decode(KeyLocator))
-  .add(TT.SigNonce, (t, { value }) => t.nonce = NNI.decode(value, { len: 4 }))
+  .add(TT.SigNonce, (t, { value }) => t.nonce = value)
   .add(TT.SigTime, (t, { nni }) => t.time = nni)
   .add(TT.SigSeqNum, (t, { nni }) => t.seqNum = nni)
   .setUnknown(EXTENSIONS.decodeUnknown);
@@ -21,9 +23,9 @@ export class SigInfo {
 
   public type = SigType.Null;
   public keyLocator?: KeyLocator;
-  public nonce?: number;
+  public nonce?: Uint8Array;
   public time?: number;
-  public seqNum?: number;
+  public seqNum?: number; // TODO consider using bignum
   public [Extensible.TAG] = Extensible.newRecords();
 
   /**
@@ -33,7 +35,9 @@ export class SigInfo {
    * - SigInfo to copy from
    * - number as SigType
    * - KeyLocator, or Name/URI/KeyDigest to construct KeyLocator
-   * - Nonce, Time, SeqNum
+   * - SigInfo.Nonce(v)
+   * - SigInfo.Time(v)
+   * - SigInfo.SeqNum(v)
    */
   constructor(...args: SigInfo.CtorArg[]) {
     const klArgs: KeyLocator.CtorArg[] = [];
@@ -42,15 +46,11 @@ export class SigInfo {
         this.type = arg;
       } else if (KeyLocator.isCtorArg(arg)) {
         klArgs.push(arg);
-      } else if (arg instanceof NonceTag) {
-        this.nonce = arg.v;
-      } else if (arg instanceof TimeTag) {
-        this.time = arg.v;
-      } else if (arg instanceof SeqNumTag) {
-        this.seqNum = arg.v;
       } else if (arg instanceof SigInfo) {
         Object.assign(this, arg);
         this[Extensible.TAG] = { ...arg[Extensible.TAG] };
+      } else if (arg[ctorAssign]) {
+        arg[ctorAssign](this);
       } else {
         throw new Error("unknown SigInfo constructor argument");
       }
@@ -60,6 +60,10 @@ export class SigInfo {
     }
   }
 
+  /**
+   * Create an Encodable.
+   * @param tt either TT.ISigInfo or TT.DSigInfo.
+   */
   public encodeAs(tt: number): EncodableObj {
     return {
       encodeTo: (encoder) => this.encodeTo(encoder, tt),
@@ -70,8 +74,7 @@ export class SigInfo {
     encoder.prependTlv(tt,
       [TT.SigType, NNI(this.type)],
       this.keyLocator,
-      [TT.SigNonce, Encoder.OmitEmpty,
-        typeof this.nonce === "undefined" ? undefined : NNI(this.nonce, { len: 4 })],
+      [TT.SigNonce, Encoder.OmitEmpty, this.nonce],
       [TT.SigTime, Encoder.OmitEmpty,
         typeof this.time === "undefined" ? undefined : NNI(this.time)],
       [TT.SigSeqNum, Encoder.OmitEmpty,
@@ -81,40 +84,47 @@ export class SigInfo {
   }
 }
 
-class NonceTag {
-  constructor(public v: number) {
-  }
-}
-
-class TimeTag {
-  constructor(public v: number) {
-  }
-}
-
-class SeqNumTag {
-  constructor(public v: number) {
-  }
+const ctorAssign = Symbol("SigInfo.ctorAssign");
+interface CtorTag {
+  [ctorAssign]: (si: SigInfo) => void;
 }
 
 export namespace SigInfo {
-  export function Nonce(v = generateNonce()): NonceTag {
-    return new NonceTag(v);
+  export function Nonce(v?: Uint8Array|number): CtorTag {
+    return {
+      [ctorAssign](si: SigInfo) {
+        switch (typeof v) {
+          case "number":
+          case "undefined":
+            si.nonce = generateNonce(v);
+            break;
+          default:
+            si.nonce = v;
+            break;
+        }
+      },
+    };
   }
 
   /** Generate a random nonce. */
-  export function generateNonce(): number {
-    return Math.floor(Math.random() * 0x100000000);
+  export function generateNonce(size = 8): Uint8Array {
+    assert(size >= 1);
+    return randBytes(size);
   }
 
-  export function Time(v = Date.now()): TimeTag {
-    return new TimeTag(v);
+  export function Time(v = Date.now()): CtorTag {
+    return {
+      [ctorAssign](si: SigInfo) { si.time = v; },
+    };
   }
 
-  export function SeqNum(v: number): SeqNumTag {
-    return new SeqNumTag(v);
+  export function SeqNum(v: number) {
+    return {
+      [ctorAssign](si: SigInfo) { si.seqNum = v; },
+    };
   }
 
-  export type CtorArg = SigInfo | number | KeyLocator.CtorArg | NonceTag | TimeTag | SeqNumTag;
+  export type CtorArg = SigInfo | number | KeyLocator.CtorArg | CtorTag;
 
   export const registerExtension = EXTENSIONS.registerExtension;
   export const unregisterExtension = EXTENSIONS.unregisterExtension;

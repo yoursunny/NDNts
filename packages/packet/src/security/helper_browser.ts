@@ -1,5 +1,9 @@
 const crypto = globalThis.crypto;
 
+export function randBytes(size: number): Uint8Array {
+  return crypto.getRandomValues(new Uint8Array(size));
+}
+
 export async function sha256(input: Uint8Array): Promise<Uint8Array> {
   const digest = await crypto.subtle.digest("SHA-256", input);
   return new Uint8Array(digest);

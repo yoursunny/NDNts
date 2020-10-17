@@ -28,6 +28,7 @@
   "dependencies": {
     "@ndn/tlv": "workspace:*",
     "buffer-compare": "^1.1.1",
+    "mnemonist": "^0.38.0",
     "minimalistic-assert": "^1.0.1",
     "tslib": "^2.0.3"
   },

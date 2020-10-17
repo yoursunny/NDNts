@@ -27,6 +27,7 @@ test("crypto", async () => {
 });
 
 test("packets", async () => {
+  const caSIP = crypto.makeSignedInterestPolicy();
   const [caPvt, caPub] = await generateSigningKey("/authority", RSA);
   const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
   const profile = await CaProfile.build({
@@ -47,10 +48,12 @@ test("packets", async () => {
   expect(profile.maxValidityPeriod).toBe(86400000);
   expect(profile.cert.name).toEqualName(caCert.name);
 
+  const reqSIP = crypto.makeSignedInterestPolicy();
   const [reqPvt, reqPub] = await generateSigningKey("/requester", ECDSA);
   const reqEcdh = await crypto.generateEcdhKey();
   const newRequest = await NewRequest.build({
     profile,
+    signedInterestPolicy: reqSIP,
     ecdhPub: reqEcdh.publicKey,
     publicKey: reqPub,
     privateKey: reqPvt,
@@ -85,6 +88,7 @@ test("packets", async () => {
     reqEcdh.privateKey, newResponse.ecdhPub, salt, requestId, crypto.SessionRole.REQUESTER);
   const { interest: challengeInterest } = await ChallengeRequest.build({
     profile,
+    signedInterestPolicy: reqSIP,
     requestId,
     ...reqSessionKey,
     publicKey: reqPub,
@@ -96,13 +100,17 @@ test("packets", async () => {
   expect(challengeInterest.name.getPrefix(3)).toEqualName("/authority/CA/CHALLENGE");
   expect(challengeInterest.sigInfo).toBeDefined();
 
-  const lookupContext = jest.fn().mockResolvedValue({
+  const lookupRequest = jest.fn().mockResolvedValue({
     sessionKey: caSessionKey,
     certRequestPub: newRequest.publicKey,
   });
-  const challengeRequest = await ChallengeRequest.fromInterest(challengeInterest, profile, lookupContext);
-  expect(lookupContext).toHaveBeenCalledTimes(1);
-  expect(lookupContext).toHaveBeenCalledWith(requestId);
+  const challengeRequest = await ChallengeRequest.fromInterest(challengeInterest, {
+    profile,
+    signedInterestPolicy: caSIP,
+    lookupRequest,
+  });
+  expect(lookupRequest).toHaveBeenCalledTimes(1);
+  expect(lookupRequest).toHaveBeenCalledWith(requestId);
   expect(challengeRequest.selectedChallenge).toBe("pin");
   expect(Object.keys(challengeRequest.parameters)).toStrictEqual(["code"]);
   expect(challengeRequest.parameters.code).toEqualUint8Array(toUtf8("000000"));

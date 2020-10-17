@@ -1,5 +1,5 @@
 import { AES, CounterIvGen, createDecrypter, createEncrypter, KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
-import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
+import { LLDecrypt, LLEncrypt, SignedInterestPolicy } from "@ndn/packet";
 
 const ECDH_PARAMS: EcKeyGenParams & EcKeyImportParams = {
   name: "ECDH",
@@ -87,4 +87,8 @@ export async function makeSessionKey(
     sessionEncrypter: ivGen.wrap(createEncrypter(AES.GCM, key)),
     sessionDecrypter: createDecrypter(AES.GCM, key),
   };
+}
+
+export function makeSignedInterestPolicy() {
+  return new SignedInterestPolicy(SignedInterestPolicy.Nonce(), SignedInterestPolicy.Time());
 }

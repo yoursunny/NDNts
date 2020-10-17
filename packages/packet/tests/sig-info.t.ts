@@ -2,7 +2,7 @@ import "../test-fixture/expect";
 
 import { Decoder } from "@ndn/tlv";
 
-import { KeyLocator, Name, SigInfo, SigType, TT } from "..";
+import { Data, digestSigning, Interest, KeyLocator, Name, noopSigning, SigInfo, SignedInterestPolicy, SigType, TT } from "..";
 
 test("KeyLocator", () => {
   expect(() => new KeyLocator({} as any)).toThrow();
@@ -46,7 +46,7 @@ test("SigInfo encode", () => {
     );
   });
 
-  si = new SigInfo(SigType.Sha256WithRsa, "/KL", SigInfo.Nonce(0x59EF),
+  si = new SigInfo(SigType.Sha256WithRsa, "/KL", SigInfo.Nonce(),
     SigInfo.Time(1157512424208), SigInfo.SeqNum(0xF598C7));
   expect(si.encodeAs(TT.ISigInfo)).toEncodeAs(({ type, value }) => {
     expect(type).toBe(TT.ISigInfo);
@@ -61,10 +61,9 @@ test("SigInfo encode", () => {
           ({ decoder }) => { expect(decoder.decode(Name)).toEqualName("/KL"); },
         );
       },
-      ({ type, length, value }) => {
+      ({ type, length }) => {
         expect(type).toBe(TT.SigNonce);
-        expect(length).toBe(4);
-        expect(value).toEqualUint8Array([0x00, 0x00, 0x59, 0xEF]);
+        expect(length).toBe(8);
       },
       ({ type, value }) => {
         expect(type).toBe(TT.SigTime);
@@ -132,7 +131,163 @@ test("SigInfo decode", () => {
   si = decoder.decode(SigInfo);
   expect(si.type).toBe(SigType.HmacWithSha256);
   expect(si.keyLocator?.digest).toEqualUint8Array([0xA0, 0xA1, 0xA2]);
-  expect(si.nonce).toBe(0xB0B1B2B3);
+  expect(si.nonce).toEqualUint8Array([0xB0, 0xB1, 0xB2, 0xB3]);
   expect(si.time).toEqual(0xC0C1);
   expect(si.seqNum).toBe(0xD0D1);
+});
+
+describe("SignedInterestPolicy", () => {
+  let policyNTS: SignedInterestPolicy;
+  let policyN: SignedInterestPolicy;
+  let policyN16: SignedInterestPolicy;
+  let policyT: SignedInterestPolicy;
+  let policyS: SignedInterestPolicy;
+
+  beforeEach(() => {
+    policyNTS = new SignedInterestPolicy(
+      SignedInterestPolicy.Nonce(), SignedInterestPolicy.Time(), SignedInterestPolicy.SeqNum());
+    policyN = new SignedInterestPolicy(SignedInterestPolicy.Nonce());
+    policyN16 = new SignedInterestPolicy(SignedInterestPolicy.Nonce({ minNonceLength: 16 }));
+    policyT = new SignedInterestPolicy(SignedInterestPolicy.Time());
+    policyS = new SignedInterestPolicy(SignedInterestPolicy.SeqNum());
+  });
+
+  function updateSign(policy: SignedInterestPolicy, interest: Interest) {
+    policy.update(interest);
+    return digestSigning.sign(interest);
+  }
+
+  test.each([
+    [
+      (interest: Interest) => digestSigning.sign(policyNTS.wrapInterest(interest)),
+      (interest: Interest) => digestSigning.verify(policyNTS.wrapInterest(interest)),
+    ],
+    [
+      (interest: Interest) => policyNTS.makeSigner(digestSigning).sign(interest),
+      (interest: Interest) => policyNTS.makeVerifier(digestSigning).verify(interest),
+    ],
+  ])("update %#", async (signFunc, verifyFunc) => {
+    const interest0 = new Interest("/A/0");
+    const interest1 = new Interest("/A/1");
+    const t0 = Date.now();
+    await signFunc(interest0);
+    await signFunc(interest1);
+    const t1 = Date.now();
+
+    expect(interest0.sigInfo).toBeDefined();
+    expect(interest1.sigInfo).toBeDefined();
+
+    expect(interest0.sigInfo!.nonce).toBeDefined();
+    expect(interest1.sigInfo!.nonce).toBeDefined();
+    expect(interest0.sigInfo!.nonce!).toHaveLength(8);
+    expect(interest1.sigInfo!.nonce!).toHaveLength(8);
+    expect(interest0.sigInfo!.nonce!).not.toEqualUint8Array(interest1.sigInfo!.nonce!);
+
+    expect(interest0.sigInfo!.time).toBeDefined();
+    expect(interest1.sigInfo!.time).toBeDefined();
+    expect(interest0.sigInfo!.time!).toBeGreaterThanOrEqual(t0);
+    expect(interest0.sigInfo!.time!).toBeLessThanOrEqual(t1);
+    expect(interest1.sigInfo!.time!).toBeGreaterThan(interest0.sigInfo!.time!);
+
+    expect(interest0.sigInfo!.seqNum).toBeDefined();
+    expect(interest1.sigInfo!.seqNum).toBeDefined();
+    expect(interest1.sigInfo!.seqNum!).toBeGreaterThan(interest0.sigInfo!.seqNum!);
+
+    await expect(verifyFunc(interest0)).resolves.toBeUndefined();
+    await expect(verifyFunc(interest1)).resolves.toBeUndefined();
+  });
+
+  test("verify not signed Interest", async () => {
+    const verifier0 = policyNTS.makeVerifier(noopSigning, {
+      passData: false,
+      passUnsignedInterest: false,
+    });
+    const verifier1 = policyNTS.makeVerifier(noopSigning, {
+      passData: true,
+      passUnsignedInterest: true,
+    });
+
+    const data = new Data("/D/0");
+    const interest = new Interest("/I/0");
+
+    await expect(verifier0.verify(data)).rejects.toThrow();
+    await expect(verifier0.verify(interest)).rejects.toThrow();
+    await expect(verifier1.verify(data)).resolves.toBeUndefined();
+    await expect(verifier1.verify(interest)).resolves.toBeUndefined();
+  });
+
+  test("no save on bad signature", async () => {
+    const interest0 = new Interest("/A/0");
+    const interest1 = new Interest("/A/0");
+    const interest2 = new Interest("/A/2");
+    await updateSign(policyS, interest0);
+    await updateSign(policyS, interest1);
+    await updateSign(policyS, interest2);
+    interest2.sigValue[0] ^= 0xFF;
+
+    const verifier = policyS.makeVerifier(digestSigning);
+    await expect(verifier.verify(interest0)).resolves.toBeUndefined();
+    await expect(verifier.verify(interest2)).rejects.toThrow();
+    await expect(verifier.verify(interest1)).resolves.toBeUndefined();
+  });
+
+  test("missing field", async () => {
+    const interest0 = new Interest("/A/0");
+    await updateSign(policyN, interest0);
+    expect(() => policyT.check(interest0)).toThrow();
+    expect(() => policyS.check(interest0)).toThrow();
+
+    const interest1 = new Interest("/A/1");
+    await updateSign(policyT, interest1);
+    expect(() => policyN.check(interest1)).toThrow();
+  });
+
+  test("SigNonce short", async () => {
+    const interest0 = new Interest("/A/0");
+    await updateSign(policyN, interest0);
+    expect(() => policyN16.check(interest0)).toThrow();
+  });
+
+  test("SigNonce duplicate", async () => {
+    const interest0 = new Interest("/A/0");
+    await updateSign(policyN16, interest0);
+    const interest1 = new Interest("/A/1");
+    await updateSign(policyN16, interest1);
+    interest1.sigInfo!.nonce = interest0.sigInfo!.nonce;
+
+    policyN.check(interest0)();
+    expect(() => policyN.check(interest1)).toThrow();
+  });
+
+  test("SigTime offset", async () => {
+    const interest0 = new Interest("/A/0");
+    await updateSign(policyT, interest0);
+    interest0.sigInfo!.time! -= 100000;
+    expect(() => policyT.check(interest0)).toThrow();
+
+    const interest1 = new Interest("/A/1");
+    await updateSign(policyT, interest1);
+    interest1.sigInfo!.time! += 100000;
+    expect(() => policyT.check(interest1)).toThrow();
+  });
+
+  test("SigTime reorder", async () => {
+    const interest0 = new Interest("/A/0");
+    await updateSign(policyT, interest0);
+    const interest1 = new Interest("/A/1");
+    await updateSign(policyT, interest1);
+
+    policyT.check(interest1)();
+    expect(() => policyT.check(interest0)).toThrow();
+  });
+
+  test("SigSeqNum reorder", async () => {
+    const interest0 = new Interest("/A/0");
+    await updateSign(policyS, interest0);
+    const interest1 = new Interest("/A/1");
+    await updateSign(policyS, interest1);
+
+    policyS.check(interest1)();
+    expect(() => policyS.check(interest0)).toThrow();
+  });
 });

@@ -1,7 +1,7 @@
 import { Decoder, Encoder, EvDecoder, NNI, toHex } from "@ndn/tlv";
 
 import { TT } from "./an";
-import { Name, NameLike } from "./name";
+import { Name, NameLike } from "./name/mod";
 
 const EVD = new EvDecoder<FwHint.Delegation>("Delegation", TT.Delegation)
   .add(TT.Preference, (t, { nni }) => t.preference = nni)

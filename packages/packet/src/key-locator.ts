@@ -1,7 +1,7 @@
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 
 import { TT } from "./an";
-import { Name, NameLike } from "./name";
+import { Name, NameLike } from "./name/mod";
 
 const EVD = new EvDecoder<KeyLocator>("KeyLocator", TT.KeyLocator)
   .add(TT.Name, (t, { value }) => t.name = new Name(value))

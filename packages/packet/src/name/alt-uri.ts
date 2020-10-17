@@ -1,4 +1,4 @@
-import { TT } from "./an";
+import { TT } from "../an";
 import { Component } from "./component";
 import type { NamingConvention } from "./convention";
 import { ImplicitDigest, ParamsDigest } from "./digest-comp";

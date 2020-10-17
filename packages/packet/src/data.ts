@@ -1,13 +1,11 @@
 import { Decoder, Encodable, EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
-import { SigType, TT } from "./an";
-import { Component } from "./component";
-import { sha256 } from "./digest_node";
-import { ImplicitDigest } from "./digest-comp";
+import { TT } from "./an";
 import type { Interest } from "./interest";
-import { Name, NameLike } from "./name";
+import { Component, ImplicitDigest, Name, NameLike } from "./name/mod";
+import { sha256 } from "./security/helper_node";
+import { LLSign, LLVerify, Signer, Verifier } from "./security/signing";
 import { SigInfo } from "./sig-info";
-import { LLSign, LLVerify, Signer, Verifier } from "./signing";
 
 const FIELDS = Symbol("Data.FIELDS");
 
@@ -18,14 +16,12 @@ class Fields {
         this.name = new Name(arg);
       } else if (arg instanceof Uint8Array) {
         this.content = arg;
-      } else if (arg instanceof ContentTypeTag) {
-        this.contentType = arg.v;
-      } else if (arg instanceof FreshnessPeriodTag) {
-        this.freshnessPeriod = arg.v;
       } else if (arg === Data.FinalBlock) {
         this.isFinalBlock = true;
       } else if (arg instanceof Data) {
         Object.assign(this, arg[FIELDS]);
+      } else if (arg[ctorAssign]) {
+        arg[ctorAssign](this);
       } else {
         throw new Error("unknown Data constructor argument");
       }
@@ -56,7 +52,7 @@ class Fields {
   public set freshnessPeriod(v) { this.freshnessPeriod_ = NNI.constrain(v, "FreshnessPeriod"); }
   public finalBlockId?: Component;
   public content = new Uint8Array();
-  public sigInfo = new SigInfo(SigType.Null);
+  public sigInfo = new SigInfo();
   public sigValue = new Uint8Array();
 
   private contentType_ = 0;
@@ -233,27 +229,25 @@ for (const field of FIELD_LIST) {
   });
 }
 
-class ContentTypeTag {
-  constructor(public v: number) {
-  }
-}
-
-class FreshnessPeriodTag {
-  constructor(public v: number) {
-  }
+const ctorAssign = Symbol("Interest.ctorAssign");
+interface CtorTag {
+  [ctorAssign]: (f: Fields) => void;
 }
 
 export namespace Data {
-  export function ContentType(v: number): ContentTypeTag {
-    return new ContentTypeTag(v);
+  export function ContentType(v: number): CtorTag {
+    return {
+      [ctorAssign](f: Fields) { return f.contentType = v; },
+    };
   }
 
-  export function FreshnessPeriod(v: number): FreshnessPeriodTag {
-    return new FreshnessPeriodTag(v);
+  export function FreshnessPeriod(v: number): CtorTag {
+    return {
+      [ctorAssign](f: Fields) { return f.freshnessPeriod = v; },
+    };
   }
 
   export const FinalBlock = Symbol("FinalBlock");
 
-  export type CtorArg = NameLike | ContentTypeTag | FreshnessPeriodTag |
-                        typeof FinalBlock | Uint8Array;
+  export type CtorArg = NameLike | CtorTag | typeof FinalBlock | Uint8Array;
 }

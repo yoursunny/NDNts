@@ -1,5 +1,5 @@
 import { Certificate, NamedSigner, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
-import { Data, Interest, SigInfo } from "@ndn/packet";
+import { Data, Interest, SignedInterestPolicy } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
@@ -11,13 +11,10 @@ const EVD = new EvDecoder<NewRequest.Fields>("NewRequest", undefined)
   .add(TT.CertRequest, (t, { vd }) => t.certRequest = Certificate.fromData(vd.decode(Data)), { required: true });
 
 export class NewRequest {
-  public static async fromInterest(interest: Interest, profile: CaProfile): Promise<NewRequest> {
+  public static async fromInterest(interest: Interest, { profile, signedInterestPolicy }: NewRequest.Context): Promise<NewRequest> {
     if (!(interest.name.getPrefix(-2).equals(profile.prefix) &&
           interest.name.at(-2).equals(Verb.NEW))) {
       throw new Error("bad Name");
-    }
-    if (typeof interest.sigInfo?.nonce === "undefined" || typeof interest.sigInfo.time === "undefined") {
-      throw new Error("bad SigInfo");
     }
 
     const request = new NewRequest(interest);
@@ -28,7 +25,7 @@ export class NewRequest {
 
     request.ecdhPub_ = await crypto.importEcdhPub(request.ecdhPubRaw);
     request.publicKey_ = await request.certRequest.createVerifier();
-    await request.publicKey.verify(interest);
+    await signedInterestPolicy.makeVerifier(request.publicKey).verify(interest);
     return request;
   }
 
@@ -62,13 +59,17 @@ function truncateValidity(
 }
 
 export namespace NewRequest {
+  export interface Context {
+    profile: CaProfile;
+    signedInterestPolicy: SignedInterestPolicy;
+  }
+
   export interface Fields {
     ecdhPubRaw: Uint8Array;
     certRequest: Certificate;
   }
 
-  export interface Options {
-    profile: CaProfile;
+  export interface Options extends Context {
     ecdhPub: CryptoKey;
     publicKey: NamedVerifier.PublicKey;
     privateKey: NamedSigner.PrivateKey;
@@ -77,6 +78,7 @@ export namespace NewRequest {
 
   export async function build({
     profile,
+    signedInterestPolicy,
     ecdhPub,
     publicKey,
     privateKey,
@@ -97,8 +99,7 @@ export namespace NewRequest {
     interest.name = profile.prefix.append(Verb.NEW);
     interest.mustBeFresh = true;
     interest.appParameters = payload;
-    interest.sigInfo = new SigInfo(SigInfo.Nonce(), SigInfo.Time());
-    await privateKey.sign(interest);
-    return NewRequest.fromInterest(interest, profile);
+    await signedInterestPolicy.makeSigner(privateKey).sign(interest);
+    return NewRequest.fromInterest(interest, { profile, signedInterestPolicy });
   }
 }

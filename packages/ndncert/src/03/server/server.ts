@@ -48,6 +48,11 @@ export class Server {
       Component.from(issuerId));
   }
 
+  private state = new Map<string, Context>();
+  private cleanupTimer: NodeJS.Timeout;
+  private producers: Producer[];
+  private signedInterestPolicy = crypto.makeSignedInterestPolicy();
+
   private constructor(
       endpoint: Endpoint,
       private readonly repo: RepoDataStore,
@@ -75,10 +80,6 @@ export class Server {
     this.cleanupTimer = setInterval(this.cleanupContext, 60000);
   }
 
-  private state = new Map<string, Context>();
-  private cleanupTimer: NodeJS.Timeout;
-  private producers: Producer[];
-
   public close() {
     clearInterval(this.cleanupTimer);
     this.producers.map((producer) => producer.close());
@@ -95,7 +96,10 @@ export class Server {
   private handleNewInterest = async (interest: Interest) => {
     let request: NewRequest;
     try {
-      request = await NewRequest.fromInterest(interest, this.profile);
+      request = await NewRequest.fromInterest(interest, {
+        profile: this.profile,
+        signedInterestPolicy: this.signedInterestPolicy,
+      });
     } catch {
       return await ErrorMsg.makeData(ErrorCode.BadParameterFormat, interest, this.key);
     }
@@ -135,8 +139,12 @@ export class Server {
   private handleChallengeInterest = async (interest: Interest) => {
     let request: ChallengeRequest;
     try {
-      request = await ChallengeRequest.fromInterest(interest, this.profile, async (requestId) => {
-        return this.state.get(toHex(requestId));
+      request = await ChallengeRequest.fromInterest(interest, {
+        profile: this.profile,
+        signedInterestPolicy: this.signedInterestPolicy,
+        lookupRequest: async (requestId) => {
+          return this.state.get(toHex(requestId));
+        },
       });
     } catch {
       return await ErrorMsg.makeData(ErrorCode.BadParameterFormat, interest, this.key);

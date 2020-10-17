@@ -38,10 +38,12 @@ export async function requestCertificate({
     describe: `NDNCERT-CLIENT(${privateKey.name})`,
     retx,
   };
+  const signedInterestPolicy = crypto.makeSignedInterestPolicy();
 
   const { privateKey: ecdhPvt, publicKey: ecdhPub } = await crypto.generateEcdhKey();
   const newRequest = await NewRequest.build({
     profile,
+    signedInterestPolicy,
     ecdhPub,
     publicKey,
     privateKey,
@@ -70,6 +72,7 @@ export async function requestCertificate({
   for (;;) {
     const challengeRequest = await ChallengeRequest.build({
       profile,
+      signedInterestPolicy,
       requestId,
       ...sessionKey,
       publicKey,

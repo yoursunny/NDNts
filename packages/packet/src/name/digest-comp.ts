@@ -1,6 +1,6 @@
 import { fromHex, toHex } from "@ndn/tlv";
 
-import { TT } from "./an";
+import { TT } from "../an";
 import { Component } from "./component";
 import type { NamingConvention } from "./convention";
 import type { Name } from "./name";

@@ -1,4 +1,8 @@
-import { createHash, timingSafeEqual as nodeTimingSafeEqual } from "crypto";
+import { createHash, randomBytes, timingSafeEqual as nodeTimingSafeEqual } from "crypto";
+
+export function randBytes(size: number): Uint8Array {
+  return randomBytes(size);
+}
 
 export async function sha256(input: Uint8Array): Promise<Uint8Array> {
   const hash = createHash("sha256");

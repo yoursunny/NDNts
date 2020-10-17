@@ -1,4 +1,4 @@
-import type { Data } from "./data";
+import type { Data } from "../data";
 
 /** Low level encryption function. */
 export type LLEncrypt = (params: LLEncrypt.Params) => Promise<LLEncrypt.Result>;
