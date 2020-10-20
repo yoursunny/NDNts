@@ -86,7 +86,7 @@ export namespace UdpTransport {
     let rx: udp.Socket;
     try {
       rx = await udp.openMulticastRx(opts);
-    } catch (err) {
+    } catch (err: unknown) {
       tx.close();
       throw err;
     }

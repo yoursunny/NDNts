@@ -64,6 +64,7 @@ export async function destroyServer(): Promise<void> {
 
 export async function waitNClients(n: number): Promise<net.Socket[]> {
   while (clients.size < n) {
+    // eslint-disable-next-line @typescript-eslint/no-loop-func
     await new Promise((r) => server.once("connection", r));
   }
   return Array.from(clients);

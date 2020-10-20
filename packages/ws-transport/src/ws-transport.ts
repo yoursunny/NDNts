@@ -27,6 +27,7 @@ export class WsTransport extends Transport {
         };
       },
     ));
+
     this.highWaterMark = opts.highWaterMark ?? 1024 * 1024;
     this.lowWaterMark = opts.lowWaterMark ?? 16 * 1024;
   }

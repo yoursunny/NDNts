@@ -36,7 +36,7 @@ export async function connect(host: string, opts: connect.Options = {}): Promise
       await testConnection(face, tc);
     }
     testConnectionDuration = getNow() - testConnectionStart;
-  } catch (err) {
+  } catch (err: unknown) {
     face.close();
     throw err;
   }

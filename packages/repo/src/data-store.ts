@@ -71,9 +71,9 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
     let record: Record;
     try {
       record = await this.db.get(name);
-    } catch (err) {
+    } catch (err: unknown) {
       /* istanbul ignore else */
-      if (err.notFound) {
+      if ((err as { notFound?: true }).notFound) { // TODO use @types/level-errors when available
         return undefined;
       }
       /* istanbul ignore next */

@@ -26,8 +26,8 @@ async function* genKeys(keyChain: KeyChain): AsyncGenerator<GenResult> {
       const [pvt, pub] = await generateSigningKey(keyChain, "/S", ECDSA, { curve });
       await keyChain.deleteKey(pvt.name);
       [res.pvt, res.pub] = [pvt, pub];
-    } catch (err) {
-      res.err = err;
+    } catch (err: unknown) {
+      res.err = err as Error;
     }
     yield res;
   }
@@ -37,8 +37,8 @@ async function* genKeys(keyChain: KeyChain): AsyncGenerator<GenResult> {
       const [pvt, pub] = await generateSigningKey(keyChain, "/S", RSA, { modulusLength });
       await keyChain.deleteKey(pvt.name);
       [res.pvt, res.pub] = [pvt, pub];
-    } catch (err) {
-      res.err = err;
+    } catch (err: unknown) {
+      res.err = err as Error;
     }
     yield res;
   }
@@ -48,8 +48,8 @@ async function* genKeys(keyChain: KeyChain): AsyncGenerator<GenResult> {
       const [pvt, pub] = await generateSigningKey(keyChain, "/S", HMAC);
       await keyChain.deleteKey(pvt.name);
       [res.pvt, res.pub] = [pvt, pub];
-    } catch (err) {
-      res.err = err;
+    } catch (err: unknown) {
+      res.err = err as Error;
     }
     yield res;
   }
@@ -73,8 +73,8 @@ async function checkWebCrypto() {
         await pvt.sign(pkt);
         pkt = new Decoder(Encoder.encode(pkt)).decode(Data);
         await pub.verify(pkt);
-      } catch (err_) {
-        err = err_;
+      } catch (err_: unknown) {
+        err = err_ as Error;
       }
     }
     lines.push(`${title}: ${err ? err.toString() : "OK"}`);
@@ -85,7 +85,7 @@ async function checkWebCrypto() {
     const cert = Certificate.fromData(new Decoder(ndn_testbed_certs.ROOT_V2_NDNCERT).decode(Data));
     testbedRootKey = await cert.createVerifier();
     lines.push("import testbed root certificate: OK");
-  } catch (err) {
+  } catch (err: unknown) {
     lines.push(`import testbed root certificate: ${err}`);
   }
 
@@ -94,7 +94,7 @@ async function checkWebCrypto() {
     await cert.createVerifier();
     await testbedRootKey?.verify(cert.data);
     lines.push("import and verify testbed site certificate: OK");
-  } catch (err) {
+  } catch (err: unknown) {
     lines.push(`import and verify testbed site certificate: ${err}`);
   }
   return lines;

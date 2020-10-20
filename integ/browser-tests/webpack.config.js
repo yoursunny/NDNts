@@ -1,7 +1,7 @@
 const { FileMatcher } = require("file-matcher");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { resolve: resolvePath, basename, dirname } = require("path");
+const path = require("path");
 
 const jestPuppeteerConfig = require("./jest-puppeteer.config.js");
 
@@ -39,7 +39,7 @@ const config = {
     allowedHosts: [
       ".ngrok.io",
     ],
-    contentBase: resolvePath(__dirname, "public"),
+    contentBase: path.resolve(__dirname, "public"),
     host: "0.0.0.0",
     port: jestPuppeteerConfig.server.port,
   },
@@ -47,14 +47,14 @@ const config = {
 
 module.exports = async () => {
   const list = await new FileMatcher().find({
-    path: resolvePath(__dirname, "tests"),
+    path: path.resolve(__dirname, "tests"),
     fileFilter: {
       fileNamePattern: "**/browser.ts",
     },
     recursiveSearch: true,
   });
   list.forEach((filename) => {
-    const name = basename(dirname(filename));
+    const name = path.basename(path.dirname(filename));
     config.entry[name] = filename;
     config.plugins.push(new HtmlWebpackPlugin({
       chunks: [name],

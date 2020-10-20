@@ -120,10 +120,10 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
       try {
         await this.transport.tx(transportTx());
         return; // iterable drained, normal close
-      } catch (err) { // TX error
+      } catch (err: unknown) { // TX error
         this.state_ = L3Face.State.DOWN;
         this.emit("state", this.state_);
-        this.emit("down", err);
+        this.emit("down", err as Error);
       }
 
       const reopenPromise = this.reopenTransport();

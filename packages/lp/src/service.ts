@@ -65,8 +65,8 @@ export class LpService {
       }
       l3pkt.token = lpp.pitToken;
       yield l3pkt;
-    } catch (err) {
-      yield new LpService.RxError(err, tlv.tlv);
+    } catch (err: unknown) {
+      yield new LpService.RxError(err as Error, tlv.tlv);
     }
   }
 
@@ -128,8 +128,8 @@ export class LpService {
         default:
           return;
       }
-    } catch (err) {
-      return yield new LpService.TxError(err, l3);
+    } catch (err: unknown) {
+      return yield new LpService.TxError(err as Error, l3);
     }
 
     if (this.fragmenter) {

@@ -39,7 +39,7 @@ export class Readvertise {
       return;
     }
 
-    name = name ?? new Name(fromHex(nameHex));
+    name ??= new Name(fromHex(nameHex));
     this.fw.emit("annrm", name);
     for (const dest of this.destinations) {
       dest.withdraw(name, nameHex);
@@ -143,8 +143,8 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
               record.status = ReadvertiseDestination.Status.ADVERTISED;
               retry!.stop();
             }
-          } catch (err) {
-            retry!.retry(err);
+          } catch (err: unknown) {
+            retry!.retry(err as Error);
           }
           break;
         case ReadvertiseDestination.Status.WITHDRAWING:
@@ -155,8 +155,8 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
               retry!.stop();
               this.table.delete(nameHex);
             }
-          } catch (err) {
-            retry!.retry(err);
+          } catch (err: unknown) {
+            retry!.retry(err as Error);
           }
           break;
       }

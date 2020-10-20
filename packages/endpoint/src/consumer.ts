@@ -127,7 +127,7 @@ export class EndpointConsumer {
             if (pkt.l3 instanceof Data) {
               try {
                 await verifier?.verify(pkt.l3);
-              } catch (err) {
+              } catch (err: unknown) {
                 reject(new Error(`Data verify failed: ${err} @${describe}`));
                 break;
               }

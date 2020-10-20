@@ -39,7 +39,7 @@ export abstract class PolicyVerifier<Context = unknown> implements Verifier {
         try {
           this.checkValidity(cert, now);
           this.checkCertPolicy(lastPkt, cert, ctx);
-        } catch (err) {
+        } catch (err: unknown) {
           certErrors.push(`${cert.name}:${"\n\t"}${err}`);
           continue;
         }

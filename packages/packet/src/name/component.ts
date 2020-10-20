@@ -134,7 +134,7 @@ export class Component {
     let b = `${this.type}=`;
     let hasNonPeriods = false;
     this.value.forEach((ch) => {
-      hasNonPeriods = hasNonPeriods || ch !== CHARCODE_PERIOD;
+      hasNonPeriods ||= ch !== CHARCODE_PERIOD;
       b += CHAR_ENCODE[ch];
     });
     if (!hasNonPeriods) {

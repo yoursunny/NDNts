@@ -37,7 +37,7 @@ for (let i = 0; i < 5; ++i) {
     console.log(`<I ${interest.name}`);
     const data = await endpoint.consume(interest);
     console.log(`>D ${data.name}`);
-  } catch (err) {
+  } catch (err: unknown) {
     console.warn(err);
   }
 }

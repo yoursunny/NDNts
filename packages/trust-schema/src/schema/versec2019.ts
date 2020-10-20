@@ -144,7 +144,7 @@ function printSequence(list: Pattern[], sep: string, parenTypes: Array<typeof Pa
   return list.map((p) => {
     let needParens = false;
     for (const ctor of parenTypes) {
-      needParens = needParens || p instanceof ctor;
+      needParens ||= p instanceof ctor;
     }
     return needParens ? `(${printPattern(p)})` : printPattern(p);
   }).join(sep);

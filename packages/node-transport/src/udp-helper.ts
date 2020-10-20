@@ -29,7 +29,7 @@ export async function openSocket({
   try {
     sock.bind(bind);
     await pEvent(sock, "listening");
-  } catch (err) {
+  } catch (err: unknown) {
     sock.close();
     throw err;
   }
@@ -50,7 +50,7 @@ export async function connect(sock: Socket, {
   try {
     sock.connect(port, host);
     await pEvent(sock, "connect");
-  } catch (err) {
+  } catch (err: unknown) {
     sock.close();
     throw err;
   }
@@ -103,7 +103,7 @@ export async function openMulticastRx(opts: MulticastOptions): Promise<Socket> {
     sock.setBroadcast(true);
     sock.setMulticastLoopback(multicastLoopback);
     sock.addMembership(group, intf);
-  } catch (err) {
+  } catch (err: unknown) {
     sock.close();
     throw err;
   }
@@ -126,7 +126,7 @@ export async function openMulticastTx(opts: MulticastOptions): Promise<Socket> {
     sock.setMulticastInterface(intf);
     sock.connect(port, group);
     await pEvent(sock, "connect");
-  } catch (err) {
+  } catch (err: unknown) {
     sock.close();
     throw err;
   }

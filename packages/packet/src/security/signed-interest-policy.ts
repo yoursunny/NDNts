@@ -212,7 +212,7 @@ class NonceRule implements Rule {
   }
 
   private recordNonce(state: KeyState, nonceHex: string): void {
-    state.nonces = state.nonces ?? new Set<string>(); // TODO ??=
+    state.nonces ??= new Set<string>();
     state.nonces.add(nonceHex);
     evict(this.trackedNonces, state.nonces);
   }

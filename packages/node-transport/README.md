@@ -30,7 +30,7 @@ The `connect()` function of each transport creates a transport.
 try {
   const unix = await UnixTransport.connect("/run/nfd.sock");
   await useInL3Face(unix);
-} catch (err) {
+} catch (err: unknown) {
   // This above would throw an error on Windows or if NFD is not running.
   console.warn(err);
 }

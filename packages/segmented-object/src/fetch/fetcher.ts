@@ -77,7 +77,7 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
     const now = this.logic.now();
     try {
       await this.opts.verifier?.verify(data);
-    } catch (err) {
+    } catch (err: unknown) {
       this.emit("error", new Error(`cannot verify segment ${segNum}: ${err}`));
       this.close();
       return;

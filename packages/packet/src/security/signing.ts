@@ -57,7 +57,7 @@ export namespace Signer {
    * @param keyLocator optionally set keyLocator; false to unset KeyLocator.
    */
   export function putSigInfo(pkt: PacketWithSignature, sigType?: number, keyLocator?: KeyLocator.CtorArg|false): SigInfo {
-    pkt.sigInfo = pkt.sigInfo ?? new SigInfo(); // TODO ??=
+    pkt.sigInfo ??= new SigInfo();
     if (typeof sigType !== "undefined") {
       pkt.sigInfo.type = sigType;
     }

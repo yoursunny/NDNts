@@ -26,9 +26,9 @@ describe("unicast", () => {
     });
   });
 
-  afterEach((done) => {
+  afterEach(() => {
     clientPorts.clear();
-    server.close(done);
+    return new Promise((r) => server.close(r));
   });
 
   test("pair", async () => {

@@ -29,6 +29,7 @@ export function destroyServer() {
 
 export async function waitNClients(n: number): Promise<WebSocket[]> {
   while (wss.clients.size < n) {
+    // eslint-disable-next-line @typescript-eslint/no-loop-func
     await new Promise((r) => wss.once("connection", r));
   }
   return Array.from(wss.clients);
@@ -37,6 +38,7 @@ export async function waitNClients(n: number): Promise<WebSocket[]> {
 export function enableBroadcast() {
   for (const client of wss.clients) {
     const sender = client;
+    // eslint-disable-next-line @typescript-eslint/no-loop-func
     sender.on("message", (msg) => {
       for (const recipient of wss.clients) {
         if (recipient !== sender && recipient.readyState === recipient.OPEN) {

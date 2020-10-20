@@ -85,8 +85,8 @@ export abstract class KeyChain {
       let signer: NamedSigner;
       try {
         signer = await this.getKey(CertNaming.toKeyName(name), "signer");
-      } catch (err) {
-        return useFallback(err);
+      } catch (err: unknown) {
+        return useFallback(err as Error);
       }
       return changeKeyLocator(signer, name);
     }
@@ -99,7 +99,9 @@ export abstract class KeyChain {
           this.getKey(name, "signer"),
           this.findSignerCertName(name, ({ keyName }) => name.equals(keyName)),
         ]);
-      } catch (err) { return useFallback(err); }
+      } catch (err: unknown) {
+        return useFallback(err as Error);
+      }
       return changeKeyLocator(signer, certName);
     }
 

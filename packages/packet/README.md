@@ -179,7 +179,7 @@ const data2 = new Decoder(dataWire).decode(Data);
 // If the verify() function does not throw, it means the signature is good.
 try {
   await digestSigning.verify(data);
-} catch (err) {
+} catch (err: unknown) {
   console.log(err);
   return;
 }
