@@ -13,6 +13,7 @@ const EVD = new EvDecoder<ErrorMsg>("ErrorMsg", undefined)
   .add(TT.ErrorInfo, (t, { text }) => t.errorInfo = text, { required: true });
 
 export namespace ErrorMsg {
+  /** Create error message packet. */
   export async function makeData(errorCode: ErrorCode, { name }: Interest, signer: Signer) {
     const errorInfo = ErrorCode[errorCode];
     const payload = Encoder.encode([
@@ -28,10 +29,12 @@ export namespace ErrorMsg {
     return data;
   }
 
+  /** Parse error message packet. */
   export function fromData({ content }: Data): ErrorMsg {
     return EVD.decodeValue({} as ErrorMsg, new Decoder(content));
   }
 
+  /** Throw an exception if the given packet is an error message packet. */
   export function throwOnError(data: Data) {
     let e: ErrorMsg|undefined;
     try { e = fromData(data); } catch { return; }

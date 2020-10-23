@@ -12,6 +12,7 @@ const EVD = new EvDecoder<NewResponse.Fields>("NewResponse", undefined)
   .add(TT.RequestId, (t, { value }) => t.requestId = value, { required: true })
   .add(TT.Challenge, (t, { text }) => t.challenges.push(text), { required: true, repeat: true });
 
+/** NEW response packet. */
 export class NewResponse {
   public static async fromData(data: Data, profile: CaProfile): Promise<NewResponse> {
     await profile.publicKey.verify(data);

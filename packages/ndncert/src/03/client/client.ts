@@ -83,16 +83,15 @@ export async function requestCertificate({
     const challengeData = await endpoint.consume(challengeRequest.interest, consumerOptions);
     ErrorMsg.throwOnError(challengeData);
     const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, requestId, sessionKey.sessionDecrypter);
-    const { status, challengeStatus, remainingTries, remainingTime } = challengeResponse;
-    if (status === Status.SUCCESS) {
+    if (challengeResponse.status === Status.SUCCESS) {
       issuedCertName = challengeResponse.issuedCertName!;
       break;
     }
     challengeParameters = await challenge.next({
       requestId,
-      challengeStatus,
-      remainingTries,
-      remainingTime,
+      challengeStatus: challengeResponse.challengeStatus!,
+      remainingTries: challengeResponse.remainingTries!,
+      remainingTime: challengeResponse.remainingTime!,
     });
   }
 

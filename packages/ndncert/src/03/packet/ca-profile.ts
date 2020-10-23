@@ -13,6 +13,7 @@ const EVD = new EvDecoder<CaProfile.Fields>("CaProfile", undefined)
   .add(TT.MaxValidityPeriod, (t, { nni }) => t.maxValidityPeriod = nni * 1000, { required: true })
   .add(TT.CaCertificate, (t, { vd }) => t.cert = Certificate.fromData(vd.decode(Data)), { required: true });
 
+/** CA profile packet. */
 export class CaProfile {
   public static async fromData(data: Data): Promise<CaProfile> {
     const profile = new CaProfile(data);

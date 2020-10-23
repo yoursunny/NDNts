@@ -18,6 +18,7 @@ const EVD = new EvDecoder<ChallengeRequest.Fields>("ChallengeRequest", undefined
   .add(TT.ParameterKey, (t, { text }) => parameter_kv.parseKey(t.parameters, text), { order: 2, repeat: true })
   .add(TT.ParameterValue, (t, { value }) => parameter_kv.parseValue(t.parameters, value), { order: 2, repeat: true });
 
+/** CHALLENGE request packet. */
 export class ChallengeRequest {
   public static async fromInterest(interest: Interest, { profile, signedInterestPolicy, lookupRequest }: ChallengeRequest.Context): Promise<ChallengeRequest> {
     if (!(interest.name.getPrefix(-3).equals(profile.prefix) &&

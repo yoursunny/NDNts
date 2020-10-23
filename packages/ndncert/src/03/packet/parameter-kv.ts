@@ -2,7 +2,9 @@ import { Encodable, EncodableTlv, toUtf8 } from "@ndn/tlv";
 
 import { TT } from "./an";
 
+/** Parameter key-value pair. */
 export type ParameterKV = Record<string, Uint8Array>;
+
 const seenKey = new WeakMap<ParameterKV, string>();
 
 export function parseKey(kv: ParameterKV, key: string) {

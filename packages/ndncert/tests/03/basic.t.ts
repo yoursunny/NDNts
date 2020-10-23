@@ -120,9 +120,6 @@ test("packets", async () => {
     ...caSessionKey,
     request: challengeRequest,
     status: Status.SUCCESS,
-    challengeStatus: "OK",
-    remainingTries: 1,
-    remainingTime: 30000,
     issuedCertName: new Name("/issued-cert"),
     signer: caPvt,
   });
@@ -130,8 +127,5 @@ test("packets", async () => {
 
   const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, requestId, reqSessionKey.sessionDecrypter);
   expect(challengeResponse.status).toBe(Status.SUCCESS);
-  expect(challengeResponse.challengeStatus).toBe("OK");
-  expect(challengeResponse.remainingTries).toBe(1);
-  expect(challengeResponse.remainingTime).toBe(30000);
   expect(challengeResponse.issuedCertName).toEqualName("/issued-cert");
 });

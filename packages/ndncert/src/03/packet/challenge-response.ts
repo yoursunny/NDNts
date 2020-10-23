@@ -1,5 +1,5 @@
 import { Data, LLDecrypt, LLEncrypt, Name, Signer } from "@ndn/packet";
-import { Decoder, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
+import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 
 import { Status, TT } from "./an";
 import type { CaProfile } from "./ca-profile";
@@ -8,11 +8,12 @@ import * as encrypted_payload from "./encrypted";
 
 const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse", undefined)
   .add(TT.Status, (t, { nni }) => t.status = NNI.constrain(nni, "Status", Status.MAX, Status.MIN), { required: true })
-  .add(TT.ChallengeStatus, (t, { text }) => t.challengeStatus = text, { required: true })
-  .add(TT.RemainingTries, (t, { nni }) => t.remainingTries = nni, { required: true })
-  .add(TT.RemainingTime, (t, { nni }) => t.remainingTime = nni * 1000, { required: true })
+  .add(TT.ChallengeStatus, (t, { text }) => t.challengeStatus = text)
+  .add(TT.RemainingTries, (t, { nni }) => t.remainingTries = nni)
+  .add(TT.RemainingTime, (t, { nni }) => t.remainingTime = nni * 1000)
   .add(TT.IssuedCertName, (t, { vd }) => t.issuedCertName = vd.decode(Name));
 
+/** CHALLENGE response packet. */
 export class ChallengeResponse {
   public static async fromData(data: Data, profile: CaProfile, requestId: Uint8Array,
       sessionDecrypter: LLDecrypt.Key): Promise<ChallengeResponse> {
@@ -28,16 +29,33 @@ export class ChallengeResponse {
 
   private constructor(public readonly data: Data, plaintext: Uint8Array) {
     EVD.decodeValue(this, new Decoder(plaintext));
+    checkFields(this);
   }
 }
 export interface ChallengeResponse extends Readonly<ChallengeResponse.Fields> {}
 
+function checkFields({
+  status,
+  challengeStatus,
+  remainingTries,
+  remainingTime,
+  issuedCertName,
+}: ChallengeResponse.Fields) {
+  if (status === Status.SUCCESS) {
+    if (!issuedCertName) {
+      throw new Error("issuedCertName is required for Status.SUCCESS");
+    }
+  } else if (!challengeStatus || !remainingTries || !remainingTime) {
+    throw new Error("challengeStatus, remainingTries, and remainingTime are required for !Status.SUCCESS");
+  }
+}
+
 export namespace ChallengeResponse {
   export interface Fields {
     status: Status;
-    challengeStatus: string;
-    remainingTries: number;
-    remainingTime: number; // milliseconds
+    challengeStatus?: string;
+    remainingTries?: number;
+    remainingTime?: number; // milliseconds
     issuedCertName?: Name;
   }
 
@@ -49,25 +67,33 @@ export namespace ChallengeResponse {
     signer: Signer;
   }
 
-  export async function build({
-    profile,
-    sessionEncrypter,
-    sessionDecrypter,
-    request: { requestId, interest: { name } },
-    status,
-    challengeStatus,
-    remainingTries,
-    remainingTime,
-    issuedCertName,
-    signer,
-  }: Options): Promise<ChallengeResponse> {
-    const payload = Encoder.encode([
+  export async function build(opts: Options): Promise<ChallengeResponse> {
+    checkFields(opts);
+    const {
+      profile,
+      sessionEncrypter,
+      sessionDecrypter,
+      request: { requestId, interest: { name } },
+      status,
+      challengeStatus,
+      remainingTries,
+      remainingTime,
+      issuedCertName,
+      signer,
+    } = opts;
+    const tlvs: EncodableTlv[] = [
       [TT.Status, NNI(status)],
-      [TT.ChallengeStatus, toUtf8(challengeStatus)],
-      [TT.RemainingTries, NNI(remainingTries)],
-      [TT.RemainingTime, NNI(remainingTime / 1000)],
-      [TT.IssuedCertName, Encoder.OmitEmpty, issuedCertName],
-    ]);
+    ];
+    if (status === Status.SUCCESS) {
+      tlvs.push([TT.IssuedCertName, issuedCertName]);
+    } else {
+      tlvs.push(
+        [TT.ChallengeStatus, toUtf8(challengeStatus!)],
+        [TT.RemainingTries, NNI(remainingTries!)],
+        [TT.RemainingTime, NNI(remainingTime! / 1000)],
+      );
+    }
+    const payload = Encoder.encode(tlvs);
 
     const data = new Data();
     data.name = name;

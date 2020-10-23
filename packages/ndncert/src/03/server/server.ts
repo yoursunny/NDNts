@@ -224,9 +224,6 @@ export class Server {
     const response = await ChallengeResponse.build({
       ...this.makeResponseCommon(request, context),
       status: Status.SUCCESS,
-      challengeStatus: "OK",
-      remainingTries: 0,
-      remainingTime: 0,
       issuedCertName,
     });
     return response.data;

@@ -10,6 +10,7 @@ const EVD = new EvDecoder<NewRequest.Fields>("NewRequest", undefined)
   .add(TT.EcdhPub, (t, { value }) => t.ecdhPubRaw = value, { required: true })
   .add(TT.CertRequest, (t, { vd }) => t.certRequest = Certificate.fromData(vd.decode(Data)), { required: true });
 
+/** NEW request packet. */
 export class NewRequest {
   public static async fromInterest(interest: Interest, { profile, signedInterestPolicy }: NewRequest.Context): Promise<NewRequest> {
     if (!(interest.name.getPrefix(-2).equals(profile.prefix) &&

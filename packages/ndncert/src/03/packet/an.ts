@@ -8,7 +8,7 @@ export const TT = {
   CaCertificate: 0x89,
   MaxValidityPeriod: 0x8B,
   ProbeResponse: 0x8D,
-  AllowLongerName: 0x8F,
+  MaxSuffixLength: 0x8F,
   EcdhPub: 0x91,
   CertRequest: 0x93,
   Salt: 0x95,
@@ -25,6 +25,8 @@ export const TT = {
   ErrorCode: 0xAB,
   ErrorInfo: 0xAD,
   AuthenticationTag: 0xAF,
+  CertToRevoke: 0xB1,
+  ProbeRedirect: 0xB3,
 };
 
 export const Verb = {
