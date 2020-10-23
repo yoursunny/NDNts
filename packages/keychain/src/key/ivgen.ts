@@ -98,26 +98,30 @@ export class CounterIvGen extends IvGen {
       this.iv |= random;
     }
 
-    this.counterMask = BigInt(`0b${"1".repeat(counterBits)}`);
+    this.maxCounter = BigInt(`0b1${"0".repeat(counterBits)}`);
 
     this.blockSize = blockSize;
   }
 
-  private iv = BigInt(0);
-  private readonly counterMask: bigint;
+  private readonly iv = BigInt(0);
+  private counter = BigInt(0);
+  private readonly maxCounter: bigint;
   private readonly blockSize: number;
 
   protected generate() {
-    return fromHex(this.iv.toString(16).padStart(2 * this.ivLength, "0"));
+    const iv = this.iv | this.counter;
+    return fromHex(iv.toString(16).padStart(2 * this.ivLength, "0"));
   }
 
   protected update(plaintextLength: number, ciphertextLength: number) {
-    let counter = this.iv & this.counterMask;
-    counter += BigInt(Math.ceil(ciphertextLength / this.blockSize));
-    counter &= this.counterMask;
+    this.counter += BigInt(Math.ceil(ciphertextLength / this.blockSize));
+    this.checkCounter();
+  }
 
-    this.iv &= ~this.counterMask;
-    this.iv |= counter;
+  private checkCounter() {
+    if (this.counter > this.maxCounter) {
+      throw new Error("CounterIvGen counter overflow");
+    }
   }
 }
 
