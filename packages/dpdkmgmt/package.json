@@ -28,10 +28,8 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "graphql-request": "^3.2.0",
+    "graphql": "^15.4.0",
+    "graphql-request": "^3.3.0",
     "tslib": "^2.0.3"
-  },
-  "devDependencies": {
-    "graphql": "^15.3.0"
   }
 }

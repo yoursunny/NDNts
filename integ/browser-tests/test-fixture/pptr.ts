@@ -1,5 +1,4 @@
 import * as path from "path";
-import { Page } from "puppeteer";
 
 import jestPuppeteerConfig from "../jest-puppeteer.config.js";
 
@@ -19,6 +18,17 @@ export function getPageUri(testcaseDirname: string) {
 export async function navigateToPage(testcaseDirname: string, delay = 200) {
   await page.goto(getPageUri(testcaseDirname));
   await new Promise((r) => setTimeout(r, delay));
+}
+
+/**
+ * Subset of Page type needed by pageInvoke function.
+ *
+ * Use a loose declaration instead of an import, because @types/expect-puppeteer and
+ * @types/jest-environment-puppeteer sometimes refer to different versions of
+ * @types/puppeteer , causing type checking errors.
+ */
+interface Page {
+  evaluate(...args: any[]): any;
 }
 
 /** Invoke JavaScript function (in global scope) on page. */

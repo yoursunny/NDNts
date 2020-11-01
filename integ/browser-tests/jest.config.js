@@ -1,7 +1,8 @@
 const path = require("path");
 const parent = require("../../jest.config.js");
 
-const config = {
+/** @type {import('@jest/types').Config.InitialOptions} */
+module.exports = {
   ...parent,
 
   globalSetup: "jest-environment-puppeteer/setup",
@@ -11,5 +12,3 @@ const config = {
 
   testPathIgnorePatterns: parent.testPathIgnorePatterns.filter((x) => !/integ/.test(x)),
 };
-
-module.exports = config;

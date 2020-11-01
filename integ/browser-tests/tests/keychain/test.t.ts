@@ -5,7 +5,7 @@ import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 import { deserializeInBrowser } from "../../test-fixture/serialize";
-import { SignVerifyTestResult } from "./api";
+import type { SignVerifyTestResult } from "./api";
 
 beforeEach(() => navigateToPage(__dirname));
 
