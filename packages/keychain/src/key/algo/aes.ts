@@ -24,7 +24,7 @@ export interface GenParams {
 }
 type GenParams_ = GenParams;
 
-/** AES block size. */
+/** AES block size in octets. */
 export const blockSize = 16;
 
 class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I, G> {
@@ -142,7 +142,13 @@ interface AlgoDetail<I> {
   modifyParams?: (params: any, info: I) => void;
 }
 
-/** AES-CBC encryption algorithm. */
+/**
+ * AES-CBC encryption algorithm.
+ *
+ * Initialization Vectors must be 16 octets.
+ * During encryption, if IV is unspecified, it is randomly generated.
+ * During decryption, quality of IV is not checked.
+ */
 export const CBC: Encryption<{}, GenParams> = new AesCommon("AES-CBC", "a3840ac4-b29d-4ab5-a255-2894ec254223", {
   secretKeyUsages: ["encrypt", "decrypt"],
   ivLength: 16,
@@ -161,7 +167,18 @@ const ctrIvGen = new DefaultWeakMap<CryptoAlgorithm.SecretKey<CTR.Info>, IvGen>(
     });
   });
 
-/** AES-CTR encryption algorithm. */
+/**
+ * AES-CTR encryption algorithm.
+ *
+ * Initialization Vectors must be 16 octets.
+ * During encryption, if IV is unspecified, it is constructed with two parts:
+ * @li a 64-bit random number, generated each time a private key instance is constructed;
+ * @li a 64-bit counter starting from zero.
+ *
+ * During decryption, quality of IV is not automatically checked.
+ * Since the security of AES-CTR depends on having unique IVs, the application is recommended to
+ * check IVs using CounterIvChecker type.
+ */
 export const CTR: Encryption<CTR.Info, CTR.GenParams> = new AesCommon<CTR.Info, CTR.GenParams>("AES-CTR", "0ec985f2-88c0-4dd9-8b69-2c41bd639809", {
   secretKeyUsages: ["encrypt", "decrypt"],
   ivLength: 16,
@@ -169,7 +186,7 @@ export const CTR: Encryption<CTR.Info, CTR.GenParams> = new AesCommon<CTR.Info, 
   allowAdditionalData: false,
   tagSize: 0,
   defaultInfo: {
-    counterLength: 128,
+    counterLength: 64,
   },
   modifyParams: (params: Partial<AesCtrParams & AesCbcParams>, { counterLength }: CTR.Info) => {
     params.counter = params.iv;
@@ -182,7 +199,7 @@ export namespace CTR {
   export interface Info {
     /**
      * Specify number of bits in IV to use as counter.
-     * This must be between 1 and 128. Default is 128.
+     * This must be between 1 and 128. Default is 64.
      */
     counterLength: number;
   }
@@ -197,7 +214,18 @@ const gcmIvGen = new DefaultWeakMap<CryptoAlgorithm.SecretKey<{}>, IvGen>(
     blockSize,
   }));
 
-/** AES-GCM encryption algorithm. */
+/**
+ * AES-GCM encryption algorithm.
+ *
+ * Initialization Vectors must be 12 octets.
+ * During encryption, if IV is unspecified, it is constructed with two parts:
+ * @li a 64-bit random number, generated each time a private key instance is constructed;
+ * @li a 32-bit counter starting from zero.
+ *
+ * During decryption, quality of IV is not automatically checked.
+ * Since the security of AES-CTR depends on having unique IVs, the application is recommended to
+ * check IVs using CounterIvChecker type.
+ */
 export const GCM: Encryption<{}, GenParams> = new AesCommon("AES-GCM", "a7e27aee-2f10-4150-bd6b-5e667c006274", {
   secretKeyUsages: ["encrypt", "decrypt"],
   ivLength: 12,

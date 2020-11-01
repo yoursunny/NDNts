@@ -1,9 +1,8 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Component, Name } from "@ndn/packet";
-import { Encoder } from "@ndn/tlv";
 
-import { AES, Certificate, EncryptionAlgorithm, generateEncryptionKey, generateSigningKey, KeyChain, KeyChainImplWebCrypto as crypto, NamedDecrypter, NamedEncrypter, RSAOAEP, ValidityPeriod } from "../..";
+import { AES, Certificate, CounterIvChecker, EncryptionAlgorithm, generateEncryptionKey, generateSigningKey, KeyChain, KeyChainImplWebCrypto as crypto, NamedDecrypter, NamedEncrypter, RSAOAEP, ValidityPeriod } from "../..";
 
 async function testEncryptDecrypt(encrypter: NamedEncrypter, decrypter: NamedDecrypter, aead: boolean) {
   expect(encrypter.name).toEqualName(decrypter.name);
@@ -65,50 +64,61 @@ test.each([
   const p1 = crypto.getRandomValues(new Uint8Array(33));
   const p2 = crypto.getRandomValues(new Uint8Array(1));
 
-  const [encA] = await generateEncryptionKey(new Name("/A"), algo, { counterLength });
-  const { iv: ivA0 } = await encA.llEncrypt({ plaintext: p0 });
-  const { iv: ivA1 } = await encA.llEncrypt({ plaintext: p1 });
-  const { iv: ivA2 } = await encA.llEncrypt({ plaintext: p2 });
-  const [encB] = await generateEncryptionKey(new Name("/B"), algo, { counterLength });
-  const { iv: ivB0 } = await encB.llEncrypt({ plaintext: p0 });
-  const { iv: ivB1 } = await encB.llEncrypt({ plaintext: p1 });
-  const { iv: ivB2 } = await encB.llEncrypt({ plaintext: p2 });
+  const [encA, decA] = await generateEncryptionKey(new Name("/A"), algo, { counterLength });
+  const cA0 = await encA.llEncrypt({ plaintext: p0 });
+  const cA1 = await encA.llEncrypt({ plaintext: p1 });
+  const cA2 = await encA.llEncrypt({ plaintext: p2 });
+  const [encB, decB] = await generateEncryptionKey(new Name("/B"), algo, { counterLength });
+  const cB0 = await encB.llEncrypt({ plaintext: p0 });
+  const cB1 = await encB.llEncrypt({ plaintext: p1 });
+  const cB2 = await encB.llEncrypt({ plaintext: p2 });
 
-  const ivLength = algo === AES.CTR ? 16 : 12;
-  const counterMask = Number.parseInt("1".repeat(counterLength), 2);
-  const parseIv = (iv: Uint8Array): [Uint8Array, number] => {
-    expect(iv).toHaveLength(ivLength);
-    const u32 = Encoder.asDataView(iv).getUint32(ivLength - 4);
-    const counter = u32 & counterMask;
-    const fixed = Uint8Array.from(iv);
-    Encoder.asDataView(fixed).setUint32(ivLength - 4, u32 & ~counterMask);
-    return [fixed, counter];
-  };
+  const ivChk = new CounterIvChecker({
+    ivLength: algo === AES.CTR ? 16 : 12,
+    counterBits: counterLength,
+    blockSize: AES.blockSize,
+    requireSameRandom: true,
+  });
 
-  const [fA0, cntA0] = parseIv(ivA0!);
-  const [fA1, cntA1] = parseIv(ivA1!);
-  const [fA2, cntA2] = parseIv(ivA2!);
-  const [fB0, cntB0] = parseIv(ivB0!);
-  const [fB1, cntB1] = parseIv(ivB1!);
-  const [fB2, cntB2] = parseIv(ivB2!);
+  const extractA0 = ivChk.extract(cA0.iv!);
+  expect(extractA0).toMatchObject({
+    fixed: BigInt(0),
+    counter: BigInt(0),
+  });
+  expect(ivChk.extract(cA1.iv!)).toMatchObject({
+    fixed: BigInt(0),
+    random: extractA0.random,
+    counter: BigInt(2),
+  });
+  expect(ivChk.extract(cA2.iv!)).toMatchObject({
+    fixed: BigInt(0),
+    random: extractA0.random,
+    counter: BigInt(5),
+  });
 
-  expect(fA1).toEqualUint8Array(fA0);
-  expect(fA2).toEqualUint8Array(fA0);
-  expect(fB0).not.toEqualUint8Array(fA0);
-  expect(fB1).toEqualUint8Array(fB0);
-  expect(fB2).toEqualUint8Array(fB0);
+  const extractB0 = ivChk.extract(cB0.iv!);
+  expect(extractB0).toMatchObject({
+    fixed: BigInt(0),
+    counter: BigInt(0),
+  });
+  expect(extractB0.random).not.toBe(extractA0.random);
+  expect(ivChk.extract(cB1.iv!)).toMatchObject({
+    fixed: BigInt(0),
+    random: extractB0.random,
+    counter: BigInt(2),
+  });
+  expect(ivChk.extract(cB2.iv!)).toMatchObject({
+    fixed: BigInt(0),
+    random: extractB0.random,
+    counter: BigInt(5),
+  });
 
-  const sub32 = (a: number, b: number) => {
-    let diff = b - a;
-    if (diff < 0) {
-      diff += 1 << 32;
-    }
-    return diff;
-  };
-  expect(sub32(cntA0, cntA1)).toBe(2);
-  expect(sub32(cntA1, cntA2)).toBe(3);
-  expect(sub32(cntB0, cntB1)).toBe(2);
-  expect(sub32(cntB1, cntB2)).toBe(3);
+  const dA = ivChk.wrap(decA);
+  const decryptB = ivChk.wrap(decB.llDecrypt.bind(decB));
+  await expect(dA.llDecrypt(cA0)).resolves.toBeDefined();
+  await expect(decryptB(cB1)).rejects.toThrow(); // wrong random bits
+  await expect(dA.llDecrypt(cA2)).resolves.toBeDefined();
+  await expect(dA.llDecrypt(cA1)).rejects.toThrow(); // counter not increasing
 });
 
 test("RSA-OAEP encrypt-decrypt", async () => {

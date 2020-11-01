@@ -1,39 +1,42 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { toHex } from "@ndn/tlv";
+import { CounterIvChecker, CounterIvGen, CounterIvOptions } from "../..";
 
-import { CounterIvGen } from "../..";
-
-test.each([32, 31])("CounterIvGen %#", async (cnt4) => {
-  const ivGen = new CounterIvGen({
+test.each([
+  { fixedType: "uint8array", lenC: 8, lenD: 1 },
+  { fixedType: "bigint", lenC: 4, lenD: 5 },
+])("CounterIvGen %#", async ({ fixedType, lenC, lenD }) => {
+  const ivOpts: CounterIvOptions = {
     ivLength: 4,
     fixedBits: 12,
-    fixed: Uint8Array.of(0x05, 0x97),
+    fixed: fixedType === "bigint" ? BigInt(0x0597) : Uint8Array.of(0x05, 0x97),
     counterBits: 5,
     blockSize: 4,
-  });
+  };
+  const ivGen = new CounterIvGen(ivOpts);
+  const ivChk = new CounterIvChecker(ivOpts);
   const encrypt = ivGen.wrap(({ plaintext, iv }) => Promise.resolve({ ciphertext: plaintext, iv }));
 
-  const { iv: iv0 } = await encrypt({ plaintext: new Uint8Array(12) });
-  const { iv: iv3 } = await encrypt({ plaintext: new Uint8Array(7) });
-  const { iv: iv5 } = await encrypt({ plaintext: new Uint8Array((cnt4 - 5) * 4) });
-  await expect(encrypt({ plaintext: new Uint8Array((32 - cnt4) * 4 + 1) }))
-    .rejects.toThrow(/counter overflow/);
+  const { iv: iv00 } = await encrypt({ plaintext: new Uint8Array(4 * 0x18) });
+  const extract0 = ivChk.extract(iv00!);
+  expect(extract0).toMatchObject({
+    fixed: BigInt(0x59700000),
+    counter: BigInt(0x00000000),
+  });
 
-  const ivToNumber = (iv?: Uint8Array): number => {
-    expect(iv).toBeDefined();
-    expect(iv).toHaveLength(4);
-    return Number.parseInt(toHex(iv!), 16);
-  };
+  const { iv: iv18 } = await encrypt({ plaintext: new Uint8Array(4 * 0x06 - 1) });
+  expect(ivChk.extract(iv18!)).toMatchObject({
+    fixed: BigInt(0x59700000),
+    random: extract0.random,
+    counter: BigInt(0x00000018),
+  });
 
-  const n0 = ivToNumber(iv0);
-  const n3 = ivToNumber(iv3);
-  const n5 = ivToNumber(iv5);
-  expect(n0 >> 20).toBe(0x597);
-  expect(n3 >> 20).toBe(0x597);
-  expect(n5 >> 20).toBe(0x597);
-  expect((n3 >> 5) & 0x7FFF).toBe((n0 >> 5) & 0x7FFF);
-  expect((n5 >> 5) & 0x7FFF).toBe((n0 >> 5) & 0x7FFF);
-  expect(n3 & 0x1F).toBe((n0 & 0x1F) + 3);
-  expect(n5 & 0x1F).toBe((n0 & 0x1F) + 5);
+  const { iv: iv1E } = await encrypt({ plaintext: new Uint8Array(lenC) });
+  expect(ivChk.extract(iv1E!)).toMatchObject({
+    fixed: BigInt(0x59700000),
+    random: extract0.random,
+    counter: BigInt(0x0000001E),
+  });
+
+  await expect(encrypt({ plaintext: new Uint8Array(lenD) })).rejects.toThrow();
 });
