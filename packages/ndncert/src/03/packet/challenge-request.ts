@@ -20,7 +20,11 @@ const EVD = new EvDecoder<ChallengeRequest.Fields>("ChallengeRequest", undefined
 
 /** CHALLENGE request packet. */
 export class ChallengeRequest {
-  public static async fromInterest(interest: Interest, { profile, signedInterestPolicy, lookupRequest }: ChallengeRequest.Context): Promise<ChallengeRequest> {
+  public static async fromInterest(interest: Interest, {
+    profile,
+    signedInterestPolicy,
+    lookupRequest,
+  }: ChallengeRequest.Context): Promise<ChallengeRequest> {
     if (!(interest.name.getPrefix(-3).equals(profile.prefix) &&
           interest.name.at(-3).equals(Verb.CHALLENGE))) {
       throw new Error("bad Name");
@@ -73,7 +77,7 @@ export namespace ChallengeRequest {
   export interface Options extends ContextBase, Fields {
     requestId: Uint8Array;
     sessionEncrypter: LLEncrypt.Key;
-    sessionDecrypter: LLDecrypt.Key;
+    sessionLocalDecrypter: LLDecrypt.Key;
     publicKey: NamedVerifier.PublicKey;
     privateKey: NamedSigner.PrivateKey;
   }
@@ -83,7 +87,7 @@ export namespace ChallengeRequest {
     signedInterestPolicy,
     requestId,
     sessionEncrypter,
-    sessionDecrypter,
+    sessionLocalDecrypter,
     publicKey,
     privateKey,
     selectedChallenge,
@@ -103,7 +107,10 @@ export namespace ChallengeRequest {
     return ChallengeRequest.fromInterest(interest, {
       profile,
       signedInterestPolicy,
-      lookupRequest: () => Promise.resolve({ sessionKey: { sessionDecrypter }, certRequestPub: publicKey }),
+      lookupRequest: () => Promise.resolve({
+        sessionKey: { sessionDecrypter: sessionLocalDecrypter },
+        certRequestPub: publicKey,
+      }),
     });
   }
 }

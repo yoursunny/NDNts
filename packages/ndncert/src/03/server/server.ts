@@ -113,8 +113,7 @@ export class Server {
 
     const salt = crypto.makeSalt();
     const { privateKey: ecdhPvt, publicKey: ecdhPub } = await crypto.generateEcdhKey();
-    const sessionKey = await crypto.makeSessionKey(
-      ecdhPvt, request.ecdhPub, salt, requestId, crypto.SessionRole.ISSUER);
+    const sessionKey = await crypto.makeSessionKey(ecdhPvt, request.ecdhPub, salt, requestId);
 
     this.state.set(requestIdHex, {
       expiry: Date.now() + BEFORE_CHALLENGE_EXPIRY,

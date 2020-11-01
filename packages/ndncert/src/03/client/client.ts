@@ -54,8 +54,7 @@ export async function requestCertificate({
   const newResponse = await NewResponse.fromData(newData, profile);
   const { ecdhPub: caEcdhPub, salt, requestId, challenges: serverChallenges } = newResponse;
 
-  const sessionKey = await crypto.makeSessionKey(
-    ecdhPvt, caEcdhPub, salt, requestId, crypto.SessionRole.REQUESTER);
+  const sessionKey = await crypto.makeSessionKey(ecdhPvt, caEcdhPub, salt, requestId);
   let challenge: ClientChallenge|undefined;
   for (const availChallenge of challenges) {
     if (serverChallenges.includes(availChallenge.challengeId)) {

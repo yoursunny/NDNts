@@ -6,6 +6,7 @@ import { CounterIvGen, IvGen, RandomIvGen } from "../ivgen";
 import type { CryptoAlgorithm, EncryptionAlgorithm } from "../types";
 
 export interface Encryption<I, G extends GenParams> extends EncryptionAlgorithm<I, false, G> {
+  readonly ivLength: number;
   makeAesKeyGenParams: (genParams: G) => AesKeyGenParams;
 }
 
@@ -34,9 +35,11 @@ class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I
       private readonly detail: AlgoDetail<I>,
   ) {
     this.keyUsages = { secret: detail.secretKeyUsages };
+    this.ivLength = detail.ivLength;
   }
 
   public readonly keyUsages: { secret: KeyUsage[] };
+  public readonly ivLength: number;
 
   public makeAesKeyGenParams({ length = KeyLength.Default }: G): AesKeyGenParams {
     return {
@@ -161,7 +164,7 @@ export const CBC: Encryption<{}, GenParams> = new AesCommon("AES-CBC", "a3840ac4
 const ctrIvGen = new DefaultWeakMap<CryptoAlgorithm.SecretKey<CTR.Info>, IvGen>(
   ({ info: { counterLength } }) => {
     return new CounterIvGen({
-      ivLength: 16,
+      ivLength: CTR.ivLength,
       counterBits: counterLength,
       blockSize,
     });
@@ -209,7 +212,7 @@ export namespace CTR {
 
 const gcmIvGen = new DefaultWeakMap<CryptoAlgorithm.SecretKey<{}>, IvGen>(
   () => new CounterIvGen({
-    ivLength: 12,
+    ivLength: GCM.ivLength,
     counterBits: 32,
     blockSize,
   }));

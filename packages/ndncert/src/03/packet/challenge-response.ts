@@ -62,7 +62,7 @@ export namespace ChallengeResponse {
   export interface Options extends Fields {
     profile: CaProfile;
     sessionEncrypter: LLEncrypt.Key;
-    sessionDecrypter: LLDecrypt.Key;
+    sessionLocalDecrypter: LLDecrypt.Key;
     request: ChallengeRequest;
     signer: Signer;
   }
@@ -72,7 +72,7 @@ export namespace ChallengeResponse {
     const {
       profile,
       sessionEncrypter,
-      sessionDecrypter,
+      sessionLocalDecrypter,
       request: { requestId, interest: { name } },
       status,
       challengeStatus,
@@ -101,6 +101,6 @@ export namespace ChallengeResponse {
     data.content = encrypted_payload.encode(
       await sessionEncrypter.llEncrypt({ plaintext: payload, additionalData: requestId }));
     await signer.sign(data);
-    return ChallengeResponse.fromData(data, profile, requestId, sessionDecrypter);
+    return ChallengeResponse.fromData(data, profile, requestId, sessionLocalDecrypter);
   }
 }

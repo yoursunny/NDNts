@@ -2,7 +2,7 @@
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-This package partially implements [NDN Certificate Management protocol v0.3](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3/289378f08c7ce6f641e029bf2e977918ecf6602e).
+This package partially implements [NDN Certificate Management protocol v0.3](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3/8fdaacc81a66602bb0a96e13808b11e03e0f0445).
 
 * [X] crypto operations
 * [X] messages
