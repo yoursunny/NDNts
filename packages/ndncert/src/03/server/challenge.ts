@@ -8,7 +8,7 @@ export interface ServerChallenge {
   /** Time limit (millis). */
   readonly timeLimit: number;
 
-  /** Retry limit; the initial attempt does not count. */
+  /** Retry limit, including the initial attempt. */
   readonly retryLimit: number;
 
   /** Process selection or continuation of the challenge. */
@@ -21,12 +21,21 @@ export interface ServerChallengeContext {
 }
 
 export interface ServerChallengeResponse {
-  /** If true, challenge has succeeded and server will issue the certificate. */
-  success: boolean;
+  /**
+   * If true, challenge has succeeded and server will issue the certificate.
+   * @default false
+   */
+  success?: boolean;
 
-  /** If true, this request counts as one failed retry. */
-  decrementRetry: boolean;
+  /**
+   * If true, this request counts as one failed retry.
+   * @default false
+   */
+  decrementRetry?: boolean;
 
-  /** ChallengeStatus to convey to the client. */
-  challengeStatus: string;
+  /**
+   * ChallengeStatus to convey to the client.
+   * @default "error"
+   */
+  challengeStatus?: string;
 }

@@ -7,6 +7,10 @@ import type { ClientChallenge, ClientChallengeContext } from "./challenge";
 export class ClientPinChallenge implements ClientChallenge {
   public readonly challengeId = "pin";
 
+  /**
+   * Constructor.
+   * @param prompt a callback function to prompt the user for a PIN code.
+   */
   constructor(private readonly prompt: (context: ClientChallengeContext) => Promise<string>) {
   }
 

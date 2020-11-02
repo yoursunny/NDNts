@@ -187,9 +187,9 @@ export class Server {
   private async continueChallenge(now: number, request: ChallengeRequest, context: Context) {
     const challenge = this.challenges.get(context.challengeId!)!;
     const {
-      success,
-      decrementRetry,
-      challengeStatus,
+      success = false,
+      decrementRetry = false,
+      challengeStatus = "error",
     } = await challenge.process(request, context);
     if (success) {
       return this.finishChallenge(now, request, context);

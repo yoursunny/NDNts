@@ -30,7 +30,7 @@ class State {
 /** The "pin" challenge where client must submit a server-generated pin code to the server. */
 export class ServerPinChallenge extends (EventEmitter as new() => TypedEmitter<Events>) implements ServerChallenge {
   public readonly challengeId = "pin";
-  public readonly timeLimit = 60000;
+  public readonly timeLimit = 3600000;
   public readonly retryLimit = 3;
 
   public async process(request: ChallengeRequest, context: ServerChallengeContext): Promise<ServerChallengeResponse> {
@@ -38,27 +38,15 @@ export class ServerPinChallenge extends (EventEmitter as new() => TypedEmitter<E
       const state = new State();
       this.emit("newpin", request.requestId, fromUtf8(state.pin));
       context.challengeState = state;
-      return {
-        success: false,
-        decrementRetry: false,
-        challengeStatus: "need-code",
-      };
+      return { challengeStatus: "need-code" };
     }
 
     const state = context.challengeState as State;
-    const code = request.parameters.code;
+    const { code } = request.parameters;
     if (!code || !state.verify(code)) {
-      return {
-        success: false,
-        decrementRetry: true,
-        challengeStatus: "wrong-code",
-      };
+      return { decrementRetry: true, challengeStatus: "wrong-code" };
     }
 
-    return {
-      success: true,
-      decrementRetry: false,
-      challengeStatus: "success",
-    };
+    return { success: true };
   }
 }

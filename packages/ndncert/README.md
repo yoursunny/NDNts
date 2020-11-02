@@ -20,7 +20,7 @@ This package partially implements [NDN Certificate Management protocol v0.3](htt
   * [X] basic issuance workflow
   * [X] PIN challenge
   * [ ] email challenge
-  * [ ] proof of credential challenge
+  * [X] proof of credential challenge
   * [ ] proof of private key challenge
   * [X] publish certificate
   * [ ] proper error messages
@@ -29,7 +29,7 @@ This package partially implements [NDN Certificate Management protocol v0.3](htt
   * [X] basic issuance workflow
   * [X] PIN challenge
   * [ ] email challenge
-  * [ ] proof of credential challenge
+  * [X] proof of credential challenge
   * [ ] proof of private key challenge
   * [X] retrieve certificate
   * [X] handle error messages

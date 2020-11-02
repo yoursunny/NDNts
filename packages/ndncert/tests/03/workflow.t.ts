@@ -1,18 +1,58 @@
-import { Certificate, ECDSA, generateSigningKey, RSA } from "@ndn/keychain";
-import { Name } from "@ndn/packet";
+import { Certificate, ECDSA, generateSigningKey, NamedSigner, NamedVerifier, RSA, ValidityPeriod } from "@ndn/keychain";
+import { Component, Name } from "@ndn/packet";
 import { PrefixRegShorter, RepoProducer } from "@ndn/repo";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 
-import { CaProfile, ClientChallenge, ClientNopChallenge, ClientPinChallenge, requestCertificate, Server, ServerChallenge, ServerNopChallenge, ServerPinChallenge } from "../..";
+import { CaProfile, ClientChallenge, ClientCredentialChallenge, ClientNopChallenge, ClientPinChallenge, requestCertificate, Server, ServerChallenge, ServerCredentialChallenge, ServerNopChallenge, ServerPinChallenge } from "../..";
 
 interface Row {
-  makeChallengeLists: () => [ServerChallenge[], ClientChallenge[]];
+  makeChallengeLists: () => Promise<[ServerChallenge[], ClientChallenge[]]>;
   clientShouldFail?: boolean;
+}
+
+function makePinChallengeWithWrongInputs(nWrongInputs = 0): Row["makeChallengeLists"] {
+  return async () => {
+    let lastPin = "";
+    const serverPin = new ServerPinChallenge();
+    serverPin.on("newpin", (requestId, pin) => lastPin = pin);
+
+    let nPrompts = 0;
+    const clientPin = new ClientPinChallenge(async () => {
+      await new Promise((r) => setTimeout(r, 100 * Math.random()));
+      if (++nPrompts <= nWrongInputs) {
+        return `x${lastPin}`;
+      }
+      return lastPin;
+    });
+
+    return [
+      [serverPin],
+      [clientPin],
+    ];
+  };
+}
+
+async function prepareCredentialChallenge(validity = ValidityPeriod.daysFromNow(1)): Promise<{
+  rootPvt: NamedSigner.PrivateKey;
+  rootPub: NamedVerifier.PublicKey;
+  clientPvt: NamedSigner.PrivateKey;
+  clientPub: NamedVerifier.PublicKey;
+  clientCert: Certificate;
+}> {
+  const [rootPvt, rootPub] = await generateSigningKey("/root");
+  const [clientPvt, clientPub] = await generateSigningKey("/requester");
+  const clientCert = await Certificate.issue({
+    validity,
+    issuerId: Component.from("root"),
+    issuerPrivateKey: rootPvt,
+    publicKey: clientPub,
+  });
+  return { rootPvt, rootPub, clientPvt, clientPub, clientCert };
 }
 
 const TABLE: Row[] = [
   {
-    makeChallengeLists() {
+    async makeChallengeLists() {
       return [
         [new ServerNopChallenge()],
         [new ClientNopChallenge()],
@@ -20,34 +60,79 @@ const TABLE: Row[] = [
     },
   },
   {
-    makeChallengeLists() {
-      let lastPin = "";
-      const serverPin = new ServerPinChallenge();
-      serverPin.on("newpin", (requestId, pin) => lastPin = pin);
-      const clientPin = new ClientPinChallenge(() => Promise.resolve(lastPin));
+    makeChallengeLists: makePinChallengeWithWrongInputs(0),
+  },
+  {
+    makeChallengeLists: makePinChallengeWithWrongInputs(2),
+  },
+  {
+    makeChallengeLists: makePinChallengeWithWrongInputs(3),
+    clientShouldFail: true, // exceed retry limit
+  },
+  {
+    async makeChallengeLists() {
+      const { rootPub, clientCert, clientPvt } = await prepareCredentialChallenge();
       return [
-        [serverPin],
-        [clientPin],
+        [new ServerCredentialChallenge(rootPub)],
+        [new ClientCredentialChallenge(clientCert, clientPvt)],
       ];
     },
   },
   {
-    makeChallengeLists() {
+    async makeChallengeLists() {
+      const { rootPub, clientCert } = await prepareCredentialChallenge();
       return [
-        [new ServerPinChallenge()],
-        [new ClientPinChallenge(() => Promise.resolve("000000"))],
+        [new ServerCredentialChallenge(rootPub)],
+        [new ClientCredentialChallenge(clientCert, async () => Uint8Array.of(0xBB))],
       ];
     },
-    clientShouldFail: true,
+    clientShouldFail: true, // bad signature
   },
   {
-    makeChallengeLists() {
+    async makeChallengeLists() {
+      const now = Date.now();
+      const { rootPub, clientCert, clientPvt } =
+        await prepareCredentialChallenge(new ValidityPeriod(now - 7200000, now - 3600000));
+      jest.spyOn(clientCert.data, "encodeTo")
+        .mockImplementation((encoder) => encoder.prependValue(Uint8Array.of(0xDD)));
+      return [
+        [new ServerCredentialChallenge(rootPub)],
+        [new ClientCredentialChallenge(clientCert, clientPvt)],
+      ];
+    },
+    clientShouldFail: true, // bad certificate encoding
+  },
+  {
+    async makeChallengeLists() {
+      const now = Date.now();
+      const { rootPub, clientCert, clientPvt } =
+        await prepareCredentialChallenge(new ValidityPeriod(now - 7200000, now - 3600000));
+      return [
+        [new ServerCredentialChallenge(rootPub)],
+        [new ClientCredentialChallenge(clientCert, clientPvt)],
+      ];
+    },
+    clientShouldFail: true, // expired certificate
+  },
+  {
+    async makeChallengeLists() {
+      const { rootPub, clientPvt, clientPub } = await prepareCredentialChallenge();
+      const clientSelfCert = await Certificate.selfSign({ privateKey: clientPvt, publicKey: clientPub });
+      return [
+        [new ServerCredentialChallenge(rootPub)],
+        [new ClientCredentialChallenge(clientSelfCert, clientPvt)],
+      ];
+    },
+    clientShouldFail: true, // client certificate not trusted
+  },
+  {
+    async makeChallengeLists() {
       return [
         [new ServerPinChallenge()],
         [new ClientNopChallenge()],
       ];
     },
-    clientShouldFail: true,
+    clientShouldFail: true, // server challenge not acceptable on client
   },
 ];
 
@@ -70,7 +155,7 @@ test.each(TABLE)("workflow %#", async ({
     version: 7,
   });
 
-  const [serverChallenges, reqChallenges] = makeChallengeLists();
+  const [serverChallenges, reqChallenges] = await makeChallengeLists();
 
   const server = Server.create({
     profile,
