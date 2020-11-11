@@ -95,11 +95,11 @@ class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I
       this.detail.modifyParams?.(params, info);
 
       const encrypted = new Uint8Array(await crypto.subtle.encrypt(params, secretKey, plaintext));
-      const ciphertext = encrypted.slice(this.detail.tagSize);
+      const ciphertext = this.detail.tagSize > 0 ? encrypted.slice(0, -this.detail.tagSize) : encrypted;
       return {
         ciphertext,
         iv,
-        authenticationTag: this.detail.tagSize ? encrypted.slice(0, this.detail.tagSize) : undefined,
+        authenticationTag: this.detail.tagSize > 0 ? encrypted.slice(-this.detail.tagSize) : undefined,
       };
     });
   }
@@ -118,9 +118,9 @@ class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I
 
       let encrypted = ciphertext;
       if (this.detail.tagSize > 0) {
-        encrypted = new Uint8Array(this.detail.tagSize + ciphertext.byteLength);
-        encrypted.set(authenticationTag!, 0);
-        encrypted.set(ciphertext, this.detail.tagSize);
+        encrypted = new Uint8Array(ciphertext.byteLength + this.detail.tagSize);
+        encrypted.set(ciphertext, 0);
+        encrypted.set(authenticationTag!, ciphertext.byteLength);
       }
 
       const params = {
