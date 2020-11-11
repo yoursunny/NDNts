@@ -1,5 +1,9 @@
 ---
+arch: arm64-graviton2
+virt: lxd
+os: linux
 dist: bionic
+group: edge
 
 language: node_js
 jobs:
@@ -13,6 +17,7 @@ addons:
       - sourceline: 'ppa:named-data/ppa-dev'
     packages:
       - build-essential
+      - chromium-browser
       - clang-format-8
       - libndn-cxx-dev
       - ndnsec
