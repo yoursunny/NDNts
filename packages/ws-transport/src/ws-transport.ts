@@ -1,5 +1,5 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
-import { EventIterator } from "event-iterator";
+import EventIterator from "event-iterator";
 import PCancelable from "p-cancelable";
 import pTimeout from "p-timeout";
 

@@ -29,7 +29,7 @@ async function transformDeclaration(filename) {
 }
 
 // Allowlist of packages published with ES Module entrypoint.
-const ESM_IMPORTS = new Set([...builtins]);
+const ESM_IMPORTS = new Set([...builtins, "streaming-iterables"]);
 
 /** Transform a JavaScript file. */
 class TransformJs {
@@ -39,8 +39,8 @@ class TransformJs {
   constructor(filename) {
     this.filename = filename;
 
-    /** Is createRequire needed? */
-    this.needRequire = false;
+    /** Number of transformed CommonJS imports. */
+    this.nCjsImports = 0;
 
     /**
      * Output lines for Node.
@@ -71,11 +71,9 @@ class TransformJs {
       }
     }
 
-    if (this.needRequire) {
+    if (this.nCjsImports > 0) {
       this.nodeOutput.unshift(
-        "import { createRequire } from \"module\";",
-        "const require = createRequire(import.meta.url);",
-        "const { __importDefault } = require(\"tslib\");",
+        "import { __importDefault } from \"tslib\";",
       );
     }
 
@@ -132,19 +130,16 @@ class TransformJs {
       return this.emitLine(line);
     }
 
-    this.needRequire = true;
-
-    let requirePrefix = "";
-    let requireSuffix = "";
+    const defaultImport = `_cjsDefaultImport${this.nCjsImports++}`;
     if (imports.startsWith("{")) {
       imports = imports.replace(/ as /g, ": ");
-    } else {
-      requirePrefix = "__importDefault(";
-      requireSuffix = ").default";
+      return this.emitLine(
+        `import ${defaultImport} from "${specifier}"; const ${imports} = ${defaultImport};`,
+        line,
+      );
     }
-
     return this.emitLine(
-      `const ${imports} = ${requirePrefix}require("${specifier}")${requireSuffix};`,
+      `import ${defaultImport} from "${specifier}"; const ${imports} = __importDefault(${defaultImport}).default;`,
       line,
     );
   }
