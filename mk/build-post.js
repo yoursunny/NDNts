@@ -29,7 +29,11 @@ async function transformDeclaration(filename) {
 }
 
 // Allowlist of packages published with ES Module entrypoint.
-const ESM_IMPORTS = new Set([...builtins, "streaming-iterables"]);
+const ESM_IMPORTS = new Set([
+  ...builtins,
+  "streaming-iterables",
+  "yargs",
+]);
 
 /** Transform a JavaScript file. */
 class TransformJs {

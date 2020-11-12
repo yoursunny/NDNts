@@ -7,7 +7,7 @@ import { Decoder, toHex } from "@ndn/tlv";
 import { promises as fs } from "graceful-fs";
 import leveldown from "leveldown";
 import stdout from "stdout-stream";
-import { Arguments, Argv, CommandModule } from "yargs";
+import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { keyChain } from "./util";
 

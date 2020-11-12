@@ -1,5 +1,5 @@
 import { Name } from "@ndn/packet";
-import { Arguments, Argv, CommandModule } from "yargs";
+import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { keyChain, printCertBase64 } from "./util";
 

@@ -1,4 +1,4 @@
-import yargs from "yargs";
+import yargs, { Argv } from "yargs";
 
 import { AddCertCommand } from "./add-cert";
 import { DeleteCommand } from "./delete";
@@ -14,7 +14,7 @@ import { Ndncert03MakeProfileCommand } from "./ndncert03-make-profile";
 import { Ndncert03ShowProfileCommand } from "./ndncert03-show-profile";
 import { ShowCertCommand } from "./show-cert";
 
-yargs
+(yargs() as unknown as Argv)
   .scriptName("ndntssec")
   .command(new GenKeyCommand())
   .command(new ShowCertCommand())

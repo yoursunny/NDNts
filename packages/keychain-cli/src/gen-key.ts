@@ -1,7 +1,7 @@
 import { Certificate, EcCurve, ECDSA, generateSigningKey, NamedSigner, NamedVerifier, PrivateKey, PublicKey, RSA, RsaModulusLength } from "@ndn/keychain";
 import { NameLike } from "@ndn/packet";
 import stdout from "stdout-stream";
-import { Arguments, Argv, CommandModule } from "yargs";
+import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { keyChain } from "./util";
 

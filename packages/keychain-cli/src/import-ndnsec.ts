@@ -1,5 +1,5 @@
 import { NdnsecKeyChain } from "@ndn/ndnsec";
-import { CommandModule } from "yargs";
+import type { CommandModule } from "yargs";
 
 import { keyChain } from "./util";
 

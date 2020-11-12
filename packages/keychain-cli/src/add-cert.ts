@@ -1,4 +1,4 @@
-import { CommandModule } from "yargs";
+import type { CommandModule } from "yargs";
 
 import { inputCertBase64, keyChain } from "./util";
 

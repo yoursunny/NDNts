@@ -1,6 +1,6 @@
 import { Certificate, ValidityPeriod } from "@ndn/keychain";
 import { Component, Name } from "@ndn/packet";
-import { Arguments, Argv, CommandModule } from "yargs";
+import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { inputCertBase64, keyChain, printCertBase64 } from "./util";
 

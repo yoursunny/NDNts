@@ -3,12 +3,12 @@ import { Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { discoverVersion, fetch } from "@ndn/segmented-object";
 import stdout from "stdout-stream";
-import { Arguments, Argv, CommandModule } from "yargs";
+import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { CommonArgs, segmentNumConvention, versionConvention } from "./common-args";
+import { CommonArgs, segmentNumConvention, versionConvention } from "./util";
 
-type DiscoverVersionChoice = "none"|"cbp"|"rdr";
-const discoverVersionChoices: readonly DiscoverVersionChoice[] = ["none", "cbp", "rdr"];
+const discoverVersionChoices = { none: true, cbp: true, rdr: true };
+type DiscoverVersionChoice = keyof typeof discoverVersionChoices;
 
 interface Args extends CommonArgs {
   name: string;
@@ -47,7 +47,7 @@ export class GetSegmentedCommand implements CommandModule<CommonArgs, Args> {
       })
       .demandOption("name")
       .option("ver", {
-        choices: discoverVersionChoices,
+        choices: Object.keys(discoverVersionChoices),
         default: "rdr" as DiscoverVersionChoice,
         desc: ["version discovery method",
           "none: no discovery",

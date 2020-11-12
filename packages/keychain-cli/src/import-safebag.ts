@@ -1,5 +1,5 @@
 import { SafeBag } from "@ndn/ndnsec";
-import { Arguments, Argv, CommandModule } from "yargs";
+import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { inputBase64, keyChain } from "./util";
 

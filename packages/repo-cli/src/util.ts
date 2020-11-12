@@ -1,6 +1,6 @@
 import { DataStore } from "@ndn/repo";
 import leveldown from "leveldown";
-import { Argv } from "yargs";
+import type { Argv } from "yargs";
 
 export interface StoreArgs {
   store: string;

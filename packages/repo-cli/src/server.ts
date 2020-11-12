@@ -2,7 +2,7 @@ import { getSigner, openUplinks } from "@ndn/cli-common";
 import { L3Face, StreamTransport } from "@ndn/l3face";
 import { BulkInsertTarget, RepoProducer, respondRdr } from "@ndn/repo";
 import { createServer } from "net";
-import { Arguments, Argv, CommandModule } from "yargs";
+import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { declareStoreArgs, openStore, store, StoreArgs } from "./util";
 

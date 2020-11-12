@@ -1,5 +1,5 @@
 import stdout from "stdout-stream";
-import { CommandModule } from "yargs";
+import type { CommandModule } from "yargs";
 
 import { keyChain } from "./util";
 

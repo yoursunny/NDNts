@@ -1,10 +1,10 @@
-import yargs from "yargs";
+import yargs, { Argv } from "yargs";
 
-import { applyCommonArgs } from "./common-args";
 import { GetSegmentedCommand } from "./get-segmented";
 import { PutSegmentedCommand } from "./put-segmented";
+import { applyCommonArgs } from "./util";
 
-yargs
+(yargs() as unknown as Argv)
   .scriptName("ndncat")
   .option("convention1", {
     default: false,

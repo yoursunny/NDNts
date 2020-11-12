@@ -3,7 +3,7 @@ import { Data } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 import { promises as fs } from "graceful-fs";
 import stdout from "stdout-stream";
-import { Arguments, Argv, CommandModule } from "yargs";
+import type { Arguments, Argv, CommandModule } from "yargs";
 
 interface Args {
   profile: string;
