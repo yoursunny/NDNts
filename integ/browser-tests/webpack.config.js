@@ -42,6 +42,9 @@ const config = {
     contentBase: path.resolve(__dirname, "public"),
     host: "0.0.0.0",
     port: jestPuppeteerConfig.server.port,
+    headers: {
+      "Origin-Trial": "Aogqh6oLPT2o/71FmPRlTsLs17gPv05kq2YOiA+2NYeFQEqJPQTikpV0DDqVJLXfGlGD6EnUhwtsCkcL6oSBkAQAAABQeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjkzMjciLCJmZWF0dXJlIjoiUXVpY1RyYW5zcG9ydCIsImV4cGlyeSI6MTYwODk0NzcyMn0=", // Chromium QuicTransport origin trial token for http://localhost:9327
+    },
   },
 };
 

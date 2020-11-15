@@ -1,0 +1,35 @@
+{
+  "name": "@ndn/quic-transport",
+  "version": "0.0.0",
+  "description": "NDNts: QUIC Transport",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "main": "src/mod.ts",
+  "module": "lib/mod_browser.js",
+  "sideEffects": false,
+  "browser": {
+    "web-bluetooth": false
+  },
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/quic-transport"
+  },
+  "publishConfig": {
+    "main": "lib/mod_node.js",
+    "types": "lib/mod.d.ts"
+  },
+  "dependencies": {
+    "@ndn/l3face": "workspace:*",
+    "tslib": "^2.0.3"
+  }
+}
