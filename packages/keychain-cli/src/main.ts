@@ -1,4 +1,6 @@
 import yargs, { Argv } from "yargs";
+// @ts-expect-error
+import { hideBin } from "yargs/helpers";
 
 import { AddCertCommand } from "./add-cert";
 import { DeleteCommand } from "./delete";
@@ -30,4 +32,4 @@ import { ShowCertCommand } from "./show-cert";
   .command(new Ndncert03CaCommand())
   .command(new Ndncert03ClientCommand())
   .demandCommand()
-  .parse();
+  .parse(hideBin(process.argv));

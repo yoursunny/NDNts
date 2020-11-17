@@ -1,4 +1,6 @@
 import yargs, { Argv } from "yargs";
+// @ts-expect-error
+import { hideBin } from "yargs/helpers";
 
 import { GetSegmentedCommand } from "./get-segmented";
 import { PutSegmentedCommand } from "./put-segmented";
@@ -15,4 +17,4 @@ import { applyCommonArgs } from "./util";
   .command(new GetSegmentedCommand())
   .command(new PutSegmentedCommand())
   .demandCommand()
-  .parse();
+  .parse(hideBin(process.argv));
