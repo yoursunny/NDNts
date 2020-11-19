@@ -1,11 +1,12 @@
 import { ReadvertiseDestination } from "@ndn/fw";
-import { Name } from "@ndn/packet";
+import type { Name } from "@ndn/packet";
 import { gql, GraphQLClient } from "graphql-request";
 
 interface State {
   fibEntryID?: string;
 }
 
+/** Enable prefix registration via NDN-DPDK GraphQL management API. */
 export class NdndpdkPrefixReg extends ReadvertiseDestination<State> {
   constructor(private readonly client: GraphQLClient, private readonly faceID: string) {
     super();
@@ -23,7 +24,6 @@ export class NdndpdkPrefixReg extends ReadvertiseDestination<State> {
       nexthops: [this.faceID],
     });
     state.fibEntryID = id;
-    console.log(id);
   }
 
   protected async doWithdraw(name: Name, state: State) {
@@ -37,6 +37,6 @@ export class NdndpdkPrefixReg extends ReadvertiseDestination<State> {
     `, {
       id: state.fibEntryID,
     });
-    state.fibEntryID = undefined;
+    delete state.fibEntryID;
   }
 }

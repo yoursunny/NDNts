@@ -45,6 +45,6 @@
     "@types/leveldown": "^4.0.2",
     "@types/prompts": "^2.0.9",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^15.0.9"
+    "@types/yargs": "^15.0.10"
   }
 }

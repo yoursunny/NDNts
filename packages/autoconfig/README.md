@@ -65,7 +65,7 @@ faces = await connectToTestbed({
   fw,
   preferFastest: true,
   connectTimeout: 3000,
-  testConnection: new Name(`/ndn/edu/arizona/ping/${Math.floor(Math.random() * 99999999)}`),
+  testConnection: new Name(`/ndn/edu/arizona/ping/${Math.floor(Math.random() * 1e9)}`),
   tryDefaultGateway: false,
 });
 assert.equal(faces.length, 1);
@@ -73,7 +73,7 @@ const [fastestFace] = faces;
 console.log("fastest face is", `${fastestFace}`);
 
 // By default, default route "/" is added to the face, so that you can send Interests right away.
-await new Endpoint({ fw }).consume(`/ndn/edu/ucla/ping/${Math.floor(Math.random() * 99999999)}`);
+await new Endpoint({ fw }).consume(`/ndn/edu/ucla/ping/${Math.floor(Math.random() * 1e9)}`);
 
 fastestFace.close();
 ```

@@ -18,6 +18,7 @@ export interface OpenFaceOptions {
   gqlServer?: string;
 }
 
+/** Open a face on NDN-DPDK. */
 export async function openFace({
   fw = Forwarder.getDefault(),
   attributes = {},

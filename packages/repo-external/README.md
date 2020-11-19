@@ -24,7 +24,7 @@ import { Data, digestSigning, Name } from "@ndn/packet";
     `);
     return;
   }
-  const dataPrefix = new Name(`/NDNts-repo-external/${Math.floor(Math.random() * 99999999)}`);
+  const dataPrefix = new Name(`/NDNts-repo-external/${Math.floor(Math.random() * 1e9)}`);
 
   const face = Forwarder.getDefault().addFace(new L3Face(await UnixTransport.connect("/run/nfd.sock")));
   face.addRoute(new Name());

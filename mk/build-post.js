@@ -31,6 +31,7 @@ async function transformDeclaration(filename) {
 // Allowlist of packages published with ES Module entrypoint.
 const ESM_IMPORTS = new Set([
   ...builtins,
+  "graphql-request",
   "streaming-iterables",
   "yargs",
 ]);
@@ -77,7 +78,7 @@ class TransformJs {
 
     if (this.nCjsImports > 0) {
       this.nodeOutput.unshift(
-        "import { __importDefault } from \"tslib\";",
+        "import { __importDefault, __importStar } from \"tslib\";",
       );
     }
 
@@ -138,7 +139,7 @@ class TransformJs {
     if (imports.startsWith("{")) {
       imports = imports.replace(/ as /g, ": ");
       return this.emitLine(
-        `import ${defaultImport} from "${specifier}"; const ${imports} = ${defaultImport};`,
+        `import ${defaultImport} from "${specifier}"; const ${imports} = __importStar(${defaultImport});`,
         line,
       );
     }

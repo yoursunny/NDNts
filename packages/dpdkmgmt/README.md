@@ -61,15 +61,15 @@ console.log(`uplinkC=${uplinkC}`, `uplinkP=${uplinkP}`);
 
 // Start a producer.
 const producer = new Endpoint({ fw: fwP }).produce("/P",
-  async () => {
+  async (interest) => {
     console.log("producing");
-    return new Data("/P", Data.FreshnessPeriod(1000), toUtf8("NDNts + NDN-DPDK"));
+    return new Data(interest.name, Data.FreshnessPeriod(1000), toUtf8("NDNts + NDN-DPDK"));
   });
 await new Promise((r) => setTimeout(r, 500));
 
 // Start a consumer, fetching Data from the producer via NFD.
 const data = await new Endpoint({ fw: fwC }).consume(
-  new Interest("/P", Interest.MustBeFresh),
+  new Interest(`/P/${Math.floor(Math.random() * 1e9)}`, Interest.MustBeFresh),
 );
 const payloadText = fromUtf8(data.content);
 console.log("received", `${data.name} ${payloadText}`);

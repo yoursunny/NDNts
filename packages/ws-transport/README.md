@@ -30,7 +30,7 @@ uplink.addRoute(new Name("/ndn"));
 const endpoint = new Endpoint();
 
 // We can now send Interests and retrieve Data.
-let seq = Math.floor(Math.random() * 99999999);
+let seq = Math.floor(Math.random() * 1e9);
 for (let i = 0; i < 5; ++i) {
   try {
     const interest = new Interest(`/ndn/edu/arizona/ping/NDNts/${seq++}`);
