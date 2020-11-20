@@ -61,7 +61,7 @@ export async function openFace({
     });
   });
 
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     const [remoteHost, remotePort] = remoteAddr.split(":");
     sock.on("error", () => {
       sock.close();

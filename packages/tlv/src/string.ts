@@ -26,8 +26,8 @@ function getHexTable(): string[] {
 export function toHex(buf: Uint8Array): string {
   const table = getHexTable();
   const a = new Array<string>(buf.length);
-  for (const [i, element] of buf.entries()) {
-    a[i] = table[element];
+  for (const [i, b] of buf.entries()) {
+    a[i] = table[b]!;
   }
   return a.join("");
 }

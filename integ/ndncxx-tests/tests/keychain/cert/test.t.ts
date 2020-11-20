@@ -18,7 +18,8 @@ test("decode", async () => {
   const certName = CertNaming.parseCertName(cert.name);
 
   const { stdout } = await execute(__dirname, [], { input: Encoder.encode(cert.data) as Buffer });
-  const [name, identity, keyId, issuerId, validityNotBefore, validityNotAfter] = stdout.split("\n");
+  const [name, identity, keyId, issuerId, validityNotBefore, validityNotAfter] =
+    stdout.split("\n") as [string, string, string, string, string, string];
   expect(name).toBe(cert.name.toString());
   expect(identity).toBe(certName.subjectName.toString());
   expect(keyId).toBe(certName.keyId.toString());

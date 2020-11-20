@@ -110,9 +110,9 @@ describe("CertFetcher", () => {
     expect(found).toHaveLength(1);
     expect(found[0]).toHaveName(certB.name);
     expect(consumeFn).toHaveBeenCalledTimes(1);
-    expect(consumeFn.mock.results[0].type).toBe("return");
-    if (consumeFn.mock.results[0].type === "return") {
-      const { interest } = consumeFn.mock.results[0].value;
+    expect(consumeFn.mock.results[0]!.type).toBe("return");
+    if (consumeFn.mock.results[0]!.type === "return") {
+      const { interest } = consumeFn.mock.results[0]!.value;
       expect(interest).toHaveName(pubB.name);
       expect(interest.canBePrefix).toBeTruthy();
       expect(interest.mustBeFresh).toBeTruthy();
@@ -129,9 +129,9 @@ describe("CertFetcher", () => {
     expect(found).toHaveLength(1);
     expect(found[0]).toHaveName(certB.name);
     expect(consumeFn).toHaveBeenCalledTimes(2);
-    expect(consumeFn.mock.results[1].type).toBe("return");
-    if (consumeFn.mock.results[1].type === "return") {
-      const { interest } = consumeFn.mock.results[1].value;
+    expect(consumeFn.mock.results[1]!.type).toBe("return");
+    if (consumeFn.mock.results[1]!.type === "return") {
+      const { interest } = consumeFn.mock.results[1]!.value;
       expect(interest).toHaveName(certB.name);
       expect(interest.canBePrefix).toBeFalsy();
       expect(interest.mustBeFresh).toBeFalsy();

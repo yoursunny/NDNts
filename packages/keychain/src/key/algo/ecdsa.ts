@@ -31,7 +31,7 @@ export namespace EcCurve {
 }
 
 function determineEcCurve(der: asn1.ElementBuffer): EcCurve|false {
-  const params = der.children?.[0].children?.[1];
+  const params = der.children?.[0]?.children?.[1];
   if (params && params.type === 0x06 && params.value) {
     const namedCurveOid = toHex(params.value);
     const curve = NamedCurveOids[namedCurveOid];
@@ -90,7 +90,7 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
       pair = { privateKey, publicKey };
     } else {
       pair = await crypto.subtle.generateKey(params, extractable,
-        [...this.keyUsages.private, ...this.keyUsages.public]) as CryptoKeyPair;
+        [...this.keyUsages.private, ...this.keyUsages.public]);
     }
 
     const spki = new Uint8Array(await crypto.subtle.exportKey("spki", pair.publicKey));
@@ -104,7 +104,7 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
 
   async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
     // SubjectPublicKeyInfo.algorithm.algorithm == 1.2.840.10045.2.1
-    const algo = der.children?.[0].children?.[0];
+    const algo = der.children?.[0]?.children?.[0];
     if (!(algo && algo.type === 0x06 && algo.value && toHex(algo.value) === "2A8648CE3D0201")) {
       throw new Error("not ECDSA key");
     }
@@ -140,8 +140,8 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
       const pointSize = PointSizes[curve];
 
       const der = asn1.parseVerbose(sig);
-      const r = der.children?.[0].value;
-      const s = der.children?.[1].value;
+      const r = der.children?.[0]?.value;
+      const s = der.children?.[1]?.value;
       if (!r || !s || r.byteLength > pointSize || s.byteLength > pointSize) {
         Verifier.throwOnBadSig(false);
       }

@@ -152,7 +152,7 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
         this.emit("end");
         break;
       }
-      await new Promise((r) => this.once(UNBLOCK, r));
+      await new Promise<void>((r) => this.once(UNBLOCK, r));
     }
   }
 

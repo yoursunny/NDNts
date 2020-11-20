@@ -15,7 +15,7 @@ window.addEventListener("load", () => {
 });
 
 window.testBlobChunkSource = async (): Promise<FetchedInfo> => {
-  const file = upload.files![0];
+  const file = upload.files![0]!;
   const server = serve("/R", new BlobChunkSource(file));
   const fetched = await fetch(new Name("/R"));
   server.close();

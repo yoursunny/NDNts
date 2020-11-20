@@ -14,7 +14,7 @@ test("pair", async () => {
     UnixTransport.connect({ path: NetServerTest.ipcPath }),
     NetServerTest.waitNClients(2),
   ]);
-  NetServerTest.enableDuplex(sockA, sockB);
+  NetServerTest.enableDuplex(sockA!, sockB!);
 
   expect(tA.toString()).toMatch(/^Unix\(/);
   TestTransport.check(await TestTransport.execute(tA, tB));

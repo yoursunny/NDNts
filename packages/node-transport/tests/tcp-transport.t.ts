@@ -14,7 +14,7 @@ test("pair", async () => {
     TcpTransport.connect({ port: NetServerTest.tcpPort }),
     NetServerTest.waitNClients(2),
   ]);
-  NetServerTest.enableDuplex(sockA, sockB);
+  NetServerTest.enableDuplex(sockA!, sockB!);
 
   expect(tA.toString()).toBe(`TCP(127.0.0.1:${NetServerTest.tcpPort})`);
   TestTransport.check(await TestTransport.execute(tA, tB));

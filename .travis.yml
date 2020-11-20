@@ -10,6 +10,7 @@ jobs:
   include:
   - node_js: '12'
   - node_js: '14'
+  - node_js: '15'
 
 addons:
   apt:

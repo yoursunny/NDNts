@@ -62,7 +62,7 @@ export abstract class PolicyVerifier<Context = unknown> implements Verifier {
       if (i === 0) {
         return cryptoVerifyUncached(cert, pkt);
       }
-      return cryptoVerifyCached(cert, chain[i - 1].data);
+      return cryptoVerifyCached(cert, chain[i - 1]!.data);
     }));
   }
 

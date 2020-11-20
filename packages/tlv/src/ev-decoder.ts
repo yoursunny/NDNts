@@ -45,7 +45,7 @@ function isCritical(tt: number): boolean {
 
 /** TLV-VALUE decoder that understands Packet Format v0.3 evolvability guidelines. */
 export class EvDecoder<T> {
-  private topTT: number[];
+  private topTT: readonly number[];
   private rules = new Map<number, Rule<T>>();
   private requiredTlvTypes = new Set<number>();
   private nextOrder = AUTO_ORDER_SKIP;
@@ -58,7 +58,7 @@ export class EvDecoder<T> {
    * @param typeName type name, used in error messages.
    * @param topTT if specified, check top-level TLV-TYPE to be in this list.
    */
-  constructor(private typeName: string, topTT?: number|readonly number[]) {
+  constructor(private readonly typeName: string, topTT?: number|readonly number[]) {
     // eslint-disable-next-line no-negated-condition
     this.topTT = !topTT ? [] : Array.isArray(topTT) ? topTT : [topTT];
     this.unknownCb = () => false;

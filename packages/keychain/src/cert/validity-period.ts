@@ -17,7 +17,8 @@ function decodeTimestamp(str: string): number {
   if (!match) {
     throw new Error("invalid ISO8601 compact timestamp");
   }
-  const [y, m, d, h, i, s] = match.slice(1).map((c) => Number.parseInt(c, 10));
+  const [y, m, d, h, i, s] = match.slice(1).map((c) => Number.parseInt(c, 10)) as
+    [number, number, number, number, number, number];
   return Date.UTC(y, m - 1, d, h, i, s);
 }
 

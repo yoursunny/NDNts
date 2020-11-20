@@ -33,17 +33,21 @@ export class IssueCertCommand implements CommandModule<{}, Args> {
       });
   }
 
-  public async handler({ issuer, "issuer-id": issuerIdStr, "valid-days": validDays }: Arguments<Args>) {
+  public async handler({
+    issuer,
+    "issuer-id": issuerIdInput,
+    "valid-days": validDays,
+  }: Arguments<Args>) {
     const keyNames = await keyChain.listKeys(new Name(issuer));
     if (keyNames.length === 0) {
       throw new Error(`issuer key ${issuer} not found`);
     }
-    const issuerPrivateKey = await keyChain.getKey(keyNames[0], "signer");
+    const issuerPrivateKey = await keyChain.getKey(keyNames[0]!, "signer");
 
     const certReq = await inputCertBase64();
     const publicKey = await certReq.createVerifier();
 
-    const issuerId = Component.from(issuerIdStr);
+    const issuerId = Component.from(issuerIdInput);
 
     const validity = ValidityPeriod.daysFromNow(validDays);
 

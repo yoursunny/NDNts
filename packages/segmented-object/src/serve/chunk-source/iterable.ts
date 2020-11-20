@@ -24,7 +24,7 @@ class ScatteredChunk {
     }
 
     // fast path when first buffer has acceptable size
-    const firstSize = this.vector[0].byteLength;
+    const firstSize = this.vector[0]!.byteLength;
     if (firstSize >= this.minSize && firstSize <= this.maxSize) {
       this.length -= firstSize;
       return this.vector.shift()!;

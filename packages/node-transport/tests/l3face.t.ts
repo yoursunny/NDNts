@@ -8,16 +8,16 @@ import { UnixTransport } from "..";
 import * as NetServerTest from "../test-fixture/net-server";
 
 let sock: net.Socket;
-let transport: UnixTransport;
 let face: L3Face;
 
 beforeEach(async () => {
   await NetServerTest.createIpcServer();
-  [transport, [sock]] = await Promise.all([
+  const [transport, socks] = await Promise.all([
     UnixTransport.connect(NetServerTest.ipcPath),
     NetServerTest.waitNClients(1),
   ]);
   face = new L3Face(transport);
+  sock = socks[0]!;
 });
 
 afterEach(NetServerTest.destroyServer);
@@ -40,7 +40,7 @@ test("createFace", async () => {
     UnixTransport.createFace({ fw }, NetServerTest.ipcPath),
     NetServerTest.waitNClients(2),
   ]);
-  NetServerTest.enableDuplex(sock0, sock1);
+  NetServerTest.enableDuplex(sock0!, sock1!);
 
   const rx = jest.fn();
   fw.on("pktrx", rx);

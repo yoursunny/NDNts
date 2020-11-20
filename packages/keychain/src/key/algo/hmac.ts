@@ -23,7 +23,7 @@ export const HMAC: SigningAlgorithm<{}, false, HMAC.GenParams> = {
         GenParams, extractable, this.keyUsages.secret);
     } else {
       secretKey = await crypto.subtle.generateKey(
-        GenParams, extractable, this.keyUsages.secret) as CryptoKey;
+        GenParams, extractable, this.keyUsages.secret);
     }
     return {
       secretKey,

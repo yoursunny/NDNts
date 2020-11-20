@@ -53,7 +53,7 @@ export class Component {
       return input;
     }
 
-    let [sType, sValue] = input.split("=", 2);
+    let [sType, sValue] = input.split("=", 2) as [string, string?];
     let type = TT.GenericNameComponent;
     let iType: number;
     if (typeof sValue === "undefined") {

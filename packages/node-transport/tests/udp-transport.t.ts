@@ -28,7 +28,7 @@ describe("unicast", () => {
 
   afterEach(() => {
     clientPorts.clear();
-    return new Promise((r) => server.close(r));
+    return new Promise<void>((r) => server.close(r));
   });
 
   test("pair", async () => {
@@ -67,7 +67,7 @@ describe("multicast", () => {
   }
 
   const opts: udp_helper.MulticastOptions = {
-    intf: intfs[0],
+    intf: intfs[0]!,
     group: "224.0.0.254", // https://tools.ietf.org/html/rfc4727#section-2.4.2
     port: 56363,
     multicastTtl: 0,

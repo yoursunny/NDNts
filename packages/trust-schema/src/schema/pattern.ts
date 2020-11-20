@@ -244,7 +244,7 @@ export class ConcatPattern extends Pattern {
 
     // reduce to the only part
     if (joined.length === 1) {
-      return joined[0];
+      return joined[0]!;
     }
     return new ConcatPattern(joined);
   }
@@ -263,7 +263,7 @@ export class ConcatPattern extends Pattern {
       yield state;
       return;
     }
-    const part = this.parts[partIndex];
+    const part = this.parts[partIndex]!;
     for (const partial of Pattern.matchState(part, state)) {
       yield* this.matchState(partial, partIndex + 1);
     }
@@ -274,7 +274,7 @@ export class ConcatPattern extends Pattern {
       yield state;
       return;
     }
-    const part = this.parts[partIndex];
+    const part = this.parts[partIndex]!;
     for (const partial of Pattern.buildState(part, state)) {
       yield* this.buildState(partial, partIndex + 1);
     }
@@ -299,7 +299,7 @@ export class AlternatePattern extends Pattern {
 
     // reduce to the only choice
     if (flattened.length === 1) {
-      return flattened[0];
+      return flattened[0]!;
     }
     return new AlternatePattern(flattened);
   }

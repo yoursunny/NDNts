@@ -15,7 +15,7 @@ const EVD = new EvDecoder<ErrorMsg>("ErrorMsg", undefined)
 export namespace ErrorMsg {
   /** Create error message packet. */
   export async function makeData(errorCode: ErrorCode, { name }: Interest, signer: Signer) {
-    const errorInfo = ErrorCode[errorCode];
+    const errorInfo = ErrorCode[errorCode]!;
     const payload = Encoder.encode([
       [TT.ErrorCode, NNI(errorCode)],
       [TT.ErrorInfo, toUtf8(errorInfo)],

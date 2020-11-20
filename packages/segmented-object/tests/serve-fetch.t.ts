@@ -65,7 +65,7 @@ test("iterable to unordered", async () => {
     const yieldSizes = [5000, 7000, 3000];
     let i = -1;
     for (let offset = 0; offset < objectBody.length;) {
-      const end = offset + yieldSizes[++i % yieldSizes.length];
+      const end = offset + yieldSizes[++i % yieldSizes.length]!;
       yield objectBody.subarray(offset, end);
       offset = end;
     }

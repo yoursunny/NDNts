@@ -138,7 +138,7 @@ export class Name {
     const rhs = new Name(other);
     const commonSize = Math.min(this.length, rhs.length);
     for (let i = 0; i < commonSize; ++i) {
-      const cmp = this.comps[i].compare(rhs.comps[i]);
+      const cmp = this.comps[i]!.compare(rhs.comps[i]!);
       if (cmp !== Component.CompareResult.EQUAL) {
         return cmp as unknown as Name.CompareResult;
       }

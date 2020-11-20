@@ -89,23 +89,23 @@ export class Decoder {
         if (this.offset > this.input.length) {
           return undefined;
         }
-        return this.input[this.offset - 2] * 0x100 +
-               this.input[this.offset - 1];
+        return this.input[this.offset - 2]! * 0x100 +
+               this.input[this.offset - 1]!;
       case 0xFE:
         this.offset += 5;
         if (this.offset > this.input.length) {
           return undefined;
         }
-        return this.input[this.offset - 4] * 0x1000000 +
-               this.input[this.offset - 3] * 0x10000 +
-               this.input[this.offset - 2] * 0x100 +
-               this.input[this.offset - 1];
+        return this.input[this.offset - 4]! * 0x1000000 +
+               this.input[this.offset - 3]! * 0x10000 +
+               this.input[this.offset - 2]! * 0x100 +
+               this.input[this.offset - 1]!;
       case 0xFF:
         // JavaScript cannot reliably represent 64-bit integers
         return undefined;
       default:
         this.offset += 1;
-        return this.input[this.offset - 1];
+        return this.input[this.offset - 1]!;
     }
   }
 

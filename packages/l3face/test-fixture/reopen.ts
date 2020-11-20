@@ -8,7 +8,7 @@ export async function run<ServerSocket>(
     waitNClients: (n: number) => Promise<ServerSocket[]>,
     closeClient: (sock: ServerSocket) => void,
 ) {
-  const [sock] = await waitNClients(1);
+  const sock = (await waitNClients(1))[0]!;
 
   const face = new L3Face(transport);
 

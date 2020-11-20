@@ -38,7 +38,7 @@ class DigestComp implements NamingConvention<Uint8Array>, NamingConvention.WithA
     if (!m) {
       return undefined;
     }
-    return new Component(this.tt, fromHex(m[1]));
+    return new Component(this.tt, fromHex(m[1]!));
   }
 }
 

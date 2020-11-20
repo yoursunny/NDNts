@@ -21,7 +21,7 @@ test("pair", async () => {
 });
 
 test("TX throttle", async () => {
-  const [transport, [sws]] = await Promise.all([
+  const [transport, socks] = await Promise.all([
     WsTransport.connect(WsTest.uri, { highWaterMark: 2000, lowWaterMark: 1000 }),
     WsTest.waitNClients(1),
   ]);
@@ -29,6 +29,7 @@ test("TX throttle", async () => {
   const cws = (transport as any).sock as WebSocket;
   const bufferedAmount = jest.spyOn(cws, "bufferedAmount", "get");
 
+  const sws = socks[0] as WsTest.ServerWebSocket;
   sws.binaryType = "nodebuffer";
   const serverRx = jest.fn<void, [Uint8Array]>();
   sws.on("message", serverRx);

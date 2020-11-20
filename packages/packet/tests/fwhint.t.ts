@@ -23,9 +23,9 @@ test("deduplicate reorder", () => {
   const dels = fh.delegations;
   expect(dels).toHaveLength(3);
   expect(dels[0]).toHaveName("/C");
-  expect(dels[0].preference).toBe(10);
+  expect(dels[0]!.preference).toBe(10);
   expect(dels[1]).toHaveName("/A");
-  expect(dels[1].preference.toString()).toMatch(/^2[01]$/);
+  expect(dels[1]!.preference.toString()).toMatch(/^2[01]$/);
   expect(dels[2]).toHaveName("/B");
-  expect(dels[2].preference).toBe(30);
+  expect(dels[2]!.preference).toBe(30);
 });

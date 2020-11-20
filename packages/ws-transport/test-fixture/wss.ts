@@ -2,6 +2,8 @@ import { createServer as createHttpServer, Server as HttpServer } from "http";
 import { AddressInfo } from "net";
 import WebSocket, { Server as WsServer } from "ws";
 
+export type ServerWebSocket = WebSocket;
+
 let httpServer: HttpServer;
 export let wss: WsServer;
 export let uri: string;

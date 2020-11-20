@@ -52,7 +52,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
   }
 
   private async *makeRx() {
-    const closePromise = new Promise((r) => this.once("close", r));
+    const closePromise = new Promise<void>((r) => this.once("close", r));
     while (this.state_ !== L3Face.State.CLOSED) {
       yield* pipeline(
         () => this.transport.rx,
@@ -75,7 +75,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
         }),
       );
       await Promise.race([
-        new Promise((r) => this.once("up", r)),
+        new Promise<void>((r) => this.once("up", r)),
         closePromise,
       ]);
     }

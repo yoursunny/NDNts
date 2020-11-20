@@ -22,7 +22,7 @@ export class BulkInsertTarget {
     face.tx((async function*() {
       await Promise.race([
         new Promise((r) => face.once("down", r)),
-        new Promise((r) => face.once("close", r)),
+        new Promise<void>((r) => face.once("close", r)),
       ]);
     })());
     return pipeline(

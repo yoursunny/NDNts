@@ -24,7 +24,7 @@ async function makeFace(): Promise<FwFace> {
     case "autoconfig:": {
       try {
         const faces = await connectToTestbed({ preferFastest: true, addRoutes: [] });
-        return faces[0];
+        return faces[0]!;
       } catch {
         throw new Error("autoconfig unavailable, set uplink in NDNTS_UPLINK");
       }

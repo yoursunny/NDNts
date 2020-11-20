@@ -6,7 +6,7 @@ class Parser {
   public lineNum = 0;
 
   public addPattern(line: string): void {
-    const [id, input] = line.split("=", 2);
+    const [id, input] = line.split("=", 2) as [string, string];
     this.schema.addPattern(id.trim(), this.parsePattern(input).simplify());
   }
 
@@ -90,8 +90,8 @@ class Parser {
   public addRules(line: string): void {
     const ids = line.split("<=").map((token) => token.trim());
     for (let i = ids.length - 1; i > 0; --i) {
-      const signerId = ids[i];
-      const packetId = ids[i - 1];
+      const signerId = ids[i]!;
+      const packetId = ids[i - 1]!;
       this.schema.addRule(packetId, signerId);
     }
   }

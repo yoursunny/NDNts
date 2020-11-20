@@ -120,7 +120,7 @@ export abstract class KeyChain {
       });
     }
     if (keyNames.length > 0) {
-      return this.getKey(keyNames[0], "signer");
+      return this.getKey(keyNames[0]!, "signer");
     }
     return useFallback();
   }

@@ -16,10 +16,7 @@ class State {
   public readonly pin: Uint8Array;
 
   constructor() {
-    this.pin = crypto.getRandomValues(new Uint8Array(6));
-    for (let i = 0; i < this.pin.byteLength; ++i) {
-      this.pin[i] = 0x30 | (this.pin[i] % 10);
-    }
+    this.pin = crypto.getRandomValues(new Uint8Array(6)).map((b) => 0x30 | b % 10);
   }
 
   public verify(code: Uint8Array): boolean {

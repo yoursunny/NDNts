@@ -100,14 +100,14 @@ test("classify", () => {
   let m = policy.match(hello.name);
   expect(new Set(m.map(({ id }) => id))).toEqual(new Set(["hello", "packet"]));
   for (const [k, v] of Object.entries(hello.vars)) {
-    expect(m[0].vars[k]).toEqualName(v);
+    expect(m[0]!.vars[k]).toEqualName(v);
   }
 
   expect(lsa.name).toEqualName("/localhop/ndn/nlsr/LSA/edu/ucla/Router/suns/name/seq1");
   m = policy.match(lsa.name);
   expect(new Set(m.map(({ id }) => id))).toEqual(new Set(["lsa", "packet"]));
   for (const [k, v] of Object.entries(lsa.vars)) {
-    expect(m[0].vars[k]).toEqualName(v);
+    expect(m[0]!.vars[k]).toEqualName(v);
   }
 
   m = policy.match(nlsrCert.cert);

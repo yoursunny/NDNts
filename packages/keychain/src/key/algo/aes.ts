@@ -55,7 +55,7 @@ class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I
         this.name, extractable, this.keyUsages.secret);
     } else {
       secretKey = await crypto.subtle.generateKey(this.makeAesKeyGenParams(genParams),
-        extractable, this.keyUsages.secret) as CryptoKey;
+        extractable, this.keyUsages.secret);
     }
 
     const info: any = Object.fromEntries(

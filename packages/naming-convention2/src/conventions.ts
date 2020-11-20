@@ -46,7 +46,7 @@ class TypedNumber extends Typed implements NumberConvention {
     if (!m) {
       return undefined;
     }
-    const v = Number.parseInt(m[1], 10);
+    const v = Number.parseInt(m[1]!, 10);
     return this.create(v); // throws upon !Number.isSafeInteger(v)
   }
 }
