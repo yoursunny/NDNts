@@ -2,13 +2,13 @@ import { Version } from "@ndn/naming-convention2";
 import { Data, digestSigning, Interest, Name, NamingConvention, Signer } from "@ndn/packet";
 import { isDiscoveryInterest, makeMetadataPacket, Metadata } from "@ndn/rdr";
 
-import type * as DataStore from "./data-store";
+import type * as S from "./data-store";
 
 /**
  * Respond to RDR discovery Interest with RDR metadata describing the latest version
  * among stored Data.
  */
-export async function respondRdr(interest: Interest, store: DataStore.ListNames, {
+export async function respondRdr(interest: Interest, store: S.ListNames, {
   versionConvention = Version,
   signer = digestSigning,
 }: respondRdr.Options = {}): Promise<Data|false> {

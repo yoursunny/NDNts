@@ -32,8 +32,8 @@ export class BulkInsertInitiator implements S.Close, S.Insert {
    * A resolved Promise means the packets are scheduled for transmission.
    * It does not imply the target has received or accepted these packets.
    */
-  public async insert(...args: S.Insert.Args<never>): Promise<void> {
-    const { pkts } = S.Insert.parseArgs(args);
+  public async insert(...args: S.Insert.Args<{}>): Promise<void> {
+    const { pkts } = S.Insert.parseArgs<{}>(args);
     const job: InsertJob = {
       pkts,
       defer: pDefer(),

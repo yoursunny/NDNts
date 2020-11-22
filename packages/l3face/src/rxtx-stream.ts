@@ -34,12 +34,14 @@ export function txToStream(conn: NodeJS.WritableStream): Transport.Tx {
     try {
       await writeToStream(conn, iterable);
     } finally {
+      await Promise.race([
+        new Promise<void>((r) => conn.end(r)),
+        new Promise<void>((r) => setTimeout(r, 100)),
+      ]);
       const destroyable = conn as unknown as { destroy?: () => void };
       /* istanbul ignore else */
       if (typeof destroyable.destroy === "function") {
         destroyable.destroy();
-      } else {
-        conn.end();
       }
     }
   };

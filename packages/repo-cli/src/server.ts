@@ -1,5 +1,4 @@
 import { getSigner, openUplinks } from "@ndn/cli-common";
-import { L3Face, StreamTransport } from "@ndn/l3face";
 import { BulkInsertTarget, RepoProducer, respondRdr } from "@ndn/repo";
 import { createServer } from "net";
 import type { Arguments, Argv, CommandModule } from "yargs";
@@ -22,10 +21,10 @@ function enableBulkInsertion({
   "bi-batch": batch,
   "bi-parallel": parallel,
 }: Args) {
-  const bi = new BulkInsertTarget(store, { batch, parallel });
+  const bi = BulkInsertTarget.create(store, { batch, parallel });
   createServer((sock) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    bi.accept(new L3Face(new StreamTransport(sock)));
+    bi.accept(sock);
   }).listen(port, host);
 }
 

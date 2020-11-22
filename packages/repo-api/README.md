@@ -9,26 +9,25 @@ This package defines the programming interface of an abstract Data repository, a
 **DataStore** is a group of interfaces that defines the API of a Data repository.
 `DataStore` type of `@ndn/repo` package is an implementation of these interfaces.
 
-### Lookup and Enumeration Methods
+* `get(name)` retrieves Data by exact name.
+* `find(interest)` finds Data that satisfies Interest.
+* `listNames(prefix?)` iterates over names of stored Data.
+* `listData(prefix?)` iterates over stored Data.
+* `insert(options?, ...pkts)` inserts Data packets.
+* `erase(...names)` deletes Data packets.
 
-**get(name)** retrieves Data by exact name.
+## DataTape
 
-**find(interest)** finds Data that satisfies Interest.
+**DataTape** is a file or stream that consists of a sequence of Data packets.
+As a file type, DataTape may be used to transfer packets between repo instances.
 
-**listNames(prefix?)** iterates over names of stored Data.
-
-**listData(prefix?)** iterates over stored Data.
-
-### Modifier Methods
-
-**insert(\[options\], ...pkts)** inserts Data packets.
-
-**erase(...names)** deletes Data packets.
+`DataTape` type of this package is an append-only implementation of `DataStore` interface.
+The `copy(src, prefix?, dst, options?)` function can import or export packets between `DataStore` and `DataTape` instances.
 
 ## Bulk Insert
 
 A repo may accept Data ingestion via [bulk insertion protocol](https://redmine.named-data.net/projects/repo-ng/wiki/Tcp_Bulk_Insert_Repo_Insertion_Protocol).
-The Data producer initiates a reliable connection to the repo's bulk insertion target, and then writes Data packets over this connection.
+The Data producer initiates a reliable connection to the repo's bulk insertion target and writes Data packets over this connection.
 The repo then saves received Data to storage, but provides no feedback.
 Conventionally, this protocol runs over TCP and uses port 7376.
 

@@ -26,12 +26,18 @@ export interface Find {
   find: (interest: Interest) => Promise<Data|undefined>;
 }
 
-export interface Insert<Options extends {} = never> {
-  /** Insert one or more Data packets. */
+export interface Insert<Options extends {} = {}> {
+  /**
+   * Insert one or more Data packets.
+   *
+   * Arguments include:
+   * - an optional Options object
+   * - zero or more Data, Iterable<Data>, or AsyncIterable<Data>
+   */
   insert: (...args: Insert.Args<Options>) => Promise<void>;
 }
 export namespace Insert {
-  export type Args<O> = [...(object extends O ? [O]|[] : []), ...Array<Data|AnyIterable<Data>>];
+  export type Args<O extends {}> = [...(object extends O ? [O]|[] : []), ...Array<Data|AnyIterable<Data>>];
 
   export interface ParsedArgs<O> {
     readonly opts?: O;

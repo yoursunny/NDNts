@@ -43,9 +43,9 @@ export class PyRepoStore implements S.Close, S.Insert, S.Delete {
   }
 
   /** Insert some Data packets. */
-  public async insert(...args: S.Insert.Args<never>): Promise<void> {
+  public async insert(...args: S.Insert.Args<{}>): Promise<void> {
     // TODO use client.insertRange where applicable
-    const { pkts } = S.Insert.parseArgs(args);
+    const { pkts } = S.Insert.parseArgs<{}>(args);
     return pipeline(
       () => pkts,
       transform(Infinity, (data) => {

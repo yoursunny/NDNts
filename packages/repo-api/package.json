@@ -30,9 +30,21 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/rdr": "workspace:*",
+    "duplexify": "^4.1.1",
+    "graceful-fs": "^4.2.4",
+    "is-stream": "^2.0.0",
     "it-pushable": "^1.4.0",
     "p-defer": "^3.0.0",
     "streaming-iterables": "^5.0.3",
     "tslib": "^2.0.3"
+  },
+  "devDependencies": {
+    "@ndn/node-transport": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "@types/duplexify": "^3.6.0",
+    "@types/graceful-fs": "^4.1.4",
+    "@types/tmp": "^0.2.0",
+    "stream-mock": "^2.0.5",
+    "tmp": "^0.2.1"
   }
 }

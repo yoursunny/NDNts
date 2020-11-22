@@ -1,47 +1,20 @@
-import { L3Face } from "@ndn/l3face";
-import { Data } from "@ndn/packet";
-import { batch, consume, filter, map, pipeline, transform } from "streaming-iterables";
-
-import type * as DataStore from "./data-store";
+import { copy, CopyOptions } from "./copy";
+import type * as S from "./data-store";
+import { DataTape } from "./data-tape";
 
 /** Accept packets into DataStore via bulk insertion protocol. */
 export class BulkInsertTarget {
-  private readonly batchSize: number;
-  private readonly parallelism: number;
-
-  constructor(private readonly store: DataStore.Insert, {
-    batch = 64,
-    parallel = 1,
-  }: BulkInserter.Options = {}) {
-    this.batchSize = batch;
-    this.parallelism = parallel;
+  public static create<InsertOptions extends {}>(
+      store: S.Insert<InsertOptions>,
+      opts?: CopyOptions & InsertOptions,
+  ): BulkInsertTarget {
+    return new BulkInsertTarget(store, opts);
   }
 
-  public accept(face: L3Face): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises, require-yield
-    face.tx((async function*() {
-      await Promise.race([
-        new Promise((r) => face.once("down", r)),
-        new Promise<void>((r) => face.once("close", r)),
-      ]);
-    })());
-    return pipeline(
-      () => face.rx,
-      map((pkt) => pkt.l3),
-      filter((pkt): pkt is Data => pkt instanceof Data),
-      batch(this.batchSize),
-      transform(this.parallelism, (pkts) => this.store.insert(...pkts)),
-      consume,
-    );
-  }
-}
+  private constructor(private readonly store: S.Insert<any>, private readonly opts?: any) {}
 
-export namespace BulkInserter {
-  export interface Options {
-    /** Number of packets per transaction. Default is 64. */
-    batch?: number;
-
-    /** Maximum parallel transactions. Default is 1. */
-    parallel?: number;
+  public accept(stream: NodeJS.ReadableStream): Promise<void> {
+    const src = new DataTape(stream);
+    return copy(src, this.store, this.opts);
   }
 }
