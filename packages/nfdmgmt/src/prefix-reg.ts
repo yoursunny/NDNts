@@ -1,9 +1,11 @@
-import { Endpoint } from "@ndn/endpoint";
+import { Endpoint, Producer } from "@ndn/endpoint";
 import { FwFace, ReadvertiseDestination, TapFace } from "@ndn/fw";
-import { Name } from "@ndn/packet";
+import { Certificate } from "@ndn/keychain";
+import { Interest, Name } from "@ndn/packet";
+import { toHex } from "@ndn/tlv";
 
 import { ControlCommand } from "./control-command";
-import { ControlParameters } from "./control-parameters";
+import type { ControlParameters } from "./control-parameters";
 
 type CommandOptions = Omit<ControlCommand.Options, "endpoint">;
 type RouteOptions = Pick<ControlParameters.Fields, "origin"|"cost"|"flags">;
@@ -12,44 +14,85 @@ type Options = CommandOptions & RouteOptions & {
 
   /** How often to refresh prefix registration, false to disable. */
   refreshInterval?: number|false;
+
+  /** Set to signer name to retrieve and serve certificate chain. */
+  preloadCertName?: Name;
 };
+
+const PRELOAD_INTEREST_LIFETIME = Interest.Lifetime(500);
 
 interface State {
   refreshTimer?: NodeJS.Timeout;
 }
 
 class NfdPrefixReg extends ReadvertiseDestination<State> {
-  private commandOptions: CommandOptions;
-  private routeOptions: RouteOptions;
-  private refreshInterval: number|false;
+  private readonly commandOptions: CommandOptions;
+  private readonly routeOptions: RouteOptions;
+  private readonly refreshInterval: number|false;
+  private readonly preloadCertName: Name|undefined;
+  private readonly preloadCerts = new Map<string, Certificate>();
 
   constructor(private readonly face: FwFace, opts: Options) {
     super(opts.retry);
+
     this.commandOptions = {
+      commandPrefix: ControlCommand.getPrefix(face.attributes.local),
       ...opts,
     };
-    if (!this.commandOptions.commandPrefix) {
-      this.commandOptions.commandPrefix = ControlCommand.getPrefix(face.attributes.local);
-    }
+
     this.routeOptions = {
       origin: 65,
       cost: 0x7473, // ASCII of 'ts'
       flags: 0x02, // CAPTURE
       ...opts,
     };
+
     this.refreshInterval = opts.refreshInterval ?? 300000;
+    this.preloadCertName = opts.preloadCertName;
     face.once("close", () => this.disable());
   }
 
-  private tap(): [ControlCommand.Options, () => void] {
+  private async tap(): Promise<[opts: ControlCommand.Options, untap: () => void]> {
     const tapFace = TapFace.create(this.face);
-    tapFace.addRoute(this.commandOptions.commandPrefix!);
-    const endpoint = new Endpoint({ fw: tapFace.fw });
-    return [{ ...this.commandOptions, endpoint }, () => tapFace.close()];
+    tapFace.addRoute(new Name("/"));
+    const endpoint = new Endpoint({
+      announcement: false,
+      describe: "NfdPrefixReg",
+      fw: tapFace.fw,
+    });
+    const preloadProducers = await this.preload(endpoint);
+    return [
+      { ...this.commandOptions, endpoint },
+      () => {
+        preloadProducers.forEach((p) => p.close());
+        tapFace.close();
+      },
+    ];
+  }
+
+  private async preload(endpoint: Endpoint) {
+    const producers = new Map<string, Producer>();
+    let name = this.preloadCertName;
+    while (name) {
+      const key = toHex(name.value);
+      if (producers.has(key)) {
+        break;
+      }
+      try {
+        const cert = this.preloadCerts.get(key) ?? Certificate.fromData(
+          await endpoint.consume(new Interest(name, Interest.CanBePrefix, PRELOAD_INTEREST_LIFETIME)));
+        this.preloadCerts.set(key, cert);
+        producers.set(key, endpoint.produce(name, () => Promise.resolve(cert.data)));
+        name = cert.issuer;
+      } catch {
+        name = undefined;
+      }
+    }
+    return producers;
   }
 
   protected async doAdvertise(name: Name, state: State, nameHex: string) {
-    const [opts, untap] = this.tap();
+    const [opts, untap] = await this.tap();
     try {
       const cr = await ControlCommand.call("rib/register", {
         name,
@@ -79,7 +122,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     if (this.closed) {
       return;
     }
-    const [opts, untap] = this.tap();
+    const [opts, untap] = await this.tap();
     try {
       const cr = await ControlCommand.call("rib/unregister", {
         name,

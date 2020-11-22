@@ -45,14 +45,14 @@ export namespace ControlCommand {
   export async function call<C extends keyof Commands>(
       command: C, params: Commands[C], opts: Options = {}): Promise<ControlResponse> {
     const {
-      endpoint = new Endpoint(),
+      endpoint = new Endpoint({ describe: `ControlCommand(${command})` }),
       commandPrefix: prefix = localhostPrefix,
     } = opts;
 
     const name = new Name([
       ...prefix.comps,
       ...command.split("/"),
-      new Component(TT.GenericNameComponent, Encoder.encode(new ControlParameters(params))),
+      new Component(TT.GenericNameComponent, Encoder.encode(new ControlParameters(params), 512)),
     ]);
     const interest = await signInterest02(new Interest(name), opts);
 

@@ -48,9 +48,10 @@ export async function openUplinks(): Promise<FwFace[]> {
     if (env.nfdreg) {
       // As of 2020-May, testbed rejects prefixreg command with cert name as KeyLocator.
       // https://github.com/WU-ARL/NDN_Ansible/issues/35
-      // Thus, set useKeyNameKeyLocator = false.
-      const signer = await getSignerImpl(env.nfdregkey ?? env.key, true);
-      enableNfdPrefixReg(face, { signer });
+      // Thus, set useKeyNameKeyLocator = true.
+      const signerName = env.nfdregkey ?? env.key;
+      const signer = await getSignerImpl(signerName, true);
+      enableNfdPrefixReg(face, { signer, preloadCertName: signerName });
     }
     face.addRoute(new Name("/"));
     theUplinks = [face];
