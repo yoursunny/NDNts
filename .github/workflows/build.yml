@@ -1,0 +1,74 @@
+name: build
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        node: ['12', '14', '15']
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: $HOME/.pnpm-store
+          key: ${{ matrix.node }}-${{ hashFiles('**/package.json') }}
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: install dependencies
+        run: |
+          sudo add-apt-repository ppa:named-data/ppa
+          sudo apt-get install build-essential clang-format-8 libndn-cxx-dev ndnsec
+      - run: npm run bootstrap
+      - run: npm run build
+      - run: npm run literate lint
+      - run: npm run literate
+      - run: npm run lint-ci
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+      - run: npm run cover -- --colors
+      - run: cd integ/browser-tests && npm test
+      - run: cd integ/ndncxx-tests && npm test
+      - uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ matrix.node == '15' }}
+  publish:
+    needs: build
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        node: ['15']
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: $HOME/.pnpm-store
+          key: ${{ matrix.node }}-${{ hashFiles('**/package.json') }}
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm run bootstrap
+      - run: npm run build
+      - run: bash mk/publish-nightly.sh
+        env:
+          GTAGID: UA-935676-11
+      - run: npm run typedoc -- --gaId UA-935676-11
+      - uses: crazy-max/ghaction-github-pages@v2
+        with:
+          repo: yoursunny/NDNts-nightly
+          build_dir: ./mk/nightly-output/
+          commit_message: ${{ github.sha }} ${{ github.run_id }}-${{ github.run_number }}
+          fqdn: ndnts-nightly.ndn.today
+        env:
+          GH_PAT: ${{ secrets.NIGHTLY_ACCESS_TOKEN }}
+      - uses: South-Paw/action-netlify-deploy@v1.0.4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          netlify-site-id: 8987d2bb-7638-4d6b-adff-806fe3b7309a
+          build-dir: ./docs/

@@ -7,7 +7,7 @@ rm -rf mk/nightly-output/
 mkdir -p mk/nightly-output/
 
 VERSION=$(git show -s --format='%ct %H' | awk '{ printf "0.0.%s-nightly-%s", strftime("%Y%m%d", $1, 1), substr($2, 1, 7) }')
-pnpm recursive exec --filter ./packages -- bash -c 'node '$ROOTDIR'/mk/edit-packagejson.js VCDN '$VERSION' && mv $(npm pack .) '$ROOTDIR'/mk/nightly-output/$(basename $(pwd)).tgz'
+./node_modules/.bin/pnpm recursive exec --filter ./packages -- bash -c 'node '$ROOTDIR'/mk/edit-packagejson.js VCDN '$VERSION' && mv $(npm pack .) '$ROOTDIR'/mk/nightly-output/$(basename $(pwd)).tgz'
 
 pushd mk/nightly-output/ >/dev/null
 (
