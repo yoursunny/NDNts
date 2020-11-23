@@ -1,5 +1,5 @@
-import { Transport } from "@ndn/l3face";
-import { TcpTransport } from "@ndn/node-transport";
+import type { FwFace } from "@ndn/fw";
+import { TcpTransport, UdpTransport } from "@ndn/node-transport";
 import defaultGateway from "default-gateway";
 import nodeFetch from "node-fetch";
 
@@ -9,8 +9,16 @@ export const fetch = nodeFetch;
 
 export const FCH_ALWAYS_CAPABILITIES = [];
 
-export function createTransport(host: string, { connectTimeout }: connect.Options): Promise<Transport> {
-  return TcpTransport.connect({ host, port: 6363, connectTimeout });
+export function createFace(host: string, {
+  fw,
+  preferProtocol = "udp",
+  mtu,
+  connectTimeout,
+}: connect.Options): Promise<FwFace> {
+  if (preferProtocol === "udp") {
+    return UdpTransport.createFace({ fw, lp: { mtu } }, { host });
+  }
+  return TcpTransport.createFace({ fw }, { host, connectTimeout });
 }
 
 export async function getDefaultGateway(): Promise<string> {

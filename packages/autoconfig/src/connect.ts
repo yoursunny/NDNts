@@ -1,10 +1,9 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder, FwFace, TapFace } from "@ndn/fw";
-import { L3Face } from "@ndn/l3face";
 import { Interest, Name } from "@ndn/packet";
 import hirestime from "hirestime";
 
-import { createTransport } from "./platform_node";
+import { createFace } from "./platform_node";
 
 const getNow = hirestime();
 
@@ -19,12 +18,10 @@ async function testConnection(face: FwFace, name: Name = new Name("/localhop/nfd
 /** Connect to a router and test the connection. */
 export async function connect(host: string, opts: connect.Options = {}): Promise<connect.Result> {
   const {
-    fw = Forwarder.getDefault(),
     testConnection: tc = testConnection,
     addRoutes = [new Name("/")],
   } = opts;
-  const transport = await createTransport(host, opts);
-  const face = fw.addFace(new L3Face(transport));
+  const face = await createFace(host, opts);
 
   const testConnectionStart = getNow();
   let testConnectionDuration: number;
@@ -50,6 +47,12 @@ export async function connect(host: string, opts: connect.Options = {}): Promise
 export namespace connect {
   export interface Options {
     fw?: Forwarder;
+
+    /** Prefer one transport protocol over others. */
+    preferProtocol?: "udp"|"tcp"|"ws";
+
+    /** Override MTU of datagram faces. */
+    mtu?: number;
 
     /** Connect timeout (in milliseconds). */
     connectTimeout?: number;

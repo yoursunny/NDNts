@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
-          path: $HOME/.pnpm-store
+          path: ~/.pnpm-store
           key: ${{ matrix.node }}-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v1
         with:
@@ -20,23 +20,43 @@ jobs:
       - name: install dependencies
         run: |
           sudo add-apt-repository ppa:named-data/ppa
-          sudo apt-get install build-essential clang-format-8 libndn-cxx-dev ndnsec
+          sudo apt-get install ndnsec
       - run: npm run bootstrap
-      - run: npm run build
-      - run: npm run literate lint
-      - run: npm run literate
       - run: npm run lint-ci
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
       - run: npm run cover -- --colors
-      - run: cd integ/browser-tests && npm test
-      - run: cd integ/ndncxx-tests && npm test
       - uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
         if: ${{ matrix.node == '15' }}
+  integ:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        node: ['15']
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/.pnpm-store
+          key: ${{ matrix.node }}-${{ hashFiles('**/package.json') }}
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: install dependencies
+        run: |
+          sudo add-apt-repository ppa:named-data/ppa
+          sudo apt-get install build-essential libndn-cxx-dev nfd
+      - run: npm run bootstrap
+      - run: npm run build
+      - run: npm run literate lint
+      - run: npm run literate
+      - run: cd integ/browser-tests && npm test
+      - run: cd integ/ndncxx-tests && npm test
   publish:
-    needs: build
+    needs: [build, integ]
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-18.04
     strategy:
@@ -47,7 +67,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
-          path: $HOME/.pnpm-store
+          path: ~/.pnpm-store
           key: ${{ matrix.node }}-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v1
         with:

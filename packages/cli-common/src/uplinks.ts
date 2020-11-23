@@ -20,10 +20,19 @@ function parseHostPort(): { host: string; port: number|undefined } {
 }
 
 async function makeFace(): Promise<FwFace> {
+  let preferProtocol: connectToTestbed.Options["preferProtocol"];
   switch (env.uplink.protocol) {
+    case "autoconfig-tcp:":
+      preferProtocol = "tcp";
+      // fallthrough
     case "autoconfig:": {
       try {
-        const faces = await connectToTestbed({ preferFastest: true, addRoutes: [] });
+        const faces = await connectToTestbed({
+          preferProtocol,
+          mtu: env.mtu,
+          preferFastest: true,
+          addRoutes: [],
+        });
         return faces[0]!;
       } catch {
         throw new Error("autoconfig unavailable, set uplink in NDNTS_UPLINK");

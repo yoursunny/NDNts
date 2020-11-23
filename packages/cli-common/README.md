@@ -23,7 +23,7 @@ If the specified prefix does not match any existing key, digest signing will be 
 `NDNTS_PKTTRACE=1` environment variable enables forwarder tracing.
 
 `NDNTS_UPLINK` environment variable creates an uplink to another forwarder/node.
-It supports Unix (e.g. `unix:///run/nfd.sock`), TCP (e.g. `tcp://192.0.2.1:6363`), UDP (e.g. `udp://192.0.2.1:6363`), and autoconfig (i.e. `autoconfig:`).
+It supports Unix (e.g. `unix:///run/nfd.sock`), TCP (e.g. `tcp://192.0.2.1:6363`), UDP (e.g. `udp://192.0.2.1:6363`), and autoconfig (i.e. `autoconfig:` or `autoconfig-tcp:`).
 The default is `unix:///run/nfd.sock`.
 `openUplinks` function creates the uplink, and `closeUplinks` function closes the uplink.
 

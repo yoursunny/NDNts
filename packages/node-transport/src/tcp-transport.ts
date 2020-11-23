@@ -3,6 +3,8 @@ import * as net from "net";
 import PCancelable from "p-cancelable";
 import pTimeout from "p-timeout";
 
+const DEFAULT_PORT = 6363;
+
 /** TCP socket transport. */
 export class TcpTransport extends StreamTransport {
   constructor(sock: net.Socket, private readonly connectOpts: net.TcpNetConnectOpts) {
@@ -39,7 +41,7 @@ export namespace TcpTransport {
    */
   export function connect(opts: NetConnectOpts&Options): Promise<TcpTransport>;
 
-  export function connect(arg1?: string|(NetConnectOpts&Options), port = 6363,
+  export function connect(arg1?: string|(NetConnectOpts&Options), port = DEFAULT_PORT,
       { connectTimeout = 10000 }: Options = {}): Promise<TcpTransport> {
     const connectOpts: net.TcpNetConnectOpts =
       typeof arg1 === "undefined" ? { port } :
