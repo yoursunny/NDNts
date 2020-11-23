@@ -93,9 +93,11 @@ describe("DataTape file", () => {
   });
 });
 
-test("BulkInsertTarget", async () => {
-  const [open, retrieve] = makeDataTapeAppendStream();
-  const tape = new DataTape(open);
+async function testBulkInsertTarget(
+    stream: NodeJS.WritableStream|DataTape.OpenStream,
+    retrieve: () => Buffer,
+) {
+  const tape = new DataTape(stream);
   const storeInsert = jest.spyOn(tape, "insert");
 
   const bi = BulkInsertTarget.create<{}>(tape, {
@@ -105,9 +107,19 @@ test("BulkInsertTarget", async () => {
   await expect(bi.accept(makeDataTapeReadStream("read"))).resolves.toBeUndefined();
   expect(storeInsert).toHaveBeenCalledTimes(16);
 
-  await new Promise((r) => setTimeout(r, 100));
+  await tape.close();
   const readback = new DataTape(new BufferReadableMock(retrieve()));
   await expect(collect(readback.listData())).resolves.toHaveLength(500);
+}
+
+test("BulkInsertTarget single-stream", () => {
+  const [open, retrieve] = makeDataTapeAppendStream();
+  return testBulkInsertTarget(open("append") as NodeJS.WritableStream, retrieve);
+});
+
+test("BulkInsertTarget make-stream", () => {
+  const [open, retrieve] = makeDataTapeAppendStream();
+  return testBulkInsertTarget(open, retrieve);
 });
 
 test("BulkInsertInitiator", async () => {
