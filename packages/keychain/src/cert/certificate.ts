@@ -2,7 +2,8 @@ import { Component, Data, Name, SigInfo, Signer } from "@ndn/packet";
 import * as asn1 from "@yoursunny/asn1";
 import assert from "minimalistic-assert";
 
-import { createEncrypter, CryptoAlgorithm, EncryptionAlgorithmList, NamedEncrypter, NamedSigner, NamedVerifier, PublicKey, SigningAlgorithmList } from "../key/mod";
+import { EncryptionAlgorithmList, SigningAlgorithmList } from "../algo/mod";
+import { createEncrypter, CryptoAlgorithm, NamedEncrypter, NamedSigner, NamedVerifier, PublicKey } from "../key/mod";
 import { createVerifier } from "../key/signing";
 import * as CertNaming from "../naming";
 import { ContentTypeKEY } from "./an";

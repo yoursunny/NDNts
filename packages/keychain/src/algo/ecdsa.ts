@@ -3,7 +3,7 @@ import { fromHex, toHex } from "@ndn/tlv";
 import * as asn1 from "@yoursunny/asn1";
 
 import { crypto } from "../crypto_node";
-import type { CryptoAlgorithm, SigningAlgorithm } from "../types";
+import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
 
 const SignVerifyParams: EcdsaParams = { name: "ECDSA", hash: "SHA-256" };
 

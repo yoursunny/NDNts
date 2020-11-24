@@ -1,4 +1,4 @@
-import type { CryptoAlgorithm, EncryptionAlgorithm, SigningAlgorithm } from "../types";
+import type { CryptoAlgorithm, EncryptionAlgorithm, SigningAlgorithm } from "../key/mod";
 import * as AES from "./aes";
 import { ECDSA } from "./ecdsa";
 import { HMAC } from "./hmac";

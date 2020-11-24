@@ -1,7 +1,8 @@
 import type { Name } from "@ndn/packet";
 
-import { crypto } from "../key/crypto_node";
-import { createDecrypter, createEncrypter, createSigner, createVerifier, CryptoAlgorithm, CryptoAlgorithmList, KeyKind, NamedDecrypter, NamedEncrypter, NamedSigner, NamedVerifier, PublicKey } from "../key/mod";
+import { CryptoAlgorithmList } from "../algo/mod";
+import { crypto } from "../crypto_node";
+import { createDecrypter, createEncrypter, createSigner, createVerifier, CryptoAlgorithm, KeyKind, NamedDecrypter, NamedEncrypter, NamedSigner, NamedVerifier, PublicKey } from "../key/mod";
 import { StoreBase } from "./store-base";
 
 function findAlgo(uuid: string): CryptoAlgorithm<unknown>|undefined {

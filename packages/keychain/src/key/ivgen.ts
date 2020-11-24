@@ -2,7 +2,7 @@ import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
 import { fromHex, toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 
-import { crypto } from "./crypto_node";
+import { crypto } from "../crypto_node";
 
 /** Initialization Vector generator. */
 export abstract class IvGen {

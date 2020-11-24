@@ -2,7 +2,14 @@
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-This package provides basic signing algorithms and certificate management features.
+This package provides signing algorithms, encryption algorithms, and certificate management features.
+
+The implementation uses [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API).
+
+* Modern browsers natively support WebCrypto.
+* Most browsers restrict WebCrypto to [secure contexts](https://www.w3.org/TR/powerful-features/) only.
+  During development, you may use `http://localhost` or [ngrok](https://ngrok.com/).
+* In Node.js, [@peculiar/webcrypto](https://www.npmjs.com/package/@peculiar/webcrypto) wraps Node.js Crypto API and exports them as WebCrypto.
 
 ## Signing Algorithms
 
@@ -26,20 +33,24 @@ Both Interest and Data are signable.
 
 * [X] sign Interest
   * [X] put certificate name in KeyLocator
-  * [ ] generate SigNonce, SigTime, SigSeqNum
+  * [X] generate SigNonce, SigTime, SigSeqNum
 * [X] verify Interest
   * [X] check ParametersSha256DigestComponent
-  * [ ] check SigNonce, SigTime, SigSeqNum
+  * [X] check SigNonce, SigTime, SigSeqNum
 * [X] sign Data
   * [X] put certificate name in KeyLocator
 * [X] verify Data
 
-The implementation uses [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API).
+## Encryption Algorithms
 
-* Modern browsers natively support WebCrypto.
-* Most browsers restrict WebCrypto to [secure contexts](https://www.w3.org/TR/powerful-features/) only.
-  During development, you may use `http://localhost` or [ngrok](https://ngrok.com/).
-* In Node.js, [@peculiar/webcrypto](https://www.npmjs.com/package/@peculiar/webcrypto) wraps Node.js Crypto API and exports them as WebCrypto.
+* [X] AES-CBC
+  * [X] low-level encryption and decryption
+* [X] AES-CTR and AES-GCM
+  * [X] low-level encryption and decryption
+  * [X] generate unique IV
+  * [X] check IV uniqueness
+* [X] RSA-OAEP
+  * [X] low-level encryption and decryption
 
 ## Certificate Management and Storage
 
@@ -63,7 +74,7 @@ Persistent keychain in browser uses [IndexedDB API](https://developer.mozilla.or
 The *locator* argument determines the database name(s).
 Private keys are saved as non-extractable `CryptoKey` objects.
 
-Known issues:
+## Known Issues
 
 * In Firefox, persistent keychain stores JWK instead of `CryptoKey`, due to [Mozilla Bug 1545813](https://bugzilla.mozilla.org/show_bug.cgi?id=1545813).
 * In Firefox, persistent keychain is unusable in a Private Browsing window, due to [Mozilla Bug 781982](https://bugzilla.mozilla.org/show_bug.cgi?id=1639542).

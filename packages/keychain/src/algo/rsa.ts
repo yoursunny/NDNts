@@ -3,7 +3,7 @@ import { toHex } from "@ndn/tlv";
 import type * as asn1 from "@yoursunny/asn1";
 
 import { crypto } from "../crypto_node";
-import type { CryptoAlgorithm, EncryptionAlgorithm, SigningAlgorithm } from "../types";
+import type { CryptoAlgorithm, EncryptionAlgorithm, SigningAlgorithm } from "../key/mod";
 
 export type RsaModulusLength = 2048|4096;
 export namespace RsaModulusLength {

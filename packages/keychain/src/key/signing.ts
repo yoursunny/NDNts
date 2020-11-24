@@ -1,9 +1,9 @@
 import { KeyLocator, LLSign, LLVerify, Name, NameLike, Signer, Verifier } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
+import { ECDSA } from "../algo/mod";
 import * as CertNaming from "../naming";
 import type { KeyChain } from "../store/mod";
-import { ECDSA } from "./algo/mod";
 import { generateKeyInternal } from "./generate";
 import { CryptoAlgorithm, KeyKind, NamedSigner, NamedVerifier, SigningAlgorithm } from "./types";
 

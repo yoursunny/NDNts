@@ -2,8 +2,7 @@ import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
 import { crypto } from "../crypto_node";
-import { CounterIvGen, IvGen, RandomIvGen } from "../ivgen";
-import type { CryptoAlgorithm, EncryptionAlgorithm } from "../types";
+import { CounterIvGen, CryptoAlgorithm, EncryptionAlgorithm, IvGen, RandomIvGen } from "../key/mod";
 
 export interface Encryption<I, G extends GenParams> extends EncryptionAlgorithm<I, false, G> {
   readonly ivLength: number;
