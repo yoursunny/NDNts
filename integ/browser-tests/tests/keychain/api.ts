@@ -3,7 +3,7 @@ import { TestRecord as CertStoreRecord } from "@ndn/keychain/test-fixture/cert-s
 import { TestRecord as KeyStoreRecord } from "@ndn/keychain/test-fixture/key-store";
 import { TestRecord as SignVerifyRecord } from "@ndn/packet/test-fixture/sign-verify";
 
-import { SerializedInBrowser } from "../../test-fixture/serialize";
+import type * as Serialize from "../../test-fixture/serialize";
 
 export type SignVerifyTestResult = [
   SignVerifyRecord, // Interest test record
@@ -14,9 +14,9 @@ declare global {
   interface Window {
     testKeyStore: () => Promise<KeyStoreRecord>;
     testCertStore: () => Promise<CertStoreRecord>;
-    testDigestSigning: () => Promise<SerializedInBrowser>;
-    testECDSA: (curve: EcCurve) => Promise<SerializedInBrowser>;
-    testRSA: (modulusLength: RsaModulusLength) => Promise<SerializedInBrowser>;
-    testHMAC: () => Promise<SerializedInBrowser>;
+    testDigestSigning: () => Promise<Serialize.Value<SignVerifyTestResult>>;
+    testECDSA: (curve: EcCurve) => Promise<Serialize.Value<SignVerifyTestResult>>;
+    testRSA: (modulusLength: RsaModulusLength) => Promise<Serialize.Value<SignVerifyTestResult>>;
+    testHMAC: () => Promise<Serialize.Value<SignVerifyTestResult>>;
   }
 }

@@ -6,7 +6,8 @@ import { execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
 import { Data, digestSigning, Interest, Signer, Verifier } from "@ndn/packet";
 import { execute as testSignVerify } from "@ndn/packet/test-fixture/sign-verify";
 
-import { SerializedInBrowser, serializeInBrowser } from "../../test-fixture/serialize";
+import * as Serialize from "../../test-fixture/serialize";
+import type { SignVerifyTestResult } from "./api";
 
 window.testKeyStore = () => {
   return testKeyStore(KeyChain.open("296616c2-7abb-4d9e-94b3-a97e4fd327b5"));
@@ -17,8 +18,8 @@ window.testCertStore = () => {
 };
 
 async function testSigningKey(pvtA: Signer, pubA: Verifier,
-    pvtB: Signer, pubB: Verifier): Promise<SerializedInBrowser> {
-  return serializeInBrowser(await Promise.all([
+    pvtB: Signer, pubB: Verifier): Promise<Serialize.Value<SignVerifyTestResult>> {
+  return Serialize.stringify(await Promise.all([
     testSignVerify(Interest, pvtA, pubA, pvtB, pubB),
     testSignVerify(Data, pvtA, pubA, pvtB, pubB),
   ]));

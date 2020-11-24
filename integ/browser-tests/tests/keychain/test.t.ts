@@ -4,8 +4,7 @@ import * as TestKeyStore from "@ndn/keychain/test-fixture/key-store";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
-import { deserializeInBrowser } from "../../test-fixture/serialize";
-import type { SignVerifyTestResult } from "./api";
+import * as Serialize from "../../test-fixture/serialize";
 
 beforeEach(() => navigateToPage(__dirname));
 
@@ -20,29 +19,29 @@ test("CertStore", async () => {
 });
 
 test("SHA256", async () => {
-  const [rI, rD] = deserializeInBrowser(await pageInvoke<typeof window.testDigestSigning>(
-    page, "testDigestSigning")) as SignVerifyTestResult;
+  const [rI, rD] = Serialize.parse(
+    await pageInvoke<typeof window.testDigestSigning>(page, "testDigestSigning"));
   TestSignVerify.check(rI, { deterministic: true, sameAB: true });
   TestSignVerify.check(rD, { deterministic: true, sameAB: true });
 });
 
 test.each(EcCurve.Choices)("ECDSA %p", async (curve) => {
-  const [rI, rD] = deserializeInBrowser(await pageInvoke<typeof window.testECDSA>(
-    page, "testECDSA", curve)) as SignVerifyTestResult;
+  const [rI, rD] = Serialize.parse(
+    await pageInvoke<typeof window.testECDSA>(page, "testECDSA", curve));
   TestSignVerify.check(rI);
   TestSignVerify.check(rD);
 });
 
 test.each(RsaModulusLength.Choices)("RSA %p", async (modulusLength) => {
-  const [rI, rD] = deserializeInBrowser(await pageInvoke<typeof window.testRSA>(
-    page, "testRSA", modulusLength)) as SignVerifyTestResult;
+  const [rI, rD] = Serialize.parse(
+    await pageInvoke<typeof window.testRSA>(page, "testRSA", modulusLength));
   TestSignVerify.check(rI, { deterministic: true });
   TestSignVerify.check(rD, { deterministic: true });
 });
 
 test("HMAC", async () => {
-  const [rI, rD] = deserializeInBrowser(await pageInvoke<typeof window.testHMAC>(
-    page, "testHMAC")) as SignVerifyTestResult;
+  const [rI, rD] = Serialize.parse(
+    await pageInvoke<typeof window.testHMAC>(page, "testHMAC"));
   TestSignVerify.check(rI, { deterministic: true });
   TestSignVerify.check(rD, { deterministic: true });
 });
