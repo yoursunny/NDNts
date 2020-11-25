@@ -47,6 +47,7 @@
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
     "@ndn/naming-convention1": "workspace:*",
+    "@ndn/repo-api": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@types/graceful-fs": "^4.1.4",
     "@types/minimalistic-assert": "^1.0.1",

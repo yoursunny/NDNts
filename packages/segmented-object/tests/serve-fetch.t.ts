@@ -8,7 +8,7 @@ import { Segment as Segment2 } from "@ndn/naming-convention2";
 import { Name, Verifier } from "@ndn/packet";
 import { AbortController } from "abort-controller";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
-import { consume } from "streaming-iterables";
+import { collect, consume } from "streaming-iterables";
 
 import { BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, makeChunkSource, serve, Server } from "..";
 import { makeObjectBody } from "../test-fixture/object-body";
@@ -27,10 +27,7 @@ test("buffer to buffer", async () => {
 
 test("buffer to chunks", async () => {
   const server = serve("/R", makeChunkSource(objectBody));
-  const chunks = [] as Uint8Array[];
-  for await (const chunk of fetch(new Name("/R")).chunks()) {
-    chunks.push(chunk);
-  }
+  const chunks = await collect(fetch(new Name("/R")).chunks());
   expect(Buffer.concat(chunks)).toEqualUint8Array(objectBody);
   server.close();
 });

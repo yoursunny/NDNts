@@ -7,38 +7,12 @@ import { getIterator } from "streaming-iterables";
 import { defaultSegmentConvention, SegmentConvention } from "../convention";
 import type { Chunk, ChunkSource } from "./chunk-source/mod";
 
-interface DataProducerOptions {
-  /**
-   * Choose a segment number naming convention.
-   * Default is Segment from @ndn/naming-convention2 package.
-   */
-  segmentNumConvention?: SegmentConvention;
-
-  /**
-   * Data ContentType.
-   * @default 0
-   */
-  contentType?: number;
-
-  /**
-   * Data FreshnessPeriod (in milliseconds).
-   * @default 60000
-   */
-  freshnessPeriod?: number;
-
-  /**
-   * A private key to sign Data.
-   * Default is SHA256 digest.
-   */
-  signer?: Signer;
-}
-
 /** Produce Data for requested segment. */
 export abstract class DataProducer {
-  segmentNumConvention: SegmentConvention;
-  contentType: ReturnType<typeof Data["ContentType"]>;
-  freshnessPeriod: ReturnType<typeof Data["FreshnessPeriod"]>;
-  signer: Signer;
+  private readonly segmentNumConvention: SegmentConvention;
+  private readonly contentType: ReturnType<typeof Data["ContentType"]>;
+  private readonly freshnessPeriod: ReturnType<typeof Data["FreshnessPeriod"]>;
+  private readonly signer: Signer;
 
   constructor(protected readonly source: ChunkSource, protected readonly prefix: Name,
       {
@@ -46,20 +20,26 @@ export abstract class DataProducer {
         contentType = 0,
         freshnessPeriod = 60000,
         signer = digestSigning,
-      }: DataProducerOptions = {}) {
+      }: DataProducer.Options) {
     this.segmentNumConvention = segmentNumConvention;
     this.contentType = Data.ContentType(contentType);
     this.freshnessPeriod = Data.FreshnessPeriod(freshnessPeriod);
     this.signer = signer;
   }
 
+  public async *listData(): AsyncIterable<Data> {
+    for (let i = 0; ; ++i) {
+      const data = await this.getData(i);
+      if (!data) {
+        break;
+      }
+      yield data;
+    }
+  }
+
   public processInterest: ProducerHandler = async (interest: Interest): Promise<Data|false> => {
     const segmentNum = this.parseInterest(interest);
-    const data = await this.getData(segmentNum);
-    if (!data) {
-      return false;
-    }
-    return data;
+    return (await this.getData(segmentNum)) ?? false;
   };
 
   private parseInterest({ name, canBePrefix }: Interest): number {
@@ -99,33 +79,6 @@ export abstract class DataProducer {
   }
 }
 
-interface SequentialDataProducerOptions extends DataProducerOptions {
-  /**
-   * How many chunks behind latest request to store in buffer.
-   *
-   * After processing an Interest requesting segment `i`, subsequent Interests requesting
-   * segment before `i - bufferBehind` cannot be answered.
-   *
-   * A larger number or even `Infinity` allows answering Interests requesting early segments,
-   * at the cost of buffering many generated packets in memory.
-   * A smaller number reduces memory usage, at the risk of not being able to answer some Interests,
-   * which would become a problem in the presence of multiple consumers.
-   *
-   * @default Infinity
-   */
-  bufferBehind?: number;
-
-  /**
-   * How many chunks ahead of latest request to store in buffer.
-   *
-   * A larger number can reduce latency of fulfilling Interests if ChunkSource is slow.
-   * A smaller number reduces memory usage.
-   *
-   * @default 16
-   */
-  bufferAhead?: number;
-}
-
 /** Read from a sequential ChunkSource, and produce Data into a buffer. */
 class SequentialDataProducer extends DataProducer {
   private requested = -1;
@@ -135,7 +88,7 @@ class SequentialDataProducer extends DataProducer {
   private pause?: pDefer.DeferredPromise<void>;
   private stop = pDefer<IteratorReturnResult<unknown>>();
 
-  constructor(source: ChunkSource, prefix: Name, opts: SequentialDataProducerOptions = {}) {
+  constructor(source: ChunkSource, prefix: Name, opts: DataProducer.Options = {}) {
     super(source, prefix, opts);
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.produce(opts);
@@ -165,7 +118,7 @@ class SequentialDataProducer extends DataProducer {
     return this.buffer.get(i);
   }
 
-  private async produce({ bufferBehind = Infinity, bufferAhead = 16 }: SequentialDataProducerOptions) {
+  private async produce({ bufferBehind = Infinity, bufferAhead = 16 }: DataProducer.Options) {
     const iterator = getIterator(this.source.listChunks());
     let i = -1;
     for (;;) {
@@ -190,7 +143,7 @@ class SequentialDataProducer extends DataProducer {
       const data = await this.makeData(chunk);
       this.buffer.set(i, data);
       if (Number.isFinite(bufferBehind)) {
-        this.buffer.delete(i - bufferBehind);
+        this.buffer.delete(i - bufferAhead - bufferBehind);
       }
 
       const w = this.waitlist.get(i);
@@ -214,11 +167,9 @@ class SequentialDataProducer extends DataProducer {
   }
 }
 
-type OnDemandDataProducerOptions = DataProducerOptions;
-
 /** Produce Data from a ChunkSource that supports on-demand generation. */
 class OnDemandDataProducer extends DataProducer {
-  constructor(source: ChunkSource, prefix: Name, opts: OnDemandDataProducerOptions = {}) {
+  constructor(source: ChunkSource, prefix: Name, opts: DataProducer.Options = {}) {
     super(source, prefix, opts);
     assert(typeof source.getChunk === "function");
   }
@@ -233,12 +184,73 @@ class OnDemandDataProducer extends DataProducer {
 }
 
 export namespace DataProducer {
-  export type Options = SequentialDataProducerOptions | OnDemandDataProducerOptions;
+  export interface Options {
+    /**
+     * Choose a segment number naming convention.
+     * Default is Segment from @ndn/naming-convention2 package.
+     */
+    segmentNumConvention?: SegmentConvention;
 
+    /**
+     * Data ContentType.
+     * @default 0
+     */
+    contentType?: number;
+
+    /**
+     * Data FreshnessPeriod (in milliseconds).
+     * @default 60000
+     */
+    freshnessPeriod?: number;
+
+    /**
+     * A private key to sign Data.
+     * Default is SHA256 digest.
+     */
+    signer?: Signer;
+
+    /**
+     * How many chunks behind latest request to store in buffer.
+     * This is ignored if the ChunkSource supports getChunk() function.
+     *
+     * After processing an Interest requesting segment `i`, subsequent Interests requesting
+     * segment before `i - bufferBehind` cannot be answered.
+     *
+     * A larger number or even `Infinity` allows answering Interests requesting early segments,
+     * at the cost of buffering many generated packets in memory.
+     * A smaller number reduces memory usage, at the risk of not being able to answer some Interests,
+     * which would become a problem in the presence of multiple consumers.
+     *
+     * @default Infinity
+     */
+    bufferBehind?: number;
+
+    /**
+     * How many chunks ahead of latest request to store in buffer.
+     * This is ignored if the ChunkSource supports getChunk() function.
+     *
+     * A larger number can reduce latency of fulfilling Interests if ChunkSource is slow.
+     * A smaller number reduces memory usage.
+     *
+     * @default 16
+     */
+    bufferAhead?: number;
+  }
+
+  /** Create a DataProducer suitable for the ChunkSource. */
   export function create(source: ChunkSource, prefix: Name, opts: Options = {}): DataProducer {
     if (typeof source.getChunk === "function") {
       return new OnDemandDataProducer(source, prefix, opts);
     }
     return new SequentialDataProducer(source, prefix, opts);
+  }
+
+  /** Produce all Data packets from a ChunkSource. */
+  export function listData(source: ChunkSource, prefix: Name, opts: Options = {}): AsyncIterable<Data> {
+    return create(source, prefix, {
+      ...opts,
+      bufferBehind: 0,
+      bufferAhead: 0,
+    }).listData();
   }
 }
