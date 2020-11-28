@@ -21,4 +21,5 @@ export interface ClientChallengeContext {
   challengeStatus: string;
   remainingTries: number;
   remainingTime: number;
+  parameters: ParameterKV;
 }

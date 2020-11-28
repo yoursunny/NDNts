@@ -3,7 +3,6 @@ import "../test-fixture/expect";
 import { Decoder, EvDecoder } from "..";
 
 class EvdTestTarget {
-  public top?: Decoder.Tlv;
   public a1 = 0;
   public a4 = 0;
   public a6 = 0;
@@ -13,6 +12,18 @@ class EvdTestTarget {
 
   public sum(): number {
     return this.a1 * 1000 + this.a4 * 100 + this.a6 * 10 + this.a9;
+  }
+
+  public beforeTop = jest.fn<void, [EvdTestTarget, Decoder.Tlv]>();
+  public beforeValue = jest.fn<void, [EvdTestTarget]>();
+  public afterValue = jest.fn<void, [EvdTestTarget]>();
+  public afterTop = jest.fn<void, [EvdTestTarget, Decoder.Tlv]>();
+
+  public setCallbacks(evd: EvDecoder<EvdTestTarget>): void {
+    evd.beforeTopCallbacks.splice(0, 1, this.beforeTop);
+    evd.beforeValueCallbacks.splice(0, 1, this.beforeValue);
+    evd.afterValueCallbacks.splice(0, 1, this.afterValue);
+    evd.afterTopCallbacks.splice(0, 1, this.afterTop);
   }
 }
 
@@ -28,7 +39,6 @@ class A1 {
 }
 
 const EVD = new EvDecoder<EvdTestTarget>("A0", 0xA0)
-  .setTop((t, tlv) => t.top = tlv)
   .add(0xA1, (t, { decoder }) => { ++t.a1; decoder.decode(A1); })
   .add(0xA4, (t) => { ++t.a4; })
   .add(0xA6, (t) => { ++t.a6; }, { repeat: true })
@@ -49,15 +59,21 @@ test("decode normal", () => {
     0xC0, 0x04, 0xC1, 0x02, 0x01, 0x04,
   );
   const target = new EvdTestTarget();
+  target.setCallbacks(EVD);
   EVD.decode(target, new Decoder(input));
-  expect(target.top).toMatchObject({ type: 0xA0 });
+  expect(target.beforeTop).toHaveBeenCalledWith(target, expect.objectContaining({ type: 0xA0 }));
+  expect(target.beforeValue).toHaveBeenCalledWith(target);
+  expect(target.afterValue).toHaveBeenCalledWith(target);
+  expect(target.afterTop).toHaveBeenCalledWith(target, expect.objectContaining({ type: 0xA0 }));
   expect(target.sum()).toBe(1121);
   expect(target.c1).toBe(0x0104);
 
   const target2 = new EvdTestTarget();
+  target2.setCallbacks(EVD);
   const target3 = EVD.decodeValue(target2, new Decoder(input.slice(2)));
   expect(target3).toBe(target2);
-  expect(target2.top).toBeUndefined();
+  expect(target3.beforeTop).not.toHaveBeenCalled();
+  expect(target3.afterTop).not.toHaveBeenCalled();
   expect(target2.sum()).toBe(1121);
 });
 
@@ -124,8 +140,9 @@ test("decode out-of-order non-critical", () => {
 test("decode bad TLV-TYPE", () => {
   const decoder = new Decoder(Uint8Array.of(0xAF, 0x00));
   const target = new EvdTestTarget();
+  target.setCallbacks(EVD);
   expect(() => EVD.decode(target, decoder)).toThrow();
-  expect(target.top).toBeUndefined();
+  expect(target.beforeTop).not.toHaveBeenCalled();
 });
 
 test("decode required", () => {

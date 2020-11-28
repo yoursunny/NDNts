@@ -65,7 +65,6 @@ class Fields {
 const FIELD_LIST: Array<keyof Fields> = ["name", "contentType", "freshnessPeriod", "finalBlockId", "isFinalBlock", "content", "sigInfo", "sigValue"];
 
 const EVD = new EvDecoder<Fields>("Data", TT.Data)
-  .setTop((t, { tlv }) => t.topTlv = tlv)
   .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
   .add(TT.MetaInfo,
     new EvDecoder<Fields>("MetaInfo")
@@ -81,6 +80,7 @@ const EVD = new EvDecoder<Fields>("Data", TT.Data)
     t.sigValue = value;
     t.signedPortion = before;
   }, { required: true });
+EVD.beforeTopCallbacks.push((t, { tlv }) => t.topTlv = tlv);
 
 /** Data packet. */
 export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signable, Verifier.Verifiable {

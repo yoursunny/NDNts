@@ -14,9 +14,8 @@ interface RequestInfo {
 }
 
 const EVD = new EvDecoder<ChallengeRequest.Fields>("ChallengeRequest", undefined)
-  .add(TT.SelectedChallenge, (t, { text }) => t.selectedChallenge = text, { order: 1, required: true })
-  .add(TT.ParameterKey, (t, { text }) => parameter_kv.parseKey(t.parameters, text), { order: 2, repeat: true })
-  .add(TT.ParameterValue, (t, { value }) => parameter_kv.parseValue(t.parameters, value), { order: 2, repeat: true });
+  .add(TT.SelectedChallenge, (t, { text }) => t.selectedChallenge = text, { order: 1, required: true });
+parameter_kv.parseEvDecoder(EVD, 2);
 
 /** CHALLENGE request packet. */
 export class ChallengeRequest {
@@ -50,9 +49,7 @@ export class ChallengeRequest {
   }
 
   private constructor(public readonly interest: Interest, plaintext: Uint8Array) {
-    (this as ChallengeRequest.Fields).parameters = {};
     EVD.decodeValue(this, new Decoder(plaintext));
-    parameter_kv.finish(this.parameters);
   }
 
   public get requestId() { return this.interest.name.at(-2).value; }

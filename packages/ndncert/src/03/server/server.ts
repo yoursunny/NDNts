@@ -190,6 +190,7 @@ export class Server {
       success = false,
       decrementRetry = false,
       challengeStatus = "error",
+      parameters,
     } = await challenge.process(request, context);
     if (success) {
       return this.finishChallenge(now, request, context);
@@ -202,6 +203,7 @@ export class Server {
       ...this.makeResponseCommon(request, context),
       status: Status.CHALLENGE,
       challengeStatus,
+      parameters,
       remainingTries: context.challengeRemainingTries!,
       remainingTime: context.expiry - now,
     });

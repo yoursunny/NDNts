@@ -1,17 +1,20 @@
 import { Data, LLDecrypt, LLEncrypt, Name, Signer } from "@ndn/packet";
-import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
+import { Decoder, Encodable, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 
 import { Status, TT } from "./an";
 import type { CaProfile } from "./ca-profile";
 import type { ChallengeRequest } from "./challenge-request";
 import * as encrypted_payload from "./encrypted";
+import * as parameter_kv from "./parameter-kv";
 
 const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse", undefined)
-  .add(TT.Status, (t, { nni }) => t.status = NNI.constrain(nni, "Status", Status.MIN, Status.MAX), { required: true })
-  .add(TT.ChallengeStatus, (t, { text }) => t.challengeStatus = text)
-  .add(TT.RemainingTries, (t, { nni }) => t.remainingTries = nni)
-  .add(TT.RemainingTime, (t, { nni }) => t.remainingTime = nni * 1000)
-  .add(TT.IssuedCertName, (t, { vd }) => t.issuedCertName = vd.decode(Name));
+  .add(TT.Status, (t, { nni }) => t.status = NNI.constrain(nni, "Status", Status.MIN, Status.MAX),
+    { order: 1, required: true })
+  .add(TT.ChallengeStatus, (t, { text }) => t.challengeStatus = text, { order: 2 })
+  .add(TT.RemainingTries, (t, { nni }) => t.remainingTries = nni, { order: 3 })
+  .add(TT.RemainingTime, (t, { nni }) => t.remainingTime = nni * 1000, { order: 4 })
+  .add(TT.IssuedCertName, (t, { vd }) => t.issuedCertName = vd.decode(Name), { order: 6 });
+parameter_kv.parseEvDecoder(EVD, 5);
 
 /** CHALLENGE response packet. */
 export class ChallengeResponse {
@@ -29,24 +32,39 @@ export class ChallengeResponse {
 
   private constructor(public readonly data: Data, plaintext: Uint8Array) {
     EVD.decodeValue(this, new Decoder(plaintext));
-    checkFields(this);
+    checkFieldsByStatus(this);
   }
 }
 export interface ChallengeResponse extends Readonly<ChallengeResponse.Fields> {}
 
-function checkFields({
+function checkFieldsByStatus({
   status,
   challengeStatus,
   remainingTries,
   remainingTime,
+  parameters,
   issuedCertName,
-}: ChallengeResponse.Fields) {
-  if (status === Status.SUCCESS) {
-    if (!issuedCertName) {
-      throw new Error("issuedCertName is required for Status.SUCCESS");
-    }
-  } else if (!challengeStatus || !remainingTries || !remainingTime) {
-    throw new Error("challengeStatus, remainingTries, and remainingTime are required for !Status.SUCCESS");
+}: ChallengeResponse.Fields): () => Encodable[] {
+  switch (status) {
+    case Status.FAILURE:
+      return () => [];
+    case Status.SUCCESS:
+      if (!issuedCertName) {
+        throw new Error("issuedCertName missing");
+      }
+      return () => [
+        [TT.IssuedCertName, issuedCertName],
+      ];
+    default:
+      if (!challengeStatus || !remainingTries || !remainingTime) {
+        throw new Error("challengeStatus, remainingTries, remainingTime missing");
+      }
+      return () => [
+        [TT.ChallengeStatus, toUtf8(challengeStatus)],
+        [TT.RemainingTries, NNI(remainingTries)],
+        [TT.RemainingTime, NNI(remainingTime / 1000)],
+        ...parameter_kv.encode(parameters),
+      ];
   }
 }
 
@@ -56,6 +74,7 @@ export namespace ChallengeResponse {
     challengeStatus?: string;
     remainingTries?: number;
     remainingTime?: number; // milliseconds
+    parameters?: parameter_kv.ParameterKV;
     issuedCertName?: Name;
   }
 
@@ -68,31 +87,16 @@ export namespace ChallengeResponse {
   }
 
   export async function build(opts: Options): Promise<ChallengeResponse> {
-    checkFields(opts);
     const {
       profile,
       sessionEncrypter,
       sessionLocalDecrypter,
       request: { requestId, interest: { name } },
       status,
-      challengeStatus,
-      remainingTries,
-      remainingTime,
-      issuedCertName,
       signer,
     } = opts;
-    const tlvs: EncodableTlv[] = [
-      [TT.Status, NNI(status)],
-    ];
-    if (status === Status.SUCCESS) {
-      tlvs.push([TT.IssuedCertName, issuedCertName]);
-    } else {
-      tlvs.push(
-        [TT.ChallengeStatus, toUtf8(challengeStatus!)],
-        [TT.RemainingTries, NNI(remainingTries!)],
-        [TT.RemainingTime, NNI(remainingTime! / 1000)],
-      );
-    }
+    const tlvs = checkFieldsByStatus(opts)();
+    tlvs.unshift([TT.Status, NNI(status)]);
     const payload = Encoder.encode(tlvs);
 
     const data = new Data();

@@ -1,7 +1,7 @@
-import type { ChallengeRequest } from "../packet/mod";
+import type { ChallengeRequest, ParameterKV } from "../packet/mod";
 
 /** Server side of a challenge. */
-export interface ServerChallenge {
+export interface ServerChallenge<State = any> {
   /** Challenge module identifier. */
   readonly challengeId: string;
 
@@ -12,12 +12,12 @@ export interface ServerChallenge {
   readonly retryLimit: number;
 
   /** Process selection or continuation of the challenge. */
-  process: (request: ChallengeRequest, context: ServerChallengeContext) => Promise<ServerChallengeResponse>;
+  process: (request: ChallengeRequest, context: ServerChallengeContext<State>) => Promise<ServerChallengeResponse>;
 }
 
-export interface ServerChallengeContext {
+export interface ServerChallengeContext<State = unknown> {
   /** Server-side state of the challenge on a request session. */
-  challengeState?: unknown;
+  challengeState?: State;
 }
 
 export interface ServerChallengeResponse {
@@ -38,4 +38,6 @@ export interface ServerChallengeResponse {
    * @default "error"
    */
   challengeStatus?: string;
+
+  parameters?: ParameterKV;
 }

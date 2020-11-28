@@ -31,8 +31,6 @@ const AUTO_ORDER_SKIP = 100;
  */
 type UnknownElementCallback<T> = (target: T, tlv: Decoder.Tlv, order: number) => boolean;
 
-type TopElementCallback<T> = (target: T, tlv: Decoder.Tlv) => void;
-
 function nest<T>(evd: EvDecoder<T>): ElementCallback<T> {
   return (target, { decoder }) => { evd.decode(target, decoder); };
 }
@@ -43,15 +41,27 @@ function isCritical(tt: number): boolean {
   return tt <= 0x1F || tt % 2 === 1;
 }
 
+type TopElementCallback<T> = (target: T, tlv: Decoder.Tlv) => void;
+
+type TargetCallback<T> = (target: T) => void;
+
 /** TLV-VALUE decoder that understands Packet Format v0.3 evolvability guidelines. */
 export class EvDecoder<T> {
-  private topTT: readonly number[];
-  private rules = new Map<number, Rule<T>>();
-  private requiredTlvTypes = new Set<number>();
+  private readonly topTT: readonly number[];
+  private readonly rules = new Map<number, Rule<T>>();
+  private readonly requiredTlvTypes = new Set<number>();
   private nextOrder = AUTO_ORDER_SKIP;
   private isCriticalCb: IsCriticalCallback = isCritical;
   private unknownCb: UnknownElementCallback<T>;
-  private topCb: TopElementCallback<T>;
+
+  /** Callbacks to receive top-level TLV before decoding TLV-VALUE. */
+  public readonly beforeTopCallbacks = [] as Array<TopElementCallback<T>>;
+  /** Callbacks before decoding TLV-VALUE. */
+  public readonly beforeValueCallbacks = [] as Array<TargetCallback<T>>;
+  /** Callbacks after decoding TLV-VALUE. */
+  public readonly afterValueCallbacks = [] as Array<TargetCallback<T>>;
+  /** Callbacks to receive top-level TLV after decoding TLV-VALUE. */
+  public readonly afterTopCallbacks = [] as Array<TopElementCallback<T>>;
 
   /**
    * Constructor.
@@ -62,7 +72,6 @@ export class EvDecoder<T> {
     // eslint-disable-next-line no-negated-condition
     this.topTT = !topTT ? [] : Array.isArray(topTT) ? topTT : [topTT];
     this.unknownCb = () => false;
-    this.topCb = () => undefined;
   }
 
   /**
@@ -105,12 +114,6 @@ export class EvDecoder<T> {
     return this;
   }
 
-  /** Set callback to receive top-level TLV. */
-  public setTop(cb: TopElementCallback<T>): this {
-    this.topCb = cb;
-    return this;
-  }
-
   /** Decode TLV to target object. */
   public decode<R extends T = T>(target: R, decoder: Decoder): R {
     const topTlv = decoder.read();
@@ -118,13 +121,17 @@ export class EvDecoder<T> {
     if (this.topTT.length > 0 && !this.topTT.includes(type)) {
       throw new Error(`TLV-TYPE ${printTT(type)} is not ${this.typeName}`);
     }
-    this.topCb(target, topTlv);
 
-    return this.decodeValue(target, vd);
+    this.beforeTopCallbacks.forEach((cb) => cb(target, topTlv));
+    this.decodeValue(target, vd);
+    this.afterTopCallbacks.forEach((cb) => cb(target, topTlv));
+    return target;
   }
 
   /** Decode TLV-VALUE to target object. */
   public decodeValue<R extends T = T>(target: R, vd: Decoder): R {
+    this.beforeValueCallbacks.forEach((cb) => cb(target));
+
     let currentOrder = 0;
     let currentCount = 0;
     const missingTlvTypes = new Set(this.requiredTlvTypes);
@@ -161,6 +168,8 @@ export class EvDecoder<T> {
     if (missingTlvTypes.size > 0) {
       throw new Error(`TLV-TYPE ${Array.from(missingTlvTypes).map(printTT).join(",")} ${missingTlvTypes.size === 1 ? "is" : "are"} missing in ${this.typeName}`);
     }
+
+    this.afterValueCallbacks.forEach((cb) => cb(target));
     return target;
   }
 

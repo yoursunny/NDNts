@@ -91,6 +91,7 @@ export async function requestCertificate({
       challengeStatus: challengeResponse.challengeStatus!,
       remainingTries: challengeResponse.remainingTries!,
       remainingTime: challengeResponse.remainingTime!,
+      parameters: challengeResponse.parameters ?? {},
     });
   }
 

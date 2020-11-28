@@ -41,10 +41,11 @@ export enum Status {
   CHALLENGE = 1,
   PENDING = 2,
   SUCCESS = 3,
+  FAILURE = 4,
 }
 export namespace Status {
   export const MIN = 0;
-  export const MAX = 3;
+  export const MAX = 4;
 }
 
 export enum ErrorCode {

@@ -3,7 +3,7 @@ import { Component, Name } from "@ndn/packet";
 import { PrefixRegShorter, RepoProducer } from "@ndn/repo";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 
-import { CaProfile, ClientChallenge, ClientCredentialChallenge, ClientNopChallenge, ClientPinChallenge, requestCertificate, Server, ServerChallenge, ServerCredentialChallenge, ServerNopChallenge, ServerPinChallenge } from "../..";
+import { CaProfile, ClientChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, requestCertificate, Server, ServerChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "../..";
 
 interface Row {
   makeChallengeLists: () => Promise<[ServerChallenge[], ClientChallenge[]]>;
@@ -32,7 +32,7 @@ function makePinChallengeWithWrongInputs(nWrongInputs = 0): Row["makeChallengeLi
   };
 }
 
-async function prepareCredentialChallenge(validity = ValidityPeriod.daysFromNow(1)): Promise<{
+async function preparePossessionChallenge(validity = ValidityPeriod.daysFromNow(1)): Promise<{
   rootPvt: NamedSigner.PrivateKey;
   rootPub: NamedVerifier.PublicKey;
   clientPvt: NamedSigner.PrivateKey;
@@ -71,19 +71,19 @@ const TABLE: Row[] = [
   },
   {
     async makeChallengeLists() {
-      const { rootPub, clientCert, clientPvt } = await prepareCredentialChallenge();
+      const { rootPub, clientCert, clientPvt } = await preparePossessionChallenge();
       return [
-        [new ServerCredentialChallenge(rootPub)],
-        [new ClientCredentialChallenge(clientCert, clientPvt)],
+        [new ServerPossessionChallenge(rootPub)],
+        [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
   },
   {
     async makeChallengeLists() {
-      const { rootPub, clientCert } = await prepareCredentialChallenge();
+      const { rootPub, clientCert } = await preparePossessionChallenge();
       return [
-        [new ServerCredentialChallenge(rootPub)],
-        [new ClientCredentialChallenge(clientCert, async () => Uint8Array.of(0xBB))],
+        [new ServerPossessionChallenge(rootPub)],
+        [new ClientPossessionChallenge(clientCert, async () => Uint8Array.of(0xBB))],
       ];
     },
     clientShouldFail: true, // bad signature
@@ -92,12 +92,12 @@ const TABLE: Row[] = [
     async makeChallengeLists() {
       const now = Date.now();
       const { rootPub, clientCert, clientPvt } =
-        await prepareCredentialChallenge(new ValidityPeriod(now - 7200000, now - 3600000));
+        await preparePossessionChallenge(new ValidityPeriod(now - 7200000, now - 3600000));
       jest.spyOn(clientCert.data, "encodeTo")
         .mockImplementation((encoder) => encoder.prependValue(Uint8Array.of(0xDD)));
       return [
-        [new ServerCredentialChallenge(rootPub)],
-        [new ClientCredentialChallenge(clientCert, clientPvt)],
+        [new ServerPossessionChallenge(rootPub)],
+        [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
     clientShouldFail: true, // bad certificate encoding
@@ -106,21 +106,21 @@ const TABLE: Row[] = [
     async makeChallengeLists() {
       const now = Date.now();
       const { rootPub, clientCert, clientPvt } =
-        await prepareCredentialChallenge(new ValidityPeriod(now - 7200000, now - 3600000));
+        await preparePossessionChallenge(new ValidityPeriod(now - 7200000, now - 3600000));
       return [
-        [new ServerCredentialChallenge(rootPub)],
-        [new ClientCredentialChallenge(clientCert, clientPvt)],
+        [new ServerPossessionChallenge(rootPub)],
+        [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
     clientShouldFail: true, // expired certificate
   },
   {
     async makeChallengeLists() {
-      const { rootPub, clientPvt, clientPub } = await prepareCredentialChallenge();
+      const { rootPub, clientPvt, clientPub } = await preparePossessionChallenge();
       const clientSelfCert = await Certificate.selfSign({ privateKey: clientPvt, publicKey: clientPub });
       return [
-        [new ServerCredentialChallenge(rootPub)],
-        [new ClientCredentialChallenge(clientSelfCert, clientPvt)],
+        [new ServerPossessionChallenge(rootPub)],
+        [new ClientPossessionChallenge(clientSelfCert, clientPvt)],
       ];
     },
     clientShouldFail: true, // client certificate not trusted
