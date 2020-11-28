@@ -85,4 +85,6 @@ test("constrain", () => {
   expect(() => NNI.constrain(Number.MAX_VALUE, "XXXX")).toThrow(/XXXX/);
   expect(NNI.constrain(8, "XXXX", 8)).toBe(8);
   expect(() => NNI.constrain(9, "XXXX", 8)).toThrow(/XXXX/);
+  expect(NNI.constrain(2, "XXXX", 2, 6)).toBe(2);
+  expect(() => NNI.constrain(1, "XXXX", 2, 6)).toThrow(/XXXX/);
 });

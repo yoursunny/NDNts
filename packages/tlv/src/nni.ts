@@ -201,12 +201,19 @@ export namespace NNI {
     return decode32(dv);
   }
 
+  /** Error if n exceeds [0,MAX_SAFE_INTEGER] range. */
+  export function constrain(n: number, typeName: string): number;
+  /** Error if n exceeds [0,max] range. */
+  export function constrain(n: number, typeName: string, max: number): number;
   /** Error if n exceeds [min,max] range. */
-  export function constrain(n: number, typeName: string,
-      max: number = Number.MAX_SAFE_INTEGER, min = 0): number {
-    if (n >= min && n <= max) {
-      return Math.floor(n);
+  export function constrain(n: number, typeName: string, min: number, max?: number): number;
+
+  export function constrain(n: number, typeName: string, limit0?: number, limit1?: number): number {
+    const [min = 0, max = Number.MAX_SAFE_INTEGER] =
+      typeof limit1 === "number" ? [limit0, limit1] : [0, limit0];
+    if (n < min || n > max) {
+      throw new RangeError(`${n} is out of ${typeName} valid range`);
     }
-    throw new RangeError(`${n} is out of ${typeName} valid range`);
+    return Math.floor(n);
   }
 }

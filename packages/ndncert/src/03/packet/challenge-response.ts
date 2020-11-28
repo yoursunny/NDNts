@@ -7,7 +7,7 @@ import type { ChallengeRequest } from "./challenge-request";
 import * as encrypted_payload from "./encrypted";
 
 const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse", undefined)
-  .add(TT.Status, (t, { nni }) => t.status = NNI.constrain(nni, "Status", Status.MAX, Status.MIN), { required: true })
+  .add(TT.Status, (t, { nni }) => t.status = NNI.constrain(nni, "Status", Status.MIN, Status.MAX), { required: true })
   .add(TT.ChallengeStatus, (t, { text }) => t.challengeStatus = text)
   .add(TT.RemainingTries, (t, { nni }) => t.remainingTries = nni)
   .add(TT.RemainingTime, (t, { nni }) => t.remainingTime = nni * 1000)
