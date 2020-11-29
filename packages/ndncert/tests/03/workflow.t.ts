@@ -1,3 +1,5 @@
+import "@ndn/packet/test-fixture/expect";
+
 import { Certificate, ECDSA, generateSigningKey, NamedSigner, NamedVerifier, RSA, ValidityPeriod } from "@ndn/keychain";
 import { Component, Name } from "@ndn/packet";
 import { PrefixRegShorter, RepoProducer } from "@ndn/repo";
@@ -73,10 +75,32 @@ const TABLE: Row[] = [
     async makeChallengeLists() {
       const { rootPub, clientCert, clientPvt } = await preparePossessionChallenge();
       return [
-        [new ServerPossessionChallenge(rootPub)],
+        [new ServerPossessionChallenge(rootPub)], // assignment policy not specified
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
+  },
+  {
+    async makeChallengeLists() {
+      const { rootPub, clientCert, clientPvt } = await preparePossessionChallenge();
+      return [
+        [new ServerPossessionChallenge(rootPub, async (newSubjectName, oldCert) => {
+          expect(newSubjectName).toEqualName("/requester");
+          expect(oldCert).toHaveName(clientCert.name);
+        })],
+        [new ClientPossessionChallenge(clientCert, clientPvt)],
+      ];
+    },
+  },
+  {
+    async makeChallengeLists() {
+      const { rootPub, clientCert, clientPvt } = await preparePossessionChallenge();
+      return [
+        [new ServerPossessionChallenge(rootPub, () => Promise.reject(new Error("no-assign")))],
+        [new ClientPossessionChallenge(clientCert, clientPvt)],
+      ];
+    },
+    clientShouldFail: true, // assignment policy rejects
   },
   {
     async makeChallengeLists() {
@@ -90,9 +114,7 @@ const TABLE: Row[] = [
   },
   {
     async makeChallengeLists() {
-      const now = Date.now();
-      const { rootPub, clientCert, clientPvt } =
-        await preparePossessionChallenge(new ValidityPeriod(now - 7200000, now - 3600000));
+      const { rootPub, clientCert, clientPvt } = await preparePossessionChallenge();
       jest.spyOn(clientCert.data, "encodeTo")
         .mockImplementation((encoder) => encoder.prependValue(Uint8Array.of(0xDD)));
       return [

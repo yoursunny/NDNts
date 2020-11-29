@@ -1,3 +1,5 @@
+import type { Name } from "@ndn/packet";
+
 import type { ChallengeRequest, ParameterKV } from "../packet/mod";
 
 /** Server side of a challenge. */
@@ -16,6 +18,8 @@ export interface ServerChallenge<State = any> {
 }
 
 export interface ServerChallengeContext<State = unknown> {
+  readonly subjectName: Name;
+
   /** Server-side state of the challenge on a request session. */
   challengeState?: State;
 }

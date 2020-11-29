@@ -7,7 +7,7 @@ import assert from "minimalistic-assert";
 
 import * as crypto from "../crypto-common";
 import { CaProfile, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, NewRequest, NewResponse, Status, Verb } from "../packet/mod";
-import type { ServerChallenge } from "./challenge";
+import type { ServerChallenge, ServerChallengeContext } from "./challenge";
 
 export interface ServerOptions {
   /** Endpoint for communication. */
@@ -115,13 +115,7 @@ export class Server {
     const { privateKey: ecdhPvt, publicKey: ecdhPub } = await crypto.generateEcdhKey();
     const sessionKey = await crypto.makeSessionKey(ecdhPvt, request.ecdhPub, salt, requestId);
 
-    this.state.set(requestIdHex, {
-      expiry: Date.now() + BEFORE_CHALLENGE_EXPIRY,
-      sessionKey,
-      certRequestPub: request.publicKey,
-      validityPeriod: request.certRequest.validity,
-      status: Status.BEFORE_CHALLENGE,
-    });
+    this.state.set(requestIdHex, new Context(request, sessionKey));
 
     const response = await NewResponse.build({
       profile: this.profile,
@@ -255,13 +249,24 @@ export class Server {
 
 const BEFORE_CHALLENGE_EXPIRY = 60000;
 
-interface Context {
-  expiry: number;
-  sessionKey: crypto.SessionKey;
-  certRequestPub: NamedVerifier.PublicKey;
-  validityPeriod: ValidityPeriod;
-  status: Status;
-  challengeId?: string;
-  challengeState?: unknown;
-  challengeRemainingTries?: number;
+class Context implements ServerChallengeContext {
+  constructor(
+      request: NewRequest,
+      public readonly sessionKey: crypto.SessionKey,
+  ) {
+    this.certRequestPub = request.publicKey;
+    this.validityPeriod = request.certRequest.validity;
+  }
+
+  public get subjectName() {
+    return CertNaming.parseKeyName(this.certRequestPub.name).subjectName;
+  }
+
+  public expiry = Date.now() + BEFORE_CHALLENGE_EXPIRY;
+  public readonly certRequestPub: NamedVerifier.PublicKey;
+  public readonly validityPeriod: ValidityPeriod;
+  public status = Status.BEFORE_CHALLENGE;
+  public challengeId?: string;
+  public challengeState?: unknown;
+  public challengeRemainingTries?: number;
 }

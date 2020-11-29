@@ -1,5 +1,5 @@
 import { Certificate, KeyChainImplWebCrypto, SigningAlgorithm, SigningAlgorithmList } from "@ndn/keychain";
-import { Data, Verifier } from "@ndn/packet";
+import { Data, Name, Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
 import type { ChallengeRequest } from "../packet/mod";
@@ -23,17 +23,21 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
 
   /**
    * Constructor.
-   * @param verifier a verifier to accept or reject a credential certificate.
+   * @param verifier a verifier to accept or reject an existing certificate presented by client.
    *                 This may be a public key of the expected issuer or a trust schema validator.
+   * @param assignmentPolicy name assignment policy callback. Default permits all assignments.
    */
-  constructor(private readonly verifier: Verifier) {
+  constructor(
+      private readonly verifier: Verifier,
+      private readonly assignmentPolicy?: ServerPossessionChallenge.AssignmentPolicy,
+  ) {
   }
 
   public process(request: ChallengeRequest, context: ServerChallengeContext<State>): Promise<ServerChallengeResponse> {
     if (!context.challengeState) {
       return this.process0(request, context);
     }
-    return this.process1(request, context.challengeState);
+    return this.process1(request, context);
   }
 
   private async process0(request: ChallengeRequest, context: ServerChallengeContext<State>): Promise<ServerChallengeResponse> {
@@ -52,8 +56,11 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
     };
   }
 
-  private async process1(request: ChallengeRequest,
-      { cert: certWire, nonce }: State): Promise<ServerChallengeResponse> {
+  private async process1(
+      request: ChallengeRequest,
+      { subjectName, challengeState }: ServerChallengeContext<State>,
+  ): Promise<ServerChallengeResponse> {
+    const { cert: certWire, nonce } = challengeState!;
     const { proof } = request.parameters;
     if (!proof) {
       return invalidResponse;
@@ -66,6 +73,7 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
         return invalidResponse;
       }
       await this.verifier.verify(data);
+      await this.assignmentPolicy?.(subjectName, cert);
 
       const [algo, key] = await cert.importPublicKey(SigningAlgorithmList);
       const llVerify = (algo as SigningAlgorithm<any, true>).makeLLVerify(key);
@@ -76,4 +84,12 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
 
     return { success: true };
   }
+}
+
+export namespace ServerPossessionChallenge {
+  /**
+   * Callback to determine whether the owner of `oldCert` is allowed to obtain a certificate
+   * of `newSubjectName`. It should throw to disallow assignment.
+   */
+  export type AssignmentPolicy = (newSubjectName: Name, oldCert: Certificate) => Promise<void>;
 }

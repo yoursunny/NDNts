@@ -31,7 +31,7 @@
     "@ndn/nfdmgmt": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "@strattadb/environment": "^8.0.1",
+    "@strattadb/environment": "^8.0.2",
     "dotenv": "^8.2.0",
     "tslib": "^2.0.3"
   }
