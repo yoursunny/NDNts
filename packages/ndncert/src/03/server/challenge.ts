@@ -1,6 +1,6 @@
 import type { Name } from "@ndn/packet";
 
-import type { ChallengeRequest, ParameterKV } from "../packet/mod";
+import type { CaProfile, ChallengeRequest, ParameterKV } from "../packet/mod";
 
 /** Server side of a challenge. */
 export interface ServerChallenge<State = any> {
@@ -18,7 +18,9 @@ export interface ServerChallenge<State = any> {
 }
 
 export interface ServerChallengeContext<State = unknown> {
+  readonly profile: CaProfile;
   readonly subjectName: Name;
+  readonly keyName: Name;
 
   /** Server-side state of the challenge on a request session. */
   challengeState?: State;

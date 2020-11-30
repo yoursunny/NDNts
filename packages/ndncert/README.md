@@ -19,7 +19,7 @@ This package partially implements [NDN Certificate Management protocol v0.3](htt
   * [ ] probe
   * [X] basic issuance workflow
   * [X] PIN challenge
-  * [ ] email challenge
+  * [X] email challenge
   * [X] proof of possession challenge
   * [X] publish certificate
   * [ ] proper error messages
@@ -27,7 +27,7 @@ This package partially implements [NDN Certificate Management protocol v0.3](htt
   * [ ] probe
   * [X] basic issuance workflow
   * [X] PIN challenge
-  * [ ] email challenge
+  * [X] email challenge
   * [X] proof of possession challenge
   * [X] retrieve certificate
   * [X] handle error messages

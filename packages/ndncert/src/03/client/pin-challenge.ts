@@ -1,25 +1,15 @@
-import { toUtf8 } from "@ndn/tlv";
-
 import type { ParameterKV } from "../packet/mod";
-import type { ClientChallenge, ClientChallengeContext } from "./challenge";
+import { ClientPinLikeChallenge } from "./pin-like-challenge";
 
-/** The "pin" challenge where client must submit a server-generated pin code to the server. */
-export class ClientPinChallenge implements ClientChallenge {
+/** The "pin" challenge where client receives a pin code through offline means. */
+export class ClientPinChallenge extends ClientPinLikeChallenge {
   public readonly challengeId = "pin";
 
-  /**
-   * Constructor.
-   * @param prompt a callback function to prompt the user for a PIN code.
-   */
-  constructor(private readonly prompt: (context: ClientChallengeContext) => Promise<string>) {
+  constructor(protected readonly prompt: ClientPinLikeChallenge.Prompt) {
+    super();
   }
 
   public async start(): Promise<ParameterKV> {
     return {};
-  }
-
-  public async next(context: ClientChallengeContext): Promise<ParameterKV> {
-    const pin = await this.prompt(context);
-    return { code: toUtf8(pin) };
   }
 }

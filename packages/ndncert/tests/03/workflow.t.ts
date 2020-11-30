@@ -1,11 +1,13 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Certificate, ECDSA, generateSigningKey, NamedSigner, NamedVerifier, RSA, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, ECDSA, generateSigningKey, NamedSigner, NamedVerifier, RSA, ValidityPeriod } from "@ndn/keychain";
 import { Component, Name } from "@ndn/packet";
 import { PrefixRegShorter, RepoProducer } from "@ndn/repo";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
+import { toHex } from "@ndn/tlv";
+import { createTransport as createMT, SentMessageInfo } from "nodemailer";
 
-import { CaProfile, ClientChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, requestCertificate, Server, ServerChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "../..";
+import { CaProfile, ClientChallenge, ClientChallengeContext, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, requestCertificate, Server, ServerChallenge, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "../..";
 
 interface Row {
   makeChallengeLists: () => Promise<[ServerChallenge[], ClientChallenge[]]>;
@@ -70,6 +72,45 @@ const TABLE: Row[] = [
   {
     makeChallengeLists: makePinChallengeWithWrongInputs(3),
     clientShouldFail: true, // exceed retry limit
+  },
+  {
+    async makeChallengeLists() {
+      const emailsent = jest.fn<void, [Uint8Array, SentMessageInfo]>();
+      const emailerror = jest.fn<void, [Uint8Array, Error]>();
+      const server = new ServerEmailChallenge({
+        mail: createMT({ jsonTransport: true }),
+        template: {
+          from: "ca@example.com",
+          subject: "NDNCERT $caPrefix$ email challenge for $requestId$",
+          text: "$subjectName$\n$keyName$\n$pin$\n$pin$",
+        },
+        assignmentPolicy: async (newSubjectName: Name, email: string) => {
+          expect(newSubjectName).toEqualName("/requester");
+          expect(email).toBe("user@example.com");
+        },
+      });
+      server.on("emailsent", emailsent);
+      server.on("emailerror", emailerror);
+      return [
+        [server],
+        [new ClientEmailChallenge("user@example.com", async (context: ClientChallengeContext) => {
+          expect(emailerror).not.toHaveBeenCalled();
+          expect(emailsent).toHaveBeenCalledTimes(1);
+          const [sentRequestId, { envelope, message }] = emailsent.mock.calls[0]!;
+          expect(sentRequestId).toEqualUint8Array(context.requestId);
+          expect(envelope.from).toBe("ca@example.com");
+          expect(envelope.to).toStrictEqual(["user@example.com"]);
+          const msg = JSON.parse(message);
+          expect(msg.subject).toBe(`NDNCERT /authority/CA email challenge for ${toHex(context.requestId)}`);
+          const lines = msg.text.split("\n");
+          expect(lines).toHaveLength(4);
+          expect(new Name(lines[0])).toEqualName("/requester");
+          expect(CertNaming.isKeyName(new Name(lines[1]))).toBeTruthy();
+          expect(lines[2]).toBe(lines[3]);
+          return lines[2];
+        })],
+      ];
+    },
   },
   {
     async makeChallengeLists() {

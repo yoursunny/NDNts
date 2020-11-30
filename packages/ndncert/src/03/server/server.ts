@@ -48,10 +48,10 @@ export class Server {
       Component.from(issuerId));
   }
 
-  private state = new Map<string, Context>();
+  private readonly state = new Map<string, Context>();
   private cleanupTimer: NodeJS.Timeout;
-  private producers: Producer[];
-  private signedInterestPolicy = crypto.makeSignedInterestPolicy();
+  private readonly producers: Producer[];
+  private readonly signedInterestPolicy = crypto.makeSignedInterestPolicy();
 
   private constructor(
       endpoint: Endpoint,
@@ -115,7 +115,7 @@ export class Server {
     const { privateKey: ecdhPvt, publicKey: ecdhPub } = await crypto.generateEcdhKey();
     const sessionKey = await crypto.makeSessionKey(ecdhPvt, request.ecdhPub, salt, requestId);
 
-    this.state.set(requestIdHex, new Context(request, sessionKey));
+    this.state.set(requestIdHex, new Context(request, sessionKey, this.profile));
 
     const response = await NewResponse.build({
       profile: this.profile,
@@ -253,6 +253,7 @@ class Context implements ServerChallengeContext {
   constructor(
       request: NewRequest,
       public readonly sessionKey: crypto.SessionKey,
+      public readonly profile: CaProfile,
   ) {
     this.certRequestPub = request.publicKey;
     this.validityPeriod = request.certRequest.validity;
@@ -260,6 +261,10 @@ class Context implements ServerChallengeContext {
 
   public get subjectName() {
     return CertNaming.parseKeyName(this.certRequestPub.name).subjectName;
+  }
+
+  public get keyName() {
+    return this.certRequestPub.name;
   }
 
   public expiry = Date.now() + BEFORE_CHALLENGE_EXPIRY;
