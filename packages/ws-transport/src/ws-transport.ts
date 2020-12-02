@@ -1,7 +1,6 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
+import type { AbortSignal } from "abort-controller";
 import EventIterator from "event-iterator";
-import PCancelable from "p-cancelable";
-import pTimeout from "p-timeout";
 
 import { makeWebSocket } from "./ws_node";
 
@@ -69,8 +68,13 @@ export namespace WsTransport {
   export interface Options {
     /** Connect timeout (in milliseconds). */
     connectTimeout?: number;
+
+    /** AbortSignal that allows canceling connection attempt via AbortController. */
+    signal?: AbortSignal;
+
     /** Buffer amount (in bytes) to start TX throttling. */
     highWaterMark?: number;
+
     /** Buffer amount (in bytes) to stop TX throttling. */
     lowWaterMark?: number;
   }
@@ -81,19 +85,35 @@ export namespace WsTransport {
    * @param opts other options.
    */
   export function connect(uri: string, opts: WsTransport.Options = {}): Promise<WsTransport> {
-    return pTimeout(new PCancelable<WsTransport>((resolve, reject, onCancel) => {
+    const {
+      connectTimeout = 10000,
+      signal,
+    } = opts;
+
+    return new Promise<WsTransport>((resolve, reject) => {
       const sock = makeWebSocket(uri);
+
+      const fail = (err?: Error) => {
+        sock.close();
+        reject(err);
+      };
+      setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
+
+      const onabort = () => fail(new Error("abort"));
+      signal?.addEventListener("abort", () => onabort);
+
       const onerror = (evt: Event) => {
         reject(new Error((evt as ErrorEvent).message));
         sock.close();
       };
       sock.addEventListener("error", onerror);
+
       sock.addEventListener("open", () => {
         sock.removeEventListener("error", onerror);
+        signal?.removeEventListener("abort", onabort);
         resolve(new WsTransport(sock, opts));
       });
-      onCancel(() => sock.close());
-    }), opts.connectTimeout ?? 10000);
+    });
   }
 
   /** Create a transport and add to forwarder. */

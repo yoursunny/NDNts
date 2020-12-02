@@ -30,7 +30,7 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "p-cancelable": "^2.0.0",
+    "abort-controller": "^3.0.0",
     "tslib": "^2.0.3"
   },
   "devDependencies": {

@@ -4,6 +4,7 @@ import { Endpoint, Producer } from "@ndn/endpoint";
 import { generateSigningKey } from "@ndn/keychain";
 import { Version } from "@ndn/naming-convention2";
 import { Name, Signer, Verifier } from "@ndn/packet";
+import { AbortController } from "abort-controller";
 
 import { retrieveMetadata, serveMetadata } from "..";
 
@@ -38,7 +39,8 @@ test("retrieve verify", async () => {
 });
 
 test("retrieve cancel", async () => {
-  const promise = retrieveMetadata("/Z/32=metadata");
-  setTimeout(() => promise.cancel(), 10);
+  const abort = new AbortController();
+  const promise = retrieveMetadata("/Z/32=metadata", { signal: abort.signal });
+  setTimeout(() => abort.abort(), 10);
   await expect(promise).rejects.toThrow();
 });

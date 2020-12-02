@@ -5,6 +5,7 @@ import { Forwarder } from "@ndn/fw";
 import { Segment as Segment1, Version as Version1 } from "@ndn/naming-convention1";
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
 import { Data, Interest, Name } from "@ndn/packet";
+import { AbortController } from "abort-controller";
 
 import { BufferChunkSource, ChunkSource, discoverVersion, serve, Server, serveVersioned } from "..";
 
@@ -81,7 +82,8 @@ test.each(wrongNames)("discover wrong name %#", async (dataName) => {
 });
 
 test("discover cancel", async () => {
-  const p = discoverVersion(new Name("/A"));
-  setTimeout(() => p.cancel(), 100);
+  const abort = new AbortController();
+  const p = discoverVersion(new Name("/A"), { signal: abort.signal });
+  setTimeout(() => abort.abort(), 100);
   await expect(p).rejects.toThrow();
 });

@@ -1,7 +1,7 @@
 import { CancelInterest, Forwarder, FwPacket } from "@ndn/fw";
 import { Data, FwHint, Interest, NameLike, Verifier } from "@ndn/packet";
+import type { AbortSignal } from "abort-controller";
 import pushable from "it-pushable";
-import PCancelable from "p-cancelable";
 
 import { makeRetxGenerator, RetxPolicy } from "./retx";
 
@@ -63,6 +63,9 @@ export interface Options {
    */
   retx?: RetxPolicy;
 
+  /** AbortSignal that allows canceling the Interest via AbortController. */
+  signal?: AbortSignal;
+
   /**
    * Data verifier.
    * Default is no verification.
@@ -76,7 +79,7 @@ export interface Options {
  * This is a Promise that resolves with the retrieved Data, and rejects upon timeout.
  * Calling .cancel() cancels Data retrieval and rejects the Promise.
  */
-export type Context = PCancelable<Data> & {
+export type Context = Promise<Data> & {
   readonly interest: Interest;
   readonly nRetx: number;
 };
@@ -93,6 +96,7 @@ export class EndpointConsumer {
       describe = `consume(${interest.name})`,
       modifyInterest,
       retx,
+      signal,
       verifier,
     } = { ...this.opts, ...opts };
 
@@ -103,13 +107,15 @@ export class EndpointConsumer {
     let nRetx = -1;
     const retxGen = makeRetxGenerator(retx)(interest.lifetime)[Symbol.iterator]();
 
-    const promise = new PCancelable<Data>((resolve, reject, onCancel) => {
+    const promise = new Promise<Data>((resolve, reject) => {
       const rx = pushable<FwPacket>();
+
       let timer: NodeJS.Timeout|undefined;
       const cancelRetx = () => {
         if (timer) { clearTimeout(timer); }
         timer = undefined;
       };
+
       const sendInterest = () => {
         cancelRetx();
         const { value, done } = retxGen.next() as IteratorYieldResult<number>;
@@ -119,6 +125,12 @@ export class EndpointConsumer {
         rx.push(FwPacket.create(interest));
         ++nRetx;
       };
+
+      const onabort = () => {
+        cancelRetx();
+        rx.push(new CancelInterest(interest));
+      };
+      signal?.addEventListener("abort", onabort);
 
       this.fw.addFace({
         rx,
@@ -140,6 +152,7 @@ export class EndpointConsumer {
             }
           }
           cancelRetx();
+          signal?.removeEventListener("abort", onabort);
           rx.end();
         },
       },
@@ -149,11 +162,6 @@ export class EndpointConsumer {
       });
 
       sendInterest();
-      onCancel(() => {
-        cancelRetx();
-        rx.push(new CancelInterest(interest));
-      });
-      onCancel.shouldReject = false;
     });
 
     return Object.defineProperties(promise, {

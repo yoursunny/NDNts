@@ -1,7 +1,6 @@
 import { L3Face, StreamTransport } from "@ndn/l3face";
+import type { AbortSignal } from "abort-controller";
 import * as net from "net";
-import PCancelable from "p-cancelable";
-import pTimeout from "p-timeout";
 
 const DEFAULT_PORT = 6363;
 
@@ -25,6 +24,9 @@ export namespace TcpTransport {
   export interface Options {
     /** Connect timeout (in milliseconds). */
     connectTimeout?: number;
+
+    /** AbortSignal that allows canceling connection attempt via AbortController. */
+    signal?: AbortSignal;
   }
 
   /**
@@ -42,25 +44,37 @@ export namespace TcpTransport {
   export function connect(opts: NetConnectOpts&Options): Promise<TcpTransport>;
 
   export function connect(arg1?: string|(NetConnectOpts&Options), port = DEFAULT_PORT,
-      { connectTimeout = 10000 }: Options = {}): Promise<TcpTransport> {
+      opts: Options = {}): Promise<TcpTransport> {
     const connectOpts: net.TcpNetConnectOpts =
       typeof arg1 === "undefined" ? { port } :
       typeof arg1 === "string" ? { host: arg1, port } :
-      { connectTimeout, port, ...arg1 };
-    if (typeof arg1 === "object") {
-      connectTimeout = arg1.connectTimeout ?? connectTimeout;
-    }
-    return pTimeout(new PCancelable<TcpTransport>((resolve, reject, onCancel) => {
+      { host: arg1.host, port: arg1.port ?? DEFAULT_PORT };
+    const {
+      connectTimeout = 10000,
+      signal,
+    } = typeof arg1 === "object" ? arg1 : opts;
+
+    return new Promise<TcpTransport>((resolve, reject) => {
       const sock = net.connect(connectOpts);
       sock.setNoDelay(true);
+
+      const fail = (err?: Error) => {
+        sock.destroy();
+        reject(err);
+      };
+      setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
+
+      const onabort = () => fail(new Error("abort"));
+      signal?.addEventListener("abort", () => onabort);
+
       sock.on("error", () => undefined);
-      sock.once("error", reject);
+      sock.once("error", fail);
       sock.once("connect", () => {
-        sock.off("error", reject);
+        sock.off("error", fail);
+        signal?.removeEventListener("abort", onabort);
         resolve(new TcpTransport(sock, connectOpts));
       });
-      onCancel(() => sock.destroy());
-    }), connectTimeout);
+    });
   }
 
   /** Create a transport and add to forwarder. */

@@ -147,15 +147,16 @@ test("abort", async () => {
   const server = serve("/R", new IterableChunkSource(src));
 
   const abort = new AbortController();
+  const signal = abort.signal;
   await Promise.all([
     (async () => {
       await new Promise((r) => setTimeout(r, 150));
       abort.abort();
     })(),
-    expect(fetch(new Name("/R"), { abort })).rejects.toThrow(),
-    expect(consume(fetch(new Name("/R"), { abort }))).rejects.toThrow(),
-    expect(consume(fetch(new Name("/R"), { abort }).chunks())).rejects.toThrow(),
-    expect(consume(fetch(new Name("/R"), { abort }).unordered())).rejects.toThrow(),
+    expect(fetch(new Name("/R"), { signal })).rejects.toThrow(),
+    expect(consume(fetch(new Name("/R"), { signal }))).rejects.toThrow(),
+    expect(consume(fetch(new Name("/R"), { signal }).chunks())).rejects.toThrow(),
+    expect(consume(fetch(new Name("/R"), { signal }).unordered())).rejects.toThrow(),
   ]);
 
   server.close();

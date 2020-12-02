@@ -1,8 +1,8 @@
 import { Endpoint, RetxPolicy } from "@ndn/endpoint";
 import { Interest, Name, NameLike, Verifier } from "@ndn/packet";
-import PCancelable from "p-cancelable";
+import type { AbortSignal } from "abort-controller";
 
-import { decodeMetadataContent, Metadata, MetadataKeyword } from "./metadata";
+import { decodeMetadataContent, MetadataKeyword } from "./metadata";
 
 /**
  * Make RDR discovery Interest.
@@ -16,32 +16,32 @@ export function makeDiscoveryInterest(prefix: NameLike): Interest {
   return new Interest(name, Interest.CanBePrefix, Interest.MustBeFresh);
 }
 
-interface Options {
-  endpoint?: Endpoint;
-  retx?: RetxPolicy;
-  verifier?: Verifier;
-}
-
 /** Retrieve RDR metadata packet. */
-export const retrieveMetadata: (prefix: NameLike, opts?: Options) => PCancelable<Metadata> =
-PCancelable.fn(async (prefix: NameLike, arg2: any, arg3: any) => {
-  const [{
-    endpoint = new Endpoint(),
-    retx,
-    verifier,
-  }, onCancel]: [Options, PCancelable.OnCancelFunction] =
-    typeof arg2 === "function" ? [{}, arg2] : [arg2, arg3];
-
+export async function retrieveMetadata(prefix: NameLike, {
+  endpoint = new Endpoint(),
+  retx,
+  signal,
+  verifier,
+}: retrieveMetadata.Options = {}) {
   const interest = makeDiscoveryInterest(prefix);
   const consumer = endpoint.consume(interest, {
-    retx,
     describe: `RDR-c(${prefix})`,
+    retx,
+    signal,
   });
-  onCancel(() => consumer.cancel());
 
   const data = await consumer;
   if (verifier) {
     await verifier.verify(data);
   }
   return decodeMetadataContent(data.content);
-});
+}
+
+export namespace retrieveMetadata {
+  export interface Options {
+    endpoint?: Endpoint;
+    retx?: RetxPolicy;
+    signal?: AbortSignal;
+    verifier?: Verifier;
+  }
+}

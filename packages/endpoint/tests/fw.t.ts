@@ -5,6 +5,7 @@ import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, Interest, Name } from "@ndn/packet";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
 import { toHex } from "@ndn/tlv";
+import { AbortController } from "abort-controller";
 import { consume } from "streaming-iterables";
 
 import { Endpoint } from "..";
@@ -50,8 +51,9 @@ test("simple", async () => {
       return new Data(interest.name);
     });
 
-  const canceledInterest = ep.consume("/Q/canceled");
-  setTimeout(() => canceledInterest.cancel(), 50);
+  const abort = new AbortController();
+  const canceledInterest = ep.consume("/Q/canceled", { signal: abort.signal });
+  setTimeout(() => abort.abort(), 50);
   await Promise.all([
     expect(ep.consume("/O/no-route", { modifyInterest: { lifetime: 500 } }))
       .rejects.toThrow(),
@@ -191,8 +193,9 @@ describe("tracer", () => {
 
   test("simple", async () => {
     const tracer = FwTracer.enable({ fw });
-    const consumerA = ep.consume("/A");
-    consumerA.cancel();
+    const abort = new AbortController();
+    const consumerA = ep.consume("/A", { signal: abort.signal });
+    abort.abort();
     await expect(consumerA).rejects.toThrow();
 
     const producerB = ep.produce("/B", async () => new Data("/B/1", Data.FreshnessPeriod(1000)));

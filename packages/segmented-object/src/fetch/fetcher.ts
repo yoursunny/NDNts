@@ -1,7 +1,7 @@
 import { Endpoint } from "@ndn/endpoint";
 import { CancelInterest, Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { Data, Interest, Name, Verifier } from "@ndn/packet";
-import type AbortController from "abort-controller";
+import type { AbortSignal } from "abort-controller";
 import { EventEmitter } from "events";
 import type TypedEmitter from "typed-emitter";
 
@@ -37,13 +37,11 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
       describe: `fetch(${name})`,
     });
 
-    opts.abort?.signal.addEventListener("abort", () => {
-      this.emit("error", new Error("abort"));
-      this.close();
-    });
+    opts.signal?.addEventListener("abort", this.handleAbort);
   }
 
   public close() {
+    this.opts.signal?.removeEventListener("abort", this.handleAbort);
     this.logic.close();
     this.face.close();
   }
@@ -96,6 +94,11 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
     }
     this.emit("segment", segNum, data);
   }
+
+  private handleAbort = () => {
+    this.emit("error", new Error("abort"));
+    this.close();
+  };
 }
 
 export namespace Fetcher {
@@ -109,8 +112,8 @@ export namespace Fetcher {
      */
     segmentNumConvention?: SegmentConvention;
 
-    /** Allow aborting fetching process. */
-    abort?: AbortController;
+    /** AbortSignal that allows canceling the Interest via AbortController. */
+    signal?: AbortSignal;
 
     /**
      * InterestLifetime added to RTO.

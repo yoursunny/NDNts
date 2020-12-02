@@ -29,10 +29,10 @@
     "@ndn/fw": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "abort-controller": "^3.0.0",
     "applymixins": "^1.1.0",
     "it-pushable": "^1.4.0",
     "minimalistic-assert": "^1.0.1",
-    "p-cancelable": "^2.0.0",
     "streaming-iterables": "^5.0.3",
     "tslib": "^2.0.3"
   },
