@@ -152,6 +152,9 @@ See `@ndn/ndnsec` package for more information.
 * `--challenge nop` enables "nop" challenge that approves all certificate requests.
 * `--challenge pin` enables "pin" challenge that requires the requester to enter a 6-digit PIN code.
   The correct PIN code is displayed on the console of CA.
+* `--challenge possession` enables "possession" challenge that requires the requester to own a certificate from a specified issuer.
+* `--possession-issuer` specifies filename of issuer certificate to fulfill possession challenge.
+  The default is the CA certificate in the CA profile.
 
 `ndntssec ndncert03-client` command requests a certificate.
 
@@ -161,6 +164,9 @@ See `@ndn/ndnsec` package for more information.
   The key pair must exist in the keychain given in `NDNTS_KEYCHAIN` environment variable, or ndn-cxx keychain if `--ndnsec` is specified.
 * `--challenge nop` enables "nop" challenge.
 * `--challenge pin` enables "pin" challenge.
+* `--challenge possession` enables "possession" challenge.
+* `--possession-cert` specifies existing certificate name to fulfill possession challenge.
+  This is required when enabling possession challenge, and the certificate and the corresponding private key must exist in the keychain.
 * You may specify multiple challenges, and the first one allowed by the server will be used.
 
 CA example:
@@ -208,4 +214,35 @@ ndntssec ndncert03-client --profile /tmp/ca.data --ndnsec --key $REQKEY --challe
 
 # view certificates
 ndnsec list -c
+```
+
+Proof of possession challenge example: (client uses ndn-cxx keychain)
+
+```sh
+# generate "other" issuer key
+ndnsec key-gen -te /O >/dev/null
+ndnsec cert-dump -i /O >/tmp/O.ndncert
+
+# issue "existing" certificate
+ndnsec key-gen -te /E >/tmp/E-self.ndncert
+ndnsec cert-gen -s /O -i ISSUER-O /tmp/E-self.ndncert >/tmp/E.ndncert
+ndnsec cert-install /tmp/E.ndncert
+
+# generate CA key, make CA profile
+CACERT=$(NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec gen-key /A)
+NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec ndncert03-make-profile --out /tmp/ca.data --prefix /localhost/my-ndncert/CA --cert $CACERT --valid-days 60
+
+# start CA with proof of possession challenge
+nfd-start
+NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge possession --possession-issuer /tmp/O.ndncert
+
+# (in another console window)
+# request certificate via NDNCERT using proof of possession challenge
+REQKEY=$(ndnsec list -k | awk '$1=="+->*" && $2 ~ "^/E/" { print $2 }')
+OCERT=$(ndnsec list -c | awk '$1=="+->*" && $2 ~ "^'$REQKEY'/ISSUER-O/" { print $2 }')
+ndntssec ndncert03-client --profile /tmp/ca.data --ndnsec --key $REQKEY --challenge possession --possession-cert $OCERT
+
+# view certificates
+ndnsec list -c
+ndnsec cert-dump -p -i /E
 ```

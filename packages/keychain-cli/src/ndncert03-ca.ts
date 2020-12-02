@@ -1,20 +1,20 @@
 import { openUplinks } from "@ndn/cli-common";
 import { CertNaming } from "@ndn/keychain";
-import { CaProfile, Server, ServerChallenge, ServerNopChallenge, ServerPinChallenge } from "@ndn/ndncert";
-import { Data } from "@ndn/packet";
+import { Server, ServerChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "@ndn/ndncert";
+import type { Verifier } from "@ndn/packet";
 import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
-import { Decoder, toHex } from "@ndn/tlv";
-import { promises as fs } from "graceful-fs";
+import { toHex } from "@ndn/tlv";
 import leveldown from "leveldown";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { keyChain } from "./util";
+import { inputCaProfile, inputCertBase64, keyChain } from "./util";
 
 interface Args {
   profile: string;
   store: string;
   challenge: string[];
+  "possession-issuer"?: string;
 }
 
 export class Ndncert03CaCommand implements CommandModule<{}, Args> {
@@ -36,8 +36,12 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
       .option("challenge", {
         demandOption: true,
         array: true,
-        choices: ["nop", "pin"],
+        choices: ["nop", "pin", "possession"],
         desc: "supported challenges",
+        type: "string",
+      })
+      .option("possession-issuer", {
+        desc: "possession challenge - filename of existing certificate issuer",
         type: "string",
       });
   }
@@ -45,7 +49,7 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
   public async handler(args: Arguments<Args>) {
     await openUplinks();
 
-    const profile = await CaProfile.fromData(new Decoder(await fs.readFile(args.profile)).decode(Data));
+    const profile = await inputCaProfile(args.profile);
     const key = await keyChain.getKey(CertNaming.toKeyName(profile.cert.name), "signer");
 
     const repo = new DataStore(leveldown(args.store));
@@ -63,6 +67,18 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
             stdout.write(`PinChallenge requestId=${toHex(requestId)} pin=${pin}\n`);
           });
           challenges.push(challenge);
+          break;
+        }
+        case "possession": {
+          const { "possession-issuer": issuerFile } = args;
+          let verifier: Verifier;
+          if (issuerFile) {
+            const issuerCert = await inputCertBase64(issuerFile);
+            verifier = await issuerCert.createVerifier();
+          } else {
+            verifier = profile.publicKey;
+          }
+          challenges.push(new ServerPossessionChallenge(verifier));
           break;
         }
       }

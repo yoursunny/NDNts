@@ -69,7 +69,8 @@ test("list find expire", async () => {
   await expect(store.find(new Interest("/A"))).resolves.toBeUndefined();
   await expect(store.find(new Interest("/A/1"))).resolves.toHaveName("/A/1");
   const dataA = await store.find(new Interest("/A", Interest.CanBePrefix));
-  expect(["/8=A/8=1", "/8=A/8=2"]).toContain(dataA?.name.toString());
+  expect(dataA).toBeDefined();
+  expect(["/8=A/8=1", "/8=A/8=2"]).toContain(dataA!.name.toString());
   await expect(store.find(new Interest("/C", Interest.CanBePrefix))).resolves.toBeUndefined();
 
   await store.clearExpired();

@@ -1,9 +1,7 @@
-import { CaProfile } from "@ndn/ndncert";
-import { Data } from "@ndn/packet";
-import { Decoder } from "@ndn/tlv";
-import { promises as fs } from "graceful-fs";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
+
+import { inputCaProfile } from "./util";
 
 interface Args {
   profile: string;
@@ -23,7 +21,7 @@ export class Ndncert03ShowProfileCommand implements CommandModule<{}, Args> {
   }
 
   public async handler(args: Arguments<Args>) {
-    const profile = await CaProfile.fromData(new Decoder(await fs.readFile(args.profile)).decode(Data));
+    const profile = await inputCaProfile(args.profile);
     stdout.write(`${profile}\n`);
   }
 }
