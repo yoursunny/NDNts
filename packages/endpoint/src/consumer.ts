@@ -64,7 +64,7 @@ export interface Options {
   retx?: RetxPolicy;
 
   /** AbortSignal that allows canceling the Interest via AbortController. */
-  signal?: AbortSignal;
+  signal?: AbortSignal|globalThis.AbortSignal;
 
   /**
    * Data verifier.
@@ -130,7 +130,7 @@ export class EndpointConsumer {
         cancelRetx();
         rx.push(new CancelInterest(interest));
       };
-      signal?.addEventListener("abort", onabort);
+      (signal as AbortSignal|undefined)?.addEventListener("abort", onabort);
 
       this.fw.addFace({
         rx,
@@ -152,7 +152,7 @@ export class EndpointConsumer {
             }
           }
           cancelRetx();
-          signal?.removeEventListener("abort", onabort);
+          (signal as AbortSignal|undefined)?.removeEventListener("abort", onabort);
           rx.end();
         },
       },

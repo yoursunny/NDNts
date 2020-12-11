@@ -26,7 +26,7 @@ export namespace TcpTransport {
     connectTimeout?: number;
 
     /** AbortSignal that allows canceling connection attempt via AbortController. */
-    signal?: AbortSignal;
+    signal?: AbortSignal|globalThis.AbortSignal;
   }
 
   /**
@@ -65,13 +65,13 @@ export namespace TcpTransport {
       setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
 
       const onabort = () => fail(new Error("abort"));
-      signal?.addEventListener("abort", () => onabort);
+      (signal as AbortSignal|undefined)?.addEventListener("abort", () => onabort);
 
       sock.on("error", () => undefined);
       sock.once("error", fail);
       sock.once("connect", () => {
         sock.off("error", fail);
-        signal?.removeEventListener("abort", onabort);
+        (signal as AbortSignal|undefined)?.removeEventListener("abort", onabort);
         resolve(new TcpTransport(sock, connectOpts));
       });
     });

@@ -37,11 +37,11 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
       describe: `fetch(${name})`,
     });
 
-    opts.signal?.addEventListener("abort", this.handleAbort);
+    (opts.signal as AbortSignal|undefined)?.addEventListener("abort", this.handleAbort);
   }
 
   public close() {
-    this.opts.signal?.removeEventListener("abort", this.handleAbort);
+    (this.opts.signal as AbortSignal|undefined)?.removeEventListener("abort", this.handleAbort);
     this.logic.close();
     this.face.close();
   }
@@ -113,7 +113,7 @@ export namespace Fetcher {
     segmentNumConvention?: SegmentConvention;
 
     /** AbortSignal that allows canceling the Interest via AbortController. */
-    signal?: AbortSignal;
+    signal?: AbortSignal|globalThis.AbortSignal;
 
     /**
      * InterestLifetime added to RTO.

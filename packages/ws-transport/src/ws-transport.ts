@@ -70,7 +70,7 @@ export namespace WsTransport {
     connectTimeout?: number;
 
     /** AbortSignal that allows canceling connection attempt via AbortController. */
-    signal?: AbortSignal;
+    signal?: AbortSignal|globalThis.AbortSignal;
 
     /** Buffer amount (in bytes) to start TX throttling. */
     highWaterMark?: number;
@@ -100,7 +100,7 @@ export namespace WsTransport {
       setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
 
       const onabort = () => fail(new Error("abort"));
-      signal?.addEventListener("abort", () => onabort);
+      (signal as AbortSignal|undefined)?.addEventListener("abort", () => onabort);
 
       const onerror = (evt: Event) => {
         reject(new Error((evt as ErrorEvent).message));
@@ -110,7 +110,7 @@ export namespace WsTransport {
 
       sock.addEventListener("open", () => {
         sock.removeEventListener("error", onerror);
-        signal?.removeEventListener("abort", onabort);
+        (signal as AbortSignal|undefined)?.removeEventListener("abort", onabort);
         resolve(new WsTransport(sock, opts));
       });
     });
