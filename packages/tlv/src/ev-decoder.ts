@@ -70,7 +70,9 @@ export class EvDecoder<T> {
    */
   constructor(private readonly typeName: string, topTT?: number|readonly number[]) {
     // eslint-disable-next-line no-negated-condition
-    this.topTT = !topTT ? [] : Array.isArray(topTT) ? topTT : [topTT];
+    this.topTT = !topTT ? [] :
+      Array.isArray(topTT) ? (topTT as readonly number[]) :
+      [topTT as number];
     this.unknownCb = () => false;
   }
 

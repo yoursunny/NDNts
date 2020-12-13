@@ -1,6 +1,6 @@
 # NDNts: Named Data Networking libraries for the Modern Web
 
-[![Travis build status](https://img.shields.io/travis/com/yoursunny/NDNts?style=flat&logo=Travis)](https://travis-ci.com/github/yoursunny/NDNts) [![Coveralls code coverage](https://img.shields.io/coveralls/github/yoursunny/NDNts?style=flat&logo=Coveralls)](https://coveralls.io/github/yoursunny/NDNts) [![GitHub code size](https://img.shields.io/github/languages/code-size/yoursunny/NDNts?style=flat&logo=GitHub)](https://github.com/yoursunny/NDNts/) [![Testing Powered By SauceLabs](https://img.shields.io/badge/browser%20testing-SauceLabs-E2231A?style=flat&logo=Sauce%20Labs)](https://saucelabs.com/)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/yoursunny/NDNts/build)](https://github.com/yoursunny/NDNts/actions) [![Coveralls code coverage](https://img.shields.io/coveralls/github/yoursunny/NDNts?style=flat&logo=Coveralls)](https://coveralls.io/github/yoursunny/NDNts) [![GitHub code size](https://img.shields.io/github/languages/code-size/yoursunny/NDNts?style=flat&logo=GitHub)](https://github.com/yoursunny/NDNts/) [![Testing Powered By SauceLabs](https://img.shields.io/badge/browser%20testing-SauceLabs-E2231A?style=flat&logo=Sauce%20Labs)](https://saucelabs.com/)
 
 ![NDNts logo](docs/logo.svg)
 
