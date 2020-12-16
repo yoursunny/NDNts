@@ -152,6 +152,8 @@ See `@ndn/ndnsec` package for more information.
 * `--challenge nop` enables "nop" challenge that approves all certificate requests.
 * `--challenge pin` enables "pin" challenge that requires the requester to enter a 6-digit PIN code.
   The correct PIN code is displayed on the console of CA.
+* `--challenge email` enables "email" challenge.
+  The following environment variables are required when enabling email challenge: `CA_EMAIL_HOST`, `CA_EMAIL_PORT`, `CA_EMAIL_USER`, `CA_EMAIL_PASS`, `CA_EMAIL_FROM`.
 * `--challenge possession` enables "possession" challenge that requires the requester to own a certificate from a specified issuer.
 * `--possession-issuer` specifies filename of issuer certificate to fulfill possession challenge.
   The default is the CA certificate in the CA profile.
@@ -164,12 +166,16 @@ See `@ndn/ndnsec` package for more information.
   The key pair must exist in the keychain given in `NDNTS_KEYCHAIN` environment variable, or ndn-cxx keychain if `--ndnsec` is specified.
 * `--challenge nop` enables "nop" challenge.
 * `--challenge pin` enables "pin" challenge.
+* `--challenge email` enables "email" challenge.
+* `--email` specifies email address to use in the email challenge.
 * `--challenge possession` enables "possession" challenge.
 * `--possession-cert` specifies existing certificate name to fulfill possession challenge.
-  This is required when enabling possession challenge, and the certificate and the corresponding private key must exist in the keychain.
+  The specified certificate and its corresponding private key must exist in the keychain.
 * You may specify multiple challenges, and the first one allowed by the server will be used.
 
-CA example:
+### NDNCERT examples
+
+CA setup with PIN challenge:
 
 ```sh
 # generate CA key
@@ -181,42 +187,67 @@ NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec ndncert03-make-profile --out /tmp/ca.da
 # display CA profile
 ndntssec ndncert03-show-profile --profile /tmp/ca.data
 
-# start CA
+# start CA with PIN challenge
 nfd-start
 NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge pin
 ```
 
-Client example using NDNts keychain:
+Client using PIN challenge, with NDNts keychain:
 
 ```sh
 # generate key pair
 REQCERT=$(NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec gen-key /B)
 REQKEY=$(echo $REQCERT | awk 'BEGIN { FS=OFS="/" } { NF-=2; print }')
 
-# request certificate via NDNCERT
-# (you'll need to enter the PIN shown on CA console)
+# request certificate with PIN challenge; you'll need to enter the PIN shown on CA console
 NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec ndncert03-client --profile /tmp/ca.data --key $REQKEY --challenge pin
 
 # view certificates
 NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec list-certs
 ```
 
-Client example using ndn-cxx keychain:
+Client using PIN challenge, with ndn-cxx keychain:
 
 ```sh
 # generate key pair
 ndnsec key-gen -te /C >/dev/null
 REQKEY=$(ndnsec list -k | awk '$1=="+->*" && $2 ~ "^/C/" { print $2 }')
 
-# request certificate via NDNCERT
-# (you'll need to enter the PIN shown on CA console)
+# request certificate with PIN challenge; you'll need to enter the PIN shown on CA console
 ndntssec ndncert03-client --profile /tmp/ca.data --ndnsec --key $REQKEY --challenge pin
 
 # view certificates
 ndnsec list -c
 ```
 
-Proof of possession challenge example: (client uses ndn-cxx keychain)
+Email challenge, NDNts keychain on client side:
+
+```sh
+# before start, prepare CA profile using commands in the PIN challenge example
+
+export CA_EMAIL_HOST=smtp.ethereal.email
+export CA_EMAIL_PORT=587
+export CA_EMAIL_USER=mireya.hoeger51@ethereal.email
+export CA_EMAIL_PASS=ZMGMfXc1E7NvMr9sJB
+export CA_EMAIL_FROM=$CA_EMAIL_USER
+
+# start CA with email challenge
+nfd-start
+NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge email
+
+# generate key pair
+REQCERT=$(NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec gen-key /M)
+REQKEY=$(echo $REQCERT | awk 'BEGIN { FS=OFS="/" } { NF-=2; print }')
+
+# request certificate with email challenge; you'll need to enter the PIN received from email
+REQEMAIL=someone@example.com
+NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec ndncert03-client --profile /tmp/ca.data --key $REQKEY --challenge email --email $REQEMAIL
+
+# view certificates
+NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec list-certs
+```
+
+Proof of possession challenge, ndn-cxx keychain on client side:
 
 ```sh
 # generate "other" issuer key
@@ -232,12 +263,11 @@ ndnsec cert-install /tmp/E.ndncert
 CACERT=$(NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec gen-key /A)
 NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec ndncert03-make-profile --out /tmp/ca.data --prefix /localhost/my-ndncert/CA --cert $CACERT --valid-days 60
 
-# start CA with proof of possession challenge
+# start CA with possession challenge
 nfd-start
 NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge possession --possession-issuer /tmp/O.ndncert
 
-# (in another console window)
-# request certificate via NDNCERT using proof of possession challenge
+# request certificate with possession challenge
 REQKEY=$(ndnsec list -k | awk '$1=="+->*" && $2 ~ "^/E/" { print $2 }')
 OCERT=$(ndnsec list -c | awk '$1=="+->*" && $2 ~ "^'$REQKEY'/ISSUER-O/" { print $2 }')
 ndntssec ndncert03-client --profile /tmp/ca.data --ndnsec --key $REQKEY --challenge possession --possession-cert $OCERT

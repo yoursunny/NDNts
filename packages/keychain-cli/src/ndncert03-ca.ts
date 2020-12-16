@@ -1,10 +1,12 @@
 import { openUplinks } from "@ndn/cli-common";
 import { CertNaming } from "@ndn/keychain";
-import { Server, ServerChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "@ndn/ndncert";
+import { Server, ServerChallenge, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "@ndn/ndncert";
 import type { Verifier } from "@ndn/packet";
 import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
 import { toHex } from "@ndn/tlv";
+import { makeEnv, parsers } from "@strattadb/environment";
 import leveldown from "leveldown";
+import { createTransport as createMT } from "nodemailer";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
@@ -36,7 +38,7 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
       .option("challenge", {
         demandOption: true,
         array: true,
-        choices: ["nop", "pin", "possession"],
+        choices: ["nop", "pin", "email", "possession"],
         desc: "supported challenges",
         type: "string",
       })
@@ -65,6 +67,72 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
           const challenge = new ServerPinChallenge();
           challenge.on("newpin", (requestId, pin) => {
             stdout.write(`PinChallenge requestId=${toHex(requestId)} pin=${pin}\n`);
+          });
+          challenges.push(challenge);
+          break;
+        }
+        case "email": {
+          const env = makeEnv({
+            host: {
+              envVarName: "CA_EMAIL_HOST",
+              parser: parsers.string,
+              required: true,
+            },
+            port: {
+              envVarName: "CA_EMAIL_PORT",
+              parser: parsers.port,
+              required: false,
+              defaultValue: 587,
+            },
+            user: {
+              envVarName: "CA_EMAIL_USER",
+              parser: parsers.string,
+              required: true,
+            },
+            pass: {
+              envVarName: "CA_EMAIL_PASS",
+              parser: parsers.string,
+              required: true,
+            },
+            from: {
+              envVarName: "CA_EMAIL_FROM",
+              parser: parsers.email,
+              required: true,
+            },
+          });
+          const challenge = new ServerEmailChallenge({
+            mail: createMT({
+              host: env.host,
+              port: env.port,
+              secure: env.port === 465,
+              auth: {
+                user: env.user,
+                pass: env.pass,
+              },
+            }),
+            template: {
+              from: env.from,
+              subject: "NDNCERT email challenge",
+              text: `Hi there
+
+Someone has requested a Named Data Networking certificate from an NDNCERT certificate authority.
+
+Requested subject name: $subjectName$
+Requested key name: $keyName$
+Certificate authority name: $caPrefix$
+Request ID: $requestId$
+
+If this is you, please validate the above information, and enter the following PIN code:
+    $pin$
+
+Otherwise, please disregard this message.`,
+            },
+          });
+          challenge.on("emailsent", (requestId, sent) => {
+            stdout.write(`EmailChallenge requestId=${toHex(requestId)} sent=${JSON.stringify(sent)}\n`);
+          });
+          challenge.on("emailerror", (requestId, err) => {
+            stdout.write(`EmailChallenge requestId=${toHex(requestId)} err=${err}\n`);
           });
           challenges.push(challenge);
           break;

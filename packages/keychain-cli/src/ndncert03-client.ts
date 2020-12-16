@@ -1,6 +1,6 @@
 import { closeUplinks, openUplinks } from "@ndn/cli-common";
 import { CertNaming } from "@ndn/keychain";
-import { ClientChallenge, ClientChallengeContext, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, requestCertificate } from "@ndn/ndncert";
+import { ClientChallenge, ClientChallengeContext, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, requestCertificate } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
@@ -24,6 +24,7 @@ interface Args {
   ndnsec: boolean;
   key: string;
   challenge: string[];
+  email?: string;
   "possession-cert"?: string;
 }
 
@@ -51,8 +52,12 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
       .option("challenge", {
         demandOption: true,
         array: true,
-        choices: ["nop", "pin", "possession"],
+        choices: ["nop", "pin", "email", "possession"],
         desc: "supported challenges",
+        type: "string",
+      })
+      .option("email", {
+        desc: "email challenge - email address",
         type: "string",
       })
       .option("possession-cert", {
@@ -62,6 +67,12 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
       .check(({ key }) => {
         if (!CertNaming.isKeyName(new Name(key))) {
           throw new Error("--key is not a key name");
+        }
+        return true;
+      })
+      .check(({ challenge, email }) => {
+        if (challenge.includes("email") && !email?.includes("@")) {
+          throw new Error("--email is not an email address");
         }
         return true;
       })
@@ -87,6 +98,10 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
           break;
         case "pin": {
           challenges.push(new ClientPinChallenge(promptPin));
+          break;
+        }
+        case "email": {
+          challenges.push(new ClientEmailChallenge(args.email!, promptPin));
           break;
         }
         case "possession": {
