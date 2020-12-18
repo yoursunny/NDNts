@@ -97,18 +97,19 @@ export namespace WsTransport {
         sock.close();
         reject(err);
       };
-      setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
+      const timeout = setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
 
       const onabort = () => fail(new Error("abort"));
       (signal as AbortSignal|undefined)?.addEventListener("abort", () => onabort);
 
       const onerror = (evt: Event) => {
-        reject(new Error((evt as ErrorEvent).message));
         sock.close();
+        reject(new Error((evt as ErrorEvent).message));
       };
       sock.addEventListener("error", onerror);
 
       sock.addEventListener("open", () => {
+        clearTimeout(timeout);
         sock.removeEventListener("error", onerror);
         (signal as AbortSignal|undefined)?.removeEventListener("abort", onabort);
         resolve(new WsTransport(sock, opts));
