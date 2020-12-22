@@ -10,18 +10,27 @@ export type Socket = dgram.Socket;
 
 type SocketOptions = Pick<dgram.SocketOptions, "recvBufferSize"|"sendBufferSize">;
 
-export type OpenSocketOptions = SocketOptions & {
+interface AddressFamilyOption {
+  /**
+   * IPv4 or IPv6.
+   * Default is IPv4, unless `host` is an IPv6 address (contains a colon).
+   */
+  family?: 4|6;
+}
+
+export type OpenSocketOptions = SocketOptions & AddressFamilyOption & {
   /** Bind options, such as local address and port. */
   bind?: dgram.BindOptions;
 };
 
-export async function openSocket({
+async function openSocket({
+  family = 4,
   recvBufferSize,
   sendBufferSize,
   bind = {},
 }: OpenSocketOptions): Promise<Socket> {
   const sock = dgram.createSocket({
-    type: "udp4",
+    type: `udp${family}` as dgram.SocketType,
     reuseAddr: true,
     recvBufferSize,
     sendBufferSize,
@@ -36,7 +45,7 @@ export async function openSocket({
   return sock;
 }
 
-export interface ConnectOptions {
+export interface ConnectOptions extends AddressFamilyOption {
   /** Remote address. */
   host: string;
   /** Remote port. */
@@ -60,6 +69,9 @@ export async function connect(sock: Socket, {
 export type UnicastOptions = OpenSocketOptions & ConnectOptions;
 
 export async function openUnicast(opts: UnicastOptions): Promise<Socket> {
+  if (!opts.family && opts.host.includes(":")) {
+    opts.family = 6;
+  }
   const sock = await openSocket(opts);
   return connect(sock, opts);
 }

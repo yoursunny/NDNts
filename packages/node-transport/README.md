@@ -8,6 +8,7 @@ This package implements socket transports for Node.js environment.
 import { TcpTransport, UdpTransport, UnixTransport } from "@ndn/node-transport";
 
 // other imports for examples
+import { FwPacket } from "@ndn/fw";
 import { L3Face, Transport } from "@ndn/l3face";
 import { Data, Interest, Name } from "@ndn/packet";
 (async () => {
@@ -19,8 +20,8 @@ if (process.env.CI) { return; }
 There are three transport types:
 
 * UnixTransport: Unix socket or Windows named pipe.
-* TcpTransport: TCP tunnel, IPv4 only.
-* UdpTransport: UDP unicast tunnel or UDP multicast group, IPv4 only.
+* TcpTransport: TCP tunnel (IPv4 or IPv6).
+* UdpTransport: UDP unicast tunnel (IPv4 or IPv6) or UDP multicast group (IPv4 only).
 
 The `connect()` function of each transport creates a transport.
 
@@ -30,20 +31,42 @@ The `connect()` function of each transport creates a transport.
 try {
   const unix = await UnixTransport.connect("/run/nfd.sock");
   await useInL3Face(unix);
-} catch (err: unknown) {
-  // This above would throw an error on Windows or if NFD is not running.
-  console.warn(err);
+} catch (err: unknown) { // NFD is not running
+  console.warn("unix", err);
 }
 
 // TcpTransport.connect() establishes a TCP tunnel.
 // It accepts either host+port or an options object for net.createConnection().
-const tcp = await TcpTransport.connect("hobo.cs.arizona.edu", 6363);
-await useInL3Face(tcp);
+try {
+  const tcp4 = await TcpTransport.connect("hobo.cs.arizona.edu", 6363);
+  await useInL3Face(tcp4);
+} catch (err: unknown) { // router unavailable
+  console.warn("tcp4", err);
+}
+
+// Select IPv4 with `family: 4` or select IPv6 with `family: 6`. Default is both.
+try {
+  const tcp6 = await TcpTransport.connect({ host: "ndnhub.ipv6.lip6.fr", family: 6 });
+  await useInL3Face(tcp6);
+} catch (err: unknown) { // router unavailable
+  console.warn("tcp6", err);
+}
 
 // UdpTransport.connect() establishes a UDP tunnel.
-// It supports IPv4 only.
-const udp = await UdpTransport.connect({ host: "hobo.cs.arizona.edu" });
-await useInL3Face(udp);
+try {
+  const udp4 = await UdpTransport.connect("hobo.cs.arizona.edu");
+  await useInL3Face(udp4);
+} catch (err: unknown) { // router unavailable
+  console.warn("udp4", err);
+}
+
+// Select IPv6 with `type: "udp6"`. Default is IPv4 only.
+try {
+  const udp6 = await UdpTransport.connect({ host: "ndnhub.ipv6.lip6.fr", family: 6 });
+  await useInL3Face(udp6);
+} catch (err: unknown) { // router unavailable
+  console.warn("udp6", err);
+}
 ```
 
 To use UDP multicast, each network interface needs to have a separate transport.
@@ -54,11 +77,7 @@ It's easiest to let NDNts automatically create transports on every network inter
 // network interface, skipping network interfaces where socket creation fails.
 const multicasts = await UdpTransport.multicasts();
 multicasts.forEach(async (transport, i) => {
-  if (i === 0) {
-    await useInL3Face(transport);
-  } else {
-    transport.close();
-  }
+  await useInL3Face(transport);
 });
 ```
 
@@ -75,7 +94,7 @@ See `@ndn/ws-transport` package documentation for a complete example of `createF
 // the face to a non-default Forwarder instance. This argument is required.
 // Subsequent parameters are same as the corresponding connect() function.
 // It returns a FwFace instance (from @ndn/fw package).
-const face = await UdpTransport.createFace({}, "hobo.cs.arizona.edu");
+const face = await UdpTransport.createFace({}, "ndnhub.ipv6.lip6.fr");
 face.addRoute(new Name("/ndn"));
 face.close();
 // TcpTransport.createFace() and UnixTransport.createFace() behave similarly.
@@ -113,19 +132,18 @@ async function useInL3Face(transport: Transport) {
         await new Promise((r) => setTimeout(r, 50));
         const interest = new Interest(`/ndn/edu/arizona/ping/NDNts/${seq++}`);
         console.log(`${transport} <I ${interest.name}`);
-        yield interest;
+        yield FwPacket.create(interest);
       }
-      await new Promise((r) => setTimeout(r, 200));
+      await new Promise((r) => setTimeout(r, 500));
     } }),
     (async () => {
       let nData = 0;
-      for await (const pkt of face.rx) {
-        if (!(pkt instanceof Data)) {
+      for await (const { l3 } of face.rx) {
+        if (!(l3 instanceof Data)) {
           continue;
         }
         // Print incoming Data name.
-        const data: Data = pkt;
-        console.log(`${transport} >D ${data.name}`);
+        console.log(`${transport} >D ${l3.name}`);
         if (++nData >= 5) {
           return;
         }

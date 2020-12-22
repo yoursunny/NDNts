@@ -48,7 +48,7 @@ export namespace TcpTransport {
     const connectOpts: net.TcpNetConnectOpts =
       typeof arg1 === "undefined" ? { port } :
       typeof arg1 === "string" ? { host: arg1, port } :
-      { host: arg1.host, port: arg1.port ?? DEFAULT_PORT };
+      { host: arg1.host, port: arg1.port ?? DEFAULT_PORT, family: arg1.family };
     const {
       connectTimeout = 10000,
       signal,

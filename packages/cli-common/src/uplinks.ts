@@ -14,7 +14,7 @@ if (env.pkttrace) {
 function parseHostPort(): { host: string; port: number|undefined } {
   const { hostname, port } = env.uplink;
   return {
-    host: hostname,
+    host: hostname.replace(/^\[|]$/g, ""),
     port: port.length > 0 ? Number.parseInt(port, 10) : undefined,
   };
 }
@@ -30,6 +30,7 @@ async function makeFace(): Promise<FwFace> {
         const faces = await connectToTestbed({
           preferProtocol,
           mtu: env.mtu,
+          count: 4,
           preferFastest: true,
           addRoutes: [],
         });

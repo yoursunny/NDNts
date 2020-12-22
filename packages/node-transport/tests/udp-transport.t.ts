@@ -4,18 +4,21 @@ import { collect } from "streaming-iterables";
 
 import { udp_helper, UdpTransport } from "..";
 
-describe("unicast", () => {
+describe.each([
+  { family: 4, address: "127.0.0.1" },
+  { family: 6, address: "::1" },
+] as Array<{ family: 4|6; address: string }>)("unicast %p", ({ family, address }) => {
   let server: dgram.Socket;
   let serverPort: number;
   const clientPorts = new Set<number>();
 
   beforeEach(async () => {
     server = dgram.createSocket({
-      type: "udp4",
+      type: `udp${family}` as dgram.SocketType,
       reuseAddr: true,
     });
     serverPort = await new Promise<number>((r) =>
-      server.bind({ address: "127.0.0.1" }, () => r(server.address().port)));
+      server.bind({ address }, () => r(server.address().port)));
     server.on("message", (msg, { port }) => {
       for (const clientPort of clientPorts) {
         if (port === clientPort) {
@@ -33,20 +36,24 @@ describe("unicast", () => {
 
   test("pair", async () => {
     const [tA, tB] = await Promise.all([
-      UdpTransport.connect("localhost", serverPort),
-      UdpTransport.connect({ host: "127.0.0.1", port: serverPort, bind: { address: "127.0.0.1" } }),
+      UdpTransport.connect(address, serverPort),
+      UdpTransport.connect({ family, host: "localhost", port: serverPort, bind: { address } }),
     ]);
     clientPorts.add(tA.laddr.port);
     clientPorts.add(tB.laddr.port);
 
     expect(tA.raddr.port).toBe(serverPort);
-    expect(tA.toString()).toBe("UDP(127.0.0.1)");
-    expect(tB.toString()).toBe("UDP(127.0.0.1)");
+    expect(tA.toString()).toBe(`UDP(${address})`);
+    expect(tB.toString()).toBe(`UDP(${address})`);
     TestTransport.check(await TestTransport.execute(tA, tB));
   });
 
   test("RX error", async () => {
-    const transport = await UdpTransport.connect({ port: serverPort, host: "localhost" });
+    const transport = await UdpTransport.connect({
+      port: serverPort,
+      host: "localhost",
+      family,
+    });
     setTimeout(() => server.send(Uint8Array.of(0xF0, 0x01), transport.laddr.port), 200); // incomplete TLV ignored
     await Promise.all([
       expect(collect(transport.rx)).resolves.toHaveLength(0),
