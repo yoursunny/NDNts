@@ -1,4 +1,4 @@
-import { connectToTestbed } from "@ndn/autoconfig";
+import { connect, connectToTestbed } from "@ndn/autoconfig";
 import { FwFace, FwTracer } from "@ndn/fw";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { TcpTransport, UdpTransport, UnixTransport } from "@ndn/node-transport";
@@ -20,7 +20,7 @@ function parseHostPort(): { host: string; port: number|undefined } {
 }
 
 async function makeFace(): Promise<FwFace> {
-  let preferProtocol: connectToTestbed.Options["preferProtocol"];
+  let preferProtocol: connect.PreferProtocol|undefined;
   switch (env.uplink.protocol) {
     case "autoconfig-tcp:":
       preferProtocol = "tcp";
@@ -52,6 +52,7 @@ async function makeFace(): Promise<FwFace> {
 
 let theUplinks: FwFace[]|undefined;
 
+/** Open the uplinks specified by NDNTS_UPLINK environ. */
 export async function openUplinks(): Promise<FwFace[]> {
   if (typeof theUplinks === "undefined") {
     const face = await makeFace();
@@ -69,6 +70,7 @@ export async function openUplinks(): Promise<FwFace[]> {
   return theUplinks;
 }
 
+/** Close the uplinks. */
 export function closeUplinks() {
   if (typeof theUplinks !== "undefined") {
     theUplinks.forEach((uplink) => uplink.close());

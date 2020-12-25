@@ -25,7 +25,7 @@ export async function connect(host: string, opts: connect.Options = {}): Promise
 
   const testConnectionStart = getNow();
   let testConnectionDuration: number;
-  let testConnectionResult: any;
+  let testConnectionResult: unknown;
   try {
     if (typeof tc === "function") {
       testConnectionResult = await tc(face);
@@ -45,11 +45,13 @@ export async function connect(host: string, opts: connect.Options = {}): Promise
 }
 
 export namespace connect {
+  export type PreferProtocol = "udp"|"tcp"|"ws";
+
   export interface Options {
     fw?: Forwarder;
 
     /** Prefer one transport protocol over others. */
-    preferProtocol?: "udp"|"tcp"|"ws";
+    preferProtocol?: PreferProtocol;
 
     /** Override MTU of datagram faces. */
     mtu?: number;
@@ -70,6 +72,6 @@ export namespace connect {
     /** Execution duration of testConnection function. */
     testConnectionDuration: number;
     /** Return value from custom testConnection function. */
-    testConnectionResult: any;
+    testConnectionResult: unknown;
   }
 }

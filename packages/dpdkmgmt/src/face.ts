@@ -6,25 +6,13 @@ import { gql, GraphQLClient } from "graphql-request";
 
 import { NdndpdkPrefixReg } from "./prefix-reg";
 
-export interface OpenFaceOptions {
-  /** NDNts forwarder. */
-  fw?: Forwarder;
-  /** NDNts face attributes. */
-  attributes?: L3Face.Attributes;
-
-  /** Local IP address. */
-  localHost?: string;
-  /** NDN-DPDK GraphQL server. */
-  gqlServer?: string;
-}
-
 /** Open a face on NDN-DPDK. */
 export async function openFace({
   fw = Forwarder.getDefault(),
   attributes = {},
   localHost = "127.0.0.1",
   gqlServer = "http://localhost:3030",
-}: OpenFaceOptions = {}): Promise<FwFace> {
+}: openFace.Options = {}): Promise<FwFace> {
   const sock = await new Promise<dgram.Socket>((resolve, reject) => {
     const sock = dgram.createSocket({ type: "udp4" });
     sock.on("error", reject);
@@ -35,7 +23,14 @@ export async function openFace({
   });
 
   const client = new GraphQLClient(gqlServer);
-  const { createFace: { id, locator: { local: remoteAddr } } } = await client.request(gql`
+  const { createFace: { id, locator: { local: remoteAddr } } } = await client.request<{
+    createFace: {
+      id: string;
+      locator: {
+        local: string;
+      };
+    };
+  }>(gql`
     mutation createFace($locator: JSON!) {
       createFace(locator: $locator) {
         id
@@ -63,12 +58,18 @@ export async function openFace({
 
   await new Promise<void>((resolve, reject) => {
     const [remoteHost, remotePort] = remoteAddr.split(":");
-    sock.on("error", () => {
+    const handleError = () => {
       sock.close();
       reject();
-    });
+    };
+    if (!remoteHost || !remotePort) {
+      handleError();
+      return;
+    }
+
+    sock.once("error", handleError);
     sock.connect(Number.parseInt(remotePort, 10), remoteHost, () => {
-      sock.off("error", reject);
+      sock.off("error", handleError);
       resolve();
     });
   });
@@ -80,4 +81,18 @@ export async function openFace({
     describe: `NDN-DPDK(${id})`,
     ...attributes,
   }));
+}
+
+export namespace openFace {
+  export interface Options {
+    /** NDNts logical forwarder. */
+    fw?: Forwarder;
+    /** NDNts face attributes. */
+    attributes?: L3Face.Attributes;
+
+    /** Local IPv4 address. */
+    localHost?: string;
+    /** NDN-DPDK GraphQL server. */
+    gqlServer?: string;
+  }
 }

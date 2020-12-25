@@ -42,7 +42,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
 
     this.routeOptions = {
       origin: 65,
-      cost: 0x7473, // ASCII of 'ts'
+      cost: 87, // T9 code of 'ts'
       flags: 0x02, // CAPTURE
       ...opts,
     };

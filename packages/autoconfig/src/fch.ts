@@ -1,5 +1,9 @@
 import { FCH_ALWAYS_CAPABILITIES, fetch } from "./platform_node";
 
+/**
+ * Query NDN-FCH (Find Closest Hub) service.
+ * @see https://github.com/named-data/ndn-fch
+ */
 export async function queryFch(opts: queryFch.Options = {}): Promise<string[]> {
   const {
     server = "https://ndn-fch.named-data.net",
@@ -33,7 +37,7 @@ export namespace queryFch {
     /** Required router capabilities. */
     capabilities?: string[];
     /** GPS position in GeoJSON [lon,lat] format, or IpGeolocation. */
-    position?: [number, number] | typeof IpGeolocation;
+    position?: [lon: number, lat: number] | typeof IpGeolocation;
   }
 
   /** Set IP geolocation in Options.position. */

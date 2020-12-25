@@ -28,7 +28,7 @@ if (!gqlServer || !localHost) {
   console.log(`
 To run @ndn/dpdkmgmt demo, set the following environment variables:
 DEMO_DPDKMGMT_GQLSERVER= NDN-DPDK forwarder GraphQL server URI
-DEMO_DPDKMGMT_LOCAL= IP address to reach local host from NDN-DPDK forwarder
+DEMO_DPDKMGMT_LOCAL= IPv4 address to reach local host from NDN-DPDK forwarder
 `);
   return;
 }

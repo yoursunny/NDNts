@@ -5,17 +5,10 @@ import { connect } from "./connect";
 import { queryFch } from "./fch";
 import { getDefaultGateway } from "./platform_node";
 
-interface Options {
-  /** List of routers to use in case FCH request fails. */
-  fchFallback?: string[];
-  /** Maximum number of faces to establish. */
-  count?: number;
-  /** Consider default IPv4 gateway as a candidate. */
-  tryDefaultGateway?: boolean;
-  /** Choose one face with fastest testConnection completion and close others. */
-  preferFastest?: boolean;
-}
-
+/**
+ * Connect to the NDN research testbed.
+ * @see https://named-data.net/ndn-testbed/
+ */
 export async function connectToTestbed(opts: connectToTestbed.Options = {}): Promise<FwFace[]> {
   const {
     fchFallback = [],
@@ -45,8 +38,15 @@ export async function connectToTestbed(opts: connectToTestbed.Options = {}): Pro
   return faces.map(({ face }) => face);
 }
 
-type Options_ = Options;
-
 export namespace connectToTestbed {
-  export type Options = queryFch.Options&connect.Options&Options_;
+  export interface Options extends queryFch.Options, connect.Options {
+    /** List of routers to use in case FCH request fails. */
+    fchFallback?: string[];
+    /** Maximum number of faces to establish. */
+    count?: number;
+    /** Consider default IPv4 gateway as a candidate. */
+    tryDefaultGateway?: boolean;
+    /** Choose one face with fastest testConnection completion and close others. */
+    preferFastest?: boolean;
+  }
 }

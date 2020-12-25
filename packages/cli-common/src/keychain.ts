@@ -5,6 +5,7 @@ import { env } from "./env";
 
 let theKeyChain: KeyChain|undefined;
 
+/** Open the KeyChain specified by NDNTS_KEYCHAIN environ. */
 export function openKeyChain(): KeyChain {
   if (!theKeyChain) {
     if (env.keychain) {
@@ -25,6 +26,7 @@ export async function getSignerImpl(prefix = new Name(), useKeyNameKeyLocator = 
   });
 }
 
+/** Get the KeyChain signer specified by NDNTS_KEY environ. */
 export async function getSigner(): Promise<Signer> {
   return getSignerImpl(env.key);
 }
