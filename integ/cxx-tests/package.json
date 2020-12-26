@@ -2,7 +2,7 @@
   "name": "@ndn/cxx-tests",
   "private": true,
   "scripts": {
-    "lint": "find -name '*.cpp' | xargs clang-format-8 -i -style='{BasedOnStyle: Mozilla, ReflowComments: false}'",
+    "lint": "find -name '*.cpp' | xargs clang-format-8 -i -style=file",
     "test": "../../node_modules/.bin/jest"
   },
   "devDependencies": {
