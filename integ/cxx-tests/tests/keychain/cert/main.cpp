@@ -1,4 +1,4 @@
-#include <ndn-cxx/security/v2/certificate.hpp>
+#include <ndn-cxx/security/certificate.hpp>
 #include <ndn-cxx/util/io.hpp>
 #include <ndn-cxx/util/time.hpp>
 

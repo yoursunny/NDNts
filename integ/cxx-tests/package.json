@@ -1,5 +1,5 @@
 {
-  "name": "@ndn/ndncxx-tests",
+  "name": "@ndn/cxx-tests",
   "private": true,
   "scripts": {
     "lint": "find -name '*.cpp' | xargs clang-format-8 -i -style='{BasedOnStyle: Mozilla, ReflowComments: false}'",

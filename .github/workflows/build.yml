@@ -54,7 +54,7 @@ jobs:
       - run: npm run literate lint
       - run: npm run literate
       - run: cd integ/browser-tests && npm test
-      - run: cd integ/ndncxx-tests && npm test
+      - run: cd integ/cxx-tests && npm test
   publish:
     needs: [build, integ]
     if: ${{ github.event_name == 'push' }}
