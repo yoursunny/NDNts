@@ -30,9 +30,9 @@ test("fill buffer in handler", async () => {
   const handler = jest.fn<ReturnType<ProducerHandler>, Parameters<ProducerHandler>>(
     async (interest: Interest, { dataBuffer }: Producer) => {
       expect(dataBuffer).toBe(dataStoreBuffer);
-      if (!interest.name.equals("/A")) { return false; }
+      if (!interest.name.equals("/A")) { return undefined; }
       await dataBuffer!.insert(new Data("/A/0"), new Data("/A/1"), new Data("/A/2"));
-      return false;
+      return undefined;
     });
   ep.produce("/A", handler);
 
@@ -52,9 +52,10 @@ test("prefill buffer", async () => {
   const handler = jest.fn(async (interest: Interest) => {
     return new Data(interest.name);
   });
-  ep.produce("/A", handler);
+  const producer = ep.produce("/A", handler);
 
   await dataStoreBuffer.insert(new Data("/A/0"), new Data("/A/1"));
+  await expect(producer.processInterest(new Interest("/A/0"))).resolves.toHaveName("/A/0");
   await expect(ep.consume("/A/0")).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(0);
 
@@ -83,7 +84,7 @@ test.each([false, true])("autoBuffer %p", async (autoBuffer) => {
 test("buffer expire", async () => {
   const [ep] = await makeEndpointBuffered(undefined, { ttl: 150 });
   const handler = jest.fn(async (interest: Interest) => {
-    if (!interest.name.equals("/A")) { return false; }
+    if (!interest.name.equals("/A")) { return undefined; }
     return new Data("/A/0");
   });
   ep.produce("/A", handler);

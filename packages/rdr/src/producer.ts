@@ -68,7 +68,7 @@ export function serveMetadata(m: Metadata|(() => Metadata), opts: Options = {}):
       if (isDiscoveryInterest(interest) && interest.name.length === name.length) {
         return makeMetadataPacket(makeMetadata(), opts);
       }
-      return false;
+      return undefined;
     },
     {
       describe: `RDR-s(${name})`,

@@ -37,9 +37,9 @@ export abstract class DataProducer {
     }
   }
 
-  public processInterest: ProducerHandler = async (interest: Interest): Promise<Data|false> => {
+  public processInterest: ProducerHandler = (interest: Interest): Promise<Data|undefined> => {
     const segmentNum = this.parseInterest(interest);
-    return (await this.getData(segmentNum)) ?? false;
+    return this.getData(segmentNum);
   };
 
   private parseInterest({ name, canBePrefix }: Interest): number {

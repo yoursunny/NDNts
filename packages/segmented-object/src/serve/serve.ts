@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Name, NameLike } from "@ndn/packet";
+import { Data, Interest, Name, NameLike } from "@ndn/packet";
 
 import type { ChunkSource } from "./chunk-source/mod";
 import { DataProducer } from "./data-producer";
@@ -9,15 +9,26 @@ export type ServeOptions = DataProducer.Options & {
   /** Use specified Endpoint instead of default. */
   endpoint?: Endpoint;
 
+  /** FwFace description. */
+  describe?: string;
+
   /**
    * Producer name prefix, if differs from Data prefix.
    * Specifying a shorter prefix enables name discovery.
    */
   producerPrefix?: Name;
+
+  /**
+   * Prefix announcement.
+   * Default is same as producer name prefix or Data prefix.
+   * False disables announcement.
+   */
+  announcement?: Endpoint.RouteAnnouncement;
 };
 
 export interface Server {
   readonly prefix: Name;
+  processInterest: (interest: Interest) => Promise<Data|undefined>;
   close: () => void;
 }
 
@@ -36,10 +47,14 @@ export function serve(prefixInput: NameLike, source: ChunkSource, opts: ServeOpt
     producer.processInterest,
     {
       concurrency: 16,
-      describe: `serve(${prefix})`,
+      describe: opts.describe ?? `serve(${prefix})`,
+      announcement: opts.announcement,
     });
   return {
     prefix,
+    processInterest(interest) {
+      return prod.processInterest(interest);
+    },
     close() {
       producer.close();
       prod.close();

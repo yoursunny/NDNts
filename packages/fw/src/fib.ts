@@ -27,15 +27,15 @@ export class Fib {
   }
 
   public lpm(name: Name): FibEntry|undefined {
-    const prefixStrs = [""];
+    const prefixHexs = [""];
     let s = "";
     for (let i = 0; i < name.length; ++i) {
       s += toHex(name.get(i)!.tlv);
-      prefixStrs.push(s);
+      prefixHexs.push(s);
     }
 
     for (let prefixLen = name.length; prefixLen >= 0; --prefixLen) {
-      const prefixStr = prefixStrs.pop()!;
+      const prefixStr = prefixHexs.pop()!;
       const entry = this.table.peek(prefixStr);
       if (entry) {
         assert(entry.nexthops.size > 0);

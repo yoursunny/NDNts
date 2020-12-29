@@ -78,7 +78,7 @@ export class PrpsPublisher {
     const key = toHex(interest.name.value);
     const pending = this.pendings.get(key);
     if (!pending) {
-      return false;
+      return undefined;
     }
     const { topic, item } = pending;
 

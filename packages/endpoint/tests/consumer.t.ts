@@ -14,8 +14,8 @@ describe("retx limit", () => {
 
   beforeEach(() => {
     producer = jest.fn<ReturnType<ProducerHandler>, Parameters<ProducerHandler>>()
-      .mockResolvedValueOnce(false)
-      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
       .mockResolvedValueOnce(new Data("/A"));
     ep.produce("/A", producer);
   });

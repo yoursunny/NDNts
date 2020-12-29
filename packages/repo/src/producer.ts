@@ -1,4 +1,4 @@
-import { Endpoint, Producer as EpProducer } from "@ndn/endpoint";
+import { Endpoint, Producer as EpProducer, ProducerHandler } from "@ndn/endpoint";
 import { Data, Interest } from "@ndn/packet";
 
 import { DataStore } from "./data-store";
@@ -10,7 +10,7 @@ export class Producer {
   public static create(store: DataStore, {
     endpoint = new Endpoint(),
     describe = "repo",
-    fallback = () => Promise.resolve(false),
+    fallback = () => Promise.resolve(undefined),
     reg = PrefixRegStrip(PrefixRegStrip.stripNonGeneric),
   }: Producer.Options = {}) {
     return new Producer(store, endpoint, describe, fallback, reg);
@@ -35,7 +35,7 @@ export class Producer {
     this.prod.close();
   }
 
-  private processInterest = async (interest: Interest): Promise<Data|false> => {
+  private processInterest: ProducerHandler = async (interest: Interest): Promise<Data|undefined> => {
     const found = await this.store.find(interest);
     return found ?? this.fallback(interest, this, this.store);
   };
@@ -49,5 +49,5 @@ export namespace Producer {
     reg?: PrefixRegController;
   }
 
-  export type FallbackHandler = (interest: Interest, producer: Producer, store: DataStore) => Promise<Data|false>;
+  export type FallbackHandler = (interest: Interest, producer: Producer, store: DataStore) => Promise<Data|undefined>;
 }

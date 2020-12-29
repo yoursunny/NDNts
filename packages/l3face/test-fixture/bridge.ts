@@ -26,7 +26,8 @@ class BridgeTransport extends Transport {
       if (!result || result.done) { // normal close
         return;
       }
-      this.bridgePeer?.bridgeRx.push(result.value);
+      const copy = new Uint8Array(result.value);
+      this.bridgePeer?.bridgeRx.push(copy);
     }
   };
 }
@@ -53,7 +54,7 @@ function makeRelayFunc(relay: Bridge.Relay): Bridge.RelayFunc {
   const delayRange = maxDelay - minDelay;
   return (it) => pipeline(
     () => it,
-    filter(() => Math.random() > loss),
+    filter(() => Math.random() >= loss),
     transform(64, async (pkt) => {
       await new Promise((r) => setTimeout(r, minDelay + delayRange * Math.random()));
       return pkt;

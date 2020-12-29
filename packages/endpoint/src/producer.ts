@@ -7,14 +7,14 @@ import type { DataBuffer } from "./data-buffer";
 /**
  * Producer handler function.
  *
- * The handler can return a Data to respond to the Interest, or return 'false' to cause a timeout.
+ * The handler can return a Data to respond to the Interest, or return `undefined` to cause a timeout.
  *
  * If Options.dataBuffer is provided, the handler can access the DataBuffer via producer.dataBuffer .
  * The handler can return a Data to respond to the Interest, which is also inserted to the DataBuffer
- * unless Options.autoBuffer is set to false. If the handler returns 'false', the Interest is used
+ * unless Options.autoBuffer is set to false. If the handler returns `undefined`, the Interest is used
  * to query the DataBuffer, and any matching Data may be sent.
  */
-export type Handler = (interest: Interest, producer: Producer) => Promise<Data|false>;
+export type Handler = (interest: Interest, producer: Producer) => Promise<Data|undefined>;
 
 export interface Options {
   /** Description for debugging purpose. */
@@ -56,6 +56,16 @@ export interface Producer {
   readonly face: FwFace;
 
   readonly dataBuffer?: DataBuffer;
+
+  /**
+   * Process an Interest received elsewhere.
+   *
+   * Use case of this function:
+   * 1. Producer A dynamically creates producer B upon receiving an Interest.
+   * 2. Producer A can invoke this function to let producer B generate a response.
+   * 3. The response should be sent by producer A.
+   */
+  processInterest: (interest: Interest) => Promise<Data|undefined>;
 
   /** Close the producer. */
   close: () => void;
@@ -136,6 +146,7 @@ export class EndpointProducer {
       prefix,
       face,
       dataBuffer,
+      processInterest,
       close() { face.close(); },
     };
     return producer;

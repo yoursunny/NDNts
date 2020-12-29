@@ -70,7 +70,7 @@ class Subscription implements PrpsSubscriber.Subscription {
 
   private handleNotifyInterest: ProducerHandler = async (interest) => {
     if (interest.name.length !== this.notifyPrefix.length + 1 || !interest.appParameters) {
-      return false;
+      return undefined;
     }
 
     const { publisher, nonce, publisherFwHint } =

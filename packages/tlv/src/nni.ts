@@ -171,6 +171,11 @@ export function NNI(n: number|bigint, {
 }
 
 export namespace NNI {
+  /** Determine if len is a valid length of encoded NNI. */
+  export function isValidLength(len: number): boolean {
+    return !!(EncodeNniClass as Record<number, unknown>)[len];
+  }
+
   /** Decode non-negative integer as number. */
   export function decode(value: Uint8Array, opts?: Options & { big?: false }): number;
 

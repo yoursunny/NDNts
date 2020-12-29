@@ -33,6 +33,10 @@ class TypedNumber extends Typed implements NumberConvention {
     return new Component(this.tt, Encoder.encode(NNI(v), 8));
   }
 
+  public match(comp: Component): boolean {
+    return super.match(comp) && NNI.isValidLength(comp.length);
+  }
+
   public parse(comp: Component): number {
     return NNI.decode(comp.value);
   }
@@ -69,6 +73,10 @@ class TypedTimestamp extends Typed implements TimestampConvention {
       v = v.getTime() * 1000;
     }
     return timestampNumber.create(v);
+  }
+
+  public match(comp: Component): boolean {
+    return timestampNumber.match(comp);
   }
 
   public parse(comp: Component): number {

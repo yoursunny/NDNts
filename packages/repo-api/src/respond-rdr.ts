@@ -11,9 +11,9 @@ import type * as S from "./data-store";
 export async function respondRdr(interest: Interest, store: S.ListNames, {
   versionConvention = Version,
   signer = digestSigning,
-}: respondRdr.Options = {}): Promise<Data|false> {
+}: respondRdr.Options = {}): Promise<Data|undefined> {
   if (!isDiscoveryInterest(interest)) {
-    return false;
+    return undefined;
   }
   const prefix = interest.name.getPrefix(-1);
 
@@ -31,7 +31,7 @@ export async function respondRdr(interest: Interest, store: S.ListNames, {
     }
   }
   if (!bestName) {
-    return false;
+    return undefined;
   }
 
   const metadata: Metadata = { name: bestName };

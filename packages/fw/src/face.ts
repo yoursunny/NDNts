@@ -72,7 +72,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
   }
 
   /** Shutdown the face. */
-  public close() {
+  public close(): void {
     if (!this.running) {
       return;
     }
@@ -93,8 +93,13 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
     return this.attributes.describe ?? "FwFace";
   }
 
+  /** Determine if a route is present on the face. */
+  public hasRoute(name: Name): boolean {
+    return this.routes.has(toHex(name.value));
+  }
+
   /** Add a route toward the face. */
-  public addRoute(name: Name, announcement: FwFace.RouteAnnouncement = true) {
+  public addRoute(name: Name, announcement: FwFace.RouteAnnouncement = true): void {
     this.fw.emit("prefixadd", this, name);
     const nameHex = toHex(name.value);
     this.routes.add(nameHex);
@@ -109,7 +114,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
   }
 
   /** Remove a route toward the face. */
-  public removeRoute(name: Name, announcement: FwFace.RouteAnnouncement = true) {
+  public removeRoute(name: Name, announcement: FwFace.RouteAnnouncement = true): void {
     const ann = computeAnnouncement(name, announcement);
     if (ann) {
       this.removeAnnouncement(ann);
@@ -124,7 +129,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
   }
 
   /** Add a prefix announcement associated with the face. */
-  public addAnnouncement(name: Name) {
+  public addAnnouncement(name: Name): void {
     if (!this.attributes.advertiseFrom) {
       return;
     }
@@ -136,7 +141,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
   }
 
   /** Remove a prefix announcement associated with the face. */
-  public removeAnnouncement(name: Name) {
+  public removeAnnouncement(name: Name): void {
     if (!this.attributes.advertiseFrom) {
       return;
     }
@@ -205,7 +210,7 @@ export namespace FaceImpl {
 
 /** A socket or network interface associated with forwarding plane. */
 export interface FwFace extends Pick<FaceImpl,
-"attributes"|"close"|"toString"|"addRoute"|"removeRoute"|"addAnnouncement"|"removeAnnouncement"|
+"attributes"|"close"|"toString"|"hasRoute"|"addRoute"|"removeRoute"|"addAnnouncement"|"removeAnnouncement"|
 Exclude<keyof TypedEmitter<Events>, "emit">> {
   readonly fw: Forwarder;
   readonly running: boolean;

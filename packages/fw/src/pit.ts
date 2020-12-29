@@ -145,9 +145,7 @@ export class Pit {
 
   public insertEntry(entry: PitEntry) {
     this.byName.set(entry.key, entry);
-    if (!entry.token) {
-      entry.token = this.generateToken();
-    }
+    entry.token ??= this.generateToken();
     this.byToken.set(entry.token, entry);
   }
 
@@ -180,10 +178,7 @@ export class Pit {
       () => this.findPotentialMatches(data, token),
       filter(({ interest }: PitEntry) => data.canSatisfy(interest)),
       flatMap((entry) => entry.returnData(face)),
-      tap(({ dn, token: dnToken }) => {
-        dn.send(FwPacket.create(data, dnToken));
-        // this Promise resolves when packet is sent, don't wait for it
-      }),
+      tap(({ dn, token: dnToken }) => dn.send(FwPacket.create(data, dnToken))),
       reduce((count) => count + 1, 0),
     );
     return nSentData > 0;

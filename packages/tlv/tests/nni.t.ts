@@ -42,6 +42,9 @@ test("encode fixed size", () => {
 });
 
 test("decode variable size", () => {
+  expect(NNI.isValidLength(2)).toBeTruthy();
+  expect(NNI.isValidLength(5)).toBeFalsy();
+
   expect(NNI.decode(Uint8Array.of(0x00))).toBe(0x00);
   expect(NNI.decode(Uint8Array.of(0xFF))).toBe(0xFF);
   expect(NNI.decode(Uint8Array.of(0x01, 0x00))).toBe(0x0100);

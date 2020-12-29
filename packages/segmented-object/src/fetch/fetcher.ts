@@ -34,7 +34,7 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
       rx: this.tx(),
       tx: this.rx,
     }, {
-      describe: `fetch(${name})`,
+      describe: opts.describe ?? `fetch(${name})`,
     });
 
     (opts.signal as AbortSignal|undefined)?.addEventListener("abort", this.handleAbort);
@@ -49,12 +49,14 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
   private tx(): AsyncIterable<FwPacket> {
     const {
       segmentNumConvention = defaultSegmentConvention,
+      modifyInterest,
       lifetimeAfterRto = 1000,
     } = this.opts;
     return this.logic.outgoing(
       ({ segNum, rto }) => {
         const interest = new Interest(this.name.append(segmentNumConvention, segNum),
           Interest.Lifetime(rto + lifetimeAfterRto));
+        modifyInterest?.(interest);
         return FwPacket.create(interest, segNum);
       },
       ({ interest: { l3, token } }) => {
@@ -106,11 +108,20 @@ export namespace Fetcher {
     /** Use the specified endpoint instead of the default. */
     endpoint?: Endpoint;
 
+    /** FwFace description. */
+    describe?: string;
+
     /**
      * Choose a segment number naming convention.
      * Default is Segment from @ndn/naming-convention2 package.
      */
     segmentNumConvention?: SegmentConvention;
+
+    /**
+     * Modify Interest according to specified options.
+     * This can also be used to witness Interests without modification.
+     */
+    modifyInterest?: (interest: Interest) => void;
 
     /** AbortSignal that allows canceling the Interest via AbortController. */
     signal?: AbortSignal|globalThis.AbortSignal;
@@ -118,6 +129,7 @@ export namespace Fetcher {
     /**
      * InterestLifetime added to RTO.
      * Default is 1000ms.
+     * Ignored if `lifetime` is set.
      */
     lifetimeAfterRto?: number;
 

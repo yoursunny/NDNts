@@ -90,11 +90,11 @@ test("aggregate & retransmit", async () => {
   const producedNames = new Set<string>();
   ep.produce("/P",
     async (interest) => {
-      const nameStr = toHex(interest.name.value);
-      if (producedNames.has(nameStr)) {
-        return false;
+      const nameHex = toHex(interest.name.value);
+      if (producedNames.has(nameHex)) {
+        return undefined;
       }
-      producedNames.add(nameStr);
+      producedNames.add(nameHex);
       await new Promise((r) => setTimeout(r, 100));
       return new Data("/P/Q/R/S");
     },

@@ -68,15 +68,28 @@ test("discover simple", async () => {
   producer.close();
 });
 
+test.each([3, discoverVersion.ANY_SUFFIX_LEN] as Array<discoverVersion.Options["expectedSuffixLen"]>,
+)("discover expectedSuffixLen", async (expectedSuffixLen) => {
+  const producer = new Endpoint().produce("/A",
+    async () => {
+      const name = new Name("/A/S").append(Version2, 2).append(Segment2, 4);
+      return new Data(name, Data.FreshnessPeriod(1000));
+    });
+  await expect(discoverVersion(new Name("/A"), { expectedSuffixLen }))
+    .resolves.toEqualName(new Name("/A/S").append(Version2, 2));
+  producer.close();
+});
+
 const wrongNames = [
   new Name("/A/B/C/D"),
+  new Name("/A/B/C"),
   new Name("/A/B").append(Segment2, 4),
   new Name("/A").append(Version2, 2).append("C"),
 ];
 
 test.each(wrongNames)("discover wrong name %#", async (dataName) => {
   const producer = new Endpoint().produce("/A",
-    async (interest) => new Data(dataName, Data.FreshnessPeriod(1000)));
+    async () => new Data(dataName, Data.FreshnessPeriod(1000)));
   await expect(discoverVersion(new Name("/A"))).rejects.toThrow(/cannot extract version/);
   producer.close();
 });
