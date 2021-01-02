@@ -47,7 +47,7 @@ It contains two parts:
 The trust schema implementation in this package is inspired by the above documents.
 The overall structure is:
 
-```plain
+```text
 TrustSchema
 +-TrustSchemaPolicy
 |   +-patterns = set of

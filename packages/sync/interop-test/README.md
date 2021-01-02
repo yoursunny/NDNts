@@ -2,7 +2,7 @@
 
 Test environment:
 
-* Node.js 14.14.0
+* Node.js 14.15.3
 * ndn-cxx and NFD 0.7.1 (install from PPA)
 * [PSync C++ library](https://github.com/named-data/PSync) commit `b60398c5fc216a1b577b9dbcf61d48a21cb409a4` (2020-12-18)
 

@@ -197,7 +197,7 @@ Client using PIN challenge, with NDNts keychain:
 ```sh
 # generate key pair
 REQCERT=$(NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec gen-key /B)
-REQKEY=$(echo $REQCERT | awk 'BEGIN { FS=OFS="/" } { NF-=2; print }')
+REQKEY=$(echo $REQCERT | gawk 'BEGIN { FS=OFS="/" } { NF-=2; print }')
 
 # request certificate with PIN challenge; you'll need to enter the PIN shown on CA console
 NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec ndncert03-client --profile /tmp/ca.data --key $REQKEY --challenge pin
@@ -211,7 +211,7 @@ Client using PIN challenge, with ndn-cxx keychain:
 ```sh
 # generate key pair
 ndnsec key-gen -te /C >/dev/null
-REQKEY=$(ndnsec list -k | awk '$1=="+->*" && $2 ~ "^/C/" { print $2 }')
+REQKEY=$(ndnsec list -k | gawk '$1=="+->*" && $2 ~ "^/C/" { print $2 }')
 
 # request certificate with PIN challenge; you'll need to enter the PIN shown on CA console
 ndntssec ndncert03-client --profile /tmp/ca.data --ndnsec --key $REQKEY --challenge pin
@@ -237,7 +237,7 @@ NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /
 
 # generate key pair
 REQCERT=$(NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec gen-key /M)
-REQKEY=$(echo $REQCERT | awk 'BEGIN { FS=OFS="/" } { NF-=2; print }')
+REQKEY=$(echo $REQCERT | gawk 'BEGIN { FS=OFS="/" } { NF-=2; print }')
 
 # request certificate with email challenge; you'll need to enter the PIN received from email
 REQEMAIL=someone@example.com
@@ -268,8 +268,8 @@ nfd-start
 NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge possession --possession-issuer /tmp/O.ndncert
 
 # request certificate with possession challenge
-REQKEY=$(ndnsec list -k | awk '$1=="+->*" && $2 ~ "^/E/" { print $2 }')
-OCERT=$(ndnsec list -c | awk '$1=="+->*" && $2 ~ "^'$REQKEY'/ISSUER-O/" { print $2 }')
+REQKEY=$(ndnsec list -k | gawk '$1=="+->*" && $2 ~ "^/E/" { print $2 }')
+OCERT=$(ndnsec list -c | gawk '$1=="+->*" && $2 ~ "^'$REQKEY'/ISSUER-O/" { print $2 }')
 ndntssec ndncert03-client --profile /tmp/ca.data --ndnsec --key $REQKEY --challenge possession --possession-cert $OCERT
 
 # view certificates
