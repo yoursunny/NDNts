@@ -89,6 +89,7 @@ export namespace CaProfile {
     data.name = prefix.append(Verb.INFO).append(Version, version).append(Segment, 0);
     data.freshnessPeriod = 3600000;
     data.content = payload;
+    data.isFinalBlock = true;
     await signer.sign(data);
     return CaProfile.fromData(data);
   }

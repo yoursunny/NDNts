@@ -23,7 +23,7 @@ export interface ServerOptions {
   key: NamedSigner.PrivateKey;
 
   /** Supported challenges. */
-  challenges: ServerChallenge[];
+  challenges: readonly ServerChallenge[];
 
   /** IssuerId on issued certificates. */
   issuerId?: ComponentLike;
@@ -66,7 +66,7 @@ export class Server {
     const infoVersion = infoName.getPrefix(-1);
 
     this.producers = [
-      serveMetadata({ name: infoVersion }, { endpoint, announcement: prefix }),
+      serveMetadata({ name: infoVersion }, { endpoint, announcement: prefix, signer: key }),
       endpoint.produce(infoVersion, this.handleInfoInterest,
         { describe: `NDNCERT-CA(${prefix}, INFO)`, announcement: prefix }),
       endpoint.produce(prefix.append(Verb.PROBE), this.handleProbeInterest,

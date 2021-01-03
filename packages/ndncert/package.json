@@ -45,6 +45,8 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/repo": "workspace:*",
-    "@types/minimalistic-assert": "^1.0.1"
+    "@ndn/segmented-object": "workspace:*",
+    "@types/minimalistic-assert": "^1.0.1",
+    "streaming-iterables": "^5.0.3"
   }
 }

@@ -1,13 +1,17 @@
 import "@ndn/packet/test-fixture/expect";
 
+import { Endpoint } from "@ndn/endpoint";
 import { Certificate, CertNaming, ECDSA, generateSigningKey, NamedSigner, NamedVerifier, RSA, ValidityPeriod } from "@ndn/keychain";
 import { Component, Name } from "@ndn/packet";
-import { PrefixRegShorter, RepoProducer } from "@ndn/repo";
+import { retrieveMetadata } from "@ndn/rdr";
+import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
+import { fetch } from "@ndn/segmented-object";
 import { toHex } from "@ndn/tlv";
 import { createTransport as createMT, SentMessageInfo } from "nodemailer";
+import { collect } from "streaming-iterables";
 
-import { CaProfile, ClientChallenge, ClientChallengeContext, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, requestCertificate, Server, ServerChallenge, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "../..";
+import { CaProfile, ClientChallenge, ClientChallengeContext, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, requestCertificate, Server, ServerChallenge, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "../..";
 
 interface Row {
   makeChallengeLists: () => Promise<[ServerChallenge[], ClientChallenge[]]>;
@@ -17,11 +21,11 @@ interface Row {
 function makePinChallengeWithWrongInputs(nWrongInputs = 0): Row["makeChallengeLists"] {
   return async () => {
     let lastPin = "";
-    const serverPin = new ServerPinChallenge();
-    serverPin.on("newpin", (requestId, pin) => lastPin = pin);
+    const server = new ServerPinChallenge();
+    server.on("newpin", (requestId, pin) => lastPin = pin);
 
     let nPrompts = 0;
-    const clientPin = new ClientPinChallenge(async () => {
+    const client = new ClientPinChallenge(async () => {
       await new Promise((r) => setTimeout(r, 100 * Math.random()));
       if (++nPrompts <= nWrongInputs) {
         return `x${lastPin}`;
@@ -30,8 +34,8 @@ function makePinChallengeWithWrongInputs(nWrongInputs = 0): Row["makeChallengeLi
     });
 
     return [
-      [serverPin],
-      [clientPin],
+      [server],
+      [client],
     ];
   };
 }
@@ -53,6 +57,12 @@ async function preparePossessionChallenge(validity = ValidityPeriod.daysFromNow(
   });
   return { rootPvt, rootPub, clientPvt, clientPub, clientCert };
 }
+
+const emailTemplate: ServerEmailChallenge.Template = {
+  from: "ca@example.com",
+  subject: "NDNCERT $caPrefix$ email challenge for $requestId$",
+  text: "$subjectName$\n$keyName$\n$pin$\n$pin$",
+};
 
 const TABLE: Row[] = [
   {
@@ -79,11 +89,7 @@ const TABLE: Row[] = [
       const emailerror = jest.fn<void, [Uint8Array, Error]>();
       const server = new ServerEmailChallenge({
         mail: createMT({ jsonTransport: true }),
-        template: {
-          from: "ca@example.com",
-          subject: "NDNCERT $caPrefix$ email challenge for $requestId$",
-          text: "$subjectName$\n$keyName$\n$pin$\n$pin$",
-        },
+        template: emailTemplate,
         assignmentPolicy: async (newSubjectName: Name, email: string) => {
           expect(newSubjectName).toEqualName("/requester");
           expect(email).toBe("user@example.com");
@@ -111,6 +117,33 @@ const TABLE: Row[] = [
         })],
       ];
     },
+  },
+  {
+    async makeChallengeLists() {
+      const server = new ServerEmailChallenge({
+        mail: createMT({ jsonTransport: true }),
+        template: emailTemplate,
+      });
+      return [
+        [server],
+        [new ClientEmailChallenge("", async () => "0000")],
+      ];
+    },
+    clientShouldFail: true,
+  },
+  {
+    async makeChallengeLists() {
+      const server = new ServerEmailChallenge({
+        mail: createMT({ jsonTransport: true }),
+        template: emailTemplate,
+        assignmentPolicy: async () => { throw new Error("no-assignment"); },
+      });
+      return [
+        [server],
+        [new ClientEmailChallenge("user@example.com", async () => "0000")],
+      ];
+    },
+    clientShouldFail: true,
   },
   {
     async makeChallengeLists() {
@@ -199,16 +232,16 @@ const TABLE: Row[] = [
   },
 ];
 
-test.each(TABLE)("workflow %#", async ({
-  makeChallengeLists,
-  clientShouldFail = false,
-}) => {
-  const repo = await makeDataStore();
-  const repoProducer = RepoProducer.create(repo, { reg: PrefixRegShorter(2) });
-
-  const [caPvt, caPub] = await generateSigningKey("/authority", RSA);
-  const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
-  const profile = await CaProfile.build({
+let caPvt: NamedSigner.PrivateKey;
+let caPub: NamedVerifier.PublicKey;
+let caCert: Certificate;
+let profile: CaProfile;
+let reqPvt: NamedSigner.PrivateKey;
+let reqPub: NamedVerifier.PublicKey;
+beforeAll(async () => {
+  [caPvt, caPub] = await generateSigningKey("/authority", RSA);
+  caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
+  profile = await CaProfile.build({
     prefix: new Name("/authority/CA"),
     info: "authority CA",
     probeKeys: ["uid"],
@@ -217,17 +250,66 @@ test.each(TABLE)("workflow %#", async ({
     signer: caPvt,
     version: 7,
   });
+  [reqPvt, reqPub] = await generateSigningKey("/requester", ECDSA);
+});
 
-  const [serverChallenges, reqChallenges] = await makeChallengeLists();
+let repo: DataStore;
+let repoProducer: RepoProducer;
+let server: Server;
+beforeEach(async () => {
+  repo = await makeDataStore();
+  repoProducer = RepoProducer.create(repo, { reg: PrefixRegShorter(2) });
+});
+afterEach(async () => {
+  server?.close();
+  repoProducer.close();
+  await repo.close();
+  Endpoint.deleteDefaultForwarder();
+});
 
-  const server = Server.create({
+function startServer(challenges: readonly ServerChallenge[] = [new ServerNopChallenge()]): Server {
+  server = Server.create({
     profile,
     repo,
     key: caPvt,
-    challenges: serverChallenges,
+    challenges,
   });
+  return server;
+}
 
-  const [reqPvt, reqPub] = await generateSigningKey("/requester", ECDSA);
+test("INFO command", async () => {
+  startServer();
+
+  const metadata = await retrieveMetadata("/authority/CA/INFO", { verifier: caPub });
+  const dataPkts = await collect(fetch(metadata.name, { verifier: caPub }));
+  expect(dataPkts).toHaveLength(1);
+  expect(dataPkts[0]).toHaveName(profile.data.name);
+
+  const parsed = await CaProfile.fromData(dataPkts[0]!);
+  expect(parsed.certDigest).toEqual(profile.certDigest);
+});
+
+test("unsupported or malformed commands", async () => {
+  startServer();
+
+  const endpoint = new Endpoint();
+  const [probeErr, newErr, challengeErr] = await Promise.all([
+    endpoint.consume("/authority/CA/PROBE"),
+    endpoint.consume("/authority/CA/NEW"),
+    endpoint.consume("/authority/CA/CHALLENGE"),
+  ]);
+  expect(() => ErrorMsg.throwOnError(probeErr)).toThrow();
+  expect(() => ErrorMsg.throwOnError(newErr)).toThrow();
+  expect(() => ErrorMsg.throwOnError(challengeErr)).toThrow();
+});
+
+test.each(TABLE)("challenge %#", async ({
+  makeChallengeLists,
+  clientShouldFail = false,
+}) => {
+  const [serverChallenges, reqChallenges] = await makeChallengeLists();
+  startServer(serverChallenges);
+
   const reqPromise = requestCertificate({
     profile,
     privateKey: reqPvt,
@@ -239,8 +321,4 @@ test.each(TABLE)("workflow %#", async ({
   } else {
     await expect(reqPromise).resolves.toBeInstanceOf(Certificate);
   }
-
-  server.close();
-  repoProducer.close();
-  await repo.close();
 });

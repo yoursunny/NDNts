@@ -41,6 +41,7 @@ test("packets", async () => {
   });
   const { data: profileData } = profile;
   expect(profileData.name).toEqualName("/authority/CA/INFO/35=%07/33=%00");
+  expect(profileData.isFinalBlock).toBeTruthy();
   expect(profileData.sigInfo.keyLocator?.name).toEqualName(caPub.name);
   expect(profile.prefix).toEqualName("/authority/CA");
   expect(profile.info).toBe("authority CA");
