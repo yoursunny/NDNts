@@ -39,6 +39,7 @@
   "devDependencies": {
     "@ndn/keychain": "workspace:*",
     "@ndn/repo": "workspace:*",
-    "@types/minimalistic-assert": "^1.0.1"
+    "@types/minimalistic-assert": "^1.0.1",
+    "stream-mock": "^2.0.5"
   }
 }

@@ -4,8 +4,9 @@ import { CancelInterest, Forwarder, FwPacket, FwTracer } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, Interest, Name } from "@ndn/packet";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
-import { toHex } from "@ndn/tlv";
+import { fromUtf8, toHex } from "@ndn/tlv";
 import { AbortController } from "abort-controller";
+import { BufferWritableMock } from "stream-mock";
 import { consume } from "streaming-iterables";
 
 import { Endpoint } from "..";
@@ -186,49 +187,49 @@ test("Data without token", async () => {
   expect(fw.pit.dataNoTokenMatch).toHaveBeenCalledTimes(5);
 });
 
-describe("tracer", () => {
-  let debugFn: jest.SpyInstance<void, any[]>;
-  beforeEach(() => debugFn = jest.spyOn(FwTracer.internalLogger, "debug").mockImplementation(() => undefined));
-  afterEach(() => debugFn.mockRestore());
-
-  test("simple", async () => {
-    const tracer = FwTracer.enable({ fw });
-    const abort = new AbortController();
-    const consumerA = ep.consume("/A", { signal: abort.signal });
-    abort.abort();
-    await expect(consumerA).rejects.toThrow();
-
-    const producerB = ep.produce("/B", async () => new Data("/B/1", Data.FreshnessPeriod(1000)));
-    await ep.consume(new Interest("/B", Interest.CanBePrefix, Interest.MustBeFresh));
-    producerB.close();
-
-    const faceC = fw.addFace(new NoopFace());
-    faceC.addRoute(new Name("/C"));
-    faceC.removeRoute(new Name("/C"));
-    tracer.disable();
-    faceC.close();
-
-    expect(debugFn.mock.calls.map((a) => a.join(" "))).toEqual([
-      "+Face consume(/8=A)",
-      "consume(/8=A) >I /8=A",
-      "consume(/8=A) >Cancel /8=A",
-      "consume(/8=A) <Reject(cancel) /8=A",
-      "+Face produce(/8=B)",
-      "produce(/8=B) +Prefix /8=B",
-      "+Announcement /8=B",
-      "+Face consume(/8=B)",
-      "consume(/8=B) >I /8=B[P][F]",
-      "-Face consume(/8=A)",
-      "produce(/8=B) <I /8=B[P][F]",
-      "produce(/8=B) >D /8=B/8=1",
-      "consume(/8=B) <D /8=B/8=1",
-      "-Announcement /8=B",
-      "-Face produce(/8=B)",
-      "+Face NoopFace",
-      "NoopFace +Prefix /8=C",
-      "+Announcement /8=C",
-      "-Announcement /8=C",
-      "NoopFace -Prefix /8=C",
-    ]);
+test("tracer", async () => {
+  const output = new BufferWritableMock();
+  const tracer = FwTracer.enable({
+    output: new console.Console(output),
+    fw,
   });
+  const abort = new AbortController();
+  const consumerA = ep.consume("/A", { signal: abort.signal });
+  abort.abort();
+  await expect(consumerA).rejects.toThrow();
+
+  const producerB = ep.produce("/B", async () => new Data("/B/1", Data.FreshnessPeriod(1000)));
+  await ep.consume(new Interest("/B", Interest.CanBePrefix, Interest.MustBeFresh));
+  producerB.close();
+
+  const faceC = fw.addFace(new NoopFace());
+  faceC.addRoute(new Name("/C"));
+  faceC.removeRoute(new Name("/C"));
+  tracer.disable();
+  faceC.close();
+
+  await new Promise((r) => output.end(r));
+  expect(fromUtf8(output.flatData).split("\n")).toEqual([
+    "+Face consume(/8=A)",
+    "consume(/8=A) >I /8=A",
+    "consume(/8=A) >Cancel /8=A",
+    "consume(/8=A) <Reject(cancel) /8=A",
+    "+Face produce(/8=B)",
+    "produce(/8=B) +Prefix /8=B",
+    "+Announcement /8=B",
+    "+Face consume(/8=B)",
+    "consume(/8=B) >I /8=B[P][F]",
+    "-Face consume(/8=A)",
+    "produce(/8=B) <I /8=B[P][F]",
+    "produce(/8=B) >D /8=B/8=1",
+    "consume(/8=B) <D /8=B/8=1",
+    "-Announcement /8=B",
+    "-Face produce(/8=B)",
+    "+Face NoopFace",
+    "NoopFace +Prefix /8=C",
+    "+Announcement /8=C",
+    "-Announcement /8=C",
+    "NoopFace -Prefix /8=C",
+    "",
+  ]);
 });
