@@ -254,36 +254,94 @@ interface CtorTag {
 }
 
 export namespace Interest {
+  /** Signer that calculates ParamsDigest. */
   export const Parameterize: LLSign = () => Promise.resolve(new Uint8Array());
-
-  export const CanBePrefix = Symbol("Interest.CanBePrefix");
-  export const MustBeFresh = Symbol("Interest.MustBeFresh");
-
-  export function Nonce(v = generateNonce()): CtorTag {
-    return {
-      [ctorAssign](f: Fields) { f.nonce = v; },
-    };
-  }
 
   /** Generate a random nonce. */
   export function generateNonce(): number {
     return Math.floor(Math.random() * 0x100000000);
   }
 
+  /** Default InterestLifetime. */
+  export const DefaultLifetime = 4000;
+
+  /** Constructor argument to set CanBePrefix flag. */
+  export const CanBePrefix = Symbol("Interest.CanBePrefix");
+
+  /** Constructor argument to set MustBeFresh flag. */
+  export const MustBeFresh = Symbol("Interest.MustBeFresh");
+
+  /** Constructor argument to set Nonce field. */
+  export function Nonce(v = generateNonce()): CtorTag {
+    return {
+      [ctorAssign](f: Fields) { f.nonce = v; },
+    };
+  }
+
+  /** Constructor argument to set InterestLifetime field. */
   export function Lifetime(v: number): CtorTag {
     return {
       [ctorAssign](f: Fields) { f.lifetime = v; },
     };
   }
 
-  export const DefaultLifetime = 4000;
-
+  /** Constructor argument to set HopLimit field. */
   export function HopLimit(v: number): CtorTag {
     return {
       [ctorAssign](f: Fields) { f.hopLimit = v; },
     };
   }
 
+  /** Constructor argument. */
   export type CtorArg = NameLike | typeof CanBePrefix | typeof MustBeFresh | FwHint |
   CtorTag | Uint8Array;
+
+  /** A function to modify an existing Interest. */
+  export type ModifyFunc = (interest: Interest) => void;
+
+  /** Common fields to assign onto an existing Interest. */
+  export interface ModifyFields {
+    canBePrefix?: boolean;
+    mustBeFresh?: boolean;
+    fwHint?: FwHint;
+    lifetime?: number;
+    hopLimit?: number;
+  }
+
+  /** A structure to modify an existing Interest. */
+  export type Modify = ModifyFunc | ModifyFields;
+
+  /** Turn ModifyFields to ModifyFunc; return ModifyFunc as-is. */
+  export function makeModifyFunc(input?: Modify): ModifyFunc {
+    switch (typeof input) {
+      case "function":
+        return input;
+      case "undefined":
+        return () => undefined;
+    }
+    const {
+      canBePrefix,
+      mustBeFresh,
+      fwHint,
+      lifetime,
+      hopLimit,
+    } = input;
+    return (interest) => {
+      if (typeof canBePrefix !== "undefined") {
+        interest.canBePrefix = canBePrefix;
+      }
+      if (typeof mustBeFresh !== "undefined") {
+        interest.mustBeFresh = mustBeFresh;
+      }
+      if (typeof fwHint !== "undefined") {
+        interest.fwHint = fwHint;
+      }
+      if (typeof lifetime !== "undefined") {
+        interest.lifetime = lifetime;
+      }
+      if (typeof hopLimit !== "undefined") {
+        interest.hopLimit = hopLimit;
+      }
+    };
+  }
 }

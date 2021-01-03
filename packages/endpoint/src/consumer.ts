@@ -1,51 +1,9 @@
 import { CancelInterest, Forwarder, FwPacket } from "@ndn/fw";
-import { Data, FwHint, Interest, NameLike, Verifier } from "@ndn/packet";
+import { Data, Interest, NameLike, Verifier } from "@ndn/packet";
 import type { AbortSignal } from "abort-controller";
 import pushable from "it-pushable";
 
 import { makeRetxGenerator, RetxPolicy } from "./retx";
-
-type ModifyInterestFunc = (interest: Interest) => void;
-
-interface ModifyInterestFields {
-  canBePrefix?: boolean;
-  mustBeFresh?: boolean;
-  fwHint?: FwHint;
-  lifetime?: number;
-  hopLimit?: number;
-}
-
-type ModifyInterest = ModifyInterestFunc | ModifyInterestFields;
-
-function makeModifyInterest(input: ModifyInterest): ModifyInterestFunc {
-  if (typeof input === "function") {
-    return input;
-  }
-  const {
-    canBePrefix,
-    mustBeFresh,
-    fwHint,
-    lifetime,
-    hopLimit,
-  } = input;
-  return (interest) => {
-    if (typeof canBePrefix !== "undefined") {
-      interest.canBePrefix = canBePrefix;
-    }
-    if (typeof mustBeFresh !== "undefined") {
-      interest.mustBeFresh = mustBeFresh;
-    }
-    if (typeof fwHint !== "undefined") {
-      interest.fwHint = fwHint;
-    }
-    if (typeof lifetime !== "undefined") {
-      interest.lifetime = lifetime;
-    }
-    if (typeof hopLimit !== "undefined") {
-      interest.hopLimit = hopLimit;
-    }
-  };
-}
 
 export interface Options {
   /** Description for debugging purpose. */
@@ -55,7 +13,7 @@ export interface Options {
    * Modify Interest according to specified options.
    * Default is no modification.
    */
-  modifyInterest?: ModifyInterest;
+  modifyInterest?: Interest.Modify;
 
   /**
    * Retransmission policy.
@@ -99,10 +57,7 @@ export class EndpointConsumer {
       signal,
       verifier,
     } = { ...this.opts, ...opts };
-
-    if (modifyInterest) {
-      makeModifyInterest(modifyInterest)(interest);
-    }
+    Interest.makeModifyFunc(modifyInterest)(interest);
 
     let nRetx = -1;
     const retxGen = makeRetxGenerator(retx)(interest.lifetime)[Symbol.iterator]();

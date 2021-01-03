@@ -99,6 +99,35 @@ test("decode", async () => {
   await expect(interest.validateParamsDigest()).resolves.toBeUndefined();
 });
 
+test("modify", () => {
+  const interest = new Interest("/A");
+  Interest.makeModifyFunc()(interest);
+  expect(interest.name).toEqualName("/A");
+  expect(interest.canBePrefix).toBeFalsy();
+  expect(interest.mustBeFresh).toBeFalsy();
+  expect(interest.fwHint).toBeUndefined();
+  expect(interest.nonce).toBeUndefined();
+  expect(interest.lifetime).toBe(4000);
+  expect(interest.hopLimit).toBe(255);
+
+  Interest.makeModifyFunc(Interest.makeModifyFunc({
+    canBePrefix: true,
+    mustBeFresh: true,
+  }))(interest);
+  expect(interest.canBePrefix).toBeTruthy();
+  expect(interest.mustBeFresh).toBeTruthy();
+
+  Interest.makeModifyFunc({
+    fwHint: new FwHint([new FwHint.Delegation("/FH1", 1), new FwHint.Delegation("/FH2", 2)]),
+    lifetime: 2500,
+    hopLimit: 7,
+  })(interest);
+  expect(interest.fwHint).toBeDefined();
+  expect(interest.fwHint!.delegations).toHaveLength(2);
+  expect(interest.lifetime).toBe(2500);
+  expect(interest.hopLimit).toBe(7);
+});
+
 test("encode parameterized", async () => {
   // insert empty AppParameters
   let interest = new Interest(new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"));

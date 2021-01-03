@@ -52,11 +52,12 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
       modifyInterest,
       lifetimeAfterRto = 1000,
     } = this.opts;
+    const modify = Interest.makeModifyFunc(modifyInterest);
     return this.logic.outgoing(
       ({ segNum, rto }) => {
         const interest = new Interest(this.name.append(segmentNumConvention, segNum),
           Interest.Lifetime(rto + lifetimeAfterRto));
-        modifyInterest?.(interest);
+        modify(interest);
         return FwPacket.create(interest, segNum);
       },
       ({ interest: { l3, token } }) => {
@@ -121,7 +122,7 @@ export namespace Fetcher {
      * Modify Interest according to specified options.
      * This can also be used to witness Interests without modification.
      */
-    modifyInterest?: (interest: Interest) => void;
+    modifyInterest?: Interest.Modify;
 
     /** AbortSignal that allows canceling the Interest via AbortController. */
     signal?: AbortSignal|globalThis.AbortSignal;

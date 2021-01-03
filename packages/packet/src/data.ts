@@ -11,13 +11,14 @@ const FIELDS = Symbol("Data.FIELDS");
 
 class Fields {
   constructor(...args: Array<Data | Data.CtorArg>) {
+    let isFinalBlock = false;
     args.forEach((arg) => {
       if (Name.isNameLike(arg)) {
         this.name = new Name(arg);
       } else if (arg instanceof Uint8Array) {
         this.content = arg;
       } else if (arg === Data.FinalBlock) {
-        this.isFinalBlock = true;
+        isFinalBlock = true;
       } else if (arg instanceof Data) {
         Object.assign(this, arg[FIELDS]);
       } else if (arg[ctorAssign]) {
@@ -26,6 +27,7 @@ class Fields {
         throw new Error("unknown Data constructor argument");
       }
     });
+    this.isFinalBlock = isFinalBlock;
   }
 
   public get isFinalBlock(): boolean {
@@ -235,19 +237,23 @@ interface CtorTag {
 }
 
 export namespace Data {
+  /** Constructor argument to set ContentType field. */
   export function ContentType(v: number): CtorTag {
     return {
       [ctorAssign](f: Fields) { return f.contentType = v; },
     };
   }
 
+  /** Constructor argument to set FreshnessPeriod field. */
   export function FreshnessPeriod(v: number): CtorTag {
     return {
       [ctorAssign](f: Fields) { return f.freshnessPeriod = v; },
     };
   }
 
+  /** Constructor argument to set the current packet as FinalBlock. */
   export const FinalBlock = Symbol("FinalBlock");
 
+  /** Constructor argument. */
   export type CtorArg = NameLike | CtorTag | typeof FinalBlock | Uint8Array;
 }

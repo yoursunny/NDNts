@@ -7,6 +7,7 @@ const EVD = new EvDecoder<FwHint.Delegation>("Delegation", TT.Delegation)
   .add(TT.Preference, (t, { nni }) => t.preference = nni)
   .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name));
 
+/** ForwardingHint in Interest. */
 export class FwHint {
   public static decodeValue(value: Uint8Array): FwHint {
     const dels = [] as FwHint.Delegation[];
@@ -34,7 +35,7 @@ export class FwHint {
     return Array.from(this.m.values()).sort((a, b) => a.preference - b.preference);
   }
 
-  private m = new Map<string, FwHint.Delegation>();
+  private readonly m = new Map<string, FwHint.Delegation>();
 
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(TT.ForwardingHint, Encoder.OmitEmpty, ...this.delegations);
@@ -42,6 +43,7 @@ export class FwHint {
 }
 
 export namespace FwHint {
+  /** Delegation in ForwardingHint. */
   export class Delegation {
     public static decodeFrom(decoder: Decoder): Delegation {
       return EVD.decode(new Delegation(), decoder);
