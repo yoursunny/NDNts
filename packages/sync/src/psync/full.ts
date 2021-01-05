@@ -96,7 +96,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>) i
   private readonly cLifetime: number;
   private readonly cInterval: [min: number, range: number];
   private readonly cVerifier?: Verifier;
-  private cTimer: NodeJS.Timeout = 0 as any;
+  private cTimer!: NodeJS.Timeout;
   private cAbort?: AbortController;
   private cCurrentInterestName?: Name;
 
@@ -112,6 +112,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>) i
     });
   }
 
+  /** Stop the protocol operation. */
   public close(): void {
     if (this.closed) {
       return;
@@ -299,7 +300,6 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>) i
 
 export namespace PSyncFull {
   export interface Parameters extends PSyncCore.Parameters, PSyncCodec.Parameters {
-
   }
 
   export interface Options {

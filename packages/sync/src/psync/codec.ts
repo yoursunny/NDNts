@@ -1,6 +1,7 @@
 import { Component, NamingConvention } from "@ndn/packet";
+import applyMixins from "applymixins";
 
-import { IBLT } from "../iblt";
+import { Compression as Compression_, IbltCodec } from "../detail/iblt-codec";
 import type { PSyncCore } from "./core";
 
 export class PSyncCodec {
@@ -12,17 +13,11 @@ export class PSyncCodec {
     }
   }
 
+  protected get ibltParams() { // for IbltCodec
+    return this.c.ibltParams;
+  }
+
   public readonly uselessCompsAfterIblt: Component[] = [];
-
-  public iblt2comp(iblt: IBLT): Component {
-    return new Component(undefined, this.ibltCompression.compress(iblt.serialize()));
-  }
-
-  public comp2iblt(comp: Component): IBLT {
-    const iblt = new IBLT(this.c.ibltParams);
-    iblt.deserialize(this.ibltCompression.decompress(comp.value));
-    return iblt;
-  }
 
   public state2buffer(state: PSyncCore.State): Uint8Array {
     return this.contentCompression.compress(this.encodeState(state));
@@ -32,13 +27,12 @@ export class PSyncCodec {
     return this.decodeState(this.contentCompression.decompress(buffer));
   }
 }
-export interface PSyncCodec extends Readonly<PSyncCodec.Parameters> {}
+
+export interface PSyncCodec extends Readonly<PSyncCodec.Parameters>, IbltCodec {}
+applyMixins(PSyncCodec, [IbltCodec]);
 
 export namespace PSyncCodec {
-  export interface Compression {
-    compress: (input: Uint8Array) => Uint8Array;
-    decompress: (compressed: Uint8Array) => Uint8Array;
-  }
+  export type Compression = Compression_;
 
   export interface Parameters {
     /** Compression method for IBLT in name component. */

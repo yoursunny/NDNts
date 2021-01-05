@@ -116,7 +116,7 @@ class Fixture {
   private readonly updates: Array<jest.Mock<void, [SyncUpdate<Name>]>> = [];
 
   public delay(multiple = 1): Promise<void> {
-    return new Promise((r) => setTimeout(r, 200 * multiple));
+    return new Promise((r) => setTimeout(r, 300 * multiple));
   }
 
   public add(i: number, prefix: NameLike): SyncNode<Name> {

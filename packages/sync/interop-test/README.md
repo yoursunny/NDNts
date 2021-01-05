@@ -5,6 +5,8 @@ Test environment:
 * Node.js 14.15.3
 * ndn-cxx and NFD 0.7.1 (install from PPA)
 * [PSync C++ library](https://github.com/named-data/PSync) commit `b60398c5fc216a1b577b9dbcf61d48a21cb409a4` (2020-12-18)
+* [ndn-ind](https://github.com/operantnetworks/ndn-ind) commit `dd934a7a5106cda6ea14675554427e12df1ce18f` (2020-12-23)
+* syncps in [DNMP-v2](https://github.com/pollere/DNMP-v2) commit `c9431460f85c326a410758aa4ff2a26bfcf0df69` (2020-10-17)
 
 ## PSyncFull
 
@@ -15,4 +17,34 @@ NDNTS_NFDREG=1 npm run literate packages/sync/interop-test/psync-full.ts
 # in PSync directory
 export NDN_LOG=examples.FullSyncApp=INFO
 LD_LIBRARY_PATH=build ./build/examples/psync-full-sync /psync-interop /psync-memphis/${RANDOM} 10 1000
+```
+
+## SyncpsPubsub
+
+```bash
+# these dependencies must be installed before compiling ndn-ind
+sudo apt install build-essential clang-8 liblog4cxx-dev libprotobuf-dev libssl-dev protobuf-compiler
+
+# in ndn-ind directory
+./configure
+make -j$(nproc)
+sudo make install
+sudo ldconfig
+
+# in NDNts directory
+
+# build C++ interop test program
+DNMPV2=$HOME/code/DNMP-v2
+make -C ${DNMPV2} syncps/syncps-content.pb.cc
+g++ -o packages/sync/interop-test/syncps-ind.exe \
+  -std=c++17 $(pkg-config --cflags libndn-ind) -I${DNMPV2}/syncps \
+  packages/sync/interop-test/syncps-ind.cpp ${DNMPV2}/syncps/syncps-content.pb.cc \
+  $(pkg-config --libs libndn-ind) -lboost_iostreams -lboost_chrono -lboost_system \
+  -lprotobuf -llog4cxx -lpthread
+
+# start NDNts interop test script
+NDNTS_NFDREG=1 npm run literate packages/sync/interop-test/syncps.ts
+
+# start C++ interop test program
+packages/sync/interop-test/syncps-ind.exe /syncps-interop /syncps-interop-data /syncps-interop-data/ind/$RANDOM >/dev/null
 ```

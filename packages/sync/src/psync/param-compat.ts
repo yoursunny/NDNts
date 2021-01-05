@@ -4,6 +4,7 @@ import { Decoder, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 // @ts-expect-error
 import murmurHash3 from "murmurhash3js-revisited";
 
+import { IBLT } from "../iblt";
 import type { PSyncCodec } from "./codec";
 import type { PSyncCore } from "./core";
 import type { PSyncFull } from "./full";
@@ -20,12 +21,32 @@ const GenericNumber: NamingConvention<number, number> = {
   },
 };
 
-function hash(seed: number, input: Uint8Array): number {
+export function hash(seed: number, input: Uint8Array): number {
   return murmurHash3.x86.hash32(input, seed);
 }
 
 const nHash = 3;
 const checkSeed = 11;
+
+export function makeIbltParams(
+    expectedEntries: number,
+    keyToBufferLittleEndian: boolean,
+    serializeLittleEndian = false,
+): IBLT.Parameters {
+  let nEntries = Math.floor(expectedEntries * 1.5);
+  const rem = nEntries % 3;
+  if (rem !== 0) {
+    nEntries += nHash - rem;
+  }
+  return {
+    keyToBufferLittleEndian,
+    serializeLittleEndian,
+    hash,
+    nHash,
+    checkSeed,
+    nEntries,
+  };
+}
 
 function joinPrefixSeqNum({ prefix, seqNum }: PSyncCore.PrefixSeqNum) {
   const name = prefix.append(GenericNumber, seqNum);
@@ -60,27 +81,13 @@ const PSyncStateEVD = new EvDecoder<PSyncCore.PrefixSeqNum[]>("PSyncState")
 
 /** Create algorithm parameters to be compatible with PSync C++ library. */
 export function makePSyncCompatParam({
-  littleEndian = true,
+  keyToBufferLittleEndian = true,
   expectedEntries = 80,
   ibltCompression = noCompression,
   contentCompression = noCompression,
 }: makePSyncCompatParam.Options = {}): PSyncFull.Parameters {
-  let nEntries = Math.floor(expectedEntries * 1.5);
-  const rem = nEntries % 3;
-  if (rem !== 0) {
-    nEntries += nHash - rem;
-  }
-
   return {
-    uint32ToBuffer(n) {
-      const b = new ArrayBuffer(4);
-      new DataView(b).setUint32(0, n, littleEndian);
-      return new Uint8Array(b);
-    },
-    hash,
-    nHash,
-    checkSeed,
-    nEntries,
+    ...makeIbltParams(expectedEntries, keyToBufferLittleEndian),
 
     threshold: Math.floor(expectedEntries / 2),
     joinPrefixSeqNum,
@@ -108,13 +115,13 @@ export function makePSyncCompatParam({
 export namespace makePSyncCompatParam {
   export interface Options {
     /**
-     * Whether to use little endian when converting a uint32 key to a byte array.
+     * Whether to use little endian when converting uint32 key to Uint8Array.
      * PSync C++ library behaves differently on big endian and little endian machines,
      * https://github.com/named-data/PSync/blob/b60398c5fc216a1b577b9dbcf61d48a21cb409a4/PSync/detail/util.cpp#L126
      * This must be set to match other peers.
      * @default true
      */
-    littleEndian?: boolean;
+    keyToBufferLittleEndian?: boolean;
 
     /**
      * Expected number of IBLT entries, i.e. expected number of updates in a sync cycle.

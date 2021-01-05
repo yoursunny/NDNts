@@ -4,6 +4,7 @@
   "scripts": {
     "bootstrap": "npx pnpm install && bash mk/make-tsconfig.sh",
     "build": "bash mk/build.sh",
+    "clang-format": "git ls-files '*.cpp' | xargs clang-format-8 -i -style=file",
     "cover": "jest --coverage",
     "lint": "env NODE_OPTIONS='--max-old-space-size=4096' xo --fix",
     "lint-ci": "env NODE_OPTIONS='--max-old-space-size=4096' xo",

@@ -183,4 +183,4 @@ test("congestion avoidance", async () => {
   await expect(fetched).resolves.toEqualUint8Array(objectBody);
   server.close();
   bridge.close();
-});
+}, 10000);

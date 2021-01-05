@@ -22,7 +22,10 @@ jobs:
           sudo add-apt-repository ppa:named-data/ppa
           sudo apt-get install ndnsec
       - run: npm run bootstrap
-      - run: npm run lint-ci
+      - name: check code style
+        run: |
+          npm run lint
+          [[ $(git status --porcelain | tee >(cat 1>&2) | wc -l) -eq 0 ]]
       - run: npm run cover -- --colors
       - uses: coverallsapp/github-action@master
         with:
@@ -46,13 +49,17 @@ jobs:
       - name: install dependencies
         run: |
           sudo add-apt-repository ppa:named-data/ppa
-          sudo apt-get install build-essential libndn-cxx-dev nfd
+          sudo apt-get install build-essential clang-format-8 libndn-cxx-dev nfd
       - run: npm run bootstrap
       - run: npm run build
       - run: npm run literate lint
       - run: npm run literate
       - run: cd integ/browser-tests && npm test
       - run: cd integ/cxx-tests && npm test
+      - name: check C++ code style
+        run: |
+          npm run clang-format
+          [[ $(git status --porcelain | tee >(cat 1>&2) | wc -l) -eq 0 ]]
   publish:
     needs: [build, integ]
     if: ${{ github.event_name == 'push' }}

@@ -1,3 +1,4 @@
+export * from "./algo";
 export * from "./alt-uri";
 export * from "./component";
 export * from "./convention";

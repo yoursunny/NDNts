@@ -7,7 +7,7 @@ interface Entry {
 }
 
 class Hashtable {
-  constructor(nEntries: number) {
+  constructor(nEntries: number, private readonly littleEndian: boolean) {
     this.ab = new ArrayBuffer(4 * (nEntries * 3));
     this.dv = new DataView(this.ab);
   }
@@ -17,16 +17,16 @@ class Hashtable {
 
   public get(i: number): Entry {
     return {
-      count: this.dv.getInt32(4 * (i * 3 + 0)),
-      keySum: this.dv.getUint32(4 * (i * 3 + 1)),
-      keyCheck: this.dv.getUint32(4 * (i * 3 + 2)),
+      count: this.dv.getInt32(4 * (i * 3 + 0), this.littleEndian),
+      keySum: this.dv.getUint32(4 * (i * 3 + 1), this.littleEndian),
+      keyCheck: this.dv.getUint32(4 * (i * 3 + 2), this.littleEndian),
     };
   }
 
   public set(i: number, { count, keySum, keyCheck }: Entry): void {
-    this.dv.setInt32(4 * (i * 3 + 0), count);
-    this.dv.setUint32(4 * (i * 3 + 1), keySum);
-    this.dv.setUint32(4 * (i * 3 + 2), keyCheck);
+    this.dv.setInt32(4 * (i * 3 + 0), count, this.littleEndian);
+    this.dv.setUint32(4 * (i * 3 + 1), keySum, this.littleEndian);
+    this.dv.setUint32(4 * (i * 3 + 2), keyCheck, this.littleEndian);
   }
 
   public serialize(): Uint8Array {
@@ -45,7 +45,7 @@ class Hashtable {
 export class IBLT {
   constructor(p: IBLT.Parameters|IBLT.PreparedParameters) {
     this.p = IBLT.PreparedParameters.prepare(p);
-    this.ht = new Hashtable(this.p.nEntries);
+    this.ht = new Hashtable(this.p.nEntries, this.p.serializeLittleEndian);
   }
 
   private readonly p: IBLT.PreparedParameters;
@@ -65,11 +65,17 @@ export class IBLT {
     return this.p.hash(this.p.checkSeed, input);
   }
 
+  private keyToBuffer(key: number): Uint8Array {
+    const ab = new ArrayBuffer(4);
+    new DataView(ab).setUint32(0, key, this.p.keyToBufferLittleEndian);
+    return new Uint8Array(ab);
+  }
+
   private update(change: number, key: number): void {
     assert(key >= 0);
     assert(key <= 0xFFFFFFFF);
     assert(Math.floor(key) === key);
-    const keyB = this.p.uint32ToBuffer(key);
+    const keyB = this.keyToBuffer(key);
     this.update2(this.ht, change, key, keyB, this.checkHash(keyB));
   }
 
@@ -86,17 +92,21 @@ export class IBLT {
   }
 
   /** Compute the difference between this (first) and other (second) IBLT. */
-  public diff(other: IBLT): IBLT.Diff {
-    assert(this.p.nEntries === other.p.nEntries);
-    const peel = new Hashtable(this.p.nEntries);
+  public diff(...other: IBLT[]): IBLT.Diff {
+    other.forEach(({ p }) => assert(this.p.nEntries === p.nEntries));
+    const hts: Hashtable[] = [this.ht, ...other.map(({ ht }) => ht)];
+
+    const peel = new Hashtable(this.p.nEntries, this.p.serializeLittleEndian);
     for (let i = 0; i < this.p.nEntries; ++i) {
-      const a = this.ht.get(i);
-      const b = other.ht.get(i);
-      peel.set(i, {
-        count: a.count - b.count,
-        keySum: a.keySum ^ b.keySum,
-        keyCheck: a.keyCheck ^ b.keyCheck,
-      });
+      const entries = hts.map((ht) => ht.get(i));
+      // eslint-disable-next-line unicorn/no-reduce
+      peel.set(i, entries.reduce((a, b) => {
+        return {
+          count: a.count - b.count,
+          keySum: a.keySum ^ b.keySum,
+          keyCheck: a.keyCheck ^ b.keyCheck,
+        };
+      }));
     }
 
     const positive = new Set<number>();
@@ -116,7 +126,7 @@ export class IBLT {
             continue;
         }
 
-        const keyB = this.p.uint32ToBuffer(keySum);
+        const keyB = this.keyToBuffer(keySum);
         const checkHash = this.checkHash(keyB);
         if (keyCheck !== checkHash) {
           continue;
@@ -178,8 +188,11 @@ export namespace IBLT {
 
   /** IBLT parameters. */
   export interface Parameters {
-    /** A function to convert uint32 key number to Uint8Array. */
-    uint32ToBuffer: (n: number) => Uint8Array;
+    /** Whether to use little endian when converting uint32 key to Uint8Array. */
+    keyToBufferLittleEndian: boolean;
+
+    /** Whether to use little endian when serializing uint32 and int32 fields. */
+    serializeLittleEndian: boolean;
 
     /** 32-bit hash function. */
     hash: HashFunction;
@@ -209,7 +222,8 @@ export namespace IBLT {
     }
 
     private constructor({
-      uint32ToBuffer,
+      keyToBufferLittleEndian,
+      serializeLittleEndian,
       hash,
       nHash,
       checkSeed,
@@ -224,7 +238,8 @@ export namespace IBLT {
       assert(nEntries % nHash === 0);
 
       const self = this as Parameters;
-      self.uint32ToBuffer = uint32ToBuffer;
+      self.keyToBufferLittleEndian = keyToBufferLittleEndian;
+      self.serializeLittleEndian = serializeLittleEndian;
       self.hash = hash;
       self.nHash = nHash;
       self.checkSeed = checkSeed;

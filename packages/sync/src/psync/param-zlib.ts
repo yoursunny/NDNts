@@ -1,13 +1,5 @@
-import pako from "pako";
-
+import { makeZlib } from "../detail/zlib";
 import type { PSyncCodec } from "./codec";
 
 /** Use zlib compression with PSync. */
-export const PSyncZlib: PSyncCodec.Compression = {
-  compress(input) {
-    return pako.deflate(input, { level: 9 });
-  },
-  decompress(compressed) {
-    return pako.inflate(compressed);
-  },
-};
+export const PSyncZlib: PSyncCodec.Compression = makeZlib(9);
