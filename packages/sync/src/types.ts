@@ -1,3 +1,4 @@
+import type { Name } from "@ndn/packet";
 import assert from "minimalistic-assert";
 import type TypedEmitter from "typed-emitter";
 
@@ -76,5 +77,28 @@ export class SyncUpdate<ID = any> {
     for (let seqNum = this.loSeqNum; seqNum <= this.hiSeqNum; ++seqNum) {
       yield seqNum;
     }
+  }
+}
+
+export interface Subscriber<Topic = Name, Update = any, SubscribeInfo = Topic> {
+  subscribe: (topic: SubscribeInfo) => Subscription<Topic, Update>;
+}
+
+/**
+ * A subscription on a topic.
+ * Listen to the 'update' event to receive updates on incoming publications matching the topic.
+ */
+export interface Subscription<Topic = Name, Update = SyncUpdate<Topic>> extends TypedEmitter<Subscription.Events<Update>> {
+  /** The topic. */
+  readonly topic: Topic;
+
+  /** Unsubscribe. */
+  remove(): void;
+}
+
+export namespace Subscription {
+  export interface Events<Update> {
+    /** Emitted when a subscription update is received. */
+    update: (update: Update) => void;
   }
 }

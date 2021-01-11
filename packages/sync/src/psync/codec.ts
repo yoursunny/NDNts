@@ -1,20 +1,18 @@
-import { Component, NamingConvention } from "@ndn/packet";
+import { Component, Name, NamingConvention } from "@ndn/packet";
+import type { BloomFilter } from "@yoursunny/psync-bloom";
 import applyMixins from "applymixins";
 
 import { Compression as Compression_, IbltCodec } from "../detail/iblt-codec";
+import type { IBLT } from "../iblt";
 import type { PSyncCore } from "./core";
 
 export class PSyncCodec {
-  constructor(p: PSyncCodec.Parameters, private readonly c: PSyncCore) {
+  constructor(p: PSyncCodec.Parameters, protected readonly ibltParams: IBLT.PreparedParameters) {
     Object.assign(this, p);
 
     for (let i = 0; i < this.nUselessCompsAfterIblt; ++i) {
       this.uselessCompsAfterIblt.push(new Component());
     }
-  }
-
-  protected get ibltParams() { // for IbltCodec
-    return this.c.ibltParams;
   }
 
   public readonly uselessCompsAfterIblt: Component[] = [];
@@ -35,8 +33,20 @@ export namespace PSyncCodec {
   export type Compression = Compression_;
 
   export interface Parameters {
+    /** Version convention for SyncData. */
+    versionConvention: NamingConvention<number, number>;
+
+    /** Segment number convention for SyncData. */
+    segmentNumConvention: NamingConvention<number, number>;
+
     /** Compression method for IBLT in name component. */
     ibltCompression: Compression;
+
+    /**
+     * Number of useless components between IBLT and Version.
+     * @see https://github.com/named-data/PSync/blob/b60398c5fc216a1b577b9dbcf61d48a21cb409a4/PSync/full-producer.cpp#L239
+     */
+    nUselessCompsAfterIblt: number;
 
     /** Compression method for State in segmented object. */
     contentCompression: Compression;
@@ -47,16 +57,10 @@ export namespace PSyncCodec {
     /** Decode State from buffer (without decompression). */
     decodeState: (payload: Uint8Array) => PSyncCore.State;
 
-    /**
-     * Number of useless components between IBLT and Version.
-     * @see https://github.com/named-data/PSync/blob/b60398c5fc216a1b577b9dbcf61d48a21cb409a4/PSync/full-producer.cpp#L239
-     */
-    nUselessCompsAfterIblt: number;
+    addToBloom: (bf: BloomFilter, prefix: Name) => void;
 
-    /** Version convention for SyncData. */
-    versionConvention: NamingConvention<number, number>;
+    encodeBloom: (bf: BloomFilter) => Component[];
 
-    /** Segment number convention for SyncData. */
-    segmentNumConvention: NamingConvention<number, number>;
+    decodeBloom: (Bloom: typeof BloomFilter, comps: readonly Component[]) => Promise<BloomFilter>;
   }
 }

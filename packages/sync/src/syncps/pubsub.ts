@@ -5,12 +5,13 @@ import { toHex } from "@ndn/tlv";
 import { AbortController } from "abort-controller";
 import { EventEmitter } from "events";
 import DefaultWeakMap from "mnemonist/default-weak-map";
-import MultiMap from "mnemonist/multi-map";
 import pDefer from "p-defer";
 import type TypedEmitter from "typed-emitter";
 
+import { SubscriptionTable } from "../detail/subscription-table";
 import { UplinkRouteMirror } from "../detail/uplink-route-mirror";
 import { IBLT } from "../iblt";
+import type { Subscriber, Subscription } from "../types";
 import { SyncpsCodec } from "./codec";
 
 interface PublicationEntry {
@@ -32,20 +33,6 @@ interface SyncInterestInfo {
 interface PendingInterest extends SyncInterestInfo {
   expire: NodeJS.Timeout;
   defer: pDefer.DeferredPromise<Data|undefined>;
-}
-
-interface SubEvents {
-  update: (pub: Data) => void;
-}
-
-class Subscription extends (EventEmitter as new() => TypedEmitter<SubEvents>) implements SyncpsPubsub.Subscription {
-  constructor(
-      public readonly topic: Name,
-      public readonly topicHex: string,
-      public readonly close: () => void,
-  ) {
-    super();
-  }
 }
 
 interface DebugEntry {
@@ -92,7 +79,7 @@ function defaultFilterPubs(items: SyncpsPubsub.FilterPubItem[]) {
 }
 
 /** syncps - pubsub service. */
-export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>) {
+export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>) implements Subscriber<Name, Data> {
   constructor({
     p,
     endpoint = new Endpoint(),
@@ -115,7 +102,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
     this.endpoint = endpoint;
     this.describe = describe ?? `SyncpsPubsub(${syncPrefix})`;
     this.syncPrefix = syncPrefix;
-    const ibltParams = IBLT.PreparedParameters.prepare(p);
+    const ibltParams = IBLT.PreparedParameters.prepare(p.iblt);
     this.codec = new SyncpsCodec(p, ibltParams);
     if (addSyncPrefixOnUplinks) {
       this.uplinkRouteMirror = new UplinkRouteMirror(endpoint.fw, syncPrefix);
@@ -155,7 +142,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
   private readonly pubs = new Map<number, PublicationEntry>();
   private readonly maxPubLifetime: number;
   private readonly maxClockSkew: number;
-  private readonly subs = new MultiMap<string, Subscription>(Set);
+  private readonly subs = new SubscriptionTable<Name, Data>((topic) => toHex(topic.value));
 
   private readonly dModify: SyncpsPubsub.ModifyPublicationCallback;
   private readonly dIsExpired: SyncpsPubsub.IsExpiredCallback;
@@ -245,12 +232,8 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
    * Subscribe to a topic.
    * @param topic a name prefix.
    */
-  public subscribe(topic: Name): SyncpsPubsub.Subscription {
-    const topicHex = toHex(topic.value);
-    const sub: Subscription = new Subscription(topic, topicHex,
-      () => this.subs.remove(topicHex, sub));
-    this.subs.set(topicHex, sub);
-    return sub;
+  public subscribe(topic: Name): Subscription<Name, Data> {
+    return this.subs.add(topic, undefined);
   }
 
   private handleSyncInterest = async (interest: Interest): Promise<Data|undefined> => {
@@ -396,12 +379,10 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
         }
 
         this.addToActive(key, pub, false);
-        const subs = lpm(pub.name, (prefixHex) => this.subs.get(prefixHex));
-        if (subs) {
+        const sub = lpm(pub.name, (prefixHex) => this.subs.get(prefixHex));
+        if (sub) {
           this.debug("c-deliver", key, pub);
-          for (const sub of subs) {
-            sub.emit("update", pub);
-          }
+          this.subs.update(sub, pub);
         } else {
           this.debug("c-nosub", key, pub);
         }
@@ -474,7 +455,8 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
 }
 
 export namespace SyncpsPubsub {
-  export interface Parameters extends IBLT.Parameters, SyncpsCodec.Parameters {
+  export interface Parameters extends SyncpsCodec.Parameters {
+    iblt: IBLT.Parameters;
   }
 
   export type ModifyPublicationCallback = (pub: Data) => void;
@@ -597,13 +579,4 @@ export namespace SyncpsPubsub {
   }
 
   export type PublishCallback = (pub: Data, confirmed: boolean) => void;
-
-  /**
-   * A subscription on a topic.
-   * Listen to the 'update' event to receive updates on incoming publications matching the topic.
-   */
-  export interface Subscription extends TypedEmitter<SubEvents> {
-    /** Unsubscribe. */
-    close: () => void;
-  }
 }

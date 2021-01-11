@@ -33,6 +33,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "@yoursunny/psync-bloom": "yoursunny/PSyncBloom-wasm#build",
     "abort-controller": "^3.0.0",
     "applymixins": "^1.1.0",
     "minimalistic-assert": "^1.0.1",

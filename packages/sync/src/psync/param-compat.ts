@@ -4,10 +4,11 @@ import { Decoder, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 // @ts-expect-error
 import murmurHash3 from "murmurhash3js-revisited";
 
-import { IBLT } from "../iblt";
+import type { IBLT } from "../iblt";
 import type { PSyncCodec } from "./codec";
 import type { PSyncCore } from "./core";
 import type { PSyncFull } from "./full";
+import type { PSyncPartialSubscriber } from "./partial-subscriber";
 
 const GenericNumber: NamingConvention<number, number> = {
   match(comp: Component): boolean {
@@ -83,17 +84,21 @@ const PSyncStateEVD = new EvDecoder<PSyncCore.PrefixSeqNum[]>("PSyncState")
 export function makePSyncCompatParam({
   keyToBufferLittleEndian = true,
   expectedEntries = 80,
+  expectedSubscriptions = 16,
   ibltCompression = noCompression,
   contentCompression = noCompression,
-}: makePSyncCompatParam.Options = {}): PSyncFull.Parameters {
+}: makePSyncCompatParam.Options = {}): PSyncFull.Parameters & PSyncPartialSubscriber.Parameters {
   return {
-    ...makeIbltParams(expectedEntries, keyToBufferLittleEndian),
-
+    iblt: makeIbltParams(expectedEntries, keyToBufferLittleEndian),
     threshold: Math.floor(expectedEntries / 2),
     joinPrefixSeqNum,
-    splitPrefixSeqNum,
+
+    versionConvention,
+    segmentNumConvention,
 
     ibltCompression,
+    nUselessCompsAfterIblt: 1,
+
     contentCompression,
     encodeState(state) {
       return Encoder.encode([
@@ -106,9 +111,32 @@ export function makePSyncCompatParam({
       PSyncStateEVD.decode(list, new Decoder(payload));
       return list;
     },
-    nUselessCompsAfterIblt: 1,
-    versionConvention,
-    segmentNumConvention,
+
+    bloom: {
+      hash,
+      projectedElementCount: expectedSubscriptions,
+      falsePositiveProbability: 0.001,
+    },
+    addToBloom(bf, prefix) {
+      bf.insert(AltUri.ofName(prefix));
+    },
+    encodeBloom(bf) {
+      return [
+        GenericNumber.create(bf.projectedElementCount),
+        GenericNumber.create(Math.floor(bf.falsePositiveProbability * 1000)),
+        new Component(undefined, bf.encode()),
+      ];
+    },
+    decodeBloom(Bloom, comps) {
+      if (comps.length !== 3 || !GenericNumber.match(comps[0]!) || !GenericNumber.match(comps[1]!)) {
+        throw new Error("PSyncCompatParam.decodeBloom bad input");
+      }
+      return Bloom.create({
+        hash,
+        projectedElementCount: GenericNumber.parse(comps[0]!),
+        falsePositiveProbability: GenericNumber.parse(comps[1]!) / 1000,
+      }, comps[2]!.value);
+    },
   };
 }
 
@@ -125,15 +153,23 @@ export namespace makePSyncCompatParam {
 
     /**
      * Expected number of IBLT entries, i.e. expected number of updates in a sync cycle.
+     * This is irrelevant to PartialSync consumer.
      * @default 80
      */
     expectedEntries?: number;
 
     /**
+     * Estimated number of subscriptions in PartialSync consumer.
+     * @default 16
+     */
+    expectedSubscriptions?: number;
+
+    /**
      * Whether to use zlib compression on IBLT.
      * Default is no compression. Use `PSyncZlib` to set zlib compression.
      *
-     * Default in PSync C++ library depends on whether zlib is available at compile time.
+     * In PSync C++ library, default for FullSync depends on whether zlib is available at compile
+     * time, and default for PartialSync is no compression.
      * This must be set to match other peers.
      */
     ibltCompression?: PSyncCodec.Compression;
@@ -142,7 +178,8 @@ export namespace makePSyncCompatParam {
      * Whether to use zlib compression on Data payload.
      * Default is no compression. Use `PSyncZlib` to set zlib compression.
      *
-     * Default in PSync C++ library depends on whether zlib is available at compile time.
+     * In PSync C++ library, default for FullSync depends on whether zlib is available at compile
+     * time. For PartialSync, it is always no compression.
      * This must be set to match other peers.
      */
     contentCompression?: PSyncCodec.Compression;

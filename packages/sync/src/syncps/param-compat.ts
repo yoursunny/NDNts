@@ -17,12 +17,12 @@ export function makeSyncpsCompatParam({
   keyToBufferLittleEndian = true,
   expectedEntries = 85,
 }: makeSyncpsCompatParam.Options = {}): SyncpsPubsub.Parameters {
-  const ibltParams = makeIbltParams(expectedEntries, keyToBufferLittleEndian, true);
+  const iblt = makeIbltParams(expectedEntries, keyToBufferLittleEndian, true);
   return {
-    ...ibltParams,
+    iblt,
 
     ibltCompression,
-    hashPub: (pub) => hash(ibltParams.checkSeed, Encoder.encode(pub)),
+    hashPub: (pub) => hash(iblt.checkSeed, Encoder.encode(pub)),
     encodeContent(pubs, maxSize) {
       const encoder = new Encoder(maxSize * 2);
       const list = [...pubs];

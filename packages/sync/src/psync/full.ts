@@ -1,18 +1,18 @@
 import { Endpoint, Producer } from "@ndn/endpoint";
 import { Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
-import { discoverVersion, fetch } from "@ndn/segmented-object";
 import { toHex } from "@ndn/tlv";
 import { AbortController } from "abort-controller";
 import { EventEmitter } from "events";
-import assert from "minimalistic-assert";
 import pDefer from "p-defer";
 import type TypedEmitter from "typed-emitter";
 
+import { computeInterval, IntervalFunc, IntervalRange } from "../detail/interval";
 import { UplinkRouteMirror } from "../detail/uplink-route-mirror";
 import type { IBLT } from "../iblt";
 import { SyncNode, SyncProtocol, SyncUpdate } from "../types";
 import { PSyncCodec } from "./codec";
 import { PSyncCore, PSyncNode } from "./core";
+import { PSyncStateFetcher } from "./state-fetcher";
 import { PSyncStateProducerBuffer } from "./state-producer-buffer";
 
 interface PendingInterest {
@@ -54,7 +54,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>) i
     this.syncPrefix = syncPrefix;
     this.c = new PSyncCore(p);
     this.c.onIncreaseSeqNum = this.handleIncreaseSeqNum;
-    this.codec = new PSyncCodec(p, this.c);
+    this.codec = new PSyncCodec(p, this.c.ibltParams);
     if (addSyncPrefixOnUplinks) {
       this.uplinkRouteMirror = new UplinkRouteMirror(endpoint.fw, syncPrefix);
     }
@@ -67,16 +67,8 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>) i
       concurrency: Infinity,
     });
 
-    this.cLifetime = syncInterestLifetime;
-    this.cInterval = ((): [number, number] => {
-      if (syncInterestInterval) {
-        const [min, max] = syncInterestInterval;
-        assert(min <= max);
-        return [min, max - min];
-      }
-      return [syncInterestLifetime / 2 + 100, syncInterestLifetime / 2 + 500];
-    })();
-    this.cVerifier = verifier;
+    this.cFetcher = new PSyncStateFetcher(endpoint, this.describe, this.codec, syncInterestLifetime, verifier);
+    this.cInterval = computeInterval(syncInterestInterval, syncInterestLifetime);
     this.scheduleSyncInterest(0);
   }
 
@@ -93,9 +85,8 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>) i
   private readonly pProducer: Producer;
   private readonly pPendings = new Map<string, PendingInterest>(); // toHex(ibltComp.value) => PI
 
-  private readonly cLifetime: number;
-  private readonly cInterval: [min: number, range: number];
-  private readonly cVerifier?: Verifier;
+  private readonly cFetcher: PSyncStateFetcher;
+  private readonly cInterval: IntervalFunc;
   private cTimer!: NodeJS.Timeout;
   private cAbort?: AbortController;
   private cCurrentInterestName?: Name;
@@ -220,7 +211,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>) i
     return server.processInterest(interest);
   }
 
-  private scheduleSyncInterest(after = this.cInterval[0] + Math.random() * this.cInterval[1]) {
+  private scheduleSyncInterest(after = this.cInterval()) {
     this.cCurrentInterestName = undefined;
     clearTimeout(this.cTimer);
     this.cTimer = setTimeout(this.sendSyncInterest, after);
@@ -242,27 +233,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>) i
 
     let state: PSyncCore.State;
     try {
-      const versioned = await discoverVersion(name, {
-        endpoint: this.endpoint,
-        describe: `${this.describe}[cv]`,
-        versionConvention: this.codec.versionConvention,
-        segmentNumConvention: this.codec.segmentNumConvention,
-        expectedSuffixLen: 2 + this.codec.nUselessCompsAfterIblt,
-        modifyInterest: { lifetime: this.cLifetime },
-        retxLimit: 0,
-        signal: this.cAbort.signal,
-        verifier: this.cVerifier,
-      });
-      const payload = await fetch(versioned, {
-        endpoint: this.endpoint,
-        describe: `${this.describe}[cf]`,
-        segmentNumConvention: this.codec.segmentNumConvention,
-        modifyInterest: { lifetime: this.cLifetime },
-        retxLimit: 0,
-        signal: this.cAbort.signal,
-        verifier: this.cVerifier,
-      });
-      state = this.codec.buffer2state(payload);
+      ({ state } = await this.cFetcher.fetch(name, abort));
     } catch {
       if (this.cAbort !== abort) { // aborted
         return;
@@ -353,7 +324,7 @@ export namespace PSyncFull {
      * Interval between sync Interests, randomized within the range, in milliseconds.
      * @default [syncInterestLifetime/2+100,syncInterestLifetime/2+500]
      */
-    syncInterestInterval?: [min: number, max: number];
+    syncInterestInterval?: IntervalRange;
 
     /**
      * Verifier of sync reply Data packets.

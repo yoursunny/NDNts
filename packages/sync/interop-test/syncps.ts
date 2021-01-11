@@ -1,7 +1,6 @@
 import { openUplinks } from "@ndn/cli-common";
 import { Data, Name } from "@ndn/packet";
 import { makeSyncpsCompatParam, SyncpsPubsub } from "@ndn/sync";
-// import { makeSyncpsCompatParam, SyncpsPubsub } from "..";
 
 const syncPrefix = new Name("/syncps-interop");
 const ownName = new Name(`/syncps-interop-data/NDNts/${Date.now()}`);

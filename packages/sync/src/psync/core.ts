@@ -8,22 +8,20 @@ import type { SyncNode } from "../types";
 export class PSyncCore {
   constructor(p: PSyncCore.Parameters) {
     const {
+      iblt: ibltParams,
       threshold,
       joinPrefixSeqNum,
-      splitPrefixSeqNum,
     } = p;
     this.threshold = threshold;
     this.joinPrefixSeqNum = joinPrefixSeqNum;
-    this.splitPrefixSeqNum = splitPrefixSeqNum;
 
-    this.ibltParams = IBLT.PreparedParameters.prepare(p);
+    this.ibltParams = IBLT.PreparedParameters.prepare(ibltParams);
     this.iblt = new IBLT(this.ibltParams);
   }
 
   public readonly ibltParams: IBLT.PreparedParameters;
   public readonly threshold: number;
   public readonly joinPrefixSeqNum: (ps: PSyncCore.PrefixSeqNum) => PSyncCore.PrefixSeqNumEncoded;
-  public readonly splitPrefixSeqNum: (value: Uint8Array) => PSyncCore.PrefixSeqNum;
 
   public readonly nodes = new Map<string, PSyncNode>(); // prefixHex => node
   public readonly keys = new Map<number, PSyncNode>(); // key => node
@@ -69,15 +67,14 @@ export namespace PSyncCore {
     readonly hash: number;
   }
 
-  export interface Parameters extends IBLT.Parameters {
+  export interface Parameters {
+    iblt: IBLT.Parameters;
+
     /** If IBLT diff has at least this number of entries, respond with SyncData right away. */
     threshold: number;
 
     /** Encode prefix and sequence number to byte array. */
     joinPrefixSeqNum: (ps: PrefixSeqNum) => PrefixSeqNumEncoded;
-
-    /** Decode prefix and sequence number from byte array. */
-    splitPrefixSeqNum: (value: Uint8Array) => PrefixSeqNum;
   }
 }
 

@@ -7,6 +7,7 @@ import { Data, Name, NameLike } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
 import { makeSyncpsCompatParam, SyncpsPubsub } from "..";
+import { Subscription } from "../src/types";
 
 class DebugPrinter {
   public static enabled = process.env.NDNTS_SYNC_DEBUG === "1";
@@ -96,7 +97,7 @@ class Fixture {
     await this.syncs[i]!.publish(new Data(pub), cb);
   }
 
-  public subscribe(i: number, topic: NameLike): [sub: SyncpsPubsub.Subscription, update: UpdateMock] {
+  public subscribe(i: number, topic: NameLike): [sub: Subscription, update: UpdateMock] {
     const title = String.fromCharCode(0x41 + i);
     topic = new Name(topic);
     const update = jest.fn<void, [Data]>()
@@ -123,7 +124,7 @@ test("simple", async () => {
   const [, updateBtP] = f.subscribe(1, "/P");
   const [, updateCtQ] = f.subscribe(2, "/Q");
 
-  subAtPZ.close();
+  subAtPZ.remove();
   await f.publish(1, "/P/Z/0");
   await f.delay();
   expect(updateAtR).toHaveBeenCalledTimes(0);
@@ -135,7 +136,7 @@ test("simple", async () => {
   expect(updateBtP).toHaveBeenCalledTimes(0);
   expect(updateCtQ).toHaveBeenCalledTimes(0);
 
-  subAtP1.close();
+  subAtP1.remove();
   await Promise.all([
     f.publish(0, "/P/A/1"),
     f.publish(1, "/P/B/1"),

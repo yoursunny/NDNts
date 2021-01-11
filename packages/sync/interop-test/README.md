@@ -4,7 +4,7 @@ Test environment:
 
 * Node.js 14.15.3
 * ndn-cxx and NFD 0.7.1 (install from PPA)
-* [PSync C++ library](https://github.com/named-data/PSync) commit `b60398c5fc216a1b577b9dbcf61d48a21cb409a4` (2020-12-18)
+* [PSync C++ library](https://github.com/named-data/PSync) commit `32b97d7654f5a3851388804ec3a0cbc2fde2c06f` (2020-12-31)
 * [ndn-ind](https://github.com/operantnetworks/ndn-ind) commit `dd934a7a5106cda6ea14675554427e12df1ce18f` (2020-12-23)
 * syncps in [DNMP-v2](https://github.com/pollere/DNMP-v2) commit `c9431460f85c326a410758aa4ff2a26bfcf0df69` (2020-10-17)
 
@@ -17,6 +17,17 @@ NDNTS_NFDREG=1 npm run literate packages/sync/interop-test/psync-full.ts
 # in PSync directory
 export NDN_LOG=examples.FullSyncApp=INFO
 LD_LIBRARY_PATH=build ./build/examples/psync-full-sync /psync-interop /psync-memphis/${RANDOM} 10 1000
+```
+
+## PSyncPartialSubscriber
+
+```bash
+# in PSync directory
+export NDN_LOG=examples.PartialSyncProducerApp=INFO
+LD_LIBRARY_PATH=build ./build/examples/psync-producer /psync-interop /psync-memphis/${RANDOM} 10 1000
+
+# in NDNts directory
+npm run literate packages/sync/interop-test/psync-partial-subscriber.ts
 ```
 
 ## SyncpsPubsub

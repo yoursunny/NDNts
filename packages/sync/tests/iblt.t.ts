@@ -4,7 +4,7 @@ import { fromHex } from "@ndn/tlv";
 
 import { IBLT, makePSyncCompatParam } from "..";
 
-const paramCompat10 = makePSyncCompatParam({ expectedEntries: 10 });
+const paramCompat10 = makePSyncCompatParam({ expectedEntries: 10 }).iblt;
 
 test("serialize", () => {
   const iblt0 = new IBLT(paramCompat10);
@@ -15,7 +15,7 @@ test("serialize", () => {
   const iblt1 = new IBLT(paramCompat10);
   iblt1.deserialize(wire0);
 
-  const iblt2 = new IBLT(makePSyncCompatParam({ expectedEntries: 20 }));
+  const iblt2 = new IBLT(makePSyncCompatParam({ expectedEntries: 20 }).iblt);
   expect(() => iblt2.deserialize(wire0)).toThrow();
 });
 
