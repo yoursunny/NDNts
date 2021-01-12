@@ -30,7 +30,7 @@
     "execa": "^5.0.0",
     "minimalistic-assert": "^1.0.1",
     "throat": "^5.0.0",
-    "tslib": "^2.0.3"
+    "tslib": "^2.1.0"
   },
   "devDependencies": {
     "@types/minimalistic-assert": "^1.0.1",

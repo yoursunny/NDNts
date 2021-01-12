@@ -27,7 +27,7 @@
     "@ndn/l3face": "workspace:*",
     "abort-controller": "^3.0.0",
     "p-event": "^4.2.0",
-    "tslib": "^2.0.3"
+    "tslib": "^2.1.0"
   },
   "devDependencies": {
     "@ndn/fw": "workspace:*",
