@@ -4,7 +4,7 @@ import { Data, Name, Signer } from "@ndn/packet";
 import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI, toHex, toUtf8 } from "@ndn/tlv";
 import indentString from "indent-string";
 
-import { TT, Verb } from "./an";
+import { C, TT } from "./an";
 
 const EVD = new EvDecoder<CaProfile.Fields>("CaProfile", undefined)
   .add(TT.CaPrefix, (t, { vd }) => t.prefix = vd.decode(Name), { required: true })
@@ -17,14 +17,15 @@ const EVD = new EvDecoder<CaProfile.Fields>("CaProfile", undefined)
 export class CaProfile {
   public static async fromData(data: Data): Promise<CaProfile> {
     const profile = new CaProfile(data);
-    if (!(data.name.getPrefix(-3).equals(profile.prefix) &&
-          data.name.at(-3).equals(Verb.INFO) &&
+    if (!(data.name.getPrefix(-4).equals(profile.prefix) &&
+          data.name.at(-4).equals(C.CA) &&
+          data.name.at(-3).equals(C.INFO) &&
           data.name.at(-2).is(Version) &&
           data.name.at(-1).is(Segment))) {
       throw new Error("bad Name");
     }
     profile.publicKey_ = await profile.cert.createVerifier();
-    await profile.publicKey.verify(data);
+    await profile.publicKey_.verify(data);
     profile.certDigest_ = await profile.cert.data.computeImplicitDigest();
     return profile;
   }
@@ -86,7 +87,7 @@ export namespace CaProfile {
     ]);
 
     const data = new Data();
-    data.name = prefix.append(Verb.INFO).append(Version, version).append(Segment, 0);
+    data.name = prefix.append(C.CA, C.INFO, Version.create(version), Segment.create(0));
     data.freshnessPeriod = 3600000;
     data.content = payload;
     data.isFinalBlock = true;

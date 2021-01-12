@@ -3,7 +3,7 @@ import { Data, Interest, SignedInterestPolicy } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
-import { TT, Verb } from "./an";
+import { C, TT } from "./an";
 import type { CaProfile } from "./ca-profile";
 
 const EVD = new EvDecoder<NewRequest.Fields>("NewRequest", undefined)
@@ -13,8 +13,9 @@ const EVD = new EvDecoder<NewRequest.Fields>("NewRequest", undefined)
 /** NEW request packet. */
 export class NewRequest {
   public static async fromInterest(interest: Interest, { profile, signedInterestPolicy }: NewRequest.Context): Promise<NewRequest> {
-    if (!(interest.name.getPrefix(-2).equals(profile.prefix) &&
-          interest.name.at(-2).equals(Verb.NEW))) {
+    if (!(interest.name.getPrefix(-3).equals(profile.prefix) &&
+    interest.name.at(-3).equals(C.CA) &&
+          interest.name.at(-2).equals(C.NEW))) {
       throw new Error("bad Name");
     }
 
@@ -97,7 +98,7 @@ export namespace NewRequest {
     ]);
 
     const interest = new Interest();
-    interest.name = profile.prefix.append(Verb.NEW);
+    interest.name = profile.prefix.append(C.CA, C.NEW);
     interest.mustBeFresh = true;
     interest.appParameters = payload;
     await signedInterestPolicy.makeSigner(privateKey).sign(interest);

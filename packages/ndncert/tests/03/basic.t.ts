@@ -31,7 +31,7 @@ test("packets", async () => {
   const [caPvt, caPub] = await generateSigningKey("/authority", RSA);
   const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
   const profile = await CaProfile.build({
-    prefix: new Name("/authority/CA"),
+    prefix: new Name("/authority"),
     info: "authority CA",
     probeKeys: ["uid"],
     maxValidityPeriod: 86400000,
@@ -43,7 +43,7 @@ test("packets", async () => {
   expect(profileData.name).toEqualName("/authority/CA/INFO/35=%07/33=%00");
   expect(profileData.isFinalBlock).toBeTruthy();
   expect(profileData.sigInfo.keyLocator?.name).toEqualName(caPub.name);
-  expect(profile.prefix).toEqualName("/authority/CA");
+  expect(profile.prefix).toEqualName("/authority");
   expect(profile.info).toBe("authority CA");
   expect(profile.probeKeys).toEqual(["uid"]);
   expect(profile.maxValidityPeriod).toBe(86400000);

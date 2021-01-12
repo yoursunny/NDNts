@@ -3,7 +3,7 @@ import { Component, Interest, LLDecrypt, LLEncrypt, SignedInterestPolicy } from 
 import { Decoder, Encoder, EvDecoder, toUtf8 } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
-import { TT, Verb } from "./an";
+import { C, TT } from "./an";
 import type { CaProfile } from "./ca-profile";
 import * as encrypted_payload from "./encrypted";
 import * as parameter_kv from "./parameter-kv";
@@ -24,8 +24,9 @@ export class ChallengeRequest {
     signedInterestPolicy,
     lookupRequest,
   }: ChallengeRequest.Context): Promise<ChallengeRequest> {
-    if (!(interest.name.getPrefix(-3).equals(profile.prefix) &&
-          interest.name.at(-3).equals(Verb.CHALLENGE))) {
+    if (!(interest.name.getPrefix(-4).equals(profile.prefix) &&
+    interest.name.at(-4).equals(C.CA) &&
+          interest.name.at(-3).equals(C.CHALLENGE))) {
       throw new Error("bad Name");
     }
     if (!interest.appParameters) {
@@ -96,7 +97,7 @@ export namespace ChallengeRequest {
     ]);
 
     const interest = new Interest();
-    interest.name = profile.prefix.append(Verb.CHALLENGE, new Component(undefined, requestId));
+    interest.name = profile.prefix.append(C.CA, C.CHALLENGE, new Component(undefined, requestId));
     interest.mustBeFresh = true;
     interest.appParameters = encrypted_payload.encode(
       await sessionEncrypter.llEncrypt({ plaintext: payload, additionalData: requestId }));

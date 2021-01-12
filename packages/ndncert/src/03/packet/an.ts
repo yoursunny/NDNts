@@ -29,7 +29,8 @@ export const TT = {
   ProbeRedirect: 0xB3,
 };
 
-export const Verb = {
+export const C = {
+  CA: Component.from("CA"),
   INFO: Component.from("INFO"),
   PROBE: Component.from("PROBE"),
   NEW: Component.from("NEW"),

@@ -1,12 +1,12 @@
-import { Endpoint, Producer } from "@ndn/endpoint";
+import { Endpoint, Producer, ProducerHandler } from "@ndn/endpoint";
 import { Certificate, CertNaming, NamedSigner, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
-import { Component, ComponentLike, Data, Interest } from "@ndn/packet";
+import { Component, ComponentLike, Data } from "@ndn/packet";
 import { serveMetadata } from "@ndn/rdr";
 import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 
 import * as crypto from "../crypto-common";
-import { CaProfile, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, NewRequest, NewResponse, Status, Verb } from "../packet/mod";
+import { C, CaProfile, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
 import type { ServerChallenge, ServerChallengeContext } from "./challenge";
 
 export interface ServerOptions {
@@ -64,17 +64,18 @@ export class Server {
     const { cert, prefix, data: { name: infoName } } = profile;
     assert(CertNaming.toKeyName(cert.name).equals(key.name));
     const infoVersion = infoName.getPrefix(-1);
+    const announcement = prefix.append(C.CA);
 
     this.producers = [
-      serveMetadata({ name: infoVersion }, { endpoint, announcement: prefix, signer: key }),
+      serveMetadata({ name: infoVersion }, { endpoint, announcement, signer: key }),
       endpoint.produce(infoVersion, this.handleInfoInterest,
-        { describe: `NDNCERT-CA(${prefix}, INFO)`, announcement: prefix }),
-      endpoint.produce(prefix.append(Verb.PROBE), this.handleProbeInterest,
-        { describe: `NDNCERT-CA(${prefix}, PROBE)`, announcement: prefix }),
-      endpoint.produce(prefix.append(Verb.NEW), this.handleNewInterest,
-        { describe: `NDNCERT-CA(${prefix}, NEW)`, announcement: prefix }),
-      endpoint.produce(prefix.append(Verb.CHALLENGE), this.handleChallengeInterest,
-        { describe: `NDNCERT-CA(${prefix}, CHALLENGE)`, announcement: prefix }),
+        { describe: `NDNCERT-CA(${prefix}, INFO)`, announcement }),
+      endpoint.produce(announcement.append(C.PROBE), this.handleProbeInterest,
+        { describe: `NDNCERT-CA(${prefix}, PROBE)`, announcement }),
+      endpoint.produce(announcement.append(C.NEW), this.handleNewInterest,
+        { describe: `NDNCERT-CA(${prefix}, NEW)`, announcement }),
+      endpoint.produce(announcement.append(C.CHALLENGE), this.handleChallengeInterest,
+        { describe: `NDNCERT-CA(${prefix}, CHALLENGE)`, announcement }),
     ];
 
     this.cleanupTimer = setInterval(this.cleanupContext, 60000);
@@ -85,15 +86,15 @@ export class Server {
     this.producers.map((producer) => producer.close());
   }
 
-  private handleInfoInterest = async (interest: Interest) => {
+  private handleInfoInterest: ProducerHandler = async () => {
     return this.profile.data;
   };
 
-  private handleProbeInterest = async (interest: Interest) => {
+  private handleProbeInterest: ProducerHandler = async (interest) => {
     return ErrorMsg.makeData(ErrorCode.NoAvailableName, interest, this.key);
   };
 
-  private handleNewInterest = async (interest: Interest) => {
+  private handleNewInterest: ProducerHandler = async (interest) => {
     let request: NewRequest;
     try {
       request = await NewRequest.fromInterest(interest, {
@@ -129,7 +130,7 @@ export class Server {
     return response.data;
   };
 
-  private handleChallengeInterest = async (interest: Interest) => {
+  private handleChallengeInterest: ProducerHandler = async (interest) => {
     let request: ChallengeRequest;
     try {
       request = await ChallengeRequest.fromInterest(interest, {

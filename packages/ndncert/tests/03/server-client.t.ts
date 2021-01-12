@@ -107,7 +107,7 @@ const TABLE: Row[] = [
           expect(envelope.from).toBe("ca@example.com");
           expect(envelope.to).toStrictEqual(["user@example.com"]);
           const msg = JSON.parse(message);
-          expect(msg.subject).toBe(`NDNCERT /authority/CA email challenge for ${toHex(context.requestId)}`);
+          expect(msg.subject).toBe(`NDNCERT /authority email challenge for ${toHex(context.requestId)}`);
           const lines = msg.text.split("\n");
           expect(lines).toHaveLength(4);
           expect(new Name(lines[0])).toEqualName("/requester");
@@ -242,7 +242,7 @@ beforeAll(async () => {
   [caPvt, caPub] = await generateSigningKey("/authority", RSA);
   caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
   profile = await CaProfile.build({
-    prefix: new Name("/authority/CA"),
+    prefix: new Name("/authority"),
     info: "authority CA",
     probeKeys: ["uid"],
     maxValidityPeriod: 86400000,
