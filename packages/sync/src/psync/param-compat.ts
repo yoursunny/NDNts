@@ -8,6 +8,7 @@ import type { IBLT } from "../iblt";
 import type { PSyncCodec } from "./codec";
 import type { PSyncCore } from "./core";
 import type { PSyncFull } from "./full";
+import { PSyncPartialPublisher } from "./partial-publisher";
 import type { PSyncPartialSubscriber } from "./partial-subscriber";
 
 const GenericNumber: NamingConvention<number, number> = {
@@ -87,7 +88,7 @@ export function makePSyncCompatParam({
   expectedSubscriptions = 16,
   ibltCompression = noCompression,
   contentCompression = noCompression,
-}: makePSyncCompatParam.Options = {}): PSyncFull.Parameters & PSyncPartialSubscriber.Parameters {
+}: makePSyncCompatParam.Options = {}): PSyncFull.Parameters & PSyncPartialPublisher.Parameters & PSyncPartialSubscriber.Parameters {
   return {
     iblt: makeIbltParams(expectedEntries, keyToBufferLittleEndian),
     threshold: Math.floor(expectedEntries / 2),
@@ -117,9 +118,10 @@ export function makePSyncCompatParam({
       projectedElementCount: expectedSubscriptions,
       falsePositiveProbability: 0.001,
     },
-    addToBloom(bf, prefix) {
-      bf.insert(AltUri.ofName(prefix));
+    toBloomKey(prefix) {
+      return AltUri.ofName(prefix);
     },
+    encodeBloomLength: 3,
     encodeBloom(bf) {
       return [
         GenericNumber.create(bf.projectedElementCount),
@@ -128,7 +130,7 @@ export function makePSyncCompatParam({
       ];
     },
     decodeBloom(Bloom, comps) {
-      if (comps.length !== 3 || !GenericNumber.match(comps[0]!) || !GenericNumber.match(comps[1]!)) {
+      if (comps.length !== this.encodeBloomLength || !GenericNumber.match(comps[0]!) || !GenericNumber.match(comps[1]!)) {
         throw new Error("PSyncCompatParam.decodeBloom bad input");
       }
       return Bloom.create({

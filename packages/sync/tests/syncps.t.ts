@@ -6,8 +6,7 @@ import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Data, Name, NameLike } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
-import { makeSyncpsCompatParam, SyncpsPubsub } from "..";
-import { Subscription } from "../src/types";
+import { makeSyncpsCompatParam, Subscription, SyncpsPubsub } from "..";
 
 class DebugPrinter {
   public static enabled = process.env.NDNTS_SYNC_DEBUG === "1";
@@ -32,7 +31,6 @@ class DebugPrinter {
   }
 }
 
-const syncPrefix = new Name("/syncps-test");
 const paramCompat = makeSyncpsCompatParam();
 let debugPrinter: DebugPrinter;
 let closers: Array<{ close: () => void }>;
@@ -54,7 +52,7 @@ class Fixture {
 
     const opts: SyncpsPubsub.Options = {
       p: paramCompat,
-      syncPrefix,
+      syncPrefix: new Name("/syncps-test"),
       syncInterestLifetime: 100,
     };
     this.syncs.push(new SyncpsPubsub({ ...opts }));

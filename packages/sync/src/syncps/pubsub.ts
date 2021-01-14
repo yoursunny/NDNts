@@ -79,7 +79,8 @@ function defaultFilterPubs(items: SyncpsPubsub.FilterPubItem[]) {
 }
 
 /** syncps - pubsub service. */
-export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>) implements Subscriber<Name, Data> {
+export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>)
+  implements Subscriber<Name, Data> {
   constructor({
     p,
     endpoint = new Endpoint(),

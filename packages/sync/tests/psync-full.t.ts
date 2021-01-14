@@ -8,8 +8,7 @@ import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 import DefaultMap from "mnemonist/default-map";
 
-import { IBLT, makePSyncCompatParam, PSyncFull } from "..";
-import { SyncNode, SyncUpdate } from "../src/types";
+import { IBLT, makePSyncCompatParam, PSyncFull, SyncNode, SyncUpdate } from "..";
 
 class DebugPrinter {
   public static enabled = process.env.NDNTS_SYNC_DEBUG === "1";
@@ -47,7 +46,6 @@ class DebugPrinter {
   }
 }
 
-const syncPrefix = new Name("/psync-test");
 const paramCompat = makePSyncCompatParam({ expectedEntries: 40 });
 let debugPrinter: DebugPrinter;
 let closers: Array<{ close: () => void }>;
@@ -67,7 +65,7 @@ class Fixture {
 
     const opts: PSyncFull.Options = {
       p: paramCompat,
-      syncPrefix,
+      syncPrefix: new Name("/psync-test"),
       syncInterestLifetime: 100,
       syncInterestInterval: [110, 150],
     };

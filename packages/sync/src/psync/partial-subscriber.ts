@@ -14,6 +14,7 @@ import { PSyncCodec } from "./codec";
 import { PSyncCore } from "./core";
 import { PSyncStateFetcher } from "./state-fetcher";
 
+type Sub = Subscription<Name, SyncUpdate<Name>>;
 type Update = SyncUpdate<Name>;
 
 interface DebugEntry {
@@ -64,7 +65,7 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
   private closed = false;
 
   private readonly subs = new SubscriptionTable<Name, Update, string, PSyncPartialSubscriber.TopicInfo>((topic) => toHex(topic.value));
-  private readonly prevSeqNums = new WeakMap<Set<Subscription<Name, Update>>, number>();
+  private readonly prevSeqNums = new WeakMap<Set<Sub>, number>();
   private bloom!: BloomFilter;
   private ibltComp?: Component;
 
@@ -94,16 +95,16 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
     clearTimeout(this.cTimer);
   }
 
-  public subscribe(topic: PSyncPartialSubscriber.TopicInfo): Subscription<Name, Update> {
+  public subscribe(topic: PSyncPartialSubscriber.TopicInfo): Sub {
     return this.subs.add(topic.prefix, topic);
   }
 
-  private handleAddTopic = (prefix: Name, topicHex: string, set: Set<Subscription<Name, Update>>, { seqNum }: PSyncPartialSubscriber.TopicInfo): void => {
+  private handleAddTopic = (prefix: Name, topicHex: string, set: Set<Sub>, { seqNum }: PSyncPartialSubscriber.TopicInfo): void => {
     this.prevSeqNums.set(set, seqNum);
-    this.codec.addToBloom(this.bloom, prefix);
+    this.bloom.insert(this.codec.toBloomKey(prefix));
   };
 
-  private handleRemoveTopic = (topic: Name, topicHex: string, set: Set<Subscription<Name, Update>>): void => {
+  private handleRemoveTopic = (topic: Name, topicHex: string, set: Set<Sub>): void => {
     if (!this.prevSeqNums.delete(set)) {
       return;
     }
@@ -119,7 +120,7 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
         prefix = sub.topic;
         break;
       }
-      this.codec.addToBloom(this.bloom, prefix);
+      this.bloom.insert(this.codec.toBloomKey(prefix));
     }
   };
 
@@ -172,6 +173,7 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
     let state: PSyncCore.State;
     try {
       const { state: rState, versioned } = await this.cFetcher.fetch(name, abort, "s");
+      // TODO test ContentType=Nack explicitly
       if (rState.length === 0) {
         this.ibltComp = undefined;
         return this.scheduleInterest(0);
@@ -221,7 +223,7 @@ export namespace PSyncPartialSubscriber {
   export interface Options {
     /**
      * Algorithm parameters.
-     * They must be the same on every peer.
+     * They must match the publisher parameters.
      */
     p: Parameters;
 

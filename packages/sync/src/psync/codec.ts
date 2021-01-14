@@ -57,10 +57,16 @@ export namespace PSyncCodec {
     /** Decode State from buffer (without decompression). */
     decodeState: (payload: Uint8Array) => PSyncCore.State;
 
-    addToBloom: (bf: BloomFilter, prefix: Name) => void;
+    /** Convert a name prefix to a Bloom filter key. */
+    toBloomKey: (prefix: Name) => string|Uint8Array;
 
+    /** Number of name components in an encoded Bloom filter. */
+    encodeBloomLength: number;
+
+    /** Encode a Bloom filter. */
     encodeBloom: (bf: BloomFilter) => Component[];
 
+    /** Decode a Bloom filter. */
     decodeBloom: (Bloom: typeof BloomFilter, comps: readonly Component[]) => Promise<BloomFilter>;
   }
 }

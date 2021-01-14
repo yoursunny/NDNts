@@ -2,7 +2,7 @@
 
 Test environment:
 
-* Node.js 14.15.3
+* Node.js 14.15.4
 * ndn-cxx and NFD 0.7.1 (install from PPA)
 * [PSync C++ library](https://github.com/named-data/PSync) commit `32b97d7654f5a3851388804ec3a0cbc2fde2c06f` (2020-12-31)
 * [ndn-ind](https://github.com/operantnetworks/ndn-ind) commit `dd934a7a5106cda6ea14675554427e12df1ce18f` (2020-12-23)
@@ -17,6 +17,17 @@ NDNTS_NFDREG=1 npm run literate packages/sync/interop-test/psync-full.ts
 # in PSync directory
 export NDN_LOG=examples.FullSyncApp=INFO
 LD_LIBRARY_PATH=build ./build/examples/psync-full-sync /psync-interop /psync-memphis/${RANDOM} 10 1000
+```
+
+## PSyncPartialPublisher
+
+```bash
+# in NDNts directory
+NDNTS_NFDREG=1 npm run literate packages/sync/interop-test/psync-partial-publisher.ts
+
+# in PSync directory
+export NDN_LOG=examples.PartialSyncConsumerApp=INFO
+LD_LIBRARY_PATH=build ./build/examples/psync-consumer /psync-interop 5
 ```
 
 ## PSyncPartialSubscriber

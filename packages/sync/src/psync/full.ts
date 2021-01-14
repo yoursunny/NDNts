@@ -1,4 +1,4 @@
-import { Endpoint, Producer } from "@ndn/endpoint";
+import { Endpoint, Producer, ProducerHandler } from "@ndn/endpoint";
 import { Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import { AbortController } from "abort-controller";
@@ -34,7 +34,8 @@ interface Events extends SyncProtocol.Events<Name> {
 }
 
 /** PSync - FullSync participant. */
-export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>) implements SyncProtocol<Name> {
+export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
+  implements SyncProtocol<Name> {
   constructor({
     p,
     endpoint = new Endpoint(),
@@ -131,7 +132,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>) i
     return this.c.add(prefix);
   }
 
-  private handleSyncInterest = async (interest: Interest): Promise<Data|undefined> => {
+  private handleSyncInterest: ProducerHandler = async (interest) => {
     if (interest.name.length !== this.syncPrefix.length + 1) {
       // segment Interest should be satisfied by PSyncStateProducerBuffer
       return undefined;
