@@ -47,6 +47,6 @@
     "@ndn/repo": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@types/minimalistic-assert": "^1.0.1",
-    "streaming-iterables": "^5.0.3"
+    "streaming-iterables": "^5.0.4"
   }
 }

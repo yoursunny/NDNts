@@ -1,4 +1,4 @@
-import { createStore, del as idbDel, get as idbGet, keys as idbKeys, set as idbSet } from "idb-keyval";
+import { createStore, del, get, keys, set, UseStore } from "idb-keyval";
 
 import { CertStore } from "./cert-store";
 import { KeyStore } from "./key-store";
@@ -8,18 +8,18 @@ class IdbStoreProvider<T> implements StoreProvider<T> {
   // Firefox does not support structured clone of ECDSA CryptoKey.
   // https://bugzilla.mozilla.org/show_bug.cgi?id=1545813
   public readonly canSClone = !/rv:.*Gecko\//.test(navigator.userAgent);
-  private readonly store: ReturnType<typeof createStore>;
+  private readonly store: UseStore;
 
   constructor(dbName: string) {
     this.store = createStore(dbName, "");
   }
 
   public list(): Promise<string[]> {
-    return idbKeys(this.store) as Promise<string[]>;
+    return keys(this.store) as Promise<string[]>;
   }
 
   public async get(key: string): Promise<T> {
-    const value = await idbGet<T|undefined>(key, this.store);
+    const value = await get<T|undefined>(key, this.store);
     if (typeof value === "undefined") {
       throw new Error(`${key} does not exist`);
     }
@@ -27,11 +27,11 @@ class IdbStoreProvider<T> implements StoreProvider<T> {
   }
 
   public insert(key: string, value: T): Promise<void> {
-    return idbSet(key, value, this.store);
+    return set(key, value, this.store);
   }
 
   public erase(key: string): Promise<void> {
-    return idbDel(key, this.store);
+    return del(key, this.store);
   }
 }
 

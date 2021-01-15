@@ -32,7 +32,7 @@
     "hard-rejection": "^2.1.0",
     "leveldown": "^5.6.0",
     "progress": "^2.0.3",
-    "streaming-iterables": "^5.0.3",
+    "streaming-iterables": "^5.0.4",
     "tslib": "^2.1.0",
     "yargs": "^16.2.0"
   },

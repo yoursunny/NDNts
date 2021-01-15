@@ -59,7 +59,7 @@ export class Ndncert03MakeProfileCommand implements CommandModule<{}, Args> {
       prefix: new Name(args.prefix),
       info: args.info,
       probeKeys: [],
-      maxValidityPeriod: 86400 * args["valid-days"],
+      maxValidityPeriod: args["valid-days"] * 86400_000,
       cert,
       signer,
     });
