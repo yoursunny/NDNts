@@ -31,7 +31,7 @@ It accepts the following arguments:
 
 ### Example
 
-```sh
+```bash
 dd if=/dev/urandom of=/tmp/1.bin bs=1M count=1
 
 # producer: serve from stdin

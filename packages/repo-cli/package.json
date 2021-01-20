@@ -13,7 +13,7 @@
   ],
   "type": "module",
   "bin": {
-    "ndntsrepo": "cli.cjs"
+    "ndnts-repo": "cli.cjs"
   },
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {

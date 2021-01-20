@@ -2,27 +2,27 @@
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-**ndntssec** is a command line utility to access an NDNts persistent KeyChain.
+**ndnts-keychain** is a command line utility to access an NDNts persistent KeyChain.
 
 `NDNTS_KEYCHAIN` environment variable specifies location of the KeyChain.
 If missing, the command will operate on a temporary in-memory KeyChain, which is not particularly useful.
 
 NDNts does not provide a "default" KeyChain, because it is unsafe to access the same KeyChain from multiple processes simultaneously.
 
-## `ndntssec list-keys`: List Keys
+## `ndnts-keychain list-keys`: List Keys
 
-```sh
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec list-keys
+```bash
+NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain list-keys
 ```
 
 This command prints a list of key names to standard output.
 
-## `ndntssec gen-key`: Generate Key
+## `ndnts-keychain gen-key`: Generate Key
 
-```sh
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec gen-key /A
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec gen-key /A --type ec --curve P-384
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec gen-key /A --type rsa --modulus-length 2048
+```bash
+NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain gen-key /A
+NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain gen-key /A --type ec --curve P-384
+NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain gen-key /A --type rsa --modulus-length 2048
 ```
 
 * The name can either be a subject name (called "identity" in other tools), or a key name.
@@ -32,28 +32,28 @@ NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec gen-key /A --type rsa --modulus-length 
 * Default is ECDSA key with P-256 curve.
 
 This command adds a self-signed certificate to the KeyChain, and prints the certificate name to stdout.
-You may retrieve the self-signed certificate with `ndntssec show-cert` command.
+You may retrieve the self-signed certificate with `ndnts-keychain show-cert` command.
 
-## `ndntssec list-certs`: List Certificates
+## `ndnts-keychain list-certs`: List Certificates
 
-```sh
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec list-certs
+```bash
+NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain list-certs
 ```
 
 This command prints a list of certificate names to standard output.
 
-## `ndntssec show-cert`: Show Certificate
+## `ndnts-keychain show-cert`: Show Certificate
 
-```sh
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec show-cert /A/KEY/36=%00%05%96%BA%2C%A5%89%F8/self/35=%00%00%01nD%24%01%87
+```bash
+NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain show-cert /A/KEY/36=%00%05%96%BA%2C%A5%89%F8/self/35=%00%00%01nD%24%01%87
 ```
 
 This command prints the specified certificate in Base64 format to standard output.
 
-## `ndntssec issue-cert`: Issue Certificate
+## `ndnts-keychain issue-cert`: Issue Certificate
 
-```sh
-NDNTS_KEYCHAIN=/tmp/issuer-keychain ndntssec issue-cert --issuer /B --issuer-id B --valid-days 72 < A-request.cert > A.cert
+```bash
+NDNTS_KEYCHAIN=/tmp/issuer-keychain ndnts-keychain issue-cert --issuer /B --issuer-id B --valid-days 72 < A-request.cert > A.cert
 ```
 
 This command reads a certificate request (self-signed certificate) in Base64 format from standard input, signs (issues) a certificate to the public key enclosed in the certificate request, and prints the issued certificate in Base64 format to standard output.
@@ -68,19 +68,19 @@ This command reads a certificate request (self-signed certificate) in Base64 for
 Example:
 
 ```shell
-$ NDNTS_KEYCHAIN=/tmp/issuer ndntssec gen-key /issuer
+$ NDNTS_KEYCHAIN=/tmp/issuer ndnts-keychain gen-key /issuer
 /issuer/KEY/36=%00%05%96%BAy%B2%60%90/self/35=%00%00%01nD7%BB%12
 
-$ NDNTS_KEYCHAIN=/tmp/user ndntssec gen-key /user
+$ NDNTS_KEYCHAIN=/tmp/user ndnts-keychain gen-key /user
 /user/KEY/36=%00%05%96%BAz%FCl%C0/self/35=%00%00%01nD8%0F%8E
 
-$ NDNTS_KEYCHAIN=/tmp/user ndntssec show-cert /user/KEY/36=%00%05%96%BAz%FCl%C0/self/35=%00%00%01nD8%0F%8E \
-  | NDNTS_KEYCHAIN=/tmp/issuer ndntssec issue-cert --issuer /issuer --issuer-id master --valid-days 72 \
-  | NDNTS_KEYCHAIN=/tmp/user ndntssec add-cert
+$ NDNTS_KEYCHAIN=/tmp/user ndnts-keychain show-cert /user/KEY/36=%00%05%96%BAz%FCl%C0/self/35=%00%00%01nD8%0F%8E \
+  | NDNTS_KEYCHAIN=/tmp/issuer ndnts-keychain issue-cert --issuer /issuer --issuer-id parent --valid-days 72 \
+  | NDNTS_KEYCHAIN=/tmp/user ndnts-keychain add-cert
 
-$ NDNTS_KEYCHAIN=/tmp/user ndntssec list-certs
+$ NDNTS_KEYCHAIN=/tmp/user ndnts-keychain list-certs
 /user/KEY/36=%00%05%96%BAz%FCl%C0/self/35=%00%00%01nD8%0F%8E
-/user/KEY/36=%00%05%96%BAz%FCl%C0/master/35=%00%00%01nD9L%05
+/user/KEY/36=%00%05%96%BAz%FCl%C0/parent/35=%00%00%01nD9L%05
 ```
 
 1. Generate `/issuer` key in issuer's KeyChain.
@@ -88,37 +88,37 @@ $ NDNTS_KEYCHAIN=/tmp/user ndntssec list-certs
 3. Show `/user` certificate request, have it signed by `/issuer`, and add the issued certificate to user's KeyChain.
 4. Display certificates in user's KeyChain.
 
-## `ndntssec add-cert`: Add Certificate
+## `ndnts-keychain add-cert`: Add Certificate
 
-```sh
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec add-cert < A.cert
+```bash
+NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain add-cert < A.cert
 ```
 
 This command reads a certificate in Base64 format from standard input, and saves it in the KeyChain.
 The corresponding key must exist in the KeyChain.
 
-## `ndntssec delete`: Delete Keys and Certificates
+## `ndnts-keychain delete`: Delete Keys and Certificates
 
-```sh
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec delete /A
+```bash
+NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain delete /A
 ```
 
 This command deletes keys and certificates under a name prefix.
 
-## `ndntssec import-safebag`: Import ndn-cxx SafeBag
+## `ndnts-keychain import-safebag`: Import ndn-cxx SafeBag
 
-```sh
-ndnsec export -i /subject -P 888888 | NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec import-safebag --passphrase 888888
+```bash
+ndnsec export -i /subject -P 888888 | NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain import-safebag --passphrase 888888
 ```
 
 This command reads a ndn-cxx [SafeBag](https://named-data.net/doc/ndn-cxx/0.6.6/specs/safe-bag.html) object in Base64 format from standard input, and saves the enclosed private key, public key, and certificate in the KeyChain.
 
-## `ndntssec import-ndnsec`: Import ndn-cxx KeyChain via ndnsec
+## `ndnts-keychain import-ndnsec`: Import ndn-cxx KeyChain via ndnsec
 
-```sh
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec import-ndnsec
+```bash
+NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain import-ndnsec
 
-NDNTS_KEYCHAIN=/tmp/my-keychain ndntssec import-ndnsec --prefix /subject
+NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain import-ndnsec --prefix /subject
 ```
 
 This command copies keys and certificates from ndn-cxx KeyChain using `ndnsec` executable, and prints imported key names to standard output.
@@ -128,9 +128,9 @@ This command copies keys and certificates from ndn-cxx KeyChain using `ndnsec` e
 
 See `@ndn/ndnsec` package for more information.
 
-## `ndntssec ndncert03-*`: NDNCERT 0.3
+## `ndnts-keychain ndncert03-*`: NDNCERT 0.3
 
-`ndntssec ndncert03-make-profile` command generates a CA profile.
+`ndnts-keychain ndncert03-make-profile` command generates a CA profile.
 
 * `--out` specifies output filename.
   The file contains the CA profile Data packet in binary format.
@@ -141,11 +141,11 @@ See `@ndn/ndnsec` package for more information.
 * `--valid-days` specifies maximum validity period of issued certificates, in days.
   The default is 30 days.
 
-`ndntssec ndncert03-show-profile` command displays information in a CA profile.
+`ndnts-keychain ndncert03-show-profile` command displays information in a CA profile.
 
 * `--profile` specifies filename of CA profile.
 
-`ndntssec ndncert03-ca` command runs a certificate authority.
+`ndnts-keychain ndncert03-ca` command runs a certificate authority.
 
 * `--profile` specifies filename of CA profile.
 * `--store` specifies directory path of a repository that stores issued certificates.
@@ -158,7 +158,7 @@ See `@ndn/ndnsec` package for more information.
 * `--possession-issuer` specifies filename of issuer certificate to fulfill possession challenge.
   The default is the CA certificate in the CA profile.
 
-`ndntssec ndncert03-client` command requests a certificate.
+`ndnts-keychain ndncert03-client` command requests a certificate.
 
 * `--profile` specifies filename of CA profile.
 * `--ndnsec` uses ndn-cxx keychain instead of NDNts keychain.
@@ -177,44 +177,44 @@ See `@ndn/ndnsec` package for more information.
 
 CA setup with PIN challenge:
 
-```sh
+```bash
 # generate CA key
-CACERT=$(NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec gen-key /A)
+CACERT=$(NDNTS_KEYCHAIN=/tmp/ca-keychain ndnts-keychain gen-key /A)
 
 # make CA profile
-NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec ndncert03-make-profile --out /tmp/ca.data --prefix /localhost/my-ndncert/CA --cert $CACERT --valid-days 60
+NDNTS_KEYCHAIN=/tmp/ca-keychain ndnts-keychain ndncert03-make-profile --out /tmp/ca.data --prefix /localhost/my-ndncert/CA --cert $CACERT --valid-days 60
 
 # display CA profile
-ndntssec ndncert03-show-profile --profile /tmp/ca.data
+ndnts-keychain ndncert03-show-profile --profile /tmp/ca.data
 
 # start CA with PIN challenge
 nfd-start
-NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge pin
+NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndnts-keychain ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge pin
 ```
 
 Client using PIN challenge, with NDNts keychain:
 
-```sh
+```bash
 # generate key pair
-REQCERT=$(NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec gen-key /B)
+REQCERT=$(NDNTS_KEYCHAIN=/tmp/req-keychain ndnts-keychain gen-key /B)
 REQKEY=$(echo $REQCERT | gawk 'BEGIN { FS=OFS="/" } { NF-=2; print }')
 
 # request certificate with PIN challenge; you'll need to enter the PIN shown on CA console
-NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec ndncert03-client --profile /tmp/ca.data --key $REQKEY --challenge pin
+NDNTS_KEYCHAIN=/tmp/req-keychain ndnts-keychain ndncert03-client --profile /tmp/ca.data --key $REQKEY --challenge pin
 
 # view certificates
-NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec list-certs
+NDNTS_KEYCHAIN=/tmp/req-keychain ndnts-keychain list-certs
 ```
 
 Client using PIN challenge, with ndn-cxx keychain:
 
-```sh
+```bash
 # generate key pair
 ndnsec key-gen -te /C >/dev/null
 REQKEY=$(ndnsec list -k | gawk '$1=="+->*" && $2 ~ "^/C/" { print $2 }')
 
 # request certificate with PIN challenge; you'll need to enter the PIN shown on CA console
-ndntssec ndncert03-client --profile /tmp/ca.data --ndnsec --key $REQKEY --challenge pin
+ndnts-keychain ndncert03-client --profile /tmp/ca.data --ndnsec --key $REQKEY --challenge pin
 
 # view certificates
 ndnsec list -c
@@ -222,7 +222,7 @@ ndnsec list -c
 
 Email challenge, NDNts keychain on client side:
 
-```sh
+```bash
 # before start, prepare CA profile using commands in the PIN challenge example
 
 export CA_EMAIL_HOST=smtp.ethereal.email
@@ -233,23 +233,23 @@ export CA_EMAIL_FROM=$CA_EMAIL_USER
 
 # start CA with email challenge
 nfd-start
-NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge email
+NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndnts-keychain ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge email
 
 # generate key pair
-REQCERT=$(NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec gen-key /M)
+REQCERT=$(NDNTS_KEYCHAIN=/tmp/req-keychain ndnts-keychain gen-key /M)
 REQKEY=$(echo $REQCERT | gawk 'BEGIN { FS=OFS="/" } { NF-=2; print }')
 
 # request certificate with email challenge; you'll need to enter the PIN received from email
 REQEMAIL=someone@example.com
-NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec ndncert03-client --profile /tmp/ca.data --key $REQKEY --challenge email --email $REQEMAIL
+NDNTS_KEYCHAIN=/tmp/req-keychain ndnts-keychain ndncert03-client --profile /tmp/ca.data --key $REQKEY --challenge email --email $REQEMAIL
 
 # view certificates
-NDNTS_KEYCHAIN=/tmp/req-keychain ndntssec list-certs
+NDNTS_KEYCHAIN=/tmp/req-keychain ndnts-keychain list-certs
 ```
 
 Proof of possession challenge, ndn-cxx keychain on client side:
 
-```sh
+```bash
 # generate "other" issuer key
 ndnsec key-gen -te /O >/dev/null
 ndnsec cert-dump -i /O >/tmp/O.ndncert
@@ -260,17 +260,17 @@ ndnsec cert-gen -s /O -i ISSUER-O /tmp/E-self.ndncert >/tmp/E.ndncert
 ndnsec cert-install /tmp/E.ndncert
 
 # generate CA key, make CA profile
-CACERT=$(NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec gen-key /A)
-NDNTS_KEYCHAIN=/tmp/ca-keychain ndntssec ndncert03-make-profile --out /tmp/ca.data --prefix /localhost/my-ndncert/CA --cert $CACERT --valid-days 60
+CACERT=$(NDNTS_KEYCHAIN=/tmp/ca-keychain ndnts-keychain gen-key /A)
+NDNTS_KEYCHAIN=/tmp/ca-keychain ndnts-keychain ndncert03-make-profile --out /tmp/ca.data --prefix /localhost/my-ndncert/CA --cert $CACERT --valid-days 60
 
 # start CA with possession challenge
 nfd-start
-NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndntssec ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge possession --possession-issuer /tmp/O.ndncert
+NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndnts-keychain ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge possession --possession-issuer /tmp/O.ndncert
 
 # request certificate with possession challenge
 REQKEY=$(ndnsec list -k | gawk '$1=="+->*" && $2 ~ "^/E/" { print $2 }')
 OCERT=$(ndnsec list -c | gawk '$1=="+->*" && $2 ~ "^'$REQKEY'/ISSUER-O/" { print $2 }')
-ndntssec ndncert03-client --profile /tmp/ca.data --ndnsec --key $REQKEY --challenge possession --possession-cert $OCERT
+ndnts-keychain ndncert03-client --profile /tmp/ca.data --ndnsec --key $REQKEY --challenge possession --possession-cert $OCERT
 
 # view certificates
 ndnsec list -c

@@ -6,7 +6,6 @@ import type { Arguments, Argv, CommandModule } from "yargs";
 import { declareStoreArgs, openStore, store, StoreArgs } from "./util";
 
 interface Args extends StoreArgs {
-  prefix: string;
   rdr: boolean;
   bi: boolean;
   "bi-host": string;
@@ -34,11 +33,6 @@ export class ServerCommand implements CommandModule<{}, Args> {
 
   public builder(argv: Argv): Argv<Args> {
     return declareStoreArgs(argv)
-      .option("prefix", {
-        default: "/localhost/ndntsrepo",
-        desc: "command prefix",
-        type: "string",
-      })
       .option("rdr", {
         default: false,
         desc: "respond to RDR discovery Interests",

@@ -6,7 +6,7 @@ import { FillBiCommand, FillStoreCommand } from "./fill";
 import { ServerCommand } from "./server";
 
 (yargs() as unknown as Argv)
-  .scriptName("ndntsrepo")
+  .scriptName("ndnts-repo")
   .command(new ServerCommand())
   .command(new FillStoreCommand())
   .command(new FillBiCommand())

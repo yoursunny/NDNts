@@ -13,7 +13,7 @@
   ],
   "type": "module",
   "bin": {
-    "ndntssec": "cli.cjs"
+    "ndnts-keychain": "cli.cjs"
   },
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {

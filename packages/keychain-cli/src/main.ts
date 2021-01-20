@@ -17,7 +17,7 @@ import { Ndncert03ShowProfileCommand } from "./ndncert03-show-profile";
 import { ShowCertCommand } from "./show-cert";
 
 (yargs() as unknown as Argv)
-  .scriptName("ndntssec")
+  .scriptName("ndnts-keychain")
   .command(new GenKeyCommand())
   .command(new ShowCertCommand())
   .command(new DeleteCommand())

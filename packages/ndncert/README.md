@@ -32,4 +32,4 @@ This package partially implements [NDN Certificate Management protocol v0.3](htt
   * [X] retrieve certificate
   * [X] handle error messages
 
-`@ndn/keychain-cli` package offers `ndntssec ndncert03-profile`,  `ndntssec ndncert03-ca`,  `ndntssec ndncert03-client` commands that use this implementation.
+`@ndn/keychain-cli` package offers `ndnts-keychain ndncert03-profile`,  `ndnts-keychain ndncert03-ca`,  `ndnts-keychain ndncert03-client` commands that use this implementation.

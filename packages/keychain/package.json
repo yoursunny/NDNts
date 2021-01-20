@@ -38,7 +38,7 @@
     "minimalistic-assert": "^1.0.1",
     "mnemonist": "^0.38.1",
     "idb-keyval": "^5.0.1",
-    "throat": "^5.0.0",
+    "throat": "^6.0.0",
     "tslib": "^2.1.0"
   },
   "devDependencies": {
