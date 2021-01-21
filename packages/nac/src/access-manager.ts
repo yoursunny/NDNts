@@ -27,8 +27,7 @@ export class AccessManager {
       private readonly dataStore: AccessManager.DataStore,
       private readonly prefix: Name,
       private readonly keys: AccessManager.Keys,
-  ) {
-  }
+  ) {}
 
   /** Create a new Key Encryption Key. */
   public async createKek(subset: Name): Promise<AccessManager.KekHandle> {

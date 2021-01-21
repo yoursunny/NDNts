@@ -9,8 +9,7 @@ export abstract class Transport {
   public abstract readonly rx: Transport.Rx;
   public abstract readonly tx: Transport.Tx;
 
-  protected constructor(public readonly attributes: Transport.Attributes) {
-  }
+  protected constructor(public readonly attributes: Transport.Attributes) {}
 
   public reopen(): Promise<Transport> {
     /* istanbul ignore next */

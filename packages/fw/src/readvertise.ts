@@ -15,8 +15,7 @@ import type { Forwarder, ForwarderImpl } from "./forwarder";
  * each destination on what prefixes should be advertised.
  */
 export class Readvertise {
-  constructor(public readonly fw: ForwarderImpl) {
-  }
+  constructor(public readonly fw: ForwarderImpl) {}
 
   public readonly announcements = new MultiMap<string, FaceImpl>(Set);
   public readonly destinations = new Set<ReadvertiseDestination>();
@@ -64,8 +63,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
     minTimeout: 5000,
     maxTimeout: 60000,
     randomize: true,
-  }) {
-  }
+  }) {}
 
   /** Enable and attach to a forwarder. */
   public enable(fw: Forwarder): void {

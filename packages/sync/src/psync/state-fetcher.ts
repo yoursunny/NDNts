@@ -18,8 +18,7 @@ export class PSyncStateFetcher {
       private readonly codec: PSyncCodec,
       private readonly syncInterestLifetime: number,
       private readonly verifier: Verifier|undefined,
-  ) {
-  }
+  ) {}
 
   public async fetch(name: Name, { signal }: AbortController, describeSuffix = "c"): Promise<Result> {
     const versioned = await discoverVersion(name, {

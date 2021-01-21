@@ -2,8 +2,7 @@ import { Encodable, Encoder } from "./encoder";
 import { toHex } from "./string";
 
 class Nni1 {
-  constructor(private readonly n: number) {
-  }
+  constructor(private readonly n: number) {}
 
   public encodeTo(encoder: Encoder) {
     encoder.prependRoom(1)[0] = this.n;
@@ -11,8 +10,7 @@ class Nni1 {
 }
 
 class Nni2 {
-  constructor(private readonly n: number) {
-  }
+  constructor(private readonly n: number) {}
 
   public encodeTo(encoder: Encoder) {
     Encoder.asDataView(encoder.prependRoom(2)).setUint16(0, this.n);
@@ -20,8 +18,7 @@ class Nni2 {
 }
 
 class Nni4 {
-  constructor(private readonly n: number) {
-  }
+  constructor(private readonly n: number) {}
 
   public encodeTo(encoder: Encoder) {
     Encoder.asDataView(encoder.prependRoom(4)).setUint32(0, this.n);
@@ -29,8 +26,7 @@ class Nni4 {
 }
 
 class Nni8Number {
-  constructor(private readonly n: number) {
-  }
+  constructor(private readonly n: number) {}
 
   public encodeTo(encoder: Encoder) {
     const dv = Encoder.asDataView(encoder.prependRoom(8));
@@ -40,8 +36,7 @@ class Nni8Number {
 }
 
 class Nni8Big {
-  constructor(private readonly n: bigint) {
-  }
+  constructor(private readonly n: bigint) {}
 
   public encodeTo(encoder: Encoder) {
     encodeBig64(Encoder.asDataView(encoder.prependRoom(8)), this.n);

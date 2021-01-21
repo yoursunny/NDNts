@@ -7,8 +7,7 @@ import { Data, digestSigning, Interest, LLSign, LLVerify, Name, nullSigner, SigI
 import * as TestSignVerify from "../test-fixture/sign-verify";
 
 class TestAlgo {
-  constructor(private readonly key: string, private readonly wantSignError: boolean = false) {
-  }
+  constructor(private readonly key: string, private readonly wantSignError: boolean = false) {}
 
   public sign(pkt: LLSign.Signable) {
     return pkt[LLSign.OP](async (input) => {

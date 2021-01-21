@@ -26,8 +26,7 @@ export class RejectInterest implements FwPacket<Interest> {
       public reject: RejectInterest.Reason,
       public l3: Interest,
       public token?: unknown,
-  ) {
-  }
+  ) {}
 }
 export namespace RejectInterest {
   export type Reason = "cancel"|"expire";
@@ -38,8 +37,7 @@ export class CancelInterest implements FwPacket<Interest> {
   constructor(
       public l3: Interest,
       public token?: unknown,
-  ) {
-  }
+  ) {}
 
   public readonly cancel = true;
 }

@@ -40,8 +40,7 @@ export class SafeBag {
     return new SafeBag(certificate, encryptedKey);
   }
 
-  constructor(public readonly certificate: Certificate, public readonly encryptedKey: Uint8Array) {
-  }
+  constructor(public readonly certificate: Certificate, public readonly encryptedKey: Uint8Array) {}
 
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(TT.SafeBag,

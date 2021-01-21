@@ -4,8 +4,7 @@ import { Chunk, ChunkOptions, ChunkSource, getMaxChunkSize, getMinChunkSize } fr
 
 /** Gather chunks of acceptable size from scattered buffers. */
 class ScatteredChunk {
-  constructor(private readonly minSize: number, private readonly maxSize: number) {
-  }
+  constructor(private readonly minSize: number, private readonly maxSize: number) {}
 
   private vector: Uint8Array[] = [];
   private length = 0;
@@ -53,8 +52,7 @@ class ScatteredChunk {
 /** Generate chunks from an Iterable or AsyncIterable of Uint8Arrays. */
 export class IterableChunkSource implements ChunkSource {
   constructor(private readonly input: AnyIterable<Uint8Array>,
-      private readonly opts: ChunkOptions = {}) {
-  }
+      private readonly opts: ChunkOptions = {}) {}
 
   public async *listChunks(): AsyncIterable<Chunk> {
     let i = -1;

@@ -242,7 +242,7 @@ test.each([4, 8])("many nodes %p", async (count) => {
     f.add(i, `/${i}`).seqNum++;
   }
 
-  await f.delay(count * 2);
+  await f.delay(count * 3);
   for (let i = 0; i < count; ++i) {
     f.expectUpdateTimes(i, count - 1);
     for (let j = 0; j < count; ++j) {

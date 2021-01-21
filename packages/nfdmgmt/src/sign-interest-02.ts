@@ -5,8 +5,7 @@ class SignedInterest02 implements Signer.Signable {
   public sigInfo?: SigInfo;
   public sigValue = new Uint8Array();
 
-  constructor(public name: Name, private readonly timestamp: number) {
-  }
+  constructor(public name: Name, private readonly timestamp: number) {}
 
   public async [LLSign.OP](sign: LLSign) {
     const nonce = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);

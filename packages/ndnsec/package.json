@@ -29,7 +29,7 @@
     "@ndn/tlv": "workspace:*",
     "execa": "^5.0.0",
     "minimalistic-assert": "^1.0.1",
-    "throat": "^6.0.0",
+    "throat": "^6.0.1",
     "tslib": "^2.1.0"
   },
   "devDependencies": {

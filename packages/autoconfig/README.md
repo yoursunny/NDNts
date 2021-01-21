@@ -53,7 +53,7 @@ let faces = await connectToTestbed({
   tryDefaultGateway: true,
   fchFallback: ["hobo.cs.arizona.edu", "titan.cs.memphis.edu"],
 });
-assert(faces.length >= 1);
+assert(faces.length > 0);
 faces.forEach((face) => {
   console.log("connected to", `${face}`);
   face.close();

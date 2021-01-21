@@ -30,8 +30,7 @@ export class Certificate {
     return cert;
   }
 
-  private constructor(public readonly data: Data, public readonly validity: ValidityPeriod) {
-  }
+  private constructor(public readonly data: Data, public readonly validity: ValidityPeriod) {}
 
   public get name() { return this.data.name; }
 

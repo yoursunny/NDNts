@@ -16,8 +16,7 @@ class MatchState {
       public readonly name: Name,
       public readonly pos = 0,
       public readonly vars: Vars = {},
-  ) {
-  }
+  ) {}
 
   /** Unconsumed name portion. */
   public get tail() { return this.name.slice(this.pos); }

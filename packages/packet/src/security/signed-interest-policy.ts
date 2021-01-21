@@ -219,8 +219,7 @@ class NonceRule implements Rule {
 }
 
 class SequencedRuleBase {
-  constructor(private readonly field: keyof KeyState & keyof SigInfo, private readonly name: string) {
-  }
+  constructor(private readonly field: keyof KeyState & keyof SigInfo, private readonly name: string) {}
 
   public check(si: SigInfo, state: KeyState) {
     const value = si[this.field];

@@ -30,8 +30,7 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
   constructor(
       private readonly verifier: Verifier,
       private readonly assignmentPolicy?: ServerPossessionChallenge.AssignmentPolicy,
-  ) {
-  }
+  ) {}
 
   public process(request: ChallengeRequest, context: ServerChallengeContext<State>): Promise<ServerChallengeResponse> {
     if (!context.challengeState) {

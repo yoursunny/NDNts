@@ -2,8 +2,7 @@ import { Component, NamingConvention } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
 
 abstract class Typed {
-  constructor(protected readonly tt: number) {
-  }
+  constructor(protected readonly tt: number) {}
 
   public match(comp: Component): boolean {
     return comp.type === this.tt;

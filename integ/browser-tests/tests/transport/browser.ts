@@ -25,7 +25,6 @@ async function facePing(facePromise: Promise<FwFace>, pingPrefix: string) {
   const lines = names.map((name, i) => `${rtts[i]} ${name}`);
   lines.unshift(
     `RTT min=${Math.min(...rtts)}`,
-    // eslint-disable-next-line unicorn/no-reduce
     `RTT avg=${rtts.reduce((sum, rtt) => sum + rtt, 0) / rtts.length}`,
     `RTT max=${Math.max(...rtts)}`,
   );

@@ -99,7 +99,6 @@ export class IBLT {
     const peel = new Hashtable(this.p.nEntries, this.p.serializeLittleEndian);
     for (let i = 0; i < this.p.nEntries; ++i) {
       const entries = hts.map((ht) => ht.get(i));
-      // eslint-disable-next-line unicorn/no-reduce
       peel.set(i, entries.reduce((a, b) => {
         return {
           count: a.count - b.count,

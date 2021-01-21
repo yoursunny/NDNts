@@ -49,5 +49,5 @@ import { Data, digestSigning, Name } from "@ndn/packet";
     await store.close();
     face.close();
   }
-})().then(console.log, console.error);
+})().catch(console.error);
 ```

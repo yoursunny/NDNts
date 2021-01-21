@@ -5,8 +5,7 @@ import type { CertSource } from "./types";
 
 /** Find certificates in KeyChain. */
 export class KeyChainCertSource implements CertSource {
-  constructor(private readonly keyChain: KeyChain) {
-  }
+  constructor(private readonly keyChain: KeyChain) {}
 
   public async *findCerts(keyLocator: Name): AsyncIterable<Certificate> {
     if (CertNaming.isCertName(keyLocator)) {

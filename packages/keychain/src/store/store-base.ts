@@ -7,8 +7,7 @@ import type { StoreProvider } from "./store-provider";
 export abstract class StoreBase<T> {
   private throttle = throat(1);
 
-  constructor(private readonly provider: StoreProvider<T>) {
-  }
+  constructor(private readonly provider: StoreProvider<T>) {}
 
   public get canSClone() { return this.provider.canSClone; }
 

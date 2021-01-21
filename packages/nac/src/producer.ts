@@ -24,8 +24,7 @@ export class Producer {
       private readonly dataStore: Producer.DataStore,
       private readonly ckPrefix: Name,
       private readonly signer: Signer,
-  ) {
-  }
+  ) {}
 
   private readonly keys = new DefaultWeakMap<KeyEncryptionKey, Promise<[ContentKey, LLEncrypt.Key]>>(async (kek: KeyEncryptionKey): Promise<[ContentKey, LLEncrypt.Key]> => {
     const key = await AES.CBC.cryptoGenerate({}, true);

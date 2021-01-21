@@ -25,7 +25,6 @@ module.exports = {
   ],
 
   globals: {
-    "ts-jest": {
-    },
+    "ts-jest": {},
   },
 };

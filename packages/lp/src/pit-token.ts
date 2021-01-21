@@ -8,8 +8,7 @@ let lastPrefix = 0; // eslint-disable-line prefer-const
 
 /** PIT tokens in a 32-bit numeric range. */
 export class NumericPitToken {
-  constructor(public readonly prefix = ++lastPrefix) {
-  }
+  constructor(public readonly prefix = ++lastPrefix) {}
 
   public toNumber(token?: PitToken): number|undefined {
     if (!token || token.byteLength !== 8) {

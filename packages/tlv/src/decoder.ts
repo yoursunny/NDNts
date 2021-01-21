@@ -47,8 +47,7 @@ class DecodedTlv {
   }
 
   constructor(public readonly type: number, private buf: Uint8Array,
-      private offsetT: number, private offsetV: number, private offsetE: number) {
-  }
+      private offsetT: number, private offsetV: number, private offsetE: number) {}
 }
 
 /** TLV decoder. */
@@ -60,8 +59,7 @@ export class Decoder {
 
   private offset = 0;
 
-  constructor(private input: Uint8Array) {
-  }
+  constructor(private input: Uint8Array) {}
 
   /** Read TLV structure. */
   public read(): Decoder.Tlv {

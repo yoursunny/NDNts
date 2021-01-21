@@ -1,8 +1,7 @@
 import { LpPacket } from "./packet";
 
 class PartialPacket {
-  constructor(public readonly seqNumBase: bigint) {
-  }
+  constructor(public readonly seqNumBase: bigint) {}
 
   private buffer: Array<LpPacket|undefined> = [];
   private accepted = 0;
@@ -53,8 +52,7 @@ class PartialPacket {
 }
 
 export class Reassembler {
-  constructor(private readonly capacity: number) {
-  }
+  constructor(private readonly capacity: number) {}
 
   private readonly partials = new Map<bigint, PartialPacket>();
 

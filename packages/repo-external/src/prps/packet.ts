@@ -23,8 +23,7 @@ export class NotifyParams {
       public publisher: Name,
       public nonce: Uint8Array,
       public publisherFwHint?: Name,
-  ) {
-  }
+  ) {}
 
   public encodeTo(encoder: Encoder) {
     encoder.prependValue(

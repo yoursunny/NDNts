@@ -29,7 +29,7 @@ test("TX throttle", async () => {
   const cws = (transport as any).sock as WebSocket;
   const bufferedAmount = jest.spyOn(cws, "bufferedAmount", "get");
 
-  const sws = socks[0] as WsTest.ServerWebSocket;
+  const sws = socks[0]!;
   sws.binaryType = "nodebuffer";
   const serverRx = jest.fn<void, [Uint8Array]>();
   sws.on("message", serverRx);

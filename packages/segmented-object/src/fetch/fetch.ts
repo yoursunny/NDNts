@@ -7,8 +7,7 @@ import { Fetcher } from "./fetcher";
 import { Reorder } from "./reorder";
 
 class FetchResult implements fetch.Result {
-  constructor(private readonly name: Name, private readonly opts: fetch.Options) {
-  }
+  constructor(private readonly name: Name, private readonly opts: fetch.Options) {}
 
   public count = 0;
   private unused = true;

@@ -22,8 +22,7 @@ export class CommandParameter {
       public name?: Name,
       public startBlockId?: number,
       public endBlockId?: number,
-  ) {
-  }
+  ) {}
 
   public processId = new Uint8Array();
   public fwHint?: Name;

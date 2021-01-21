@@ -17,8 +17,7 @@ const tokenLimiters = new DefaultWeakMap<CongestionAvoidance, TokenLimiter>((ca)
 });
 
 class SegState {
-  constructor(public readonly segNum: number) {
-  }
+  constructor(public readonly segNum: number) {}
 
   public get isRetx() { return this.nRetx > 0; }
 
