@@ -32,6 +32,7 @@ async function transformDeclaration(filename) {
 const ESM_IMPORTS = new Set([
   ...builtins,
   "graphql-request",
+  "idb-keyval",
   "streaming-iterables",
   "yargs",
 ]);
@@ -77,9 +78,9 @@ class TransformJs {
     }
 
     if (this.nCjsImports > 0) {
-      this.nodeOutput.unshift(
-        "import { __importDefault, __importStar } from \"tslib\";",
-      );
+      const tslibImport = "import { __importDefault, __importStar } from \"tslib\";";
+      this.nodeOutput.unshift(tslibImport);
+      this.browserOutput.unshift(tslibImport);
     }
 
     const basename = this.filename.replace(/(_node|_browser)?\.js$/, "");
@@ -140,12 +141,10 @@ class TransformJs {
       imports = imports.replace(/ as /g, ": ");
       return this.emitLine(
         `import ${defaultImport} from "${specifier}"; const ${imports} = __importStar(${defaultImport});`,
-        line,
       );
     }
     return this.emitLine(
       `import ${defaultImport} from "${specifier}"; const ${imports} = __importDefault(${defaultImport}).default;`,
-      line,
     );
   }
 }
@@ -163,7 +162,7 @@ lines.on("data", async (/** @type string */line) => {
   const filename = line.slice(8);
   try {
     if (filename.endsWith(".map")) {
-      await fs.unlink(filename);
+      delayedWrite(filename, false);
     } else if (filename.endsWith(".d.ts")) {
       await transformDeclaration(filename);
     } else if (filename.endsWith(".js")) {

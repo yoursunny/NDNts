@@ -13,6 +13,7 @@
 
 Supported platforms include:
 
-* Node.js 14.x and 12.x: requires ES Modules.
-* Firefox: supported via webpack bundler, tested on Windows/Mac.
-* Chrome: supported via webpack bundler, tested on Windows/Mac/Android/iOS.
+* Node.js: 12.x, 14.x, and 15.x, on Windows and Linux.
+* Bundlers: webpack 5 and Parcel.
+* Firefox: latest version on Windows and Mac.
+* Chrome: latest version on Windows, Mac, Android, and iOS 14.

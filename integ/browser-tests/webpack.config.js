@@ -8,7 +8,7 @@ const jestPuppeteerConfig = require("./jest-puppeteer.config.js");
 /** @type {import("webpack").Configuration} */
 const config = {
   mode: "development",
-  devtool: "eval-cheap-module-source-map",
+  devtool: "cheap-module-source-map",
   entry: {},
   module: {
     rules: [
