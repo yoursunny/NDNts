@@ -33,7 +33,7 @@
     "duplexify": "^4.1.1",
     "graceful-fs": "^4.2.4",
     "is-stream": "^2.0.0",
-    "it-pushable": "^1.4.0",
+    "it-pushable": "1.4.0",
     "p-defer": "^3.0.0",
     "streaming-iterables": "^5.0.4",
     "throat": "^6.0.1",

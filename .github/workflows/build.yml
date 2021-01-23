@@ -2,7 +2,7 @@ name: build
 on: [push, pull_request]
 
 jobs:
-  build:
+  unittest:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
@@ -61,7 +61,7 @@ jobs:
           npm run clang-format
           [[ $(git status --porcelain | tee >(cat 1>&2) | wc -l) -eq 0 ]]
   publish:
-    needs: [build, integ]
+    needs: [unittest, integ]
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-18.04
     strategy:

@@ -35,6 +35,6 @@
   "devDependencies": {
     "@ndn/packet": "workspace:*",
     "@types/ws": "^7.4.0",
-    "it-pushable": "^1.4.0"
+    "it-pushable": "1.4.0"
   }
 }
