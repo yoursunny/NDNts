@@ -68,7 +68,7 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
     try {
       const data = new Decoder(certWire).decode(Data);
       const cert = Certificate.fromData(data);
-      if (!cert.validity.includes()) {
+      if (!cert.validity.includes(Date.now())) {
         return invalidResponse;
       }
       await this.verifier.verify(data);

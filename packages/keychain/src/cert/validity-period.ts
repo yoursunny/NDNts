@@ -70,7 +70,7 @@ export class ValidityPeriod {
   }
 
   /** Determine whether the specified timestamp is within validity period. */
-  public includes(t: ValidityPeriod.TimestampInput = Date.now()): boolean {
+  public includes(t: ValidityPeriod.TimestampInput): boolean {
     t = toTimestamp(t);
     return this.notBefore <= t && t <= this.notAfter;
   }

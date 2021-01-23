@@ -1,10 +1,18 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Certificate, CertNaming, ECDSA, generateSigningKey, RSA } from "@ndn/keychain";
+import { Certificate, CertNaming, ECDSA, generateSigningKey, NamedSigner, NamedVerifier, RSA, ValidityPeriod } from "@ndn/keychain";
 import { Name } from "@ndn/packet";
 import { toUtf8 } from "@ndn/tlv";
 
 import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, Status } from "../..";
+
+let rootPvt: NamedSigner.PrivateKey;
+let rootPub: NamedVerifier.PublicKey;
+let rootCert: Certificate;
+beforeAll(async () => {
+  [rootPvt, rootPub] = await generateSigningKey("/root", RSA);
+  rootCert = await Certificate.selfSign({ privateKey: rootPvt, publicKey: rootPub });
+});
 
 test("crypto", async () => {
   const { privateKey: ecdhPvtA, publicKey: ecdhPubA } = await crypto.generateEcdhKey();
@@ -28,26 +36,24 @@ test("crypto", async () => {
 
 test("packets", async () => {
   const caSIP = crypto.makeSignedInterestPolicy();
-  const [caPvt, caPub] = await generateSigningKey("/authority", RSA);
-  const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
   const profile = await CaProfile.build({
-    prefix: new Name("/authority"),
-    info: "authority CA",
+    prefix: new Name("/root"),
+    info: "root CA",
     probeKeys: ["uid"],
     maxValidityPeriod: 86400000,
-    cert: caCert,
-    signer: caPvt,
+    cert: rootCert,
+    signer: rootPvt,
     version: 7,
   });
   const { data: profileData } = profile;
-  expect(profileData.name).toEqualName("/authority/CA/INFO/35=%07/33=%00");
+  expect(profileData.name).toEqualName("/root/CA/INFO/35=%07/33=%00");
   expect(profileData.isFinalBlock).toBeTruthy();
-  expect(profileData.sigInfo.keyLocator?.name).toEqualName(caPub.name);
-  expect(profile.prefix).toEqualName("/authority");
-  expect(profile.info).toBe("authority CA");
+  expect(profileData.sigInfo.keyLocator?.name).toEqualName(rootPub.name);
+  expect(profile.prefix).toEqualName("/root");
+  expect(profile.info).toBe("root CA");
   expect(profile.probeKeys).toEqual(["uid"]);
   expect(profile.maxValidityPeriod).toBe(86400000);
-  expect(profile.cert.name).toEqualName(caCert.name);
+  expect(profile.cert.name).toEqualName(rootCert.name);
 
   const reqSIP = crypto.makeSignedInterestPolicy();
   const [reqPvt, reqPub] = await generateSigningKey("/requester", ECDSA);
@@ -61,7 +67,7 @@ test("packets", async () => {
   });
   const { interest: newInterest } = newRequest;
   expect(newInterest.name).toHaveLength(4);
-  expect(newInterest.name.getPrefix(3)).toEqualName("/authority/CA/NEW");
+  expect(newInterest.name.getPrefix(3)).toEqualName("/root/CA/NEW");
   expect(newInterest.sigInfo).toBeDefined();
   expect(CertNaming.toSubjectName(newRequest.certRequest.name)).toEqualName("/requester");
 
@@ -77,7 +83,7 @@ test("packets", async () => {
     salt,
     requestId,
     challenges: ["pin"],
-    signer: caPvt,
+    signer: rootPvt,
   });
   const { data: newData } = newResponse;
   await expect(newData.canSatisfy(newInterest)).resolves.toBeTruthy();
@@ -98,7 +104,7 @@ test("packets", async () => {
     parameters: { code: toUtf8("000000") },
   });
   expect(challengeInterest.name).toHaveLength(5);
-  expect(challengeInterest.name.getPrefix(3)).toEqualName("/authority/CA/CHALLENGE");
+  expect(challengeInterest.name.getPrefix(3)).toEqualName("/root/CA/CHALLENGE");
   expect(challengeInterest.sigInfo).toBeDefined();
 
   const lookupRequest = jest.fn().mockResolvedValue({
@@ -122,11 +128,37 @@ test("packets", async () => {
     request: challengeRequest,
     status: Status.SUCCESS,
     issuedCertName: new Name("/issued-cert"),
-    signer: caPvt,
+    signer: rootPvt,
   });
   await expect(challengeData.canSatisfy(challengeInterest)).resolves.toBeTruthy();
 
   const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, requestId, reqSessionKey.sessionDecrypter);
   expect(challengeResponse.status).toBe(Status.SUCCESS);
   expect(challengeResponse.issuedCertName).toEqualName("/issued-cert");
+});
+
+test("expired CA certificate", async () => {
+  const [caPvt, caPub] = await generateSigningKey("/root/authority");
+  const now = Date.now();
+  const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub, validity: new ValidityPeriod(now - 3600000, now - 1800000) });
+  const profile = await CaProfile.build({
+    prefix: new Name("/root/authority"),
+    info: "authority CA",
+    probeKeys: [],
+    maxValidityPeriod: 86400000,
+    cert: caCert,
+    signer: caPvt,
+    version: 7,
+  });
+
+  const reqSIP = crypto.makeSignedInterestPolicy();
+  const [reqPvt, reqPub] = await generateSigningKey("/requester");
+  const reqEcdh = await crypto.generateEcdhKey();
+  await expect(NewRequest.build({
+    profile,
+    signedInterestPolicy: reqSIP,
+    ecdhPub: reqEcdh.publicKey,
+    publicKey: reqPub,
+    privateKey: reqPvt,
+  })).rejects.toThrow(/ValidityPeriod/);
 });

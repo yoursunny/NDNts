@@ -52,7 +52,7 @@ function truncateValidity(
       maxValidityPeriod,
       cert: { validity: caValidity },
     }: CaProfile,
-    enableNotBeforeGracePeriod = false): ValidityPeriod {
+    enableNotBeforeGracePeriod: boolean): ValidityPeriod {
   const now = Date.now();
   return validity.intersect(
     caValidity,
@@ -86,10 +86,14 @@ export namespace NewRequest {
     privateKey,
     validity = ValidityPeriod.MAX,
   }: Options) {
+    validity = truncateValidity(validity, profile, false);
+    if (!validity.includes(Date.now())) {
+      throw new Error("bad ValidityPeriod (requester certificate or CA certificate expired?)");
+    }
     const certRequest = await Certificate.selfSign({
       publicKey,
       privateKey,
-      validity: truncateValidity(validity, profile),
+      validity,
     });
 
     const payload = Encoder.encode([
