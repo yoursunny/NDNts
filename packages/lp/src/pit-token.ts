@@ -3,8 +3,7 @@ import { Encoder } from "@ndn/tlv";
 /** PIT token field of NDNLP packet. */
 export type PitToken = Uint8Array;
 
-// https://github.com/typescript-eslint/typescript-eslint/issues/2954
-let lastPrefix = 0; // eslint-disable-line prefer-const
+let lastPrefix = 0;
 
 /** PIT tokens in a 32-bit numeric range. */
 export class NumericPitToken {

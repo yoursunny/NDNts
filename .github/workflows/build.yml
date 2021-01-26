@@ -14,7 +14,7 @@ jobs:
         with:
           path: ~/.pnpm-store
           key: ${{ matrix.node }}-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
       - name: install dependencies
@@ -22,6 +22,8 @@ jobs:
           sudo add-apt-repository ppa:named-data/ppa
           sudo apt-get install ndnsec
       - run: npm run bootstrap
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
       - name: check code style
         run: |
           npm run lint
@@ -33,19 +35,15 @@ jobs:
         if: ${{ matrix.node == '15' }}
   integ:
     runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        node: ['15']
-      fail-fast: false
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           path: ~/.pnpm-store
-          key: ${{ matrix.node }}-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v1
+          key: 15-${{ hashFiles('**/package.json') }}
+      - uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 15
       - name: install dependencies
         run: |
           sudo add-apt-repository ppa:named-data/ppa
@@ -64,20 +62,18 @@ jobs:
     needs: [unittest, integ]
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        node: ['15']
-      fail-fast: false
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           path: ~/.pnpm-store
-          key: ${{ matrix.node }}-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v1
+          key: 15-${{ hashFiles('**/package.json') }}
+      - uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 15
       - run: npm run bootstrap
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
       - run: npm run build
       - run: bash mk/publish-nightly.sh
         env:
