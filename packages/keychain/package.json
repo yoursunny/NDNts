@@ -31,7 +31,7 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@peculiar/webcrypto": "^1.1.4",
+    "@peculiar/webcrypto": "^1.1.5",
     "@types/minimalistic-assert": "^1.0.1",
     "@yoursunny/asn1": "^0.0.20200718",
     "data-store": "jonschlinkert/data-store#4.1.0",

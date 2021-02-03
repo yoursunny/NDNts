@@ -39,7 +39,7 @@ async function testQuic() {
   document.body.innerHTML = `
     <form>
     QUIC gateway:
-    <code>quic-transport://</code><input type="text" placeholder="localhost"><code>:6367/ndn</code>
+    <code>quic-transport://</code><input type="text" placeholder="localhost:6367">/ndn</code>
     <button>OK</button>
     </form>
   `;
@@ -51,7 +51,7 @@ async function testQuic() {
       document.body.innerHTML = "";
     });
   });
-  return facePing(QuicTransport.createFace({}, `quic-transport://${gateway}:6367/ndn`), "/example/quic/ping");
+  return facePing(QuicTransport.createFace({}, `quic-transport://${gateway}/ndn`), "/example/quic/ping");
 }
 
 addManualTest("test WebBluetoothTransport", testWebBluetooth);
