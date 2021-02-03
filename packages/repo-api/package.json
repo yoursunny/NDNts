@@ -1,6 +1,6 @@
 {
   "name": "@ndn/repo-api",
-  "version": "0.0.20200909",
+  "version": "0.0.20210203",
   "description": "NDNts: Data Repository API",
   "keywords": [
     "NDN",

@@ -1,6 +1,6 @@
 {
   "name": "@ndn/quic-transport",
-  "version": "0.0.0",
+  "version": "0.0.20210203",
   "description": "NDNts: QUIC Transport",
   "keywords": [
     "NDN",
