@@ -32,7 +32,7 @@
     "@ndn/repo-api": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "it-keepalive": "^1.2.0",
-    "it-pushable": "1.4.0",
+    "it-pushable": "^1.4.2",
     "p-defer": "^3.0.0",
     "streaming-iterables": "^5.0.4",
     "throat": "^6.0.1",
