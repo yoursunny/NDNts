@@ -1,5 +1,6 @@
 #!/bin/bash
 set -eo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")"/..
 ROOTDIR=$(pwd)
 VERSIONSUFFIX=$1
 

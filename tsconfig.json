@@ -8,19 +8,5 @@
     "types": [
       "jest"
     ]
-  },
-  "typedocOptions": {
-    "inputFiles": ["./packages"],
-    "mode": "modules",
-    "exclude": ["**/node_modules", "**/literate-temp.ts", "**/test-fixture", "**/tests"],
-    "excludeExternals": true,
-    "excludePrivate": true,
-    "ignoreCompilerErrors": true,
-    "out": "docs/typedoc",
-    "theme": "minimal",
-    "name": "NDNts",
-    "readme": "./mk/typedoc-README.md",
-    "plugin": ["@strictsoftware/typedoc-plugin-monorepo"],
-    "external-modulemap": ".*packages\/([^\/]+)\/.*",
   }
 }

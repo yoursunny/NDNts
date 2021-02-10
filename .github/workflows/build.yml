@@ -78,7 +78,9 @@ jobs:
       - run: bash mk/publish-nightly.sh
         env:
           GTAGID: UA-935676-11
-      - run: npm run typedoc -- --gaID UA-935676-11
+      - run: npm run typedoc
+        env:
+          GTAGID: UA-935676-11
       - uses: crazy-max/ghaction-github-pages@v2
         with:
           repo: yoursunny/NDNts-nightly

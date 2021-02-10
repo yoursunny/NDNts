@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig-base.json",
+  "compilerOptions": {
+    "rootDir": "../packages",
+    "baseUrl": "..",
+    "paths": {
+      "@ndn/*": ["./packages/*"],
+      "ndn": ["./packages/ndn"]
+    }
+  },
+  "include": [
+    "../packages/*/src/**/*"
+  ],
+  "typedocOptions": {
+    "exclude": ["**/node_modules", "**/literate-temp.ts", "**/interop-test", "**/lib", "**/test-fixture", "**/tests"],
+    "excludeExternals": true,
+    "excludePrivate": true,
+    "out": "docs/typedoc",
+    "theme": "default",
+    "name": "NDNts",
+    "readme": "./mk/typedoc-README.md",
+    "plugin": ["@strictsoftware/typedoc-plugin-monorepo"],
+    "external-modulemap": ".*packages\/([^\/]+)\/.*",
+  }
+}
