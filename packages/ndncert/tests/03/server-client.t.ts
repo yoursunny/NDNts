@@ -271,7 +271,7 @@ function startServer(challenges: readonly ServerChallenge[] = [new ServerNopChal
   server = Server.create({
     profile,
     repo,
-    key: caPvt,
+    signer: caPvt.withKeyLocator(caCert.name),
     challenges,
   });
   return server;

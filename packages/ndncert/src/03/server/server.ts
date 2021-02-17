@@ -1,9 +1,9 @@
 import { Endpoint, Producer, ProducerHandler } from "@ndn/endpoint";
-import { Certificate, CertNaming, NamedSigner, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
+import type { Signer } from "@ndn/packet";
 import { Component, ComponentLike, Data } from "@ndn/packet";
 import { serveMetadata } from "@ndn/rdr";
 import { toHex } from "@ndn/tlv";
-import assert from "minimalistic-assert";
 
 import * as crypto from "../crypto-common";
 import { C, CaProfile, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
@@ -20,7 +20,7 @@ export interface ServerOptions {
   profile: CaProfile;
 
   /** CA private key, must match the certificate in the CA profile. */
-  key: NamedSigner.PrivateKey;
+  signer: Signer;
 
   /** Supported challenges. */
   challenges: readonly ServerChallenge[];
@@ -39,11 +39,11 @@ export class Server {
     endpoint = new Endpoint(),
     repo,
     profile,
-    key,
+    signer,
     challenges,
     issuerId = "NDNts-NDNCERT",
   }: ServerOptions): Server {
-    return new Server(endpoint, repo, profile, key,
+    return new Server(endpoint, repo, profile, signer,
       new Map<string, ServerChallenge>(challenges.map((challenge) => [challenge.challengeId, challenge])),
       Component.from(issuerId));
   }
@@ -57,17 +57,16 @@ export class Server {
       endpoint: Endpoint,
       private readonly repo: RepoDataStore,
       private readonly profile: CaProfile,
-      private readonly key: NamedSigner.PrivateKey,
+      private readonly signer: Signer,
       private readonly challenges: Map<string, ServerChallenge>,
       private readonly issuerId: Component,
   ) {
-    const { cert, prefix, data: { name: infoName } } = profile;
-    assert(CertNaming.toKeyName(cert.name).equals(key.name));
+    const { prefix, data: { name: infoName } } = profile;
     const infoVersion = infoName.getPrefix(-1);
     const announcement = prefix.append(C.CA);
 
     this.producers = [
-      serveMetadata({ name: infoVersion }, { endpoint, announcement, signer: key }),
+      serveMetadata({ name: infoVersion }, { endpoint, announcement, signer }),
       endpoint.produce(infoVersion, this.handleInfoInterest,
         { describe: `NDNCERT-CA(${prefix}, INFO)`, announcement }),
       endpoint.produce(announcement.append(C.PROBE), this.handleProbeInterest,
@@ -91,7 +90,7 @@ export class Server {
   };
 
   private handleProbeInterest: ProducerHandler = async (interest) => {
-    return ErrorMsg.makeData(ErrorCode.NoAvailableName, interest, this.key);
+    return ErrorMsg.makeData(ErrorCode.NoAvailableName, interest, this.signer);
   };
 
   private handleNewInterest: ProducerHandler = async (interest) => {
@@ -102,7 +101,7 @@ export class Server {
         signedInterestPolicy: this.signedInterestPolicy,
       });
     } catch {
-      return await ErrorMsg.makeData(ErrorCode.BadParameterFormat, interest, this.key);
+      return await ErrorMsg.makeData(ErrorCode.BadParameterFormat, interest, this.signer);
     }
 
     let requestId: Uint8Array;
@@ -125,7 +124,7 @@ export class Server {
       salt,
       requestId,
       challenges: Array.from(this.challenges.keys()),
-      signer: this.key,
+      signer: this.signer,
     });
     return response.data;
   };
@@ -141,7 +140,7 @@ export class Server {
         },
       });
     } catch {
-      return await ErrorMsg.makeData(ErrorCode.BadParameterFormat, interest, this.key);
+      return await ErrorMsg.makeData(ErrorCode.BadParameterFormat, interest, this.signer);
     }
 
     const context = this.state.get(toHex(request.requestId))!;
@@ -149,18 +148,18 @@ export class Server {
 
     if (context.expiry < now) {
       this.deleteContext(request);
-      return ErrorMsg.makeData(ErrorCode.OutOfTime, interest, this.key);
+      return ErrorMsg.makeData(ErrorCode.OutOfTime, interest, this.signer);
     }
     if (context.status === Status.BEFORE_CHALLENGE) {
       return this.startChallenge(now, request, context);
     }
     if (request.selectedChallenge !== context.challengeId) {
       this.deleteContext(request);
-      return ErrorMsg.makeData(ErrorCode.InvalidParameters, interest, this.key);
+      return ErrorMsg.makeData(ErrorCode.InvalidParameters, interest, this.signer);
     }
     if (context.challengeRemainingTries! <= 0) {
       this.deleteContext(request);
-      return ErrorMsg.makeData(ErrorCode.OutOfTries, interest, this.key);
+      return ErrorMsg.makeData(ErrorCode.OutOfTries, interest, this.signer);
     }
     return this.continueChallenge(now, request, context);
   };
@@ -169,7 +168,7 @@ export class Server {
     const challenge = this.challenges.get(request.selectedChallenge);
     if (!challenge) {
       this.deleteContext(request);
-      return ErrorMsg.makeData(ErrorCode.InvalidParameters, request.interest, this.key);
+      return ErrorMsg.makeData(ErrorCode.InvalidParameters, request.interest, this.signer);
     }
 
     context.status = Status.CHALLENGE;
@@ -210,7 +209,7 @@ export class Server {
 
     const issuedCert = await Certificate.issue({
       issuerId: this.issuerId,
-      issuerPrivateKey: this.key,
+      issuerPrivateKey: this.signer,
       publicKey: context.certRequestPub,
       validity: context.validityPeriod,
     });
@@ -230,7 +229,7 @@ export class Server {
       profile: this.profile,
       ...context.sessionKey,
       request,
-      signer: this.key,
+      signer: this.signer,
     };
   }
 

@@ -37,6 +37,7 @@ export async function requestCertificate({
   const consumerOptions: ConsumerOptions = {
     describe: `NDNCERT-CLIENT(${privateKey.name})`,
     retx,
+    verifier: profile.publicKey,
   };
   const signedInterestPolicy = crypto.makeSignedInterestPolicy();
 

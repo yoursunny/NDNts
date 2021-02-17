@@ -1,5 +1,4 @@
 import { openUplinks } from "@ndn/cli-common";
-import { CertNaming } from "@ndn/keychain";
 import { Server, ServerChallenge, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "@ndn/ndncert";
 import type { Verifier } from "@ndn/packet";
 import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
@@ -52,7 +51,7 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
     await openUplinks();
 
     const profile = await inputCaProfile(args.profile);
-    const key = await keyChain.getKey(CertNaming.toKeyName(profile.cert.name), "signer");
+    const signer = await keyChain.getSigner(profile.cert.name);
 
     const repo = new DataStore(leveldown(args.store));
     RepoProducer.create(repo, { reg: PrefixRegShorter(2) });
@@ -155,7 +154,7 @@ Otherwise, please disregard this message.`,
     Server.create({
       repo,
       profile,
-      key,
+      signer,
       challenges,
     });
   }

@@ -8,6 +8,7 @@ interface Args {
   issuer: string;
   "issuer-id": string;
   "valid-days": number;
+  "use-key-name-locator": boolean;
 }
 
 export class IssueCertCommand implements CommandModule<{}, Args> {
@@ -17,8 +18,8 @@ export class IssueCertCommand implements CommandModule<{}, Args> {
   public builder(argv: Argv): Argv<Args> {
     return argv
       .option("issuer", {
-        default: "/",
-        desc: "issuer key name or prefix",
+        demandOption: true,
+        desc: "issuer key name or certificate name",
         type: "string",
       })
       .option("issuer-id", {
@@ -30,6 +31,11 @@ export class IssueCertCommand implements CommandModule<{}, Args> {
         default: 30,
         desc: "validity period in days since now",
         type: "number",
+      })
+      .option("use-key-name-locator", {
+        default: false,
+        desc: "",
+        type: "boolean",
       });
   }
 
@@ -37,12 +43,9 @@ export class IssueCertCommand implements CommandModule<{}, Args> {
     issuer,
     "issuer-id": issuerIdInput,
     "valid-days": validDays,
+    "use-key-name-locator": useKeyNameKeyLocator,
   }: Arguments<Args>) {
-    const keyNames = await keyChain.listKeys(new Name(issuer));
-    if (keyNames.length === 0) {
-      throw new Error(`issuer key ${issuer} not found`);
-    }
-    const issuerPrivateKey = await keyChain.getKey(keyNames[0]!, "signer");
+    const issuerPrivateKey = await keyChain.getSigner(new Name(issuer), { useKeyNameKeyLocator });
 
     const certReq = await inputCertBase64();
     const publicKey = await certReq.createVerifier();

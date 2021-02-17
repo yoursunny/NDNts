@@ -58,12 +58,13 @@ NDNTS_KEYCHAIN=/tmp/issuer-keychain ndnts-keychain issue-cert --issuer /B --issu
 
 This command reads a certificate request (self-signed certificate) in Base64 format from standard input, signs (issues) a certificate to the public key enclosed in the certificate request, and prints the issued certificate in Base64 format to standard output.
 
-* `--issuer` specifies name prefix of a private key that signs (issues) the certificate.
-  Default is any available key in the KeyChain.
+* `--issuer` specifies a private key that signs (issues) the certificate.
+  This may be a key name or a certificate name.
 * `--issuer-id` specifies the IssuerId name component.
   Default is an empty component.
 * `--valid-days` specifies certificate ValidityPeriod in days from now.
   Default is 30 days.
+* `--use-key-name-locator` forces the KeyLocator of the issued certificate to contain a key name instead of a certificate name.
 
 Example:
 
