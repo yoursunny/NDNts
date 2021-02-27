@@ -13,7 +13,7 @@ const FIELDS = Symbol("Interest.FIELDS");
 
 class Fields {
   constructor(...args: Array<Interest | Interest.CtorArg>) {
-    args.forEach((arg) => {
+    for (const arg of args) {
       if (Name.isNameLike(arg)) {
         this.name = new Name(arg);
       } else if (arg === Interest.CanBePrefix) {
@@ -31,7 +31,7 @@ class Fields {
       } else {
         throw new Error("unknown Interest constructor argument");
       }
-    });
+    }
   }
 
   public name: Name = new Name();

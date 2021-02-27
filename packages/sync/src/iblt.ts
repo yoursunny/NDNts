@@ -92,9 +92,14 @@ export class IBLT {
   }
 
   /** Compute the difference between this (first) and other (second) IBLT. */
-  public diff(...other: IBLT[]): IBLT.Diff {
-    other.forEach(({ p }) => assert(this.p.nEntries === p.nEntries));
-    const hts: Hashtable[] = [this.ht, ...other.map(({ ht }) => ht)];
+  public diff(...others: IBLT[]): IBLT.Diff {
+    const hts: Hashtable[] = [
+      this.ht,
+      ...others.map((other) => {
+        assert(this.p.nEntries === other.p.nEntries);
+        return other.ht;
+      }),
+    ];
 
     const peel = new Hashtable(this.p.nEntries, this.p.serializeLittleEndian);
     for (let i = 0; i < this.p.nEntries; ++i) {

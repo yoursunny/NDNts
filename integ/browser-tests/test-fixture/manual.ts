@@ -1,6 +1,8 @@
 export function addManualTest(title: string, f: () => Promise<string|string[]>) {
   const handler = () => {
-    document.querySelectorAll("button").forEach((btn) => btn.disabled = true);
+    for (const btn of document.querySelectorAll("button")) {
+      btn.disabled = true;
+    }
     f().then(
       (result) => {
         if (Array.isArray(result)) {

@@ -11,5 +11,7 @@ export function writeTmpFile(content: string|Uint8Array): string {
 }
 
 export function deleteTmpFiles() {
-  removeCallbacks.forEach((f) => f());
+  for (const f of removeCallbacks) {
+    f();
+  }
 }

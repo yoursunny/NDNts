@@ -9,7 +9,8 @@
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
   "files": [
-    "lib"
+    "lib",
+    "cli.cjs"
   ],
   "type": "module",
   "bin": {

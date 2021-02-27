@@ -6,7 +6,7 @@ import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Name, NameLike } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
-import DefaultMap from "mnemonist/default-map";
+import DefaultMap from "mnemonist/default-map.js";
 
 import { IBLT, makePSyncCompatParam, PSyncFull, SyncNode, SyncUpdate } from "..";
 
@@ -55,7 +55,7 @@ beforeEach(() => {
   closers = [];
 });
 afterEach(() => {
-  closers.forEach((obj) => obj.close());
+  for (const obj of closers) {obj.close();}
   Forwarder.deleteDefault();
 });
 

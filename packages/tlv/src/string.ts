@@ -14,9 +14,9 @@ let hexTable: string[]|undefined;
 
 function getHexTable(): string[] {
   if (!hexTable) {
-    hexTable = new Array<string>(0x100);
+    hexTable = [];
     for (let b = 0; b <= 0xFF; ++b) {
-      hexTable[b] = b.toString(16).padStart(2, "0").toUpperCase();
+      hexTable.push(b.toString(16).padStart(2, "0").toUpperCase());
     }
   }
   return hexTable;
@@ -25,11 +25,7 @@ function getHexTable(): string[] {
 /** Convert byte array to upper-case hexadecimal string. */
 export function toHex(buf: Uint8Array): string {
   const table = getHexTable();
-  const a = new Array<string>(buf.length);
-  for (const [i, b] of buf.entries()) {
-    a[i] = table[b]!;
-  }
-  return a.join("");
+  return Array.from(buf, (b) => table[b]).join("");
 }
 
 /**

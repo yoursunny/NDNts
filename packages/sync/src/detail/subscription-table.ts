@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import MultiMap from "mnemonist/multi-map";
+import MultiMap from "mnemonist/multi-map.js";
 import type TypedEmitter from "typed-emitter";
 
 import type { Subscription } from "../types";

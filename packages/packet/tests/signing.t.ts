@@ -40,7 +40,7 @@ class TestAlgo {
 const ALGO0 = new TestAlgo("0");
 const ALGO1 = new TestAlgo("1", true);
 
-type Pkt = LLSign.Signable & LLVerify.Verifiable & Encodable & {sigInfo: SigInfo};
+type Pkt = LLSign.Signable & LLVerify.Verifiable & Encodable & { sigInfo: SigInfo };
 
 interface Row {
   cls: (new(name: Name) => Pkt) & Decodable<Pkt>;

@@ -90,6 +90,8 @@ describe("multicast", () => {
   test("creates", async () => {
     const faces = await UdpTransport.createMulticastFaces({}, opts);
     expect(faces).toHaveLength(intfs.length);
-    faces.forEach((face) => face.close());
+    for (const face of faces) {
+      face.close();
+    }
   });
 });

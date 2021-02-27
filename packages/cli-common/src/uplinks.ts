@@ -70,7 +70,9 @@ export async function openUplinks(): Promise<FwFace[]> {
 /** Close the uplinks. */
 export function closeUplinks() {
   if (typeof theUplinks !== "undefined") {
-    theUplinks.forEach((uplink) => uplink.close());
+    for (const uplink of theUplinks) {
+      uplink.close();
+    }
     theUplinks = undefined;
   }
 }

@@ -26,9 +26,9 @@ type TlvMatcher = (tlv: Decoder.Tlv) => void;
 
 function toMatchTlv(received: Uint8Array, ...checks: TlvMatcher[]) {
   const decoder = new Decoder(received);
-  checks.forEach((check) => {
+  for (const check of checks) {
     check(decoder.read());
-  });
+  }
   if (decoder.eof) {
     return {
       message: `expected ${received} not to match TLV`,

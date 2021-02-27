@@ -4,7 +4,7 @@ import { Data, digestSigning, Interest, lpm, Name, Signer, Verifier } from "@ndn
 import { toHex } from "@ndn/tlv";
 import { AbortController } from "abort-controller";
 import { EventEmitter } from "events";
-import DefaultWeakMap from "mnemonist/default-weak-map";
+import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import pDefer from "p-defer";
 import type TypedEmitter from "typed-emitter";
 

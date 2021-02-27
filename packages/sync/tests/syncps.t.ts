@@ -40,7 +40,9 @@ beforeEach(() => {
   closers = [];
 });
 afterEach(() => {
-  closers.forEach((obj) => obj.close());
+  for (const obj of closers) {
+    obj.close();
+  }
   Forwarder.deleteDefault();
 });
 

@@ -16,10 +16,10 @@ function assertType(t: number): void {
 
 const CHAR_ENCODE = (() => {
 const UNESCAPED = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
-const a = new Array<string>(256);
+const a: string[] = [];
 for (let ch = 0x00; ch <= 0xFF; ++ch) {
   const s = String.fromCharCode(ch);
-  a[ch] = UNESCAPED.includes(s) ? s : `%${ch.toString(16).padStart(2, "0").toUpperCase()}`;
+  a.push(UNESCAPED.includes(s) ? s : `%${ch.toString(16).padStart(2, "0").toUpperCase()}`);
 }
 return a;
 })();
@@ -133,10 +133,10 @@ export class Component {
   public toString(): string {
     let b = `${this.type}=`;
     let hasNonPeriods = false;
-    this.value.forEach((ch) => {
+    for (const ch of this.value) {
       hasNonPeriods ||= ch !== CHARCODE_PERIOD;
       b += CHAR_ENCODE[ch];
-    });
+    }
     if (!hasNonPeriods) {
       b += "...";
     }

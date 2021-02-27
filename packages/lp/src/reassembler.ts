@@ -9,7 +9,7 @@ class PartialPacket {
 
   public accept(fragment: LpPacket): false|LpPacket|undefined {
     if (this.accepted === 0) { // first
-      this.buffer = new Array(fragment.fragCount);
+      this.buffer = Array.from({ length: fragment.fragCount });
       this.acceptOne(fragment);
       return undefined;
     }

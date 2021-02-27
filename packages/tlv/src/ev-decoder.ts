@@ -124,15 +124,19 @@ export class EvDecoder<T> {
       throw new Error(`TLV-TYPE ${printTT(type)} is not ${this.typeName}`);
     }
 
-    this.beforeTopCallbacks.forEach((cb) => cb(target, topTlv));
+    for (const cb of this.beforeTopCallbacks) {
+      cb(target, topTlv);
+    }
     this.decodeValue(target, vd);
-    this.afterTopCallbacks.forEach((cb) => cb(target, topTlv));
+    for (const cb of this.afterTopCallbacks) {
+      cb(target, topTlv);
+    }
     return target;
   }
 
   /** Decode TLV-VALUE to target object. */
   public decodeValue<R extends T = T>(target: R, vd: Decoder): R {
-    this.beforeValueCallbacks.forEach((cb) => cb(target));
+    for (const cb of this.beforeValueCallbacks) {cb(target);}
 
     let currentOrder = 0;
     let currentCount = 0;
@@ -171,7 +175,7 @@ export class EvDecoder<T> {
       throw new Error(`TLV-TYPE ${Array.from(missingTlvTypes).map(printTT).join(",")} ${missingTlvTypes.size === 1 ? "is" : "are"} missing in ${this.typeName}`);
     }
 
-    this.afterValueCallbacks.forEach((cb) => cb(target));
+    for (const cb of this.afterValueCallbacks) {cb(target);}
     return target;
   }
 

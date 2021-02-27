@@ -1,6 +1,6 @@
 import { Forwarder, FwFace } from "@ndn/fw";
 import { Name } from "@ndn/packet";
-import DefaultWeakMap from "mnemonist/default-weak-map";
+import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
 const emptyName = new Name();
 

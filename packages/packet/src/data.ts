@@ -12,7 +12,7 @@ const FIELDS = Symbol("Data.FIELDS");
 class Fields {
   constructor(...args: Array<Data | Data.CtorArg>) {
     let isFinalBlock = false;
-    args.forEach((arg) => {
+    for (const arg of args) {
       if (Name.isNameLike(arg)) {
         this.name = new Name(arg);
       } else if (arg instanceof Uint8Array) {
@@ -26,7 +26,7 @@ class Fields {
       } else {
         throw new Error("unknown Data constructor argument");
       }
-    });
+    }
     this.isFinalBlock = isFinalBlock;
   }
 

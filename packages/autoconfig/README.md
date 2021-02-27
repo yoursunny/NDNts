@@ -54,10 +54,10 @@ let faces = await connectToTestbed({
   fchFallback: ["hobo.cs.arizona.edu", "titan.cs.memphis.edu"],
 });
 assert(faces.length > 0);
-faces.forEach((face) => {
+for (const face of faces) {
   console.log("connected to", `${face}`);
   face.close();
-});
+}
 
 // Try up to four candidates with 3-second timeout, and keep the fastest face only.
 faces = await connectToTestbed({

@@ -56,7 +56,7 @@ module.exports = async () => {
     },
     recursiveSearch: true,
   });
-  list.forEach((filename) => {
+  for (const filename of list) {
     const name = path.basename(path.dirname(filename));
     config.entry[name] = filename;
     config.plugins.push(new HtmlWebpackPlugin({
@@ -64,6 +64,6 @@ module.exports = async () => {
       filename: `${name}.html`,
       title: name,
     }));
-  });
+  }
   return config;
 };

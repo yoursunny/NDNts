@@ -76,9 +76,9 @@ It's easiest to let NDNts automatically create transports on every network inter
 // UdpTransport.multicasts() attempts to create UDP multicast transports on every
 // network interface, skipping network interfaces where socket creation fails.
 const multicasts = await UdpTransport.multicasts();
-multicasts.forEach(async (transport, i) => {
+for (const transport of multicasts) {
   await useInL3Face(transport);
-});
+}
 ```
 
 ## How to Use a Transport
@@ -102,7 +102,9 @@ face.close();
 // UdpTransport.createMulticastFaces() constructs UDP multicast transports on every network
 // interface and adds them to a forwarder.
 const faces = await UdpTransport.createMulticastFaces({});
-faces.forEach((face) => face.close());
+for (const face of faces) {
+  face.close();
+}
 })();
 ```
 

@@ -64,7 +64,9 @@ export class Fragmenter {
       fragments.push(fragment);
     }
 
-    fragments.forEach((fragment) => fragment.fragCount = fragments.length);
+    for (const fragment of fragments) {
+      fragment.fragCount = fragments.length;
+    }
     return fragments;
   }
 }

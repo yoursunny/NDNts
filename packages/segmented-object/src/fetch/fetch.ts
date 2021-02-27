@@ -36,10 +36,10 @@ class FetchResult implements fetch.Result {
     const it = pushable<Data>();
     ctx.on("segment", (segNum, data) => {
       const ordered = reorder.push(segNum, data);
-      ordered.forEach((data) => {
+      for (const data of ordered) {
         it.push(data);
         ++this.count;
-      });
+      }
     });
     ctx.on("end", () => {
       assert(reorder.empty);
@@ -69,10 +69,10 @@ class FetchResult implements fetch.Result {
 
     const output = new Uint8Array(totalLength);
     let offset = 0;
-    chunks.forEach((chunk) => {
+    for (const chunk of chunks) {
       output.set(chunk, offset);
       offset += chunk.length;
-    });
+    }
     assert.equal(offset, totalLength);
     return output;
   }

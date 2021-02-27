@@ -46,7 +46,8 @@ export class LpService {
     try {
       const { type, decoder } = tlv;
       if (type !== TT.LpPacket) {
-        return yield this.decodeL3(tlv);
+        yield this.decodeL3(tlv);
+        return;
       }
 
       const fragment = decoder.decode(LpPacket);

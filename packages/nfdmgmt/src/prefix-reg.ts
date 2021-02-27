@@ -64,7 +64,9 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     return [
       { ...this.commandOptions, endpoint },
       () => {
-        preloadProducers.forEach((p) => p.close());
+        for (const p of preloadProducers.values()) {
+          p.close();
+        }
         tapFace.close();
       },
     ];
