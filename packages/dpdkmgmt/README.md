@@ -67,7 +67,7 @@ const producer = new Endpoint({ fw: fwP }).produce("/P",
   });
 await new Promise((r) => setTimeout(r, 500));
 
-// Start a consumer, fetching Data from the producer via NFD.
+// Start a consumer, fetching Data from the producer via NDN-DPDK.
 const data = await new Endpoint({ fw: fwC }).consume(
   new Interest(`/P/${Math.floor(Math.random() * 1e9)}`, Interest.MustBeFresh),
 );

@@ -37,7 +37,7 @@
     "abort-controller": "^3.0.0",
     "applymixins": "^1.1.0",
     "minimalistic-assert": "^1.0.1",
-    "mnemonist": "^0.38.1",
+    "mnemonist": "^0.38.3",
     "murmurhash3js-revisited": "^3.0.0",
     "p-defer": "^3.0.0",
     "pako": "^2.0.3",

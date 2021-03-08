@@ -36,7 +36,7 @@
     "@types/minimalistic-assert": "^1.0.1",
     "@yoursunny/asn1": "^0.0.20200718",
     "minimalistic-assert": "^1.0.1",
-    "mnemonist": "^0.38.1",
+    "mnemonist": "^0.38.3",
     "tslib": "^2.1.0"
   },
   "devDependencies": {
