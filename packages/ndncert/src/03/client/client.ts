@@ -1,6 +1,6 @@
 import { ConsumerOptions, Endpoint, RetxPolicy } from "@ndn/endpoint";
 import { Certificate, NamedSigner, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
-import { Name } from "@ndn/packet";
+import { FwHint, Interest, Name } from "@ndn/packet";
 
 import * as crypto from "../crypto-common";
 import { CaProfile, ChallengeRequest, ChallengeResponse, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
@@ -69,6 +69,7 @@ export async function requestCertificate({
 
   let challengeParameters = await challenge.start({ requestId });
   let issuedCertName: Name;
+  let issuedCertFwHint: FwHint|undefined;
   for (;;) {
     const challengeRequest = await ChallengeRequest.build({
       profile,
@@ -85,6 +86,7 @@ export async function requestCertificate({
     const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, requestId, sessionKey.sessionDecrypter);
     if (challengeResponse.status === Status.SUCCESS) {
       issuedCertName = challengeResponse.issuedCertName!;
+      issuedCertFwHint = challengeResponse.fwHint;
       break;
     }
     challengeParameters = await challenge.next({
@@ -96,7 +98,9 @@ export async function requestCertificate({
     });
   }
 
-  const issuedCertData = await endpoint.consume(issuedCertName, consumerOptions);
+  const issuedCertInterest = new Interest(issuedCertName);
+  issuedCertInterest.fwHint = issuedCertFwHint;
+  const issuedCertData = await endpoint.consume(issuedCertInterest, consumerOptions);
   const issuedCert = Certificate.fromData(issuedCertData);
   return issuedCert;
 }

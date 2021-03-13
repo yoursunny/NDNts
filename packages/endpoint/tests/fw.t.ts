@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { CancelInterest, Forwarder, FwPacket, FwTracer } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
-import { Data, Interest, Name } from "@ndn/packet";
+import { Data, FwHint, Interest, Name } from "@ndn/packet";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
 import { fromUtf8, toHex } from "@ndn/tlv";
 import { AbortController } from "abort-controller";
@@ -157,6 +157,25 @@ test("aggregate & retransmit", async () => {
   expect(rxDataTokens.has(2)).toBeTruthy();
   expect(rxDataTokens.has(3)).toBeTruthy();
   expect(nRxRejects).toBe(2);
+});
+
+test("FwHint", async () => {
+  fw.nodeNames.push(new Name("/B/n"));
+  ep.produce("/A", async (interest) => {
+    expect(interest).toHaveName("/C");
+    return new Data(interest.name.append("A"));
+  });
+  ep.produce("/C", async (interest) => {
+    expect(interest).toHaveName("/C");
+    return new Data(interest.name.append("B"));
+  });
+
+  await expect(ep.consume(new Interest("/C", Interest.CanBePrefix,
+    new FwHint([new FwHint.Delegation("/A")]),
+  ))).resolves.toHaveName("/C/A");
+  await expect(ep.consume(new Interest("/C", Interest.CanBePrefix,
+    new FwHint([new FwHint.Delegation("/B")]),
+  ))).resolves.toHaveName("/C/B");
 });
 
 test("Data without token", async () => {

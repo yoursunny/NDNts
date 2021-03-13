@@ -1,4 +1,4 @@
-import { Data, LLDecrypt, LLEncrypt, Name, Signer } from "@ndn/packet";
+import { Data, FwHint, LLDecrypt, LLEncrypt, Name, Signer, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encodable, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 
 import { Status, TT } from "./an";
@@ -13,7 +13,8 @@ const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse", undefin
   .add(TT.ChallengeStatus, (t, { text }) => t.challengeStatus = text, { order: 2 })
   .add(TT.RemainingTries, (t, { nni }) => t.remainingTries = nni, { order: 3 })
   .add(TT.RemainingTime, (t, { nni }) => t.remainingTime = nni * 1000, { order: 4 })
-  .add(TT.IssuedCertName, (t, { vd }) => t.issuedCertName = vd.decode(Name), { order: 6 });
+  .add(TT.IssuedCertName, (t, { vd }) => t.issuedCertName = vd.decode(Name), { order: 6 })
+  .add(l3TT.ForwardingHint, (t, { value }) => t.fwHint = FwHint.decodeValue(value), { order: 7 });
 parameter_kv.parseEvDecoder(EVD, 5);
 
 /** CHALLENGE response packet. */
@@ -44,6 +45,7 @@ function checkFieldsByStatus({
   remainingTime,
   parameters,
   issuedCertName,
+  fwHint,
 }: ChallengeResponse.Fields): () => Encodable[] {
   switch (status) {
     case Status.FAILURE:
@@ -54,6 +56,7 @@ function checkFieldsByStatus({
       }
       return () => [
         [TT.IssuedCertName, issuedCertName],
+        fwHint,
       ];
     default:
       if (!challengeStatus || !remainingTries || !remainingTime) {
@@ -76,6 +79,7 @@ export namespace ChallengeResponse {
     remainingTime?: number; // milliseconds
     parameters?: parameter_kv.ParameterKV;
     issuedCertName?: Name;
+    fwHint?: FwHint;
   }
 
   export interface Options extends Fields {

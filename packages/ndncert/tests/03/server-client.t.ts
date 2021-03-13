@@ -2,9 +2,9 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
 import { Certificate, CertNaming, ECDSA, generateSigningKey, NamedSigner, NamedVerifier, RSA, ValidityPeriod } from "@ndn/keychain";
-import { Component, Name } from "@ndn/packet";
+import { Component, FwHint, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
-import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
+import { DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 import { fetch } from "@ndn/segmented-object";
 import { toHex } from "@ndn/tlv";
@@ -254,11 +254,14 @@ beforeAll(async () => {
 });
 
 let repo: DataStore;
+let repoFwHint: FwHint;
 let repoProducer: RepoProducer;
 let server: Server;
 beforeEach(async () => {
   repo = await makeDataStore();
-  repoProducer = RepoProducer.create(repo, { reg: PrefixRegShorter(2) });
+  const fwName = new Name("/fh");
+  repoFwHint = new FwHint([new FwHint.Delegation(fwName)]);
+  repoProducer = RepoProducer.create(repo, { reg: PrefixRegStatic(fwName) });
 });
 afterEach(async () => {
   server?.close();
@@ -271,6 +274,7 @@ function startServer(challenges: readonly ServerChallenge[] = [new ServerNopChal
   server = Server.create({
     profile,
     repo,
+    repoFwHint,
     signer: caPvt.withKeyLocator(caCert.name),
     challenges,
   });

@@ -1,6 +1,6 @@
 import { Endpoint, Producer, ProducerHandler } from "@ndn/endpoint";
 import { Certificate, CertNaming, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
-import type { Signer } from "@ndn/packet";
+import type { FwHint, Signer } from "@ndn/packet";
 import { Component, ComponentLike, Data } from "@ndn/packet";
 import { serveMetadata } from "@ndn/rdr";
 import { toHex } from "@ndn/tlv";
@@ -15,6 +15,9 @@ export interface ServerOptions {
 
   /** Repo for storing issued certificates. */
   repo: RepoDataStore;
+
+  /** Forwarding hint to retrieve certificates from the repo. */
+  repoFwHint?: FwHint;
 
   /** The CA profile. */
   profile: CaProfile;
@@ -38,12 +41,13 @@ export class Server {
   public static create({
     endpoint = new Endpoint(),
     repo,
+    repoFwHint,
     profile,
     signer,
     challenges,
     issuerId = "NDNts-NDNCERT",
   }: ServerOptions): Server {
-    return new Server(endpoint, repo, profile, signer,
+    return new Server(endpoint, repo, repoFwHint, profile, signer,
       new Map<string, ServerChallenge>(challenges.map((challenge) => [challenge.challengeId, challenge])),
       Component.from(issuerId));
   }
@@ -56,6 +60,7 @@ export class Server {
   private constructor(
       endpoint: Endpoint,
       private readonly repo: RepoDataStore,
+      private readonly repoFwHint: FwHint|undefined,
       private readonly profile: CaProfile,
       private readonly signer: Signer,
       private readonly challenges: Map<string, ServerChallenge>,
@@ -135,9 +140,7 @@ export class Server {
       request = await ChallengeRequest.fromInterest(interest, {
         profile: this.profile,
         signedInterestPolicy: this.signedInterestPolicy,
-        lookupRequest: async (requestId) => {
-          return this.state.get(toHex(requestId));
-        },
+        lookupRequest: this.lookupContext,
       });
     } catch {
       return await ErrorMsg.makeData(ErrorCode.BadParameterFormat, interest, this.signer);
@@ -220,6 +223,7 @@ export class Server {
       ...this.makeResponseCommon(request, context),
       status: Status.SUCCESS,
       issuedCertName,
+      fwHint: this.repoFwHint,
     });
     return response.data;
   }
@@ -232,6 +236,10 @@ export class Server {
       signer: this.signer,
     };
   }
+
+  private lookupContext = async (requestId: Uint8Array) => {
+    return this.state.get(toHex(requestId));
+  };
 
   private deleteContext({ requestId }: ChallengeRequest) {
     this.state.delete(toHex(requestId));

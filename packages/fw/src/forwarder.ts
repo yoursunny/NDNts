@@ -27,7 +27,9 @@ interface Events {
   pkttx: (face: FwFace, pkt: FwPacket) => void;
 }
 
-export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
+export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events>) implements Forwarder {
+  /** Node names, used in forwarding hint processing. */
+  public readonly nodeNames: Name[] = [];
   public readonly faces = new Set<FaceImpl>();
   public readonly fib = new Fib();
   public readonly pit = new Pit();
@@ -42,12 +44,20 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
     return new FaceImpl(this, face, attributes);
   }
 
+  private pickInterestForwardingName(interest: Interest): Name {
+    const fhName = interest.fwHint?.delegations[0]?.name;
+    if (fhName && this.nodeNames.every((nodeName) => !fhName.isPrefixOf(nodeName))) {
+      return fhName;
+    }
+    return interest.name;
+  }
+
   /** Process incoming Interest. */
   public processInterest(face: FaceImpl, pkt: FwPacket<Interest>) {
     const pi = this.pit.lookup(pkt);
     pi.receiveInterest(face, pkt);
 
-    const fibEntry = this.fib.lpm(pkt.l3.name);
+    const fibEntry = this.fib.lpm(this.pickInterestForwardingName(pkt.l3));
     if (!fibEntry) {
       return;
     }
@@ -78,7 +88,7 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
 
 /** Forwarding plane. */
 export interface Forwarder extends Pick<ForwarderImpl,
-"addFace"|Exclude<keyof TypedEmitter<Events>, "emit">> {
+"nodeNames"|"addFace"|Exclude<keyof TypedEmitter<Events>, "emit">> {
   readonly faces: Set<FwFace>;
   readonly pit: Pick<Pit, "dataNoTokenMatch">;
 }

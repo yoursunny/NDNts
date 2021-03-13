@@ -30,8 +30,11 @@ The main differences from a full forwarder include:
 * Forwarding strategy is dumb.
 * No Interest aggregation.
 * No Content Store (CS).
-  If your application needs data packet caching, use `@ndn/repo` package.
-* No forwarding hint processing.
+  * If your application needs data packet caching, use `@ndn/repo` package.
 * No Nack generation or processing.
+* Limited forwarding hint processing:
+  * Only the first delegation name is considered. Others are ignored.
+  * If the first delegation name is a prefix of one of the configured node names, FIB lookup uses the Interest name; otherwise, FIB lookup uses the first delegation name.
+  * Forwarding hint is not stripped even if it matches a configured node name.
 
 These are subject to change.
