@@ -5,7 +5,7 @@ import { TcpTransport, UdpTransport, UnixTransport } from "@ndn/node-transport";
 import { Name } from "@ndn/packet";
 
 import { env } from "./env";
-import { getSignerImpl } from "./keychain";
+import { getSignerImpl, openKeyChain } from "./keychain";
 
 if (env.pkttrace) {
   FwTracer.enable();
@@ -59,7 +59,11 @@ export async function openUplinks(): Promise<FwFace[]> {
     if (env.nfdreg) {
       const signerName = env.nfdregkey ?? env.key;
       const signer = await getSignerImpl(signerName);
-      enableNfdPrefixReg(face, { signer, preloadCertName: signerName });
+      enableNfdPrefixReg(face, {
+        signer,
+        preloadCertName: signerName,
+        preloadFromKeyChain: openKeyChain(),
+      });
     }
     face.addRoute(new Name("/"));
     theUplinks = [face];

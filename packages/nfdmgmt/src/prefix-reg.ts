@@ -1,6 +1,6 @@
 import { Endpoint, Producer } from "@ndn/endpoint";
 import { FwFace, ReadvertiseDestination, TapFace } from "@ndn/fw";
-import { Certificate } from "@ndn/keychain";
+import { Certificate, KeyChain } from "@ndn/keychain";
 import { Interest, Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 
@@ -17,6 +17,9 @@ type Options = CommandOptions & RouteOptions & {
 
   /** Set to signer name to retrieve and serve certificate chain. */
   preloadCertName?: Name;
+
+  /** Local KeyChain to collect preloaded certificates. */
+  preloadFromKeyChain?: KeyChain;
 };
 
 const PRELOAD_INTEREST_LIFETIME = Interest.Lifetime(500);
@@ -29,7 +32,8 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
   private readonly commandOptions: CommandOptions;
   private readonly routeOptions: RouteOptions;
   private readonly refreshInterval: number|false;
-  private readonly preloadCertName: Name|undefined;
+  private readonly preloadCertName?: Name;
+  private readonly preloadFromKeyChain?: KeyChain;
   private readonly preloadCerts = new Map<string, Certificate>();
 
   constructor(private readonly face: FwFace, opts: Options) {
@@ -49,6 +53,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
 
     this.refreshInterval = opts.refreshInterval ?? 300000;
     this.preloadCertName = opts.preloadCertName;
+    this.preloadFromKeyChain = opts.preloadFromKeyChain;
     face.once("close", () => this.disable());
   }
 
@@ -81,8 +86,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
         break;
       }
       try {
-        const cert = this.preloadCerts.get(key) ?? Certificate.fromData(
-          await endpoint.consume(new Interest(name, Interest.CanBePrefix, PRELOAD_INTEREST_LIFETIME)));
+        const cert = await this.retrievePreload(endpoint, key, name);
         this.preloadCerts.set(key, cert);
         producers.set(key, endpoint.produce(name, () => Promise.resolve(cert.data)));
         name = cert.issuer;
@@ -91,6 +95,23 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
       }
     }
     return producers;
+  }
+
+  private async retrievePreload(endpoint: Endpoint, key: string, name: Name): Promise<Certificate> {
+    const cert = this.preloadCerts.get(key);
+    if (cert) {
+      return cert;
+    }
+
+    if (this.preloadFromKeyChain) {
+      try {
+        return await this.preloadFromKeyChain.getCert(name);
+      } catch {}
+    }
+
+    const interest = new Interest(name, Interest.CanBePrefix, PRELOAD_INTEREST_LIFETIME);
+    const data = await endpoint.consume(interest);
+    return Certificate.fromData(data);
   }
 
   protected async doAdvertise(name: Name, state: State, nameHex: string) {

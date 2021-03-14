@@ -13,7 +13,7 @@ If empty, a temporary in-memory KeyChain will be used.
 `openKeyChain` function returns this KeyChain.
 
 `NDNTS_KEY` environment variable specifies the default signing key.
-It may be a certificate name, a key name, or prefix of a subject name.
+It's recommended to use a certificate name, but this can also be a key name or prefix of a subject name.
 If empty, any key in the KeyChain may be used.
 If the specified prefix does not match any existing key, digest signing will be used.
 `getSigner` function returns the private key.

@@ -121,7 +121,7 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
       publicKey,
       challenges,
     });
-    stdout.write(`${await cert.data.computeFullName()}\n`);
+    stdout.write(`${cert.data.name}\n`);
 
     await keyChain.insertCert(cert);
     closeUplinks();
