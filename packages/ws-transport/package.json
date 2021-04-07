@@ -29,12 +29,12 @@
     "@ndn/l3face": "workspace:*",
     "abort-controller": "^3.0.0",
     "event-iterator": "^2.0.0",
-    "tslib": "^2.1.0",
+    "tslib": "^2.2.0",
     "ws": "^7.4.4"
   },
   "devDependencies": {
     "@ndn/packet": "workspace:*",
-    "@types/ws": "^7.4.0",
+    "@types/ws": "^7.4.1",
     "it-pushable": "^1.4.2"
   }
 }

@@ -12,7 +12,7 @@ npm whoami # check NPM login
 
 if [[ $NDNTS_SKIP_BUILD -ne 1 ]]; then
   npm run build clean
-  npm run lint-ci
+  npm run lint
   [[ $(git status --porcelain | tee >(cat 1>&2) | wc -l) -eq 0 ]]
   npm run build
   npm test

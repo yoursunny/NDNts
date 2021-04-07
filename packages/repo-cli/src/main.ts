@@ -1,5 +1,4 @@
 import yargs, { Argv } from "yargs";
-// @ts-expect-error
 import { hideBin } from "yargs/helpers";
 
 import { FillBiCommand, FillStoreCommand } from "./fill";

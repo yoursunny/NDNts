@@ -30,6 +30,6 @@
     "@ndn/packet": "workspace:*",
     "graphql": "^15.5.0",
     "graphql-request": "^3.4.0",
-    "tslib": "^2.1.0"
+    "tslib": "^2.2.0"
   }
 }

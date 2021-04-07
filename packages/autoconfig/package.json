@@ -35,10 +35,10 @@
     "hirestime": "^6.1.0",
     "node-fetch": "^2.6.1",
     "streaming-iterables": "^5.0.4",
-    "tslib": "^2.1.0"
+    "tslib": "^2.2.0"
   },
   "devDependencies": {
     "@types/default-gateway": "^3.0.1",
-    "@types/node-fetch": "^2.5.8"
+    "@types/node-fetch": "^2.5.9"
   }
 }

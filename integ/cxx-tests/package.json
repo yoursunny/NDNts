@@ -10,6 +10,6 @@
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "execa": "^5.0.0",
-    "tslib": "^2.1.0"
+    "tslib": "^2.2.0"
   }
 }
