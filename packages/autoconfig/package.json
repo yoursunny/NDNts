@@ -39,6 +39,6 @@
   },
   "devDependencies": {
     "@types/default-gateway": "^3.0.1",
-    "@types/node-fetch": "^2.5.9"
+    "@types/node-fetch": "^2.5.10"
   }
 }

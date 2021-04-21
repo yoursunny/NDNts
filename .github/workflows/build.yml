@@ -1,12 +1,14 @@
 name: build
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
   unittest:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
-        node: ['12', '14', '15']
+        node: ['12', '14', '16']
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
@@ -20,7 +22,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo add-apt-repository ppa:named-data/ppa
-          sudo apt-get install ndnsec
+          sudo apt-get install --no-install-recommends ndnsec
       - run: npm run bootstrap
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
@@ -32,22 +34,22 @@ jobs:
       - uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-        if: ${{ matrix.node == '15' }}
+        if: ${{ matrix.node == '16' }}
   integ:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           path: ~/.pnpm-store
-          key: 15-${{ hashFiles('**/package.json') }}
+          key: 16-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v2
         with:
-          node-version: 15
+          node-version: 16
       - name: install dependencies
         run: |
           sudo add-apt-repository ppa:named-data/ppa
-          sudo apt-get install build-essential clang-format-8 libndn-cxx-dev nfd
+          sudo apt-get install --no-install-recommends build-essential clang-format-8 libndn-cxx-dev nfd
       - run: npm run bootstrap
       - run: npm run build
       - run: npm run literate lint
@@ -61,16 +63,16 @@ jobs:
   publish:
     needs: [unittest, integ]
     if: ${{ github.event_name == 'push' }}
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           path: ~/.pnpm-store
-          key: 15-${{ hashFiles('**/package.json') }}
+          key: 16-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v2
         with:
-          node-version: 15
+          node-version: 16
       - run: npm run bootstrap
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true

@@ -42,6 +42,6 @@
   "devDependencies": {
     "@ndn/repo": "workspace:*",
     "@types/memdown": "^3.0.0",
-    "memdown": "^5.1.0"
+    "memdown": "^6.0.0"
   }
 }

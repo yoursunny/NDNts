@@ -33,9 +33,9 @@
     "@ndn/repo-api": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@types/abstract-leveldown": "^5.0.1",
-    "abstract-leveldown": "^6.3.0",
-    "encoding-down": "^6.3.0",
-    "levelup": "^4.4.0",
+    "abstract-leveldown": "^7.0.0",
+    "encoding-down": "^7.0.0",
+    "levelup": "^5.0.0",
     "minimalistic-assert": "^1.0.1",
     "streaming-iterables": "^5.0.4",
     "throat": "^6.0.1",
@@ -47,9 +47,9 @@
     "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@types/encoding-down": "^5.0.0",
-    "@types/levelup": "^4.3.0",
+    "@types/levelup": "^4.3.1",
     "@types/memdown": "^3.0.0",
     "@types/minimalistic-assert": "^1.0.1",
-    "memdown": "^5.1.0"
+    "memdown": "^6.0.0"
   }
 }
