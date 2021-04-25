@@ -75,9 +75,6 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
   private cAbort?: AbortController;
 
   private debug(action: string): void {
-    if (this.listenerCount("debug") === 0) {
-      return;
-    }
     this.emit("debug", {
       action,
     });
@@ -89,6 +86,8 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
       return;
     }
     this.closed = true;
+
+    this.bloom.dispose();
 
     this.cAbort?.abort();
     this.cAbort = undefined;

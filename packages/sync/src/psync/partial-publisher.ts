@@ -133,9 +133,6 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
       return undefined;
     }
 
-    const bloomComps = interest.name.slice(-1 - this.codec.encodeBloomLength, -1).comps;
-    const bloom = await this.codec.decodeBloom(BloomFilter, bloomComps);
-
     const ibltComp = interest.name.at(-1);
     const recvIblt = this.codec.comp2iblt(ibltComp);
 
@@ -147,6 +144,8 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
       return new Data(name, Data.ContentType(0x03), Data.FreshnessPeriod(this.sFreshness), Data.FinalBlock);
     }
 
+    const bloomComps = interest.name.slice(-1 - this.codec.encodeBloomLength, -1).comps;
+    const bloom = await this.codec.decodeBloom(BloomFilter, bloomComps);
     const state = this.c.list(({ id: prefix, key }) => {
       return positive.has(key) &&
              bloom.contains(this.codec.toBloomKey(prefix));
@@ -165,6 +164,7 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
           this.debug("s-expire", pending.interest);
           pending.defer.resolve(undefined);
         }
+        pending.bloom.dispose();
       }, interest.lifetime),
       defer: pDefer<Data|undefined>(),
     };
