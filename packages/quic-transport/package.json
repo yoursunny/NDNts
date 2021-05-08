@@ -1,7 +1,7 @@
 {
   "name": "@ndn/quic-transport",
   "version": "0.0.20210203",
-  "description": "NDNts: QUIC Transport",
+  "description": "NDNts: HTTP/3 Transport",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -15,9 +15,6 @@
   "main": "src/mod.ts",
   "module": "lib/mod_browser.js",
   "sideEffects": false,
-  "browser": {
-    "web-bluetooth": false
-  },
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",

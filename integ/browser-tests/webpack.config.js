@@ -43,7 +43,7 @@ const config = {
     host: "0.0.0.0",
     port: jestPuppeteerConfig.server.port,
     headers: {
-      "Origin-Trial": "AmPDppaOagbU+dd15oIA1Zol9LcnBG5RWj1tL8O0yjbWsSJ20zRjBtEpQOfHOyQZ89X2yQeUkbFxFNSMPEwwVwgAAABQeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjkzMjciLCJmZWF0dXJlIjoiUXVpY1RyYW5zcG9ydCIsImV4cGlyeSI6MTYxNDEyNDc5OX0=", // Chromium QuicTransport origin trial token for http://localhost:9327 expires 2021-02-23
+      "Origin-Trial": "An6rhP9kx5wibLrfVBgGmY3MKPaAlLex0hci5Hu6BRIZ3JhmGKQ6QNFSFcmTaaVugda/PY7NgtQVdfe91e5ogwEAAABPeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjkzMjciLCJmZWF0dXJlIjoiV2ViVHJhbnNwb3J0IiwiZXhwaXJ5IjoxNjM0MDgzMTk5fQ==", // Chromium WebTransport origin trial token for http://localhost:9327 expires 2021-06-19
     },
   },
 };

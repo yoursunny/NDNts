@@ -1,7 +1,7 @@
 import { Endpoint } from "@ndn/endpoint";
 import type { FwFace } from "@ndn/fw";
 import { Name } from "@ndn/packet";
-import { QuicTransport } from "@ndn/quic-transport";
+import { H3Transport } from "@ndn/quic-transport";
 import { WebBluetoothTransport } from "@ndn/web-bluetooth-transport";
 
 import { addManualTest } from "../../test-fixture/manual";
@@ -35,11 +35,11 @@ function testWebBluetooth() {
   return facePing(WebBluetoothTransport.createFace({}), "/example/esp8266/ble/ping");
 }
 
-async function testQuic() {
+async function testH3() {
   document.body.innerHTML = `
     <form>
-    QUIC gateway:
-    <code>quic-transport://</code><input type="text" placeholder="localhost:6367">/ndn</code>
+    HTTP3 gateway:
+    <code>https://</code><input type="text" placeholder="localhost:6367"><code>/ndn</code>
     <button>OK</button>
     </form>
   `;
@@ -51,8 +51,8 @@ async function testQuic() {
       document.body.innerHTML = "";
     });
   });
-  return facePing(QuicTransport.createFace({}, `quic-transport://${gateway}/ndn`), "/example/quic/ping");
+  return facePing(H3Transport.createFace({}, `https://${gateway}/ndn`), "/example/quic/ping");
 }
 
 addManualTest("test WebBluetoothTransport", testWebBluetooth);
-addManualTest("test QuicTransport", testQuic);
+addManualTest("test H3Transport", testH3);
