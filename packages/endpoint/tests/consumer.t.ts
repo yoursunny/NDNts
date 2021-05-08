@@ -1,7 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Data, Interest, Verifier } from "@ndn/packet";
-import { AbortController } from "abort-controller";
+import AbortController from "abort-controller";
 
 import { Endpoint, ProducerHandler, RetxPolicy } from "..";
 

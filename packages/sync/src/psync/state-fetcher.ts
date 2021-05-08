@@ -1,7 +1,7 @@
 import type { Endpoint } from "@ndn/endpoint";
 import type { Name, Verifier } from "@ndn/packet";
 import { discoverVersion, fetch } from "@ndn/segmented-object";
-import { AbortController } from "abort-controller";
+import AbortController from "abort-controller";
 
 import type { PSyncCodec } from "./codec";
 import { PSyncCore } from "./core";

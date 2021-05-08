@@ -6,7 +6,7 @@ import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Segment as Segment1 } from "@ndn/naming-convention1";
 import { Segment as Segment2 } from "@ndn/naming-convention2";
 import { Name, Verifier } from "@ndn/packet";
-import { AbortController } from "abort-controller";
+import AbortController from "abort-controller";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, consume } from "streaming-iterables";
 

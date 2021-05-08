@@ -2,7 +2,7 @@ import { Endpoint, Producer } from "@ndn/endpoint";
 import { Timestamp } from "@ndn/naming-convention2";
 import { Data, digestSigning, Interest, lpm, Name, Signer, Verifier } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
-import { AbortController } from "abort-controller";
+import AbortController from "abort-controller";
 import { EventEmitter } from "events";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import pDefer from "p-defer";

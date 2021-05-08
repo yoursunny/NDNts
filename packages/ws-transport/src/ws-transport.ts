@@ -38,7 +38,7 @@ export class WsTransport extends Transport {
   public tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
     for await (const pkt of iterable) {
       if (this.sock.readyState !== this.sock.OPEN) {
-        throw new Error(`unexpected WebSocket.readState ${this.sock.readyState}`);
+        throw new Error(`unexpected WebSocket.readyState ${this.sock.readyState}`);
       }
       this.sock.send(pkt);
       if (this.sock.bufferedAmount > this.highWaterMark) {
@@ -81,17 +81,21 @@ export namespace WsTransport {
 
   /**
    * Create a transport and connect to remote endpoint.
-   * @param uri server URI.
+   * @param uri server URI or WebSocket object.
    * @param opts other options.
    */
-  export function connect(uri: string, opts: WsTransport.Options = {}): Promise<WsTransport> {
+  export function connect(uri: string|WebSocket, opts: WsTransport.Options = {}): Promise<WsTransport> {
     const {
       connectTimeout = 10000,
       signal,
     } = opts;
 
     return new Promise<WsTransport>((resolve, reject) => {
-      const sock = makeWebSocket(uri);
+      const sock = typeof uri === "object" ? uri : makeWebSocket(uri);
+      if (sock.readyState === sock.OPEN) {
+        resolve(new WsTransport(sock, opts));
+        return;
+      }
 
       const fail = (err?: Error) => {
         sock.close();

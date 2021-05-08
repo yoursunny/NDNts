@@ -5,7 +5,7 @@ import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, FwHint, Interest, Name } from "@ndn/packet";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
 import { fromUtf8, toHex } from "@ndn/tlv";
-import { AbortController } from "abort-controller";
+import AbortController from "abort-controller";
 import { BufferWritableMock } from "stream-mock";
 import { consume } from "streaming-iterables";
 

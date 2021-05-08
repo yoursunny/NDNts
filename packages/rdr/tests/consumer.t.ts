@@ -4,7 +4,7 @@ import { Endpoint, Producer } from "@ndn/endpoint";
 import { generateSigningKey } from "@ndn/keychain";
 import { Version } from "@ndn/naming-convention2";
 import { Name, Signer, Verifier } from "@ndn/packet";
-import { AbortController } from "abort-controller";
+import AbortController from "abort-controller";
 
 import { retrieveMetadata, serveMetadata } from "..";
 
