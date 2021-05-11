@@ -36,7 +36,7 @@
     "graceful-fs": "^4.2.6",
     "hard-rejection": "^2.1.0",
     "leveldown": "^6.0.0",
-    "nodemailer": "^6.5.0",
+    "nodemailer": "^6.6.0",
     "prompts": "^2.4.1",
     "stdout-stream": "^1.4.1",
     "tslib": "^2.2.0",
@@ -47,7 +47,7 @@
     "@types/graceful-fs": "^4.1.5",
     "@types/leveldown": "^4.0.2",
     "@types/nodemailer": "^6.4.1",
-    "@types/prompts": "^2.0.10",
+    "@types/prompts": "^2.0.11",
     "@types/stdout-stream": "^1.4.0",
     "@types/yargs": "^16.0.1"
   }

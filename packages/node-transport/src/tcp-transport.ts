@@ -65,7 +65,7 @@ export namespace TcpTransport {
       const timeout = setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
 
       const onabort = () => fail(new Error("abort"));
-      (signal as AbortSignal|undefined)?.addEventListener("abort", () => onabort);
+      (signal as AbortSignal|undefined)?.addEventListener("abort", onabort);
 
       sock.on("error", () => undefined);
       sock.once("error", fail);

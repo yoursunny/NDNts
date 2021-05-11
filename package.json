@@ -25,7 +25,7 @@
     "jest": "^26.6.3",
     "jest-environment-node": "^26.6.2",
     "js-yaml": "^4.1.0",
-    "pnpm": "^6.2.5",
+    "pnpm": "^6.3.0",
     "split2": "^3.2.2",
     "ts-jest": "^26.5.6",
     "tslib": "^2.2.0",

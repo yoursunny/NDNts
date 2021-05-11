@@ -22,8 +22,7 @@ export async function run<ServerSocket>(
   face.on("close", closeEvt);
 
   let end = false;
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  face.tx((async function*() {
+  void face.tx((async function*() {
     // eslint-disable-next-line no-unmodified-loop-condition
     for (let i = 0; !end; ++i) {
       yield FwPacket.create(new Interest(`/A/${i}`));
