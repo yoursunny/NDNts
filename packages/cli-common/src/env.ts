@@ -1,9 +1,8 @@
+import "dotenv/config";
+
 import { Name } from "@ndn/packet";
 import { makeEnv, parsers } from "@strattadb/environment";
-import dotenv from "dotenv";
 import { URL } from "url";
-
-dotenv.config();
 
 export const env = makeEnv({
   keychain: {

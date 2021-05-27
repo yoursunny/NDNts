@@ -1,11 +1,11 @@
-import yargs, { Argv } from "yargs";
+import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
 import { GetSegmentedCommand } from "./get-segmented";
 import { PutSegmentedCommand } from "./put-segmented";
 import { applyCommonArgs } from "./util";
 
-(yargs() as unknown as Argv)
+void yargs(hideBin(process.argv))
   .scriptName("ndncat")
   .option("convention1", {
     default: false,
@@ -16,4 +16,4 @@ import { applyCommonArgs } from "./util";
   .command(new GetSegmentedCommand())
   .command(new PutSegmentedCommand())
   .demandCommand()
-  .parse(hideBin(process.argv));
+  .parse();

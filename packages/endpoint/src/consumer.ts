@@ -34,13 +34,13 @@ export interface Options {
 /**
  * Progress of Data retrieval.
  *
- * This is a Promise that resolves with the retrieved Data, and rejects upon timeout.
- * Calling .cancel() cancels Data retrieval and rejects the Promise.
+ * This is a Promise that resolves with the retrieved Data and rejects upon timeout,
+ * annotated with the Interest and some counters.
  */
-export type Context = Promise<Data> & {
+export interface Context extends Promise<Data> {
   readonly interest: Interest;
   readonly nRetx: number;
-};
+}
 
 /** Consumer functionality of Endpoint. */
 export class EndpointConsumer {
@@ -122,6 +122,6 @@ export class EndpointConsumer {
     return Object.defineProperties(promise, {
       interest: { value: interest },
       nRetx: { get() { return nRetx; } },
-    });
+    }) as Context;
   }
 }

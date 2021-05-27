@@ -30,7 +30,7 @@
     "abort-controller": "^3.0.0",
     "event-iterator": "^2.0.0",
     "tslib": "^2.2.0",
-    "ws": "^7.4.5"
+    "ws": "^7.4.6"
   },
   "devDependencies": {
     "@ndn/packet": "workspace:*",

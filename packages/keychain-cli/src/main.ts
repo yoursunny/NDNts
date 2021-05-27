@@ -1,4 +1,4 @@
-import yargs, { Argv } from "yargs";
+import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
 import { AddCertCommand } from "./add-cert";
@@ -15,7 +15,7 @@ import { Ndncert03MakeProfileCommand } from "./ndncert03-make-profile";
 import { Ndncert03ShowProfileCommand } from "./ndncert03-show-profile";
 import { ShowCertCommand } from "./show-cert";
 
-(yargs() as unknown as Argv)
+void yargs(hideBin(process.argv))
   .scriptName("ndnts-keychain")
   .command(new GenKeyCommand())
   .command(new ShowCertCommand())
@@ -31,4 +31,4 @@ import { ShowCertCommand } from "./show-cert";
   .command(new Ndncert03CaCommand())
   .command(new Ndncert03ClientCommand())
   .demandCommand()
-  .parse(hideBin(process.argv));
+  .parse();

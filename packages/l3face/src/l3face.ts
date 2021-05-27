@@ -184,16 +184,16 @@ export namespace L3Face {
    * Returns FwFace.
    */
   export type CreateFaceFunc<
-    C extends (...args: any) => Promise<Transport|Transport[]>,
-  > = <
-    U extends any[] = C extends (...args: infer P) => any ? P : never,
-  >(opts: CreateFaceOptions, ...args: U) => C extends ((...args: U) => Promise<Transport>) ? Promise<FwFace> :
-  C extends ((...args: U) => Promise<Transport[]>) ? Promise<FwFace[]> : never;
+    P extends any[],
+    R extends Transport|Transport[],
+  > = (opts: CreateFaceOptions, ...args: P) => Promise<R extends Transport[] ? FwFace[] : FwFace>;
 
   export function makeCreateFace<
-    C extends (...args: any) => Promise<Transport|Transport[]>,
-  >(createTransport: C): CreateFaceFunc<C> {
-    return (async (opts: CreateFaceOptions, ...args: any[]) => {
+    C extends (...args: any[]) => Promise<Transport|Transport[]>,
+    P extends any[] = C extends (...args: infer P) => any ? P : never,
+    R extends Transport|Transport[] = C extends (...args: any[]) => Promise<infer R> ? R : never,
+  >(createTransport: C): CreateFaceFunc<P, R> {
+    return (async (opts: CreateFaceOptions, ...args: P) => {
       const created = await createTransport(...args);
       const {
         fw = Forwarder.getDefault(),

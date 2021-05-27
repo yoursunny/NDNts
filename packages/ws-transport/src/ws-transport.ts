@@ -1,6 +1,7 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 import type { AbortSignal } from "abort-controller";
 import EventIterator from "event-iterator";
+import type WsWebSocket from "ws";
 
 import { makeWebSocket } from "./ws_node";
 
@@ -84,14 +85,14 @@ export namespace WsTransport {
    * @param uri server URI or WebSocket object.
    * @param opts other options.
    */
-  export function connect(uri: string|WebSocket, opts: WsTransport.Options = {}): Promise<WsTransport> {
+  export function connect(uri: string|WebSocket|WsWebSocket, opts: WsTransport.Options = {}): Promise<WsTransport> {
     const {
       connectTimeout = 10000,
       signal,
     } = opts;
 
     return new Promise<WsTransport>((resolve, reject) => {
-      const sock = typeof uri === "object" ? uri : makeWebSocket(uri);
+      const sock = typeof uri === "string" ? makeWebSocket(uri) : uri as unknown as WebSocket;
       if (sock.readyState === sock.OPEN) {
         resolve(new WsTransport(sock, opts));
         return;

@@ -33,9 +33,8 @@ test("PSyncPartial", async () => {
     pageInvoke<typeof window.startPSyncPartial>(page, "startPSyncPartial", WsTest.uri),
     (async () => {
       const sock = (await WsTest.waitNClients(1))[0]!;
-      // eslint-disable-next-line @typescript-eslint/await-thenable
       face = await WsTransport.createFace({}, sock);
-      face!.addRoute(new Name());
+      face.addRoute(new Name());
     })(),
   ]);
 
