@@ -15,7 +15,7 @@ class IdbStoreProvider<T> implements StoreProvider<T> {
   }
 
   public list(): Promise<string[]> {
-    return keys(this.store) as Promise<string[]>;
+    return keys<string>(this.store);
   }
 
   public async get(key: string): Promise<T> {

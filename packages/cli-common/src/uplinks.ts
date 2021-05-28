@@ -1,7 +1,7 @@
-import { connect, connectToTestbed } from "@ndn/autoconfig";
+import { connectToNetwork, connectToRouter } from "@ndn/autoconfig";
 import { FwFace, FwTracer } from "@ndn/fw";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
-import { TcpTransport, UdpTransport, UnixTransport } from "@ndn/node-transport";
+import { UnixTransport } from "@ndn/node-transport";
 import { Name } from "@ndn/packet";
 
 import { env } from "./env";
@@ -11,27 +11,17 @@ if (env.pkttrace) {
   FwTracer.enable();
 }
 
-function parseHostPort(): { host: string; port: number|undefined } {
-  const { hostname, port } = env.uplink;
-  return {
-    host: hostname.replace(/^\[|]$/g, ""),
-    port: port.length > 0 ? Number.parseInt(port, 10) : undefined,
-  };
-}
-
 async function makeFace(): Promise<FwFace> {
-  let preferProtocol: connect.PreferProtocol|undefined;
+  let preferTcp = false;
   switch (env.uplink.protocol) {
     case "autoconfig-tcp:":
-      preferProtocol = "tcp";
+      preferTcp = true;
       // fallthrough
     case "autoconfig:": {
       try {
-        const faces = await connectToTestbed({
-          preferProtocol,
+        const faces = await connectToNetwork({
           mtu: env.mtu,
-          count: 4,
-          preferFastest: true,
+          preferTcp,
           addRoutes: [],
         });
         return faces[0]!;
@@ -40,11 +30,16 @@ async function makeFace(): Promise<FwFace> {
       }
     }
     case "tcp:":
-      return TcpTransport.createFace({}, parseHostPort());
+      return (await connectToRouter(env.uplink.host,
+        { preferTcp: true, testConnection: false })).face;
     case "udp:":
-      return UdpTransport.createFace({ lp: { mtu: env.mtu } }, parseHostPort());
-    case "unix:":
-      return UnixTransport.createFace({}, env.uplink.pathname);
+      return (await connectToRouter(env.uplink.host,
+        { preferTcp: false, mtu: env.mtu, testConnection: false })).face;
+    case "unix:": {
+      const face = await UnixTransport.createFace({}, env.uplink.pathname);
+      face.addRoute(new Name("/"), false);
+      return face;
+    }
     default:
       throw new Error(`unknown protocol ${env.uplink.protocol} in NDNTS_UPLINK`);
   }
@@ -65,7 +60,6 @@ export async function openUplinks(): Promise<FwFace[]> {
         preloadFromKeyChain: openKeyChain(),
       });
     }
-    face.addRoute(new Name("/"));
     theUplinks = [face];
   }
   return theUplinks;

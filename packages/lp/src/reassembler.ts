@@ -65,7 +65,7 @@ export class Reassembler {
       return undefined;
     }
 
-    const seqNumBase = fragment.fragSeqNum - BigInt(fragment.fragIndex);
+    const seqNumBase = BigInt.asUintN(64, fragment.fragSeqNum - BigInt(fragment.fragIndex));
     const partial = this.getPartial(seqNumBase);
     const result = partial.accept(fragment);
     if (result) {

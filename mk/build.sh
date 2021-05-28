@@ -2,10 +2,18 @@
 set -eo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"/..
 ACT=$1
+shift || true
+
+if [[ $ACT == lint ]]; then
+  XOFLAG=--fix
+  if [[ $CI == true ]]; then
+    XOFLAG=
+  fi
+  exec env NODE_OPTIONS='--max-old-space-size=4096' xo $XOFLAG "$@"
+fi
 
 if [[ $ACT == clean ]]; then
-  rm -rf packages/*/lib/ packages/*/literate-temp.ts packages/*/tsconfig.tsbuildinfo
-  exit
+  exec rm -rf packages/*/lib/ packages/*/literate-temp.ts packages/*/tsconfig.tsbuildinfo
 fi
 
 TSCFLAG=

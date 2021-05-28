@@ -30,12 +30,14 @@
     "@ndn/fw": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
+    "@ndn/quic-transport": "workspace:*",
     "@ndn/ws-transport": "workspace:*",
     "default-gateway": "^6.0.3",
     "hirestime": "^6.1.0",
     "node-fetch": "^2.6.1",
     "streaming-iterables": "^5.0.4",
-    "tslib": "^2.2.0"
+    "tslib": "^2.2.0",
+    "url-parse-lax": "^4.0.0"
   },
   "devDependencies": {
     "@types/default-gateway": "^3.0.1",

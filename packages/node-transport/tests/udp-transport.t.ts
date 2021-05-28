@@ -43,8 +43,7 @@ describe.each([
     clientPorts.add(tB.laddr.port);
 
     expect(tA.raddr.port).toBe(serverPort);
-    expect(tA.toString()).toBe(`UDP(${address})`);
-    expect(tB.toString()).toBe(`UDP(${address})`);
+    expect(tA.toString()).toMatch(/^UDP\(/);
     TestTransport.check(await TestTransport.execute(tA, tB));
   });
 
@@ -84,6 +83,7 @@ describe("multicast", () => {
   test("loopback", async () => {
     const tA = await UdpTransport.multicast(opts);
     const tB = await UdpTransport.multicast(opts);
+    expect(tA.toString()).toMatch(/^UDPm\(/);
     TestTransport.check(await TestTransport.execute(tA, tB));
   });
 

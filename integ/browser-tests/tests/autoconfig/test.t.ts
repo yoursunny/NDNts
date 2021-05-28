@@ -5,6 +5,6 @@ import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 beforeEach(() => navigateToPage(__dirname));
 
 test("connectToTestbed", async () => {
-  const record = await pageInvoke<typeof window.testConnectToTestbed>(page, "testConnectToTestbed");
+  const record = await pageInvoke<typeof window.testConnectToNetwork>(page, "testConnectToNetwork");
   expect(record.faces.length).toBeGreaterThan(0);
 });

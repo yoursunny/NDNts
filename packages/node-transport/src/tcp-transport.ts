@@ -2,13 +2,15 @@ import { L3Face, StreamTransport } from "@ndn/l3face";
 import type { AbortSignal } from "abort-controller";
 import * as net from "net";
 
+import { joinHostPort } from "./hostport";
+
 const DEFAULT_PORT = 6363;
 
 /** TCP socket transport. */
 export class TcpTransport extends StreamTransport {
   constructor(sock: net.Socket, private readonly connectOpts: net.TcpNetConnectOpts) {
     super(sock, {
-      describe: `TCP(${sock.remoteAddress}:${sock.remotePort})`,
+      describe: `TCP(${joinHostPort(sock.remoteAddress!, sock.remotePort!)})`,
       local: sock.localAddress === sock.remoteAddress,
     });
   }

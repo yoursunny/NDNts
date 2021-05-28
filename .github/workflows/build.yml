@@ -27,9 +27,7 @@ jobs:
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
       - name: check code style
-        run: |
-          npm run lint
-          [[ $(git status --porcelain | tee >(cat 1>&2) | wc -l) -eq 0 ]]
+        run: npm run lint
       - run: npm run cover -- --colors
       - uses: coverallsapp/github-action@master
         with:
@@ -59,7 +57,9 @@ jobs:
       - name: check C++ code style
         run: |
           npm run clang-format
-          [[ $(git status --porcelain | tee >(cat 1>&2) | wc -l) -eq 0 ]]
+          if ! [[ $(git status --porcelain | tee /dev/stderr | wc -l) -eq 0 ]]; then
+            git diff && false
+          fi
   publish:
     needs: [unittest, integ]
     if: ${{ github.event_name == 'push' }}

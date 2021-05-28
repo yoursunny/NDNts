@@ -2,6 +2,7 @@ import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 import type { AddressInfo } from "net";
 import pEvent from "p-event";
 
+import { joinHostPort } from "./hostport";
 import * as udp from "./udp-helper";
 
 /** UDP socket transport. */
@@ -18,7 +19,10 @@ export class UdpTransport extends Transport {
   constructor(multicastTx: udp.Socket, multicastRx: udp.Socket);
   constructor(txSock: udp.Socket, rxSock?: udp.Socket) {
     super({
-      describe: rxSock ? `UDPm(${txSock.address().address})` : `UDP(${txSock.remoteAddress().address})`,
+      describe: (() => {
+        const [scheme, { address, port }] = rxSock ? ["UDPm", txSock.address()] : ["UDP", txSock.remoteAddress()];
+        return `${scheme}(${joinHostPort(address, port)})`;
+      })(),
       multicast: !!rxSock,
     });
 

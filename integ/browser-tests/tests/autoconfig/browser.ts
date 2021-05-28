@@ -1,13 +1,16 @@
 import "./api";
 
-import { connectToTestbed } from "@ndn/autoconfig";
+import { connectToNetwork } from "@ndn/autoconfig";
 import { FwTracer } from "@ndn/fw";
+import { H3Transport } from "@ndn/quic-transport";
 
-window.testConnectToTestbed = async () => {
-  FwTracer.enable();
-  const faces = await connectToTestbed({
-    count: 3,
-    fchFallback: ["hobo.cs.arizona.edu", "titan.cs.memphis.edu"],
+FwTracer.enable();
+
+window.testConnectToNetwork = async () => {
+  const faces = await connectToNetwork({
+    H3Transport,
+    fallback: ["suns.cs.ucla.edu", "ndn.qub.ac.uk"],
+    fastest: 2,
   });
   return {
     faces: faces.map((face) => face.toString()),

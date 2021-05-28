@@ -1,10 +1,12 @@
 import { Endpoint } from "@ndn/endpoint";
-import type { FwFace } from "@ndn/fw";
+import { FwFace, FwTracer } from "@ndn/fw";
 import { Name } from "@ndn/packet";
 import { H3Transport } from "@ndn/quic-transport";
 import { WebBluetoothTransport } from "@ndn/web-bluetooth-transport";
 
 import { addManualTest } from "../../test-fixture/manual";
+
+FwTracer.enable();
 
 async function facePing(facePromise: Promise<FwFace>, pingPrefix: string) {
   const face = await facePromise;
@@ -38,20 +40,27 @@ function testWebBluetooth() {
 async function testH3() {
   document.body.innerHTML = `
     <form>
-    HTTP3 gateway:
-    <code>https://</code><input type="text" placeholder="localhost:6367"><code>/ndn</code>
+    HTTP3 router:
+    <input type="text" name="router" value="https://localhost:6367/ndn">
+    <br>
+    ping:
+    <input type="text" name="prefix" value="/example/quic/ping">
+    <br>
     <button>OK</button>
     </form>
   `;
   const $form = document.querySelector("form");
-  const gateway = await new Promise((resolve) => {
+  const [router, prefix] = await new Promise((resolve) => {
     $form!.addEventListener("submit", (evt) => {
       evt.preventDefault();
-      resolve(document.querySelector("input")!.value);
+      resolve([
+        document.querySelector<HTMLInputElement>("input[name=router]")!.value,
+        document.querySelector<HTMLInputElement>("input[name=prefix]")!.value,
+      ]);
       document.body.innerHTML = "";
     });
   });
-  return facePing(H3Transport.createFace({}, `https://${gateway}/ndn`), "/example/quic/ping");
+  return facePing(H3Transport.createFace({}, router), prefix);
 }
 
 addManualTest("test WebBluetoothTransport", testWebBluetooth);
