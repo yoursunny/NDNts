@@ -35,6 +35,7 @@
     "default-gateway": "^6.0.3",
     "hirestime": "^6.1.0",
     "node-fetch": "^2.6.1",
+    "p-any": "^3.0.0",
     "streaming-iterables": "^5.0.4",
     "tslib": "^2.2.0",
     "url-parse-lax": "^4.0.0"
