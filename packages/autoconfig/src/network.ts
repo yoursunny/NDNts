@@ -48,7 +48,7 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
   let connected: ConnectRouterResult[] = [];
   for await (const routers of
     (async function*(): AsyncIterable<string[]> {
-      const routers = [];
+      const routers: string[] = [];
       if (fch !== false) {
         if (!fch.transports) {
           fch.transports = FCH_DEFAULTS.transports(opts);
@@ -56,15 +56,16 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
         const res = await fchQuery(fch);
 
         if (preferH3) {
-          const { http3 = [] } = res;
-          if (http3.length > 0) {
-            yield http3;
+          const h3routers = res.routers.filter((r) => r.transport === "http3");
+          if (h3routers.length > 0) {
+            yield h3routers.map((r) => r.connect);
           }
-          delete res.http3;
         }
 
-        for (const list of Object.values(res)) {
-          routers.push(...list);
+        for (const r of res.routers) {
+          if (!preferH3 || r.transport !== "http3") {
+            routers.push(r.connect);
+          }
         }
       }
       if (tryDefaultGateway) {

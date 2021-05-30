@@ -22,17 +22,31 @@ if (process.env.CI) { return; }
 ```ts
 // The simplest query:
 let res = await fchQuery();
-assert.equal(res.udp.length, 1);
-console.log("closest router", res);
+assert.equal(res.routers.length, 1);
+showFchResponse("closest router", res);
 
 // Ask for multiple routers:
 res = await fchQuery({ count: 4 });
-assert(res.udp.length > 1);
-console.log("multiple routers", res);
+assert(res.routers.length > 1);
+showFchResponse("multiple routers", res);
+
+// Ask for multiple transports:
+res = await fchQuery({ transports: { udp: 4, wss: 2 } });
+assert(res.routers.length > 1);
+showFchResponse("multiple transports", res);
 
 // Ask for router at specific location:
 res = await fchQuery({ position: [121.40335, 31.00799] });
-console.log("near @yoursunny's birthplace", res);
+showFchResponse("near @yoursunny's birthplace", res);
+
+function showFchResponse(title, res) {
+  console.log(title, `updated ${res.updated}`);
+  console.table(res.routers.map((r) => ({
+    transport: r.transport,
+    connect: r.connect,
+    prefix: `${r.prefix}`,
+  })));
+}
 ```
 
 ## Connect to Network

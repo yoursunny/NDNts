@@ -1,31 +1,47 @@
+import { Name } from "@ndn/packet";
+
 import { FCH_DEFAULTS, fetch } from "./platform_node";
 
 /** FCH service request. */
 export interface FchRequest {
+  /** FCH service URI. */
   server?: string;
+  /** Number of routers. Ignored if transports is a Record. */
   count?: number;
-  transports?: readonly string[];
+  /** Transport protocols. */
+  transports?: readonly string[] | Record<string, number>;
+  /** IPv4 allowed. */
   ipv4?: boolean;
+  /** IPv6 allowed. */
   ipv6?: boolean;
+  /** Client position. */
   position?: [lon: number, lat: number];
+  /** AbortSignal. */
   signal?: AbortSignal;
 }
 
-/**
- * FCH service response.
- * Key is transport type. Value is a list of routers.
- */
-export type FchResponse = Record<string, string[]>;
+/** FCH service response. */
+export interface FchResponse {
+  readonly updated?: Date;
+  readonly routers: FchResponse.Router[];
+}
+
+export namespace FchResponse {
+  export interface Router {
+    transport: string;
+    connect: string;
+    prefix?: Name;
+  }
+}
 
 /** FCH service query. */
 export async function fchQuery(req: FchRequest = {}): Promise<FchResponse> {
-  const {
-    transports = FCH_DEFAULTS.transports(),
-    signal,
-  } = req;
+  const { signal } = req;
+  const tcs = parseTransportCounts(req);
+  const res = new FchResp();
 
   try {
-    const hRes = await fetch(makeRequest(req, transports), {
+    const hRes = await fetch(makeRequest(req, tcs), {
       headers: {
         Accept: "application/json, text/plain, */*",
       },
@@ -34,19 +50,21 @@ export async function fchQuery(req: FchRequest = {}): Promise<FchResponse> {
     if (!hRes.ok) {
       throw new Error(`HTTP ${hRes.status}`);
     }
+
     if (hRes.headers.get("Content-Type")?.startsWith("application/json")) {
-      return await parseJsonResponse(hRes, transports);
+      await res.setJsonResponse(hRes);
+      return res;
     }
-    if (transports.length === 1) {
-      return {
-        [transports[0]!]: await parseTextResponse(hRes),
-      };
+
+    if (tcs.length === 1) {
+      await res.addTextResponse(tcs[0]!.transport, hRes);
+      return res;
     }
   } catch {}
 
-  return Object.fromEntries(await Promise.all(transports.map(async (transport) => {
+  await Promise.all(tcs.map(async (tc) => {
     try {
-      const hRes = await fetch(makeRequest(req, [transport]), {
+      const hRes = await fetch(makeRequest(req, [tc]), {
         headers: {
           Accept: "text/plain, */*",
         },
@@ -55,26 +73,41 @@ export async function fchQuery(req: FchRequest = {}): Promise<FchResponse> {
       if (!hRes.ok) {
         throw new Error(`HTTP ${hRes.status}`);
       }
-      return [transport, await parseTextResponse(hRes)];
-    } catch {
-      return [transport, []];
-    }
-  })));
+      await res.addTextResponse(tc.transport, hRes);
+    } catch {}
+  }));
+  return res;
 }
 
-function makeRequest(req: FchRequest, transports: readonly string[]): string {
+interface TransportCount {
+  transport: string;
+  count: number;
+}
+
+function parseTransportCounts({
+  count = 1,
+  transports = FCH_DEFAULTS.transports(),
+}: FchRequest): TransportCount[] {
+  if (Array.isArray(transports)) {
+    return (transports as readonly string[])
+      .map((transport) => ({ transport, count }));
+  }
+  return Object.entries(transports as Record<string, number>)
+    .map(([transport, count]) => ({ transport, count }));
+}
+
+function makeRequest(req: FchRequest, tc: readonly TransportCount[]): string {
   const {
     server = "https://fch.ndn.today",
-    count = 1,
     ipv4 = FCH_DEFAULTS.hasIPv4(),
     ipv6 = FCH_DEFAULTS.hasIPv6(),
     position,
   } = req;
 
   const uri = new URL(server);
-  uri.searchParams.set("k", `${count}`);
-  for (const c of transports) {
-    uri.searchParams.append("cap", c);
+  for (const { transport, count } of tc) {
+    uri.searchParams.append("cap", transport);
+    uri.searchParams.append("k", `${count}`);
   }
   setBoolParam(uri.searchParams, "ipv4", ipv4);
   setBoolParam(uri.searchParams, "ipv6", ipv6);
@@ -92,15 +125,30 @@ function setBoolParam(search: URLSearchParams, name: string, value: boolean|unde
   }
 }
 
-async function parseJsonResponse(hRes: Response, transports: readonly string[]): Promise<FchResponse> {
-  const body = await hRes.json();
-  return Object.fromEntries(transports.map((transport) => {
-    const routers = body.routers?.[transport];
-    return [transport, Array.isArray(routers) ? routers : []];
-  }));
-}
+class FchResp implements FchResponse {
+  public updated?: Date;
+  public routers: FchResponse.Router[] = [];
 
-async function parseTextResponse(hRes: Response): Promise<string[]> {
-  const body = await hRes.text();
-  return body.split(",").filter((router) => router.length > 0);
+  public async setJsonResponse(hRes: Response): Promise<void> {
+    const body = await hRes.json();
+    this.updated = new Date(body.updated);
+    this.routers = (body.routers as Array<Record<string, string>>).map((r) => ({
+      transport: r.transport!,
+      connect: r.connect!,
+      prefix: r.prefix ? new Name(r.prefix) : undefined,
+    }));
+  }
+
+  public async addTextResponse(transport: string, hRes: Response): Promise<void> {
+    const body = await hRes.text();
+    if (body === "") {
+      return;
+    }
+    for (const connect of body.split(",")) {
+      this.routers.push({
+        transport,
+        connect,
+      });
+    }
+  }
 }
