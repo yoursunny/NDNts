@@ -17,6 +17,11 @@ interface WebTransport {
 
 /** HTTP3 transport. */
 export class H3Transport extends Transport {
+  /**
+   * Whether current browser supports WebTransport and is enrolled in Origin Trial.
+   */
+  public static supported = !!(globalThis as any).WebTransport;
+
   public static async connect(uri: string): Promise<H3Transport> {
     const transport = new (globalThis as any).WebTransport(uri) as WebTransport;
     await transport.ready;

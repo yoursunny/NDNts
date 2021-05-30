@@ -9,6 +9,7 @@ FwTracer.enable();
 window.testConnectToNetwork = async () => {
   const faces = await connectToNetwork({
     H3Transport,
+    preferH3: true,
     fallback: ["suns.cs.ucla.edu", "ndn.qub.ac.uk"],
     fastest: 2,
   });

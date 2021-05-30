@@ -8,7 +8,7 @@ export const fetch = globalThis.fetch;
 export const FCH_DEFAULTS = {
   transports({ H3Transport }: ConnectRouterOptions = {}) {
     const list = ["wss"];
-    if (H3Transport) {
+    if (H3Transport?.supported) {
       list.push("http3");
     }
     return list;

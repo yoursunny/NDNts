@@ -9,7 +9,9 @@ import urlParse from "url-parse-lax";
 
 import type { ConnectRouterOptions } from "./router";
 
-export const fetch = nodeFetch;
+export function fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
+  return nodeFetch(input as any, init as any) as any;
+}
 
 function hasAddressFamily(family: os.NetworkInterfaceInfo["family"]): () => boolean {
   return () => {
