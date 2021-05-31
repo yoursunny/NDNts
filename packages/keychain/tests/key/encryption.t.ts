@@ -82,35 +82,35 @@ test.each([
 
   const extractA0 = ivChk.extract(cA0.iv!);
   expect(extractA0).toMatchObject({
-    fixed: BigInt(0),
-    counter: BigInt(0),
+    fixed: 0n,
+    counter: 0n,
   });
   expect(ivChk.extract(cA1.iv!)).toMatchObject({
-    fixed: BigInt(0),
+    fixed: 0n,
     random: extractA0.random,
-    counter: BigInt(2),
+    counter: 2n,
   });
   expect(ivChk.extract(cA2.iv!)).toMatchObject({
-    fixed: BigInt(0),
+    fixed: 0n,
     random: extractA0.random,
-    counter: BigInt(5),
+    counter: 5n,
   });
 
   const extractB0 = ivChk.extract(cB0.iv!);
   expect(extractB0).toMatchObject({
-    fixed: BigInt(0),
-    counter: BigInt(0),
+    fixed: 0n,
+    counter: 0n,
   });
   expect(extractB0.random).not.toBe(extractA0.random);
   expect(ivChk.extract(cB1.iv!)).toMatchObject({
-    fixed: BigInt(0),
+    fixed: 0n,
     random: extractB0.random,
-    counter: BigInt(2),
+    counter: 2n,
   });
   expect(ivChk.extract(cB2.iv!)).toMatchObject({
-    fixed: BigInt(0),
+    fixed: 0n,
     random: extractB0.random,
-    counter: BigInt(5),
+    counter: 5n,
   });
 
   const dA = ivChk.wrap(decA);

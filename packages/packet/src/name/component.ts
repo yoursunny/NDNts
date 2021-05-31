@@ -5,7 +5,7 @@ import { TT } from "../an";
 import type { NamingConvention } from "./convention";
 
 function checkType(t: number): boolean {
-  return !Number.isNaN(t) && t >= 0x01 && t <= 0xFFFF;
+  return Number.isFinite(t) && t >= 0x01 && t <= 0xFFFF;
 }
 
 function assertType(t: number): void {

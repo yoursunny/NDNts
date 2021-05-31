@@ -1,6 +1,4 @@
-/**
- * An object that knows how to prepend itself to an Encoder.
- */
+/** An object that knows how to prepend itself to an Encoder. */
 export interface EncodableObj {
   encodeTo: (encoder: Encoder) => void;
 }
@@ -14,9 +12,7 @@ export interface EncodableObj {
  */
 export type EncodableTlv = [number, ...any[]];
 
-/**
- * An object acceptable to Encoder.encode().
- */
+/** An object acceptable to Encoder.encode(). */
 export type Encodable = Uint8Array | undefined | EncodableObj | EncodableTlv;
 
 function sizeofVarNum(n: number): number {

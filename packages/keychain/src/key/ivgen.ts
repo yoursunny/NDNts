@@ -163,8 +163,8 @@ function parseCounterIvOptions({
   const randomBits = ivBits - fixedBits - counterBits;
   assert(randomBits >= 0);
 
-  let fixedMask = BigInt(0);
-  let fixed = BigInt(0);
+  let fixedMask = 0n;
+  let fixed = 0n;
   if (fixedBits > 0) {
     fixedMask = BigInt(`0b${"1".repeat(fixedBits)}${"0".repeat(randomBits + counterBits)}`);
     switch (typeof fixedInput) {
@@ -181,8 +181,8 @@ function parseCounterIvOptions({
     fixed &= fixedMask;
   }
 
-  let randomMask = BigInt(0);
-  let random = BigInt(0);
+  let randomMask = 0n;
+  let random = 0n;
   if (randomBits > 0) {
     randomMask = BigInt(`0b${"1".repeat(randomBits)}${"0".repeat(counterBits)}`);
     const randomBuffer = crypto.getRandomValues(new Uint8Array(ivLength));
@@ -191,7 +191,7 @@ function parseCounterIvOptions({
   }
 
   const maxCounter = BigInt(`0b1${"0".repeat(counterBits)}`);
-  const counterMask = maxCounter - BigInt(1);
+  const counterMask = maxCounter - 1n;
 
   return {
     ivBits,
@@ -215,7 +215,7 @@ class CounterIncrement {
     assert(blockSize > 0);
   }
 
-  public counter = BigInt(0);
+  public counter = 0n;
 
   public appendBlocks(plaintextLength: number, ciphertextLength: number): void {
     this.counter += BigInt(Math.ceil(Math.max(plaintextLength, ciphertextLength) / this.blockSize));

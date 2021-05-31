@@ -25,8 +25,8 @@ test("encode big", () => {
   // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
   expect(() => Encoder.encode(NNI(0x1FFFFFFFFFFFFFFFF, { unsafe: true }))).toThrow(/large/);
 
-  expect(NNI(BigInt("0xFFFFFFFFFFFFFFFF"))).toEncodeAs([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
-  expect(() => Encoder.encode(NNI(BigInt("0x10000000000000000")))).toThrow(/large/);
+  expect(NNI(0xFFFFFFFFFFFFFFFFn)).toEncodeAs([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
+  expect(() => Encoder.encode(NNI(0x10000000000000000n))).toThrow(/large/);
 });
 
 test("encode fixed size", () => {
@@ -35,10 +35,10 @@ test("encode fixed size", () => {
   expect(NNI(0x04, { len: 4 })).toEncodeAs([0x00, 0x00, 0x00, 0x04]);
   expect(NNI(0x08, { len: 8 })).toEncodeAs([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08]);
 
-  expect(NNI(BigInt(0x01), { len: 1 })).toEncodeAs([0x01]);
-  expect(NNI(BigInt(0x02), { len: 2 })).toEncodeAs([0x00, 0x02]);
-  expect(NNI(BigInt(0x04), { len: 4 })).toEncodeAs([0x00, 0x00, 0x00, 0x04]);
-  expect(NNI(BigInt(0x08), { len: 8 })).toEncodeAs([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08]);
+  expect(NNI(0x01n, { len: 1 })).toEncodeAs([0x01]);
+  expect(NNI(0x02n, { len: 2 })).toEncodeAs([0x00, 0x02]);
+  expect(NNI(0x04n, { len: 4 })).toEncodeAs([0x00, 0x00, 0x00, 0x04]);
+  expect(NNI(0x08n, { len: 8 })).toEncodeAs([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08]);
 });
 
 test("decode variable size", () => {
@@ -59,7 +59,7 @@ test("decode big", () => {
   const uOne = Uint8Array.of(0x01);
   expect(NNI.decode(uOne)).toBe(1);
   expect(NNI.decode(uOne, { unsafe: true })).toBe(1);
-  expect(NNI.decode(uOne, { big: true })).toBe(BigInt(1));
+  expect(NNI.decode(uOne, { big: true })).toBe(1n);
 
   const uSafe = Encoder.encode(NNI(Number.MAX_SAFE_INTEGER));
   expect(NNI.decode(uSafe)).toBe(Number.MAX_SAFE_INTEGER);
@@ -69,7 +69,7 @@ test("decode big", () => {
   const uMax = Uint8Array.of(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
   expect(() => NNI.decode(uMax)).toThrow(/large/);
   expect(typeof NNI.decode(uMax, { unsafe: true })).toBe("number");
-  expect(NNI.decode(uMax, { big: true })).toBe(BigInt("0xFFFFFFFFFFFFFFFF"));
+  expect(NNI.decode(uMax, { big: true })).toBe(0xFFFFFFFFFFFFFFFFn);
 });
 
 test("decode fixed size", () => {

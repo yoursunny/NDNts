@@ -55,55 +55,31 @@ function decode32(dv: DataView): number {
   throw new Error("incorrect TLV-LENGTH of NNI");
 }
 
-let BIG0: bigint;
-let BIG32: bigint;
-let BIG64: bigint;
-let decodeBig: (dv: DataView) => bigint;
-let encodeBig64: (dv: DataView, n: bigint) => void;
-
-// Node.js and desktop browsers support all BigInt functions.
 // iOS 14 supports BigInt constructor but lacks DataView methods.
-// iOS 13 does not support BigInt.
-
-/* istanbul ignore else */
-if (typeof globalThis.BigInt === "function") {
-  BIG0 = BigInt(0);
-  BIG32 = BigInt("0x100000000");
-  BIG64 = BigInt("0xFFFFFFFFFFFFFFFF");
-
-  /* istanbul ignore else */
-  if (typeof DataView.prototype.getBigUint64 === "function") {
-    decodeBig = (dv) => {
+const decodeBig: (dv: DataView) => bigint =
+  typeof DataView.prototype.getBigUint64 === "function" ?
+    ((dv) => {
       if (dv.byteLength === 8) {
         return dv.getBigUint64(0);
       }
       return BigInt(decode32(dv));
-    };
-  } else {
-    decodeBig = (dv) => {
+    }) :
+  /* istanbul ignore next */
+    ((dv) => {
       if (dv.byteLength === 8) {
-        return BigInt(dv.getUint32(0)) * BIG32 + BigInt(dv.getUint32(4));
+        return BigInt(dv.getUint32(0)) * 0x100000000n + BigInt(dv.getUint32(4));
       }
       return BigInt(decode32(dv));
-    };
-  }
+    });
 
-  /* istanbul ignore else */
-  if (typeof DataView.prototype.setBigUint64 === "function") {
-    encodeBig64 = (dv, n) => dv.setBigUint64(0, n);
-  } else {
-    encodeBig64 = (dv, n) => {
-      dv.setUint32(0, Number(n / BIG32));
-      dv.setUint32(4, Number(n % BIG32));
-    };
-  }
-} else {
-  decodeBig = () => Number.NaN as any;
-  encodeBig64 = (dv) => {
-    dv.setUint32(0, 0);
-    dv.setUint32(4, 0);
-  };
-}
+const encodeBig64: (dv: DataView, n: bigint) => void =
+typeof DataView.prototype.setBigUint64 === "function" ?
+  ((dv, n) => dv.setBigUint64(0, n)) :
+/* istanbul ignore next */
+  ((dv, n) => {
+    dv.setUint32(0, Number(n / 0x100000000n));
+    dv.setUint32(4, Number(n % 0x100000000n));
+  });
 
 type Len = 1|2|4|8;
 
@@ -136,12 +112,12 @@ export function NNI(n: number|bigint, {
 
   if (typeof n === "bigint") {
     switch (true) {
-      case n < BIG0:
+      case n < 0n:
         throw new RangeError("NNI cannot be negative");
-      case n < BIG32:
+      case n < 0x100000000n:
         n = Number(n);
         break;
-      case n <= BIG64:
+      case n <= 0xFFFFFFFFFFFFFFFFn:
         return new Nni8Big(n);
       default:
         throw new RangeError("NNI is too large");
