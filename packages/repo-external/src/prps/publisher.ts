@@ -103,7 +103,7 @@ export class PrpsPublisher {
   };
 }
 
-type Item = Encodable|PrpsPublisher.PublicationCallback;
+type Item = Encodable | PrpsPublisher.PublicationCallback;
 
 interface Pending {
   topic: Name;
@@ -128,7 +128,7 @@ export namespace PrpsPublisher {
      * Prefix announcement to receive msg Interests.
      * Default is pubFwHint, or pubPrefix.
      */
-    pubAnnouncement?: Name|false;
+    pubAnnouncement?: Name | false;
 
     /**
      * Key to sign publications.
@@ -154,5 +154,5 @@ export namespace PrpsPublisher {
    * @param topic topic name.
    * @return either a Data that is already signed, or an Encodable object to use as publication body.
    */
-  export type PublicationCallback = (name: Name, topic: Name) => Promise<Data|Encodable>;
+  export type PublicationCallback = (name: Name, topic: Name) => Promise<Data | Encodable>;
 }

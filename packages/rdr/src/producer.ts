@@ -58,7 +58,7 @@ export function isDiscoveryInterest({ name, canBePrefix, mustBeFresh }: Interest
 }
 
 /** Serve RDR metadata packet in a producer. */
-export function serveMetadata(m: Metadata|(() => Metadata), opts: Options = {}): Producer {
+export function serveMetadata(m: Metadata | (() => Metadata), opts: Options = {}): Producer {
   const { prefix, endpoint = new Endpoint() } = opts;
   const makeMetadata = typeof m === "function" ? m : () => m;
   const name = makeName(makeMetadata(), prefix).getPrefix(-2);

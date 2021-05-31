@@ -64,7 +64,7 @@ export namespace ChallengeRequest {
   }
 
   export interface Context extends ContextBase {
-    lookupRequest: (requestId: Uint8Array) => Promise<RequestInfo|undefined>;
+    lookupRequest: (requestId: Uint8Array) => Promise<RequestInfo | undefined>;
   }
 
   export interface Fields {

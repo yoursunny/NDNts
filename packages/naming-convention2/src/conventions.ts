@@ -44,7 +44,7 @@ class TypedNumber extends Typed implements NumberConvention {
     return `${this.altUriPrefix}=${this.parse(comp)}`;
   }
 
-  public fromAltUri(input: string): Component|undefined {
+  public fromAltUri(input: string): Component | undefined {
     const m = this.altUriRegex.exec(input);
     if (!m) {
       return undefined;
@@ -56,7 +56,7 @@ class TypedNumber extends Typed implements NumberConvention {
 
 const timestampNumber = new TypedNumber(0x24, "t");
 
-type TimestampConvention = NamingConvention<number|Date, number> & NamingConvention.WithAltUri;
+type TimestampConvention = NamingConvention<number | Date, number> & NamingConvention.WithAltUri;
 class TypedTimestamp extends Typed implements TimestampConvention {
   constructor(
       private readonly unit: number,
@@ -65,7 +65,7 @@ class TypedTimestamp extends Typed implements TimestampConvention {
     super(0x24);
   }
 
-  public create(v: number|Date): Component {
+  public create(v: number | Date): Component {
     if (typeof v === "number") {
       v *= this.unit;
     } else {
@@ -90,7 +90,7 @@ class TypedTimestamp extends Typed implements TimestampConvention {
     return timestampNumber.toAltUri(comp);
   }
 
-  public fromAltUri(input: string): Component|undefined {
+  public fromAltUri(input: string): Component | undefined {
     return timestampNumber.fromAltUri(input);
   }
 }

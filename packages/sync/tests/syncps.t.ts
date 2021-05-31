@@ -93,7 +93,7 @@ class Fixture {
 
   private readonly syncs: SyncpsPubsub[] = [];
 
-  public async publish(i: number, pub: Data|NameLike, cb?: SyncpsPubsub.PublishCallback): Promise<void> {
+  public async publish(i: number, pub: Data | NameLike, cb?: SyncpsPubsub.PublishCallback): Promise<void> {
     await this.syncs[i]!.publish(new Data(pub), cb);
   }
 

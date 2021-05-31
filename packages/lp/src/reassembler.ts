@@ -3,11 +3,11 @@ import { LpPacket } from "./packet";
 class PartialPacket {
   constructor(public readonly seqNumBase: bigint) {}
 
-  private buffer: Array<LpPacket|undefined> = [];
+  private buffer: Array<LpPacket | undefined> = [];
   private accepted = 0;
   private payloadLength = 0;
 
-  public accept(fragment: LpPacket): false|LpPacket|undefined {
+  public accept(fragment: LpPacket): false | LpPacket | undefined {
     if (this.accepted === 0) { // first
       this.buffer = Array.from({ length: fragment.fragCount });
       this.acceptOne(fragment);
@@ -56,7 +56,7 @@ export class Reassembler {
 
   private readonly partials = new Map<bigint, PartialPacket>();
 
-  public accept(fragment: LpPacket): LpPacket|undefined {
+  public accept(fragment: LpPacket): LpPacket | undefined {
     if (fragment.fragCount === 1) { // not fragmented
       return fragment;
     }

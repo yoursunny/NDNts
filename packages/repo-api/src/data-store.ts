@@ -18,12 +18,12 @@ export interface ListData {
 
 export interface Get {
   /** Retrieve Data by exact name. */
-  get: (name: Name) => Promise<Data|undefined>;
+  get: (name: Name) => Promise<Data | undefined>;
 }
 
 export interface Find {
   /** Find Data that satisfies Interest. */
-  find: (interest: Interest) => Promise<Data|undefined>;
+  find: (interest: Interest) => Promise<Data | undefined>;
 }
 
 export interface Insert<Options extends {} = {}> {
@@ -37,7 +37,7 @@ export interface Insert<Options extends {} = {}> {
   insert: (...args: Insert.Args<Options>) => Promise<void>;
 }
 export namespace Insert {
-  export type Args<O extends {}> = [...(object extends O ? [O]|[] : []), ...Array<Data|AnyIterable<Data>>];
+  export type Args<O extends {}> = [...(object extends O ? [O] | [] : []), ...Array<Data | AnyIterable<Data>>];
 
   export interface ParsedArgs<O> {
     readonly opts?: O;
@@ -47,7 +47,7 @@ export namespace Insert {
   }
 
   export function parseArgs<O>(args: Args<O>): ParsedArgs<O> {
-    let opts: O|undefined;
+    let opts: O | undefined;
     if (args.length > 0 && !(args[0] instanceof Data) && !isDataIterable(args[0])) {
       opts = args.shift() as O;
     }

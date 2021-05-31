@@ -23,7 +23,7 @@ class PlainCryptoSigner<I> implements Signer {
     this.sigType = algo.sigType;
   }
 
-  public readonly [KeyKind]: "private"|"secret";
+  public readonly [KeyKind]: "private" | "secret";
   public readonly sigType: number;
   private readonly llSign: LLSign;
 
@@ -77,7 +77,7 @@ class PlainCryptoVerifier<I> implements Verifier {
     this.sigType = algo.sigType;
   }
 
-  public readonly [KeyKind]: "public"|"secret";
+  public readonly [KeyKind]: "public" | "secret";
   public readonly sigType: number;
   private readonly llVerify: LLVerify;
   public readonly spki?: Uint8Array;

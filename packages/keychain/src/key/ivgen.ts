@@ -12,7 +12,7 @@ export abstract class IvGen {
 
   public wrap<T extends LLEncrypt.Key>(key: T): T;
   public wrap(f: LLEncrypt): LLEncrypt;
-  public wrap(arg1: LLEncrypt|LLEncrypt.Key) {
+  public wrap(arg1: LLEncrypt | LLEncrypt.Key) {
     const key = arg1 as LLEncrypt.Key;
     if (typeof key.llEncrypt === "function") {
       return this.wrapKey(key);
@@ -59,7 +59,7 @@ export abstract class IvChecker {
 
   public wrap<T extends LLDecrypt.Key>(key: T): T;
   public wrap(f: LLDecrypt): LLDecrypt;
-  public wrap(arg1: LLDecrypt|LLDecrypt.Key) {
+  public wrap(arg1: LLDecrypt | LLDecrypt.Key) {
     const key = arg1 as LLDecrypt.Key;
     if (typeof key.llDecrypt === "function") {
       return this.wrapKey(key);
@@ -127,7 +127,7 @@ export interface CounterIvOptions {
    * If it's a Uint8Array, it must have fixedBits bits.
    * The least significant bits are taken.
    */
-  fixed?: bigint|Uint8Array;
+  fixed?: bigint | Uint8Array;
 
   /** Number of counter bits. */
   counterBits: number;

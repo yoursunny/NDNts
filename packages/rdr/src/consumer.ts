@@ -41,7 +41,7 @@ export namespace retrieveMetadata {
   export interface Options {
     endpoint?: Endpoint;
     retx?: RetxPolicy;
-    signal?: AbortSignal|globalThis.AbortSignal;
+    signal?: AbortSignal | globalThis.AbortSignal;
     verifier?: Verifier;
   }
 }

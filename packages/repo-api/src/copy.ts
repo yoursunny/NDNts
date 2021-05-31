@@ -33,12 +33,12 @@ function splitOptions(opts: any): [CopyOptions, any] {
  * @param opts insert options and copy batching options.
  */
 export async function copy<InsertOptions extends {} = never>(src: S.ListData, prefix: Name,
-  dst: S.Insert<InsertOptions>, opts?: CopyOptions&InsertOptions): Promise<void>;
+  dst: S.Insert<InsertOptions>, opts?: CopyOptions & InsertOptions): Promise<void>;
 export async function copy<InsertOptions extends {} = never>(src: S.ListData,
-  dst: S.Insert<InsertOptions>, opts?: CopyOptions&InsertOptions): Promise<void>;
+  dst: S.Insert<InsertOptions>, opts?: CopyOptions & InsertOptions): Promise<void>;
 
 export async function copy(src: S.ListData, arg2: any, arg3?: any, arg4?: any): Promise<void> {
-  const [prefix, dst, opts]: [Name|undefined, S.Insert<any>, any] =
+  const [prefix, dst, opts]: [Name | undefined, S.Insert<any>, any] =
     arg2 instanceof Name ? [arg2, arg3, arg4] : [undefined, arg2, arg3];
 
   const [{

@@ -34,7 +34,7 @@ export class Name {
   constructor(comps: readonly ComponentLike[]);
 
   constructor(
-      arg1?: NameLike|Uint8Array|readonly ComponentLike[],
+      arg1?: NameLike | Uint8Array | readonly ComponentLike[],
       parseComponentUri = Component.from as any,
   ) {
     let valueEncoderBufSize = 256;
@@ -78,7 +78,7 @@ export class Name {
   }
 
   /** Retrieve i-th component. */
-  public get(i: number): Component|undefined {
+  public get(i: number): Component | undefined {
     i = i < 0 ? i + this.length : i;
     return this.comps[i];
   }

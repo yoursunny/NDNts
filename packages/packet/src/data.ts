@@ -143,7 +143,7 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
     ];
   }
 
-  public getImplicitDigest(): Uint8Array|undefined {
+  public getImplicitDigest(): Uint8Array | undefined {
     return this[FIELDS].topTlvDigest;
   }
 
@@ -160,7 +160,7 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
     return digest;
   }
 
-  public getFullName(): Name|undefined {
+  public getFullName(): Name | undefined {
     const digest = this.getImplicitDigest();
     if (!digest) {
       return undefined;

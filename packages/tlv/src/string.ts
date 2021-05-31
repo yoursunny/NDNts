@@ -10,7 +10,7 @@ export function printTT(tlvType: number): string {
   return `0x${s.padStart(8, "0")}`;
 }
 
-let hexTable: string[]|undefined;
+let hexTable: string[] | undefined;
 
 function getHexTable(): string[] {
   if (!hexTable) {

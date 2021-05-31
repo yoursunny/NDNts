@@ -28,7 +28,7 @@ class SegState {
   public interest: any;
 }
 
-type SegRequest<T> = Pick<Readonly<SegState>, "segNum"|"isRetx"|"rto"> & {
+type SegRequest<T> = Pick<Readonly<SegState>, "segNum" | "isRetx" | "rto"> & {
   interest: T;
 };
 
@@ -99,7 +99,7 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
   public async *outgoing<T, C>(
       makeInterest: (req: SegRequest<unknown>) => T,
       cancelInterest: (req: SegRequest<T>) => C,
-  ): AsyncGenerator<T|C> {
+  ): AsyncGenerator<T | C> {
     while (this.running) {
       await this.tl.take();
       if (!this.running) {
@@ -232,7 +232,7 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
 export namespace FetchLogic {
   export interface Options {
     /** Use given RttEstimator instance or construct RttEstimator from options. */
-    rtte?: RttEstimator|RttEstimator.Options;
+    rtte?: RttEstimator | RttEstimator.Options;
 
     /** Use given congestion avoidance instance. */
     ca?: CongestionAvoidance;
@@ -244,7 +244,7 @@ export namespace FetchLogic {
      * If the end segment number is undefined or greater than the final segment number,
      * fetching will stop at the final segment.
      */
-    segmentRange?: [number, number|undefined];
+    segmentRange?: [number, number | undefined];
 
     /**
      * Estimated final segment number (inclusive).

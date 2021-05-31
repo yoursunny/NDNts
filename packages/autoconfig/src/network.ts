@@ -12,7 +12,7 @@ export interface ConnectNetworkOptions extends ConnectRouterOptions {
    * Default is requesting 4 routers.
    * Pass false to disable FCH.
    */
-  fch?: FchRequest|false;
+  fch?: FchRequest | false;
 
   /**
    * Whether to try HTTP/3 before all other options.

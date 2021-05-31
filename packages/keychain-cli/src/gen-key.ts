@@ -5,7 +5,7 @@ import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { keyChain } from "./util";
 
-type TypeChoice = "ec"|"rsa"|"hmac";
+type TypeChoice = "ec" | "rsa" | "hmac";
 const typeChoices: readonly TypeChoice[] = ["ec", "rsa", "hmac"];
 
 interface Args extends GenKeyCommand.KeyParamArgs {

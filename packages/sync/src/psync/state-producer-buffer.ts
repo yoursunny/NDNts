@@ -11,7 +11,7 @@ export class PSyncStateProducerBuffer {
       private readonly endpoint: Endpoint,
       private readonly describe: string,
       private readonly codec: PSyncCodec,
-      private readonly signer: Signer|undefined,
+      private readonly signer: Signer | undefined,
       private readonly limit: number,
   ) {
     assert(limit >= 1);

@@ -7,7 +7,7 @@ import type { Name } from "./name";
  * @param name target name.
  * @param get callback function to retrieve entry by hexadecimal name prefix.
  */
-export function lpm<Entry>(name: Name, get: (prefixHex: string) => Entry|undefined): Entry|undefined {
+export function lpm<Entry>(name: Name, get: (prefixHex: string) => Entry | undefined): Entry | undefined {
   const prefixes = [""];
   let s = "";
   for (const comp of name.comps) {

@@ -7,7 +7,7 @@ import { udp_helper, UdpTransport } from "..";
 describe.each([
   { family: 4, address: "127.0.0.1" },
   { family: 6, address: "::1" },
-] as Array<{ family: 4|6; address: string }>)("unicast %p", ({ family, address }) => {
+] as Array<{ family: 4 | 6; address: string }>)("unicast %p", ({ family, address }) => {
   let server: dgram.Socket;
   let serverPort: number;
   const clientPorts = new Set<number>();

@@ -68,7 +68,7 @@ export class EvDecoder<T> {
    * @param typeName type name, used in error messages.
    * @param topTT if specified, check top-level TLV-TYPE to be in this list.
    */
-  constructor(private readonly typeName: string, topTT?: number|readonly number[]) {
+  constructor(private readonly typeName: string, topTT?: number | readonly number[]) {
     // eslint-disable-next-line no-negated-condition
     this.topTT = !topTT ? [] :
       Array.isArray(topTT) ? (topTT as readonly number[]) :
@@ -82,7 +82,7 @@ export class EvDecoder<T> {
    * @param cb callback to handle element TLV.
    * @param options additional rule options.
    */
-  public add(tt: number, cb: ElementCallback<T>|EvDecoder<T>,
+  public add(tt: number, cb: ElementCallback<T> | EvDecoder<T>,
       options?: RuleOptions<T>): this {
     if (this.rules.has(tt)) {
       throw new Error(`TLV-TYPE ${printTT(tt)} already has a rule`);

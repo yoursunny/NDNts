@@ -28,7 +28,7 @@ export namespace TcpTransport {
     connectTimeout?: number;
 
     /** AbortSignal that allows canceling connection attempt via AbortController. */
-    signal?: AbortSignal|globalThis.AbortSignal;
+    signal?: AbortSignal | globalThis.AbortSignal;
   }
 
   /**
@@ -43,9 +43,9 @@ export namespace TcpTransport {
    * Create a transport and connect to remote endpoint.
    * @param opts remote endpoint and other options.
    */
-  export function connect(opts: NetConnectOpts&Options): Promise<TcpTransport>;
+  export function connect(opts: NetConnectOpts & Options): Promise<TcpTransport>;
 
-  export function connect(arg1?: string|(NetConnectOpts&Options), port = DEFAULT_PORT,
+  export function connect(arg1?: string | (NetConnectOpts & Options), port = DEFAULT_PORT,
       opts: Options = {}): Promise<TcpTransport> {
     const connectOpts: net.TcpNetConnectOpts =
       typeof arg1 === "undefined" ? { port } :
@@ -67,14 +67,14 @@ export namespace TcpTransport {
       const timeout = setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
 
       const onabort = () => fail(new Error("abort"));
-      (signal as AbortSignal|undefined)?.addEventListener("abort", onabort);
+      (signal as AbortSignal | undefined)?.addEventListener("abort", onabort);
 
       sock.on("error", () => undefined);
       sock.once("error", fail);
       sock.once("connect", () => {
         clearTimeout(timeout);
         sock.off("error", fail);
-        (signal as AbortSignal|undefined)?.removeEventListener("abort", onabort);
+        (signal as AbortSignal | undefined)?.removeEventListener("abort", onabort);
         resolve(new TcpTransport(sock, connectOpts));
       });
     });

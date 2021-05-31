@@ -105,7 +105,7 @@ SigInfo.registerExtension({
 });
 
 export namespace ValidityPeriod {
-  export type TimestampInput = number|Date;
+  export type TimestampInput = number | Date;
 
   export const MAX = new ValidityPeriod(
     540109800000,
@@ -119,8 +119,8 @@ export namespace ValidityPeriod {
     return new ValidityPeriod(notBefore, notAfter);
   }
 
-  export function get(si: SigInfo): ValidityPeriod|undefined {
-    return Extension.get(si, TT.ValidityPeriod) as ValidityPeriod|undefined;
+  export function get(si: SigInfo): ValidityPeriod | undefined {
+    return Extension.get(si, TT.ValidityPeriod) as ValidityPeriod | undefined;
   }
 
   export function set(si: SigInfo, v?: ValidityPeriod) {

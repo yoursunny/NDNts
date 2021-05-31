@@ -8,12 +8,12 @@ import { ControlCommand } from "./control-command";
 import type { ControlParameters } from "./control-parameters";
 
 type CommandOptions = Omit<ControlCommand.Options, "endpoint">;
-type RouteOptions = Pick<ControlParameters.Fields, "origin"|"cost"|"flags">;
+type RouteOptions = Pick<ControlParameters.Fields, "origin" | "cost" | "flags">;
 type Options = CommandOptions & RouteOptions & {
   retry?: ReadvertiseDestination.RetryOptions;
 
   /** How often to refresh prefix registration, false to disable. */
-  refreshInterval?: number|false;
+  refreshInterval?: number | false;
 
   /** Set to signer name to retrieve and serve certificate chain. */
   preloadCertName?: Name;
@@ -31,7 +31,7 @@ interface State {
 class NfdPrefixReg extends ReadvertiseDestination<State> {
   private readonly commandOptions: CommandOptions;
   private readonly routeOptions: RouteOptions;
-  private readonly refreshInterval: number|false;
+  private readonly refreshInterval: number | false;
   private readonly preloadCertName?: Name;
   private readonly preloadFromKeyChain?: KeyChain;
   private readonly preloadCerts = new Map<string, Certificate>();

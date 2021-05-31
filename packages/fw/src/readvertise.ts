@@ -32,7 +32,7 @@ export class Readvertise {
     }
   }
 
-  public removeAnnouncement(face: FaceImpl, name: Name|undefined, nameHex: string) {
+  public removeAnnouncement(face: FaceImpl, name: Name | undefined, nameHex: string) {
     this.announcements.remove(nameHex, face);
     if (this.announcements.multiplicity(nameHex) > 0) {
       return;

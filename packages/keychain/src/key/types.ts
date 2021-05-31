@@ -1,10 +1,10 @@
 import type { KeyLocator, LLDecrypt, LLEncrypt, LLSign, LLVerify, Name, Signer, Verifier } from "@ndn/packet";
 import type * as asn1 from "@yoursunny/asn1";
 
-type If<Cond, True, False, Unknown = True|False> = Cond extends true ? True : Cond extends false ? False : Unknown;
+type If<Cond, True, False, Unknown = True | False> = Cond extends true ? True : Cond extends false ? False : Unknown;
 
 /** Identify kind of key. */
-export type KeyKind = "private"|"public"|"secret";
+export type KeyKind = "private" | "public" | "secret";
 export namespace KeyKind {
   /** Pick "private" or "secret" based on whether the algorithm is asymmetric. */
   export type PrivateSecret<Asym extends boolean> = If<Asym, "private", "secret">;
@@ -79,7 +79,7 @@ export interface CryptoAlgorithm<I = any, Asym extends boolean = any, G = any> {
    */
   readonly uuid: string;
 
-  readonly keyUsages: If<Asym, Record<"private"|"public", KeyUsage[]>, Record<"secret", KeyUsage[]>, {}>;
+  readonly keyUsages: If<Asym, Record<"private" | "public", KeyUsage[]>, Record<"secret", KeyUsage[]>, {}>;
 
   /** Generate key pair or secret key. */
   cryptoGenerate: (params: G, extractable: boolean)

@@ -71,7 +71,7 @@ export namespace WsTransport {
     connectTimeout?: number;
 
     /** AbortSignal that allows canceling connection attempt via AbortController. */
-    signal?: AbortSignal|globalThis.AbortSignal;
+    signal?: AbortSignal | globalThis.AbortSignal;
 
     /** Buffer amount (in bytes) to start TX throttling. */
     highWaterMark?: number;
@@ -85,7 +85,7 @@ export namespace WsTransport {
    * @param uri server URI or WebSocket object.
    * @param opts other options.
    */
-  export function connect(uri: string|WebSocket|WsWebSocket, opts: WsTransport.Options = {}): Promise<WsTransport> {
+  export function connect(uri: string | WebSocket | WsWebSocket, opts: WsTransport.Options = {}): Promise<WsTransport> {
     const {
       connectTimeout = 10000,
       signal,
@@ -105,7 +105,7 @@ export namespace WsTransport {
       const timeout = setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
 
       const onabort = () => fail(new Error("abort"));
-      (signal as AbortSignal|undefined)?.addEventListener("abort", () => onabort);
+      (signal as AbortSignal | undefined)?.addEventListener("abort", () => onabort);
 
       const onerror = (evt: Event) => {
         sock.close();
@@ -116,7 +116,7 @@ export namespace WsTransport {
       sock.addEventListener("open", () => {
         clearTimeout(timeout);
         sock.removeEventListener("error", onerror);
-        (signal as AbortSignal|undefined)?.removeEventListener("abort", onabort);
+        (signal as AbortSignal | undefined)?.removeEventListener("abort", onabort);
         resolve(new WsTransport(sock, opts));
       });
     });

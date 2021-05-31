@@ -30,7 +30,7 @@ export abstract class StoreBase<T> {
     return this.throttle(() => this.provider.insert(toHex(name.value), value));
   }
 
-  protected bufferToStorable(input: Uint8Array|string): Uint8Array|string {
+  protected bufferToStorable(input: Uint8Array | string): Uint8Array | string {
     if (!this.canSClone && ArrayBuffer.isView(input)) {
       return toHex(input);
     }
@@ -39,7 +39,7 @@ export abstract class StoreBase<T> {
 }
 
 export namespace StoreBase {
-  export function bufferFromStorable(input: Uint8Array|string): Uint8Array {
+  export function bufferFromStorable(input: Uint8Array | string): Uint8Array {
     if (ArrayBuffer.isView(input)) {
       return input;
     }

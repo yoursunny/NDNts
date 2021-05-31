@@ -30,7 +30,7 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
    * DataTape.Reader methods are available only if the stream is readable.
    * DataTape.Writer methods are available only if the stream is writable.
    */
-  constructor(stream: NodeJS.ReadableStream|NodeJS.WritableStream|DataTape.OpenStream|string) {
+  constructor(stream: NodeJS.ReadableStream | NodeJS.WritableStream | DataTape.OpenStream | string) {
     switch (typeof stream) {
       case "function":
         this.makeStream = stream;
@@ -52,7 +52,7 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
     }
   }
 
-  private readonly makeStream: (mode: DataTape.StreamMode) => NodeJS.ReadableStream|NodeJS.WritableStream;
+  private readonly makeStream: (mode: DataTape.StreamMode) => NodeJS.ReadableStream | NodeJS.WritableStream;
   private readonly mutex = throat(1);
   private currentWriter?: [L3Face, Pushable<WriteItem>];
 
@@ -156,7 +156,7 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
     return output;
   }
 
-  private async findFirst(predicate: (data: Data) => boolean|Promise<boolean>): Promise<Data|undefined> {
+  private async findFirst(predicate: (data: Data) => boolean | Promise<boolean>): Promise<Data | undefined> {
     return this.useReader(async (reader) => {
       for await (const data of reader) {
         if (await predicate(data)) {
@@ -167,11 +167,11 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
     });
   }
 
-  public get(name: Name): Promise<Data|undefined> {
+  public get(name: Name): Promise<Data | undefined> {
     return this.findFirst((data) => data.name.equals(name));
   }
 
-  public find(interest: Interest): Promise<Data|undefined> {
+  public find(interest: Interest): Promise<Data | undefined> {
     return this.findFirst((data) => data.canSatisfy(interest));
   }
 
@@ -188,6 +188,6 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
 }
 
 export namespace DataTape {
-  export type StreamMode = "read"|"append";
-  export type OpenStream = (mode: StreamMode) => NodeJS.ReadableStream|NodeJS.WritableStream;
+  export type StreamMode = "read" | "append";
+  export type OpenStream = (mode: StreamMode) => NodeJS.ReadableStream | NodeJS.WritableStream;
 }

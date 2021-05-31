@@ -2,7 +2,7 @@ import expect from "expect";
 
 import { Decoder, Encodable, Encoder, toHex } from "..";
 
-type Uint8ArrayExpect = Uint8Array|Array<number|undefined>;
+type Uint8ArrayExpect = Uint8Array | Array<number | undefined>;
 
 function toEqualUint8Array(received: Uint8Array, expected: Uint8ArrayExpect) {
   let pass: boolean;
@@ -41,7 +41,7 @@ function toMatchTlv(received: Uint8Array, ...checks: TlvMatcher[]) {
   };
 }
 
-function toEncodeAs(received: Encoder|Encodable, ...args: any[]) {
+function toEncodeAs(received: Encoder | Encodable, ...args: any[]) {
   let output: Uint8Array;
   if (received instanceof Encoder) {
     output = received.output;

@@ -75,7 +75,7 @@ export namespace UdpTransport {
   /** Create a unicast transport. */
   export function connect(opts: udp.UnicastOptions): Promise<UdpTransport>;
 
-  export async function connect(arg1: string|udp.UnicastOptions, port?: number): Promise<UdpTransport> {
+  export async function connect(arg1: string | udp.UnicastOptions, port?: number): Promise<UdpTransport> {
     const opts = typeof arg1 === "string" ? { host: arg1, port } : arg1;
     const sock = await udp.openUnicast(opts);
     return new UdpTransport(sock);

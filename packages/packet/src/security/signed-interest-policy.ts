@@ -6,7 +6,7 @@ import { Interest } from "../interest";
 import { SigInfo } from "../sig-info";
 import { LLSign, LLVerify, Signer, Verifier } from "./signing";
 
-function evict<K>(capacity: number, container: Set<K>|Map<K, unknown>): void {
+function evict<K>(capacity: number, container: Set<K> | Map<K, unknown>): void {
   assert(capacity >= 0);
   for (const key of container.keys()) {
     if (container.size <= capacity) {
@@ -31,7 +31,7 @@ export class SignedInterestPolicy {
    */
   constructor(opts: SignedInterestPolicy.Options, ...rules: Rule[]);
   constructor(...rules: Rule[]);
-  constructor(arg1?: SignedInterestPolicy.Options|Rule, ...rules: Rule[]) {
+  constructor(arg1?: SignedInterestPolicy.Options | Rule, ...rules: Rule[]) {
     let opts: SignedInterestPolicy.Options = {};
     if (typeof (arg1 as Rule).check === "function") {
       rules.unshift(arg1 as Rule);

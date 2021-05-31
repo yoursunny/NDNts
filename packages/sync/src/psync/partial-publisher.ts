@@ -18,7 +18,7 @@ interface PendingInterest {
   recvIblt: IBLT;
   bloom: BloomFilter;
   expire: NodeJS.Timeout;
-  defer: pDefer.DeferredPromise<Data|undefined>;
+  defer: pDefer.DeferredPromise<Data | undefined>;
 }
 
 interface DebugEntry {
@@ -103,7 +103,7 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
     this.sProducer.close();
   }
 
-  public get(prefix: Name): SyncNode<Name>|undefined {
+  public get(prefix: Name): SyncNode<Name> | undefined {
     return this.c.get(prefix);
   }
 
@@ -166,7 +166,7 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
         }
         pending.bloom.dispose();
       }, interest.lifetime),
-      defer: pDefer<Data|undefined>(),
+      defer: pDefer<Data | undefined>(),
     };
     this.sPendings.set(nameHex, pending);
     return pending.defer.promise;
@@ -176,7 +176,7 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
     this.debug(`+(${node.id},${node.seqNum})`);
 
     for (const [nameHex, { interest, recvIblt, bloom, expire, defer }] of this.sPendings) {
-      const del = (data?: Promise<Data|undefined>) => {
+      const del = (data?: Promise<Data | undefined>) => {
         if (this.sPendings.delete(nameHex)) {
           clearTimeout(expire);
           defer.resolve(data);
@@ -205,7 +205,7 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
     }
   };
 
-  private sendStateData(interest: Interest, state: PSyncCore.State, action: string, freshness: number): Promise<Data|undefined> {
+  private sendStateData(interest: Interest, state: PSyncCore.State, action: string, freshness: number): Promise<Data | undefined> {
     const ibltComp = this.codec.iblt2comp(this.c.iblt);
     const name = interest.name.append(ibltComp);
 

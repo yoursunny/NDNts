@@ -28,7 +28,7 @@ export type ServeOptions = DataProducer.Options & {
 
 export interface Server {
   readonly prefix: Name;
-  processInterest: (interest: Interest) => Promise<Data|undefined>;
+  processInterest: (interest: Interest) => Promise<Data | undefined>;
   close: () => void;
 }
 

@@ -14,7 +14,7 @@ import type { DataBuffer } from "./data-buffer";
  * unless Options.autoBuffer is set to false. If the handler returns `undefined`, the Interest is used
  * to query the DataBuffer, and any matching Data may be sent.
  */
-export type Handler = (interest: Interest, producer: Producer) => Promise<Data|undefined>;
+export type Handler = (interest: Interest, producer: Producer) => Promise<Data | undefined>;
 
 export interface Options {
   /** Description for debugging purpose. */
@@ -51,7 +51,7 @@ export interface Options {
 
 /** A running producer. */
 export interface Producer {
-  readonly prefix: Name|undefined;
+  readonly prefix: Name | undefined;
 
   readonly face: FwFace;
 
@@ -65,7 +65,7 @@ export interface Producer {
    * 2. Producer A can invoke this function to let producer B generate a response.
    * 3. The response should be sent by producer A.
    */
-  processInterest: (interest: Interest) => Promise<Data|undefined>;
+  processInterest: (interest: Interest) => Promise<Data | undefined>;
 
   /** Close the producer. */
   close: () => void;
@@ -81,7 +81,7 @@ export class EndpointProducer {
    * @param prefixInput prefix registration; if undefined, prefixes may be added later.
    * @param handler function to handle incoming Interest.
    */
-  public produce(prefixInput: NameLike|undefined, handler: Handler, opts: Options = {}): Producer {
+  public produce(prefixInput: NameLike | undefined, handler: Handler, opts: Options = {}): Producer {
     const prefix = typeof prefixInput === "undefined" ? undefined : new Name(prefixInput);
     const {
       describe = `produce(${prefix})`,
@@ -157,7 +157,7 @@ export namespace EndpointProducer {
   export type RouteAnnouncement = FwFace.RouteAnnouncement;
 }
 
-export async function signUnsignedData(data: Data, dataSigner: Signer|undefined) {
+export async function signUnsignedData(data: Data, dataSigner: Signer | undefined) {
   if (dataSigner && data.sigInfo.type === SigType.Null) {
     await dataSigner.sign(data);
   }

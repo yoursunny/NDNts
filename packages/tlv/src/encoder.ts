@@ -108,7 +108,7 @@ export class Encoder {
    * @param omitEmpty omit TLV altogether if set to Encoder.OmitEmpty
    * @param tlvValue TLV-VALUE objects.
    */
-  public prependTlv(tlvType: number, omitEmpty?: typeof Encoder.OmitEmpty|Encodable,
+  public prependTlv(tlvType: number, omitEmpty?: typeof Encoder.OmitEmpty | Encodable,
       ...tlvValue: Encodable[]) {
     let hasOmitEmpty = false;
     if (omitEmpty) {
@@ -129,7 +129,7 @@ export class Encoder {
   }
 
   /** Prepend an Encodable object. */
-  public encode(obj: Encodable|readonly Encodable[]) {
+  public encode(obj: Encodable | readonly Encodable[]) {
     if (obj instanceof Uint8Array) {
       this.prependRoom(obj.byteLength).set(obj);
     } else if (typeof obj === "object" && typeof (obj as EncodableObj).encodeTo === "function") {
@@ -161,14 +161,14 @@ export namespace Encoder {
 
   export const OmitEmpty = Symbol("OmitEmpty");
 
-  export function encode(obj: Encodable|readonly Encodable[], initBufSize: number = BUF_INIT_SIZE) {
+  export function encode(obj: Encodable | readonly Encodable[], initBufSize: number = BUF_INIT_SIZE) {
     const encoder = new Encoder(initBufSize);
     encoder.encode(obj);
     return encoder.output;
   }
 
   /** Extract the encoding output of an element while writing to a larger encoder. */
-  export function extract(obj: Encodable|readonly Encodable[], cb: (output: Uint8Array) => void): Encodable {
+  export function extract(obj: Encodable | readonly Encodable[], cb: (output: Uint8Array) => void): Encodable {
     return {
       encodeTo(encoder) {
         const sizeBefore = encoder.size;

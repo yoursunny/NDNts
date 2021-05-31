@@ -68,7 +68,7 @@ export interface Decrypter<T = Data> {
 }
 
 /** Encrypter and decrypter that do nothing. */
-export const noopEncryption: Encrypter<any>&Decrypter<any> = {
+export const noopEncryption: Encrypter<any> & Decrypter<any> = {
   encrypt() {
     return Promise.resolve();
   },

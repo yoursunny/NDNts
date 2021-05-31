@@ -5,7 +5,7 @@ import { Certificate } from "../cert/mod";
 import { StoreBase } from "./store-base";
 
 interface StoredCert {
-  certBuffer: Uint8Array|string;
+  certBuffer: Uint8Array | string;
 }
 
 /** Storage of certificates. */

@@ -56,7 +56,7 @@ export async function requestCertificate({
   const { ecdhPub: caEcdhPub, salt, requestId, challenges: serverChallenges } = newResponse;
 
   const sessionKey = await crypto.makeSessionKey(ecdhPvt, caEcdhPub, salt, requestId);
-  let challenge: ClientChallenge|undefined;
+  let challenge: ClientChallenge | undefined;
   for (const availChallenge of challenges) {
     if (serverChallenges.includes(availChallenge.challengeId)) {
       challenge = availChallenge;
@@ -69,7 +69,7 @@ export async function requestCertificate({
 
   let challengeParameters = await challenge.start({ requestId });
   let issuedCertName: Name;
-  let issuedCertFwHint: FwHint|undefined;
+  let issuedCertFwHint: FwHint | undefined;
   for (;;) {
     const challengeRequest = await ChallengeRequest.build({
       profile,

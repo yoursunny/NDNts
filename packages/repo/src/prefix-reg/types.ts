@@ -6,7 +6,7 @@ export interface PrefixRegContext {
   close: () => void;
 }
 
-type Face = Pick<FwFace, "addRoute"|"removeRoute">;
+type Face = Pick<FwFace, "addRoute" | "removeRoute">;
 
 /** Control prefix registrations of a repo producer. */
 export type PrefixRegController = (store: DataStore, face: Face) => PrefixRegContext;

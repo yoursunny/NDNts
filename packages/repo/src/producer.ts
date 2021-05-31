@@ -35,7 +35,7 @@ export class Producer {
     this.prod.close();
   }
 
-  private processInterest: ProducerHandler = async (interest: Interest): Promise<Data|undefined> => {
+  private processInterest: ProducerHandler = async (interest: Interest): Promise<Data | undefined> => {
     const found = await this.store.find(interest);
     return found ?? this.fallback(interest, this, this.store);
   };
@@ -49,5 +49,5 @@ export namespace Producer {
     reg?: PrefixRegController;
   }
 
-  export type FallbackHandler = (interest: Interest, producer: Producer, store: DataStore) => Promise<Data|undefined>;
+  export type FallbackHandler = (interest: Interest, producer: Producer, store: DataStore) => Promise<Data | undefined>;
 }

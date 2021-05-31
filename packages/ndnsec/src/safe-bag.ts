@@ -50,7 +50,7 @@ export class SafeBag {
   }
 
   /** Decrypt private key and return unencrypted PKCS8 format. */
-  public decryptKey(passphrase: string|Uint8Array): Uint8Array {
+  public decryptKey(passphrase: string | Uint8Array): Uint8Array {
     const key = createPrivateKey({
       key: Buffer.from(this.encryptedKey),
       type: "pkcs8",

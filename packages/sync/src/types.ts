@@ -8,7 +8,7 @@ export interface SyncProtocol<ID = any> extends TypedEmitter<SyncProtocol.Events
   close(): void;
 
   /** Retrieve a node. */
-  get(id: ID): SyncNode<ID>|undefined;
+  get(id: ID): SyncNode<ID> | undefined;
 
   /** Retrieve or create a node. */
   add(id: ID): SyncNode<ID>;

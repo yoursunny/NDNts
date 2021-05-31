@@ -5,7 +5,7 @@ import type * as asn1 from "@yoursunny/asn1";
 import { crypto } from "../crypto_node";
 import type { CryptoAlgorithm, EncryptionAlgorithm, SigningAlgorithm } from "../key/mod";
 
-export type RsaModulusLength = 2048|4096;
+export type RsaModulusLength = 2048 | 4096;
 export namespace RsaModulusLength {
   export const Default: RsaModulusLength = 2048;
   export const Choices: readonly RsaModulusLength[] = [2048, 4096];
@@ -15,7 +15,7 @@ class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenParams> {
   constructor(
       protected readonly name: string,
       public readonly uuid: string,
-      public readonly keyUsages: Record<"private"|"public", KeyUsage[]>,
+      public readonly keyUsages: Record<"private" | "public", KeyUsage[]>,
       hash: AlgorithmIdentifier = "SHA-256",
   ) {
     this.importParams = { name, hash };

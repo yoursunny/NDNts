@@ -118,7 +118,7 @@ test("aggregate & retransmit", async () => {
     })(),
     async tx(iterable) {
       for await (const { l3, reject, token: tokenU } of iterable) {
-        const token = (tokenU as number|undefined) ?? -1;
+        const token = (tokenU as number | undefined) ?? -1;
         if (l3 instanceof Data) {
           expect(rxDataTokens.has(token)).toBeFalsy();
           rxDataTokens.add(token);

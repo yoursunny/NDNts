@@ -21,7 +21,7 @@ export class FwHint {
 
   constructor(delegations: readonly FwHint.Delegation[]);
 
-  constructor(arg?: FwHint|readonly FwHint.Delegation[]) {
+  constructor(arg?: FwHint | readonly FwHint.Delegation[]) {
     if (Array.isArray(arg)) {
       for (const del of arg) {
         this.m.set(toHex(del.name.value), del);

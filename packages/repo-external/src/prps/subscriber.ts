@@ -43,8 +43,8 @@ class Subscription implements PrpsSubscriber.Subscription {
       private readonly endpoint: Endpoint,
       private readonly msgInterestLifetime: number,
       private readonly msgRetx: RetxPolicy,
-      private readonly pubVerifier: Verifier|undefined,
-      subAnnouncement: false|undefined,
+      private readonly pubVerifier: Verifier | undefined,
+      subAnnouncement: false | undefined,
       subSigner: Signer,
   ) {
     this.notifyPrefix = topic.append(NotifySuffix);

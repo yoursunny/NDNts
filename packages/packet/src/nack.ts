@@ -37,7 +37,7 @@ export class Nack {
   public header: NackHeader;
   public interest: Interest;
 
-  constructor(interest: Interest, header: NackHeader|number = NackReason.NoRoute) {
+  constructor(interest: Interest, header: NackHeader | number = NackReason.NoRoute) {
     this.interest = interest;
     if (typeof header === "number") {
       this.header = new NackHeader(header);

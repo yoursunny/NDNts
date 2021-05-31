@@ -8,14 +8,14 @@ const DEFAULT_MULTICAST_PORT = 56363;
 
 export type Socket = dgram.Socket;
 
-type SocketOptions = Pick<dgram.SocketOptions, "recvBufferSize"|"sendBufferSize">;
+type SocketOptions = Pick<dgram.SocketOptions, "recvBufferSize" | "sendBufferSize">;
 
 interface AddressFamilyOption {
   /**
    * IPv4 or IPv6.
    * Default is IPv4, unless `host` is an IPv6 address (contains a colon).
    */
-  family?: 4|6;
+  family?: 4 | 6;
 }
 
 export type OpenSocketOptions = SocketOptions & AddressFamilyOption & {

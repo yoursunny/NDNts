@@ -4,7 +4,7 @@ export type IntervalRange = [min: number, max: number];
 
 export type IntervalFunc = () => number;
 
-export function computeInterval(input: IntervalRange|undefined, syncInterestLifetime: number): IntervalFunc {
+export function computeInterval(input: IntervalRange | undefined, syncInterestLifetime: number): IntervalFunc {
   const [min, range] = (() => {
     if (input) {
       const [min, max] = input;

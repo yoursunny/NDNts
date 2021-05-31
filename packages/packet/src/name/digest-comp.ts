@@ -33,7 +33,7 @@ class DigestComp implements NamingConvention<Uint8Array>, NamingConvention.WithA
     return `${this.altUriPrefix}=${toHex(comp.value).toLowerCase()}`;
   }
 
-  public fromAltUri(input: string): Component|undefined {
+  public fromAltUri(input: string): Component | undefined {
     const m = this.altUriRegex.exec(input);
     if (!m) {
       return undefined;

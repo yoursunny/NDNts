@@ -45,7 +45,7 @@ export class CertSources implements CertSource {
 
 export namespace CertSources {
   export interface Options extends CertFetcher.Options {
-    trustAnchors?: TrustAnchorContainer|Certificate[];
+    trustAnchors?: TrustAnchorContainer | Certificate[];
 
     /** If true, disable CertFetcher. */
     offline?: boolean;

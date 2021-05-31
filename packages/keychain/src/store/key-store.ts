@@ -5,7 +5,7 @@ import { crypto } from "../crypto_node";
 import { createDecrypter, createEncrypter, createSigner, createVerifier, CryptoAlgorithm, KeyKind, NamedDecrypter, NamedEncrypter, NamedSigner, NamedVerifier, PublicKey } from "../key/mod";
 import { StoreBase } from "./store-base";
 
-function findAlgo(uuid: string): CryptoAlgorithm<unknown>|undefined {
+function findAlgo(uuid: string): CryptoAlgorithm<unknown> | undefined {
   return CryptoAlgorithmList.find((algo) => algo.uuid === uuid);
 }
 
@@ -150,9 +150,9 @@ export namespace KeyStore {
     algo: string;
     info: any;
     jwkImportParams?: AlgorithmIdentifier;
-    privateKey?: CryptoKey|JsonWebKey;
-    publicKey?: CryptoKey|JsonWebKey;
-    publicKeySpki?: Uint8Array|string;
-    secretKey?: CryptoKey|JsonWebKey;
+    privateKey?: CryptoKey | JsonWebKey;
+    publicKey?: CryptoKey | JsonWebKey;
+    publicKeySpki?: Uint8Array | string;
+    secretKey?: CryptoKey | JsonWebKey;
   }
 }

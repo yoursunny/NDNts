@@ -22,7 +22,7 @@ export abstract class ServerPinLikeChallenge<State extends ServerPinLikeChalleng
    * @param context the challenge context, which contains the certificate request.
    * @returns a State to continue the challenge, or a ServerChallengeResponse to fail the challenge.
    */
-  protected abstract start(request: ChallengeRequest, context: ServerChallengeContext<State>): Promise<State|ServerChallengeResponse>;
+  protected abstract start(request: ChallengeRequest, context: ServerChallengeContext<State>): Promise<State | ServerChallengeResponse>;
 
   public async process(request: ChallengeRequest, context: ServerChallengeContext<State>): Promise<ServerChallengeResponse> {
     if (!context.challengeState) {

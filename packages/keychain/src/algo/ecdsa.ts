@@ -7,7 +7,7 @@ import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
 
 const SignVerifyParams: EcdsaParams = { name: "ECDSA", hash: "SHA-256" };
 
-function makeGenParams(curve: EcCurve): EcKeyGenParams&EcKeyImportParams {
+function makeGenParams(curve: EcCurve): EcKeyGenParams & EcKeyImportParams {
   return { name: "ECDSA", namedCurve: curve };
 }
 
@@ -17,7 +17,7 @@ const PointSizes = {
   "P-521": 66,
 };
 
-const NamedCurveOids: Record<string, EcCurve|undefined> = {
+const NamedCurveOids: Record<string, EcCurve | undefined> = {
   "2A8648CE3D030107": "P-256", // 1.2.840.10045.3.1.7
   "2B81040022": "P-384", // 1.3.132.0.34
   "2B81040023": "P-521", // 1.3.132.0.35
@@ -30,7 +30,7 @@ export namespace EcCurve {
   export const Choices = Object.keys(PointSizes) as readonly EcCurve[];
 }
 
-function determineEcCurve(der: asn1.ElementBuffer): EcCurve|false {
+function determineEcCurve(der: asn1.ElementBuffer): EcCurve | false {
   const params = der.children?.[0]?.children?.[1];
   if (params && params.type === 0x06 && params.value) {
     const namedCurveOid = toHex(params.value);

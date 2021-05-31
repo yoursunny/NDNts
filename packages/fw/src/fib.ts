@@ -25,7 +25,7 @@ export class Fib {
     }
   }
 
-  public lpm(name: Name): FibEntry|undefined {
+  public lpm(name: Name): FibEntry | undefined {
     const entry = lpm(name, (prefixHex) => this.table.peek(prefixHex));
     if (entry) {
       assert(entry.nexthops.size > 0);

@@ -60,7 +60,7 @@ export class Server {
   private constructor(
       endpoint: Endpoint,
       private readonly repo: RepoDataStore,
-      private readonly repoFwHint: FwHint|undefined,
+      private readonly repoFwHint: FwHint | undefined,
       private readonly profile: CaProfile,
       private readonly signer: Signer,
       private readonly challenges: Map<string, ServerChallenge>,

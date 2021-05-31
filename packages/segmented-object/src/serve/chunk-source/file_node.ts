@@ -42,7 +42,7 @@ export class FileChunkSource implements ChunkSource {
     yield* inner.listChunks();
   }
 
-  public async getChunk(i: number): Promise<Chunk|undefined> {
+  public async getChunk(i: number): Promise<Chunk | undefined> {
     const inner = await this.opening;
     return inner.getChunk(i);
   }

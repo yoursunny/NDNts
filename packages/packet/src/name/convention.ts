@@ -26,7 +26,7 @@ export namespace NamingConvention {
      * Parse from alternate URI.
      * @returns component, or undefined if it cannot be parsed.
      */
-    fromAltUri: (input: string) => Component|undefined;
+    fromAltUri: (input: string) => Component | undefined;
   }
 
   export function isConvention(obj: any): obj is NamingConvention<any> {

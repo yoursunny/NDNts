@@ -36,7 +36,7 @@ export class LpService {
     return this.rx_(iterable);
   };
 
-  private async *rx_(iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<LpService.Packet|LpService.RxError> {
+  private async *rx_(iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<LpService.Packet | LpService.RxError> {
     for await (const tlv of iterable) {
       yield* this.decode(tlv);
     }
@@ -83,9 +83,9 @@ export class LpService {
   }
 
   public tx = (iterable: AsyncIterable<LpService.Packet>) => {
-    let iterable1: AsyncIterable<LpService.Packet|false> = iterable;
+    let iterable1: AsyncIterable<LpService.Packet | false> = iterable;
     if (this.keepAlive > 0) {
-      iterable1 = itKeepAlive<LpService.Packet|false>(
+      iterable1 = itKeepAlive<LpService.Packet | false>(
         () => false,
         { timeout: this.keepAlive },
       )(iterable);
@@ -93,7 +93,7 @@ export class LpService {
     return this.tx_(iterable1);
   };
 
-  private async *tx_(iterable: AsyncIterable<LpService.Packet|false>): AsyncIterable<Uint8Array|LpService.TxError> {
+  private async *tx_(iterable: AsyncIterable<LpService.Packet | false>): AsyncIterable<Uint8Array | LpService.TxError> {
     for await (const pkt of iterable) {
       if (pkt === false) {
         yield IDLE;
@@ -103,13 +103,13 @@ export class LpService {
     }
   }
 
-  private *encode({ l3, token }: LpService.Packet): Iterable<Uint8Array|LpService.TxError> {
+  private *encode({ l3, token }: LpService.Packet): Iterable<Uint8Array | LpService.TxError> {
     let lpp: LpPacket;
     try {
       switch (true) {
         case l3 instanceof Interest:
         case l3 instanceof Data: {
-          const payload = Encoder.encode(l3 as Interest|Data);
+          const payload = Encoder.encode(l3 as Interest | Data);
           if (!token && payload.length <= this.mtu) {
             return yield payload;
           }
@@ -148,7 +148,7 @@ export namespace LpService {
      * Set false or zero to disable keep-alive.
      * @default 60000
      */
-    keepAlive?: false|number;
+    keepAlive?: false | number;
 
     /**
      * MTU for fragmentation.
@@ -164,7 +164,7 @@ export namespace LpService {
     reassemblerCapacity?: number;
   }
 
-  type L3Pkt = Interest|Data|Nack;
+  type L3Pkt = Interest | Data | Nack;
 
   export interface Packet {
     l3: L3Pkt;

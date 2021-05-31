@@ -15,7 +15,7 @@ export class PyRepoStore implements S.Close, S.Insert, S.Delete {
   /** Construct with existing PyRepoClient. */
   constructor(client: PyRepoClient, opts?: PyRepoStore.StoreOptions);
 
-  constructor(arg1: PyRepoClient|PyRepoStore.Options, arg2: PyRepoStore.StoreOptions = {}) {
+  constructor(arg1: PyRepoClient | PyRepoStore.Options, arg2: PyRepoStore.StoreOptions = {}) {
     let opts: PyRepoStore.StoreOptions;
     if (arg1 instanceof PyRepoClient) {
       this.client = arg1;

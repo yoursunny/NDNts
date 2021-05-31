@@ -77,7 +77,7 @@ export class Decoder {
     return d.decodeFrom(this);
   }
 
-  private readVarNum(): number|undefined {
+  private readVarNum(): number | undefined {
     if (this.eof) {
       return undefined;
     }

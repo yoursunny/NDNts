@@ -76,7 +76,7 @@ export class PyRepoClient {
       const commandTopic = this.repoPrefix.append(verb);
       await this.publisher.publish(commandTopic, parameter);
 
-      const subAlive = itKeepAlive<Data|false>(
+      const subAlive = itKeepAlive<Data | false>(
         () => false,
         { timeout: this.progressTimeout },
       )(sub);

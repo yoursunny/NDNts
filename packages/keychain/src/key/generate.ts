@@ -7,8 +7,8 @@ import { CryptoAlgorithm } from "./types";
 
 export async function generateKeyInternal<Algo extends CryptoAlgorithm>(
     defaultAlgo: Algo, a: unknown[],
-): Promise<[Name, Algo, CryptoAlgorithm.GeneratedKeyPair|CryptoAlgorithm.GeneratedSecretKey]> {
-  let keyChain: KeyChain|undefined;
+): Promise<[Name, Algo, CryptoAlgorithm.GeneratedKeyPair | CryptoAlgorithm.GeneratedSecretKey]> {
+  let keyChain: KeyChain | undefined;
   if (typeof (a[0] as KeyChain).listKeys === "function") {
     keyChain = a.shift() as KeyChain;
   }

@@ -1,6 +1,6 @@
 import type { Data, Interest, Nack } from "@ndn/packet";
 
-type L3Pkt = Interest|Data|Nack;
+type L3Pkt = Interest | Data | Nack;
 
 /** A logical packet in the forwarder. */
 export interface FwPacket<T extends L3Pkt = L3Pkt> {
@@ -29,7 +29,7 @@ export class RejectInterest implements FwPacket<Interest> {
   ) {}
 }
 export namespace RejectInterest {
-  export type Reason = "cancel"|"expire";
+  export type Reason = "cancel" | "expire";
 }
 
 /** Request to cancel a pending Interest. */

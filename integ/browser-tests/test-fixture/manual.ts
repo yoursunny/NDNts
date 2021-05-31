@@ -1,4 +1,4 @@
-export function addManualTest(title: string, f: () => Promise<string|string[]>) {
+export function addManualTest(title: string, f: () => Promise<string | string[]>) {
   const handler = () => {
     for (const btn of document.querySelectorAll("button")) {
       btn.disabled = true;

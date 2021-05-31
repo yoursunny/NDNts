@@ -17,7 +17,7 @@ interface Events {
 
 const STOP = Symbol("FaceImpl.Stop");
 
-function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement): Name|undefined {
+function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement): Name | undefined {
   switch (typeof announcement) {
     case "number":
       return name.getPrefix(announcement);
@@ -38,7 +38,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
 
   constructor(
       public readonly fw: ForwarderImpl,
-      rxtx: FwFace.RxTx|FwFace.RxTxTransform,
+      rxtx: FwFace.RxTx | FwFace.RxTxTransform,
       attributes: FwFace.Attributes,
   ) {
     super();
@@ -210,7 +210,7 @@ export namespace FaceImpl {
 
 /** A socket or network interface associated with forwarding plane. */
 export interface FwFace extends Pick<FaceImpl,
-"attributes"|"close"|"toString"|"hasRoute"|"addRoute"|"removeRoute"|"addAnnouncement"|"removeAnnouncement"|
+"attributes" | "close" | "toString" | "hasRoute" | "addRoute" | "removeRoute" | "addAnnouncement" | "removeAnnouncement" |
 Exclude<keyof TypedEmitter<Events>, "emit">> {
   readonly fw: Forwarder;
   readonly running: boolean;

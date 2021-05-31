@@ -9,7 +9,7 @@ export interface Encryption<I, G extends GenParams> extends EncryptionAlgorithm<
   makeAesKeyGenParams: (genParams: G) => AesKeyGenParams;
 }
 
-export type KeyLength = 128|192|256;
+export type KeyLength = 128 | 192 | 256;
 export namespace KeyLength {
   export const Default: KeyLength = 128;
   export const Choices: readonly KeyLength[] = [128, 192, 256];
@@ -68,7 +68,7 @@ class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I
     };
   }
 
-  private check(iv: Uint8Array|undefined, additionalData: Uint8Array|undefined) {
+  private check(iv: Uint8Array | undefined, additionalData: Uint8Array | undefined) {
     if (iv?.byteLength !== this.detail.ivLength) {
       throw new Error("bad IV");
     }

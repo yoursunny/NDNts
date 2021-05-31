@@ -5,7 +5,7 @@ import expect from "expect";
 import { Component, ComponentLike, Name, NameLike } from "..";
 
 expect.extend({
-  toEqualComponent(received: Component|undefined, comp: ComponentLike) {
+  toEqualComponent(received: Component | undefined, comp: ComponentLike) {
     const c = Component.from(comp);
     if (received instanceof Component && received.equals(c)) {
       return {
@@ -18,7 +18,7 @@ expect.extend({
       pass: false,
     };
   },
-  toEqualName(received: Name|undefined, name: NameLike) {
+  toEqualName(received: Name | undefined, name: NameLike) {
     const n = new Name(name);
     if (received instanceof Name && received.equals(n)) {
       return {
@@ -31,7 +31,7 @@ expect.extend({
       pass: false,
     };
   },
-  toHaveName(received: { readonly name?: Name }|undefined, name: NameLike) {
+  toHaveName(received: { readonly name?: Name } | undefined, name: NameLike) {
     const n = new Name(name);
     if (received?.name?.equals(n)) {
       return {

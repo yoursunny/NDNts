@@ -81,7 +81,7 @@ typeof DataView.prototype.setBigUint64 === "function" ?
     dv.setUint32(4, Number(n % 0x100000000n));
   });
 
-type Len = 1|2|4|8;
+type Len = 1 | 2 | 4 | 8;
 
 interface Options<LenT = Len> {
   /** If set, use/enforce specific TLV-LENGTH. */
@@ -99,7 +99,7 @@ const EncodeNniClass = {
 };
 
 /** Create Encodable from non-negative integer. */
-export function NNI(n: number|bigint, {
+export function NNI(n: number | bigint, {
   len,
   unsafe = false,
 }: Options<Extract<Len, keyof typeof EncodeNniClass>> = {}): Encodable {

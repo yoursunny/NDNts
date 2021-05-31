@@ -76,7 +76,7 @@ export class AccessManager {
     };
   }
 
-  private async extractMemberKey(member: NamedEncrypter.PublicKey|Certificate|Name): Promise<NamedEncrypter.PublicKey> {
+  private async extractMemberKey(member: NamedEncrypter.PublicKey | Certificate | Name): Promise<NamedEncrypter.PublicKey> {
     if (member instanceof Name) {
       if (!this.keys.memberVerifier) {
         throw new Error("cannot retrieve member certificate without memberVerifier");
@@ -159,6 +159,6 @@ export namespace AccessManager {
      * Caller is responsible for verifying authenticity of the PublicKey or Certificate.
      * If passing a key name or certificate name, the retrieved certificate will be verified by Options.memberVerifier.
      */
-    grant: (member: NamedEncrypter.PublicKey|Certificate|Name) => Promise<KeyDecryptionKey>;
+    grant: (member: NamedEncrypter.PublicKey | Certificate | Name) => Promise<KeyDecryptionKey>;
   }
 }

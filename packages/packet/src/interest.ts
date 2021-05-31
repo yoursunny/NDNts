@@ -48,7 +48,7 @@ class Fields {
   public sigInfo?: SigInfo;
   public sigValue = new Uint8Array();
 
-  private nonce_: number|undefined;
+  private nonce_: number | undefined;
   private lifetime_: number = Interest.DefaultLifetime;
   private hopLimit_: number = HOPLIMIT_MAX;
 

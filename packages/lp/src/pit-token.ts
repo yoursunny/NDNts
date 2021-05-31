@@ -9,7 +9,7 @@ let lastPrefix = 0;
 export class NumericPitToken {
   constructor(public readonly prefix = ++lastPrefix) {}
 
-  public toNumber(token?: PitToken): number|undefined {
+  public toNumber(token?: PitToken): number | undefined {
     if (!token || token.byteLength !== 8) {
       return undefined;
     }

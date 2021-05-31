@@ -139,7 +139,7 @@ async function checkWebCrypto() {
     });
   }
 
-  let testbedRootKey: NamedVerifier.PublicKey|undefined;
+  let testbedRootKey: NamedVerifier.PublicKey | undefined;
   await run({ title: "import testbed root certificate" }, async () => {
     const cert = Certificate.fromData(new Decoder(ndn_testbed_certs.ROOT_V2_NDNCERT).decode(Data));
     testbedRootKey = await cert.createVerifier();

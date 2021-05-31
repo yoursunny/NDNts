@@ -27,7 +27,7 @@ class Cache {
     this.cleanupInterval = cacheCleanupInterval;
   }
 
-  public lookup(name: Name): CacheEntry|undefined {
+  public lookup(name: Name): CacheEntry | undefined {
     const now = this.cleanup();
     const key = toHex(name.value);
     const entry = this.table.get(key);

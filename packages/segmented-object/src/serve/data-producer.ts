@@ -37,7 +37,7 @@ export abstract class DataProducer {
     }
   }
 
-  public processInterest: ProducerHandler = (interest: Interest): Promise<Data|undefined> => {
+  public processInterest: ProducerHandler = (interest: Interest): Promise<Data | undefined> => {
     const segmentNum = this.parseInterest(interest);
     return this.getData(segmentNum);
   };
@@ -72,7 +72,7 @@ export abstract class DataProducer {
     return data;
   }
 
-  protected abstract getData(i: number): Promise<Data|undefined>;
+  protected abstract getData(i: number): Promise<Data | undefined>;
 
   public close(): void {
     this.source.close?.();

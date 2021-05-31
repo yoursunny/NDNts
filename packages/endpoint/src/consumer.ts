@@ -22,7 +22,7 @@ export interface Options {
   retx?: RetxPolicy;
 
   /** AbortSignal that allows canceling the Interest via AbortController. */
-  signal?: AbortSignal|globalThis.AbortSignal;
+  signal?: AbortSignal | globalThis.AbortSignal;
 
   /**
    * Data verifier.
@@ -48,7 +48,7 @@ export class EndpointConsumer {
   declare public opts: Options;
 
   /** Consume a single piece of Data. */
-  public consume(interestInput: Interest|NameLike, opts: Options = {}): Context {
+  public consume(interestInput: Interest | NameLike, opts: Options = {}): Context {
     const interest = interestInput instanceof Interest ? interestInput : new Interest(interestInput);
     const {
       describe = `consume(${interest.name})`,
@@ -65,7 +65,7 @@ export class EndpointConsumer {
     const promise = new Promise<Data>((resolve, reject) => {
       const rx = pushable<FwPacket>();
 
-      let timer: NodeJS.Timeout|undefined;
+      let timer: NodeJS.Timeout | undefined;
       const cancelRetx = () => {
         if (timer) { clearTimeout(timer); }
         timer = undefined;
@@ -85,7 +85,7 @@ export class EndpointConsumer {
         cancelRetx();
         rx.push(new CancelInterest(interest));
       };
-      (signal as AbortSignal|undefined)?.addEventListener("abort", onabort);
+      (signal as AbortSignal | undefined)?.addEventListener("abort", onabort);
 
       this.fw.addFace({
         rx,
@@ -107,7 +107,7 @@ export class EndpointConsumer {
             }
           }
           cancelRetx();
-          (signal as AbortSignal|undefined)?.removeEventListener("abort", onabort);
+          (signal as AbortSignal | undefined)?.removeEventListener("abort", onabort);
           rx.end();
         },
       },

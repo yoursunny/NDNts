@@ -3,7 +3,7 @@ import { digestSigning, Name, Signer } from "@ndn/packet";
 
 import { env } from "./env";
 
-let theKeyChain: KeyChain|undefined;
+let theKeyChain: KeyChain | undefined;
 
 /** Open the KeyChain specified by NDNTS_KEYCHAIN environ. */
 export function openKeyChain(): KeyChain {

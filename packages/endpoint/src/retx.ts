@@ -47,10 +47,10 @@ export type RetxGenerator = (interestLifetime: number) => Iterable<number>;
  * A number is interpreted as the limit.
  * Set 0 to disable retransmissions.
  */
-export type RetxPolicy = RetxOptions|RetxGenerator|number;
+export type RetxPolicy = RetxOptions | RetxGenerator | number;
 
 /** Construct RetxGenerator from RetxPolicy. */
-export function makeRetxGenerator(policy: RetxPolicy|undefined): RetxGenerator {
+export function makeRetxGenerator(policy: RetxPolicy | undefined): RetxGenerator {
   if (!policy) {
     return () => [];
   }

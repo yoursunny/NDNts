@@ -31,7 +31,7 @@ export class NdnsecKeyChain extends KeyChain {
     NDN_NAME_ALT_URI: "0",
   };
 
-  private readonly importOptions: SafeBag.ImportOptions|undefined;
+  private readonly importOptions: SafeBag.ImportOptions | undefined;
 
   private async invokeNdnsec(argv: string[], input?: Uint8Array): Promise<{
     lines: string[];

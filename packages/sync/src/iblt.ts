@@ -43,7 +43,7 @@ class Hashtable {
 
 /** Invertible Bloom Lookup Table. */
 export class IBLT {
-  constructor(p: IBLT.Parameters|IBLT.PreparedParameters) {
+  constructor(p: IBLT.Parameters | IBLT.PreparedParameters) {
     this.p = IBLT.PreparedParameters.prepare(p);
     this.ht = new Hashtable(this.p.nEntries, this.p.serializeLittleEndian);
   }

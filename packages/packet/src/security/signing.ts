@@ -56,7 +56,7 @@ export namespace Signer {
    * @param sigType optionally set sigType.
    * @param keyLocator optionally set keyLocator; false to unset KeyLocator.
    */
-  export function putSigInfo(pkt: PacketWithSignature, sigType?: number, keyLocator?: KeyLocator.CtorArg|false): SigInfo {
+  export function putSigInfo(pkt: PacketWithSignature, sigType?: number, keyLocator?: KeyLocator.CtorArg | false): SigInfo {
     pkt.sigInfo ??= new SigInfo();
     if (typeof sigType !== "undefined") {
       pkt.sigInfo.type = sigType;
@@ -103,7 +103,7 @@ export namespace Verifier {
 }
 
 /** Signer and Verifier that do nothing. */
-export const noopSigning: Signer&Verifier = {
+export const noopSigning: Signer & Verifier = {
   sign() {
     return Promise.resolve();
   },
@@ -113,7 +113,7 @@ export const noopSigning: Signer&Verifier = {
 };
 
 /** Signer and Verifier for SigType.Sha256 digest. */
-export const digestSigning: Signer&Verifier = {
+export const digestSigning: Signer & Verifier = {
   sign(pkt: Signer.Signable): Promise<void> {
     Signer.putSigInfo(pkt, SigType.Sha256, false);
     return pkt[LLSign.OP]((input) => sha256(input));

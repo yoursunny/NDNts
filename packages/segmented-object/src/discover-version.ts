@@ -51,6 +51,6 @@ export namespace discoverVersion {
      * Minimum and default are 2, i.e. Version and Segment components.
      * ANY_SUFFIX_LEN allows any suffix length.
      */
-    expectedSuffixLen?: number|typeof ANY_SUFFIX_LEN;
+    expectedSuffixLen?: number | typeof ANY_SUFFIX_LEN;
   }
 }

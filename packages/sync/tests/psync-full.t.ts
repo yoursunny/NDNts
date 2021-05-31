@@ -121,7 +121,7 @@ class Fixture {
     return this.syncs[i]!.add(new Name(prefix));
   }
 
-  public get(i: number, prefix: NameLike): SyncNode<Name>|undefined {
+  public get(i: number, prefix: NameLike): SyncNode<Name> | undefined {
     return this.syncs[i]!.get(new Name(prefix));
   }
 

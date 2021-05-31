@@ -20,7 +20,7 @@ export namespace UnixTransport {
    * Create a transport and connect to remote endpoint.
    * @param pathOrOpts Unix socket path.
    */
-  export function connect(pathOrOpts: string|net.IpcNetConnectOpts): Promise<UnixTransport> {
+  export function connect(pathOrOpts: string | net.IpcNetConnectOpts): Promise<UnixTransport> {
     const connectOpts: net.IpcNetConnectOpts =
       typeof pathOrOpts === "string" ? { path: pathOrOpts } :
       pathOrOpts;

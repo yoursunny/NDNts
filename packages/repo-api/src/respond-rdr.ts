@@ -11,14 +11,14 @@ import type * as S from "./data-store";
 export async function respondRdr(interest: Interest, store: S.ListNames, {
   versionConvention = Version,
   signer = digestSigning,
-}: respondRdr.Options = {}): Promise<Data|undefined> {
+}: respondRdr.Options = {}): Promise<Data | undefined> {
   if (!isDiscoveryInterest(interest)) {
     return undefined;
   }
   const prefix = interest.name.getPrefix(-1);
 
   let bestVersion = -1;
-  let bestName: Name|undefined;
+  let bestName: Name | undefined;
   for await (const name of store.listNames(prefix)) {
     const comp = name.get(prefix.length);
     if (!comp || !versionConvention.match(comp)) {

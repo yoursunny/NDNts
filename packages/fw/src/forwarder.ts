@@ -40,7 +40,7 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
   }
 
   /** Add a face to the forwarding plane. */
-  public addFace(face: FwFace.RxTx|FwFace.RxTxTransform, attributes: FwFace.Attributes = {}): FwFace {
+  public addFace(face: FwFace.RxTx | FwFace.RxTxTransform, attributes: FwFace.Attributes = {}): FwFace {
     return new FaceImpl(this, face, attributes);
   }
 
@@ -88,7 +88,7 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
 
 /** Forwarding plane. */
 export interface Forwarder extends Pick<ForwarderImpl,
-"nodeNames"|"addFace"|Exclude<keyof TypedEmitter<Events>, "emit">> {
+"nodeNames" | "addFace" | Exclude<keyof TypedEmitter<Events>, "emit">> {
   readonly faces: Set<FwFace>;
   readonly pit: Pick<Pit, "dataNoTokenMatch">;
 }
@@ -103,7 +103,7 @@ export namespace Forwarder {
     return new ForwarderImpl({ ...DefaultOptions, ...options });
   }
 
-  let defaultInstance: Forwarder|undefined;
+  let defaultInstance: Forwarder | undefined;
 
   /** Access the default forwarding plane instance. */
   export function getDefault(): Forwarder {

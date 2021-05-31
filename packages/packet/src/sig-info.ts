@@ -90,7 +90,7 @@ interface CtorTag {
 }
 
 export namespace SigInfo {
-  export function Nonce(v?: Uint8Array|number): CtorTag {
+  export function Nonce(v?: Uint8Array | number): CtorTag {
     return {
       [ctorAssign](si: SigInfo) {
         switch (typeof v) {

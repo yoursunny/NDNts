@@ -23,7 +23,7 @@ export interface ChunkSource {
    * @param i chunk number, starting from zero.
    * @returns a Promise that resolves to requested chunk, or undefined if out of range.
    */
-  getChunk?: (i: number) => Promise<Chunk|undefined>;
+  getChunk?: (i: number) => Promise<Chunk | undefined>;
 
   close?: () => void;
 }
@@ -51,7 +51,7 @@ export abstract class KnownSizeChunkSource implements ChunkSource {
     }
   }
 
-  public async getChunk(i: number): Promise<Chunk|undefined> {
+  public async getChunk(i: number): Promise<Chunk | undefined> {
     if (i > this.final) {
       return undefined;
     }

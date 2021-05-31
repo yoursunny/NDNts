@@ -22,7 +22,7 @@ class PlainCryptoEncrypter<I> {
     }
   }
 
-  public readonly [KeyKind]: "public"|"secret";
+  public readonly [KeyKind]: "public" | "secret";
   public readonly llEncrypt: LLEncrypt;
   public readonly spki?: Uint8Array;
 }
@@ -53,7 +53,7 @@ class PlainCryptoDecrypter<I> {
     }
   }
 
-  public readonly [KeyKind]: "private"|"secret";
+  public readonly [KeyKind]: "private" | "secret";
   public readonly llDecrypt: LLDecrypt;
 }
 

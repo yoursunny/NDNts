@@ -14,7 +14,7 @@ class ScatteredChunk {
     this.length += buf.byteLength;
   }
 
-  public gather(ignoreMinSize = false): Uint8Array|undefined {
+  public gather(ignoreMinSize = false): Uint8Array | undefined {
     if (!ignoreMinSize && this.length < this.minSize) {
       return undefined;
     }

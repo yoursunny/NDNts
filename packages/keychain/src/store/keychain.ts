@@ -93,7 +93,7 @@ export abstract class KeyChain {
 
     if (CertNaming.isKeyName(name)) {
       let signer: NamedSigner;
-      let certName: Name|undefined;
+      let certName: Name | undefined;
       try {
         [signer, certName] = await Promise.all([
           this.getKey(name, "signer"),
@@ -125,7 +125,7 @@ export abstract class KeyChain {
     return useFallback();
   }
 
-  private async findSignerCertName(prefix: Name, filter: (certName: CertNaming.CertNameFields) => boolean): Promise<Name|undefined> {
+  private async findSignerCertName(prefix: Name, filter: (certName: CertNaming.CertNameFields) => boolean): Promise<Name | undefined> {
     const certNames = (await this.listCerts(prefix)).filter((certName) => {
       const parsed = CertNaming.parseCertName(certName);
       return !parsed.issuerId.equals(CertNaming.ISSUER_SELF) && filter(parsed);
@@ -228,7 +228,7 @@ export namespace KeyChain {
   /** Open a keychain from given KeyStore and CertStore. */
   export function open(keys: KeyStore, certs: CertStore): KeyChain;
 
-  export function open(arg1: string|KeyStore, arg2?: CertStore): KeyChain {
+  export function open(arg1: string | KeyStore, arg2?: CertStore): KeyChain {
     const [pvts, certs] = typeof arg1 === "string" ? openStores(arg1) : [arg1, arg2!];
     return new KeyChainImpl(pvts, certs);
   }

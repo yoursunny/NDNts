@@ -119,7 +119,7 @@ function makeRequest(req: FchRequest, tc: readonly TransportCount[]): string {
   return uri.toString();
 }
 
-function setBoolParam(search: URLSearchParams, name: string, value: boolean|undefined): void {
+function setBoolParam(search: URLSearchParams, name: string, value: boolean | undefined): void {
   if (typeof value === "boolean") {
     search.set(name, `${Number(value)}`);
   }

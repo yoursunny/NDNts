@@ -94,7 +94,7 @@ describe("DataTape file", () => {
 });
 
 async function testBulkInsertTarget(
-    stream: NodeJS.WritableStream|DataTape.OpenStream,
+    stream: NodeJS.WritableStream | DataTape.OpenStream,
     retrieve: () => Buffer,
 ) {
   const tape = new DataTape(stream);

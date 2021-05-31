@@ -3,7 +3,7 @@ import { SigType, Verifier } from "@ndn/packet";
 import { crypto } from "../crypto_node";
 import { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
 
-const GenParams: HmacKeyGenParams&HmacImportParams = {
+const GenParams: HmacKeyGenParams & HmacImportParams = {
   name: "HMAC",
   hash: "SHA-256",
 };

@@ -45,7 +45,7 @@ async function makeFace(): Promise<FwFace> {
   }
 }
 
-let theUplinks: FwFace[]|undefined;
+let theUplinks: FwFace[] | undefined;
 
 /** Open the uplinks specified by NDNTS_UPLINK environ. */
 export async function openUplinks(): Promise<FwFace[]> {

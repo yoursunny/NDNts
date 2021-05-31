@@ -24,7 +24,7 @@ implements Iterable<[Key, Set<Subscription<Topic, Update>>]> {
 
   private readonly table = new MultiMap<Key, Sub<Topic, Update>>(Set);
 
-  public get(key: Key): Set<Subscription<Topic, Update>>|undefined {
+  public get(key: Key): Set<Subscription<Topic, Update>> | undefined {
     return this.table.get(key);
   }
 

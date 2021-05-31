@@ -27,7 +27,7 @@ export class PSyncCore {
   public readonly keys = new Map<number, PSyncNode>(); // key => node
   public readonly iblt: IBLT;
 
-  public get(prefix: Name): PSyncNode|undefined {
+  public get(prefix: Name): PSyncNode | undefined {
     return this.nodes.get(toHex(prefix.value));
   }
 

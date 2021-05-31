@@ -34,7 +34,7 @@ export class PitEntry {
   /** Last expiration time among downstream. */
   public lastExpire = 0;
   /** Entry expiration timer; should match this.lastExpire. */
-  public expireTimer?: NodeJS.Timer|number;
+  public expireTimer?: NodeJS.Timer | number;
 
   constructor(private readonly pit: Pit, public readonly key: string, interest: Interest) {
     this.interest = new Interest(interest);
@@ -131,7 +131,7 @@ export class Pit {
    *   return true: deliver matched PIT entry.
    *   return false: drop Data.
    */
-  public dataNoTokenMatch: boolean|((data: Data, key: string) => boolean) = true;
+  public dataNoTokenMatch: boolean | ((data: Data, key: string) => boolean) = true;
 
   private generateToken(): number {
     do {
@@ -158,7 +158,7 @@ export class Pit {
   public lookup(interest: FwPacket<Interest>): PitEntry;
 
   /** Find entry, disallow insertion. */
-  public lookup(interest: FwPacket<Interest>, canInsert: false): PitEntry|undefined;
+  public lookup(interest: FwPacket<Interest>, canInsert: false): PitEntry | undefined;
 
   public lookup({ l3: interest }: FwPacket<Interest>, canInsert = true) {
     const key = `${toHex(interest.name.value)} ${interest.canBePrefix ? "+" : "-"}${interest.mustBeFresh ? "+" : "-"}`;

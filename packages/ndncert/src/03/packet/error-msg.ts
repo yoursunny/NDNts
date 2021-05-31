@@ -36,7 +36,7 @@ export namespace ErrorMsg {
 
   /** Throw an exception if the given packet is an error message packet. */
   export function throwOnError(data: Data) {
-    let e: ErrorMsg|undefined;
+    let e: ErrorMsg | undefined;
     try { e = fromData(data); } catch { return; }
     throw new Error(`CA response error ${e.errorCode}: ${e.errorInfo}`);
   }

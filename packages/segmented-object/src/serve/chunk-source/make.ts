@@ -18,7 +18,7 @@ export function makeChunkSource(input: NodeJS.ReadableStream, opts?: ChunkOption
  * Use of this function is discouraged as it pulls in ChunkSource implementations not needed by
  * your application. It's recommended to construct a ChunkSource implementation directly.
  */
-export function makeChunkSource(input: Uint8Array|AnyIterable<Uint8Array>|NodeJS.ReadableStream, opts: ChunkOptions = {}) {
+export function makeChunkSource(input: Uint8Array | AnyIterable<Uint8Array> | NodeJS.ReadableStream, opts: ChunkOptions = {}) {
   if (input instanceof Uint8Array) {
     return new BufferChunkSource(input, opts);
   }

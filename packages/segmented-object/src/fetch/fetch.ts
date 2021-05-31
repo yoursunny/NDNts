@@ -77,8 +77,8 @@ class FetchResult implements fetch.Result {
     return output;
   }
 
-  public then<R, J>(onfulfilled: ((value: Uint8Array) => R|PromiseLike<R>) | undefined | null,
-      onrejected?: ((reason: any) => J|PromiseLike<J>) | undefined | null) {
+  public then<R, J>(onfulfilled: ((value: Uint8Array) => R | PromiseLike<R>) | undefined | null,
+      onrejected?: ((reason: any) => J | PromiseLike<J>) | undefined | null) {
     if (!this.promise) {
       this.promise = this.startPromise();
     }

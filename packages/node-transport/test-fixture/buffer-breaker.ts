@@ -23,7 +23,7 @@ export class BufferBreaker extends Transform {
     callback();
   }
 
-  public _destroy(err: Error, callback: (err: Error|null) => void) {
+  public _destroy(err: Error, callback: (err: Error | null) => void) {
     clearInterval(this.timer);
     callback(err);
   }

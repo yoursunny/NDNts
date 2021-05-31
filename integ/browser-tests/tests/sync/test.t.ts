@@ -9,8 +9,8 @@ import * as WsTest from "@ndn/ws-transport/test-fixture/wss";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 
-let face: FwFace|undefined;
-let pub: PSyncPartialPublisher|undefined;
+let face: FwFace | undefined;
+let pub: PSyncPartialPublisher | undefined;
 
 beforeEach(() => Promise.all([
   WsTest.createServer(),

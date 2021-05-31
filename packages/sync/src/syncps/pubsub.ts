@@ -32,7 +32,7 @@ interface SyncInterestInfo {
 
 interface PendingInterest extends SyncInterestInfo {
   expire: NodeJS.Timeout;
-  defer: pDefer.DeferredPromise<Data|undefined>;
+  defer: pDefer.DeferredPromise<Data | undefined>;
 }
 
 interface DebugEntry {
@@ -167,7 +167,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
 
   private debug(action: string, key?: number, pub?: Data): void;
   private debug(action: string, recvIblt?: IBLT, content?: readonly Data[], contentFirst?: number): void;
-  private debug(action: string, arg2?: number|IBLT, arg3?: Data|readonly Data[], contentFirst = 0): void {
+  private debug(action: string, arg2?: number | IBLT, arg3?: Data | readonly Data[], contentFirst = 0): void {
     if (this.listenerCount("debug") === 0) {
       return;
     }
@@ -237,7 +237,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
     return this.subs.add(topic, undefined);
   }
 
-  private handleSyncInterest = async (interest: Interest): Promise<Data|undefined> => {
+  private handleSyncInterest = async (interest: Interest): Promise<Data | undefined> => {
     if (interest.name.length !== this.syncPrefix.length + 1) {
       return undefined;
     }
@@ -269,13 +269,13 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
           pending.defer.resolve(undefined);
         }
       }, interest.lifetime),
-      defer: pDefer<Data|undefined>(),
+      defer: pDefer<Data | undefined>(),
     };
     this.pPendings.set(ibltCompHex, pending);
     return pending.defer.promise;
   };
 
-  private processSyncInterest({ interest, recvIblt }: SyncInterestInfo): Data|undefined {
+  private processSyncInterest({ interest, recvIblt }: SyncInterestInfo): Data | undefined {
     {
       const { negative } = this.iblt.diff(this.dConfirmIblt, recvIblt);
       for (const key of negative) {
@@ -471,7 +471,7 @@ export namespace SyncpsPubsub {
    *   The publication is considered expired if this timestamp is before
    *   `NOW - (maxPubLifetime+maxClockSkew)` or after `NOW + maxClockSkew`.
    */
-  export type IsExpiredCallback = (pub: Data) => boolean|number;
+  export type IsExpiredCallback = (pub: Data) => boolean | number;
 
   export interface FilterPubItem {
     /** A publication, i.e. Data packet. */

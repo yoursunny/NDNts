@@ -17,7 +17,7 @@ export class PSyncStateFetcher {
       private readonly describe: string,
       private readonly codec: PSyncCodec,
       private readonly syncInterestLifetime: number,
-      private readonly verifier: Verifier|undefined,
+      private readonly verifier: Verifier | undefined,
   ) {}
 
   public async fetch(name: Name, { signal }: AbortController, describeSuffix = "c"): Promise<Result> {

@@ -17,7 +17,7 @@ export class ClientPossessionChallenge implements ClientChallenge {
    *            This is preferably a low-level signer, but can also accept a high-level signer
    *            that unconditionally signs the input regardless of the packet name.
    */
-  constructor(private readonly cert: Certificate, pvt: LLSign|Signer) {
+  constructor(private readonly cert: Certificate, pvt: LLSign | Signer) {
     if (typeof pvt === "function") {
       this.llSign = pvt;
     } else {

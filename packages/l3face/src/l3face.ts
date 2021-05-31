@@ -65,7 +65,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
           return true;
         }),
         map(({ l3, token }: LpService.Packet) => {
-          let internalToken: Uint8Array|number|undefined;
+          let internalToken: Uint8Array | number | undefined;
           if (l3 instanceof Interest) {
             internalToken = token;
           } else {
@@ -93,7 +93,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
       () => iterable,
       filter((pkt: FwPacket) => FwPacket.isEncodable(pkt)),
       map(({ l3, token }: FwPacket) => {
-        let wireToken: Uint8Array|undefined;
+        let wireToken: Uint8Array | undefined;
         if (typeof token === "number") {
           wireToken = this.numericPitToken.toToken(token);
         } else if (token instanceof Uint8Array) {
@@ -185,13 +185,13 @@ export namespace L3Face {
    */
   export type CreateFaceFunc<
     P extends any[],
-    R extends Transport|Transport[],
+    R extends Transport | Transport[],
   > = (opts: CreateFaceOptions, ...args: P) => Promise<R extends Transport[] ? FwFace[] : FwFace>;
 
   export function makeCreateFace<
-    C extends (...args: any[]) => Promise<Transport|Transport[]>,
+    C extends (...args: any[]) => Promise<Transport | Transport[]>,
     P extends any[] = C extends (...args: infer P) => any ? P : never,
-    R extends Transport|Transport[] = C extends (...args: any[]) => Promise<infer R> ? R : never,
+    R extends Transport | Transport[] = C extends (...args: any[]) => Promise<infer R> ? R : never,
   >(createTransport: C): CreateFaceFunc<P, R> {
     return (async (opts: CreateFaceOptions, ...args: P) => {
       const created = await createTransport(...args);

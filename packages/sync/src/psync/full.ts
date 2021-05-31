@@ -19,7 +19,7 @@ interface PendingInterest {
   interest: Interest;
   recvIblt: IBLT;
   expire: NodeJS.Timeout;
-  defer: pDefer.DeferredPromise<Data|undefined>;
+  defer: pDefer.DeferredPromise<Data | undefined>;
 }
 
 interface DebugEntry {
@@ -124,7 +124,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
     this.uplinkRouteMirror?.close();
   }
 
-  public get(prefix: Name): SyncNode<Name>|undefined {
+  public get(prefix: Name): SyncNode<Name> | undefined {
     return this.c.get(prefix);
   }
 
@@ -175,7 +175,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
           pending.defer.resolve(undefined);
         }
       }, interest.lifetime),
-      defer: pDefer<Data|undefined>(),
+      defer: pDefer<Data | undefined>(),
     };
     this.pPendings.set(ibltCompHex, pending);
     return pending.defer.promise;
@@ -201,7 +201,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
     }
   };
 
-  private async sendSyncData(interest: Interest, state: PSyncCore.State, action: string, recvIblt: IBLT): Promise<Data|undefined> {
+  private async sendSyncData(interest: Interest, state: PSyncCore.State, action: string, recvIblt: IBLT): Promise<Data | undefined> {
     this.debug(action, recvIblt, state);
     if (this.cCurrentInterestName?.equals(interest.name)) {
       this.scheduleSyncInterest(0);

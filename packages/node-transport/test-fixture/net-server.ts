@@ -13,7 +13,7 @@ const clients = new Set<net.Socket>();
 
 function handleNewClient(sock: net.Socket) {
   clients.add(sock);
-  let interval: NodeJS.Timeout|undefined;
+  let interval: NodeJS.Timeout | undefined;
   if (sendToClients) {
     interval = setInterval(() => {
       try {

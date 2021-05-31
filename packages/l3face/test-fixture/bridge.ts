@@ -77,8 +77,8 @@ export namespace Bridge {
     bridgeName?: string;
     fwA: Forwarder;
     fwB: Forwarder;
-    relayAB?: RelayFunc|RelayOptions;
-    relayBA?: RelayFunc|RelayOptions;
+    relayAB?: RelayFunc | RelayOptions;
+    relayBA?: RelayFunc | RelayOptions;
   }
 
   /**

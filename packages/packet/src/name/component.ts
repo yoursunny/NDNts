@@ -93,12 +93,12 @@ export class Component {
    * @param value TLV-VALUE; if specified as string, it's encoded as UTF-8 but not interpreted
    *              as URI representation. Use from() to interpret URI.
    */
-  constructor(type?: number, value?: Uint8Array|string);
+  constructor(type?: number, value?: Uint8Array | string);
 
   /** Construct from TLV. */
   constructor(tlv: Uint8Array);
 
-  constructor(arg1?: number|Uint8Array, arg2?: Uint8Array|string) {
+  constructor(arg1?: number | Uint8Array, arg2?: Uint8Array | string) {
     switch (typeof arg1) {
       case "object": {
         this.tlv = arg1;

@@ -34,7 +34,7 @@ export class Certificate {
 
   public get name() { return this.data.name; }
 
-  public get issuer(): Name|undefined {
+  public get issuer(): Name | undefined {
     return this.data.sigInfo.keyLocator?.name;
   }
 

@@ -43,7 +43,7 @@ export function parseKeyName(name: Name): KeyNameFields {
   };
 }
 
-function getKeyNameImpl(name: Name): Name|undefined {
+function getKeyNameImpl(name: Name): Name | undefined {
   if (isKeyName(name)) {
     return name;
   }

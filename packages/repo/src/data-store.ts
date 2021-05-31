@@ -67,7 +67,7 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
   }
 
   /** Retrieve Data by exact name. */
-  public async get(name: Name): Promise<Data|undefined> {
+  public async get(name: Name): Promise<Data | undefined> {
     let record: Record;
     try {
       record = await this.db.get(name);
@@ -85,7 +85,7 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
   }
 
   /** Find Data that satisfies Interest. */
-  public async find(interest: Interest): Promise<Data|undefined> {
+  public async find(interest: Interest): Promise<Data | undefined> {
     const prefix = ImplicitDigest.strip(interest.name);
     const it = filter(filterExpired(false), this.iterRecords(prefix));
     for await (const { data } of it) {
@@ -133,7 +133,7 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
 
 type InsertOptions = Pick<Record, "expireTime">;
 
-type Diff = ["insert"|"delete", Name];
+type Diff = ["insert" | "delete", Name];
 
 /** DataStore update transaction. */
 export class Transaction {
@@ -156,7 +156,7 @@ export class Transaction {
   }
 
   private async insertImpl(data: Data, opts: InsertOptions): Promise<void> {
-    const record: Omit<Record, "name"|"data"> = {
+    const record: Omit<Record, "name" | "data"> = {
       ...opts,
       insertTime: this.timestamp,
     };

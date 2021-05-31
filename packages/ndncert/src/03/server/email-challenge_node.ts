@@ -60,7 +60,7 @@ export class ServerEmailChallenge extends (EventEmitter as new() => TypedEmitter
   protected async start(
       { requestId, parameters: { email } }: ChallengeRequest,
       { profile, subjectName, keyName }: ServerChallengeContext<State>,
-  ): Promise<State|ServerChallengeResponse> {
+  ): Promise<State | ServerChallengeResponse> {
     if (!email) {
       return invalidResponse;
     }
@@ -126,7 +126,7 @@ export namespace ServerEmailChallenge {
     subject: string;
     text: string;
     html?: string;
-  } & Omit<SendMailOptions, "to"|"text"|"html"|"raw">;
+  } & Omit<SendMailOptions, "to" | "text" | "html" | "raw">;
 
   export interface Options {
     assignmentPolicy?: AssignmentPolicy;
