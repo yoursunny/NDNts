@@ -149,9 +149,9 @@ export class Transaction {
 
   /** Insert a Data packet. */
   public insert(data: Data, opts: InsertOptions = {}): this {
-    this.encodePromises.push(
-      this.insertImpl(data, opts).catch((err) => this.encodeError = err),
-    );
+    this.encodePromises.push((async () => {
+      try { await this.insertImpl(data, opts); } catch (err: unknown) { this.encodeError = err as Error; }
+    })());
     return this;
   }
 

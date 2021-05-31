@@ -56,8 +56,11 @@ export class GetSegmentedCommand implements CommandModule<CommonArgs, Args> {
       });
   }
 
-  public handler(args: Arguments<Args>) {
-    main(args)
-      .finally(closeUplinks);
+  public async handler(args: Arguments<Args>) {
+    try {
+      await main(args);
+    } finally {
+      closeUplinks();
+    }
   }
 }

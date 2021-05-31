@@ -12,9 +12,9 @@ export abstract class StoreBase<T> {
   public get canSClone() { return this.provider.canSClone; }
 
   /** List item names. */
-  public list(): Promise<Name[]> {
-    return this.throttle(() => this.provider.list())
-      .then((keys) => keys.map((k) => new Name(fromHex(k))));
+  public async list(): Promise<Name[]> {
+    const keys = await this.throttle(() => this.provider.list());
+    return keys.map((k) => new Name(fromHex(k)));
   }
 
   /** Erase item by name. */

@@ -51,10 +51,10 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
     this.cFetcher = new PSyncStateFetcher(endpoint, this.describe, this.codec, syncInterestLifetime, verifier);
     this.cInterval = computeInterval(syncInterestInterval, syncInterestLifetime);
 
-    void BloomFilter.create(p.bloom).then((bloom) => {
-      this.bloom = bloom;
+    void (async () => {
+      this.bloom = await BloomFilter.create(p.bloom);
       this.scheduleInterest(0);
-    });
+    })();
   }
 
   public readonly describe: string;

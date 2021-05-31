@@ -26,9 +26,11 @@ export async function makeRepoProducer(
   return {
     store,
     producer,
-    close() {
-      store.close().catch(() => undefined);
-      producer.close();
+    async close() {
+      try {
+        await store.close();
+        producer.close();
+      } catch {}
     },
   };
 }

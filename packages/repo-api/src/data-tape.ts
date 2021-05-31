@@ -146,13 +146,21 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
 
   public listData(prefix?: Name): AsyncIterable<Data> {
     const output = pushable<Data>();
-    this.useReader(async (reader) => {
-      for await (const data of reader) {
-        if (!prefix || prefix.isPrefixOf(data.name)) {
-          output.push(data);
-        }
+    void (async () => {
+      try {
+        await this.useReader(async (reader) => {
+          for await (const data of reader) {
+            if (!prefix || prefix.isPrefixOf(data.name)) {
+              output.push(data);
+            }
+          }
+        });
+      } catch (err: unknown) {
+        output.end(err as Error);
+        return;
       }
-    }).then(() => output.end(), (err) => output.end(err));
+      output.end();
+    })();
     return output;
   }
 

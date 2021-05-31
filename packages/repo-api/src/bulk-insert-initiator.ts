@@ -17,7 +17,9 @@ export class BulkInsertInitiator implements S.Close, S.Insert {
   private readonly faceTx: Promise<void>;
 
   constructor(face: L3Face) {
+    // eslint-disable-next-line promise/prefer-await-to-then
     consume(face.rx).catch(() => undefined);
+    // eslint-disable-next-line promise/prefer-await-to-then
     this.faceTx = face.tx(this.tx()).catch(() => undefined);
   }
 

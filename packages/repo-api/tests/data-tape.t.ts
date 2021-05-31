@@ -15,18 +15,22 @@ import { BulkInsertInitiator, BulkInsertTarget, copy, DataTape } from "..";
 function makeDataTapeReadStream(mode: DataTape.StreamMode): NodeJS.ReadableStream {
   expect(mode).toBe("read");
   const bb = new BufferBreaker();
-  pipeline(
-    async function*() {
-      for (let i = 0; i < 500; ++i) {
-        yield new Data(`/A/${Math.floor(i / 100)}/${i % 100}`);
-        if (i % 20 === 0) {
-          await new Promise((r) => setTimeout(r, Math.random() * 5));
-        }
-      }
-    },
-    map((data) => Encoder.encode(data)),
-    writeToStream(bb),
-  ).then(() => bb.end(), () => undefined);
+  void (async () => {
+    try {
+      await pipeline(
+        async function*() {
+          for (let i = 0; i < 500; ++i) {
+            yield new Data(`/A/${Math.floor(i / 100)}/${i % 100}`);
+            if (i % 20 === 0) {
+              await new Promise((r) => setTimeout(r, Math.random() * 5));
+            }
+          }
+        },
+        map((data) => Encoder.encode(data)),
+        writeToStream(bb),
+      );
+    } catch {} finally { bb.end(); }
+  })();
   return bb;
 }
 

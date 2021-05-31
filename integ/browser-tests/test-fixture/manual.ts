@@ -3,16 +3,20 @@ export function addManualTest(title: string, f: () => Promise<string | string[]>
     for (const btn of document.querySelectorAll("button")) {
       btn.disabled = true;
     }
-    f().then(
-      (result) => {
-        if (Array.isArray(result)) {
-          result = result.join("\n");
-        }
-        document.body.innerHTML = "<pre></pre>";
-        document.body.querySelector("pre")!.textContent = result;
-      },
-      (err) => document.body.textContent = err,
-    );
+    void (async () => {
+      let result: string | string[];
+      try {
+        result = await f();
+      } catch (err: unknown) {
+        document.body.textContent = `${err}`;
+        return;
+      }
+      if (Array.isArray(result)) {
+        result = result.join("\n");
+      }
+      document.body.innerHTML = "<pre></pre>";
+      document.body.querySelector("pre")!.textContent = result;
+    })();
   };
 
   window.addEventListener("load", () => {
