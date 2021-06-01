@@ -27,19 +27,72 @@ interface Events {
   pkttx: (face: FwFace, pkt: FwPacket) => void;
 }
 
-export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events>) implements Forwarder {
+/** Forwarding plane. */
+export interface Forwarder extends TypedEmitter<Events> {
   /** Node names, used in forwarding hint processing. */
+  readonly nodeNames: Name[];
+
+  /** Logical faces. */
+  readonly faces: Set<FwFace>;
+
+  /** Add a logical face to the forwarding plane. */
+  addFace(face: FwFace.RxTx | FwFace.RxTxTransform, attributes?: FwFace.Attributes): FwFace;
+}
+export namespace Forwarder {
+  export interface Options {
+    /** Per-face RX buffer length. */
+    faceRxBuffer?: number;
+    /** Per-face TX buffer length. */
+    faceTxBuffer?: number;
+
+    /** Whether to try matching Data without PIT token. */
+    dataNoTokenMatch?: boolean;
+  }
+
+  export const DefaultOptions: Required<Options> = {
+    faceRxBuffer: 16,
+    faceTxBuffer: 16,
+    dataNoTokenMatch: true,
+  };
+
+  /** Create a new forwarding plane. */
+  export function create(options?: Options): Forwarder {
+    return new ForwarderImpl({ ...DefaultOptions, ...options });
+  }
+
+  let defaultInstance: Forwarder | undefined;
+
+  /** Access the default forwarding plane instance. */
+  export function getDefault(): Forwarder {
+    if (!defaultInstance) {
+      defaultInstance = Forwarder.create();
+    }
+    return defaultInstance;
+  }
+
+  /** Replace the default forwarding plane instance. */
+  export function replaceDefault(fw?: Forwarder): void {
+    defaultInstance = fw;
+  }
+
+  /** Delete default instance (mainly for unit testing). */
+  export function deleteDefault() {
+    replaceDefault(undefined);
+  }
+}
+
+export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events>) implements Forwarder {
   public readonly nodeNames: Name[] = [];
   public readonly faces = new Set<FaceImpl>();
   public readonly fib = new Fib();
-  public readonly pit = new Pit();
+  public readonly pit: Pit;
   public readonly readvertise = new Readvertise(this);
 
-  constructor(public readonly options: Forwarder.Options) {
+  constructor(public readonly options: Required<Forwarder.Options>) {
     super();
+    this.pit = new Pit(options.dataNoTokenMatch);
   }
 
-  /** Add a face to the forwarding plane. */
   public addFace(face: FwFace.RxTx | FwFace.RxTxTransform, attributes: FwFace.Attributes = {}): FwFace {
     return new FaceImpl(this, face, attributes);
   }
@@ -76,45 +129,13 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
 
   /** Process incoming Data. */
   public processData(face: FaceImpl, pkt: FwPacket<Data>) {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.pit.satisfy(face, pkt);
+    void this.pit.satisfy(face, pkt);
   }
 
   /** Process incoming Nack. */
   public processNack(face: FaceImpl, nack: FwPacket<Nack>) {
     // ignore Nack
-  }
-}
-
-/** Forwarding plane. */
-export interface Forwarder extends Pick<ForwarderImpl,
-"nodeNames" | "addFace" | Exclude<keyof TypedEmitter<Events>, "emit">> {
-  readonly faces: Set<FwFace>;
-  readonly pit: Pick<Pit, "dataNoTokenMatch">;
-}
-
-export namespace Forwarder {
-  export type Options = FaceImpl.Options;
-
-  const DefaultOptions = { ...FaceImpl.DefaultOptions };
-
-  /** Create a new forwarding plane. */
-  export function create(options?: Options): Forwarder {
-    return new ForwarderImpl({ ...DefaultOptions, ...options });
-  }
-
-  let defaultInstance: Forwarder | undefined;
-
-  /** Access the default forwarding plane instance. */
-  export function getDefault(): Forwarder {
-    if (!defaultInstance) {
-      defaultInstance = Forwarder.create();
-    }
-    return defaultInstance;
-  }
-
-  /** Delete default instance (mainly for unit testing). */
-  export function deleteDefault() {
-    defaultInstance = undefined;
+    void face;
+    void nack;
   }
 }

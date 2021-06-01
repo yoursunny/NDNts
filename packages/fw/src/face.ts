@@ -15,6 +15,64 @@ interface Events {
   close: () => void;
 }
 
+/** A socket or network interface associated with forwarding plane. */
+export interface FwFace extends TypedEmitter<Events> {
+  readonly fw: Forwarder;
+  readonly attributes: FwFace.Attributes;
+  readonly running: boolean;
+  readonly txQueueLength: number;
+
+  /** Shutdown the face. */
+  close(): void;
+
+  toString(): string;
+
+  /** Determine if a route is present on the face. */
+  hasRoute(name: Name): boolean;
+
+  /** Add a route toward the face. */
+  addRoute(name: Name, announcement?: FwFace.RouteAnnouncement): void;
+
+  /** Remove a route toward the face. */
+  removeRoute(name: Name, announcement?: FwFace.RouteAnnouncement): void;
+
+  /** Add a prefix announcement associated with the face. */
+  addAnnouncement(name: Name): void;
+
+  /** Remove a prefix announcement associated with the face. */
+  removeAnnouncement(name: Name): void;
+}
+
+export namespace FwFace {
+  export interface Attributes extends Record<string, any> {
+    /** Short string to identify the face. */
+    describe?: string;
+    /** Whether face is local. Default is false. */
+    local?: boolean;
+    /** Whether to readvertise registered routes. Default is true. */
+    advertiseFrom?: boolean;
+  }
+
+  export type RouteAnnouncement = boolean | number | Name;
+
+  interface RxTxBase {
+    readonly attributes?: Attributes;
+  }
+
+  export interface RxTx extends RxTxBase {
+    rx: AsyncIterable<FwPacket>;
+    tx: (iterable: AsyncIterable<FwPacket>) => void;
+  }
+
+  export interface RxTxTransform extends RxTxBase {
+    /**
+     * The transform function takes an iterable of packets sent by the forwarder,
+     * and returns an iterable of packets received by the forwarder.
+     */
+    transform: (iterable: AsyncIterable<FwPacket>) => AsyncIterable<FwPacket>;
+  }
+}
+
 const STOP = Symbol("FaceImpl.Stop");
 
 function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement): Name | undefined {
@@ -27,7 +85,7 @@ function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement)
   return announcement;
 }
 
-export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
+export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) implements FwFace {
   public readonly attributes: FwFace.Attributes;
   private readonly routes = new MultiSet<string>();
   private readonly announcements = new MultiSet<string>();
@@ -51,8 +109,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
     fw.emit("faceadd", this);
     fw.faces.add(this);
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    pipeline(
+    void pipeline(
       () => this.txLoop(),
       buffer(this.fw.options.faceTxBuffer),
       tap((pkt) => fw.emit("pkttx", this, pkt)),
@@ -71,7 +128,6 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
     );
   }
 
-  /** Shutdown the face. */
   public close(): void {
     if (!this.running) {
       return;
@@ -93,12 +149,10 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
     return this.attributes.describe ?? "FwFace";
   }
 
-  /** Determine if a route is present on the face. */
   public hasRoute(name: Name): boolean {
     return this.routes.has(toHex(name.value));
   }
 
-  /** Add a route toward the face. */
   public addRoute(name: Name, announcement: FwFace.RouteAnnouncement = true): void {
     this.fw.emit("prefixadd", this, name);
     const nameHex = toHex(name.value);
@@ -113,7 +167,6 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
     }
   }
 
-  /** Remove a route toward the face. */
   public removeRoute(name: Name, announcement: FwFace.RouteAnnouncement = true): void {
     const ann = computeAnnouncement(name, announcement);
     if (ann) {
@@ -128,7 +181,6 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
     this.fw.emit("prefixrm", this, name);
   }
 
-  /** Add a prefix announcement associated with the face. */
   public addAnnouncement(name: Name): void {
     if (!this.attributes.advertiseFrom) {
       return;
@@ -140,7 +192,6 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
     }
   }
 
-  /** Remove a prefix announcement associated with the face. */
   public removeAnnouncement(name: Name): void {
     if (!this.attributes.advertiseFrom) {
       return;
@@ -193,56 +244,5 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) {
       yield pkt;
     }
     this.close();
-  }
-}
-
-export namespace FaceImpl {
-  export interface Options {
-    faceRxBuffer: number;
-    faceTxBuffer: number;
-  }
-
-  export const DefaultOptions: Options = {
-    faceRxBuffer: 16,
-    faceTxBuffer: 16,
-  };
-}
-
-/** A socket or network interface associated with forwarding plane. */
-export interface FwFace extends Pick<FaceImpl,
-"attributes" | "close" | "toString" | "hasRoute" | "addRoute" | "removeRoute" | "addAnnouncement" | "removeAnnouncement" |
-Exclude<keyof TypedEmitter<Events>, "emit">> {
-  readonly fw: Forwarder;
-  readonly running: boolean;
-  readonly txQueueLength: number;
-}
-
-export namespace FwFace {
-  export interface Attributes extends Record<string, any> {
-    /** Short string to identify the face. */
-    describe?: string;
-    /** Whether face is local. Default is false. */
-    local?: boolean;
-    /** Whether to readvertise registered routes. Default is true. */
-    advertiseFrom?: boolean;
-  }
-
-  export type RouteAnnouncement = boolean | number | Name;
-
-  interface RxTxBase {
-    readonly attributes?: Attributes;
-  }
-
-  export interface RxTx extends RxTxBase {
-    rx: AsyncIterable<FwPacket>;
-    tx: (iterable: AsyncIterable<FwPacket>) => void;
-  }
-
-  export interface RxTxTransform extends RxTxBase {
-    /**
-     * The transform function takes an iterable of packets sent by the forwarder,
-     * and returns an iterable of packets received by the forwarder.
-     */
-    transform: (iterable: AsyncIterable<FwPacket>) => AsyncIterable<FwPacket>;
   }
 }

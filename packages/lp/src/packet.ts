@@ -2,7 +2,6 @@ import { NackHeader } from "@ndn/packet";
 import { Decoder, Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
 import { TT } from "./an";
-import type { PitToken } from "./pit-token";
 
 function isCritical(tt: number): boolean {
   return !(tt >= 800 && tt <= 959 && tt % 4 === 0);
@@ -26,7 +25,7 @@ export class LpPacket {
   public fragSeqNum?: bigint;
   public fragIndex = 0;
   public fragCount = 1;
-  public pitToken?: PitToken;
+  public pitToken?: Uint8Array;
   public nack?: NackHeader;
   public payload?: Uint8Array;
 

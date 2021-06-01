@@ -17,7 +17,7 @@ interface PitDn {
   expire: number;
   /** Last nonce from this downstream. */
   nonce: number;
-  /** Last InterestToken from this downstream. */
+  /** Last PIT token from this downstream. */
   token: unknown;
 }
 
@@ -112,26 +112,19 @@ export class PitEntry {
 
   private expire = () => {
     this.pit.eraseEntry(this);
-    for (const [face, dnR] of this.dnRecords) {
-      face.send(new RejectInterest("expire", this.interest, dnR.token));
+    for (const [face, { token }] of this.dnRecords) {
+      face.send(new RejectInterest("expire", this.interest, token));
     }
   };
 }
 
 /** Pending Interest table. */
 export class Pit {
-  public readonly byName = new Map<string, PitEntry>();
-  public readonly byToken = new Map<number, PitEntry>();
-  private lastToken = 0;
+  public constructor(public readonly dataNoTokenMatch: boolean) {}
 
-  /**
-   * true: try to match Data without token.
-   * false: Data without token.
-   * callback function: invoked when Data without token matches PIT entry.
-   *   return true: deliver matched PIT entry.
-   *   return false: drop Data.
-   */
-  public dataNoTokenMatch: boolean | ((data: Data, key: string) => boolean) = true;
+  private readonly byName = new Map<string, PitEntry>();
+  private readonly byToken = new Map<number, PitEntry>();
+  private lastToken = 0;
 
   private generateToken(): number {
     do {
@@ -143,13 +136,13 @@ export class Pit {
     return this.lastToken;
   }
 
-  public insertEntry(entry: PitEntry) {
+  public insertEntry(entry: PitEntry): void {
     this.byName.set(entry.key, entry);
     entry.token ??= this.generateToken();
     this.byToken.set(entry.token, entry);
   }
 
-  public eraseEntry(entry: PitEntry) {
+  public eraseEntry(entry: PitEntry): void {
     this.byName.delete(entry.key);
     this.byToken.delete(entry.token!);
   }
@@ -171,7 +164,7 @@ export class Pit {
 
   /**
    * Satisfy pending Interests with incoming Data.
-   * @returns true if Data satisfies any pending Interest, or false if Data is unsolicited.
+   * @returns true if Data satisfies any pending Interest; false if Data is unsolicited.
    */
   public async satisfy(face: FaceImpl, { l3: data, token }: FwPacket<Data>): Promise<boolean> {
     const nSentData = await pipeline(
@@ -193,25 +186,20 @@ export class Pit {
       return;
     }
 
-    if (this.dataNoTokenMatch === false) {
+    if (!this.dataNoTokenMatch) {
       return;
     }
 
-    for (let [prefix, exact] = [data.name, true];
-      prefix.length > 0;
-      [prefix, exact] = [prefix.getPrefix(-1), false]) {
+    let keySuffixes = [" ++", " +-", " -+", " --"];
+    for (let prefix = data.name; prefix.length > 0; prefix = prefix.getPrefix(-1)) {
       const prefixHex = toHex(prefix.value);
-      for (const keySuffix of (exact ? [" ++", " +-", " -+", " --"] : [" ++", " +-"])) {
-        const key = prefixHex + keySuffix;
-        const entry = this.byName.get(key);
+      for (const keySuffix of keySuffixes) {
+        const entry = this.byName.get(prefixHex + keySuffix);
         if (entry) {
-          if (typeof this.dataNoTokenMatch === "function" &&
-              !this.dataNoTokenMatch(data, key)) {
-            return;
-          }
           yield entry;
         }
       }
+      keySuffixes = [" ++", " +-"];
     }
   }
 }

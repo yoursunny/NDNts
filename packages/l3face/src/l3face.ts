@@ -1,6 +1,7 @@
 import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
-import { LpService, NumericPitToken } from "@ndn/lp";
+import { LpService } from "@ndn/lp";
 import { Interest } from "@ndn/packet";
+import { Encoder } from "@ndn/tlv";
 import { EventEmitter } from "events";
 import { filter, map, pipeline } from "streaming-iterables";
 import type TypedEmitter from "typed-emitter";
@@ -28,10 +29,10 @@ const REOPENED = Symbol("L3Face.REOPENED");
 export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) implements FwFace.RxTx {
   public readonly attributes: L3Face.Attributes;
   public readonly lp: LpService;
-  public readonly numericPitToken = new NumericPitToken();
   public readonly rx: AsyncIterable<FwPacket>;
   public get state() { return this.state_; }
 
+  private readonly wireTokenPrefix = Math.floor(Math.random() * 0x10000);
   private state_: L3Face.State = L3Face.State.UP;
 
   constructor(
@@ -64,12 +65,15 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
           }
           return true;
         }),
-        map(({ l3, token }: LpService.Packet) => {
+        map(({ l3, token: wireToken }: LpService.Packet) => {
           let internalToken: Uint8Array | number | undefined;
           if (l3 instanceof Interest) {
-            internalToken = token;
-          } else {
-            internalToken = this.numericPitToken.toNumber(token);
+            internalToken = wireToken;
+          } else if (wireToken?.length === 6) {
+            const dv = Encoder.asDataView(wireToken);
+            if (dv.getUint16(0) === this.wireTokenPrefix) {
+              internalToken = dv.getUint32(2);
+            }
           }
           return FwPacket.create(l3, internalToken);
         }),
@@ -92,12 +96,15 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
     const iterator = pipeline(
       () => iterable,
       filter((pkt: FwPacket) => FwPacket.isEncodable(pkt)),
-      map(({ l3, token }: FwPacket) => {
+      map(({ l3, token: internalToken }: FwPacket) => {
         let wireToken: Uint8Array | undefined;
-        if (typeof token === "number") {
-          wireToken = this.numericPitToken.toToken(token);
-        } else if (token instanceof Uint8Array) {
-          wireToken = token;
+        if (typeof internalToken === "number") {
+          wireToken = new Uint8Array(6);
+          const dv = Encoder.asDataView(wireToken);
+          dv.setUint16(0, this.wireTokenPrefix);
+          dv.setUint32(2, internalToken);
+        } else if (internalToken instanceof Uint8Array) {
+          wireToken = internalToken;
         }
         return { l3, token: wireToken };
       }),

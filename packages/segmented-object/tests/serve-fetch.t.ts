@@ -15,7 +15,7 @@ import { makeObjectBody } from "../test-fixture/object-body";
 import { deleteTmpFiles, writeTmpFile } from "../test-fixture/tmpfile";
 
 const objectBody = makeObjectBody();
-beforeEach(() => Forwarder.getDefault().pit.dataNoTokenMatch = false);
+beforeEach(() => Forwarder.replaceDefault(Forwarder.create({ dataNoTokenMatch: false })));
 afterEach(() => Forwarder.deleteDefault());
 
 test("buffer to buffer", async () => {

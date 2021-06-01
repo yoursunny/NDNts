@@ -13,11 +13,13 @@ import { Endpoint } from "..";
 
 let fw: Forwarder;
 let ep: Endpoint;
-beforeEach(() => {
-  fw = Forwarder.create();
-  fw.pit.dataNoTokenMatch = false;
+
+function initForwarder(dataNoTokenMatch = false): void {
+  fw = Forwarder.create({ dataNoTokenMatch });
   ep = new Endpoint({ fw, retx: 0 });
-});
+}
+
+beforeEach(() => initForwarder());
 afterEach(() => Forwarder.deleteDefault());
 
 test("simple", async () => {
@@ -179,7 +181,7 @@ test("FwHint", async () => {
 });
 
 test("Data without token", async () => {
-  fw.pit.dataNoTokenMatch = jest.fn<boolean, [Data, string]>().mockReturnValue(true);
+  initForwarder(true);
 
   const face = fw.addFace({
     rx: (async function*() {
@@ -202,8 +204,6 @@ test("Data without token", async () => {
     expect(ep.consume(new Interest("/P/Q/R/S", Interest.MustBeFresh)))
       .resolves.toBeInstanceOf(Data),
   ]);
-
-  expect(fw.pit.dataNoTokenMatch).toHaveBeenCalledTimes(5);
 });
 
 test("tracer", async () => {
