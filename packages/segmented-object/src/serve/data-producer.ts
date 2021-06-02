@@ -1,7 +1,8 @@
 import type { ProducerHandler } from "@ndn/endpoint";
 import { Data, digestSigning, Interest, Name, Signer } from "@ndn/packet";
 import assert from "minimalistic-assert";
-import pDefer from "p-defer";
+import DefaultMap from "mnemonist/default-map.js";
+import pDefer, { DeferredPromise } from "p-defer";
 import { getIterator } from "streaming-iterables";
 
 import { defaultSegmentConvention, SegmentConvention } from "../convention";
@@ -84,14 +85,14 @@ class SequentialDataProducer extends DataProducer {
   private requested = -1;
   private final = Infinity;
   private readonly buffer = new Map<number, Data>();
-  private readonly waitlist = new Map<number, pDefer.DeferredPromise<void>>();
-  private pause?: pDefer.DeferredPromise<void>;
-  private stop = pDefer<IteratorReturnResult<unknown>>();
+  private readonly waitlist = new DefaultMap<number, DeferredPromise<void>>(() => pDefer());
+  private readonly generator: AsyncGenerator<Chunk, false>;
+  private pause?: DeferredPromise<void>;
 
   constructor(source: ChunkSource, prefix: Name, opts: DataProducer.Options = {}) {
     super(source, prefix, opts);
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.produce(opts);
+    this.generator = this.listChunks();
+    void this.produce(opts);
   }
 
   public async getData(i: number) {
@@ -109,31 +110,36 @@ class SequentialDataProducer extends DataProducer {
       return data;
     }
 
-    let wait = this.waitlist.get(i);
-    if (!wait) {
-      wait = pDefer();
-      this.waitlist.set(i, wait);
-    }
-    await wait.promise;
+    await this.waitlist.get(i).promise;
     return this.buffer.get(i);
   }
 
-  private async produce({ bufferBehind = Infinity, bufferAhead = 16 }: DataProducer.Options) {
+  private async *listChunks(): AsyncGenerator<Chunk, false> {
     const iterator = getIterator(this.source.listChunks());
+    try {
+      for (;;) {
+        const { done, value } = await iterator.next();
+        if (done) {
+          return false;
+        }
+        yield value;
+      }
+    } finally {
+      void iterator.return?.();
+    }
+  }
+
+  private async produce({ bufferBehind = Infinity, bufferAhead = 16 }: DataProducer.Options) {
     let i = -1;
     for (;;) {
-      const { done, value } = await Promise.race([iterator.next(), this.stop.promise]);
-      if (done) {
-        if (iterator.return) {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          iterator.return();
-        }
+      const { done, value } = await this.generator.next();
+      if (done || value === false) {
         break;
       }
-
       const chunk: Chunk = value;
       ++i;
       assert(chunk.i === i, "unexpected chunk number");
+
       if (i > this.requested + bufferAhead) {
         this.pause = pDefer();
         await this.pause.promise;
@@ -146,7 +152,7 @@ class SequentialDataProducer extends DataProducer {
         this.buffer.delete(i - bufferAhead - bufferBehind);
       }
 
-      const w = this.waitlist.get(i);
+      const w = this.waitlist.peek(i);
       if (w) {
         this.waitlist.delete(i);
         w.resolve();
@@ -157,13 +163,11 @@ class SequentialDataProducer extends DataProducer {
 
   public close() {
     super.close();
-
+    void this.generator.return(false);
     for (const w of this.waitlist.values()) {
       w.resolve();
     }
-
     this.pause?.resolve();
-    this.stop.resolve({ done: true, value: undefined });
   }
 }
 

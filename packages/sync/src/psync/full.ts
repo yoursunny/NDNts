@@ -3,7 +3,7 @@ import { Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import AbortController from "abort-controller";
 import { EventEmitter } from "events";
-import pDefer from "p-defer";
+import pDefer, { DeferredPromise } from "p-defer";
 import type TypedEmitter from "typed-emitter";
 
 import { computeInterval, IntervalFunc, IntervalRange } from "../detail/interval";
@@ -19,7 +19,7 @@ interface PendingInterest {
   interest: Interest;
   recvIblt: IBLT;
   expire: NodeJS.Timeout;
-  defer: pDefer.DeferredPromise<Data | undefined>;
+  defer: DeferredPromise<Data | undefined>;
 }
 
 interface DebugEntry {

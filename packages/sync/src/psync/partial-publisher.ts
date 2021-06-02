@@ -4,7 +4,7 @@ import { Data, Interest, Name, Signer } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import { BloomFilter } from "@yoursunny/psync-bloom";
 import { EventEmitter } from "events";
-import pDefer from "p-defer";
+import pDefer, { DeferredPromise } from "p-defer";
 import type TypedEmitter from "typed-emitter";
 
 import { IBLT } from "../iblt";
@@ -18,7 +18,7 @@ interface PendingInterest {
   recvIblt: IBLT;
   bloom: BloomFilter;
   expire: NodeJS.Timeout;
-  defer: pDefer.DeferredPromise<Data | undefined>;
+  defer: DeferredPromise<Data | undefined>;
 }
 
 interface DebugEntry {

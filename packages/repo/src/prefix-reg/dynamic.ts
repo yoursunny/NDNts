@@ -21,8 +21,7 @@ export function PrefixRegDynamic(transform: (name: Name) => Name): PrefixRegCont
       face.removeRoute(prefix);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    store.mutex(async () => {
+    void store.mutex(async () => {
       for await (const name of store.listNames()) {
         handleInsert(name);
       }

@@ -5,7 +5,7 @@ import { toHex } from "@ndn/tlv";
 import AbortController from "abort-controller";
 import { EventEmitter } from "events";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
-import pDefer from "p-defer";
+import pDefer, { DeferredPromise } from "p-defer";
 import type TypedEmitter from "typed-emitter";
 
 import { SubscriptionTable } from "../detail/subscription-table";
@@ -32,7 +32,7 @@ interface SyncInterestInfo {
 
 interface PendingInterest extends SyncInterestInfo {
   expire: NodeJS.Timeout;
-  defer: pDefer.DeferredPromise<Data | undefined>;
+  defer: DeferredPromise<Data | undefined>;
 }
 
 interface DebugEntry {

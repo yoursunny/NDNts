@@ -72,7 +72,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
     for (const nameHex of this.readvertise.announcements.keys()) {
       this.queue.push(nameHex);
     }
-    this.process(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    void this.process();
   }
 
   /**

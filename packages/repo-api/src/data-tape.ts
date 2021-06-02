@@ -82,8 +82,8 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
       duplex.once("end", close);
 
       const face = new L3Face(new StreamTransport(duplex));
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises, require-yield
-      face.tx((async function*() { await defer.promise; })());
+      // eslint-disable-next-line require-yield
+      void face.tx((async function*() { await defer.promise; })());
 
       const reader = pipeline(
         () => face.rx,

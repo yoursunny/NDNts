@@ -2,7 +2,6 @@ import { Data, Interest, Nack, Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import { EventEmitter } from "events";
 import MultiSet from "mnemonist/multi-set.js";
-import pDefer from "p-defer";
 import Fifo from "p-fifo";
 import { buffer, filter, pipeline, tap } from "streaming-iterables";
 import type TypedEmitter from "typed-emitter";
@@ -73,8 +72,6 @@ export namespace FwFace {
   }
 }
 
-const STOP = Symbol("FaceImpl.Stop");
-
 function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement): Name | undefined {
   switch (typeof announcement) {
     case "number":
@@ -89,9 +86,8 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
   public readonly attributes: FwFace.Attributes;
   private readonly routes = new MultiSet<string>();
   private readonly announcements = new MultiSet<string>();
-  private readonly stopping = pDefer<typeof STOP>();
   public running = true;
-  private readonly txQueue = new Fifo<FwPacket>();
+  private readonly txQueue = new Fifo<FwPacket | false>();
   public txQueueLength = 0;
 
   constructor(
@@ -133,6 +129,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
       return;
     }
     this.running = false;
+
     this.fw.faces.delete(this);
     for (const nameHex of this.routes.keys()) {
       this.fw.fib.delete(this, nameHex);
@@ -140,7 +137,8 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
     for (const nameHex of this.announcements.keys()) {
       this.fw.readvertise.removeAnnouncement(this, undefined, nameHex);
     }
-    this.stopping.resolve(STOP);
+
+    void this.txQueue.push(false);
     this.emit("close");
     this.fw.emit("facerm", this);
   }
@@ -205,7 +203,11 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
 
   /** Transmit a packet on the face. */
   public send(pkt: FwPacket): void {
-    (async () => {
+    if (!this.running) {
+      return;
+    }
+
+    void (async () => {
       ++this.txQueueLength;
       await this.txQueue.push(pkt);
       --this.txQueueLength;
@@ -232,16 +234,17 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
     this.close();
   };
 
-  private async *txLoop() {
+  private async *txLoop(): AsyncGenerator<FwPacket> {
     while (true) {
-      const pkt = await Promise.race([
-        this.stopping.promise,
-        this.txQueue.shift(),
-      ]);
-      if (pkt === STOP) {
+      const pkt = await this.txQueue.shift();
+      if (!this.running || pkt === false) {
         break;
       }
       yield pkt;
+    }
+
+    while (!this.txQueue.isEmpty()) {
+      void this.txQueue.shift();
     }
     this.close();
   }

@@ -22,8 +22,7 @@ function enableBulkInsertion({
 }: Args) {
   const bi = BulkInsertTarget.create(store, { batch, parallel });
   createServer((sock) => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    bi.accept(sock);
+    void bi.accept(sock);
   }).listen(port, host);
 }
 
