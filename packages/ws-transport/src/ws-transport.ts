@@ -123,5 +123,5 @@ export namespace WsTransport {
   }
 
   /** Create a transport and add to forwarder. */
-  export const createFace = L3Face.makeCreateFace(WsTransport.connect);
+  export const createFace = L3Face.makeCreateFace(connect);
 }

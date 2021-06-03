@@ -45,7 +45,11 @@ export namespace TcpTransport {
    */
   export function connect(opts: NetConnectOpts & Options): Promise<TcpTransport>;
 
-  export function connect(arg1?: string | (NetConnectOpts & Options), port = DEFAULT_PORT,
+  export function connect(arg1?: string | (NetConnectOpts & Options), port?: number, opts?: Options) {
+    return connectImpl(arg1, port, opts);
+  }
+
+  function connectImpl(arg1?: string | (NetConnectOpts & Options), port = DEFAULT_PORT,
       opts: Options = {}): Promise<TcpTransport> {
     const connectOpts: net.TcpNetConnectOpts =
       typeof arg1 === "undefined" ? { port } :
@@ -81,5 +85,5 @@ export namespace TcpTransport {
   }
 
   /** Create a transport and add to forwarder. */
-  export const createFace = L3Face.makeCreateFace(TcpTransport.connect);
+  export const createFace = L3Face.makeCreateFace(connectImpl);
 }

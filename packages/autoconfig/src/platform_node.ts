@@ -44,5 +44,5 @@ export function createFace(router: string, {
   if (preferTcp) {
     return TcpTransport.createFace({ fw }, { host, port, connectTimeout });
   }
-  return UdpTransport.createFace({ fw, lp: { mtu } }, { host });
+  return UdpTransport.createFace({ fw, lp: { mtu } }, { host, port });
 }

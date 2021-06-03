@@ -37,7 +37,11 @@ export class MockTransport extends Transport {
       if (!pkt || pkt.done) { // normal close
         return;
       }
-      this.sent.push(pkt.value);
+      this.send(pkt.value);
     }
   };
+
+  protected send(pkt: Uint8Array): void {
+    this.sent.push(pkt);
+  }
 }

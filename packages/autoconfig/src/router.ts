@@ -2,6 +2,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Forwarder, FwFace, TapFace } from "@ndn/fw";
 import { Interest, Name } from "@ndn/packet";
 import type { H3Transport } from "@ndn/quic-transport";
+import AbortController from "abort-controller";
 import hirestime from "hirestime";
 import pAny from "p-any";
 
@@ -48,6 +49,13 @@ export interface ConnectRouterOptions {
   testConnection?: false | TestConnectionPacket | TestConnectionPacket[] |
   ((face: FwFace) => Promise<unknown>);
 
+  /**
+   * InterestLifetime of connection test Interest packets.
+   * Used only if testConnection is a string or Name.
+   * Default is 2000.
+   */
+  testConnectionTimeout?: number;
+
   /** Routes to be added on the create face. Default is ["/"]. */
   addRoutes?: Name[];
 }
@@ -66,7 +74,6 @@ const getNow = hirestime();
 /** Connect to a router and test the connection. */
 export async function connectToRouter(router: string, opts: ConnectRouterOptions = {}): Promise<ConnectRouterResult> {
   const {
-    testConnection: tc,
     addRoutes = [new Name("/")],
   } = opts;
   const face = await createFace(router, opts);
@@ -75,7 +82,7 @@ export async function connectToRouter(router: string, opts: ConnectRouterOptions
   let testConnectionDuration: number;
   let testConnectionResult: unknown;
   try {
-    testConnectionResult = await testConnection(face, tc);
+    testConnectionResult = await testConnection(face, opts);
     testConnectionDuration = getNow() - testConnectionStart;
   } catch (err: unknown) {
     face.close();
@@ -90,7 +97,10 @@ export async function connectToRouter(router: string, opts: ConnectRouterOptions
 
 async function testConnection(
     face: FwFace,
-    tc: ConnectRouterOptions["testConnection"] = new Name("/localhop/nfd/rib/list"),
+    {
+      testConnection: tc = new Name("/localhop/nfd/rib/list"),
+      testConnectionTimeout = 2000,
+    }: ConnectRouterOptions,
 ): Promise<unknown> {
   if (tc === false) {
     return undefined;
@@ -113,7 +123,8 @@ async function testConnection(
           new Name(pkt.slice(0, -2)).append(Math.floor(Math.random() * 1e8).toString().padStart(8, "0")) :
           pkt;
       }
-      const interest = pkt instanceof Interest ? pkt : new Interest(pkt, Interest.CanBePrefix);
+      const interest = pkt instanceof Interest ? pkt :
+        new Interest(pkt, Interest.CanBePrefix, Interest.Lifetime(testConnectionTimeout));
       return endpoint.consume(interest);
     }));
   } finally {

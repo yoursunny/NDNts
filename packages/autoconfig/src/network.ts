@@ -46,6 +46,7 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
   } = opts;
 
   let connected: ConnectRouterResult[] = [];
+  const errors: string[] = [];
   for await (const routers of
     (async function*(): AsyncIterable<string[]> {
       const routers: string[] = [];
@@ -77,7 +78,14 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
   ) {
     connected = await pipeline(
       () => routers,
-      transform(Infinity, (router) => connectToRouter(router, opts).catch(() => undefined)),
+      transform(Infinity, async (router) => {
+        try {
+          return await connectToRouter(router, opts);
+        } catch (err: unknown) {
+          errors.push(`  ${router} ${err}`);
+          return undefined;
+        }
+      }),
       filter((res): res is ConnectRouterResult => !!res),
       collect,
     );
@@ -87,7 +95,7 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
   }
 
   if (connected.length === 0) {
-    throw new Error("connect to network failed");
+    throw new Error(`connect to network failed\n${errors.join("\n")}`);
   }
 
   connected.sort((a, b) => a.testConnectionDuration - b.testConnectionDuration);

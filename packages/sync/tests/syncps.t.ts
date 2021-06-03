@@ -3,6 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
+import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Data, Name, NameLike } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
@@ -33,16 +34,13 @@ class DebugPrinter {
 
 const paramCompat = makeSyncpsCompatParam();
 let debugPrinter: DebugPrinter;
-let closers: Array<{ close: () => void }>;
+const closers = new Closers();
 
 beforeEach(() => {
   debugPrinter = new DebugPrinter();
-  closers = [];
 });
 afterEach(() => {
-  for (const obj of closers) {
-    obj.close();
-  }
+  closers.close();
   Forwarder.deleteDefault();
 });
 

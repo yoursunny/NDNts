@@ -1,15 +1,12 @@
 import { Decoder } from "@ndn/tlv";
 import { fromStream, writeToStream } from "streaming-iterables";
 
-import type { Transport } from "./mod";
-
-async function* fromStreamSafe(conn: NodeJS.ReadableStream) {
-  try { yield* fromStream<Buffer>(conn); } catch {}
-}
+import { safe } from "./safe";
+import type { Transport } from "./transport";
 
 export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.Rx {
   let leftover = Buffer.alloc(0);
-  for await (const chunk of fromStreamSafe(conn)) {
+  for await (const chunk of safe(fromStream<Buffer>(conn))) {
     if (leftover.length > 0) {
       leftover = Buffer.concat([leftover, chunk], leftover.length + chunk.length);
     } else {

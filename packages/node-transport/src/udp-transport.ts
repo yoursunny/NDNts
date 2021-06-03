@@ -44,7 +44,8 @@ export class UdpTransport extends Transport {
     this.rx = rxFromPacketIterable(
       pEvent.iterator(this.rxSock, "message", {
         resolutionEvents: ["close"],
-      }));
+      }),
+    );
   }
 
   public close() {
@@ -75,14 +76,18 @@ export namespace UdpTransport {
   /** Create a unicast transport. */
   export function connect(opts: udp.UnicastOptions): Promise<UdpTransport>;
 
-  export async function connect(arg1: string | udp.UnicastOptions, port?: number): Promise<UdpTransport> {
+  export function connect(arg1: string | udp.UnicastOptions, port?: number) {
+    return connectImpl(arg1, port);
+  }
+
+  async function connectImpl(arg1: string | udp.UnicastOptions, port?: number): Promise<UdpTransport> {
     const opts = typeof arg1 === "string" ? { host: arg1, port } : arg1;
     const sock = await udp.openUnicast(opts);
     return new UdpTransport(sock);
   }
 
   /** Create a unicast transport and add to forwarder. */
-  export const createFace = L3Face.makeCreateFace(connect);
+  export const createFace = L3Face.makeCreateFace(connectImpl);
 
   /** Create a multicast transport. */
   export async function multicast(opts: udp.MulticastOptions): Promise<UdpTransport> {

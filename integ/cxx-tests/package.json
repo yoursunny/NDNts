@@ -9,7 +9,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "execa": "^5.0.1",
+    "execa": "^5.1.0",
     "tslib": "^2.2.0"
   }
 }

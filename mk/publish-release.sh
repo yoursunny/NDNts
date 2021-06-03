@@ -18,7 +18,7 @@ if [[ $NDNTS_SKIP_BUILD -ne 1 ]]; then
   npm test
 fi
 
-RECURSE='./node_modules/.bin/pnpm recursive exec --filter ./packages'
+RECURSE='./node_modules/.bin/pnpm --filter ./packages recursive exec'
 $RECURSE -- bash -c 'node '$ROOTDIR'/mk/edit-packagejson.js V '$VERSION
 git commit -a -m 'v'$VERSION
 
