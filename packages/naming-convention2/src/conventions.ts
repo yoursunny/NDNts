@@ -32,7 +32,7 @@ class TypedNumber extends Typed implements NumberConvention {
     return new Component(this.tt, Encoder.encode(NNI(v), 8));
   }
 
-  public match(comp: Component): boolean {
+  public override match(comp: Component): boolean {
     return super.match(comp) && NNI.isValidLength(comp.length);
   }
 
@@ -74,7 +74,7 @@ class TypedTimestamp extends Typed implements TimestampConvention {
     return timestampNumber.create(v);
   }
 
-  public match(comp: Component): boolean {
+  public override match(comp: Component): boolean {
     return timestampNumber.match(comp);
   }
 

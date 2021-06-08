@@ -10,7 +10,7 @@ export class UnixTransport extends StreamTransport {
     });
   }
 
-  public reopen(): Promise<UnixTransport> {
+  public override reopen(): Promise<UnixTransport> {
     return UnixTransport.connect(this.connectOpts);
   }
 }

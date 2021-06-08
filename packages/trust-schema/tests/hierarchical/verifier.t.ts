@@ -243,7 +243,7 @@ describe("cert expired", () => {
 describe("no KeyLocator", () => {
   let ctx: Context;
   beforeAll(async () => ctx = await Context.create({}, class extends Context {
-    async makeData() {
+    override async makeData() {
       await super.makeData();
       await digestSigning.sign(this.data);
     }

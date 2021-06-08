@@ -25,7 +25,7 @@ export class TcpCubic extends CongestionAvoidance {
     this.alphaAimd = 3 * (1 - betaCubic) / (1 + betaCubic);
   }
 
-  public increase(now: number, rtt: number) {
+  public override increase(now: number, rtt: number) {
     if (now < this.t0) {
       // increase and decrease processed out-of-order, t would be negative
       return;
@@ -52,7 +52,7 @@ export class TcpCubic extends CongestionAvoidance {
     this.updateCwnd(cwnd + (wCubic - cwnd) / cwnd);
   }
 
-  public decrease(now: number) {
+  public override decrease(now: number) {
     this.t0 = now;
     let { cwnd } = this;
     if (cwnd < this.wLastMax) {

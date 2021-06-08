@@ -237,12 +237,12 @@ export class CounterIvGen extends IvGen {
   private readonly ivPrefix: bigint;
   private readonly ci: CounterIncrement;
 
-  protected generate() {
+  protected override generate() {
     const iv = this.ivPrefix | this.ci.counter;
     return fromHex(iv.toString(16).padStart(2 * this.ivLength, "0"));
   }
 
-  protected update(plaintextLength: number, ciphertextLength: number) {
+  protected override update(plaintextLength: number, ciphertextLength: number) {
     this.ci.appendBlocks(plaintextLength, ciphertextLength);
   }
 }
@@ -296,7 +296,7 @@ export class CounterIvChecker extends IvChecker {
     };
   }
 
-  protected check(iv: Uint8Array, plaintextLength: number, ciphertextLength: number) {
+  protected override check(iv: Uint8Array, plaintextLength: number, ciphertextLength: number) {
     const { fixed, random, counter } = this.extract(iv);
     if (fixed !== this.fixed) {
       throwCounterIvError();

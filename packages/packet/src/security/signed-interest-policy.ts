@@ -253,7 +253,7 @@ class TimeRule extends SequencedRuleBase implements Rule {
     state.time = si.time;
   }
 
-  public check(si: SigInfo, state: KeyState) {
+  public override check(si: SigInfo, state: KeyState) {
     const save = super.check(si, state);
 
     const now = Date.now();

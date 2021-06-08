@@ -11,8 +11,8 @@ beforeEach(() => {
 });
 
 class SimpleDest extends ReadvertiseDestination {
-  public doAdvertise = jest.fn().mockResolvedValue(undefined);
-  public doWithdraw = jest.fn().mockResolvedValue(undefined);
+  public override doAdvertise = jest.fn().mockResolvedValue(undefined);
+  public override doWithdraw = jest.fn().mockResolvedValue(undefined);
 }
 
 test("simple", async () => {
@@ -77,7 +77,7 @@ class StatefulDest extends ReadvertiseDestination<{ S: true }> {
     });
   }
 
-  public makeState = jest.fn().mockReturnValue({ S: true });
+  public override makeState = jest.fn().mockReturnValue({ S: true });
 
   public doAdvertise = jest.fn().mockImplementationOnce(async () => {
     await new Promise((r) => setTimeout(r, 90));

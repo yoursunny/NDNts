@@ -95,7 +95,7 @@ class SequentialDataProducer extends DataProducer {
     void this.produce(opts);
   }
 
-  public async getData(i: number) {
+  public override async getData(i: number) {
     if (i > this.final) {
       return undefined;
     }
@@ -161,7 +161,7 @@ class SequentialDataProducer extends DataProducer {
     this.final = i;
   }
 
-  public close() {
+  public override close() {
     super.close();
     void this.generator.return(false);
     for (const w of this.waitlist.values()) {
@@ -178,7 +178,7 @@ class OnDemandDataProducer extends DataProducer {
     assert(typeof source.getChunk === "function");
   }
 
-  public async getData(i: number) {
+  public override async getData(i: number) {
     const chunk = await this.source.getChunk!(i);
     if (!chunk) {
       return undefined;

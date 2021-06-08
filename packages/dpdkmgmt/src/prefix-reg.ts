@@ -12,7 +12,7 @@ export class NdndpdkPrefixReg extends ReadvertiseDestination<State> {
     super();
   }
 
-  protected async doAdvertise(name: Name, state: State) {
+  protected override async doAdvertise(name: Name, state: State) {
     const { insertFibEntry: { id } } = await this.client.request(gql`
       mutation insertFibEntry($name: Name!, $nexthops: [ID!]!, $strategy: ID) {
         insertFibEntry(name: $name, nexthops: $nexthops, strategy: $strategy) {
@@ -26,7 +26,7 @@ export class NdndpdkPrefixReg extends ReadvertiseDestination<State> {
     state.fibEntryID = id;
   }
 
-  protected async doWithdraw(name: Name, state: State) {
+  protected override async doWithdraw(name: Name, state: State) {
     if (!state.fibEntryID) {
       return;
     }

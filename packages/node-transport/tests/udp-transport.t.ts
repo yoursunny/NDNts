@@ -1,13 +1,19 @@
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
+import * as dgram from "dgram";
 import { collect } from "streaming-iterables";
 
-import { udp_helper, UdpTransport } from "..";
+import { udp_helper as udp, UdpTransport } from "..";
 import { UdpServer, UdpServerBroadcast } from "../test-fixture/udp-server";
+
+test("SocketOption type", () => {
+  const x: Required<dgram.SocketOptions> extends Required<udp.SocketBufferOption> ? boolean : never = true;
+  expect(x).toBeTruthy();
+});
 
 describe.each([
   { family: 4, address: "127.0.0.1" },
   { family: 6, address: "::1" },
-] as Array<{ family: 4 | 6; address: string }>)("unicast %p", ({ family, address }) => {
+] as Array<{ family: udp.AddressFamily; address: string }>)("unicast %p", ({ family, address }) => {
   let server: UdpServerBroadcast;
 
   beforeEach(async () => {
@@ -50,14 +56,14 @@ describe.each([
 });
 
 describe("multicast", () => {
-  const intfs = udp_helper.listMulticastIntfs();
+  const intfs = udp.listMulticastIntfs();
   if (intfs.length === 0) {
     // eslint-disable-next-line jest/no-disabled-tests
     test.skip("no multicast interface", () => undefined);
     return;
   }
 
-  const opts: udp_helper.MulticastOptions = {
+  const opts: udp.MulticastOptions = {
     intf: intfs[0]!,
     group: "224.0.0.254", // https://tools.ietf.org/html/rfc4727#section-2.4.2
     port: 56363,

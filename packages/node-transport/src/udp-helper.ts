@@ -8,20 +8,25 @@ const DEFAULT_MULTICAST_PORT = 56363;
 
 export type Socket = dgram.Socket;
 
-type SocketOptions = Pick<dgram.SocketOptions, "recvBufferSize" | "sendBufferSize">;
+export interface SocketBufferOption {
+  recvBufferSize?: number;
+  sendBufferSize?: number;
+}
 
-interface AddressFamilyOption {
+export type AddressFamily = 4 | 6;
+
+export interface AddressFamilyOption {
   /**
    * IPv4 or IPv6.
    * Default is IPv4, unless `host` is an IPv6 address (contains a colon).
    */
-  family?: 4 | 6;
+  family?: AddressFamily;
 }
 
-export type OpenSocketOptions = SocketOptions & AddressFamilyOption & {
+export interface OpenSocketOptions extends SocketBufferOption, AddressFamilyOption {
   /** Bind options, such as local address and port. */
   bind?: dgram.BindOptions;
-};
+}
 
 async function openSocket({
   family = 4,
@@ -30,7 +35,7 @@ async function openSocket({
   bind = {},
 }: OpenSocketOptions): Promise<Socket> {
   const sock = dgram.createSocket({
-    type: `udp${family}` as dgram.SocketType,
+    type: `udp${family}`,
     reuseAddr: true,
     recvBufferSize,
     sendBufferSize,
@@ -66,7 +71,7 @@ export async function connect(sock: Socket, {
   return sock;
 }
 
-export type UnicastOptions = OpenSocketOptions & ConnectOptions;
+export interface UnicastOptions extends OpenSocketOptions, ConnectOptions {}
 
 export async function openUnicast(opts: UnicastOptions): Promise<Socket> {
   if (!opts.family && opts.host.includes(":")) {
@@ -87,7 +92,7 @@ export function listMulticastIntfs(): string[] {
     });
 }
 
-export type MulticastOptions = SocketOptions & {
+export interface MulticastOptions extends SocketBufferOption {
   /** IPv4 address of local network interface. */
   intf: string;
   /** Multicast group address. */
@@ -98,7 +103,7 @@ export type MulticastOptions = SocketOptions & {
   multicastTtl?: number;
   /** MulticastLoopback flag (for unit testing). */
   multicastLoopback?: boolean;
-};
+}
 
 export async function openMulticastRx(opts: MulticastOptions): Promise<Socket> {
   const {

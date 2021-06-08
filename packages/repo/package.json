@@ -35,7 +35,7 @@
     "@types/abstract-leveldown": "^5.0.1",
     "abstract-leveldown": "^7.0.0",
     "encoding-down": "^7.0.0",
-    "levelup": "^5.0.0",
+    "levelup": "^5.0.1",
     "minimalistic-assert": "^1.0.1",
     "streaming-iterables": "^5.0.4",
     "throat": "^6.0.1",

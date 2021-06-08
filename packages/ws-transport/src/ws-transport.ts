@@ -7,7 +7,7 @@ import { makeWebSocket } from "./ws_node";
 
 /** WebSocket transport. */
 export class WsTransport extends Transport {
-  public readonly rx: Transport.Rx;
+  public override readonly rx: Transport.Rx;
   private readonly highWaterMark: number;
   private readonly lowWaterMark: number;
 
@@ -36,7 +36,7 @@ export class WsTransport extends Transport {
     this.sock.close();
   }
 
-  public tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
+  public override readonly tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
     for await (const pkt of iterable) {
       if (this.sock.readyState !== this.sock.OPEN) {
         throw new Error(`unexpected WebSocket.readyState ${this.sock.readyState}`);
@@ -60,7 +60,7 @@ export class WsTransport extends Transport {
     });
   }
 
-  public reopen() {
+  public override reopen() {
     return WsTransport.connect(this.sock.url, this.opts);
   }
 }

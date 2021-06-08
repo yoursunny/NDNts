@@ -7,7 +7,7 @@ import { filter, map, pipeline, transform } from "streaming-iterables";
 import { L3Face, Transport } from "..";
 
 class BridgeTransport extends Transport {
-  public readonly rx: Transport.Rx;
+  public override readonly rx: Transport.Rx;
   public bridgePeer?: BridgeTransport;
   private readonly bridgeRx = pushable<Uint8Array>();
 
@@ -16,7 +16,7 @@ class BridgeTransport extends Transport {
     this.rx = map((wire) => new Decoder(wire).read(), relay(this.bridgeRx));
   }
 
-  public readonly tx = async (iterable: AsyncIterable<Uint8Array>) => {
+  public override readonly tx = async (iterable: AsyncIterable<Uint8Array>) => {
     const iterator = iterable[Symbol.asyncIterator]();
     for (;;) {
       const result = await Promise.race([

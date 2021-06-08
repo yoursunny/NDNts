@@ -125,13 +125,13 @@ export class ConstPattern extends Pattern {
 
   public readonly name: Name;
 
-  protected *matchState(state: MatchState): Iterable<MatchState> {
+  protected override *matchState(state: MatchState): Iterable<MatchState> {
     if (state.tailPrefix(this.name.length).equals(this.name)) {
       yield state.extend(this.name.length);
     }
   }
 
-  protected *buildState(state: BuildState): Iterable<BuildState> {
+  protected override *buildState(state: BuildState): Iterable<BuildState> {
     yield state.append(...this.name.comps);
   }
 }
@@ -168,7 +168,7 @@ export class VariablePattern extends Pattern {
   public readonly maxComps: number;
   public readonly accept: (part: Name) => boolean;
 
-  protected *matchState(state: MatchState): Iterable<MatchState> {
+  protected override *matchState(state: MatchState): Iterable<MatchState> {
     for (let i = this.minComps, max = Math.min(state.tailLength, this.maxComps); i <= max; ++i) {
       const part = state.tailPrefix(i);
       if (this.accept(part)) {
@@ -177,7 +177,7 @@ export class VariablePattern extends Pattern {
     }
   }
 
-  protected *buildState(state: BuildState): Iterable<BuildState> {
+  protected override *buildState(state: BuildState): Iterable<BuildState> {
     const value = state.vars.get(this.id);
     if (value && value.length >= this.minComps && value.length <= this.maxComps && this.accept(value)) {
       yield state.append(...value.comps);
@@ -207,14 +207,14 @@ export namespace VariablePattern {
  * It can be passed to keyChain.getSigner() to find a key/certificate.
  */
 export class CertNamePattern extends Pattern {
-  protected *matchState(state: MatchState): Iterable<MatchState> {
+  protected override *matchState(state: MatchState): Iterable<MatchState> {
     if ([2, 4].includes(state.tailLength) &&
         state.name.get(state.pos)!.equals(CertNaming.KEY)) {
       yield state.extend(state.tailLength);
     }
   }
 
-  protected *buildState(state: BuildState): Iterable<BuildState> {
+  protected override *buildState(state: BuildState): Iterable<BuildState> {
     yield state;
   }
 }
@@ -225,7 +225,7 @@ export class ConcatPattern extends Pattern {
     super();
   }
 
-  public simplify(): Pattern {
+  public override simplify(): Pattern {
     // flatten ConcatPattern
     const flattened = this.flatten();
 
@@ -257,7 +257,7 @@ export class ConcatPattern extends Pattern {
     });
   }
 
-  protected *matchState(state: MatchState, partIndex = 0): Iterable<MatchState> {
+  protected override *matchState(state: MatchState, partIndex = 0): Iterable<MatchState> {
     if (partIndex >= this.parts.length) {
       yield state;
       return;
@@ -268,7 +268,7 @@ export class ConcatPattern extends Pattern {
     }
   }
 
-  protected *buildState(state: BuildState, partIndex = 0): Iterable<BuildState> {
+  protected override *buildState(state: BuildState, partIndex = 0): Iterable<BuildState> {
     if (partIndex >= this.parts.length) {
       yield state;
       return;
@@ -292,8 +292,8 @@ export class AlternatePattern extends Pattern {
     super();
   }
 
-  public simplify(): Pattern {
-    // flatten ConcatPattern
+  public override simplify(): Pattern {
+    // flatten AlternatePattern
     const flattened = this.flatten();
 
     // reduce to the only choice
@@ -312,13 +312,13 @@ export class AlternatePattern extends Pattern {
     });
   }
 
-  protected *matchState(state: MatchState): Iterable<MatchState> {
+  protected override *matchState(state: MatchState): Iterable<MatchState> {
     for (const choice of this.choices) {
       yield* Pattern.matchState(choice, state);
     }
   }
 
-  protected *buildState(state: BuildState): Iterable<BuildState> {
+  protected override *buildState(state: BuildState): Iterable<BuildState> {
     for (const choice of this.choices) {
       yield* Pattern.buildState(choice, state);
     }

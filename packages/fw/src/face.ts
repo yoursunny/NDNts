@@ -143,7 +143,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
     this.fw.emit("facerm", this);
   }
 
-  public toString() {
+  public override toString() {
     return this.attributes.describe ?? "FwFace";
   }
 

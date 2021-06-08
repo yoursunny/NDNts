@@ -7,7 +7,7 @@ import * as udp from "./udp-helper";
 
 /** UDP socket transport. */
 export class UdpTransport extends Transport {
-  public readonly rx: Transport.Rx;
+  public override readonly rx: Transport.Rx;
 
   public readonly isMulticast: boolean;
   public readonly laddr: AddressInfo;
@@ -57,7 +57,7 @@ export class UdpTransport extends Transport {
     } catch {}
   }
 
-  public tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
+  public override readonly tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
     for await (const pkt of iterable) {
       this.txSock.send(pkt);
     }

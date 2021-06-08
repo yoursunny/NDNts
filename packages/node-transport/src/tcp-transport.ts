@@ -15,7 +15,7 @@ export class TcpTransport extends StreamTransport {
     });
   }
 
-  public reopen(): Promise<TcpTransport> {
+  public override reopen(): Promise<TcpTransport> {
     return TcpTransport.connect(this.connectOpts);
   }
 }

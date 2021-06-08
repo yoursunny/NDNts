@@ -139,40 +139,40 @@ class KeyChainImpl extends KeyChain {
     super();
   }
 
-  public get needJwk() { return !this.keys.canSClone; }
+  public override get needJwk() { return !this.keys.canSClone; }
 
-  public async listKeys(prefix: Name = new Name()): Promise<Name[]> {
+  public override async listKeys(prefix: Name = new Name()): Promise<Name[]> {
     return (await this.keys.list()).filter((n) => prefix.isPrefixOf(n));
   }
 
-  public async getKeyPair(name: Name): Promise<KeyChain.KeyPair> {
+  public override async getKeyPair(name: Name): Promise<KeyChain.KeyPair> {
     return this.keys.get(name);
   }
 
-  public async insertKey(name: Name, stored: KeyStore.StoredKey): Promise<void> {
+  public override async insertKey(name: Name, stored: KeyStore.StoredKey): Promise<void> {
     await this.keys.insert(name, stored);
   }
 
-  public async deleteKey(name: Name): Promise<void> {
+  public override async deleteKey(name: Name): Promise<void> {
     const certs = await this.listCerts(name);
     await Promise.all(certs.map((cert) => this.certs.erase(cert)));
     await this.keys.erase(name);
   }
 
-  public async listCerts(prefix: Name = new Name()): Promise<Name[]> {
+  public override async listCerts(prefix: Name = new Name()): Promise<Name[]> {
     return (await this.certs.list()).filter((n) => prefix.isPrefixOf(n));
   }
 
-  public async getCert(name: Name): Promise<Certificate> {
+  public override async getCert(name: Name): Promise<Certificate> {
     return this.certs.get(name);
   }
 
-  public async insertCert(cert: Certificate): Promise<void> {
+  public override async insertCert(cert: Certificate): Promise<void> {
     await this.getKeyPair(CertNaming.toKeyName(cert.name)); // ensure key exists
     await this.certs.insert(cert);
   }
 
-  public async deleteCert(name: Name): Promise<void> {
+  public override async deleteCert(name: Name): Promise<void> {
     await this.certs.erase(name);
   }
 }

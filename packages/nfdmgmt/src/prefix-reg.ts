@@ -114,7 +114,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     return Certificate.fromData(data);
   }
 
-  protected async doAdvertise(name: Name, state: State, nameHex: string) {
+  protected override async doAdvertise(name: Name, state: State, nameHex: string) {
     const [opts, untap] = await this.tap();
     try {
       const cr = await ControlCommand.call("rib/register", {
@@ -138,7 +138,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     }
   }
 
-  protected async doWithdraw(name: Name, state: State) {
+  protected override async doWithdraw(name: Name, state: State) {
     clearTimeout(state.refreshTimer!);
     state.refreshTimer = undefined;
 

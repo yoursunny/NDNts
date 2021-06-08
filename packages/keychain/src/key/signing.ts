@@ -47,7 +47,7 @@ class NamedCryptoSigner<I> extends PlainCryptoSigner<I> implements NamedSigner {
     assert(CertNaming.isKeyName(name), `bad key name ${name}`);
   }
 
-  public sign(pkt: Signer.Signable) {
+  public override sign(pkt: Signer.Signable) {
     return this.signWithKeyLocator(pkt, this.name);
   }
 
@@ -98,7 +98,7 @@ class NamedCryptoVerifier<I> extends PlainCryptoVerifier<I> implements NamedVeri
     assert(CertNaming.isKeyName(name), `bad key name ${name}`);
   }
 
-  public verify(pkt: Verifier.Verifiable): Promise<void> {
+  public override verify(pkt: Verifier.Verifiable): Promise<void> {
     const klName = KeyLocator.mustGetName(pkt.sigInfo?.keyLocator);
     if (!this.name.isPrefixOf(klName)) {
       throw new Error(`KeyLocator ${klName} does not match key ${this.name}`);

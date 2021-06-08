@@ -5,6 +5,7 @@ import { Name } from "@ndn/packet";
 import * as dgram from "dgram";
 
 import { joinHostPort } from "../src/hostport";
+import * as udp from "../src/udp-helper";
 
 class UdpServerTransport extends MockTransport {
   constructor(
@@ -15,14 +16,14 @@ class UdpServerTransport extends MockTransport {
     super();
   }
 
-  public send(pkt: Uint8Array): void {
+  public override send(pkt: Uint8Array): void {
     this.sock.send(pkt, this.port, this.address);
   }
 }
 
 export abstract class UdpServer {
-  public static async create<T extends UdpServer>(ctor: new(sock: dgram.Socket, host: string, port: number) => T, family: 4 | 6 = 4, address = "127.0.0.1"): Promise<T> {
-    const sock = dgram.createSocket({ type: `udp${family}` as dgram.SocketType });
+  public static async create<T extends UdpServer>(ctor: new(sock: dgram.Socket, host: string, port: number) => T, family: udp.AddressFamily = 4, address = "127.0.0.1"): Promise<T> {
+    const sock = dgram.createSocket({ type: `udp${family}` });
     sock.on("error", () => undefined);
     const port = await new Promise<number>((r) =>
       sock.bind({ address }, () => r(sock.address().port)));
@@ -83,7 +84,7 @@ export class UdpServerBroadcast extends UdpServer {
     }
   }
 
-  protected handleNewTransport(transport: UdpServerTransport): void {
+  protected override handleNewTransport(transport: UdpServerTransport): void {
     void (async () => {
       for await (const pkt of transport.rx) {
         this.broadcast(pkt.tlv, transport);
@@ -95,7 +96,7 @@ export class UdpServerBroadcast extends UdpServer {
 export class UdpServerForwarder extends UdpServer {
   public readonly fw = Forwarder.create();
 
-  protected handleNewTransport(transport: UdpServerTransport): void {
+  protected override handleNewTransport(transport: UdpServerTransport): void {
     const face = this.fw.addFace(new L3Face(transport));
     face.addRoute(new Name());
   }

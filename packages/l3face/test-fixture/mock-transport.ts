@@ -5,7 +5,7 @@ import pDefer from "p-defer";
 import { Transport } from "..";
 
 export class MockTransport extends Transport {
-  public readonly rx = pushable<Decoder.Tlv>();
+  public override readonly rx = pushable<Decoder.Tlv>();
   public sent: Uint8Array[] = [];
   private closePromise = pDefer<undefined>();
 
@@ -27,7 +27,7 @@ export class MockTransport extends Transport {
     }
   }
 
-  public readonly tx = async (iterable: AsyncIterable<Uint8Array>) => {
+  public override readonly tx = async (iterable: AsyncIterable<Uint8Array>) => {
     const iterator = iterable[Symbol.asyncIterator]();
     for (;;) {
       const pkt = await Promise.race([
