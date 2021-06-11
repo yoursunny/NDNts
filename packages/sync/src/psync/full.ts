@@ -7,7 +7,6 @@ import pDefer, { DeferredPromise } from "p-defer";
 import type TypedEmitter from "typed-emitter";
 
 import { computeInterval, IntervalFunc, IntervalRange } from "../detail/interval";
-import { UplinkRouteMirror } from "../detail/uplink-route-mirror";
 import type { IBLT } from "../iblt";
 import { SyncNode, SyncProtocol, SyncUpdate } from "../types";
 import { PSyncCodec } from "./codec";
@@ -41,7 +40,6 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
     endpoint = new Endpoint(),
     describe,
     syncPrefix,
-    addSyncPrefixOnUplinks = true,
     syncReplyFreshness = 1000,
     signer,
     producerBufferLimit = 32,
@@ -56,15 +54,13 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
     this.c = new PSyncCore(p);
     this.c.onIncreaseSeqNum = this.handleIncreaseSeqNum;
     this.codec = new PSyncCodec(p, this.c.ibltParams);
-    if (addSyncPrefixOnUplinks) {
-      this.uplinkRouteMirror = new UplinkRouteMirror(endpoint.fw, syncPrefix);
-    }
 
     this.pFreshness = syncReplyFreshness;
     this.pBuffer = new PSyncStateProducerBuffer(this.endpoint, this.describe, this.codec,
       signer, producerBufferLimit);
     this.pProducer = endpoint.produce(syncPrefix, this.handleSyncInterest, {
       describe: `${this.describe}[p]`,
+      routeCapture: false,
       concurrency: Infinity,
     });
 
@@ -78,7 +74,6 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
   private readonly syncPrefix: Name;
   private readonly c: PSyncCore;
   private readonly codec: PSyncCodec;
-  private readonly uplinkRouteMirror?: UplinkRouteMirror;
   private closed = false;
 
   private readonly pFreshness: number;
@@ -120,8 +115,6 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
     this.cAbort?.abort();
     this.cAbort = undefined;
     clearTimeout(this.cTimer);
-
-    this.uplinkRouteMirror?.close();
   }
 
   public get(prefix: Name): SyncNode<Name> | undefined {
@@ -289,12 +282,6 @@ export namespace PSyncFull {
 
     /** Sync group prefix. */
     syncPrefix: Name;
-
-    /**
-     * Whether to automatically add sync group prefix as a route on uplinks.
-     * @default true
-     */
-    addSyncPrefixOnUplinks?: boolean;
 
     /**
      * FreshnessPeriod of sync reply Data packet.

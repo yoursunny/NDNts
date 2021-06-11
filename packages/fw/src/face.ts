@@ -50,6 +50,12 @@ export namespace FwFace {
     local?: boolean;
     /** Whether to readvertise registered routes. Default is true. */
     advertiseFrom?: boolean;
+    /**
+     * Whether routes registered on this face would cause FIB to stop matching onto shorter prefixes.
+     * Default is true.
+     * More explanation in @ndn/endpoint package ProducerOptions type.
+     */
+    routeCapture?: boolean;
   }
 
   export type RouteAnnouncement = boolean | number | Name;
@@ -99,6 +105,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
     this.attributes = {
       local: false,
       advertiseFrom: true,
+      routeCapture: true,
       ...rxtx.attributes,
       ...attributes,
     };
@@ -156,7 +163,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
     const nameHex = toHex(name.value);
     this.routes.add(nameHex);
     if (this.routes.count(nameHex) === 1) {
-      this.fw.fib.insert(this, nameHex);
+      this.fw.fib.insert(this, nameHex, this.attributes.routeCapture!);
     }
 
     const ann = computeAnnouncement(name, announcement);
@@ -214,7 +221,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
     })();
   }
 
-  private rxLoop = async (input: AsyncIterable<FwPacket>) => {
+  private readonly rxLoop = async (input: AsyncIterable<FwPacket>) => {
     for await (const pkt of filter(() => this.running, input)) {
       switch (true) {
         case pkt.l3 instanceof Interest: {

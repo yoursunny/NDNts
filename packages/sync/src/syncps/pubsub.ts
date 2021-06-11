@@ -6,10 +6,10 @@ import AbortController from "abort-controller";
 import { EventEmitter } from "events";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import pDefer, { DeferredPromise } from "p-defer";
+import { take } from "streaming-iterables";
 import type TypedEmitter from "typed-emitter";
 
 import { SubscriptionTable } from "../detail/subscription-table";
-import { UplinkRouteMirror } from "../detail/uplink-route-mirror";
 import { IBLT } from "../iblt";
 import type { Subscriber, Subscription } from "../types";
 import { SyncpsCodec } from "./codec";
@@ -86,7 +86,6 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
     endpoint = new Endpoint(),
     describe,
     syncPrefix,
-    addSyncPrefixOnUplinks = true,
     syncInterestLifetime = 4000,
     syncDataPubSize = 1300,
     syncSigner = digestSigning,
@@ -105,9 +104,6 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
     this.syncPrefix = syncPrefix;
     const ibltParams = IBLT.PreparedParameters.prepare(p.iblt);
     this.codec = new SyncpsCodec(p, ibltParams);
-    if (addSyncPrefixOnUplinks) {
-      this.uplinkRouteMirror = new UplinkRouteMirror(endpoint.fw, syncPrefix);
-    }
 
     this.iblt = new IBLT(ibltParams);
     this.maxPubLifetime = maxPubLifetime;
@@ -120,6 +116,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
 
     this.pProducer = endpoint.produce(syncPrefix, this.handleSyncInterest, {
       describe: `${this.describe}[p]`,
+      routeCapture: false,
       concurrency: Infinity,
       dataSigner: syncSigner,
     });
@@ -136,7 +133,6 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
   public readonly describe: string;
   private readonly syncPrefix: Name;
   private readonly codec: SyncpsCodec;
-  private readonly uplinkRouteMirror?: UplinkRouteMirror;
   private closed = false;
 
   private readonly iblt: IBLT;
@@ -199,8 +195,6 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
     this.cAbort?.abort();
     this.cAbort = undefined;
     clearTimeout(this.cTimer);
-
-    this.uplinkRouteMirror?.close();
   }
 
   /**
@@ -380,7 +374,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
         }
 
         this.addToActive(key, pub, false);
-        const sub = lpm(pub.name, (prefixHex) => this.subs.get(prefixHex));
+        const [sub] = Array.from(take(1, lpm(pub.name, (prefixHex) => this.subs.get(prefixHex))));
         if (sub) {
           this.debug("c-deliver", key, pub);
           this.subs.update(sub, pub);
@@ -503,12 +497,6 @@ export namespace SyncpsPubsub {
 
     /** Sync group prefix. */
     syncPrefix: Name;
-
-    /**
-     * Whether to automatically add sync group prefix as a route on uplinks.
-     * @default true
-     */
-    addSyncPrefixOnUplinks?: boolean;
 
     /**
      * Sync Interest lifetime in milliseconds.

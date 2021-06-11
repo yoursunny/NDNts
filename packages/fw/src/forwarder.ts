@@ -110,11 +110,8 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
     const pi = this.pit.lookup(pkt);
     pi.receiveInterest(face, pkt);
 
-    const fibEntry = this.fib.lpm(this.pickInterestForwardingName(pkt.l3));
-    if (!fibEntry) {
-      return;
-    }
-    for (const nh of fibEntry.nexthops) {
+    const fwName = this.pickInterestForwardingName(pkt.l3);
+    for (const nh of this.fib.lookup(fwName)) {
       if (nh !== face) {
         pi.forwardInterest(nh);
       }

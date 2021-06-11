@@ -21,6 +21,16 @@ export interface Options {
   describe?: string;
 
   /**
+   * Whether routes registered by producer would cause @ndn/fw internal FIB to stop matching toward
+   * shorter prefixes. Default is true.
+   *
+   * If all nexthops of a FIB entry are set to non-capture, FIB lookup may continue onto nexthops
+   * on FIB entries with shorter prefixes. One use case is in @ndn/sync package, where both local
+   * and remote sync participants want to receive each other's Interests.
+   */
+  routeCapture?: boolean;
+
+  /**
    * What name to be readvertised.
    * Ignored if prefix is undefined.
    */
@@ -85,6 +95,7 @@ export class EndpointProducer {
     const prefix = typeof prefixInput === "undefined" ? undefined : new Name(prefixInput);
     const {
       describe = `produce(${prefix})`,
+      routeCapture = true,
       announcement,
       concurrency = 1,
       dataSigner,
@@ -137,6 +148,7 @@ export class EndpointProducer {
     {
       describe,
       local: true,
+      routeCapture,
     });
     if (prefix) {
       face.addRoute(prefix, announcement);

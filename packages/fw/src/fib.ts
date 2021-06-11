@@ -5,15 +5,16 @@ import DefaultMap from "mnemonist/default-map.js";
 import type { FaceImpl } from "./face";
 
 class FibEntry {
-  public readonly nexthops = new Set<FaceImpl>();
+  public readonly nexthops = new Map<FaceImpl, boolean>(); // face=>capture
 }
 
 export class Fib {
-  public readonly table = new DefaultMap<string, FibEntry>(() => new FibEntry());
+  private readonly table = new DefaultMap<string, FibEntry>(() => new FibEntry());
 
-  public insert(face: FaceImpl, nameHex: string): void {
+  public insert(face: FaceImpl, nameHex: string, capture: boolean): void {
     const entry = this.table.get(nameHex);
-    entry.nexthops.add(face);
+    assert(!entry.nexthops.has(face));
+    entry.nexthops.set(face, capture);
   }
 
   public delete(face: FaceImpl, nameHex: string): void {
@@ -25,11 +26,18 @@ export class Fib {
     }
   }
 
-  public lpm(name: Name): FibEntry | undefined {
-    const entry = lpm(name, (prefixHex) => this.table.peek(prefixHex));
-    if (entry) {
-      assert(entry.nexthops.size > 0);
+  public lookup(name: Name): Set<FaceImpl> {
+    const result = new Set<FaceImpl>();
+    for (const entry of lpm(name, (prefixHex) => this.table.peek(prefixHex))) {
+      let capture = false;
+      for (const [nh, c] of entry.nexthops) {
+        result.add(nh);
+        capture ||= c;
+      }
+      if (capture) {
+        break;
+      }
     }
-    return entry;
+    return result;
   }
 }

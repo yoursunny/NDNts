@@ -41,6 +41,7 @@
     "murmurhash3js-revisited": "^3.0.0",
     "p-defer": "^3.0.0",
     "pako": "^2.0.3",
+    "streaming-iterables": "^6.0.0",
     "tslib": "^2.2.0",
     "typed-emitter": "^1.3.1"
   },
