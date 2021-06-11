@@ -2,11 +2,12 @@
 
 Test environment:
 
-* Node.js 14.15.4
+* Node.js 14.17.0
 * ndn-cxx and NFD 0.7.1 (install from PPA)
 * [PSync C++ library](https://github.com/named-data/PSync) commit `32b97d7654f5a3851388804ec3a0cbc2fde2c06f` (2020-12-31)
 * [ndn-ind](https://github.com/operantnetworks/ndn-ind) commit `dd934a7a5106cda6ea14675554427e12df1ce18f` (2020-12-23)
 * syncps in [DNMP-v2](https://github.com/pollere/DNMP-v2) commit `c9431460f85c326a410758aa4ff2a26bfcf0df69` (2020-10-17)
+* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `38f24ee8f9a9c935d3685d1565fbf7c3967478a1` (2021-04-26)
 
 ## PSyncFull
 
@@ -69,4 +70,16 @@ NDNTS_NFDREG=1 npm run literate packages/sync/interop-test/syncps.ts
 
 # start C++ interop test program
 packages/sync/interop-test/syncps-ind.exe /syncps-interop /syncps-interop-data /syncps-interop-data/ind/$RANDOM >/dev/null
+```
+
+## SvSync
+
+```bash
+# in ndn-svs directory
+./waf configure --with-examples
+./waf
+LD_LIBRARY_PATH=build ./build/examples/chat ${RANDOM}
+
+# in NDNts directory
+NDNTS_NFDREG=1 npm run literate packages/sync/interop-test/svsync.ts
 ```
