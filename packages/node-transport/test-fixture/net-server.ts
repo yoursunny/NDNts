@@ -1,79 +1,119 @@
+import type { EventEmitter } from "events";
 import * as net from "net";
-import { pipeline } from "readable-stream";
+import pEvent from "p-event";
 import { tmpNameSync } from "tmp";
 
-import { BufferBreaker } from "./buffer-breaker";
+export abstract class NetServerBase<Server extends EventEmitter, Client> {
+  public get clients() { return this.clients_; }
+  private readonly clients_ = new Set<Client>();
 
-export let server: net.Server;
-export let tcpPort: number;
-export let ipcPath: string;
+  constructor(public readonly server: Server) {}
 
-let sendToClients = false;
-const clients = new Set<net.Socket>();
+  /** Start listening. */
+  public abstract open(): Promise<void>;
 
-function handleNewClient(sock: net.Socket) {
-  clients.add(sock);
-  let interval: NodeJS.Timeout | undefined;
-  if (sendToClients) {
-    interval = setInterval(() => {
-      try {
-        sock.write(Uint8Array.of(0x64, 0x00)); // NDNLPv2 IDLE packet
-      } catch {
-        sock.destroy();
+  /** Shutdown the server. */
+  public abstract close(): Promise<void>;
+
+  /** Wait until at least n clients are connected. */
+  public readonly waitNClients = async (n: number): Promise<Client[]> => {
+    if (this.clients.size < n) {
+      // eslint-disable-next-line no-empty-pattern
+      for await (const {} of pEvent.iterator(this.server, "connection", { rejectionEvents: [] })) {
+        if (this.clients.size >= n) {
+          break;
+        }
       }
-    }, 10);
-  }
-  const close = () => {
-    if (interval) { clearInterval(interval); }
-    sock.destroy();
-    clients.delete(sock);
+    }
+    return Array.from(this.clients).slice(0, n);
   };
-  sock.on("error", close);
-  sock.once("end", close);
-  sock.once("close", close);
 }
 
-function createServer(listen: (done: () => void) => void): Promise<void> {
-  server = net.createServer(handleNewClient);
-  server.on("error", () => undefined);
-  return new Promise((resolve) => {
-    listen(resolve);
-  });
-}
+/** Socket test server. */
+export abstract class NetServer extends NetServerBase<net.Server, net.Socket> {
+  /** If set to true, server periodically sends NDNLPv2 IDLE frames to new clients. */
+  public sendToClients = false;
 
-export function createTcpServer(): Promise<void> {
-  return createServer((done) => {
-    server.listen(() => {
-      ({ port: tcpPort } = server.address() as net.AddressInfo);
-      done();
-    });
-  });
-}
-
-export function createIpcServer(): Promise<void> {
-  ipcPath = process.platform === "win32" ?
-    `//./pipe/2a8370be-8abc-448f-bb09-54d8b243cf7a/${Math.floor(Math.random() * 0xFFFFFFFF)}` :
-    tmpNameSync();
-  return createServer((done) => server.listen(ipcPath, done));
-}
-
-export async function destroyServer(): Promise<void> {
-  await new Promise((r) => server.close(r));
-  // Unix socket file will be unlinked by server.close() automatically
-}
-
-export async function waitNClients(n: number): Promise<net.Socket[]> {
-  while (clients.size < n) {
-    // eslint-disable-next-line @typescript-eslint/no-loop-func
-    await new Promise((r) => server.once("connection", r));
+  constructor() {
+    super(net.createServer());
+    this.server.on("error", () => undefined);
+    this.server.on("connection", this.handleNewClient);
   }
-  return Array.from(clients);
+
+  public override async open(): Promise<void> {
+    this.listenBegin();
+    await pEvent(this.server, "listening");
+    this.listenEnd();
+  }
+
+  protected abstract listenBegin(): void;
+  protected listenEnd(): void {
+    //
+  }
+
+  public override async close(): Promise<void> {
+    this.server.off("connection", this.handleNewClient);
+    this.server.close();
+    await pEvent(this.server, "close");
+
+    for (const client of this.clients) {
+      client.end();
+    }
+    this.clients.clear();
+  }
+
+  private readonly handleNewClient = (sock: net.Socket) => {
+    this.clients.add(sock);
+
+    let interval: NodeJS.Timeout | undefined;
+    if (this.sendToClients) {
+      interval = setInterval(() => {
+        try {
+          sock.write(Uint8Array.of(0x64, 0x00)); // NDNLPv2 IDLE packet
+        } catch {
+          sock.destroy();
+        }
+      }, 10);
+    }
+
+    const close = () => {
+      if (interval) { clearInterval(interval); }
+      sock.destroy();
+      this.clients.delete(sock);
+    };
+    sock.on("error", close);
+    sock.once("end", close);
+    sock.once("close", close);
+  };
 }
 
-export function enableSendToClients() {
-  sendToClients = true;
+/** TCP socket test server. */
+export class TcpServer extends NetServer {
+  /** TCP server port. */
+  public port = 0;
+
+  protected override listenBegin(): void {
+    this.server.listen();
+  }
+
+  protected override listenEnd(): void {
+    const { port } = this.server.address() as net.AddressInfo;
+    this.port = port;
+  }
 }
 
-export function enableDuplex(sockA: net.Socket, sockB: net.Socket) {
-  pipeline(sockA, new BufferBreaker(), sockB, new BufferBreaker(), sockA, () => undefined);
+/** Unix socket test server. */
+export class IpcServer extends NetServer {
+  /** Unix/IPC server path. */
+  public path = this.makePath();
+
+  private makePath(): string {
+    return process.platform === "win32" ?
+      `//./pipe/2a8370be-8abc-448f-bb09-54d8b243cf7a/${Math.floor(Math.random() * 0xFFFFFFFF)}` :
+      tmpNameSync();
+  }
+
+  protected override listenBegin(): void {
+    this.server.listen(this.path);
+  }
 }

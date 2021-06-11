@@ -2,36 +2,42 @@ import * as TestReopen from "@ndn/l3face/test-fixture/reopen";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 
 import { UnixTransport } from "..";
-import * as NetServerTest from "../test-fixture/net-server";
+import { BufferBreaker } from "../test-fixture/buffer-breaker";
+import { IpcServer } from "../test-fixture/net-server";
 
-beforeEach(NetServerTest.createIpcServer);
+let server: IpcServer;
 
-afterEach(NetServerTest.destroyServer);
+beforeEach(async () => {
+  server = new IpcServer();
+  await server.open();
+});
+
+afterEach(() => server.close());
 
 test("pair", async () => {
   const [tA, tB, [sockA, sockB]] = await Promise.all([
-    UnixTransport.connect(NetServerTest.ipcPath),
-    UnixTransport.connect({ path: NetServerTest.ipcPath }),
-    NetServerTest.waitNClients(2),
+    UnixTransport.connect(server.path),
+    UnixTransport.connect({ path: server.path }),
+    server.waitNClients(2),
   ]);
-  NetServerTest.enableDuplex(sockA!, sockB!);
+  BufferBreaker.duplex(sockA!, sockB!);
 
   expect(tA.toString()).toMatch(/^Unix\(/);
   TestTransport.check(await TestTransport.execute(tA, tB));
 });
 
 test("connect error", async () => {
-  const path = NetServerTest.ipcPath;
-  await NetServerTest.destroyServer();
+  const path = server.path;
+  await server.close();
   await expect(UnixTransport.connect(path)).rejects.toThrow();
 });
 
 test("reopen", async () => {
-  NetServerTest.enableSendToClients();
-  const transport = await UnixTransport.connect(NetServerTest.ipcPath);
+  server.sendToClients = true;
+  const transport = await UnixTransport.connect(server.path);
   await TestReopen.run(
     transport,
-    NetServerTest.waitNClients,
+    server.waitNClients,
     (sock) => sock.destroy(),
   );
 });

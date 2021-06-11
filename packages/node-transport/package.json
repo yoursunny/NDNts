@@ -33,11 +33,9 @@
   "devDependencies": {
     "@ndn/fw": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "@types/readable-stream": "2.3.9",
     "@types/tmp": "^0.2.0",
-    "readable-stream": "^3.6.0",
     "stream-mock": "^2.0.5",
-    "streaming-iterables": "^5.0.4",
+    "streaming-iterables": "^6.0.0",
     "tmp": "^0.2.1"
   }
 }

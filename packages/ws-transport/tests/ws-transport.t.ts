@@ -1,29 +1,37 @@
 import * as TestReopen from "@ndn/l3face/test-fixture/reopen";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import pushable from "it-pushable";
+import type WebSocket from "ws";
 
 import { WsTransport } from "..";
-import * as WsTest from "../test-fixture/wss";
+import { bridgeWebSockets, WsServer } from "../test-fixture/ws-server";
 
-beforeEach(WsTest.createServer);
+let server: WsServer;
 
-afterEach(WsTest.destroyServer);
+beforeEach(async () => {
+  server = new WsServer();
+  await server.open();
+});
+
+afterEach(() => server.close());
 
 test("pair", async () => {
-  const [tA, tB] = await Promise.all([
-    WsTransport.connect(WsTest.uri),
-    WsTransport.connect(WsTest.uri),
-    WsTest.waitNClients(2),
+  const [tA, tB, sockets] = await Promise.all([
+    WsTransport.connect(server.uri),
+    WsTransport.connect(server.uri),
+    server.waitNClients(2),
   ]);
-  WsTest.enableBroadcast();
-  expect(tA.toString()).toBe(`WebSocket(${WsTest.uri})`);
+
+  expect(tA.toString()).toBe(`WebSocket(${server.uri})`);
+
+  bridgeWebSockets(sockets);
   TestTransport.check(await TestTransport.execute(tA, tB));
 });
 
 test("TX throttle", async () => {
   const [transport, socks] = await Promise.all([
-    WsTransport.connect(WsTest.uri, { highWaterMark: 2000, lowWaterMark: 1000 }),
-    WsTest.waitNClients(1),
+    WsTransport.connect(server.uri, { highWaterMark: 2000, lowWaterMark: 1000 }),
+    server.waitNClients(1),
   ]);
 
   const cws = (transport as any).sock as WebSocket;
@@ -67,16 +75,16 @@ test("TX throttle", async () => {
 });
 
 test("connect error", async () => {
-  const uri = WsTest.uri;
-  WsTest.destroyServer();
+  const uri = server.uri;
+  await server.close();
   await expect(WsTransport.connect(uri, { connectTimeout: 500 })).rejects.toThrow();
 });
 
 test("reopen", async () => {
-  const transport = await WsTransport.connect(WsTest.uri);
+  const transport = await WsTransport.connect(server.uri);
   await TestReopen.run(
     transport,
-    WsTest.waitNClients,
+    server.waitNClients,
     (sock) => sock.close(),
   );
 });

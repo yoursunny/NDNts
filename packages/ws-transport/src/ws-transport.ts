@@ -1,6 +1,7 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 import type { AbortSignal } from "abort-controller";
-import EventIterator from "event-iterator";
+import pEvent from "p-event";
+import { map } from "streaming-iterables";
 import type WsWebSocket from "ws";
 
 import { makeWebSocket } from "./ws_node";
@@ -12,20 +13,12 @@ export class WsTransport extends Transport {
   private readonly lowWaterMark: number;
 
   constructor(private readonly sock: WebSocket, private readonly opts: WsTransport.Options) {
-    super({
-      describe: `WebSocket(${sock.url})`,
-    });
+    super({ describe: `WebSocket(${sock.url})` });
     sock.binaryType = "arraybuffer";
-    this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(
-      ({ push, stop }) => {
-        const pushHandler = (evt: MessageEvent) => push(new Uint8Array(evt.data as ArrayBuffer));
-        sock.addEventListener("message", pushHandler);
-        sock.addEventListener("close", stop);
-        return () => {
-          sock.removeEventListener("message", pushHandler);
-          sock.removeEventListener("close", stop);
-        };
-      },
+    this.rx = rxFromPacketIterable(map(
+      (evt) => new Uint8Array(evt instanceof ArrayBuffer ? evt : evt.data),
+      pEvent.iterator<"message", ArrayBuffer | MessageEvent<ArrayBuffer>>(
+        sock, "message", { resolutionEvents: ["close"] }),
     ));
 
     this.highWaterMark = opts.highWaterMark ?? 1024 * 1024;
@@ -42,6 +35,7 @@ export class WsTransport extends Transport {
         throw new Error(`unexpected WebSocket.readyState ${this.sock.readyState}`);
       }
       this.sock.send(pkt);
+
       if (this.sock.bufferedAmount > this.highWaterMark) {
         await this.waitForTxBuffer();
       }
@@ -105,7 +99,7 @@ export namespace WsTransport {
       const timeout = setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
 
       const onabort = () => fail(new Error("abort"));
-      (signal as AbortSignal | undefined)?.addEventListener("abort", () => onabort);
+      (signal as AbortSignal | undefined)?.addEventListener("abort", onabort);
 
       const onerror = (evt: Event) => {
         sock.close();

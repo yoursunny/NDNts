@@ -1,4 +1,4 @@
-import { Transform } from "readable-stream";
+import { pipeline, Transform } from "stream";
 
 /** Break packet-sized buffers into random-sized buffers, for testing TCP/Unix transports. */
 export class BufferBreaker extends Transform {
@@ -33,11 +33,18 @@ export class BufferBreaker extends Transform {
     callback();
   }
 
-  private flushBuf = () => {
+  private readonly flushBuf = () => {
     if (!this.buf) {
       return;
     }
     this.push(this.buf);
     this.buf = undefined;
   };
+}
+
+export namespace BufferBreaker {
+  /** Connect two streams together via BufferBreakers. */
+  export function duplex(a: NodeJS.ReadWriteStream, b: NodeJS.ReadWriteStream) {
+    pipeline(a, new BufferBreaker(), b, new BufferBreaker(), a, () => undefined);
+  }
 }

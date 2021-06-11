@@ -2,27 +2,33 @@ import * as TestReopen from "@ndn/l3face/test-fixture/reopen";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 
 import { TcpTransport } from "..";
-import * as NetServerTest from "../test-fixture/net-server";
+import { BufferBreaker } from "../test-fixture/buffer-breaker";
+import { TcpServer } from "../test-fixture/net-server";
 
-beforeEach(NetServerTest.createTcpServer);
+let server: TcpServer;
 
-afterEach(NetServerTest.destroyServer);
+beforeEach(async () => {
+  server = new TcpServer();
+  await server.open();
+});
+
+afterEach(() => server.close());
 
 test("pair", async () => {
   const [tA, tB, [sockA, sockB]] = await Promise.all([
-    TcpTransport.connect("localhost", NetServerTest.tcpPort),
-    TcpTransport.connect({ port: NetServerTest.tcpPort }),
-    NetServerTest.waitNClients(2),
+    TcpTransport.connect("localhost", server.port),
+    TcpTransport.connect({ port: server.port }),
+    server.waitNClients(2),
   ]);
-  NetServerTest.enableDuplex(sockA!, sockB!);
+  BufferBreaker.duplex(sockA!, sockB!);
 
-  expect(tA.toString()).toBe(`TCP(127.0.0.1:${NetServerTest.tcpPort})`);
+  expect(tA.toString()).toBe(`TCP(127.0.0.1:${server.port})`);
   TestTransport.check(await TestTransport.execute(tA, tB));
 });
 
 test("connect error", async () => {
-  const port = NetServerTest.tcpPort;
-  await NetServerTest.destroyServer();
+  const port = server.port;
+  await server.close();
   await Promise.all([
     expect(TcpTransport.connect("localhost", port, { connectTimeout: 500 })).rejects.toThrow(),
     expect(TcpTransport.connect({ port, connectTimeout: 500 })).rejects.toThrow(),
@@ -30,11 +36,11 @@ test("connect error", async () => {
 });
 
 test("reopen", async () => {
-  NetServerTest.enableSendToClients();
-  const transport = await TcpTransport.connect("localhost", NetServerTest.tcpPort);
+  server.sendToClients = true;
+  const transport = await TcpTransport.connect("localhost", server.port);
   await TestReopen.run(
     transport,
-    NetServerTest.waitNClients,
+    server.waitNClients,
     (sock) => sock.end(),
   );
 });

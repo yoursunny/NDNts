@@ -5,22 +5,25 @@ import * as net from "net";
 import { collect } from "streaming-iterables";
 
 import { UnixTransport } from "..";
-import * as NetServerTest from "../test-fixture/net-server";
+import { BufferBreaker } from "../test-fixture/buffer-breaker";
+import { IpcServer } from "../test-fixture/net-server";
 
+let server: IpcServer;
 let sock: net.Socket;
 let face: L3Face;
 
 beforeEach(async () => {
-  await NetServerTest.createIpcServer();
+  server = new IpcServer();
+  await server.open();
   const [transport, socks] = await Promise.all([
-    UnixTransport.connect(NetServerTest.ipcPath),
-    NetServerTest.waitNClients(1),
+    UnixTransport.connect(server.path),
+    server.waitNClients(1),
   ]);
   face = new L3Face(transport);
   sock = socks[0]!;
 });
 
-afterEach(NetServerTest.destroyServer);
+afterEach(() => server.close());
 
 test("RX error", async () => {
   setTimeout(() => sock.write(Uint8Array.of(0xF0, 0x00)), 200);
@@ -37,10 +40,10 @@ test("RX error", async () => {
 test("createFace", async () => {
   const fw = Forwarder.create();
   const [face2, [sock0, sock1]] = await Promise.all([
-    UnixTransport.createFace({ fw }, NetServerTest.ipcPath),
-    NetServerTest.waitNClients(2),
+    UnixTransport.createFace({ fw }, server.path),
+    server.waitNClients(2),
   ]);
-  NetServerTest.enableDuplex(sock0!, sock1!);
+  BufferBreaker.duplex(sock0!, sock1!);
 
   const rx = jest.fn();
   fw.on("pktrx", rx);

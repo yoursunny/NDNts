@@ -33,7 +33,7 @@
     "applymixins": "^1.1.0",
     "it-pushable": "^1.4.2",
     "minimalistic-assert": "^1.0.1",
-    "streaming-iterables": "^5.0.4",
+    "streaming-iterables": "^6.0.0",
     "tslib": "^2.2.0"
   },
   "devDependencies": {

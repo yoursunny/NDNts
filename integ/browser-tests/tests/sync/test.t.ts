@@ -5,22 +5,24 @@ import { FwFace } from "@ndn/fw";
 import { Name } from "@ndn/packet";
 import { makePSyncCompatParam, PSyncPartialPublisher } from "@ndn/sync";
 import { WsTransport } from "@ndn/ws-transport";
-import * as WsTest from "@ndn/ws-transport/test-fixture/wss";
+import { WsServer } from "@ndn/ws-transport/test-fixture/ws-server";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 
+let server: WsServer;
 let face: FwFace | undefined;
 let pub: PSyncPartialPublisher | undefined;
 
-beforeEach(() => Promise.all([
-  WsTest.createServer(),
-  navigateToPage(__dirname),
-]));
+beforeEach(async () => {
+  server = new WsServer();
+  await server.open();
+  await navigateToPage(__dirname);
+});
 
-afterEach(() => {
+afterEach(async () => {
   face?.close();
   pub?.close();
-  WsTest.destroyServer();
+  await server.close();
 });
 
 test("PSyncPartial", async () => {
@@ -30,9 +32,9 @@ test("PSyncPartial", async () => {
   });
 
   await Promise.all([
-    pageInvoke<typeof window.startPSyncPartial>(page, "startPSyncPartial", WsTest.uri),
+    pageInvoke<typeof window.startPSyncPartial>(page, "startPSyncPartial", server.uri),
     (async () => {
-      const sock = (await WsTest.waitNClients(1))[0]!;
+      const sock = (await server.waitNClients(1))[0]!;
       face = await WsTransport.createFace({}, sock);
       face.addRoute(new Name());
     })(),

@@ -35,6 +35,6 @@
   },
   "devDependencies": {
     "@ndn/repo": "workspace:*",
-    "streaming-iterables": "^5.0.4"
+    "streaming-iterables": "^6.0.0"
   }
 }
