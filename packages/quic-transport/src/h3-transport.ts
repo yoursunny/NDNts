@@ -41,7 +41,7 @@ export class H3Transport extends Transport {
     this.datagramWriter = (tr.datagramWritable ?? tr.datagrams.writable).getWriter();
     this.rx = rxFromPacketIterable((async function*() {
       const reader = (tr.datagramReadable ?? tr.datagrams.readable).getReader();
-      for (;;) {
+      while (true) {
         const result = await reader.read();
         if (result.done) {
           break;

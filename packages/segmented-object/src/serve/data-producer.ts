@@ -117,7 +117,7 @@ class SequentialDataProducer extends DataProducer {
   private async *listChunks(): AsyncGenerator<Chunk, false> {
     const iterator = getIterator(this.source.listChunks());
     try {
-      for (;;) {
+      while (true) {
         const { done, value } = await iterator.next();
         if (done) {
           return false;
@@ -131,7 +131,7 @@ class SequentialDataProducer extends DataProducer {
 
   private async produce({ bufferBehind = Infinity, bufferAhead = 16 }: DataProducer.Options) {
     let i = -1;
-    for (;;) {
+    while (true) {
       const { done, value } = await this.generator.next();
       if (done || value === false) {
         break;

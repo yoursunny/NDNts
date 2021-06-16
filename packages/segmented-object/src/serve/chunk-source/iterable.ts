@@ -59,7 +59,7 @@ export class IterableChunkSource implements ChunkSource {
     const scattered = new ScatteredChunk(getMinChunkSize(this.opts), getMaxChunkSize(this.opts));
     for await (const buf of this.input) {
       scattered.append(buf);
-      for (;;) {
+      while (true) {
         const payload = scattered.gather();
         if (!payload) {
           break;

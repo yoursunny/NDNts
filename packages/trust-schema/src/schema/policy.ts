@@ -12,9 +12,12 @@ export class TrustSchemaPolicy {
     return this.patterns;
   }
 
-  public getPattern(id: string): Pattern {
+  public getPattern(id: string): Pattern;
+  public getPattern(id: string, optional: true): Pattern | undefined;
+
+  public getPattern(id: string, optional = false) {
     const pattern = this.patterns.get(id);
-    if (!pattern) {
+    if (!pattern && !optional) {
       throw new Error(`unknown pattern ${id}`);
     }
     return pattern;
@@ -36,8 +39,8 @@ export class TrustSchemaPolicy {
   }
 
   public addRule(packetId: string, signerId: string): void {
-    if (this.rules.has(packetId)) {
-      throw new Error(`duplicate rule for ${packetId}`);
+    if (this.rules.get(packetId)?.has(signerId)) {
+      return;
     }
     this.getPattern(packetId);
     this.getPattern(signerId);
@@ -68,8 +71,8 @@ export class TrustSchemaPolicy {
           continue;
         }
         let ok = true;
-        for (const [k, sv] of Object.entries(sVars)) {
-          const pv = pVars[k];
+        for (const [k, sv] of sVars) {
+          const pv = pVars.get(k);
           if (pv && !pv.equals(sv)) {
             ok = false;
           }
@@ -86,8 +89,12 @@ export class TrustSchemaPolicy {
   public *buildSignerNames(packet: TrustSchemaPolicy.MatchInput, vars: VarsLike = {}): Iterable<Name> {
     packet = this.match(packet);
     for (const { id: pId, vars: pVars } of packet) {
-      for (const signerId of this.rules.get(pId) ?? []) {
-        yield* this.getPattern(signerId).build({ ...vars, ...pVars });
+      const signers = this.rules.get(pId);
+      if (!signers) {
+        continue;
+      }
+      for (const signerId of signers) {
+        yield* this.getPattern(signerId).build(vars, pVars);
       }
     }
   }

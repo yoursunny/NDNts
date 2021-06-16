@@ -70,7 +70,7 @@ export async function requestCertificate({
   let challengeParameters = await challenge.start({ requestId });
   let issuedCertName: Name;
   let issuedCertFwHint: FwHint | undefined;
-  for (;;) {
+  while (true) {
     const challengeRequest = await ChallengeRequest.build({
       profile,
       signedInterestPolicy,

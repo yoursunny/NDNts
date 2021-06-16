@@ -123,7 +123,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
       }
     }).bind(this);
 
-    for (;;) {
+    while (true) {
       try {
         await this.transport.tx(transportTx());
         return; // iterable drained, normal close
@@ -134,7 +134,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
       }
 
       const reopenPromise = this.reopenTransport();
-      for (;;) {
+      while (true) {
         const res = await Promise.race([
           reopenPromise, // wait for reopen completion
           iterator.next(), // drop packets

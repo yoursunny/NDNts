@@ -1,8 +1,14 @@
 import { CertNaming } from "@ndn/keychain";
+import type { NamingConvention } from "@ndn/packet";
 import { Component, Name, NameLike } from "@ndn/packet";
 
-export type Vars = Record<string, Name>;
-export type VarsLike = Readonly<Record<string, NameLike>>;
+export type Vars = Map<string, Name>;
+export type VarsLike = Vars | Readonly<Record<string, NameLike>>;
+export namespace VarsLike {
+  export function toIterable(vars: VarsLike): Iterable<[string, NameLike]> {
+    return vars instanceof Map ? vars : Object.entries(vars);
+  }
+}
 
 /** Context of matching a name. */
 class MatchState {
@@ -15,7 +21,7 @@ class MatchState {
   constructor(
       public readonly name: Name,
       public readonly pos = 0,
-      public readonly vars: Vars = {},
+      public readonly vars: Vars = new Map<string, Name>(),
   ) {}
 
   /** Unconsumed name portion. */
@@ -39,8 +45,14 @@ class MatchState {
    * @param incrementPos how many components are consumed.
    * @param vars updated variables.
    */
-  public extend(incrementPos: number, vars: Vars = {}): MatchState {
-    return new MatchState(this.name, this.pos + incrementPos, { ...this.vars, ...vars });
+  public extend(incrementPos: number, ...varsL: Array<Iterable<readonly [string, Name]>>): MatchState {
+    varsL.unshift(this.vars);
+    return new MatchState(this.name, this.pos + incrementPos,
+      new Map<string, Name>((function*() {
+        for (const vars of varsL) {
+          yield* vars;
+        }
+      })()));
   }
 }
 
@@ -91,14 +103,17 @@ export abstract class Pattern {
   /**
    * Build names following the structure of this pattern.
    *
-   * @param vars variables to be replaced into the name.
+   * @param varsL sets of variables to be replaced into the name.
    * @returns an iterable of possible names.
    */
-  public *build(vars: VarsLike = {}): Iterable<Name> {
+  public *build(...varsL: VarsLike[]): Iterable<Name> {
     const varsM = new Map<string, Name>();
-    for (const [key, value] of Object.entries(vars)) {
-      varsM.set(key, new Name(value));
+    for (const vars of varsL) {
+      for (const [key, value] of VarsLike.toIterable(vars)) {
+        varsM.set(key, new Name(value));
+      }
     }
+
     const initial = new BuildState(new Name(), varsM);
     for (const final of this.buildState(initial)) {
       yield final.name;
@@ -155,43 +170,134 @@ export class VariablePattern extends Pattern {
       {
         minComps = 1,
         maxComps = 1,
-        accept = () => true,
+        inner,
+        filter,
       }: VariablePattern.Options = {},
   ) {
     super();
     this.minComps = minComps;
     this.maxComps = maxComps;
-    this.accept = accept;
+    this.inner = inner;
+    this.filter = filter;
   }
 
   public readonly minComps: number;
   public readonly maxComps: number;
-  public readonly accept: (part: Name) => boolean;
+  public readonly inner?: Pattern;
+  public readonly filter?: VariablePattern.Filter;
+
+  private *innerMatch(value: Name, input?: Map<string, Name>): Iterable<Vars> {
+    if (!this.inner) {
+      yield new Map<string, Name>();
+      return;
+    }
+
+    for (const m of this.inner.match(value)) {
+      const consistent = (() => {
+        if (!input) {
+          return true;
+        }
+        for (const [k, v] of m) {
+          const c = input.get(k);
+          if (c && !c.equals(v)) {
+            return false;
+          }
+        }
+        return false;
+      })();
+
+      if (consistent) {
+        yield m;
+      }
+    }
+  }
+
+  private filtersAccept(value: Name, vars: Vars): boolean {
+    return !this.filter || this.filter.accept(value, vars);
+  }
 
   protected override *matchState(state: MatchState): Iterable<MatchState> {
     for (let i = this.minComps, max = Math.min(state.tailLength, this.maxComps); i <= max; ++i) {
-      const part = state.tailPrefix(i);
-      if (this.accept(part)) {
-        yield state.extend(i, { [this.id]: part });
+      const value = state.tailPrefix(i);
+      for (const innerVars of this.innerMatch(value)) {
+        if (this.filtersAccept(value, innerVars)) {
+          yield state.extend(i, innerVars, [[this.id, value]]);
+        }
       }
     }
   }
 
   protected override *buildState(state: BuildState): Iterable<BuildState> {
     const value = state.vars.get(this.id);
-    if (value && value.length >= this.minComps && value.length <= this.maxComps && this.accept(value)) {
-      yield state.append(...value.comps);
+    if (value) {
+      if (value.length < this.minComps || value.length > this.maxComps) {
+        return;
+      }
+      let hasMatch = false;
+      for (const innerVars of this.innerMatch(value, state.vars)) {
+        if (this.filtersAccept(value, innerVars)) {
+          hasMatch = true;
+          break;
+        }
+      }
+      if (hasMatch) {
+        yield state.append(...value.comps);
+      }
+      return;
+    }
+
+    if (!this.inner) {
+      return;
+    }
+
+    for (const b of Pattern.buildState(this.inner, state)) {
+      if (this.filtersAccept(b.name.slice(state.name.length), b.vars)) {
+        yield b;
+      }
     }
   }
 }
 export namespace VariablePattern {
   export interface Options {
-    /** Minimum number of components, default is 1. */
+    /**
+     * Minimum number of components.
+     * Default is 1.
+     */
     minComps?: number;
-    /** Maximum number of components, default is 1. */
+
+    /**
+     * Maximum number of components.
+     * Default is 1.
+     */
     maxComps?: number;
-    /** Function to determine whether a name part is acceptable. */
-    accept?: (name: Name) => boolean;
+
+    /**
+     * An overlay pattern that the name part must satisfy.
+     * This effectively makes this variable an alias of the inner pattern.
+     *
+     * When building a name, if the variable of this pattern is present in build() function
+     * argument, it is checked that the inner pattern matches the name and its interpretation is
+     * consistent with other variables that are present.
+     * Otherwise, the inner pattern is used to build the name.
+     */
+    inner?: Pattern;
+
+    /** Filter that the name part must satisfy. */
+    filter?: Filter;
+  }
+
+  /** Function to determine whether a name part is acceptable. */
+  export interface Filter {
+    accept: (name: Name, vars: Vars) => boolean;
+  }
+
+  /** Create a filter that accepts a name component that satisfies a convention. */
+  export class ConventionFilter implements Filter {
+    constructor(public readonly convention: NamingConvention<any>) {}
+
+    public accept(name: Name) {
+      return name.length === 1 && name.get(0)!.is(this.convention);
+    }
   }
 }
 

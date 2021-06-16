@@ -22,31 +22,33 @@ test("const variable concat", () => {
     new P.VariablePattern("c", {
       minComps: 2,
       maxComps: 2,
-      accept: (name) => name.equals("/c/c"),
+      filter: {
+        accept: (name) => name.equals("/c/c"),
+      },
     }),
   ]);
 
-  expect(match(p, "")).toHaveLength(0);
+  expect(match(p, "/")).toHaveLength(0);
   expect(match(p, "/Z/Z/Z/Z/Z")).toHaveLength(0);
   expect(match(p, "/P/Q")).toHaveLength(0);
 
   let m = match(p, "/P/Q/a/c/c");
   expect(m).toHaveLength(1);
-  expect(m[0]!.a).toEqualName("/a");
-  expect(m[0]!.b).toEqualName("/");
-  expect(m[0]!.c).toEqualName("/c/c");
+  expect(m[0]!.get("a")).toEqualName("/a");
+  expect(m[0]!.get("b")).toEqualName("/");
+  expect(m[0]!.get("c")).toEqualName("/c/c");
 
   m = match(p, "/P/Q/a/b/c/c");
   expect(m).toHaveLength(1);
-  expect(m[0]!.a).toEqualName("/a");
-  expect(m[0]!.b).toEqualName("/b");
-  expect(m[0]!.c).toEqualName("/c/c");
+  expect(m[0]!.get("a")).toEqualName("/a");
+  expect(m[0]!.get("b")).toEqualName("/b");
+  expect(m[0]!.get("c")).toEqualName("/c/c");
 
   m = match(p, "/P/Q/a/b/b/c/c");
   expect(m).toHaveLength(1);
-  expect(m[0]!.a).toEqualName("/a");
-  expect(m[0]!.b).toEqualName("/b/b");
-  expect(m[0]!.c).toEqualName("/c/c");
+  expect(m[0]!.get("a")).toEqualName("/a");
+  expect(m[0]!.get("b")).toEqualName("/b/b");
+  expect(m[0]!.get("c")).toEqualName("/c/c");
 
   expect(match(p, "/P/Q/a/b/b/c/cc")).toHaveLength(0);
 
@@ -74,11 +76,11 @@ test("certname", () => {
 
   let m = match(p, "/identity/KEY/key-id");
   expect(m).toHaveLength(1);
-  expect(m[0]!.subject).toEqualName("/identity");
+  expect(m[0]!.get("subject")).toEqualName("/identity");
 
   m = match(p, "/identity/KEY/key-id/issuer-id/version");
   expect(m).toHaveLength(1);
-  expect(m[0]!.subject).toEqualName("/identity");
+  expect(m[0]!.get("subject")).toEqualName("/identity");
 
   const b = build(p, { subject: "/identity" });
   expect(b).toHaveLength(1);
@@ -103,11 +105,11 @@ test("alternate", () => {
 
   let m = match(p, "/P/a/A");
   expect(m).toHaveLength(1);
-  expect(m[0]!.a).toEqualName("/a");
+  expect(m[0]!.get("a")).toEqualName("/a");
 
   m = match(p, "/P/b/B");
   expect(m).toHaveLength(1);
-  expect(m[0]!.b).toEqualName("/b");
+  expect(m[0]!.get("b")).toEqualName("/b");
 
   expect(build(p, { c: "/c" })).toHaveLength(0);
 

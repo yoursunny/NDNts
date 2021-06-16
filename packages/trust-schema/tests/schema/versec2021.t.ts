@@ -1,0 +1,113 @@
+import { Name } from "@ndn/packet";
+
+import { TrustSchemaPolicy, versec2021 } from "../..";
+
+const { ast: A, nest: N, token: T } = versec2021;
+
+test("parser", () => {
+  const tokens = Array.from(T.scan(`
+    _variable: "constant", #pub: /_variable/("A"|
+    "B") <= signer1|signer2 <= signer3
+    ident1 :#pub & {
+      constraint1: "value1"
+      constraint2: "value2",
+    } & (
+      { constraint3 :"value3" } | { constraint4: "value4"/function4() }),
+    // comment
+    signer4 <= signer5 <=
+        // comment
+      signer6
+  `));
+  expect(tokens.map((token) => token.constructor)).toEqual([
+    T.Ident, T.Colon, T.ComponentLit, T.Comma, // _variable: "constant",
+    T.Ident, T.Colon, T.Slash, T.Ident, T.Slash, // #pub: /_variable/
+    T.ParenL, T.ComponentLit, T.Or, T.ComponentLit, T.ParenR, // ("A"|"B")
+    T.ArrowL, T.Ident, T.Or, T.Ident, T.ArrowL, T.Ident, T.Comma, // <= signer1|signer2 <= signer3,
+    T.Ident, T.Colon, T.Ident, T.And, T.BraceL, // ident1: #pub & {
+    T.Ident, T.Colon, T.ComponentLit, T.Comma, // constraint1: "value1",
+    T.Ident, T.Colon, T.ComponentLit, T.Comma, // constraint2: "value2",
+    T.BraceR, T.And, T.ParenL, // } & (
+    T.BraceL, T.Ident, T.Colon, T.ComponentLit, T.BraceR, T.Or, // { constraint3: "value3" } |
+    T.BraceL, T.Ident, T.Colon, T.ComponentLit, T.Slash, // { constraint4: "value4"/
+    T.Ident, T.ParenL, T.ParenR, T.BraceR, T.ParenR, T.Comma, // function4() }),
+    T.Ident, T.ArrowL, T.Ident, T.ArrowL, T.Ident, T.Comma, // signer4 <= signer5 <= signer6,
+  ]);
+
+  const units = Array.from(N.scan(tokens));
+  expect(units.map((u) => u.constructor)).toEqual([
+    T.Ident, T.Colon, T.ComponentLit, T.Comma, // _variable: "constant",
+    T.Ident, T.Colon, T.Slash, T.Ident, T.Slash, N.Paren, // #pub: /_variable/("A"|"B")
+    T.ArrowL, T.Ident, T.Or, T.Ident, T.ArrowL, T.Ident, T.Comma, // <= signer1|signer2 <= signer3,
+    T.Ident, T.Colon, T.Ident, T.And, N.Brace, T.And, N.Paren, T.Comma, // ident1: #pub & {...} & (...),
+    T.Ident, T.ArrowL, T.Ident, T.ArrowL, T.Ident, T.Comma, // signer4 <= signer5 <= signer6,
+  ]);
+
+  const groups = N.split(T.Comma, units);
+  expect(groups.map((g) => g.length)).toEqual([3, 12, 7, 5]);
+
+  const schema = A.parse(tokens);
+  expect(schema.stmts.map((stmt) => [stmt.ident.id, stmt.definition?.constructor, stmt.signingChain.length])).toEqual([
+    ["_variable", A.ComponentLit, 0],
+    ["#pub", A.Name, 2],
+    ["ident1", A.Constrained, 0],
+    ["signer4", undefined, 2],
+  ]);
+});
+
+test("compile", () => {
+  const policy = versec2021.load(`
+    // modified from DNMP example
+    _network: "example"/"net2"
+    rootCert: _network/_key
+    deviceCert: _network/"device"/deviceName/_key <= rootCert
+    roleCert: _network/_role/personName/_key <= rootCert
+    adminCert: roleCert & { _role: "admin" }
+    userCert: roleCert & { _role: "user" }
+    adminCommand: #command <= adminCert
+    userCommand: #command & ({ verb: "ping" } | { target: "local" })
+    #command: _network/_topic/target/verb/params/_commandTime &
+      { _topic: "command", _commandTime: timestamp() }
+    userCommand <= userCert
+    reply <= deviceCert
+    reply: replace(#command, _topic, "reply")/deviceName/_replyTime & { _replyTime: timestamp() }
+    _key: "KEY"/_/_/_
+  `);
+  expect(versec2021.load(versec2021.print(policy))).toBeInstanceOf(TrustSchemaPolicy);
+
+  const adminCert = new Name("/example/net2/admin/yoursunny/KEY/7daa8ebf");
+  const userCert = new Name("/example/net2/user/customer/KEY/c00240ba");
+  const deviceCert = new Name("/example/net2/device/DAL/KEY/2e77f31e");
+  const adminCommand = new Name("/example/net2/command/DAL/traceroute/LAX/36=%01");
+  const userCommand = new Name("/example/net2/command/DAL/ping/LAX/36=%01");
+  const reply = new Name("/example/net2/reply/DAL/ping/LAX/36=%01/DAL/36=%02");
+
+  const match = (name: Name) => Array.from(policy.match(name)).map(({ id }) => id);
+
+  let m = match(adminCert);
+  expect(m).toContain("adminCert");
+  expect(m).not.toContain("userCert");
+
+  m = match(adminCommand);
+  expect(m).toContain("adminCommand");
+  expect(m).not.toContain("userCommand");
+
+  m = match(userCommand);
+  expect(m).toContain("adminCommand");
+  expect(m).toContain("userCommand");
+
+  m = match(deviceCert);
+  expect(m).toContain("deviceCert");
+
+  m = match(reply);
+  expect(m).toContain("reply");
+
+  expect(policy.canSign(adminCommand, adminCert)).toBeTruthy();
+  expect(policy.canSign(userCommand, adminCert)).toBeTruthy();
+  expect(policy.canSign(reply, adminCert)).toBeFalsy();
+  expect(policy.canSign(adminCommand, userCert)).toBeFalsy();
+  expect(policy.canSign(userCommand, userCert)).toBeTruthy();
+  expect(policy.canSign(reply, userCert)).toBeFalsy();
+  expect(policy.canSign(adminCommand, deviceCert)).toBeFalsy();
+  expect(policy.canSign(userCommand, deviceCert)).toBeFalsy();
+  expect(policy.canSign(reply, deviceCert)).toBeTruthy();
+});

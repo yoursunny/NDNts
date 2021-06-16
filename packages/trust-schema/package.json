@@ -28,13 +28,16 @@
   "dependencies": {
     "@ndn/endpoint": "workspace:*",
     "@ndn/keychain": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "minimalistic-assert": "^1.0.1",
     "mnemonist": "^0.38.3",
     "tslib": "^2.2.0"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:*",
+    "@types/minimalistic-assert": "^1.0.1",
     "streaming-iterables": "^6.0.0"
   }
 }

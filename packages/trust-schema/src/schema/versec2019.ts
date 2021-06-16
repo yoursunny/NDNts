@@ -128,13 +128,19 @@ export function load(input: string): TrustSchemaPolicy {
 function printPattern(p: Pattern): string {
   if (p instanceof ConstPattern) {
     return p.name.toString().slice(1);
-  } if (p instanceof VariablePattern) {
-    return `<_${p.id}>`;
-  } if (p instanceof CertNamePattern) {
+  }
+  if (p instanceof VariablePattern) {
+    return `<_${p.id}${
+      p.inner ? `!inner:${p.inner.constructor.name}` : ""}${
+      p.filter ? `!filter:${p.filter.constructor.name}` : ""}>`;
+  }
+  if (p instanceof CertNamePattern) {
     return "<_KEY>";
-  } if (p instanceof ConcatPattern) {
+  }
+  if (p instanceof ConcatPattern) {
     return printSequence(p.parts, "/", [ConcatPattern, AlternatePattern]);
-  } if (p instanceof AlternatePattern) {
+  }
+  if (p instanceof AlternatePattern) {
     return printSequence(p.choices, "|", [AlternatePattern]);
   }
   return `<!${p.constructor.name}>`;

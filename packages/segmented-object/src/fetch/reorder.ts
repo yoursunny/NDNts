@@ -17,7 +17,7 @@ export class Reorder<T> {
 
   private pop(): T[] {
     const result = [] as T[];
-    for (;;) {
+    while (true) {
       const obj = this.buffer.get(this.next);
       if (obj) {
         result.push(obj);

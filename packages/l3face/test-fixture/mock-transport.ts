@@ -29,7 +29,7 @@ export class MockTransport extends Transport {
 
   public override readonly tx = async (iterable: AsyncIterable<Uint8Array>) => {
     const iterator = iterable[Symbol.asyncIterator]();
-    for (;;) {
+    while (true) {
       const pkt = await Promise.race([
         iterator.next(),
         this.closePromise.promise,

@@ -16,7 +16,7 @@ This package implements trust schemas.
 <!-- use emoji due to https://github.com/earldouglas/codedown/issues/8 -->
 
 ```ts
-import { TrustSchema, TrustSchemaSigner, TrustSchemaVerifier, versec2019 } from "@ndn/trust-schema";
+import { TrustSchema, TrustSchemaSigner, TrustSchemaVerifier, versec2019, versec2021 } from "@ndn/trust-schema";
 
 // other imports for examples
 import { Certificate, KeyChain, ValidityPeriod, generateSigningKey } from "@ndn/keychain";
@@ -75,9 +75,10 @@ It also contains a set of rules, which indicates a packet matching the first pat
 It must be one of these sub-types:
 
 * `ConstPattern` matches one or more name components specified as a constant in the policy.
-* `VariablePattern` matches one or more name components (specified as a range), optionally filtered by a JavaScript function, and saves matched components to a variable.
-  When the same variable appears in both packet name pattern and signer name pattern, the matched name component must be the same.
-* `CertNamePattern` matches either `KEY/key-id` or `KEY/key-id/issuer-id/version` suffix in [NDN Certificate Format](https://named-data.net/doc/ndn-cxx/0.7.0/specs/certificate-format.html).
+* `VariablePattern` matches one or more name components (specified as a range), optionally overlapped with an inner pattern and filtered by a JavaScript function.
+  It can save matched components to a variable.
+  When the same variable appears in both packet name pattern and signer name pattern, the matched name component(s) must be the same.
+* `CertNamePattern` matches either `KEY/key-id` or `KEY/key-id/issuer-id/version` suffix in [NDN Certificate Format](https://named-data.net/doc/ndn-cxx/0.7.1/specs/certificate-format.html).
 * `ConcatPattern` concatenates two or more other patterns.
 * `AlternatePattern` accepts any match among two or more possible patterns.
 
@@ -130,7 +131,9 @@ article <= author <= admin <= root
 You may notice that the output differs from the input, because the library has flattened the patterns for faster execution.
 
 ```ts
+console.group("VerSec2019 policy");
 console.log(versec2019.print(policy));
+console.groupEnd();
 ```
 
 With the policy in place, we can generate a root key and make the trust schema object.
@@ -143,9 +146,54 @@ await keyChain.insertCert(rootCert);
 const schema = new TrustSchema(policy, [rootCert]);
 ```
 
+## VerSec2021 Syntax
+
+This package has partial support of the [VerSec Domain Specific Language](https://github.com/pollere/DCT/blob/main/versec/language.md) (VerSec2021) syntax, include:
+
+* component constraints
+* `replace` function
+* `timestamp` function: translates to a `VariablePattern` that matches a Timestamp name component
+* `sysid` function: translates to a `VariablePattern` that assigns to *SYSID* variable
+* signing constraints and signing chains
+
+Some notes and limitations:
+
+* This implementation has very limited compile-time schema validation.
+* Binary schema format is not supported.
+* You can have multiple trust anchors, despite that the VerSec spec allows only one trust anchor.
+* You can create a `CertNamePattern` by writing `"KEY"/_/_/_`.
+  It should be included at the end of each certificate name.
+
+`versec2021.load()` function imports a policy:
+
+```ts
+const policy2021 = versec2021.load(`
+// This is the same policy as the previous example, written in VerSec2021 syntax.
+_site: "a"/"blog"
+root: _site/_KEY
+article: _site/"article"/category/year/month <= author
+
+// Notice the variable name distinction between 'adminName' and 'authorName', which is necessary
+// to allow them to have different values. Also, the variables cannot be named 'admin' and 'author'
+// because that would clash with the pattern name that is implicitly declared as variables.
+admin: _site/"admin"/adminName/_KEY <= root
+author: _site/_role/authorName/_KEY & { _role: "author" } <= admin
+
+_KEY: "KEY"/_/_/_
+`);
+```
+
+`versec2021.print()` function prints the policy:
+
+```ts
+console.group("VerSec2021 policy");
+console.log(versec2021.print(policy2021));
+console.groupEnd();
+```
+
 ## Trust Schema Signer
 
-`TrustSchemaSigner` type can automatically select a signer among available certificate in the KeyChain.
+`TrustSchemaSigner` type can automatically select a signer among available certificates in the KeyChain.
 
 ```ts
 const schemaSigner = new TrustSchemaSigner({ keyChain, schema });
@@ -189,7 +237,7 @@ It can collect intermediate certificates from a local KeyChain and from the netw
 
 ```ts
 const schemaVerifier = new TrustSchemaVerifier({
-  schema,
+  schema: new TrustSchema(policy2021, [rootCert]),
   offline: true,
   keyChain,
 });
