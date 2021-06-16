@@ -64,6 +64,83 @@ test("const variable concat", () => {
   expect(build(p, { a: "/a", b: "/b", c: "/c/cc" })).toHaveLength(0);
 });
 
+test("variable.inner+filter", () => {
+  const accept = jest.fn<boolean, [name: Name, vars: P.Vars]>();
+  const p = new P.VariablePattern("outer", {
+    minComps: 0,
+    maxComps: Infinity,
+    inner: new P.ConcatPattern([
+      new P.ConstPattern("/prefix"),
+      new P.VariablePattern("suffix"),
+    ]),
+    filter: { accept },
+  });
+
+  const checkedAccept = (name: Name, vars: P.Vars) => {
+    expect(name).toEqualName("/prefix/suffix");
+    expect(vars.get("suffix")).toEqualName("/suffix");
+    return true;
+  };
+
+  accept.mockImplementation(checkedAccept);
+  let m = match(p, "/prefix/suffix");
+  expect(m).toHaveLength(1);
+  expect(m[0]!.get("suffix")).toEqualName("/suffix");
+  expect(m[0]!.get("outer")).toEqualName("/prefix/suffix");
+  expect(accept).toHaveBeenCalledTimes(1);
+  accept.mockReset();
+
+  accept.mockReturnValue(false);
+  m = match(p, "/prefix/suffix");
+  expect(m).toHaveLength(0);
+  expect(accept).toHaveBeenCalledTimes(1);
+  accept.mockReset();
+
+  accept.mockReturnValue(true);
+  m = match(p, "/not-prefix/suffix");
+  expect(m).toHaveLength(0);
+  expect(accept).not.toHaveBeenCalled();
+  accept.mockReset();
+
+  accept.mockImplementation(checkedAccept);
+  let b = build(p, { outer: "/prefix/suffix" });
+  expect(b).toHaveLength(1);
+  expect(b[0]).toEqualName("/prefix/suffix");
+  expect(accept).toHaveBeenCalledTimes(1);
+  accept.mockReset();
+
+  accept.mockImplementation(checkedAccept);
+  b = build(p, { suffix: "/suffix" });
+  expect(b).toHaveLength(1);
+  expect(b[0]).toEqualName("/prefix/suffix");
+  expect(accept).toHaveBeenCalledTimes(1);
+  accept.mockReset();
+
+  accept.mockReturnValue(false);
+  b = build(p, { outer: "/prefix/suffix" });
+  expect(b).toHaveLength(0);
+  expect(accept).toHaveBeenCalledTimes(1);
+  accept.mockReset();
+
+  accept.mockReturnValue(true);
+  b = build(p, { outer: "/not-prefix/suffix" });
+  expect(b).toHaveLength(0);
+  expect(accept).not.toHaveBeenCalled();
+  accept.mockReset();
+
+  accept.mockReturnValue(true);
+  b = build(p, { suffix: "/suffix/too-long" });
+  expect(b).toHaveLength(0);
+  expect(accept).not.toHaveBeenCalled();
+  accept.mockReset();
+
+  accept.mockReturnValue(true);
+  b = build(p, { outer: "/prefix/suffix", suffix: "/different-suffix" });
+  expect(b).toHaveLength(0);
+  expect(accept).not.toHaveBeenCalled();
+  accept.mockReset();
+});
+
 test("certname", () => {
   const p = new P.ConcatPattern([
     new P.VariablePattern("subject", { maxComps: Infinity }),

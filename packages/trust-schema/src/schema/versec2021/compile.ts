@@ -43,6 +43,7 @@ function isPatternConst(pattern: Pattern): boolean {
   if (pattern instanceof AlternatePattern) {
     return pattern.choices.every(isPatternConst);
   }
+  /* istanbul ignore next */
   assert(false, `unexpected pattern type ${pattern.constructor.name}`);
 }
 
@@ -172,6 +173,7 @@ class Compiler {
     if (expr instanceof A.Constrained) {
       return this.makePatternConstrained(expr, ctx);
     }
+    /* istanbul ignore next */
     assert(false, `unexpected expression type ${expr.constructor.name}`);
   }
 
@@ -242,17 +244,17 @@ class Compiler {
   }
 
   private makePatternName(expr: A.Name, ctx: CompilePatternCtx): Pattern {
+    const patternFromComponents = (comps: readonly A.Expr[]) =>
+      comps.map((comp) => this.makePattern(comp, ctx));
     const certNameIndex = findCertName(expr);
     if (certNameIndex >= 0) {
       return new ConcatPattern([
-        ...expr.comps.slice(0, certNameIndex).map((comp) => this.makePattern(comp, ctx)),
+        ...patternFromComponents(expr.comps.slice(0, certNameIndex)),
         new CertNamePattern(),
-        ...expr.comps.slice(certNameIndex + 4).map((comp) => this.makePattern(comp, ctx)),
+        ...patternFromComponents(expr.comps.slice(certNameIndex + 4)),
       ]);
     }
-    return new ConcatPattern(
-      expr.comps.map((comp) => this.makePattern(comp, ctx)),
-    );
+    return new ConcatPattern(patternFromComponents(expr.comps));
   }
 
   private makePatternConstrained(expr: A.Constrained, ctx: CompilePatternCtx): Pattern {
@@ -284,6 +286,7 @@ class Compiler {
         op = "|";
       }
     } else {
+      /* istanbul ignore next */
       assert(false, `unexpected component constraint type ${cc.constructor.name}`);
     }
 

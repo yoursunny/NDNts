@@ -274,7 +274,7 @@ export class Schema extends Node {
 /** Parse a schema. */
 export function parse(tokens: Iterable<T.Token>): Schema {
   return new Schema(
-    N.split(T.Comma, N.scan(tokens)).map(parseStmt),
+    N.split(T.Comma, N.scan(tokens), true).map(parseStmt),
   );
 }
 
@@ -332,7 +332,7 @@ function parseExpr(units: readonly N.Unit[]): Expr {
 function parseName(units: readonly N.Unit[]): Name {
   units = N.unParen(units);
   return new Name(
-    N.split(T.Slash, units).map(parseComponent),
+    N.split(T.Slash, units, true).map(parseComponent),
   );
 }
 
@@ -348,7 +348,7 @@ function parseComponent(units: readonly N.Unit[]): Expr {
   if (units.length === 2 && units[0] instanceof T.Ident && units[1] instanceof N.Paren) {
     return new Call(
       units[0].id,
-      N.split(T.Comma, units[1].mid).map(parseExpr),
+      N.split(T.Comma, units[1].mid, true).map(parseExpr),
     );
   }
 
@@ -386,7 +386,7 @@ function parseComponentConstraintEq(units: readonly N.Unit[]): ComponentConstrai
 
 function parseComponentConstraint(brace: N.Brace): ComponentConstraint {
   return new ComponentConstraint(
-    N.split(T.Comma, brace.mid).map(parseComponentConstraintTerm),
+    N.split(T.Comma, brace.mid, true).map(parseComponentConstraintTerm),
   );
 }
 
@@ -405,8 +405,5 @@ function parseSigningConstraint(units: readonly N.Unit[]): SigningConstraint {
     }
     return Ident.fromToken(sub[0]);
   });
-  if (signers.length === 0) {
-    throwParseError("empty signing constraint", units);
-  }
   return new SigningConstraint(signers);
 }

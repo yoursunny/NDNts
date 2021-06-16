@@ -32,6 +32,8 @@ test("parser", () => {
     T.Ident, T.ParenL, T.ParenR, T.BraceR, T.ParenR, T.Comma, // function4() }),
     T.Ident, T.ArrowL, T.Ident, T.ArrowL, T.Ident, T.Comma, // signer4 <= signer5 <= signer6,
   ]);
+  expect(() => Array.from(T.scan("="))).toThrow(/unrecognized/);
+  expect(() => Array.from(T.scan("\"hello"))).toThrow(/unterminated/);
 
   const units = Array.from(N.scan(tokens));
   expect(units.map((u) => u.constructor)).toEqual([
@@ -41,9 +43,13 @@ test("parser", () => {
     T.Ident, T.Colon, T.Ident, T.And, N.Brace, T.And, N.Paren, T.Comma, // ident1: #pub & {...} & (...),
     T.Ident, T.ArrowL, T.Ident, T.ArrowL, T.Ident, T.Comma, // signer4 <= signer5 <= signer6,
   ]);
+  expect(() => Array.from(N.scan(T.scan("(}")))).toThrow(/unbalanced/);
+  expect(() => Array.from(N.scan(T.scan("(({})")))).toThrow(/unbalanced/);
 
   const groups = N.split(T.Comma, units);
-  expect(groups.map((g) => g.length)).toEqual([3, 12, 7, 5]);
+  expect(groups.map((g) => g.length)).toEqual([3, 12, 7, 5, 0]);
+  const groupsNonEmpty = N.split(T.Comma, units, true);
+  expect(groupsNonEmpty.map((g) => g.length)).toEqual([3, 12, 7, 5]);
 
   const schema = A.parse(tokens);
   expect(schema.stmts.map((stmt) => [stmt.ident.id, stmt.definition?.constructor, stmt.signingChain.length])).toEqual([
@@ -52,6 +58,16 @@ test("parser", () => {
     ["ident1", A.Constrained, 0],
     ["signer4", undefined, 2],
   ]);
+  expect(() => A.parse(T.scan("\"const\": \"const\""))).toThrow(/statement must start with ident/);
+  expect(() => A.parse(T.scan("ident/\"const\" <= signer"))).toThrow(/invalid definition/);
+  expect(() => A.parse(T.scan("s: & { comp: \"value\" }"))).toThrow(/expression must have name/);
+  expect(() => A.parse(T.scan("s: \"a\"\"b\""))).toThrow(/component should have one token/);
+  expect(() => A.parse(T.scan("s: \"a\"/{}/\"c\""))).toThrow(/unexpected token for component/);
+  expect(() => A.parse(T.scan("s: a/b & {} / {}"))).toThrow(/invalid component constraint equation/);
+  expect(() => A.parse(T.scan("s: a/b & {} {}"))).toThrow(/invalid component constraint equation/);
+  expect(() => A.parse(T.scan("s: a/b & { a & \"c\" }"))).toThrow(/invalid component constraint term/);
+  expect(() => A.parse(T.scan("s: a <= \"signer\""))).toThrow(/invalid signing constraint/);
+  expect(() => A.parse(T.scan("s: a <= <= signer"))).toThrow(/invalid signing constraint/);
 });
 
 test("compile", () => {
@@ -60,7 +76,7 @@ test("compile", () => {
     _network: "example"/"net2"
     rootCert: _network/_key
     deviceCert: _network/"device"/deviceName/_key <= rootCert
-    roleCert: _network/_role/personName/_key <= rootCert
+    roleCert: _network/_role/(personName|(department/personName))/_key <= rootCert
     adminCert: roleCert & { _role: "admin" }
     userCert: roleCert & { _role: "user" }
     adminCommand: #command <= adminCert
@@ -75,7 +91,7 @@ test("compile", () => {
   expect(versec2021.load(versec2021.print(policy))).toBeInstanceOf(TrustSchemaPolicy);
 
   const adminCert = new Name("/example/net2/admin/yoursunny/KEY/7daa8ebf");
-  const userCert = new Name("/example/net2/user/customer/KEY/c00240ba");
+  const userCert = new Name("/example/net2/user/sales/person/KEY/c00240ba");
   const deviceCert = new Name("/example/net2/device/DAL/KEY/2e77f31e");
   const adminCommand = new Name("/example/net2/command/DAL/traceroute/LAX/36=%01");
   const userCommand = new Name("/example/net2/command/DAL/ping/LAX/36=%01");
@@ -110,4 +126,13 @@ test("compile", () => {
   expect(policy.canSign(adminCommand, deviceCert)).toBeFalsy();
   expect(policy.canSign(userCommand, deviceCert)).toBeFalsy();
   expect(policy.canSign(reply, deviceCert)).toBeTruthy();
+
+  expect(() => versec2021.load(`
+    s: "a"
+    s: "b"
+  `)).toThrow(/duplicate definition/);
+  expect(() => versec2021.load("s: s")).toThrow(/cyclic dependency/);
+  expect(() => versec2021.load("s: timestamp(\"a\")")).toThrow(/timestamp\(.*arguments/);
+  expect(() => versec2021.load("s: replace()")).toThrow(/replace\(.*arguments/);
+  expect(() => versec2021.load("s: a/sysid(\"b\")")).toThrow(/sysid\(.*arguments/);
 });

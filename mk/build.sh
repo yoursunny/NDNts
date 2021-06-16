@@ -12,6 +12,20 @@ if [[ $ACT == lint ]]; then
   exec env NODE_OPTIONS='--max-old-space-size=4096' xo $XOFLAG "$@"
 fi
 
+if [[ $ACT == cover ]]; then
+  if [[ $# -eq 1 ]] && [[ ${1:0:1} != '-' ]]; then
+    TESTSUITE=$1
+    SRCDIR=$TESTSUITE
+    while [[ ${#SRCDIR} -gt 1 ]] && ! [[ -d $SRCDIR/src ]]; do
+      SRCDIR=$(dirname $SRCDIR)
+    done
+    if [[ ${#SRCDIR} -gt 1 ]]; then
+      exec jest --coverage --collectCoverageFrom=$SRCDIR'/src/**/*' "$@"
+    fi
+  fi
+  exec jest --coverage "$@"
+fi
+
 if [[ $ACT == clean ]]; then
   exec rm -rf packages/*/lib/ packages/*/literate-temp.ts packages/*/tsconfig.tsbuildinfo
 fi

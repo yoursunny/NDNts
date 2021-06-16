@@ -203,9 +203,8 @@ export class VariablePattern extends Pattern {
             return false;
           }
         }
-        return false;
+        return true;
       })();
-
       if (consistent) {
         yield m;
       }
