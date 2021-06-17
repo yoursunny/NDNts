@@ -51,11 +51,10 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
     (async function*(): AsyncIterable<string[]> {
       const routers: string[] = [];
       if (fch !== false) {
-        if (!fch.transports) {
-          fch.transports = FCH_DEFAULTS.transports(opts);
-        }
+        fch.transports ??= FCH_DEFAULTS.transports(opts);
         const res = await fchQuery(fch);
 
+        /* istanbul ignore if */
         if (preferH3) {
           const h3routers = res.routers.filter((r) => r.transport === "http3");
           if (h3routers.length > 0) {
@@ -64,6 +63,7 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
         }
 
         for (const r of res.routers) {
+          /* istanbul ignore else */
           if (!preferH3 || r.transport !== "http3") {
             routers.push(r.connect);
           }

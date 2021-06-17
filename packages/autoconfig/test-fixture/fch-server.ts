@@ -21,7 +21,7 @@ export class FchServer {
         ctx.status = 404;
         return;
       }
-      ctx.body = await this.handle?.(ctx.URL.searchParams);
+      ctx.body = await this.handle?.(ctx.URL.searchParams, ctx);
     });
     this.server = this.app.listen();
   }
@@ -35,5 +35,5 @@ export class FchServer {
     this.server.close();
   }
 
-  public handle?: (params: URLSearchParams) => Promise<unknown>;
+  public handle?: (params: URLSearchParams, ctx: Koa.Context) => Promise<unknown>;
 }

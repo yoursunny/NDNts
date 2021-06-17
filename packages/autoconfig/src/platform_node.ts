@@ -7,6 +7,7 @@ import type { UrlObject } from "url";
 // @ts-expect-error
 import urlParse from "url-parse-lax";
 
+import type { PlatformFchDefaults } from "./fch";
 import type { ConnectRouterOptions } from "./router";
 
 export function fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
@@ -20,8 +21,8 @@ function hasAddressFamily(family: os.NetworkInterfaceInfo["family"]): () => bool
   };
 }
 
-export const FCH_DEFAULTS = {
-  transports(opts?: ConnectRouterOptions) { return ["udp"]; },
+export const FCH_DEFAULTS: PlatformFchDefaults = {
+  transports() { return ["udp"]; },
   hasIPv4: hasAddressFamily("IPv4"),
   hasIPv6: hasAddressFamily("IPv6"),
 };

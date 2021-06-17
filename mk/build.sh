@@ -15,11 +15,12 @@ fi
 if [[ $ACT == cover ]]; then
   if [[ $# -eq 1 ]] && [[ ${1:0:1} != '-' ]]; then
     TESTSUITE=$1
-    SRCDIR=$TESTSUITE
+    SRCDIR=${TESTSUITE%/}
     while [[ ${#SRCDIR} -gt 1 ]] && ! [[ -d $SRCDIR/src ]]; do
       SRCDIR=$(dirname $SRCDIR)
     done
     if [[ ${#SRCDIR} -gt 1 ]]; then
+      set -x
       exec jest --coverage --collectCoverageFrom=$SRCDIR'/src/**/*' "$@"
     fi
   fi

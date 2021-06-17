@@ -98,3 +98,14 @@ test("text2", async () => {
   expect(res.routers[1]).toMatchObject({ transport: "udp", connect: "127.0.0.1:7002" });
   expect(res.routers[2]).toMatchObject({ transport: "wss", connect: "127.0.0.1:7003" });
 });
+
+test("server error", async () => {
+  server.handle = async (params, ctx) => {
+    ctx.status = 500;
+    return "";
+  };
+  await expect(fchQuery({ server: server.uri })).resolves.toMatchObject({ routers: [] });
+
+  server.handle = async () => "";
+  await expect(fchQuery({ server: server.uri })).resolves.toMatchObject({ routers: [] });
+});

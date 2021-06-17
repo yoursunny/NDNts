@@ -1,6 +1,13 @@
 import { Name } from "@ndn/packet";
 
 import { FCH_DEFAULTS, fetch } from "./platform_node";
+import type { ConnectRouterOptions } from "./router";
+
+export interface PlatformFchDefaults {
+  transports: (opts?: ConnectRouterOptions) => string[];
+  hasIPv4: () => boolean | undefined;
+  hasIPv6: () => boolean | undefined;
+}
 
 /** FCH service request. */
 export interface FchRequest {
