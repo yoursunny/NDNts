@@ -5,9 +5,7 @@ import { Name } from "@ndn/packet";
 
 import { makePSyncCompatParam, PSyncPartialPublisher, PSyncPartialSubscriber, Subscription, SyncUpdate } from "..";
 
-afterEach(() => {
-  Endpoint.deleteDefaultForwarder();
-});
+afterEach(Endpoint.deleteDefaultForwarder);
 
 function delay(multiple = 1): Promise<void> {
   return new Promise((r) => setTimeout(r, 300 * multiple));

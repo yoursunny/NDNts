@@ -9,7 +9,7 @@ class PartialPacket {
 
   public accept(fragment: LpPacket): false | LpPacket | undefined {
     if (this.accepted === 0) { // first
-      this.buffer = Array.from({ length: fragment.fragCount });
+      this.buffer.length = fragment.fragCount;
       this.acceptOne(fragment);
       return undefined;
     }
@@ -40,22 +40,27 @@ class PartialPacket {
     full.copyL3HeadersFrom(this.buffer[0]!);
     full.payload = new Uint8Array(this.payloadLength);
     let offset = 0;
-    for (const fragment of this.buffer) {
-      if (!fragment!.payload) {
+    for (const fragment of (this.buffer as LpPacket[])) {
+      if (!fragment.payload) {
         continue;
       }
-      full.payload.set(fragment!.payload, offset);
-      offset += fragment!.payload.length;
+      full.payload.set(fragment.payload, offset);
+      offset += fragment.payload.length;
     }
     return full;
   }
 }
 
+/** NDNLPv2 reassembler. */
 export class Reassembler {
   constructor(private readonly capacity: number) {}
 
   private readonly partials = new Map<bigint, PartialPacket>();
 
+  /**
+   * Process a fragment.
+   * @returns fully reassembled packet, or undefined if packet is not yet complete.
+   */
   public accept(fragment: LpPacket): LpPacket | undefined {
     if (fragment.fragCount === 1) { // not fragmented
       return fragment;
@@ -89,7 +94,7 @@ export class Reassembler {
   private putPartial(partial: PartialPacket): void {
     this.partials.set(partial.seqNumBase, partial);
 
-    if (this.partials.size >= this.capacity) { // exceed capacity, delete oldest
+    if (this.partials.size > this.capacity) { // exceed capacity, delete oldest
       // eslint-disable-next-line no-unreachable-loop
       for (const key of this.partials.keys()) {
         this.partials.delete(key);

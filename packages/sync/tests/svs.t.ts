@@ -54,7 +54,7 @@ test("example", async () => {
     endpoint: new Endpoint({ fw: fwAB }),
     syncPrefix: new Name("/svs-test"),
     syncInterestLifetime: 200,
-    steadyTimer: [900, 0.1],
+    steadyTimer: [900, 0.05],
     suppressionTimer: [50, 0.4],
   };
 

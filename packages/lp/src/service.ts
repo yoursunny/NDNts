@@ -1,11 +1,25 @@
 import { Data, Interest, Nack, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
 import itKeepAlive from "it-keepalive";
+import assert from "minimalistic-assert";
 
 import { TT } from "./an";
 import { Fragmenter } from "./fragmenter";
 import { LpPacket } from "./packet";
 import { Reassembler } from "./reassembler";
+
+/**
+ * Map and flatten, but only do it once.
+ * This differs from flatMap from streaming-iterables that recursively flattens the result.
+ */
+async function* flatMap1<T, R>(
+    f: (item: T) => Iterable<R> | AsyncIterable<R>,
+    iterable: AsyncIterable<T>,
+): AsyncIterable<R> {
+  for await (const item of iterable) {
+    yield* f(item);
+  }
+}
 
 const IDLE = Encoder.encode(new LpPacket());
 
@@ -15,10 +29,8 @@ export class LpService {
     mtu = Infinity,
     reassemblerCapacity = 16,
   }: LpService.Options = {}) {
-    if (keepAlive === false || keepAlive <= 0) {
-      this.keepAlive = -1;
-    } else {
-      this.keepAlive = keepAlive;
+    if (Number.isFinite(keepAlive) && keepAlive > 0) {
+      this.keepAlive = Math.ceil(keepAlive as number);
     }
     if (Number.isFinite(mtu)) {
       this.mtu = mtu;
@@ -27,20 +39,14 @@ export class LpService {
     this.reassembler = new Reassembler(reassemblerCapacity);
   }
 
-  private readonly keepAlive: number;
+  private readonly keepAlive?: number;
   private readonly mtu = Infinity;
   private readonly fragmenter?: Fragmenter;
   private readonly reassembler: Reassembler;
 
-  public rx = (iterable: AsyncIterable<Decoder.Tlv>) => {
-    return this.rx_(iterable);
+  public rx = (iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<LpService.Packet | LpService.RxError> => {
+    return flatMap1((tlv) => this.decode(tlv), iterable);
   };
-
-  private async *rx_(iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<LpService.Packet | LpService.RxError> {
-    for await (const tlv of iterable) {
-      yield* this.decode(tlv);
-    }
-  }
 
   private *decode(tlv: Decoder.Tlv) {
     try {
@@ -52,7 +58,7 @@ export class LpService {
 
       const fragment = decoder.decode(LpPacket);
       const lpp = this.reassembler.accept(fragment);
-      if (!lpp || !lpp.payload) {
+      if (!lpp?.payload) {
         return;
       }
 
@@ -82,52 +88,35 @@ export class LpService {
     }
   }
 
-  public tx = (iterable: AsyncIterable<LpService.Packet>) => {
-    let iterable1: AsyncIterable<LpService.Packet | false> = iterable;
-    if (this.keepAlive > 0) {
-      iterable1 = itKeepAlive<LpService.Packet | false>(
-        () => false,
-        { timeout: this.keepAlive },
-      )(iterable);
-    }
-    return this.tx_(iterable1);
+  public tx = (iterable: AsyncIterable<LpService.Packet>): AsyncIterable<Uint8Array | LpService.TxError> => {
+    return flatMap1(
+      (pkt) => this.encode(pkt),
+      this.keepAlive ?
+        itKeepAlive<LpService.Packet | false>(() => false, { timeout: this.keepAlive })(iterable) :
+        iterable,
+    );
   };
 
-  private async *tx_(iterable: AsyncIterable<LpService.Packet | false>): AsyncIterable<Uint8Array | LpService.TxError> {
-    for await (const pkt of iterable) {
-      if (pkt === false) {
-        yield IDLE;
-      } else {
-        yield* this.encode(pkt);
-      }
+  private *encode(pkt: LpService.Packet | false): Iterable<Uint8Array | LpService.TxError> {
+    if (pkt === false) {
+      yield IDLE;
+      return;
     }
-  }
 
-  private *encode({ l3, token }: LpService.Packet): Iterable<Uint8Array | LpService.TxError> {
-    let lpp: LpPacket;
+    const { l3, token } = pkt;
+    const lpp = new LpPacket();
+    lpp.pitToken = token;
     try {
-      switch (true) {
-        case l3 instanceof Interest:
-        case l3 instanceof Data: {
-          const payload = Encoder.encode(l3 as Interest | Data);
-          if (!token && payload.length <= this.mtu) {
-            return yield payload;
-          }
-          lpp = new LpPacket();
-          lpp.pitToken = token;
-          lpp.payload = payload;
-          break;
+      if (l3 instanceof Interest || l3 instanceof Data) {
+        const payload = Encoder.encode(l3);
+        if (!token && payload.length <= this.mtu) {
+          return yield payload;
         }
-        case l3 instanceof Nack: {
-          const nack = l3 as Nack;
-          lpp = new LpPacket();
-          lpp.pitToken = token;
-          lpp.nack = nack.header;
-          lpp.payload = Encoder.encode(nack.interest);
-          break;
-        }
-        default:
-          return;
+        lpp.payload = payload;
+      } else {
+        assert(l3 instanceof Nack);
+        lpp.nack = l3.header;
+        lpp.payload = Encoder.encode(l3.interest);
       }
     } catch (err: unknown) {
       return yield new LpService.TxError(err as Error, l3);
@@ -144,7 +133,7 @@ export class LpService {
 export namespace LpService {
   export interface Options {
     /**
-     * How often to send IDLE packets if nothing else was sent, in millis.
+     * How often to send IDLE packets if nothing else was sent, in milliseconds.
      * Set false or zero to disable keep-alive.
      * @default 60000
      */
