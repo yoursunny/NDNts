@@ -29,8 +29,7 @@ test("RX error", async () => {
   setTimeout(() => sock.write(Uint8Array.of(0xF0, 0x00)), 200);
   await Promise.all([
     expect(collect(face.rx)).resolves.toHaveLength(0),
-    // eslint-disable-next-line require-yield
-    face.tx((async function*() {
+    face.tx((async function*() { // eslint-disable-line require-yield
       await new Promise((r) => setTimeout(r, 400));
     })()),
     expect(new Promise((r) => face.once("rxerror", r))).resolves.toThrow(/F000/),

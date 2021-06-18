@@ -1,4 +1,5 @@
 import { Decoder } from "@ndn/tlv";
+import pEvent from "p-event";
 import { fromStream, writeToStream } from "streaming-iterables";
 
 import { safe } from "./safe";
@@ -31,10 +32,9 @@ export function txToStream(conn: NodeJS.WritableStream): Transport.Tx {
     try {
       await writeToStream(conn, iterable);
     } finally {
-      await Promise.race([
-        new Promise<void>((r) => conn.end(r)),
-        new Promise<void>((r) => setTimeout(r, 100)),
-      ]);
+      conn.end();
+      try { await pEvent(conn, "finish", { timeout: 100 }); } catch {}
+
       const destroyable = conn as unknown as { destroy?: () => void };
       /* istanbul ignore else */
       if (typeof destroyable.destroy === "function") {

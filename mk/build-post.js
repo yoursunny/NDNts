@@ -115,7 +115,7 @@ class TransformJs {
    * @param {string} line
    */
   transformImportExport(line) {
-    const m = line.match(/^(import|export) (\* as )?(.*) from ["'](.*)["'];$/);
+    const m = /^(import|export) (\* as )?(.*) from ["'](.*)["'];$/.exec(line);
     if (!m) {
       return this.emitLine(line);
     }
@@ -136,16 +136,16 @@ class TransformJs {
       return this.emitLine(line);
     }
 
-    const defaultImport = `_cjsDefaultImport${this.nCjsImports++}`;
-    if (imports.startsWith("{")) {
-      imports = imports.replace(/ as /g, ": ");
-      return this.emitLine(
-        `import ${defaultImport} from "${specifier}"; const ${imports} = __importStar(${defaultImport});`,
-      );
+    const importVar = `_cjsDefaultImport${this.nCjsImports++}`;
+    const [, defaultExport, namedExports] = /^\s*([^,{]+)?\s*,?\s*({[^}]+})?\s*$/.exec(imports);
+    const importLines = [`import ${importVar} from "${specifier}";`];
+    if (defaultExport) {
+      importLines.push(`const ${defaultExport} = __importDefault(${importVar}).default;`);
     }
-    return this.emitLine(
-      `import ${defaultImport} from "${specifier}"; const ${imports} = __importDefault(${defaultImport}).default;`,
-    );
+    if (namedExports) {
+      importLines.push(`const ${namedExports.replace(/ as /g, ": ")} = __importStar(${importVar});`);
+    }
+    return this.emitLine(importLines.join(" "));
   }
 }
 

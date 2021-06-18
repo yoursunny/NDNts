@@ -2,8 +2,13 @@ import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { LpService } from "@ndn/lp";
 import { Interest } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
+import AbortController from "abort-controller";
+import abortable, { AbortError as IteratorAbortError } from "abortable-iterator";
 import { EventEmitter } from "events";
-import { filter, map, pipeline } from "streaming-iterables";
+import pushable from "it-pushable";
+import pEvent from "p-event";
+import * as retry from "retry";
+import { consume, filter, map, pipeline } from "streaming-iterables";
 import type TypedEmitter from "typed-emitter";
 
 import type { Transport } from "./mod";
@@ -23,17 +28,47 @@ interface Events {
   txerror: (err: L3Face.TxError) => void;
 }
 
-const REOPENED = Symbol("L3Face.REOPENED");
-
 /** Network layer face for sending and receiving L3 packets. */
 export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) implements FwFace.RxTx {
   public readonly attributes: L3Face.Attributes;
   public readonly lp: LpService;
   public readonly rx: AsyncIterable<FwPacket>;
+
   public get state() { return this.state_; }
+  private set state(newState) {
+    if (newState === this.state_) {
+      return;
+    }
+    this.state_ = newState;
+    this.emit("state", newState);
+    switch (newState) {
+      case L3Face.State.UP:
+        this.emit("up");
+        break;
+      case L3Face.State.DOWN: {
+        const err = this.lastError instanceof Error ?
+          this.lastError :
+          new Error(`${this.lastError ?? "unknown error"}`);
+        this.emit("down", err);
+        this.lastError = undefined;
+        break;
+      }
+      case L3Face.State.CLOSED:
+        this.emit("close");
+        break;
+    }
+  }
+
+  private state_: L3Face.State = L3Face.State.UP;
+  private lastError?: unknown;
+  private readonly rxSources = pushable<Transport["rx"]>();
+  private readonly reopenRetry = retry.operation({
+    forever: true,
+    minTimeout: 1,
+    randomize: true,
+  });
 
   private readonly wireTokenPrefix = Math.floor(Math.random() * 0x10000);
-  private state_: L3Face.State = L3Face.State.UP;
 
   constructor(
       private transport: Transport,
@@ -49,52 +84,52 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
     };
     this.lp = new LpService(lpOptions);
     this.rx = this.makeRx();
-    (this.rx as any).return = undefined;
   }
 
-  private async *makeRx() {
-    const closePromise = new Promise<void>((r) => this.once("close", r));
-    while (this.state_ !== L3Face.State.CLOSED) {
-      yield* pipeline(
-        () => this.transport.rx,
-        this.lp.rx,
-        filter((pkt): pkt is LpService.Packet => {
-          if (pkt instanceof LpService.RxError) {
-            this.emit("rxerror", pkt);
-            return false;
-          }
-          return true;
-        }),
-        map(({ l3, token: wireToken }: LpService.Packet) => {
-          let internalToken: Uint8Array | number | undefined;
-          if (l3 instanceof Interest) {
-            internalToken = wireToken;
-          } else if (wireToken?.length === 6) {
-            const dv = Encoder.asDataView(wireToken);
-            if (dv.getUint16(0) === this.wireTokenPrefix) {
-              internalToken = dv.getUint32(2);
-            }
-          }
-          return FwPacket.create(l3, internalToken);
-        }),
-      );
-      await Promise.race([
-        new Promise<void>((r) => this.once("up", r)),
-        closePromise,
-      ]);
+  private async *makeRx(): AsyncIterable<FwPacket> {
+    for await (const source of this.rxSources) {
+      try {
+        yield* this.rxTransform(source);
+        this.lastError = new Error("RX ending");
+        this.state = L3Face.State.DOWN;
+      } catch (err: unknown) {
+        if (!(err instanceof IteratorAbortError)) {
+          this.lastError = err;
+          this.state = L3Face.State.DOWN;
+        }
+      }
     }
   }
 
-  public tx = async (iterable: AsyncIterable<FwPacket>) => {
-    await this.txImpl(iterable);
-    this.state_ = L3Face.State.CLOSED;
-    this.emit("state", this.state_);
-    this.emit("close");
-  };
+  private async *rxTransform(transportRx: Transport.Rx): AsyncIterable<FwPacket> {
+    yield* pipeline(
+      () => transportRx,
+      this.lp.rx,
+      filter((pkt): pkt is LpService.Packet => {
+        if (pkt instanceof LpService.RxError) {
+          this.emit("rxerror", pkt);
+          return false;
+        }
+        return true;
+      }),
+      map(({ l3, token: wireToken }: LpService.Packet) => {
+        let internalToken: Uint8Array | number | undefined;
+        if (l3 instanceof Interest) {
+          internalToken = wireToken;
+        } else if (wireToken?.length === 6) {
+          const dv = Encoder.asDataView(wireToken);
+          if (dv.getUint16(0) === this.wireTokenPrefix) {
+            internalToken = dv.getUint32(2);
+          }
+        }
+        return FwPacket.create(l3, internalToken);
+      }),
+    );
+  }
 
-  private async txImpl(iterable: AsyncIterable<FwPacket>): Promise<void> {
-    const iterator = pipeline(
-      () => iterable,
+  private txTransform(fwTx: AsyncIterable<FwPacket>): AsyncIterable<Uint8Array> {
+    return pipeline(
+      () => fwTx,
       filter((pkt: FwPacket) => FwPacket.isEncodable(pkt)),
       map(({ l3, token: internalToken }: FwPacket) => {
         let wireToken: Uint8Array | undefined;
@@ -109,58 +144,71 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
         return { l3, token: wireToken };
       }),
       this.lp.tx,
-    )[Symbol.asyncIterator]();
-
-    const transportTx = (async function*(this: L3Face) {
-      while (true) {
-        const { value, done } = await iterator.next();
-        if (done) { return; }
+      filter((value: Uint8Array | LpService.TxError): value is Uint8Array => {
         if (value instanceof LpService.TxError) {
           this.emit("txerror", value);
-        } else {
-          yield value as Uint8Array;
+          return false;
         }
-      }
-    }).bind(this);
-
-    while (true) {
-      try {
-        await this.transport.tx(transportTx());
-        return; // iterable drained, normal close
-      } catch (err: unknown) { // TX error
-        this.state_ = L3Face.State.DOWN;
-        this.emit("state", this.state_);
-        this.emit("down", err as Error);
-      }
-
-      const reopenPromise = this.reopenTransport();
-      while (true) {
-        const res = await Promise.race([
-          reopenPromise, // wait for reopen completion
-          iterator.next(), // drop packets
-        ]);
-        if (res === REOPENED) { break; } // reopened
-        if (res.done) { return; } // normal close
-      }
-    }
+        return true;
+      }),
+    );
   }
 
-  private async reopenTransport(): Promise<typeof REOPENED> {
-    for (let delay = 1; this.state_ === L3Face.State.DOWN; delay *= 2) {
-      const randDelay = delay * (0.9 + Math.random() * 0.2);
-      await new Promise((r) => setTimeout(r, randDelay));
+  public tx = async (iterable: AsyncIterable<FwPacket>) => {
+    const txSourceIterator = this.txTransform(iterable)[Symbol.asyncIterator]();
+    txSourceIterator.return = undefined;
+    while (this.state !== L3Face.State.CLOSED) {
+      if (this.state === L3Face.State.DOWN) {
+        this.reopenTransport();
+      }
+
+      const abort = new AbortController();
+      const onStateChange = pEvent(this, "state");
+      // eslint-disable-next-line promise/prefer-await-to-then
+      void onStateChange.then(() => abort.abort());
+
+      try {
+        const txSource = abortable<Uint8Array>(txSourceIterator as any, abort.signal);
+        if (this.state === L3Face.State.UP) {
+          this.rxSources.push(abortable(this.transport.rx, abort.signal));
+          await this.transport.tx(txSource);
+        } else {
+          await consume(txSource);
+        }
+        this.state = L3Face.State.CLOSED;
+      } catch (err: unknown) {
+        if (!(err instanceof IteratorAbortError)) {
+          this.lastError = err;
+          this.state = L3Face.State.DOWN;
+        }
+      } finally {
+        abort.abort();
+        onStateChange.cancel();
+      }
+    }
+    this.rxSources.end();
+  };
+
+  private reopenTransport(): void {
+    this.reopenRetry.stop();
+    this.reopenRetry.reset();
+    this.reopenRetry.attempt(async () => {
       try {
         this.transport = await this.transport.reopen();
-      } catch {
-        // reopen error, try again
-        continue;
+        this.reopenRetry.stop();
+      } catch (err: unknown) {
+        this.reopenRetry.retry(err as Error);
+        return;
       }
-      this.state_ = L3Face.State.UP;
-      this.emit("state", this.state_);
-      this.emit("up");
-    }
-    // either reopened or closed
-    return REOPENED;
+
+      if (this.state !== L3Face.State.DOWN) {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        void this.transport.tx((async function*() {})()); // shutdown transport
+        return;
+      }
+
+      this.state = L3Face.State.UP;
+    });
   }
 }
 

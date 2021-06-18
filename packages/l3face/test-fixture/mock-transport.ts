@@ -1,13 +1,15 @@
 import { Decoder, Encodable, Encoder } from "@ndn/tlv";
+import AbortController from "abort-controller";
+import abortable, { AbortError as IteratorAbortError } from "abortable-iterator";
 import pushable from "it-pushable";
-import pDefer from "p-defer";
+import { consume, pipeline, tap } from "streaming-iterables";
 
 import { Transport } from "..";
 
 export class MockTransport extends Transport {
   public override readonly rx = pushable<Decoder.Tlv>();
   public sent: Uint8Array[] = [];
-  private closePromise = pDefer<undefined>();
+  private readonly closing = new AbortController();
 
   constructor(attributes: Transport.Attributes = {}) {
     super(attributes);
@@ -20,24 +22,20 @@ export class MockTransport extends Transport {
 
   public close(err?: Error) {
     this.rx.end(err);
-    if (err) {
-      this.closePromise.reject(err);
-    } else {
-      this.closePromise.resolve(undefined);
-    }
+    this.closing.abort();
   }
 
   public override readonly tx = async (iterable: AsyncIterable<Uint8Array>) => {
-    const iterator = iterable[Symbol.asyncIterator]();
-    while (true) {
-      const pkt = await Promise.race([
-        iterator.next(),
-        this.closePromise.promise,
-      ]);
-      if (!pkt || pkt.done) { // normal close
-        return;
+    try {
+      await pipeline(
+        () => abortable(iterable, this.closing.signal),
+        tap((pkt) => this.send(pkt)),
+        consume,
+      );
+    } catch (err: unknown) {
+      if (!(err instanceof IteratorAbortError)) {
+        throw err;
       }
-      this.send(pkt.value);
     }
   };
 
