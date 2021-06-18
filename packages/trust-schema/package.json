@@ -33,7 +33,7 @@
     "@ndn/tlv": "workspace:*",
     "minimalistic-assert": "^1.0.1",
     "mnemonist": "^0.38.3",
-    "tslib": "^2.2.0"
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:*",

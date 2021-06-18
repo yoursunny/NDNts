@@ -34,7 +34,7 @@
     "it-pushable": "^1.4.2",
     "minimalistic-assert": "^1.0.1",
     "streaming-iterables": "^6.0.0",
-    "tslib": "^2.2.0"
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@ndn/keychain": "workspace:*",

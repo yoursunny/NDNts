@@ -58,10 +58,13 @@ export class UdpTransport extends Transport {
   }
 
   public override readonly tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
-    for await (const pkt of iterable) {
-      this.txSock.send(pkt);
+    try {
+      for await (const pkt of iterable) {
+        this.txSock.send(pkt);
+      }
+    } finally {
+      this.close();
     }
-    this.close();
   };
 }
 

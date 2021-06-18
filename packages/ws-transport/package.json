@@ -30,13 +30,13 @@
     "abort-controller": "^3.0.0",
     "p-event": "^4.2.0",
     "streaming-iterables": "^6.0.0",
-    "tslib": "^2.2.0",
-    "ws": "^7.4.6"
+    "tslib": "^2.3.0",
+    "ws": "^7.5.0"
   },
   "devDependencies": {
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "@types/ws": "^7.4.4",
+    "@types/ws": "^7.4.5",
     "it-pushable": "^1.4.2"
   }
 }

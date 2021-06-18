@@ -61,6 +61,8 @@ export interface ConnectRouterOptions {
 }
 
 export interface ConnectRouterResult {
+  /** Input router string. */
+  router: string;
   /** Created face */
   face: FwFace;
   /** Execution duration of testConnection function. */
@@ -92,7 +94,7 @@ export async function connectToRouter(router: string, opts: ConnectRouterOptions
   for (const routeName of addRoutes) {
     face.addRoute(routeName, false);
   }
-  return { face, testConnectionDuration, testConnectionResult };
+  return { router, face, testConnectionDuration, testConnectionResult };
 }
 
 async function testConnection(

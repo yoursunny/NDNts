@@ -30,17 +30,20 @@ export class WsTransport extends Transport {
   }
 
   public override readonly tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
-    for await (const pkt of iterable) {
-      if (this.sock.readyState !== this.sock.OPEN) {
-        throw new Error(`unexpected WebSocket.readyState ${this.sock.readyState}`);
-      }
-      this.sock.send(pkt);
+    try {
+      for await (const pkt of iterable) {
+        if (this.sock.readyState !== this.sock.OPEN) {
+          throw new Error(`unexpected WebSocket.readyState ${this.sock.readyState}`);
+        }
+        this.sock.send(pkt);
 
-      if (this.sock.bufferedAmount > this.highWaterMark) {
-        await this.waitForTxBuffer();
+        if (this.sock.bufferedAmount > this.highWaterMark) {
+          await this.waitForTxBuffer();
+        }
       }
+    } finally {
+      this.close();
     }
-    this.close();
   };
 
   private waitForTxBuffer(): Promise<void> {

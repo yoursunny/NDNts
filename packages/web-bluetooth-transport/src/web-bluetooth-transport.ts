@@ -44,10 +44,13 @@ export class WebBluetoothTransport extends Transport {
   }
 
   public override readonly tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
-    for await (const pkt of iterable) {
-      await this.cs.writeValue(pkt);
+    try {
+      for await (const pkt of iterable) {
+        await this.cs.writeValue(pkt);
+      }
+    } finally {
+      this.close();
     }
-    this.close();
   };
 
   /** Request for a connection. */

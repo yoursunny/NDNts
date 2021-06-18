@@ -4,6 +4,7 @@ const parent = require("../../jest.config.js");
 /** @type {import('@jest/types').Config.InitialOptions} */
 module.exports = {
   ...parent,
+  maxWorkers: 1,
 
   globalSetup: "jest-environment-puppeteer/setup",
   globalTeardown: "jest-environment-puppeteer/teardown",
