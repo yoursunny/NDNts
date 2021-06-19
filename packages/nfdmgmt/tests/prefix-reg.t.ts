@@ -1,9 +1,10 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Forwarder, FwPacket } from "@ndn/fw";
+import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, Interest, Name } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
+import { EventEmitter } from "events";
 
 import { ControlCommand, enableNfdPrefixReg } from "..";
 
@@ -39,47 +40,62 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
       expect(type).toBe(0x68);
       expect(vd.decode(Name)).toEqualName("/R");
     });
-    const status = verbs.length === 1 ? 400 : 200;
+    const status = [1, 5].includes(verbs.length) ? 400 : 200;
     const data = new Data(interest.name, Encoder.encode([0x65,
       [0x66, NNI(status)],
       [0x67]]));
     return FwPacket.create(data, token);
   };
-  const uplink = fw.addFace({
-    async *transform(iterable) {
+  const uplinkL3 = new class extends EventEmitter implements FwFace.RxTxDuplex {
+    async *duplex(iterable: AsyncIterable<FwPacket>) {
       for await (const { l3, token } of iterable) {
         expect(l3).toBeInstanceOf(Interest);
         yield remoteProcess(l3 as Interest, token);
       }
-    },
-  }, { local: faceIsLocal });
+    }
+  }();
+  const uplink = fw.addFace(uplinkL3, { local: faceIsLocal });
   enableNfdPrefixReg(uplink, {
     commandPrefix,
     retry: {
       minTimeout: 1,
       maxTimeout: 1,
     },
-    refreshInterval: 200,
+    refreshInterval: 300,
   });
 
   const appFace = fw.addFace(new NoopFace());
   appFace.addAnnouncement(new Name("/R"));
   await new Promise((r) => setTimeout(r, 70));
   expect(verbs).toHaveLength(2);
-  expect(verbs[0]).toBe("register");
+  expect(verbs[0]).toBe("register"); // status 400
   expect(verbs[1]).toBe("register");
 
-  await new Promise((r) => setTimeout(r, 230));
+  await new Promise((r) => setTimeout(r, 330));
   expect(verbs).toHaveLength(3);
   expect(verbs[2]).toBe("register");
 
+  uplinkL3.emit("down");
+  await new Promise((r) => setTimeout(r, 100));
+  uplinkL3.emit("up");
+  await new Promise((r) => setTimeout(r, 100));
+  expect(verbs).toHaveLength(4);
+  expect(verbs[3]).toBe("register");
+
   appFace.removeAnnouncement(new Name("/R"));
   await new Promise((r) => setTimeout(r, 70));
-  expect(verbs).toHaveLength(4);
-  expect(verbs[3]).toBe("unregister");
+  expect(verbs).toHaveLength(6);
+  expect(verbs[4]).toBe("unregister"); // status 400
+  expect(verbs[5]).toBe("unregister");
 
-  await new Promise((r) => setTimeout(r, 230));
-  expect(verbs).toHaveLength(4);
+  await new Promise((r) => setTimeout(r, 330));
+  expect(verbs).toHaveLength(6);
+
+  uplinkL3.emit("down");
+  await new Promise((r) => setTimeout(r, 100));
+  uplinkL3.emit("up");
+  await new Promise((r) => setTimeout(r, 100));
+  expect(verbs).toHaveLength(6);
 
   uplink.close();
 });

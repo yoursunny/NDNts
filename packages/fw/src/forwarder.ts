@@ -36,7 +36,7 @@ export interface Forwarder extends TypedEmitter<Events> {
   readonly faces: Set<FwFace>;
 
   /** Add a logical face to the forwarding plane. */
-  addFace(face: FwFace.RxTx | FwFace.RxTxTransform, attributes?: FwFace.Attributes): FwFace;
+  addFace(face: FwFace.RxTx | FwFace.RxTxDuplex, attributes?: FwFace.Attributes): FwFace;
 }
 export namespace Forwarder {
   export interface Options {
@@ -93,7 +93,7 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
     this.pit = new Pit(options.dataNoTokenMatch);
   }
 
-  public addFace(face: FwFace.RxTx | FwFace.RxTxTransform, attributes: FwFace.Attributes = {}): FwFace {
+  public addFace(face: FwFace.RxTx | FwFace.RxTxDuplex, attributes: FwFace.Attributes = {}): FwFace {
     return new FaceImpl(this, face, attributes);
   }
 

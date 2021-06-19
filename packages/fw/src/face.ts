@@ -10,7 +10,11 @@ import type { Forwarder, ForwarderImpl } from "./forwarder";
 import type { FwPacket } from "./packet";
 
 interface Events {
-  /** Emitted upon face closing. */
+  /** Emitted upon face is up as reported by lower layer. */
+  up: () => void;
+  /** Emitted upon face is down as reported by lower layer. */
+  down: () => void;
+  /** Emitted upon face is closed. */
   close: () => void;
 }
 
@@ -60,7 +64,12 @@ export namespace FwFace {
 
   export type RouteAnnouncement = boolean | number | Name;
 
-  interface RxTxBase {
+  export interface RxTxEvents {
+    up: () => void;
+    down: () => void;
+  }
+
+  export interface RxTxBase extends Partial<TypedEmitter<RxTxEvents>> {
     readonly attributes?: Attributes;
   }
 
@@ -69,13 +78,25 @@ export namespace FwFace {
     tx: (iterable: AsyncIterable<FwPacket>) => void;
   }
 
-  export interface RxTxTransform extends RxTxBase {
+  export interface RxTxDuplex extends RxTxBase {
     /**
      * The transform function takes an iterable of packets sent by the forwarder,
      * and returns an iterable of packets received by the forwarder.
      */
-    transform: (iterable: AsyncIterable<FwPacket>) => AsyncIterable<FwPacket>;
+    duplex: (iterable: AsyncIterable<FwPacket>) => AsyncIterable<FwPacket>;
   }
+}
+
+function duplexFromRxTx(rxtx: FwFace.RxTx | FwFace.RxTxDuplex): FwFace.RxTxDuplex["duplex"] {
+  return (iterable: AsyncIterable<FwPacket>) => {
+    const rxtxD = rxtx as FwFace.RxTxDuplex;
+    if (typeof rxtxD.duplex === "function") {
+      return rxtxD.duplex(iterable);
+    }
+    const rxtxS = rxtx as FwFace.RxTx;
+    rxtxS.tx(iterable);
+    return rxtxS.rx;
+  };
 }
 
 function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement): Name | undefined {
@@ -98,7 +119,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
 
   constructor(
       public readonly fw: ForwarderImpl,
-      rxtx: FwFace.RxTx | FwFace.RxTxTransform,
+      private readonly rxtx: FwFace.RxTx | FwFace.RxTxDuplex,
       attributes: FwFace.Attributes,
   ) {
     super();
@@ -116,19 +137,14 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
       () => this.txLoop(),
       buffer(this.fw.options.faceTxBuffer),
       tap((pkt) => fw.emit("pkttx", this, pkt)),
-      (iterable: AsyncIterable<FwPacket>) => {
-        const rxtxT = rxtx as FwFace.RxTxTransform;
-        if (typeof rxtxT.transform === "function") {
-          return rxtxT.transform(iterable);
-        }
-        const rxtxS = rxtx as FwFace.RxTx;
-        rxtxS.tx(iterable);
-        return rxtxS.rx;
-      },
+      duplexFromRxTx(rxtx),
       tap((pkt) => fw.emit("pktrx", this, pkt)),
       buffer(this.fw.options.faceRxBuffer),
       this.rxLoop,
     );
+
+    rxtx.on?.("up", this.handleLowerUp);
+    rxtx.on?.("down", this.handleLowerDown);
   }
 
   public close(): void {
@@ -136,6 +152,8 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
       return;
     }
     this.running = false;
+    this.rxtx.off?.("up", this.handleLowerUp);
+    this.rxtx.off?.("down", this.handleLowerDown);
 
     this.fw.faces.delete(this);
     for (const nameHex of this.routes.keys()) {
@@ -220,6 +238,14 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
       --this.txQueueLength;
     })();
   }
+
+  private readonly handleLowerUp = () => {
+    this.emit("up");
+  };
+
+  private readonly handleLowerDown = () => {
+    this.emit("down");
+  };
 
   private readonly rxLoop = async (input: AsyncIterable<FwPacket>) => {
     for await (const pkt of filter(() => this.running, input)) {

@@ -11,7 +11,7 @@ import * as retry from "retry";
 import { consume, filter, map, pipeline } from "streaming-iterables";
 import type TypedEmitter from "typed-emitter";
 
-import type { Transport } from "./mod";
+import { Transport } from "./transport";
 
 interface Events {
   /** Emitted upon face state change. */
@@ -33,6 +33,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
   public readonly attributes: L3Face.Attributes;
   public readonly lp: LpService;
   public readonly rx: AsyncIterable<FwPacket>;
+  private readonly wireTokenPrefix = Math.floor(Math.random() * 0x10000);
 
   public get state() { return this.state_; }
   private set state(newState) {
@@ -62,13 +63,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
   private state_: L3Face.State = L3Face.State.UP;
   private lastError?: unknown;
   private readonly rxSources = pushable<Transport["rx"]>();
-  private readonly reopenRetry = retry.operation({
-    forever: true,
-    minTimeout: 1,
-    randomize: true,
-  });
-
-  private readonly wireTokenPrefix = Math.floor(Math.random() * 0x10000);
+  private reopenRetry?: retry.RetryOperation;
 
   constructor(
       private transport: Transport,
@@ -186,27 +181,35 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
         onStateChange.cancel();
       }
     }
+    this.reopenRetry?.stop();
     this.rxSources.end();
   };
 
   private reopenTransport(): void {
-    this.reopenRetry.stop();
-    this.reopenRetry.reset();
+    this.reopenRetry?.stop();
+    this.reopenRetry = retry.operation({
+      forever: true,
+      minTimeout: 100,
+      maxTimeout: 60000,
+      randomize: true,
+    });
     this.reopenRetry.attempt(async () => {
       try {
         this.transport = await this.transport.reopen();
-        this.reopenRetry.stop();
       } catch (err: unknown) {
-        this.reopenRetry.retry(err as Error);
+        if (!(err instanceof Transport.ReopenNotSupportedError)) {
+          this.reopenRetry!.retry(err as Error);
+        }
         return;
       }
 
-      if (this.state !== L3Face.State.DOWN) {
+      if (this.state === L3Face.State.CLOSED) {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         void this.transport.tx((async function*() {})()); // shutdown transport
         return;
       }
 
+      this.reopenRetry!.stop();
       this.state = L3Face.State.UP;
     });
   }

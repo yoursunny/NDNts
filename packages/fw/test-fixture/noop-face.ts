@@ -1,22 +1,12 @@
 import type { FwFace, FwPacket } from "..";
 
 /** A face that does nothing and remains open. */
-export class NoopFace implements FwFace.RxTxTransform {
+export class NoopFace implements FwFace.RxTxDuplex {
   public attributes = {
     describe: "NoopFace",
   };
 
-  public transform(): AsyncIterable<FwPacket> {
-    return {
-      [Symbol.asyncIterator]() {
-        return {
-          next() {
-            // This Promise is neither resolved nor rejected.
-            // It would not prevent Node.js from exiting because there are no timers.
-            return new Promise<IteratorReturnResult<FwPacket>>(() => undefined);
-          },
-        };
-      },
-    };
+  public async *duplex(): AsyncIterable<FwPacket> { // eslint-disable-line require-yield
+    await new Promise<void>(() => undefined);
   }
 }

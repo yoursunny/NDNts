@@ -12,8 +12,7 @@ export abstract class Transport {
   protected constructor(public readonly attributes: Transport.Attributes) {}
 
   public reopen(): Promise<Transport> {
-    /* istanbul ignore next */
-    return Promise.reject(new Error("reopen not supported"));
+    return Promise.reject(new Transport.ReopenNotSupportedError());
   }
 
   public toString() {
@@ -37,4 +36,10 @@ export namespace Transport {
    * @returns Promise that resolves when iterable is exhausted, and rejects upon error.
    */
   export type Tx = (iterable: AsyncIterable<Uint8Array>) => Promise<void>;
+
+  export class ReopenNotSupportedError extends Error {
+    constructor() {
+      super("reopen not supported");
+    }
+  }
 }

@@ -54,7 +54,14 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     this.refreshInterval = opts.refreshInterval ?? 300000;
     this.preloadCertName = opts.preloadCertName;
     this.preloadFromKeyChain = opts.preloadFromKeyChain;
+
+    face.on("up", this.handleFaceUp);
     face.once("close", () => this.disable());
+  }
+
+  public override disable(): void {
+    this.face.off("up", this.handleFaceUp);
+    super.disable();
   }
 
   private async tap(): Promise<[opts: ControlCommand.Options, untap: () => void]> {
@@ -114,6 +121,14 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     return Certificate.fromData(data);
   }
 
+  private readonly handleFaceUp = () => {
+    for (const [nameHex, { status, state }] of this.table) {
+      if (status === ReadvertiseDestination.Status.ADVERTISED) {
+        this.scheduleRefresh(nameHex, state, 100);
+      }
+    }
+  };
+
   protected override async doAdvertise(name: Name, state: State, nameHex: string) {
     const [opts, untap] = await this.tap();
     try {
@@ -129,13 +144,20 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     } finally {
       untap();
     }
-    if (typeof this.refreshInterval === "number") {
-      clearTimeout(state.refreshTimer!);
-      state.refreshTimer = setTimeout(() => {
-        this.table.get(nameHex)!.status = ReadvertiseDestination.Status.ADVERTISING;
-        this.queue.push(nameHex);
-      }, this.refreshInterval);
+    if (this.refreshInterval !== false) {
+      this.scheduleRefresh(nameHex, state, this.refreshInterval);
     }
+  }
+
+  private scheduleRefresh(nameHex: string, state: State, after: number): void {
+    clearTimeout(state.refreshTimer!);
+    state.refreshTimer = setTimeout(() => {
+      const record = this.table.get(nameHex);
+      if (record?.status === ReadvertiseDestination.Status.ADVERTISED) {
+        record.status = ReadvertiseDestination.Status.ADVERTISING;
+        this.restart(nameHex, record);
+      }
+    }, after);
   }
 
   protected override async doWithdraw(name: Name, state: State) {

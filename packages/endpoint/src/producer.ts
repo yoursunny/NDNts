@@ -134,7 +134,7 @@ export class EndpointProducer {
     }
 
     const face = this.fw.addFace({
-      transform: flatTransform(concurrency, async function*({ l3: interest, token }: FwPacket) {
+      duplex: flatTransform(concurrency, async function*({ l3: interest, token }: FwPacket) {
         if (!(interest instanceof Interest)) {
           return;
         }

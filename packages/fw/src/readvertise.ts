@@ -50,7 +50,7 @@ export class Readvertise {
  * A destination of prefix advertisement.
  *
  * Generally, a prefix advertised to a destination would cause Interests matching the prefix
- * to come to the forwarder. aka prefix registration.
+ * to come to the forwarder, aka prefix registration.
  */
 export abstract class ReadvertiseDestination<State extends {} = {}> {
   private readvertise?: Readvertise;
@@ -108,6 +108,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
 
   /** Set a prefix to be withdrawn. */
   public withdraw(name: Name, nameHex: string): void {
+    void name;
     const record = this.table.get(nameHex);
     if (!record) {
       return;
@@ -116,7 +117,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
     this.restart(nameHex, record);
   }
 
-  private restart(nameHex: string, record: ReadvertiseDestination.Record<State>) {
+  protected restart(nameHex: string, record: ReadvertiseDestination.Record<State>) {
     record.retry?.stop();
     record.retry = retry.operation(this.retryOptions);
     record.retry.attempt(() => {
@@ -163,6 +164,8 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
 
   /** Create per-prefix state. */
   protected makeState(name: Name, nameHex: string): State {
+    void name;
+    void nameHex;
     return {} as any;
   }
 
