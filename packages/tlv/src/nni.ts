@@ -39,7 +39,8 @@ class Nni8Big {
   constructor(private readonly n: bigint) {}
 
   public encodeTo(encoder: Encoder) {
-    encodeBig64(Encoder.asDataView(encoder.prependRoom(8)), this.n);
+    const dv = Encoder.asDataView(encoder.prependRoom(8));
+    Encoder.setBigUint64(dv, 0, this.n);
   }
 }
 
@@ -54,32 +55,6 @@ function decode32(dv: DataView): number {
   }
   throw new Error("incorrect TLV-LENGTH of NNI");
 }
-
-// iOS 14 supports BigInt constructor but lacks DataView methods.
-const decodeBig: (dv: DataView) => bigint =
-  typeof DataView.prototype.getBigUint64 === "function" ?
-    ((dv) => {
-      if (dv.byteLength === 8) {
-        return dv.getBigUint64(0);
-      }
-      return BigInt(decode32(dv));
-    }) :
-  /* istanbul ignore next */
-    ((dv) => {
-      if (dv.byteLength === 8) {
-        return BigInt(dv.getUint32(0)) * 0x100000000n + BigInt(dv.getUint32(4));
-      }
-      return BigInt(decode32(dv));
-    });
-
-const encodeBig64: (dv: DataView, n: bigint) => void =
-typeof DataView.prototype.setBigUint64 === "function" ?
-  ((dv, n) => dv.setBigUint64(0, n)) :
-/* istanbul ignore next */
-  ((dv, n) => {
-    dv.setUint32(0, Number(n / 0x100000000n));
-    dv.setUint32(4, Number(n % 0x100000000n));
-  });
 
 type Len = 1 | 2 | 4 | 8;
 
@@ -164,7 +139,7 @@ export namespace NNI {
 
     const dv = Encoder.asDataView(value);
     if (big) {
-      return decodeBig(dv);
+      return dv.byteLength === 8 ? Encoder.getBigUint64(dv, 0) : BigInt(decode32(dv));
     }
 
     if (dv.byteLength === 8) {

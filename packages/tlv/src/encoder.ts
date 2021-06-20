@@ -155,13 +155,48 @@ export class Encoder {
 }
 
 export namespace Encoder {
+  /** Create a DataView over a Uint8Array. */
   export function asDataView(a: Uint8Array): DataView {
     return new DataView(a.buffer, a.byteOffset, a.byteLength);
   }
 
+  export namespace DataViewPolyfill {
+    export function getBigUint64(dv: DataView, byteOffset: number, littleEndian?: boolean): bigint {
+      if (littleEndian) {
+        return (BigInt(dv.getUint32(byteOffset + 4, true)) << 32n) | BigInt(dv.getUint32(byteOffset, true));
+      }
+      return BigInt(dv.getUint32(byteOffset + 4)) | (BigInt(dv.getUint32(byteOffset)) << 32n);
+    }
+
+    export function setBigUint64(dv: DataView, byteOffset: number, value: bigint, littleEndian?: boolean): void {
+      if (littleEndian) {
+        dv.setUint32(byteOffset + 4, Number(value >> 32n), true);
+        dv.setUint32(byteOffset, Number(value & 0xFFFFFFFFn), true);
+      } else {
+        dv.setUint32(byteOffset + 4, Number(value & 0xFFFFFFFFn));
+        dv.setUint32(byteOffset, Number(value >> 32n));
+      }
+    }
+  }
+
+  /** DataView.prototype.getBigUint64 with polyfill for iOS 14. */
+  export const getBigUint64: (dv: DataView, byteOffset: number, littleEndian?: boolean) => bigint =
+    typeof DataView.prototype.getBigUint64 === "function" ?
+      (dv, byteOffset, littleEndian) => dv.getBigUint64(byteOffset, littleEndian) :
+      /* istanbul ignore next */
+      DataViewPolyfill.getBigUint64;
+
+  /** DataView.prototype.setBigUint64 with polyfill for iOS 14. */
+  export const setBigUint64: (dv: DataView, byteOffset: number, value: bigint, littleEndian?: boolean) => void =
+    typeof DataView.prototype.setBigUint64 === "function" ?
+      (dv, byteOffset, value, littleEndian) => dv.setBigUint64(byteOffset, value, littleEndian) :
+      /* istanbul ignore next */
+      DataViewPolyfill.setBigUint64;
+
   export const OmitEmpty = Symbol("OmitEmpty");
 
-  export function encode(obj: Encodable | readonly Encodable[], initBufSize: number = BUF_INIT_SIZE) {
+  /** Encode a single object into Uint8Array. */
+  export function encode(obj: Encodable | readonly Encodable[], initBufSize: number = BUF_INIT_SIZE): Uint8Array {
     const encoder = new Encoder(initBufSize);
     encoder.encode(obj);
     return encoder.output;

@@ -9,7 +9,7 @@ function isCritical(tt: number): boolean {
 
 const EVD = new EvDecoder<LpPacket>("LpPacket", TT.LpPacket)
   .setIsCritical(isCritical)
-  .add(TT.LpSeqNum, (t, { value }) => t.fragSeqNum = Encoder.asDataView(value).getBigUint64(0))
+  .add(TT.LpSeqNum, (t, { value }) => t.fragSeqNum = Encoder.getBigUint64(Encoder.asDataView(value), 0))
   .add(TT.FragIndex, (t, { nni }) => t.fragIndex = nni)
   .add(TT.FragCount, (t, { nni }) => t.fragCount = nni)
   .add(TT.PitToken, (t, { value }) => t.pitToken = value)
