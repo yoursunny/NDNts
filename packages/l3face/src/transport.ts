@@ -11,6 +11,10 @@ export abstract class Transport {
 
   protected constructor(public readonly attributes: Transport.Attributes) {}
 
+  /**
+   * Reopen the transport after it has failed.
+   * @returns the same transport or a new transport after it has been reconnected.
+   */
   public reopen(): Promise<Transport> {
     return Promise.reject(new Transport.ReopenNotSupportedError());
   }
@@ -37,6 +41,10 @@ export namespace Transport {
    */
   export type Tx = (iterable: AsyncIterable<Uint8Array>) => Promise<void>;
 
+  /**
+   * Error thrown by transport.reopen() to indicate that reopen operation is not supported.
+   * No further reopen() will be attempted.
+   */
   export class ReopenNotSupportedError extends Error {
     constructor() {
       super("reopen not supported");
