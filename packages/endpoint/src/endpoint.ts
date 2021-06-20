@@ -9,7 +9,7 @@ export interface Options extends ConsumerOptions, ProducerOptions {
 }
 
 /**
- * Endpoint is the main entrypoint for an application to interact with the forwarding plane.
+ * Endpoint is the main entry point for an application to interact with the forwarding plane.
  * It provides basic consumer and producer functionality.
  */
 export class Endpoint {
@@ -19,7 +19,6 @@ export class Endpoint {
     this.fw = opts.fw ?? Forwarder.getDefault();
   }
 }
-
 export interface Endpoint extends EndpointConsumer, EndpointProducer {}
 applyMixins(Endpoint, [EndpointConsumer, EndpointProducer]);
 

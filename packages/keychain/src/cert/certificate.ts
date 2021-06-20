@@ -23,7 +23,7 @@ export class Certificate {
       throw new Error("ContentType must be KEY");
     }
     const validity = ValidityPeriod.get(sigInfo);
-    if (typeof validity === "undefined") {
+    if (!validity) {
       throw new Error("ValidityPeriod is missing");
     }
     const cert = new Certificate(data, validity);

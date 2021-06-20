@@ -14,7 +14,7 @@ function parseKey(kv: ParameterKV, key: string) {
 
 function parseValue(kv: ParameterKV, value: Uint8Array) {
   const key = seenKey.get(kv);
-  if (typeof key === "undefined") {
+  if (key === undefined) {
     throw new Error("missing ParameterKey");
   }
   seenKey.delete(kv);
@@ -23,7 +23,7 @@ function parseValue(kv: ParameterKV, value: Uint8Array) {
 
 function finish(kv: ParameterKV) {
   const oldKey = seenKey.get(kv);
-  if (typeof oldKey !== "undefined") {
+  if (oldKey !== undefined) {
     throw new Error(`missing ParameterValue for ${oldKey}`);
   }
 }

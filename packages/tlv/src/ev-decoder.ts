@@ -147,7 +147,7 @@ export class EvDecoder<T> {
       missingTlvTypes.delete(tt);
 
       const rule = this.rules.get(tt);
-      if (typeof rule === "undefined") {
+      if (rule === undefined) {
         if (!this.unknownCb(target, tlv, currentOrder)) {
           this.handleUnrecognized(tt, "unknown");
         }

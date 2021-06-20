@@ -83,7 +83,7 @@ const EVD = new EvDecoder<Fields>("Interest", TT.Interest)
     if (!t.paramsPortion) {
       throw new Error("AppParameters missing in signed Interest");
     }
-    if (typeof t.sigInfo === "undefined") {
+    if (t.sigInfo === undefined) {
       throw new Error("ISigInfo missing in signed Interest");
     }
 
@@ -185,12 +185,12 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
 
   public async validateParamsDigest(): Promise<void> {
     const f = this[FIELDS];
-    if (typeof f.appParameters === "undefined") {
+    if (f.appParameters === undefined) {
       return;
     }
 
     const params = f.paramsPortion;
-    if (typeof params === "undefined") {
+    if (params === undefined) {
       throw new Error("parameters portion is empty");
     }
 
@@ -327,19 +327,19 @@ export namespace Interest {
       hopLimit,
     } = input;
     return (interest) => {
-      if (typeof canBePrefix !== "undefined") {
+      if (canBePrefix !== undefined) {
         interest.canBePrefix = canBePrefix;
       }
-      if (typeof mustBeFresh !== "undefined") {
+      if (mustBeFresh !== undefined) {
         interest.mustBeFresh = mustBeFresh;
       }
-      if (typeof fwHint !== "undefined") {
+      if (fwHint !== undefined) {
         interest.fwHint = fwHint;
       }
-      if (typeof lifetime !== "undefined") {
+      if (lifetime !== undefined) {
         interest.lifetime = lifetime;
       }
-      if (typeof hopLimit !== "undefined") {
+      if (hopLimit !== undefined) {
         interest.hopLimit = hopLimit;
       }
     };

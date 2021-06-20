@@ -92,7 +92,7 @@ export class EndpointProducer {
    * @param handler function to handle incoming Interest.
    */
   public produce(prefixInput: NameLike | undefined, handler: Handler, opts: Options = {}): Producer {
-    const prefix = typeof prefixInput === "undefined" ? undefined : new Name(prefixInput);
+    const prefix = prefixInput === undefined ? undefined : new Name(prefixInput);
     const {
       describe = `produce(${prefix})`,
       routeCapture = true,

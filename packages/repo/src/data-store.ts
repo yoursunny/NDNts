@@ -207,7 +207,7 @@ export class Transaction {
         }
         return (exists ? act === "delete" : act === "insert") ? diff : undefined;
       }),
-      filter((diff): diff is Diff => typeof diff !== "undefined"),
+      filter((diff): diff is Diff => diff !== undefined),
     ));
 
     await this.chain.write();

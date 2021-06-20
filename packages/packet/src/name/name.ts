@@ -89,7 +89,7 @@ export class Name {
    */
   public at(i: number): Component {
     const comp = this.get(i);
-    if (typeof comp === "undefined") {
+    if (comp === undefined) {
       throw new Error(`component ${i} out of range`);
     }
     return comp;

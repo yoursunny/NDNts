@@ -63,7 +63,7 @@ export class NdnsecKeyChain extends KeyChain {
         const certName = new Name(line.split(" ").pop());
         const { issuerId, keyName } = CertNaming.parseCertName(certName);
         const certList = keyCerts.get(keyName.toString());
-        if (typeof certList !== "undefined" && !issuerId.equals(IMPORTING_ISSUER)) {
+        if (certList !== undefined && !issuerId.equals(IMPORTING_ISSUER)) {
           certList.push(certName.toString());
         }
       }

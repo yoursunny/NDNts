@@ -75,10 +75,8 @@ export class SigInfo {
       [TT.SigType, NNI(this.type)],
       this.keyLocator,
       [TT.SigNonce, Encoder.OmitEmpty, this.nonce],
-      [TT.SigTime, Encoder.OmitEmpty,
-        typeof this.time === "undefined" ? undefined : NNI(this.time)],
-      [TT.SigSeqNum, Encoder.OmitEmpty,
-        typeof this.seqNum === "undefined" ? undefined : NNI(this.seqNum)],
+      this.time === undefined ? undefined : [TT.SigTime, NNI(this.time)],
+      this.seqNum === undefined ? undefined : [TT.SigSeqNum, NNI(this.seqNum)],
       ...EXTENSIONS.encode(this),
     );
   }

@@ -80,7 +80,7 @@ assert.equal(name2.length, 4);
 // You can get an individual name component.
 const name1comp1 = name1.get(1);
 // It would return 'undefined' if the component does not exist, so we have to check.
-if (typeof name1comp1 === "undefined") {
+if (name1comp1 === undefined) {
   assert.fail(); // This isn't supposed to happen for this name, though.
 } else {
   assert.equal(name1comp1.text, "NDNts");
@@ -207,7 +207,7 @@ assert(fullName.at(-1).is(ImplicitDigest));
 const digest2 = data.getImplicitDigest();
 const fullName2 = data.getFullName();
 assert.equal(digest2, digest);
-assert(typeof fullName2 !== "undefined");
+assert(fullName2 !== undefined);
 assert.equal(fullName2.toString(), fullName.toString());
 
 // Note that you cannot modify the Data after encoding or decoding,

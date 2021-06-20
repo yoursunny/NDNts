@@ -52,7 +52,7 @@ export namespace TcpTransport {
   function connectImpl(arg1?: string | (NetConnectOpts & Options), port = DEFAULT_PORT,
       opts: Options = {}): Promise<TcpTransport> {
     const connectOpts: net.TcpNetConnectOpts =
-      typeof arg1 === "undefined" ? { port } :
+      arg1 === undefined ? { port } :
       typeof arg1 === "string" ? { host: arg1, port } :
       { host: arg1.host, port: arg1.port ?? DEFAULT_PORT, family: arg1.family };
     const {

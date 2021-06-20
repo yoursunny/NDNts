@@ -20,7 +20,7 @@ class IdbStoreProvider<T> implements StoreProvider<T> {
 
   public async get(key: string): Promise<T> {
     const value = await get<T | undefined>(key, this.store);
-    if (typeof value === "undefined") {
+    if (value === undefined) {
       throw new Error(`${key} does not exist`);
     }
     return value;

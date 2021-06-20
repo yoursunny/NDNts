@@ -51,7 +51,7 @@ export class ControlParameters {
       ...fieldDefs.map(([tt, key, type]) => {
         const value = this[key];
         switch (true) {
-          case typeof value === "undefined":
+          case value === undefined:
             return undefined;
           case type === NNI:
             return [tt, NNI(value as number)] as EncodableTlv;

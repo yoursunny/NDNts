@@ -24,7 +24,7 @@ export class MemoryStoreProvider<T> implements StoreProvider<T> {
 
   public get(key: string): Promise<T> {
     const value = this.map.get(key);
-    if (typeof value === "undefined") {
+    if (value === undefined) {
       return Promise.reject(new Error(`key ${key} is missing`));
     }
     return Promise.resolve(value);

@@ -49,7 +49,7 @@ let theUplinks: FwFace[] | undefined;
 
 /** Open the uplinks specified by NDNTS_UPLINK environ. */
 export async function openUplinks(): Promise<FwFace[]> {
-  if (typeof theUplinks === "undefined") {
+  if (!theUplinks) {
     const face = await makeFace();
     if (env.nfdreg) {
       const signerName = env.nfdregkey ?? env.key;
@@ -67,10 +67,11 @@ export async function openUplinks(): Promise<FwFace[]> {
 
 /** Close the uplinks. */
 export function closeUplinks() {
-  if (typeof theUplinks !== "undefined") {
-    for (const uplink of theUplinks) {
-      uplink.close();
-    }
-    theUplinks = undefined;
+  if (!theUplinks) {
+    return;
   }
+  for (const uplink of theUplinks) {
+    uplink.close();
+  }
+  theUplinks = undefined;
 }

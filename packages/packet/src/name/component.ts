@@ -56,7 +56,7 @@ export class Component {
     let [sType, sValue] = input.split("=", 2) as [string, string?];
     let type = TT.GenericNameComponent;
     let iType: number;
-    if (typeof sValue === "undefined") {
+    if (sValue === undefined) {
       [sType, sValue] = ["", sType];
     } else if (checkType(iType = Number.parseInt(sType, 10))) {
       type = iType;

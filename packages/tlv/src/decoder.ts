@@ -109,7 +109,7 @@ export class Decoder {
 
   private readType(): number {
     const n = this.readVarNum();
-    if (typeof n === "undefined") {
+    if (n === undefined) {
       throw new Error(`TLV-TYPE is missing near offset ${this.offset}`);
     }
     return n;
@@ -117,7 +117,7 @@ export class Decoder {
 
   private readLength(): number {
     const n = this.readVarNum();
-    if (typeof n === "undefined") {
+    if (n === undefined) {
       throw new Error(`TLV-LENGTH is missing near offset ${this.offset}`);
     }
     return n;

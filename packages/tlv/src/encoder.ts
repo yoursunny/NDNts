@@ -66,7 +66,7 @@ export class Encoder {
 
   /** Obtain part of encoding output. */
   public slice(start = 0, length?: number) {
-    if (typeof length === "undefined") {
+    if (length === undefined) {
       // iOS would interpret length=undefined as length=0, so we need a conditional
       return new Uint8Array(this.buf, this.off + start);
     }
@@ -140,7 +140,7 @@ export class Encoder {
       } else {
         this.prependValue(...(obj as readonly Encodable[]));
       }
-    } else if (typeof obj !== "undefined") {
+    } else if (obj !== undefined) {
       throw new Error("Encoder.encode: obj is not Encodable");
     }
   }

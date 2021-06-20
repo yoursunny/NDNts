@@ -199,7 +199,7 @@ class NonceRule implements Rule {
   }
 
   public check(si: SigInfo, state: KeyState) {
-    if (typeof si.nonce === "undefined" || si.nonce.length < this.minNonceLength) {
+    if (si.nonce === undefined || si.nonce.length < this.minNonceLength) {
       throw new Error("SigNonce is absent or too short");
     }
 

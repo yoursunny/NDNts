@@ -103,7 +103,7 @@ class TransformJs {
    * @param {string|undefined} browser line for browser
    */
   emitLine(node, browser) {
-    if (typeof browser === "undefined") {
+    if (browser === undefined) {
       browser = node;
     }
     this.nodeOutput.push(node);
