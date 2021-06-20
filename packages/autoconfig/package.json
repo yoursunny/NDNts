@@ -38,8 +38,7 @@
     "node-fetch": "^2.6.1",
     "p-any": "^3.0.0",
     "streaming-iterables": "^6.0.0",
-    "tslib": "^2.3.0",
-    "url-parse-lax": "^4.0.0"
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",

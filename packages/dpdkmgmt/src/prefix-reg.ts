@@ -27,6 +27,7 @@ export class NdndpdkPrefixReg extends ReadvertiseDestination<State> {
   }
 
   protected override async doWithdraw(name: Name, state: State) {
+    void name;
     if (!state.fibEntryID) {
       return;
     }

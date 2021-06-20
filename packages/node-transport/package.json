@@ -28,7 +28,8 @@
     "abort-controller": "^3.0.0",
     "p-event": "^4.2.0",
     "tslib": "^2.3.0",
-    "url-format-lax": "^1.0.0"
+    "url-format-lax": "^1.0.0",
+    "url-parse-lax": "^4.0.0"
   },
   "devDependencies": {
     "@ndn/fw": "workspace:*",

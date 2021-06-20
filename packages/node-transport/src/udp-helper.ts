@@ -18,7 +18,7 @@ export type AddressFamily = 4 | 6;
 export interface AddressFamilyOption {
   /**
    * IPv4 or IPv6.
-   * Default is IPv4, unless `host` is an IPv6 address (contains a colon).
+   * Default is IPv4, unless hostname is an IPv6 address (contains a colon).
    */
   family?: AddressFamily;
 }
@@ -28,12 +28,13 @@ export interface OpenSocketOptions extends SocketBufferOption, AddressFamilyOpti
   bind?: dgram.BindOptions;
 }
 
-async function openSocket({
-  family = 4,
+export async function openSocket({
+  family,
   recvBufferSize,
   sendBufferSize,
   bind = {},
 }: OpenSocketOptions): Promise<Socket> {
+  family ??= bind.address?.includes(":") ? 6 : 4;
   const sock = dgram.createSocket({
     type: `udp${family}`,
     reuseAddr: true,
@@ -50,7 +51,7 @@ async function openSocket({
   return sock;
 }
 
-export interface ConnectOptions extends AddressFamilyOption {
+export interface ConnectOptions {
   /** Remote address. */
   host: string;
   /** Remote port. */

@@ -1,33 +1,29 @@
 import { Forwarder, FwFace } from "@ndn/fw";
 import { L3Face } from "@ndn/l3face";
-import { UdpTransport } from "@ndn/node-transport";
-import * as dgram from "dgram";
+import { joinHostPort, splitHostPort, udp_helper, UdpTransport } from "@ndn/node-transport";
 import { gql, GraphQLClient } from "graphql-request";
 
 import { NdndpdkPrefixReg } from "./prefix-reg";
 
 /** Open a face on NDN-DPDK. */
 export async function openFace({
+  gqlServer = "http://localhost:3030",
   fw = Forwarder.getDefault(),
   attributes = {},
   localHost = "127.0.0.1",
-  gqlServer = "http://localhost:3030",
+  udp: udpOptionsInput,
 }: openFace.Options = {}): Promise<FwFace> {
-  const sock = await new Promise<dgram.Socket>((resolve, reject) => {
-    const sock = dgram.createSocket({ type: "udp4" });
-    sock.on("error", reject);
-    sock.bind(0, localHost, () => {
-      sock.off("error", reject);
-      resolve(sock);
-    });
+  const sock = await udp_helper.openSocket({
+    bind: { address: localHost },
+    ...udpOptionsInput,
   });
 
   const client = new GraphQLClient(gqlServer);
-  const { createFace: { id, locator: { local: remoteAddr } } } = await client.request<{
+  const { createFace: { id, locator } } = await client.request<{
     createFace: {
       id: string;
       locator: {
-        local: string;
+        local?: string;
       };
     };
   }>(gql`
@@ -40,12 +36,12 @@ export async function openFace({
   `, {
     locator: {
       scheme: "udp",
-      remote: `${localHost}:${sock.address().port}`,
+      remote: joinHostPort(localHost, sock.address().port),
     },
   });
 
   const prefixReg = new NdndpdkPrefixReg(client, id);
-  sock.on("close", async () => {
+  sock.once("close", async () => {
     prefixReg.disable();
     await client.request(gql`
       mutation delete($id: ID!) {
@@ -56,23 +52,11 @@ export async function openFace({
     });
   });
 
-  await new Promise<void>((resolve, reject) => {
-    const [remoteHost, remotePort] = remoteAddr.split(":");
-    const handleError = () => {
-      sock.close();
-      reject();
-    };
-    if (!remoteHost || !remotePort) {
-      handleError();
-      return;
-    }
-
-    sock.once("error", handleError);
-    sock.connect(Number.parseInt(remotePort, 10), remoteHost, () => {
-      sock.off("error", handleError);
-      resolve();
-    });
-  });
+  const { host, port } = splitHostPort(locator.local ?? "");
+  if (!host || !port) {
+    throw new Error(`unexpected locator: ${JSON.stringify(locator)}`);
+  }
+  await udp_helper.connect(sock, { host, port });
 
   const transport = new UdpTransport(sock);
   prefixReg.enable(fw);
@@ -85,6 +69,9 @@ export async function openFace({
 
 export namespace openFace {
   export interface Options {
+    /** NDN-DPDK GraphQL server. */
+    gqlServer?: string;
+
     /** NDNts logical forwarder. */
     fw?: Forwarder;
     /** NDNts face attributes. */
@@ -92,7 +79,7 @@ export namespace openFace {
 
     /** Local IPv4 address. */
     localHost?: string;
-    /** NDN-DPDK GraphQL server. */
-    gqlServer?: string;
+    /** UDP socket options. */
+    udp?: udp_helper.OpenSocketOptions;
   }
 }

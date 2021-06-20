@@ -1,11 +1,8 @@
 import type { FwFace } from "@ndn/fw";
-import { TcpTransport, UdpTransport } from "@ndn/node-transport";
+import { splitHostPort, TcpTransport, UdpTransport } from "@ndn/node-transport";
 import defaultGateway from "default-gateway";
 import nodeFetch from "node-fetch";
 import * as os from "os";
-import type { UrlObject } from "url";
-// @ts-expect-error
-import urlParse from "url-parse-lax";
 
 import type { PlatformFchDefaults } from "./fch";
 import type { ConnectRouterOptions } from "./router";
@@ -38,10 +35,7 @@ export function createFace(router: string, {
   mtu,
   connectTimeout,
 }: ConnectRouterOptions): Promise<FwFace> {
-  const uri = urlParse(router) as UrlObject;
-  const host = uri.hostname!;
-  const port = uri.port ? Number(uri.port) : undefined;
-
+  const { host, port } = splitHostPort(router);
   if (preferTcp) {
     return TcpTransport.createFace({ fw }, { host, port, connectTimeout });
   }
