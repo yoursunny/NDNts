@@ -20,14 +20,18 @@ afterEach(() => Forwarder.deleteDefault());
 
 test("buffer to buffer", async () => {
   const server = serve("/R", new BufferChunkSource(objectBody));
-  const fetched = fetch(new Name("/R"));
+  const fetched = fetch("/R");
+  expect(fetched.count).toBe(0);
   await expect(fetched).resolves.toEqualUint8Array(objectBody);
+  expect(fetched.count).toBeGreaterThan(0);
   server.close();
 });
 
 test("buffer to chunks", async () => {
   const server = serve("/R", makeChunkSource(objectBody));
-  const chunks = await collect(fetch(new Name("/R")).chunks());
+  const fetched = fetch("/R");
+  const chunks = await collect(fetched.chunks());
+  expect(fetched.count).toBe(chunks.length);
   expect(Buffer.concat(chunks)).toEqualUint8Array(objectBody);
   server.close();
 });
@@ -37,7 +41,7 @@ test("stream to stream", async () => {
   const server = serve("/R", makeChunkSource(src));
 
   const dst = new BufferWritableMock();
-  await fetch(new Name("/R")).pipe(dst);
+  await fetch("/R").pipe(dst);
 
   await new Promise((r) => dst.end(r));
   expect(objectBody.compare(dst.flatData)).toEqual(0);
@@ -51,7 +55,7 @@ describe("file source", () => {
 
   test("file to buffer", async () => {
     const server = serve("/R", new FileChunkSource(filename));
-    const fetched = fetch(new Name("/R"));
+    const fetched = fetch("/R");
     await expect(fetched).resolves.toEqualUint8Array(objectBody);
     server.close();
   });
@@ -72,12 +76,14 @@ test("iterable to unordered", async () => {
 
   let totalLength = 0;
   const receivedSegments = new Set<number>();
-  for await (const data of fetch(new Name("/R")).unordered()) {
+  const fetched = fetch("/R");
+  for await (const data of fetched.unordered()) {
     const segNum = data.name.at(-1).as(Segment2);
     expect(receivedSegments.has(segNum)).toBeFalsy();
     receivedSegments.add(segNum);
     expect(data.content.length).toBeLessThanOrEqual(6000);
     totalLength += data.content.length;
+    expect(fetched.count).toBe(receivedSegments.size);
   }
   expect(totalLength).toBe(objectBody.length);
   server.close();
@@ -86,15 +92,15 @@ test("iterable to unordered", async () => {
 test("ranged", async () => {
   const server = serve(new Name("/R"), new BufferChunkSource(objectBody, { chunkSize: 1024 })); // 1024 segments
   await Promise.all([
-    expect(fetch(new Name("/R"), { segmentRange: [0, 8] }))
+    expect(fetch("/R", { segmentRange: [0, 8] }))
       .resolves.toEqualUint8Array(objectBody.subarray(0, 8 * 1024)),
-    expect(fetch(new Name("/R"), { segmentRange: [8, 24] }))
+    expect(fetch("/R", { segmentRange: [8, 24] }))
       .resolves.toEqualUint8Array(objectBody.subarray(8 * 1024, 24 * 1024)),
-    expect(fetch(new Name("/R"), { segmentRange: [1022, undefined] }))
+    expect(fetch("/R", { segmentRange: [1022, undefined] }))
       .resolves.toEqualUint8Array(objectBody.subarray(1022 * 1024)),
-    expect(fetch(new Name("/R"), { segmentRange: [1022, 1050] }))
+    expect(fetch("/R", { segmentRange: [1022, 1050] }))
       .resolves.toEqualUint8Array(objectBody.subarray(1022 * 1024)),
-    expect(fetch(new Name("/R"), { segmentRange: [1050, undefined], retxLimit: 1 }))
+    expect(fetch("/R", { segmentRange: [1050, undefined], retxLimit: 1 }))
       .rejects.toThrow(),
   ]);
   server.close();
@@ -118,13 +124,15 @@ describe("empty object", () => {
   });
 
   test("fetch", async () => {
-    await expect(fetch(new Name("/R"))).resolves.toHaveLength(0);
+    const fetched = fetch("/R");
+    await expect(fetched).resolves.toHaveLength(0);
+    expect(fetched.count).toBe(1);
   });
 
   test("verify error", async () => {
     const verify = jest.fn<ReturnType<Verifier["verify"]>, Parameters<Verifier["verify"]>>()
       .mockRejectedValue(new Error("mock-verify-error"));
-    await expect(fetch(new Name("/R"), { verifier: { verify }, retxLimit: 0 }))
+    await expect(fetch("/R", { verifier: { verify }, retxLimit: 0 }))
       .rejects.toThrow(/mock-verify-error/);
     expect(verify).toHaveBeenCalledTimes(1);
   });
@@ -132,7 +140,7 @@ describe("empty object", () => {
 
 test("segment number convention mismatch", async () => {
   const server = serve("/R", new BufferChunkSource(objectBody), { segmentNumConvention: Segment1 });
-  await expect(fetch(new Name("/R"), { retxLimit: 1 })).rejects.toThrow();
+  await expect(fetch("/R", { retxLimit: 1 })).rejects.toThrow();
   server.close();
 });
 
@@ -153,10 +161,10 @@ test("abort", async () => {
       await new Promise((r) => setTimeout(r, 150));
       abort.abort();
     })(),
-    expect(fetch(new Name("/R"), { signal })).rejects.toThrow(),
-    expect(consume(fetch(new Name("/R"), { signal }))).rejects.toThrow(),
-    expect(consume(fetch(new Name("/R"), { signal }).chunks())).rejects.toThrow(),
-    expect(consume(fetch(new Name("/R"), { signal }).unordered())).rejects.toThrow(),
+    expect(fetch("/R", { signal })).rejects.toThrow(),
+    expect(consume(fetch("/R", { signal }))).rejects.toThrow(),
+    expect(consume(fetch("/R", { signal }).chunks())).rejects.toThrow(),
+    expect(consume(fetch("/R", { signal }).unordered())).rejects.toThrow(),
   ]);
 
   server.close();
@@ -179,7 +187,7 @@ test("congestion avoidance", async () => {
   });
   bridge.faceA.addRoute(new Name("/"));
 
-  const fetched = fetch(new Name("/R"));
+  const fetched = fetch("/R");
   await expect(fetched).resolves.toEqualUint8Array(objectBody);
   server.close();
   bridge.close();

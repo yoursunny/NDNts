@@ -147,6 +147,16 @@ export class Pit {
     this.byToken.delete(entry.token!);
   }
 
+  /**
+   * Cancel timers and other I/O resources.
+   * This instance should not be used after this operation.
+   */
+  public discard(): void {
+    for (const entry of this.byName.values()) {
+      clearTimeout(entry.expireTimer as number);
+    }
+  }
+
   /** Find or insert entry. */
   public lookup(interest: FwPacket<Interest>): PitEntry;
 

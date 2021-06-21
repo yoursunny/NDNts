@@ -77,7 +77,11 @@ export namespace Forwarder {
 
   /** Delete default instance (mainly for unit testing). */
   export function deleteDefault() {
-    replaceDefault(undefined);
+    if (!defaultInstance) {
+      return;
+    }
+    (defaultInstance as ForwarderImpl).discard();
+    defaultInstance = undefined;
   }
 }
 
@@ -134,5 +138,14 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
     // ignore Nack
     void face;
     void nack;
+  }
+
+  /**
+   * Cancel timers and other I/O resources.
+   * This instance should not be used after this operation.
+   */
+  public discard(): void {
+    this.pit.discard();
+    this.readvertise.discard();
   }
 }

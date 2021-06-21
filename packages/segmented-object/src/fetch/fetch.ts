@@ -1,7 +1,7 @@
-import type { Data, Name } from "@ndn/packet";
-import pushable from "it-pushable";
+import { Data, Name, NameLike } from "@ndn/packet";
+import { EventIterator } from "event-iterator";
 import assert from "minimalistic-assert";
-import { map, writeToStream } from "streaming-iterables";
+import { collect, map, writeToStream } from "streaming-iterables";
 
 import { Fetcher } from "./fetcher";
 import { Reorder } from "./reorder";
@@ -9,44 +9,38 @@ import { Reorder } from "./reorder";
 class FetchResult implements fetch.Result {
   constructor(private readonly name: Name, private readonly opts: fetch.Options) {}
 
-  public count = 0;
-  private unused = true;
+  public get count(): number { return this.ctx?.count ?? 0; }
+  private ctx?: Fetcher;
+  private promise?: Promise<Uint8Array>;
 
-  private makeFetcher() {
-    assert(this.unused, "fetch.Result is already used");
-    this.unused = false;
-    return new Fetcher(this.name, this.opts);
+  private startFetcher() {
+    assert(!this.ctx, "fetch.Result is already used");
+    const ctx = new Fetcher(this.name, this.opts);
+    this.ctx = ctx;
+    return new EventIterator<[segNum: number, data: Data]>(({ push, stop, fail }) => {
+      const handleSegment = (segNum: number, data: Data) => push([segNum, data]);
+      ctx.on("segment", handleSegment);
+      ctx.on("end", stop);
+      ctx.on("error", fail);
+      return () => {
+        ctx.off("segment", handleSegment);
+        ctx.off("end", stop);
+        ctx.off("error", fail);
+      };
+    });
   }
 
   public unordered() {
-    const ctx = this.makeFetcher();
-    const it = pushable<Data>();
-    ctx.on("segment", (segNum, data) => {
-      it.push(data);
-      ++this.count;
-    });
-    ctx.on("end", () => it.end());
-    ctx.on("error", (err) => it.end(err));
-    return it;
+    return map(([, data]) => data, this.startFetcher());
   }
 
-  private ordered() {
-    const ctx = this.makeFetcher();
+  private async *ordered() {
     const reorder = new Reorder<Data>(this.opts.segmentRange?.[0]);
-    const it = pushable<Data>();
-    ctx.on("segment", (segNum, data) => {
+    for await (const [segNum, data] of this.startFetcher()) {
       const ordered = reorder.push(segNum, data);
-      for (const data of ordered) {
-        it.push(data);
-        ++this.count;
-      }
-    });
-    ctx.on("end", () => {
-      assert(reorder.empty);
-      it.end();
-    });
-    ctx.on("error", (err) => it.end(err));
-    return it;
+      yield* ordered;
+    }
+    assert(reorder.empty);
   }
 
   public chunks() {
@@ -57,16 +51,9 @@ class FetchResult implements fetch.Result {
     return writeToStream(dest, this.chunks());
   }
 
-  private promise?: Promise<Uint8Array>;
-
   private async startPromise() {
-    const chunks = [] as Uint8Array[];
-    let totalLength = 0;
-    for await (const chunk of this.chunks()) {
-      chunks.push(chunk);
-      totalLength += chunk.length;
-    }
-
+    const chunks = await collect(this.chunks());
+    const totalLength = chunks.map((chunk) => chunk.length).reduce((a, b) => a + b);
     const output = new Uint8Array(totalLength);
     let offset = 0;
     for (const chunk of chunks) {
@@ -77,11 +64,11 @@ class FetchResult implements fetch.Result {
     return output;
   }
 
-  public then<R, J>(onfulfilled: ((value: Uint8Array) => R | PromiseLike<R>) | undefined | null,
-      onrejected?: ((reason: any) => J | PromiseLike<J>) | undefined | null) {
-    if (!this.promise) {
-      this.promise = this.startPromise();
-    }
+  public then<R, J>(
+      onfulfilled?: ((value: Uint8Array) => R | PromiseLike<R>) | null,
+      onrejected?: ((reason: any) => J | PromiseLike<J>) | null,
+  ) {
+    this.promise ??= this.startPromise();
     // eslint-disable-next-line promise/prefer-await-to-then
     return this.promise.then(onfulfilled, onrejected);
   }
@@ -92,8 +79,8 @@ class FetchResult implements fetch.Result {
 }
 
 /** Fetch a segment object as AsyncIterable of payload. */
-export function fetch(name: Name, opts: fetch.Options = {}): fetch.Result {
-  return new FetchResult(name, opts);
+export function fetch(name: NameLike, opts: fetch.Options = {}): fetch.Result {
+  return new FetchResult(new Name(name), opts);
 }
 
 export namespace fetch {
@@ -121,7 +108,7 @@ export namespace fetch {
     /** Write all chunks to the destination stream. */
     pipe: (dest: NodeJS.WritableStream) => Promise<void>;
 
-    /** Number of segmented retrieved. */
+    /** Number of segments retrieved so far. */
     readonly count: number;
   }
 }

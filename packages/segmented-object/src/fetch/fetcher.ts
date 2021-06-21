@@ -17,7 +17,11 @@ interface Events {
   error: (err: Error) => void;
 }
 
+/** Fetch Data packets as guided by FetchLogic. */
 export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
+  /** Number of segments retrieved so far. */
+  public get count() { return this.count_; }
+  private count_ = 0;
   private readonly logic: FetchLogic;
   private readonly face: FwFace;
 
@@ -26,8 +30,7 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
     this.logic = new FetchLogic(opts);
     this.logic.on("end", () => { this.emit("end"); this.close(); });
     this.logic.on("exceedRetxLimit", (segNum) => {
-      this.emit("error", new Error(`cannot retrieve segment ${segNum}`));
-      this.close();
+      this.fail(new Error(`cannot retrieve segment ${segNum}`));
     });
 
     this.face = (opts.endpoint?.fw ?? Forwarder.getDefault()).addFace({
@@ -66,7 +69,7 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
     );
   }
 
-  private rx = async (iterable: AsyncIterable<FwPacket>) => {
+  private readonly rx = async (iterable: AsyncIterable<FwPacket>) => {
     for await (const { l3, token } of iterable) {
       if (l3 instanceof Data && typeof token === "number") {
         void this.handleData(l3, token);
@@ -79,8 +82,7 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
     try {
       await this.opts.verifier?.verify(data);
     } catch (err: unknown) {
-      this.emit("error", new Error(`cannot verify segment ${segNum}: ${err}`));
-      this.close();
+      this.fail(new Error(`cannot verify segment ${segNum}: ${err}`));
       return;
     }
 
@@ -88,19 +90,24 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
     if (data.isFinalBlock) {
       this.logic.setFinalSegNum(segNum);
     } else {
-      const {
-        segmentNumConvention = defaultSegmentConvention,
-      } = this.opts;
-      if (data.finalBlockId?.is(segmentNumConvention)) {
-        this.logic.setFinalSegNum(data.finalBlockId.as(segmentNumConvention), true);
+      let segmentConvention: SegmentConvention;
+      if (data.finalBlockId?.is((segmentConvention = this.opts.segmentNumConvention ?? defaultSegmentConvention))) {
+        this.logic.setFinalSegNum(data.finalBlockId.as(segmentConvention), true);
       }
     }
+    ++this.count_;
     this.emit("segment", segNum, data);
   }
 
-  private handleAbort = () => {
-    this.emit("error", new Error("abort"));
-    this.close();
+  private fail(err: Error): void {
+    setTimeout(() => {
+      this.emit("error", err);
+      this.close();
+    }, 0);
+  }
+
+  private readonly handleAbort = () => {
+    this.fail(new Error("abort"));
   };
 }
 

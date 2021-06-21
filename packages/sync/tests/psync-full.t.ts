@@ -114,7 +114,7 @@ class Fixture {
   private readonly updates: Array<jest.Mock<void, [SyncUpdate<Name>]>> = [];
 
   public delay(multiple = 1): Promise<void> {
-    return new Promise((r) => setTimeout(r, 300 * multiple));
+    return new Promise((r) => setTimeout(r, 250 * multiple));
   }
 
   public add(i: number, prefix: NameLike): SyncNode<Name> {
@@ -234,7 +234,7 @@ test.each([20, 50, 100])("many updates %p", async (count) => {
   }
 });
 
-test.each([4, 8])("many nodes %p", async (count) => {
+test.each([4, 6])("many nodes %p", async (count) => {
   const f = new Fixture(count);
   await f.delay();
 
@@ -242,7 +242,7 @@ test.each([4, 8])("many nodes %p", async (count) => {
     f.add(i, `/${i}`).seqNum++;
   }
 
-  await f.delay(count * 4);
+  await f.delay(count ** 2);
   for (let i = 0; i < count; ++i) {
     f.expectUpdateTimes(i, count - 1);
     for (let j = 0; j < count; ++j) {
@@ -251,4 +251,4 @@ test.each([4, 8])("many nodes %p", async (count) => {
       expect(node!.seqNum).toBe(1);
     }
   }
-}, 10000);
+}, 20000);

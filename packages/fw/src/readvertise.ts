@@ -44,6 +44,16 @@ export class Readvertise {
       dest.withdraw(name, nameHex);
     }
   }
+
+  /**
+   * Cancel timers and other I/O resources.
+   * This instance should not be used after this operation.
+   */
+  public discard(): void {
+    for (const dest of this.destinations) {
+      dest.disable();
+    }
+  }
 }
 
 /**

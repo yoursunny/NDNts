@@ -34,7 +34,7 @@ export class FileChunkSource implements ChunkSource {
     });
   }
 
-  private opening: PLazy<FileHandleChunkSource>;
+  private readonly opening: PLazy<FileHandleChunkSource>;
 
   /* istanbul ignore next: not used when getChunk is present */
   public async *listChunks(): AsyncIterable<Chunk> {

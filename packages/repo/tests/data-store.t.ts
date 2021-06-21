@@ -34,7 +34,7 @@ describe("segmented object", () => {
   test("insert", async () => {
     const body = makeObjectBody(500 * 25);
     const producer = serve("/S", new BufferChunkSource(body, { chunkSize: 500 }));
-    await store.insert(fetch(new Name("/S")));
+    await store.insert(fetch("/S"));
     producer.close();
     await expect(collect(store.listNames())).resolves.toHaveLength(25);
   });

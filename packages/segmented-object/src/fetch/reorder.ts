@@ -1,6 +1,6 @@
 export class Reorder<T> {
   private next: number;
-  private buffer = new Map<number, T>();
+  private readonly buffer = new Map<number, T>();
 
   constructor(first = 0) {
     this.next = first;
@@ -17,14 +17,10 @@ export class Reorder<T> {
 
   private pop(): T[] {
     const result = [] as T[];
-    while (true) {
-      const obj = this.buffer.get(this.next);
-      if (obj) {
-        result.push(obj);
-        this.buffer.delete(this.next++);
-      } else {
-        break;
-      }
+    let obj: T | undefined;
+    while ((obj = this.buffer.get(this.next)) !== undefined) {
+      result.push(obj);
+      this.buffer.delete(this.next++);
     }
     return result;
   }
