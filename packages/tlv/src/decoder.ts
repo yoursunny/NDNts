@@ -1,3 +1,4 @@
+import { Encoder } from "./mod";
 import { NNI } from "./nni";
 import { fromUtf8 } from "./string";
 
@@ -34,6 +35,10 @@ class DecodedTlv {
     return NNI.decode(this.value);
   }
 
+  public get nniBig(): bigint {
+    return NNI.decode(this.value, { big: true });
+  }
+
   public get text(): string {
     return fromUtf8(this.value);
   }
@@ -46,8 +51,8 @@ class DecodedTlv {
     return this.buf.subarray(this.offsetE);
   }
 
-  constructor(public readonly type: number, private buf: Uint8Array,
-      private offsetT: number, private offsetV: number, private offsetE: number) {}
+  constructor(public readonly type: number, private readonly buf: Uint8Array,
+      private readonly offsetT: number, private readonly offsetV: number, private readonly offsetE: number) {}
 }
 
 /** TLV decoder. */
@@ -57,9 +62,12 @@ export class Decoder {
     return this.offset >= this.input.length;
   }
 
+  private readonly dv: DataView;
   private offset = 0;
 
-  constructor(private input: Uint8Array) {}
+  constructor(private readonly input: Uint8Array) {
+    this.dv = Encoder.asDataView(input);
+  }
 
   /** Read TLV structure. */
   public read(): Decoder.Tlv {
@@ -87,17 +95,13 @@ export class Decoder {
         if (this.offset > this.input.length) {
           return undefined;
         }
-        return this.input[this.offset - 2]! * 0x100 +
-               this.input[this.offset - 1]!;
+        return this.dv.getUint16(this.offset - 2);
       case 0xFE:
         this.offset += 5;
         if (this.offset > this.input.length) {
           return undefined;
         }
-        return this.input[this.offset - 4]! * 0x1000000 +
-               this.input[this.offset - 3]! * 0x10000 +
-               this.input[this.offset - 2]! * 0x100 +
-               this.input[this.offset - 1]!;
+        return this.dv.getUint32(this.offset - 4);
       case 0xFF:
         // JavaScript cannot reliably represent 64-bit integers
         return undefined;
@@ -140,7 +144,7 @@ export namespace Decoder {
     return obj instanceof Decoder || obj instanceof Uint8Array;
   }
 
-  /** Construct from Decoder.Input, or return existing Decoder. */
+  /** Construct from Uint8Array or return existing Decoder. */
   export function from(obj: Input): Decoder {
     if (obj instanceof Decoder) {
       return obj;
@@ -153,27 +157,29 @@ export namespace Decoder {
 
   /** Decoded TLV. */
   export interface Tlv {
-    /** TLV-TYPE */
+    /** TLV-TYPE. */
     readonly type: number;
-    /** TLV-LENGTH */
+    /** TLV-LENGTH. */
     readonly length: number;
-    /** TLV-VALUE */
+    /** TLV-VALUE. */
     readonly value: Uint8Array;
-    /** TLV buffer */
+    /** TLV buffer. */
     readonly tlv: Uint8Array;
-    /** sizeof tlv */
+    /** Size of TLV. */
     readonly size: number;
-    /** TLV as decoder */
+    /** TLV as decoder. */
     readonly decoder: Decoder;
-    /** TLV-VALUE as decoder */
+    /** TLV-VALUE as decoder. */
     readonly vd: Decoder;
-    /** TLV-VALUE as non-negative integer */
+    /** TLV-VALUE as non-negative integer. */
     readonly nni: number;
-    /** TLV-VALUE as UTF-8 string */
+    /** TLV-VALUE as non-negative integer bigint. */
+    readonly nniBig: bigint;
+    /** TLV-VALUE as UTF-8 string. */
     readonly text: string;
-    /** siblings before this TLV */
+    /** Siblings before this TLV. */
     readonly before: Uint8Array;
-    /** siblings after this TLV */
+    /** Siblings after this TLV. */
     readonly after: Uint8Array;
   }
 }

@@ -163,7 +163,7 @@ export class SignedInterestPolicy {
 interface KeyState {
   nonces?: Set<string>;
   time?: number;
-  seqNum?: number;
+  seqNum?: bigint;
 }
 
 interface Rule {
@@ -218,32 +218,37 @@ class NonceRule implements Rule {
   }
 }
 
-class SequencedRuleBase {
-  constructor(private readonly field: keyof KeyState & keyof SigInfo, private readonly name: string) {}
+class SequencedRuleBase<T extends number | bigint> {
+  constructor(
+      private readonly field: keyof KeyState & keyof SigInfo,
+      private readonly name: string,
+      private readonly max: (value: T, prev?: T) => T,
+  ) {}
 
   public check(si: SigInfo, state: KeyState) {
-    const value = si[this.field];
-    if (typeof value !== "number") { // TODO adjust if SigSeqNum is decoded as bignum
+    const value = si[this.field] as T | undefined;
+    if (value === undefined) {
       throw new Error(`${this.name} is absent`);
     }
 
-    if (typeof state[this.field] === "number" && value <= state[this.field]!) {
+    const prev = state[this.field] as T | undefined;
+    if (prev !== undefined && value <= prev) {
       throw new Error(`${this.name} reordering detected`);
     }
 
     return () => {
-      state[this.field] = Math.max(state[this.field] ?? 0, value);
+      (state[this.field] as T) = this.max(value, state[this.field] as T | undefined);
     };
   }
 }
 
-class TimeRule extends SequencedRuleBase implements Rule {
+class TimeRule extends SequencedRuleBase<number> implements Rule {
   private readonly maxClockOffset: number;
 
   constructor({
     maxClockOffset = 60000,
   }: SignedInterestPolicy.TimeOptions) {
-    super("time", "SigTime");
+    super("time", "SigTime", (value, prev = 0) => Math.max(value, prev));
     assert(maxClockOffset >= 0);
     this.maxClockOffset = maxClockOffset;
   }
@@ -265,19 +270,19 @@ class TimeRule extends SequencedRuleBase implements Rule {
   }
 }
 
-class SeqNumRule extends SequencedRuleBase implements Rule {
-  private readonly initialSeqNum: number;
+class SeqNumRule extends SequencedRuleBase<bigint> implements Rule {
+  private readonly beforeInitialSeqNum: bigint;
 
   constructor({
-    initialSeqNum = 0,
+    initialSeqNum = 0n,
   }: SignedInterestPolicy.SeqNumOptions) {
-    super("seqNum", "SigSeqNum");
-    this.initialSeqNum = initialSeqNum;
+    super("seqNum", "SigSeqNum", (value, prev = 0n) => value > prev ? value : prev);
+    this.beforeInitialSeqNum = initialSeqNum - 1n;
   }
 
   public update(si: SigInfo, state: KeyState) {
-    si.seqNum = 1 + (state.seqNum ?? (this.initialSeqNum - 1));
-    state.seqNum = si.seqNum;
+    state.seqNum ??= this.beforeInitialSeqNum;
+    si.seqNum = ++state.seqNum;
   }
 }
 
@@ -386,9 +391,9 @@ export namespace SignedInterestPolicy {
   export interface SeqNumOptions {
     /**
      * Initial sequence number.
-     * @default 0
+     * @default 0n
      */
-    initialSeqNum?: number;
+    initialSeqNum?: bigint;
   }
 
   /**

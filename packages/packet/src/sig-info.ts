@@ -12,7 +12,7 @@ const EVD = new EvDecoder<SigInfo>("SigInfo", [TT.ISigInfo, TT.DSigInfo])
   .add(TT.KeyLocator, (t, { decoder }) => t.keyLocator = decoder.decode(KeyLocator))
   .add(TT.SigNonce, (t, { value }) => t.nonce = value)
   .add(TT.SigTime, (t, { nni }) => t.time = nni)
-  .add(TT.SigSeqNum, (t, { nni }) => t.seqNum = nni)
+  .add(TT.SigSeqNum, (t, { nniBig }) => t.seqNum = nniBig)
   .setUnknown(EXTENSIONS.decodeUnknown);
 
 /** SignatureInfo on Interest or Data. */
@@ -25,7 +25,7 @@ export class SigInfo {
   public keyLocator?: KeyLocator;
   public nonce?: Uint8Array;
   public time?: number;
-  public seqNum?: number; // TODO consider using bignum
+  public seqNum?: bigint;
   public [Extensible.TAG] = Extensible.newRecords();
 
   /**
@@ -116,7 +116,7 @@ export namespace SigInfo {
     };
   }
 
-  export function SeqNum(v: number) {
+  export function SeqNum(v: bigint) {
     return {
       [ctorAssign](si: SigInfo) { si.seqNum = v; },
     };

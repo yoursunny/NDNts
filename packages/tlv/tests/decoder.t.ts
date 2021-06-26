@@ -6,7 +6,7 @@ test("simple", () => {
   const decoder = new Decoder(Uint8Array.of(
     0x01, 0x00,
     0xFD, 0x04, 0x09, 0x02, 0xB0, 0xB1,
-    0xFE, 0x00, 0x02, 0x04, 0x09, 0x03, 0xC0, 0x01, 0xC2,
+    0xFE, 0x00, 0x02, 0x04, 0x09, 0x03, 0xC0, 0x01, 0x74,
   ));
 
   {
@@ -21,9 +21,11 @@ test("simple", () => {
   }
 
   {
-    const { type, value, before, after } = decoder.read();
+    const { type, value, nni, nniBig, before, after } = decoder.read();
     expect(type).toBe(0x0409);
     expect(value).toEqualUint8Array([0xB0, 0xB1]);
+    expect(nni).toBe(0xB0B1);
+    expect(nniBig).toBe(0xB0B1n);
     expect(before).toHaveLength(2);
     expect(after).toHaveLength(9);
   }
@@ -31,9 +33,10 @@ test("simple", () => {
   {
     const { type, vd } = decoder.read();
     expect(type).toBe(0x00020409);
-    const { type: type1, value, before, after } = vd.read();
+    const { type: type1, value, text, before, after } = vd.read();
     expect(type1).toBe(0xC0);
-    expect(value).toEqualUint8Array([0xC2]);
+    expect(value).toEqualUint8Array([0x74]);
+    expect(text).toBe("t");
     expect(before).toHaveLength(0);
     expect(after).toHaveLength(0);
     expect(vd.eof).toBeTruthy();

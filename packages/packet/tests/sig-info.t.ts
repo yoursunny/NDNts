@@ -47,7 +47,7 @@ test("SigInfo encode", () => {
   });
 
   si = new SigInfo(SigType.Sha256WithRsa, "/KL", SigInfo.Nonce(),
-    SigInfo.Time(1157512424208), SigInfo.SeqNum(0xF598C7));
+    SigInfo.Time(1157512424208), SigInfo.SeqNum(0xF598C7n));
   expect(si.encodeAs(TT.ISigInfo)).toEncodeAs(({ type, value }) => {
     expect(type).toBe(TT.ISigInfo);
     expect(value).toMatchTlv(
@@ -133,7 +133,7 @@ test("SigInfo decode", () => {
   expect(si.keyLocator?.digest).toEqualUint8Array([0xA0, 0xA1, 0xA2]);
   expect(si.nonce).toEqualUint8Array([0xB0, 0xB1, 0xB2, 0xB3]);
   expect(si.time).toEqual(0xC0C1);
-  expect(si.seqNum).toBe(0xD0D1);
+  expect(si.seqNum).toBe(0xD0D1n);
 });
 
 describe("SignedInterestPolicy", () => {
