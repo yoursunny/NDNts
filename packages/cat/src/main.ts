@@ -1,9 +1,10 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
+import { applyCommonArgs } from "./common";
+import { FileClientCommand } from "./file-client";
 import { GetSegmentedCommand } from "./get-segmented";
 import { PutSegmentedCommand } from "./put-segmented";
-import { applyCommonArgs } from "./util";
 
 void yargs(hideBin(process.argv))
   .scriptName("ndncat")
@@ -15,5 +16,6 @@ void yargs(hideBin(process.argv))
   .middleware(applyCommonArgs)
   .command(new GetSegmentedCommand())
   .command(new PutSegmentedCommand())
+  .command(new FileClientCommand())
   .demandCommand()
   .parse();

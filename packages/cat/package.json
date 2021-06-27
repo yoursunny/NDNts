@@ -29,12 +29,17 @@
     "@ndn/packet": "workspace:*",
     "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
+    "abort-controller": "^3.0.0",
+    "graceful-fs": "^4.2.6",
     "hard-rejection": "^2.1.0",
+    "it-pushable": "^1.4.2",
+    "streaming-iterables": "^6.0.0",
     "stdout-stream": "^1.4.1",
     "tslib": "^2.3.0",
     "yargs": "^17.0.1"
   },
   "devDependencies": {
+    "@types/graceful-fs": "^4.1.5",
     "@types/stdout-stream": "^1.4.0",
     "@types/yargs": "^17.0.0"
   }

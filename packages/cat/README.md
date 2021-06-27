@@ -57,3 +57,21 @@ ndncat get-segmented --convention1 --ver=rdr /A >/tmp/2.bin
 diff /tmp/1.bin /tmp/2.bin
 rm /tmp/1.bin /tmp/2.bin
 ```
+
+## Download Files and Folders
+
+`ndncat file-client` downloads files and folders served from [ndn6-file-server](https://github.com/yoursunny/ndn6-tools/blob/main/file-server.md).
+It accepts the following arguments:
+
+* Positional arguments: remote name prefix, local file directory.
+* `NDNTS_UPLINK` environment variable, as explained in `@ndn/cli-common` package.
+* `--jobs=4` sets number of parallel downloads.
+* `--retx=10` sets Interest retransmission limit.
+
+### Example
+
+```bash
+ndn6-file-server /demo/file-server /usr/include/linux
+
+ndncat file-client /demo/file-server /tmp/file-client-demo
+```

@@ -82,7 +82,7 @@ test("KeyChainCertSource", async () => {
 describe("CertFetcher", () => {
   let endpoint: Endpoint;
   let consumeFn: jest.SpyInstance<ReturnType<Endpoint["consume"]>, Parameters<Endpoint["consume"]>>;
-  let producer: any; // TODO awaited ReturnType<typeof makeRepoProducer>
+  let producer: makeRepoProducer.Result;
   let fetcher0: CertFetcher;
   let fetcher1: CertFetcher;
   beforeEach(async () => {

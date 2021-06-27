@@ -5,7 +5,7 @@ import { discoverVersion, fetch } from "@ndn/segmented-object";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { CommonArgs, segmentNumConvention, versionConvention } from "./util";
+import { CommonArgs, segmentNumConvention, versionConvention } from "./common";
 
 const discoverVersionChoices = { none: true, cbp: true, rdr: true };
 type DiscoverVersionChoice = keyof typeof discoverVersionChoices;

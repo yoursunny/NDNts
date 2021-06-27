@@ -71,7 +71,7 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
 
   private readonly rx = async (iterable: AsyncIterable<FwPacket>) => {
     for await (const { l3, token } of iterable) {
-      if (l3 instanceof Data && typeof token === "number") {
+      if (l3 instanceof Data && typeof token === "number" && l3.contentType === 0) {
         void this.handleData(l3, token);
       }
     }

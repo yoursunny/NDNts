@@ -2,7 +2,7 @@ import { serveMetadata } from "@ndn/rdr";
 import { FileChunkSource, serve, serveVersioned, StreamChunkSource } from "@ndn/segmented-object";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { CommonArgs, segmentNumConvention, signer, versionConvention } from "./util";
+import { CommonArgs, segmentNumConvention, signer, versionConvention } from "./common";
 
 interface Args extends CommonArgs {
   name: string;
