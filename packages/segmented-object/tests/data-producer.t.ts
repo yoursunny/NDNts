@@ -35,7 +35,7 @@ test("bufferBehind bufferAhead", async () => {
   let offset = 0;
   const src = new IterableChunkSource((async function*() {
     for (offset = 0; offset < 10000; offset += 100) {
-      yield objectBody.slice(offset, offset + 100);
+      yield objectBody.subarray(offset, offset + 100);
       await new Promise((r) => setTimeout(r, 10));
     }
   })(), { chunkSize: 100 });

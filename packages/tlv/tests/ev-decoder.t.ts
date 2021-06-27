@@ -70,7 +70,7 @@ test("decode normal", () => {
 
   const target2 = new EvdTestTarget();
   target2.setCallbacks(EVD);
-  const target3 = EVD.decodeValue(target2, new Decoder(input.slice(2)));
+  const target3 = EVD.decodeValue(target2, new Decoder(input.subarray(2)));
   expect(target3).toBe(target2);
   expect(target3.beforeTop).not.toHaveBeenCalled();
   expect(target3.afterTop).not.toHaveBeenCalled();

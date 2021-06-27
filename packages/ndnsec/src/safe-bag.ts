@@ -13,9 +13,12 @@ interface SafeBagFields {
 
 const EVD = new EvDecoder<SafeBagFields>("SafeBag", TT.SafeBag)
   .add(l3TT.Data, (t, { decoder }) => t.certificate = Certificate.fromData(decoder.decode(Data)))
-  .add(TT.EncryptedKeyBag, (t, { value }) => t.encryptedKey = value);
+  .add(TT.EncryptedKey, (t, { value }) => t.encryptedKey = value);
 
-/** ndn-cxx private key export. */
+/**
+ * ndn-cxx exported credentials.
+ * @see https://named-data.net/doc/ndn-cxx/0.7.1/specs/safe-bag.html
+ */
 export class SafeBag {
   public static create(certificate: Certificate, privateKey: Uint8Array, passphrase: string): SafeBag {
     const key = createPrivateKey({
@@ -45,7 +48,7 @@ export class SafeBag {
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(TT.SafeBag,
       this.certificate.data,
-      [TT.EncryptedKeyBag, this.encryptedKey],
+      [TT.EncryptedKey, this.encryptedKey],
     );
   }
 
@@ -81,7 +84,8 @@ export class SafeBag {
     const pkcs8 = this.decryptKey(passphrase);
     if (CryptoAlgorithm.isSigning(algo)) {
       await generateSigningKey(keyChain, keyName, algo, { importPkcs8: [pkcs8, key.spki] });
-    } else if (CryptoAlgorithm.isEncryption(algo)) {
+    } else {
+      assert(CryptoAlgorithm.isEncryption(algo));
       await generateEncryptionKey(keyChain, keyName, algo, { importPkcs8: [pkcs8, key.spki] });
     }
   }

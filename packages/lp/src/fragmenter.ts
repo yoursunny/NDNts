@@ -51,14 +51,14 @@ export class Fragmenter {
     const first = new LpPacket();
     first.copyL3HeadersFrom(full);
     first.fragSeqNum = this.seqNumGen.next();
-    first.payload = full.payload!.slice(0, sizeofFirstFragment);
+    first.payload = full.payload!.subarray(0, sizeofFirstFragment);
     fragments.push(first);
 
     for (let offset = sizeofFirstFragment; offset < sizeofPayload; offset += this.fragmentRoom) {
       const fragment = new LpPacket();
       fragment.fragSeqNum = this.seqNumGen.next();
       fragment.fragIndex = fragments.length;
-      fragment.payload = full.payload!.slice(offset, offset + this.fragmentRoom);
+      fragment.payload = full.payload!.subarray(offset, offset + this.fragmentRoom);
       fragments.push(fragment);
     }
 

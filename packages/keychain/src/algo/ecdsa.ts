@@ -17,7 +17,7 @@ const PointSizes = {
   "P-521": 66,
 };
 
-const NamedCurveOids: Record<string, EcCurve | undefined> = {
+const NamedCurveOids: Record<string, EcCurve> = {
   "2A8648CE3D030107": "P-256", // 1.2.840.10045.3.1.7
   "2B81040022": "P-384", // 1.3.132.0.34
   "2B81040023": "P-521", // 1.3.132.0.35
@@ -35,11 +35,11 @@ function determineEcCurve(der: asn1.ElementBuffer): EcCurve | false {
   if (params && params.type === 0x06 && params.value) {
     const namedCurveOid = toHex(params.value);
     const curve = NamedCurveOids[namedCurveOid];
-    if (curve) {
-      return curve;
+    /* istanbul ignore if */
+    if (!curve) {
+      throw new Error(`unknown namedCurve OID ${namedCurveOid}`);
     }
-    /* istanbul ignore next */
-    throw new Error(`unknown namedCurve OID ${namedCurveOid}`);
+    return curve;
   }
   // Some older certificates are using specifiedCurve.
   // https://redmine.named-data.net/issues/5037

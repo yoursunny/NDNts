@@ -93,12 +93,11 @@ class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I
       };
       this.detail.modifyParams?.(params, info);
 
-      const encrypted = new Uint8Array(await crypto.subtle.encrypt(params, secretKey, plaintext));
-      const ciphertext = this.detail.tagSize > 0 ? encrypted.slice(0, -this.detail.tagSize) : encrypted;
+      const encrypted = await crypto.subtle.encrypt(params, secretKey, plaintext);
       return {
-        ciphertext,
+        ciphertext: new Uint8Array(encrypted, 0, encrypted.byteLength - this.detail.tagSize),
         iv,
-        authenticationTag: this.detail.tagSize > 0 ? encrypted.slice(-this.detail.tagSize) : undefined,
+        authenticationTag: this.detail.tagSize > 0 ? new Uint8Array(encrypted, encrypted.byteLength - this.detail.tagSize) : undefined,
       };
     });
   }
@@ -111,15 +110,15 @@ class AesCommon<I = {}, G extends GenParams = GenParams> implements Encryption<I
       additionalData,
     }) => {
       this.check(iv, additionalData);
-      if ((authenticationTag?.byteLength ?? 0) !== this.detail.tagSize) {
+      if ((authenticationTag?.length ?? 0) !== this.detail.tagSize) {
         throw new Error("bad authenticationTag");
       }
 
       let encrypted = ciphertext;
       if (this.detail.tagSize > 0) {
-        encrypted = new Uint8Array(ciphertext.byteLength + this.detail.tagSize);
+        encrypted = new Uint8Array(ciphertext.length + this.detail.tagSize);
         encrypted.set(ciphertext, 0);
-        encrypted.set(authenticationTag!, ciphertext.byteLength);
+        encrypted.set(authenticationTag!, ciphertext.length);
       }
 
       const params = {

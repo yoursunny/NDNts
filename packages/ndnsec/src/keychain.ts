@@ -27,11 +27,12 @@ export class NdnsecKeyChain extends KeyChain {
     this.importOptions = importOptions;
   }
 
-  private readonly env: NodeJS.ProcessEnv = {
-    NDN_NAME_ALT_URI: "0",
-  };
-
-  private readonly importOptions: SafeBag.ImportOptions | undefined;
+  public override readonly needJwk = true;
+  private readonly env: NodeJS.ProcessEnv = { NDN_NAME_ALT_URI: "0" };
+  private readonly importOptions?: SafeBag.ImportOptions;
+  private readonly mutex = throat(1);
+  private cached?: KeyChain;
+  private readonly insertKeyLoader = new KeyStore.Loader(true);
 
   private async invokeNdnsec(argv: string[], input?: Uint8Array): Promise<{
     lines: string[];
@@ -87,8 +88,6 @@ export class NdnsecKeyChain extends KeyChain {
     return dest;
   }
 
-  private mutex = throat(1);
-  private cached?: KeyChain;
   private async load() {
     if (!this.cached) {
       this.cached = await this.copyTo(KeyChain.createTemp());
@@ -96,24 +95,21 @@ export class NdnsecKeyChain extends KeyChain {
     return this.cached;
   }
 
-  public readonly needJwk = true;
-  private readonly insertKeyLoader = new KeyStore.Loader(true);
-
-  public async listKeys(prefix = new Name()): Promise<Name[]> {
+  public override async listKeys(prefix = new Name()): Promise<Name[]> {
     return this.mutex(async () => {
       const keyChain = await this.load();
       return keyChain.listKeys(prefix);
     });
   }
 
-  public async getKeyPair(name: Name): Promise<KeyChain.KeyPair> {
+  public override async getKeyPair(name: Name): Promise<KeyChain.KeyPair> {
     return this.mutex(async () => {
       const keyChain = await this.load();
       return keyChain.getKeyPair(name);
     });
   }
 
-  public async insertKey(name: Name, stored: KeyStore.StoredKey): Promise<void> {
+  public override async insertKey(name: Name, stored: KeyStore.StoredKey): Promise<void> {
     return this.mutex(async () => {
       const keyPair = await this.insertKeyLoader.loadKey(name, stored);
 
@@ -132,35 +128,35 @@ export class NdnsecKeyChain extends KeyChain {
     });
   }
 
-  public async deleteKey(name: Name): Promise<void> {
+  public override async deleteKey(name: Name): Promise<void> {
     return this.mutex(async () => {
       await this.invokeNdnsec(["delete", "-k", name.toString()]);
       this.cached = undefined;
     });
   }
 
-  public async listCerts(prefix = new Name()): Promise<Name[]> {
+  public override async listCerts(prefix = new Name()): Promise<Name[]> {
     return this.mutex(async () => {
       const keyChain = await this.load();
       return keyChain.listCerts(prefix);
     });
   }
 
-  public async getCert(name: Name): Promise<Certificate> {
+  public override async getCert(name: Name): Promise<Certificate> {
     return this.mutex(async () => {
       const keyChain = await this.load();
       return keyChain.getCert(name);
     });
   }
 
-  public async insertCert(cert: Certificate): Promise<void> {
+  public override async insertCert(cert: Certificate): Promise<void> {
     return this.mutex(async () => {
       await this.invokeNdnsec(["cert-install", "-K", "-f-"], Encoder.encode(cert.data));
       this.cached = undefined;
     });
   }
 
-  public async deleteCert(name: Name): Promise<void> {
+  public override async deleteCert(name: Name): Promise<void> {
     return this.mutex(async () => {
       await this.invokeNdnsec(["delete", "-c", name.toString()]);
       this.cached = undefined;

@@ -1,4 +1,5 @@
 import type { Name } from "@ndn/packet";
+import assert from "minimalistic-assert";
 
 import { CryptoAlgorithmList } from "../algo/mod";
 import { crypto } from "../crypto_node";
@@ -20,10 +21,9 @@ class KeyLoader {
 
     if (CryptoAlgorithm.isAsym(algo)) {
       return this.loadAsymmetric(name, algo, stored);
-    } if (CryptoAlgorithm.isSym(algo)) {
-      return this.loadSymmetric(name, algo as CryptoAlgorithm<any, false>, stored);
     }
-    throw new Error("unreachable");
+    assert(CryptoAlgorithm.isSym(algo));
+    return this.loadSymmetric(name, algo as CryptoAlgorithm<any, false>, stored);
   }
 
   private async loadAsymmetric(name: Name, algo: CryptoAlgorithm<any, true>, {

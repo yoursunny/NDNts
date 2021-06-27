@@ -59,12 +59,24 @@ test("import", async () => {
   const decoder = new Decoder(Buffer.from(SAFEBAG_BASE64, "base64"));
   const safeBag = SafeBag.decodeFrom(decoder);
   expect(safeBag.certificate.name).toEqualName("/b75ca858-4871-4473-90df-9ad3caaf4d39/KEY/%5B%FEu%FF%B7%BE%A8%ED/self/%FD%00%00%01r%873%0Cd");
+  const keyName = CertNaming.toKeyName(safeBag.certificate.name);
 
   expect(() => safeBag.decryptKey("wrong-passphrase")).toThrow();
 
-  const keyChain = KeyChain.createTemp();
-  await expect(safeBag.saveKeyPair(PASSPHRASE, keyChain)).resolves.toBeUndefined();
+  {
+    const keyChain = KeyChain.createTemp();
+    await expect(safeBag.saveKeyPair(PASSPHRASE, keyChain)).resolves.toBeUndefined();
+    const pvt = await keyChain.getKey(keyName, "signer");
+    expect(pvt.name).toEqualName(keyName);
+    expect(pvt.sigType).toBe(SigType.Sha256WithRsa);
+    await expect(keyChain.getKey(keyName, "decrypter")).rejects.toThrow();
+  }
 
-  const pvt = await keyChain.getKey(CertNaming.toKeyName(safeBag.certificate.name), "signer");
-  expect(pvt.sigType).toBe(SigType.Sha256WithRsa);
+  {
+    const keyChain = KeyChain.createTemp();
+    await expect(safeBag.saveKeyPair(PASSPHRASE, keyChain, { preferRSAOAEP: true })).resolves.toBeUndefined();
+    const decrypter = await keyChain.getKey(keyName, "decrypter");
+    expect(decrypter.name).toEqualName(keyName);
+    await expect(keyChain.getKey(keyName, "signer")).rejects.toThrow();
+  }
 });

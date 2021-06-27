@@ -96,8 +96,8 @@ test("reass reorder", () => {
 
   const { payload } = lpp!;
   expect(payload).toHaveLength(700);
-  expect(payload!.slice(399, 401)).toEqualUint8Array([0xD0, 0xC1]);
-  expect(payload!.slice(599, 601)).toEqualUint8Array([0xD1, 0xC2]);
+  expect(payload!.subarray(399, 401)).toEqualUint8Array([0xD0, 0xC1]);
+  expect(payload!.subarray(599, 601)).toEqualUint8Array([0xD1, 0xC2]);
 });
 
 test("reass inconsistent FragCount", () => {

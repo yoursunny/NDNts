@@ -41,8 +41,7 @@ export class ClientPossessionChallenge implements ClientChallenge {
     };
   }
 
-  public async next({ parameters }: ClientChallengeContext): Promise<ParameterKV> {
-    const nonce = parameters.nonce;
+  public async next({ parameters: { nonce } }: ClientChallengeContext): Promise<ParameterKV> {
     if (!nonce || nonce.byteLength < 16) {
       throw new Error("nonce missing");
     }
