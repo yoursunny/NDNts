@@ -47,7 +47,8 @@
     "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@types/encoding-down": "^5.0.0",
-    "@types/levelup": "^4.3.1",
+    "@types/level-errors": "^3.0.0",
+    "@types/levelup": "^4.3.2",
     "@types/memdown": "^3.0.0",
     "@types/minimalistic-assert": "^1.0.1",
     "memdown": "^6.0.0"

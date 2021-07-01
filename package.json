@@ -20,17 +20,17 @@
     "@yoursunny/xo-config": "^0.40.1",
     "builtins": "^4.0.0",
     "codedown": "^2.1.6",
-    "expect": "^27.0.2",
+    "expect": "^27.0.6",
     "graceful-fs": "^4.2.6",
-    "jest": "^27.0.5",
-    "jest-environment-node": "^27.0.5",
+    "jest": "^27.0.6",
+    "jest-environment-node": "^27.0.6",
     "js-yaml": "^4.1.0",
     "pnpm": "^6.9.1",
     "split2": "^3.2.2",
     "ts-jest": "^27.0.3",
     "tslib": "^2.3.0",
     "typedoc": "^0.21.2",
-    "typescript": "~4.3.4"
+    "typescript": "~4.3.5"
   },
   "engines": {
     "node": "^14.17.0 || ^16.2.0"

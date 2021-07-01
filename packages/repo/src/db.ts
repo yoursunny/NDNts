@@ -61,7 +61,7 @@ export function openDb(db: AbstractLevelDOWN): Db {
 }
 
 export function isExpired(expireTime?: number, now = Date.now()): boolean {
-  return !!expireTime && expireTime < now;
+  return expireTime !== undefined && expireTime < now;
 }
 
 export function filterExpired(expired: boolean, now = Date.now()): (record: Record) => boolean {

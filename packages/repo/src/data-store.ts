@@ -3,6 +3,7 @@ import { DataStore as S } from "@ndn/repo-api";
 import { Encoder, toHex, toUtf8 } from "@ndn/tlv";
 import type { AbstractLevelDOWN } from "abstract-leveldown";
 import { EventEmitter } from "events";
+import type { NotFoundError } from "level-errors";
 import { collect, filter, fromStream, map, pipeline, transform } from "streaming-iterables";
 import throat from "throat";
 import type TypedEmitter from "typed-emitter";
@@ -73,7 +74,7 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
       record = await this.db.get(name);
     } catch (err: unknown) {
       /* istanbul ignore else */
-      if ((err as { notFound?: true }).notFound) { // TODO use @types/level-errors when available
+      if ((err as NotFoundError).notFound) {
         return undefined;
       }
       /* istanbul ignore next */
@@ -139,18 +140,26 @@ type Diff = ["insert" | "delete", Name];
 export class Transaction {
   private readonly timestamp = Date.now();
   private readonly chain: DbChain;
-  private readonly diffs = new Map<string, Diff>();
+  private readonly diffs?: Map<string, Diff>;
   private encodePromises = [] as Array<Promise<void>>;
   private encodeError?: Error;
 
   constructor(private readonly db: Db, private readonly store: DataStore) {
     this.chain = this.db.batch();
+    if (this.store.listenerCount("insert") + this.store.listenerCount("delete") > 0) {
+      this.diffs = new Map<string, Diff>();
+    }
   }
 
   /** Insert a Data packet. */
   public insert(data: Data, opts: InsertOptions = {}): this {
     this.encodePromises.push((async () => {
-      try { await this.insertImpl(data, opts); } catch (err: unknown) { this.encodeError = err as Error; }
+      try {
+        await this.insertImpl(data, opts);
+      } catch (err: unknown) {
+        // TODO AggregateError
+        this.encodeError = err as Error;
+      }
     })());
     return this;
   }
@@ -170,13 +179,13 @@ export class Transaction {
     record.encodedBuffer = Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
 
     this.chain.put(data.name, record as Record);
-    this.diffs.set(toHex(data.name.value), ["insert", data.name]);
+    this.diffs?.set(toHex(data.name.value), ["insert", data.name]);
   }
 
   /** Delete a Data packet. */
   public delete(name: Name): this {
     this.chain.del(name);
-    this.diffs.set(toHex(name.value), ["delete", name]);
+    this.diffs?.set(toHex(name.value), ["delete", name]);
     return this;
   }
 
@@ -187,16 +196,16 @@ export class Transaction {
       throw this.encodeError;
     }
 
-    if (this.store.listenerCount("insert") + this.store.listenerCount("delete") === 0) {
-      await this.chain.write();
-    } else {
+    if (this.diffs) {
       await this.store.mutex(() => this.commitWithDiff());
+    } else {
+      await this.chain.write();
     }
   }
 
   private async commitWithDiff() {
     const changes = await collect(pipeline(
-      () => this.diffs.values(),
+      () => this.diffs!.values(),
       transform(8, async (diff) => {
         const [act, name] = diff;
         let exists = true;
