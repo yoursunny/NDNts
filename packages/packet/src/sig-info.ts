@@ -5,7 +5,7 @@ import { SigType, TT } from "./an";
 import { KeyLocator } from "./key-locator";
 import { randBytes } from "./security/helper_node";
 
-const EXTENSIONS = new ExtensionRegistry<SigInfo>();
+const EXTENSIONS: ExtensionRegistry<SigInfo> = new ExtensionRegistry<SigInfo>();
 
 const EVD = new EvDecoder<SigInfo>("SigInfo", [TT.ISigInfo, TT.DSigInfo])
   .add(TT.SigType, (t, { nni }) => t.type = nni, { required: true })
@@ -26,7 +26,7 @@ export class SigInfo {
   public nonce?: Uint8Array;
   public time?: number;
   public seqNum?: bigint;
-  public [Extensible.TAG] = Extensible.newRecords();
+  public readonly [Extensible.TAG] = EXTENSIONS;
 
   /**
    * Construct from flexible arguments.
@@ -48,7 +48,7 @@ export class SigInfo {
         klArgs.push(arg);
       } else if (arg instanceof SigInfo) {
         Object.assign(this, arg);
-        this[Extensible.TAG] = { ...arg[Extensible.TAG] };
+        Extensible.cloneRecord(this, arg);
       } else if (arg[ctorAssign]) {
         arg[ctorAssign](this);
       } else {

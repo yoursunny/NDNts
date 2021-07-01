@@ -21,10 +21,10 @@ export async function respondRdr(interest: Interest, store: S.ListNames, {
   let bestName: Name | undefined;
   for await (const name of store.listNames(prefix)) {
     const comp = name.get(prefix.length);
-    if (!comp || !versionConvention.match(comp)) {
+    if (!comp?.is(versionConvention)) {
       continue;
     }
-    const version = versionConvention.parse(comp);
+    const version = comp.as(versionConvention);
     if (version > bestVersion) {
       bestVersion = version;
       bestName = name.getPrefix(prefix.length + 1);
@@ -34,8 +34,7 @@ export async function respondRdr(interest: Interest, store: S.ListNames, {
     return undefined;
   }
 
-  const metadata: Metadata = { name: bestName };
-  return makeMetadataPacket(metadata, { signer });
+  return makeMetadataPacket(new Metadata(bestName), { signer });
 }
 
 export namespace respondRdr {

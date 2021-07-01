@@ -1,32 +1,62 @@
 import { Keyword } from "@ndn/naming-convention2";
 import { Component, Name, TT } from "@ndn/packet";
-import { Decoder, Encoder } from "@ndn/tlv";
+import { Decodable, Decoder, EncodableObj, Encoder, EvDecoder, Extensible, ExtensionRegistry } from "@ndn/tlv";
 
 /** 32=metadata component. */
 export const MetadataKeyword: Component = Keyword.create("metadata");
 
+function makeEvd<M extends Metadata>(title: string) {
+  return new EvDecoder<M>(title)
+    .add(TT.Name, (t, { value }) => t.name = new Name(value), { required: true })
+    .setIsCritical(() => false);
+}
+
+const EVD = makeEvd<Metadata>("Metadata");
+
 /** RDR metadata packet content. */
-export interface Metadata {
-  /** Versioned name. */
-  name: Name;
-}
+export class Metadata implements EncodableObj {
+  /**
+   * Constructor.
+   * @param name versioned name.
+   */
+  constructor(public name = new Name()) {}
 
-/** Encode RDR metadata packet content. */
-export function encodeMetadataContent({ name }: Metadata): Uint8Array {
-  const encoder = new Encoder();
-  encoder.prependValue(name);
-  return encoder.output;
-}
-
-/** Decode RDR metadata packet content. */
-export function decodeMetadataContent(wire: Uint8Array): Metadata {
-  const d = new Decoder(wire);
-  while (!d.eof) {
-    const { type, decoder: d1 } = d.read();
-    if (type === TT.Name) {
-      const name = d1.decode(Name);
-      return { name };
-    }
+  public static decodeFrom(decoder: Decoder): Metadata {
+    const metadata = new Metadata();
+    EVD.decodeValue(metadata, decoder);
+    return metadata;
   }
-  throw new Error("invalid RDR metadata Content");
+
+  public encodeTo(encoder: Encoder): void {
+    encoder.prependValue(this.name);
+  }
+}
+
+interface ExtensibleMetadata extends Metadata, Extensible {}
+
+export namespace Metadata {
+  export interface Constructor<M extends Metadata = Metadata> extends Decodable<M> {
+    new(name?: Name): M;
+  }
+
+  /** Make an extensible Metadata subclass. */
+  export function makeExtensible(title: string): [Constructor<ExtensibleMetadata>, ExtensionRegistry<ExtensibleMetadata>] {
+    const registry = new ExtensionRegistry<ExtensibleMetadata>();
+    const evd = makeEvd<ExtensibleMetadata>(title).setUnknown(registry.decodeUnknown);
+
+    const obj = { [title]: class extends Metadata implements ExtensibleMetadata {
+      public readonly [Extensible.TAG] = registry;
+
+      public static override decodeFrom(decoder: Decoder): ExtensibleMetadata {
+        const metadata = new obj[title]!();
+        evd.decodeValue(metadata, decoder);
+        return metadata;
+      }
+
+      public override encodeTo(encoder: Encoder): void {
+        encoder.prependValue(this.name, ...registry.encode(this));
+      }
+    } };
+    return [obj[title]!, registry];
+  }
 }

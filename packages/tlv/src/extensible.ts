@@ -1,16 +1,21 @@
+import DefaultWeakMap from "mnemonist/default-weak-map.js";
+
 import type { Decoder } from "./decoder";
 import type { Encodable } from "./encoder";
 
+const RECORDS = new DefaultWeakMap<Extensible, Map<number, unknown>>(() => new Map());
+
 /** An TLV element that allows extension sub element. */
 export interface Extensible {
-  [Extensible.TAG]: Extensible.Records;
+  readonly [Extensible.TAG]: ExtensionRegistry<any>;
 }
 
 export namespace Extensible {
   export const TAG = Symbol("Extensible");
-  export type Records = Map<number, unknown>;
-  export function newRecords() {
-    return new Map<number, unknown>();
+
+  /** Clone extension fields of src to dst. */
+  export function cloneRecord(dst: Extensible, src: Extensible): void {
+    RECORDS.set(dst, new Map(RECORDS.get(src)));
   }
 }
 
@@ -44,50 +49,66 @@ export interface Extension<T, R = unknown> {
 }
 
 export namespace Extension {
+  /** Retrieve value of an extension field. */
   export function get(obj: Extensible, tt: number): unknown {
-    return obj[Extensible.TAG].get(tt);
+    return RECORDS.get(obj).get(tt);
   }
+
+  /** Assign value of an extension field. */
   export function set(obj: Extensible, tt: number, value: unknown) {
-    obj[Extensible.TAG].set(tt, value);
+    RECORDS.get(obj).set(tt, value);
   }
+
+  /** Clear value of an extension field. */
   export function clear(obj: Extensible, tt: number) {
-    obj[Extensible.TAG].delete(tt);
+    RECORDS.get(obj).delete(tt);
   }
 }
 
+/** Registry of known extension fields of a parent TLV element. */
 export class ExtensionRegistry<T extends Extensible> {
-  private table = new Map<number, Extension<T, any>>();
+  private readonly table = new Map<number, Extension<T, any>>();
 
-  public registerExtension = <R>(ext: Extension<T, R>) => {
+  /** Add an extension. */
+  public readonly registerExtension = <R>(ext: Extension<T, R>) => {
     this.table.set(ext.tt, ext);
   };
 
-  public unregisterExtension = (tt: number) => {
+  /** Remove an extension. */
+  public readonly unregisterExtension = (tt: number) => {
     this.table.delete(tt);
   };
 
-  public decodeUnknown = (target: T, tlv: Decoder.Tlv, order: number) => {
+  /** UnknownElementCallback for EvDecoder. */
+  public readonly decodeUnknown = (target: T, tlv: Decoder.Tlv, order: number) => {
     const { type: tt } = tlv;
     const ext = this.table.get(tt);
     if (!ext) {
       return false;
     }
 
-    const records = target[Extensible.TAG];
-    records.set(tt, ext.decode(target, tlv, records.get(tt)));
+    const record = RECORDS.get(target);
+    record.set(tt, ext.decode(target, tlv, record.get(tt)));
     return true;
   };
 
+  /** Encode extension fields. */
   public encode(source: T): Encodable[] {
-    return Array.from(source[Extensible.TAG])
-      .map(([tt, value]) => {
-        const ext = this.table.get(tt);
-        if (!ext) {
-          throw new Error(`unknown extension type ${tt}`);
-        }
-        return { tt, value, ext };
-      })
-      .sort((a, b) => (a.ext.order ?? a.tt) - (b.ext.order ?? b.tt))
-      .map(({ value, ext }) => ext.encode(source, value));
+    const record = RECORDS.peek(source);
+    if (!record) {
+      return [];
+    }
+
+    const fields: Array<{ tt: number; value: unknown; ext: Extension<T, any> }> = [];
+    for (const [tt, value] of record) {
+      const ext = this.table.get(tt);
+      if (!ext) {
+        throw new Error(`unknown extension type ${tt}`);
+      }
+      fields.push({ tt, value, ext });
+    }
+
+    fields.sort((a, b) => (a.ext.order ?? a.tt) - (b.ext.order ?? b.tt));
+    return fields.map(({ value, ext }) => ext.encode(source, value));
   }
 }

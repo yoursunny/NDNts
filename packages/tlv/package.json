@@ -26,6 +26,7 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
+    "mnemonist": "^0.38.3",
     "tslib": "^2.3.0"
   },
   "engines": {

@@ -1,4 +1,4 @@
-import { serveMetadata } from "@ndn/rdr";
+import { Metadata, serveMetadata } from "@ndn/rdr";
 import { FileChunkSource, serve, serveVersioned, StreamChunkSource } from "@ndn/segmented-object";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
@@ -24,7 +24,7 @@ function main({ name, rdr, ver, file, "chunk-size": chunkSize }: Args) {
     versionConvention,
   });
   if (ver !== "none" && rdr) {
-    serveMetadata({ name: server.prefix }, { signer });
+    serveMetadata(new Metadata(server.prefix), { signer });
   }
 }
 

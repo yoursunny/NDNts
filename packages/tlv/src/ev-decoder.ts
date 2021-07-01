@@ -1,49 +1,19 @@
 import type { Decoder } from "./decoder";
 import { printTT } from "./string";
 
-/** Invoked when a matching TLV element is found. */
-type ElementCallback<T> = (target: T, tlv: Decoder.Tlv) => void;
-
-interface Rule<T> {
-  cb: ElementCallback<T>;
-
-  /**
-   * Expected order of appearance.
-   * Default to the order in which rules were added to EvDecoder.
-   */
-  order: number;
-
-  /** Whether TLV element must appear at least once. */
-  required: boolean;
-
-  /** Whether TLV element may appear more than once. */
-  repeat: boolean;
+interface Rule<T> extends EvDecoder.RuleOptions {
+  cb: EvDecoder.ElementCallback<T>;
 }
-
-type RuleOptions<T> = Partial<Omit<Rule<T>, "cb">>;
 
 const AUTO_ORDER_SKIP = 100;
 
-/**
- * Invoked when a TLV element does not match any rule.
- * 'order' denotes the order number of last recognized TLV element.
- * Return true if this TLV element is accepted, or false to follow evolvability guidelines.
- */
-type UnknownElementCallback<T> = (target: T, tlv: Decoder.Tlv, order: number) => boolean;
-
-function nest<T>(evd: EvDecoder<T>): ElementCallback<T> {
+function nest<T>(evd: EvDecoder<T>): EvDecoder.ElementCallback<T> {
   return (target, { decoder }) => { evd.decode(target, decoder); };
 }
-
-type IsCriticalCallback = (tt: number) => boolean;
 
 function isCritical(tt: number): boolean {
   return tt <= 0x1F || tt % 2 === 1;
 }
-
-type TopElementCallback<T> = (target: T, tlv: Decoder.Tlv) => void;
-
-type TargetCallback<T> = (target: T) => void;
 
 /** TLV-VALUE decoder that understands Packet Format v0.3 evolvability guidelines. */
 export class EvDecoder<T> {
@@ -51,28 +21,25 @@ export class EvDecoder<T> {
   private readonly rules = new Map<number, Rule<T>>();
   private readonly requiredTlvTypes = new Set<number>();
   private nextOrder = AUTO_ORDER_SKIP;
-  private isCriticalCb: IsCriticalCallback = isCritical;
-  private unknownCb: UnknownElementCallback<T>;
+  private isCriticalCb: EvDecoder.IsCriticalCallback = isCritical;
+  private unknownCb: EvDecoder.UnknownElementCallback<T>;
 
   /** Callbacks to receive top-level TLV before decoding TLV-VALUE. */
-  public readonly beforeTopCallbacks = [] as Array<TopElementCallback<T>>;
+  public readonly beforeTopCallbacks: Array<EvDecoder.TopElementCallback<T>> = [];
   /** Callbacks before decoding TLV-VALUE. */
-  public readonly beforeValueCallbacks = [] as Array<TargetCallback<T>>;
+  public readonly beforeValueCallbacks: Array<EvDecoder.TargetCallback<T>> = [];
   /** Callbacks after decoding TLV-VALUE. */
-  public readonly afterValueCallbacks = [] as Array<TargetCallback<T>>;
+  public readonly afterValueCallbacks: Array<EvDecoder.TargetCallback<T>> = [];
   /** Callbacks to receive top-level TLV after decoding TLV-VALUE. */
-  public readonly afterTopCallbacks = [] as Array<TopElementCallback<T>>;
+  public readonly afterTopCallbacks: Array<EvDecoder.TopElementCallback<T>> = [];
 
   /**
    * Constructor.
    * @param typeName type name, used in error messages.
    * @param topTT if specified, check top-level TLV-TYPE to be in this list.
    */
-  constructor(private readonly typeName: string, topTT?: number | readonly number[]) {
-    // eslint-disable-next-line no-negated-condition
-    this.topTT = !topTT ? [] :
-      Array.isArray(topTT) ? (topTT as readonly number[]) :
-      [topTT as number];
+  constructor(private readonly typeName: string, topTT: number | readonly number[] = []) {
+    this.topTT = Array.isArray(topTT) ? (topTT as readonly number[]) : [topTT as number];
     this.unknownCb = () => false;
   }
 
@@ -82,8 +49,8 @@ export class EvDecoder<T> {
    * @param cb callback to handle element TLV.
    * @param options additional rule options.
    */
-  public add(tt: number, cb: ElementCallback<T> | EvDecoder<T>,
-      options?: RuleOptions<T>): this {
+  public add(tt: number, cb: EvDecoder.ElementCallback<T> | EvDecoder<T>,
+      options?: Partial<EvDecoder.RuleOptions>): this {
     if (this.rules.has(tt)) {
       throw new Error(`TLV-TYPE ${printTT(tt)} already has a rule`);
     }
@@ -105,13 +72,13 @@ export class EvDecoder<T> {
   }
 
   /** Set callback to determine whether TLV-TYPE is critical. */
-  public setIsCritical(cb: IsCriticalCallback): this {
+  public setIsCritical(cb: EvDecoder.IsCriticalCallback): this {
     this.isCriticalCb = cb;
     return this;
   }
 
   /** Set callback to handle unknown elements. */
-  public setUnknown(cb: UnknownElementCallback<T>): this {
+  public setUnknown(cb: EvDecoder.UnknownElementCallback<T>): this {
     this.unknownCb = cb;
     return this;
   }
@@ -136,7 +103,9 @@ export class EvDecoder<T> {
 
   /** Decode TLV-VALUE to target object. */
   public decodeValue<R extends T = T>(target: R, vd: Decoder): R {
-    for (const cb of this.beforeValueCallbacks) {cb(target);}
+    for (const cb of this.beforeValueCallbacks) {
+      cb(target);
+    }
 
     let currentOrder = 0;
     let currentCount = 0;
@@ -175,7 +144,9 @@ export class EvDecoder<T> {
       throw new Error(`TLV-TYPE ${Array.from(missingTlvTypes).map(printTT).join(",")} ${missingTlvTypes.size === 1 ? "is" : "are"} missing in ${this.typeName}`);
     }
 
-    for (const cb of this.afterValueCallbacks) {cb(target);}
+    for (const cb of this.afterValueCallbacks) {
+      cb(target);
+    }
     return target;
   }
 
@@ -184,4 +155,36 @@ export class EvDecoder<T> {
       throw new Error(`TLV-TYPE ${printTT(tt)} is ${reason} in ${this.typeName}`);
     }
   }
+}
+
+export namespace EvDecoder {
+  /** Invoked when a matching TLV element is found. */
+  export type ElementCallback<T> = (target: T, tlv: Decoder.Tlv) => void;
+
+  export interface RuleOptions {
+    /**
+     * Expected order of appearance.
+     * Default to the order in which rules were added to EvDecoder.
+     */
+    order: number;
+
+    /** Whether TLV element must appear at least once. */
+    required: boolean;
+
+    /** Whether TLV element may appear more than once. */
+    repeat: boolean;
+  }
+
+  /**
+   * Invoked when a TLV element does not match any rule.
+   * 'order' denotes the order number of last recognized TLV element.
+   * Return true if this TLV element is accepted, or false to follow evolvability guidelines.
+   */
+  export type UnknownElementCallback<T> = (target: T, tlv: Decoder.Tlv, order: number) => boolean;
+
+  export type IsCriticalCallback = (tt: number) => boolean;
+
+  export type TopElementCallback<T> = (target: T, tlv: Decoder.Tlv) => void;
+
+  export type TargetCallback<T> = (target: T) => void;
 }

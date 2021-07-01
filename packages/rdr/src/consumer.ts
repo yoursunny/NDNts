@@ -1,8 +1,9 @@
 import { Endpoint, RetxPolicy } from "@ndn/endpoint";
 import { Interest, Name, NameLike, Verifier } from "@ndn/packet";
+import { Decoder } from "@ndn/tlv";
 import type { AbortSignal } from "abort-controller";
 
-import { decodeMetadataContent, MetadataKeyword } from "./metadata";
+import { Metadata, MetadataKeyword } from "./metadata";
 
 /**
  * Make RDR discovery Interest.
@@ -17,12 +18,13 @@ export function makeDiscoveryInterest(prefix: NameLike): Interest {
 }
 
 /** Retrieve RDR metadata packet. */
-export async function retrieveMetadata(prefix: NameLike, {
+export async function retrieveMetadata<M extends Metadata = Metadata>(prefix: NameLike, {
   endpoint = new Endpoint(),
   retx,
   signal,
   verifier,
-}: retrieveMetadata.Options = {}) {
+  Metadata: ctor = Metadata as any,
+}: retrieveMetadata.Options<M> = {}) {
   const interest = makeDiscoveryInterest(prefix);
   const consumer = endpoint.consume(interest, {
     describe: `RDR-c(${prefix})`,
@@ -34,14 +36,24 @@ export async function retrieveMetadata(prefix: NameLike, {
   if (verifier) {
     await verifier.verify(data);
   }
-  return decodeMetadataContent(data.content);
+  return new Decoder(data.content).decode(ctor);
 }
 
 export namespace retrieveMetadata {
-  export interface Options {
+  export interface Options<M extends Metadata = Metadata> {
+    /** Endpoint for communication. */
     endpoint?: Endpoint;
+
+    /** Interest retransmission policy. */
     retx?: RetxPolicy;
+
+    /** Abort signal to cancel retrieval. */
     signal?: AbortSignal | globalThis.AbortSignal;
+
+    /** Data verifier. Default is no verify. */
     verifier?: Verifier;
+
+    /** Metadata type that can have extensions. */
+    Metadata?: Metadata.Constructor<M>;
   }
 }

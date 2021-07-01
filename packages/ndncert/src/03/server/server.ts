@@ -2,7 +2,7 @@ import { Endpoint, Producer, ProducerHandler } from "@ndn/endpoint";
 import { Certificate, CertNaming, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
 import type { FwHint, Signer } from "@ndn/packet";
 import { Component, ComponentLike, Data } from "@ndn/packet";
-import { serveMetadata } from "@ndn/rdr";
+import { Metadata, serveMetadata } from "@ndn/rdr";
 import { toHex } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
@@ -71,7 +71,7 @@ export class Server {
     const announcement = prefix.append(C.CA);
 
     this.producers = [
-      serveMetadata({ name: infoVersion }, { endpoint, announcement, signer }),
+      serveMetadata(new Metadata(infoVersion), { endpoint, announcement, signer }),
       endpoint.produce(infoVersion, this.handleInfoInterest,
         { describe: `NDNCERT-CA(${prefix}, INFO)`, announcement }),
       endpoint.produce(announcement.append(C.PROBE), this.handleProbeInterest,

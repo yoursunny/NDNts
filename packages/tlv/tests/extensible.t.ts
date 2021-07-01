@@ -2,13 +2,13 @@ import "../test-fixture/expect";
 
 import { Decoder, Encodable, Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI } from "..";
 
-const EXTENSIONS = new ExtensionRegistry<ExtTestTarget>();
+const EXTENSIONS: ExtensionRegistry<ExtTestTarget> = new ExtensionRegistry<ExtTestTarget>();
 
 const EVD = new EvDecoder<ExtTestTarget>("ExtTestTarget")
   .setUnknown(EXTENSIONS.decodeUnknown);
 
-class ExtTestTarget {
-  public [Extensible.TAG] = Extensible.newRecords();
+class ExtTestTarget implements Extensible {
+  public readonly [Extensible.TAG] = EXTENSIONS;
 
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(0xA0, ...EXTENSIONS.encode(this));
@@ -53,9 +53,21 @@ afterEach(() => {
 
 test("encode", () => {
   const target = new ExtTestTarget();
+  expect(target).toEncodeAs([
+    0xA0, 0x00,
+  ]);
+
   Extension.set(target, 0xA1, 5);
   Extension.set(target, 0xA2, true);
   expect(target).toEncodeAs([
+    0xA0, 0x05,
+    0xA2, 0x00,
+    0xA1, 0x01, 0x05,
+  ]);
+
+  const target2 = new ExtTestTarget();
+  Extensible.cloneRecord(target2, target);
+  expect(target2).toEncodeAs([
     0xA0, 0x05,
     0xA2, 0x00,
     0xA1, 0x01, 0x05,
@@ -66,6 +78,9 @@ test("encode", () => {
   expect(target).toEncodeAs([
     0xA0, 0x00,
   ]);
+
+  Extension.set(target, 0xA3, 0);
+  expect(() => Encoder.encode(target)).toThrow(/unknown extension type/);
 });
 
 test("decode", () => {
