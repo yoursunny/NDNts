@@ -15,7 +15,7 @@
     "exclude": ["**/node_modules", "**/literate-temp.ts", "**/interop-test", "**/lib", "**/test-fixture", "**/tests"],
     "excludeExternals": true,
     "excludePrivate": true,
-    "out": "docs/typedoc",
+    "out": "../docs/typedoc",
     "theme": "default",
     "name": "NDNts",
     "readme": "./mk/typedoc-README.md",

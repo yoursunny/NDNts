@@ -40,6 +40,6 @@
   "devDependencies": {
     "@types/leveldown": "^4.0.2",
     "@types/progress": "^2.0.3",
-    "@types/yargs": "^17.0.0"
+    "@types/yargs": "^17.0.1"
   }
 }
