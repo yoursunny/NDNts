@@ -5,7 +5,7 @@ import { generateSigningKey } from "@ndn/keychain";
 import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Version } from "@ndn/naming-convention2";
 import { Interest, Name, Signer, Verifier } from "@ndn/packet";
-import { Decoder, Extension, NNI, toUtf8 } from "@ndn/tlv";
+import { Decoder, Extensible, Extension, ExtensionRegistry, NNI, toUtf8 } from "@ndn/tlv";
 import AbortController from "abort-controller";
 
 import { Metadata, retrieveMetadata, serveMetadata } from "..";
@@ -87,7 +87,7 @@ describe("producer", () => {
 });
 
 test("ExtensibleMetadata", async () => {
-  const [MetadataA, registryA] = Metadata.makeExtensible("MetadataA");
+  const registryA: ExtensionRegistry<MetadataA> = new ExtensionRegistry<MetadataA>();
   registryA.registerExtension<number>({
     tt: 0xA1,
     decode(obj, { nni }, accumulator) {
@@ -97,10 +97,21 @@ test("ExtensibleMetadata", async () => {
       return [this.tt, NNI(value)];
     },
   });
-  const mA = new MetadataA(new Name("/D/A").append(Version, 11));
-  Extension.set(mA, 0xA1, 101);
 
-  const [MetadataB, registryB] = Metadata.makeExtensible("MetadataA");
+  @Metadata.extend
+  class MetadataA extends Metadata implements Extensible {
+    public readonly [Extensible.TAG] = registryA;
+
+    public get a1(): number {
+      return Extension.get(this, 0xA1) as (number | undefined) ?? 0;
+    }
+
+    public set a1(v: number) {
+      Extension.set(this, 0xA1, v);
+    }
+  }
+
+  const registryB: ExtensionRegistry<MetadataB> = new ExtensionRegistry<MetadataB>();
   registryB.registerExtension<string>({
     tt: 0xB1,
     decode(obj, { text }, accumulator) {
@@ -110,20 +121,37 @@ test("ExtensibleMetadata", async () => {
       return [this.tt, toUtf8(value)];
     },
   });
-  const mB = new MetadataB(new Name("/D/B").append(Version, 12));
-  Extension.set(mB, 0xB1, "bb");
 
-  const pA = serveMetadata(mA);
+  @Metadata.extend
+  class MetadataB extends Metadata implements Extensible {
+    public readonly [Extensible.TAG] = registryB;
+
+    public get b1(): string {
+      return Extension.get(this, 0xB1) as (string | undefined) ?? "";
+    }
+
+    public set b1(v: string) {
+      Extension.set(this, 0xB1, v);
+    }
+  }
+
+  const mA = new MetadataA(new Name("/D/A").append(Version, 11));
+  mA.a1 = 101;
+
+  const mB = new MetadataB(new Name("/D/B").append(Version, 12));
+  mB.b1 = "bb";
+
+  const pA = serveMetadata(mA, { signer });
   const pB = serveMetadata(mB);
   closers.push(pA, pB);
 
   const [rA0, rAA, rAB, rB0, rBA, rBB] = await Promise.all([
-    retrieveMetadata("/D/A"),
-    retrieveMetadata("/D/A", { Metadata: MetadataA }),
-    retrieveMetadata("/D/A", { Metadata: MetadataB }),
+    retrieveMetadata("/D/A", { verifier }),
+    retrieveMetadata("/D/A", MetadataA, { verifier }),
+    retrieveMetadata("/D/A", MetadataB),
     retrieveMetadata("/D/B"),
-    retrieveMetadata("/D/B", { Metadata: MetadataA }),
-    retrieveMetadata("/D/B", { Metadata: MetadataB }),
+    retrieveMetadata("/D/B", MetadataA),
+    retrieveMetadata("/D/B", MetadataB),
   ]);
   expect(rA0.name).toEqualName(mA.name);
   expect(rAA.name).toEqualName(mA.name);
@@ -131,8 +159,8 @@ test("ExtensibleMetadata", async () => {
   expect(rB0.name).toEqualName(mB.name);
   expect(rBA.name).toEqualName(mB.name);
   expect(rBB.name).toEqualName(mB.name);
-  expect(Extension.get(rAA, 0xA1)).toBe(101);
-  expect(Extension.get(rAB, 0xB1)).toBeUndefined();
-  expect(Extension.get(rBB, 0xB1)).toBe("bb");
-  expect(Extension.get(rBA, 0xA1)).toBeUndefined();
+  expect(rAA.a1).toBe(101);
+  expect(rAB.b1).toBe("");
+  expect(rBB.b1).toBe("bb");
+  expect(rBA.a1).toBe(0);
 });

@@ -1,6 +1,6 @@
 import { Endpoint, RetxPolicy } from "@ndn/endpoint";
 import { Interest, Name, NameLike, Verifier } from "@ndn/packet";
-import { Decoder } from "@ndn/tlv";
+import { Decodable, Decoder } from "@ndn/tlv";
 import type { AbortSignal } from "abort-controller";
 
 import { Metadata, MetadataKeyword } from "./metadata";
@@ -18,29 +18,38 @@ export function makeDiscoveryInterest(prefix: NameLike): Interest {
 }
 
 /** Retrieve RDR metadata packet. */
-export async function retrieveMetadata<M extends Metadata = Metadata>(prefix: NameLike, {
-  endpoint = new Endpoint(),
-  retx,
-  signal,
-  verifier,
-  Metadata: ctor = Metadata as any,
-}: retrieveMetadata.Options<M> = {}) {
+export async function retrieveMetadata(prefix: NameLike, opts?: retrieveMetadata.Options): Promise<Metadata>;
+
+/** Retrieve RDR metadata packet. */
+export async function retrieveMetadata<C extends typeof Metadata>(prefix: NameLike, ctor: C, opts?: retrieveMetadata.Options): Promise<InstanceType<C>>;
+
+export async function retrieveMetadata(prefix: NameLike, arg2: any = {}, opts: retrieveMetadata.Options = {}) {
+  let ctor: Decodable<Metadata>;
+  if (typeof arg2 === "function") {
+    ctor = arg2;
+  } else {
+    ctor = Metadata;
+    opts = arg2;
+  }
+  const {
+    endpoint = new Endpoint(),
+    retx,
+    signal,
+    verifier,
+  } = opts;
+
   const interest = makeDiscoveryInterest(prefix);
-  const consumer = endpoint.consume(interest, {
+  const data = await endpoint.consume(interest, {
     describe: `RDR-c(${prefix})`,
     retx,
     signal,
+    verifier,
   });
-
-  const data = await consumer;
-  if (verifier) {
-    await verifier.verify(data);
-  }
   return new Decoder(data.content).decode(ctor);
 }
 
 export namespace retrieveMetadata {
-  export interface Options<M extends Metadata = Metadata> {
+  export interface Options {
     /** Endpoint for communication. */
     endpoint?: Endpoint;
 
@@ -52,8 +61,5 @@ export namespace retrieveMetadata {
 
     /** Data verifier. Default is no verify. */
     verifier?: Verifier;
-
-    /** Metadata type that can have extensions. */
-    Metadata?: Metadata.Constructor<M>;
   }
 }

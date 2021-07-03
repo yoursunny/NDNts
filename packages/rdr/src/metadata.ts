@@ -1,6 +1,6 @@
 import { Keyword } from "@ndn/naming-convention2";
 import { Component, Name, TT } from "@ndn/packet";
-import { Decodable, Decoder, EncodableObj, Encoder, EvDecoder, Extensible, ExtensionRegistry } from "@ndn/tlv";
+import { Decodable, Decoder, EncodableObj, Encoder, EvDecoder, Extensible } from "@ndn/tlv";
 
 /** 32=metadata component. */
 export const MetadataKeyword: Component = Keyword.create("metadata");
@@ -32,31 +32,22 @@ export class Metadata implements EncodableObj {
   }
 }
 
-interface ExtensibleMetadata extends Metadata, Extensible {}
-
 export namespace Metadata {
   export interface Constructor<M extends Metadata = Metadata> extends Decodable<M> {
     new(name?: Name): M;
   }
 
-  /** Make an extensible Metadata subclass. */
-  export function makeExtensible(title: string): [Constructor<ExtensibleMetadata>, ExtensionRegistry<ExtensibleMetadata>] {
-    const registry = new ExtensionRegistry<ExtensibleMetadata>();
-    const evd = makeEvd<ExtensibleMetadata>(title).setUnknown(registry.decodeUnknown);
-
-    const obj = { [title]: class extends Metadata implements ExtensibleMetadata {
-      public readonly [Extensible.TAG] = registry;
-
-      public static override decodeFrom(decoder: Decoder): ExtensibleMetadata {
-        const metadata = new obj[title]!();
-        evd.decodeValue(metadata, decoder);
-        return metadata;
-      }
-
-      public override encodeTo(encoder: Encoder): void {
-        encoder.prependValue(this.name, ...registry.encode(this));
-      }
-    } };
-    return [obj[title]!, registry];
+  /** Class decorator on an extensible Metadata subclass. */
+  export function extend<M extends Metadata & Extensible>(ctor: new() => M): void {
+    const registry = new ctor()[Extensible.TAG];
+    const evd = makeEvd<M>(ctor.name).setUnknown(registry.decodeUnknown);
+    Object.defineProperty(ctor, "decodeFrom", { value(decoder: Decoder): M {
+      const metadata = new ctor();
+      evd.decodeValue(metadata, decoder);
+      return metadata;
+    } });
+    Object.defineProperty(ctor.prototype, "encodeTo", { value(this: M, encoder: Encoder): void {
+      encoder.prependValue(this.name, ...registry.encode(this));
+    } });
   }
 }
