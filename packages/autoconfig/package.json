@@ -43,8 +43,8 @@
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
     "@types/default-gateway": "^3.0.1",
-    "@types/koa": "^2.13.3",
-    "@types/node-fetch": "^2.5.10",
+    "@types/koa": "^2.13.4",
+    "@types/node-fetch": "^2.5.11",
     "koa": "^2.13.1"
   }
 }

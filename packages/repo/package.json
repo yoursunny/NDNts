@@ -32,7 +32,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/repo-api": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@types/abstract-leveldown": "^5.0.1",
+    "@types/abstract-leveldown": "^5.0.2",
     "abstract-leveldown": "^7.0.0",
     "encoding-down": "^7.0.0",
     "levelup": "^5.0.1",
@@ -48,7 +48,7 @@
     "@ndn/segmented-object": "workspace:*",
     "@types/encoding-down": "^5.0.0",
     "@types/level-errors": "^3.0.0",
-    "@types/levelup": "^4.3.2",
+    "@types/levelup": "^4.3.3",
     "@types/memdown": "^3.0.0",
     "@types/minimalistic-assert": "^1.0.1",
     "memdown": "^6.0.0"

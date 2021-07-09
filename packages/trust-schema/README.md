@@ -4,16 +4,14 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 
 This package implements trust schemas.
 
-* ✔️ hierarchical trust model verifier
-* ⚪ hierarchical trust model signer
-* ✔️ trust schema verifier
-  * ⚪ override certificate issuer in KeyLocator
-* ✔️ trust schema signer
-  * ⚪ choose certificate issuer among existing certificates
-  * ⚪ automatically create certificates using local issuer key
-  * ⚪ automatically request certificates from remote certificate authority
-
-<!-- use emoji due to https://github.com/earldouglas/codedown/issues/8 -->
+* [X] hierarchical trust model verifier
+* [ ] hierarchical trust model signer
+* [X] trust schema verifier
+  * [ ] override certificate issuer in KeyLocator
+* [X] trust schema signer
+  * [ ] choose certificate issuer among existing certificates
+  * [ ] automatically create certificates using local issuer key
+  * [ ] automatically request certificates from remote certificate authority
 
 ```ts
 import { TrustSchema, TrustSchemaSigner, TrustSchemaVerifier, versec2019, versec2021 } from "@ndn/trust-schema";
@@ -148,7 +146,7 @@ const schema = new TrustSchema(policy, [rootCert]);
 
 ## VerSec2021 Syntax
 
-This package has partial support of the [VerSec Domain Specific Language](https://github.com/pollere/DCT/blob/main/versec/language.md) (VerSec2021) syntax, include:
+This package has partial support of the [VerSec Domain Specific Language](https://github.com/pollere/DCT/blob/main/versec/language.md) (VerSec2021) syntax, including:
 
 * component constraints
 * `replace` function

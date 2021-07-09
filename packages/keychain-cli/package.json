@@ -43,12 +43,12 @@
     "yargs": "^17.0.1"
   },
   "devDependencies": {
-    "@types/fast-chunk-string": "^1.0.0",
+    "@types/fast-chunk-string": "^1.0.1",
     "@types/graceful-fs": "^4.1.5",
-    "@types/leveldown": "^4.0.2",
-    "@types/nodemailer": "^6.4.2",
-    "@types/prompts": "^2.0.13",
+    "@types/leveldown": "^4.0.3",
+    "@types/nodemailer": "^6.4.4",
+    "@types/prompts": "^2.0.14",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^17.0.1"
+    "@types/yargs": "^17.0.2"
   }
 }

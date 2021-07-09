@@ -26,7 +26,7 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@types/retry": "^0.12.0",
+    "@types/retry": "^0.12.1",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "hirestime": "^6.1.0",
