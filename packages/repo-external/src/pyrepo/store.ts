@@ -50,21 +50,21 @@ export class PyRepoStore implements S.Close, S.Insert, S.Delete {
       () => pkts,
       transform(Infinity, (data) => {
         return this.throttle(async () => {
-          const producerAnswered = pDefer();
+          const answered = pDefer();
+          const timeout = setTimeout(() => answered.reject(new Error("no incoming Interest")), 5000);
           const producer = this.endpoint.produce(data.name, async () => {
-            setTimeout(() => producerAnswered.resolve(), 100);
+            clearTimeout(timeout);
+            setTimeout(() => answered.resolve(), 100);
             return data;
           }, {
             describe: `pyrepo-insert(${data.name})`,
             announcement: false,
           });
           await new Promise((r) => setTimeout(r, 100));
+
           try {
             await this.client.insert(data.name);
-            await Promise.race([
-              producerAnswered.promise,
-              new Promise((resolve, reject) => setTimeout(() => reject(new Error("no incoming Interest")), 5000)),
-            ]);
+            await answered.promise;
           } finally {
             producer.close();
           }

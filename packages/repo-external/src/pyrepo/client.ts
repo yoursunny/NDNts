@@ -17,6 +17,7 @@ export class PyRepoClient {
       subAnnouncement: false,
       ...opts,
     });
+    this.endpoint.fw.nodeNames.push(this.publisher.pubPrefix);
   }
 
   public readonly endpoint: Endpoint;
@@ -27,6 +28,11 @@ export class PyRepoClient {
   private readonly ongoing = new Map<string, PrpsSubscriber.Subscription>();
 
   public close(): void {
+    const nodeNameIndex = this.endpoint.fw.nodeNames.findIndex((nodeName) => nodeName.equals(this.publisher.pubPrefix));
+    if (nodeNameIndex >= 0) {
+      this.endpoint.fw.nodeNames.splice(nodeNameIndex, 1);
+    }
+
     this.publisher.close();
     for (const sub of this.ongoing.values()) {
       sub.close();
