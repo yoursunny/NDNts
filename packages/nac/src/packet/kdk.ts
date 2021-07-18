@@ -28,7 +28,7 @@ export class KeyDecryptionKey {
 
   public async loadKeyPair(decrypter: LLDecrypt.Key, extractable = false): Promise<CryptoAlgorithm.GeneratedKeyPair> {
     const { plaintext } = await decrypter.llDecrypt({ ciphertext: this.encryptedPassphrase });
-    const pkcs8 = this.safeBag.decryptKey(plaintext);
+    const pkcs8 = await this.safeBag.decryptKey(plaintext);
     return RSAOAEP.cryptoGenerate({ importPkcs8: [pkcs8, this.safeBag.certificate.publicKeySpki] }, extractable);
   }
 }
@@ -93,7 +93,7 @@ export namespace KeyDecryptionKey {
 
     const pvt = new Uint8Array(await crypto.subtle.exportKey("pkcs8", keyPair.privateKey));
     const passphrase = toHex(crypto.getRandomValues(new Uint8Array(16)));
-    const safeBag = SafeBag.create(cert, pvt, passphrase);
+    const safeBag = await SafeBag.create(cert, pvt, passphrase);
 
     const { ciphertext } = await member.llEncrypt({ plaintext: toUtf8(passphrase) });
 

@@ -12,6 +12,7 @@
     "@ndn/keychain": "workspace:*",
     "@ndn/l3face": "workspace:*",
     "@ndn/ndncert": "workspace:*",
+    "@ndn/ndnsec": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/quic-transport": "workspace:*",
     "@ndn/segmented-object": "workspace:*",

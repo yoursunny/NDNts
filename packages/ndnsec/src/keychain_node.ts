@@ -122,7 +122,7 @@ export class NdnsecKeyChain extends KeyChain {
       const pkcs8 = new Uint8Array(await crypto.subtle.exportKey(
         "pkcs8", (keyPair.pvt as CryptoAlgorithm.PrivateKey).privateKey));
 
-      const safeBag = SafeBag.create(selfSigned, pkcs8, PASSPHRASE);
+      const safeBag = await SafeBag.create(selfSigned, pkcs8, PASSPHRASE);
       await this.invokeNdnsec(["import", "-P", PASSPHRASE, "-i-"], Encoder.encode(safeBag));
       this.cached = undefined;
     });

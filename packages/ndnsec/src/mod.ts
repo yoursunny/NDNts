@@ -1,2 +1,2 @@
 export * from "./safe-bag";
-export * from "./keychain";
+export * from "./keychain_node";

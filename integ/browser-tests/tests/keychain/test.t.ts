@@ -1,6 +1,10 @@
+import "@ndn/packet/test-fixture/expect";
+
 import { EcCurve, RsaModulusLength } from "@ndn/keychain";
 import * as TestCertStore from "@ndn/keychain/test-fixture/cert-store";
 import * as TestKeyStore from "@ndn/keychain/test-fixture/key-store";
+import { SafeBagEC, SafeBagRSA } from "@ndn/ndnsec/test-fixture/safe-bag";
+import { Name } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
@@ -44,4 +48,13 @@ test("HMAC", async () => {
     await pageInvoke<typeof window.testHMAC>(page, "testHMAC"));
   TestSignVerify.check(rI, { deterministic: true });
   TestSignVerify.check(rD, { deterministic: true });
+});
+
+test.each([
+  SafeBagEC, SafeBagRSA,
+])("import %#", async ({ sigType, certName, wire, passphrase }) => {
+  const [aSigType, aCertName] =
+    await pageInvoke<typeof window.testSafeBag>(page, "testSafeBag", Serialize.stringify(wire), passphrase);
+  expect(aSigType).toBe(sigType);
+  expect(new Name(aCertName)).toEqualName(certName);
 });

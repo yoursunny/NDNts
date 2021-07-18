@@ -2,8 +2,10 @@
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-This package provides `NdnsecKeyChain` to access keys and certificates in ndn-cxx KeyChain via `ndnsec` executable.
+`NdnsecKeyChain` type can access keys and certificates in ndn-cxx KeyChain.
+It works by invoking the `ndnsec` executable.
+This feature only works in Node.js.
 
-This package can deal with [SafeBag](https://named-data.net/doc/ndn-cxx/0.7.1/specs/safe-bag.html) format, which contains certificate and private key exported by ndn-cxx `ndnsec` tool.
-This feature does not require `ndnsec` to be installed.
-Since SafeBag contains encrypted PKCS#8 data that is not supported by WebCrypto, this feature is only available in Node.js environment, and cannot work in browsers.
+`SafeBag` type allows importing and exporting private keys in ndn-cxx [SafeBag](https://named-data.net/doc/ndn-cxx/0.7.1/specs/safe-bag.html) format.
+In Node.js, both importing and exporting are supported.
+In browsers, importing works, but exporting is not yet implemented.

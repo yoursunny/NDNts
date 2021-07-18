@@ -13,6 +13,7 @@
   ],
   "type": "module",
   "main": "src/mod.ts",
+  "module": "lib/mod_browser.js",
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
@@ -27,6 +28,7 @@
     "@ndn/keychain": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "@yoursunny/asn1": "^0.0.20200718",
     "execa": "^5.1.1",
     "minimalistic-assert": "^1.0.1",
     "throat": "^6.0.1",

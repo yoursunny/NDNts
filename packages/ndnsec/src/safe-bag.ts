@@ -1,10 +1,10 @@
 import { Certificate, CertNaming, CryptoAlgorithm, ECDSA, generateEncryptionKey, generateSigningKey, KeyChain, RSA, RSAOAEP } from "@ndn/keychain";
 import { Data, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
-import { createPrivateKey } from "crypto";
 import assert from "minimalistic-assert";
 
 import { TT } from "./an";
+import * as EncryptedPrivateKeyInfo from "./epki_node";
 
 interface SafeBagFields {
   certificate?: Certificate;
@@ -20,18 +20,8 @@ const EVD = new EvDecoder<SafeBagFields>("SafeBag", TT.SafeBag)
  * @see https://named-data.net/doc/ndn-cxx/0.7.1/specs/safe-bag.html
  */
 export class SafeBag {
-  public static create(certificate: Certificate, privateKey: Uint8Array, passphrase: string): SafeBag {
-    const key = createPrivateKey({
-      key: Buffer.from(privateKey),
-      type: "pkcs8",
-      format: "der",
-    });
-    const encryptedKey = key.export({
-      type: "pkcs8",
-      format: "der",
-      cipher: "aes-256-cbc",
-      passphrase,
-    });
+  public static async create(certificate: Certificate, privateKey: Uint8Array, passphrase: string | Uint8Array): Promise<SafeBag> {
+    const encryptedKey = await EncryptedPrivateKeyInfo.create(privateKey, passphrase);
     return new SafeBag(certificate, encryptedKey);
   }
 
@@ -53,17 +43,8 @@ export class SafeBag {
   }
 
   /** Decrypt private key and return unencrypted PKCS8 format. */
-  public decryptKey(passphrase: string | Uint8Array): Uint8Array {
-    const key = createPrivateKey({
-      key: Buffer.from(this.encryptedKey),
-      type: "pkcs8",
-      format: "der",
-      passphrase: Buffer.from(passphrase),
-    });
-    return key.export({
-      type: "pkcs8",
-      format: "der",
-    });
+  public decryptKey(passphrase: string | Uint8Array): Promise<Uint8Array> {
+    return EncryptedPrivateKeyInfo.decrypt(this.encryptedKey, passphrase);
   }
 
   /**
@@ -81,7 +62,7 @@ export class SafeBag {
     assert(CryptoAlgorithm.isAsym(algo));
 
     const keyName = CertNaming.toKeyName(this.certificate.name);
-    const pkcs8 = this.decryptKey(passphrase);
+    const pkcs8 = await this.decryptKey(passphrase);
     if (CryptoAlgorithm.isSigning(algo)) {
       await generateSigningKey(keyChain, keyName, algo, { importPkcs8: [pkcs8, key.spki] });
     } else {

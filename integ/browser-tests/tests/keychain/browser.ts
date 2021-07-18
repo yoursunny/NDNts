@@ -3,8 +3,10 @@ import "./webcrypto";
 import { EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength } from "@ndn/keychain";
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";
 import { execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
+import { SafeBag } from "@ndn/ndnsec";
 import { Data, digestSigning, Interest, Signer, Verifier } from "@ndn/packet";
 import { execute as testSignVerify } from "@ndn/packet/test-fixture/sign-verify";
+import { Decoder } from "@ndn/tlv";
 
 import * as Serialize from "../../test-fixture/serialize";
 import type { SignVerifyTestResult } from "./api";
@@ -45,4 +47,16 @@ window.testHMAC = async () => {
   const [pvtA, pubA] = await generateSigningKey("/HMAC-A", HMAC);
   const [pvtB, pubB] = await generateSigningKey("/HMAC-B", HMAC);
   return testSigningKey(pvtA, pubA, pvtB, pubB);
+};
+
+window.testSafeBag = async (wire: Serialize.Value<Uint8Array>, passphrase: string) => {
+  const keyChain = KeyChain.createTemp();
+  const safeBag = new Decoder(Serialize.parse(wire)).decode(SafeBag);
+  const certName = safeBag.certificate.name;
+  await safeBag.saveKeyPair(passphrase, keyChain);
+  const pvt = await keyChain.getSigner(certName);
+
+  const data = new Data("/D");
+  await pvt.sign(data);
+  return [data.sigInfo.type, `${certName}`];
 };
