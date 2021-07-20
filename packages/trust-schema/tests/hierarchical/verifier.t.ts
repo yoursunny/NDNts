@@ -144,8 +144,8 @@ describe("success", () => {
   beforeAll(async () => ctx = await Context.create({}));
   test.each(TABLE)("%#", async (row) => {
     await ctx.execute(row, async (verifier, data) => {
-      await expect(verifier.verify(data)).resolves.toBeUndefined();
-      await expect(verifier.verify(data)).resolves.toBeUndefined(); // should use cryptoVerifyCache
+      await verifier.verify(data);
+      await verifier.verify(data); // should use cryptoVerifyCache
     });
   });
 });
@@ -158,7 +158,7 @@ describe("success same name", () => {
   }));
   test.each(TABLE)("%#", async (row) => {
     await ctx.execute(row, async (verifier, data) => {
-      await expect(verifier.verify(data)).resolves.toBeUndefined();
+      await verifier.verify(data);
     });
   });
 });

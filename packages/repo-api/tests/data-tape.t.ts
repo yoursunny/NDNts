@@ -108,7 +108,7 @@ async function testBulkInsertTarget(
     batch: 32,
     parallel: 8,
   });
-  await expect(bi.accept(makeDataTapeReadStream("read"))).resolves.toBeUndefined();
+  await bi.accept(makeDataTapeReadStream("read"));
   expect(storeInsert).toHaveBeenCalledTimes(16);
 
   await tape.close();

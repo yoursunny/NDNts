@@ -54,7 +54,6 @@ test("decode testbed certs", async () => {
 
   const data1 = new Decoder(ndn_testbed_certs.ARIZONA_20190312).decode(Data);
   await pub0.verify(data1);
-  await expect(pub0.verify(data1)).resolves.toBeUndefined();
 
   const cert1 = Certificate.fromData(data1);
   expect(cert1.isSelfSigned).toBeFalsy();

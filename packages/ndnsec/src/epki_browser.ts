@@ -1,6 +1,13 @@
 import { KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
-import { toHex, toUtf8 } from "@ndn/tlv";
+import { fromHex, toHex, toUtf8 } from "@ndn/tlv";
 import * as asn1 from "@yoursunny/asn1";
+
+const OID = {
+  pkcs5PBES2: "2A864886F70D01050D", // 1.2.840.113549.1.5.13
+  pkcs5PBKDF2: "2A864886F70D01050C", // 1.2.840.113549.1.5.12
+  hmacWithSHA256: "2A864886F70D0209", // 1.2.840.113549.2.9
+  aes256CBC: "60864801650304012A", // 2.16.840.1.101.3.4.1.42
+};
 
 function toUint8Array(input: string | Uint8Array): Uint8Array {
   return typeof input === "string" ? toUtf8(input) : input;
@@ -8,9 +15,46 @@ function toUint8Array(input: string | Uint8Array): Uint8Array {
 
 /** Create EncryptedPrivateKeyInfo. */
 export async function create(privateKey: Uint8Array, passphrase: string | Uint8Array): Promise<Uint8Array> {
-  void privateKey;
-  void passphrase;
-  throw new Error("EncryptedPrivateKeyInfo.create is not implemented for browser");
+  const pbkdf2: Pbkdf2Params = {
+    name: "PBKDF2",
+    hash: "SHA-256",
+    salt: crypto.getRandomValues(new Uint8Array(8)),
+    iterations: 2048,
+  };
+  const iterationsHex = "0800";
+  const aes: AesCbcParams = {
+    name: "AES-CBC",
+    iv: crypto.getRandomValues(new Uint8Array(16)),
+  };
+
+  const pbkdf2Key = await crypto.subtle.importKey("raw", toUint8Array(passphrase), "PBKDF2", false, ["deriveBits"]);
+  const dk = await crypto.subtle.deriveBits(pbkdf2, pbkdf2Key, 256);
+  const aesKey = await crypto.subtle.importKey("raw", dk, "AES-CBC", false, ["encrypt"]);
+  const encrypted = new Uint8Array(await crypto.subtle.encrypt(aes, aesKey, privateKey));
+
+  return fromHex(asn1.Any("30",
+    asn1.Any("30",
+      asn1.Any("06", OID.pkcs5PBES2),
+      asn1.Any("30",
+        asn1.Any("30",
+          asn1.Any("06", OID.pkcs5PBKDF2),
+          asn1.Any("30",
+            asn1.Any("04", toHex(pbkdf2.salt as Uint8Array)),
+            asn1.UInt(iterationsHex),
+            asn1.Any("30",
+              asn1.Any("06", OID.hmacWithSHA256),
+              asn1.Any("05"),
+            ),
+          ),
+        ),
+        asn1.Any("30",
+          asn1.Any("06", OID.aes256CBC),
+          asn1.Any("04", toHex(aes.iv as Uint8Array)),
+        ),
+      ),
+    ),
+    asn1.Any("04", toHex(encrypted)),
+  ));
 }
 
 /** Decrypt EncryptedPrivateKeyInfo. */
@@ -64,8 +108,7 @@ class EncryptedPrivateKeyInfoParser {
 
   private parseEncryptionAlgorithm(der: asn1.ElementBuffer): void {
     // https://datatracker.ietf.org/doc/html/rfc8018#appendix-A.4
-    // 1.2.840.113549.1.5.13 pkcs5PBES2
-    const { children } = this.parseAlgorithmIdentifier(der, "EncryptionAlgorithm", "PBES2", "2A864886F70D01050D");
+    const { children } = this.parseAlgorithmIdentifier(der, "EncryptionAlgorithm", "PBES2", OID.pkcs5PBES2);
     if (children?.length !== 2) {
       throw new Error("bad PBES2-params");
     }
@@ -75,8 +118,7 @@ class EncryptedPrivateKeyInfoParser {
 
   private parseKeyDerivationFunc(der: asn1.ElementBuffer): void {
     // https://datatracker.ietf.org/doc/html/rfc8018#appendix-A.2
-    // 1.2.840.113549.1.5.12 pkcs5PBKDF2
-    const { children = [] } = this.parseAlgorithmIdentifier(der, "KeyDerivationFunc", "PBKDF2", "2A864886F70D01050C");
+    const { children = [] } = this.parseAlgorithmIdentifier(der, "KeyDerivationFunc", "PBKDF2", OID.pkcs5PBKDF2);
     if (children.length < 2 || children.length > 4) {
       throw new Error("bad PBKDF2-params");
     }
@@ -95,15 +137,13 @@ class EncryptedPrivateKeyInfoParser {
 
   private parsePseudoRandomFunction(der: asn1.ElementBuffer): void {
     // https://datatracker.ietf.org/doc/html/rfc8018#appendix-B.1.2
-    // 1.2.840.113549.2.9 hmacWithSHA256
-    this.parseAlgorithmIdentifier(der, "PseudoRandomFunction", "hmacWithSHA256", "2A864886F70D0209");
+    this.parseAlgorithmIdentifier(der, "PseudoRandomFunction", "hmacWithSHA256", OID.hmacWithSHA256);
     this.pbkdf2.hash = "SHA-256";
   }
 
   private parseEncryptionScheme(der: asn1.ElementBuffer): void {
     // https://datatracker.ietf.org/doc/html/rfc8018#appendix-B.2.5
-    // 2.16.840.1.101.3.4.1.42 aes256-CBC
-    const params = this.parseAlgorithmIdentifier(der, "EncryptionScheme", "aes256-CBC-PAD", "60864801650304012A");
+    const params = this.parseAlgorithmIdentifier(der, "EncryptionScheme", "aes256-CBC-PAD", OID.aes256CBC);
     if (params.type !== 0x04 || params.length !== 16) {
       throw new Error("bad aes256-CBC-PAD initialization vector");
     }
@@ -121,7 +161,6 @@ class EncryptedPrivateKeyInfoParser {
     const pbkdf2Key = await crypto.subtle.importKey("raw", passphrase, "PBKDF2", false, ["deriveBits"]);
     const dk = await crypto.subtle.deriveBits(this.pbkdf2, pbkdf2Key, 256);
     const aesKey = await crypto.subtle.importKey("raw", dk, "AES-CBC", false, ["decrypt"]);
-    const decrypted = await crypto.subtle.decrypt(this.aes, aesKey, this.data);
-    return new Uint8Array(decrypted);
+    return new Uint8Array(await crypto.subtle.decrypt(this.aes, aesKey, this.data));
   }
 }

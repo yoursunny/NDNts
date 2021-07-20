@@ -19,7 +19,7 @@ test.each([
 
   {
     const keyChain = KeyChain.createTemp();
-    await expect(safeBag.saveKeyPair(passphrase, keyChain)).resolves.toBeUndefined();
+    await safeBag.saveKeyPair(passphrase, keyChain);
     const pvt = await keyChain.getKey(keyName, "signer");
     expect(pvt.name).toEqualName(keyName);
     expect(pvt.sigType).toBe(sigType);
@@ -29,12 +29,12 @@ test.each([
     await pvt.sign(data);
     expect(data.sigInfo.type).toBe(sigType);
     const verifier = await cert.createVerifier();
-    await expect(verifier.verify(data)).resolves.toBeUndefined();
+    await verifier.verify(data);
   }
 
   if (canRSAOAEP) {
     const keyChain = KeyChain.createTemp();
-    await expect(safeBag.saveKeyPair(passphrase, keyChain, { preferRSAOAEP: true })).resolves.toBeUndefined();
+    await safeBag.saveKeyPair(passphrase, keyChain, { preferRSAOAEP: true });
     const decrypter = await keyChain.getKey(keyName, "decrypter");
     expect(decrypter.name).toEqualName(keyName);
     await expect(keyChain.getKey(keyName, "signer")).rejects.toThrow();

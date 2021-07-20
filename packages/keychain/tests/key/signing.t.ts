@@ -33,7 +33,7 @@ test.each(EcCurve.Choices)("ECDSA load %p", async (curve) => {
   const verifier = await cert.createVerifier();
   expect(verifier.name).toEqualName(signer.name);
   expect(verifier.sigType).toBe(SigType.Sha256WithEcdsa);
-  await expect(verifier.verify(cert.data)).resolves.toBeUndefined();
+  await verifier.verify(cert.data);
 });
 
 test.each(TestSignVerify.makeTable("modulusLength", RsaModulusLength.Choices))("RSA sign-verify %p", async ({ cls, modulusLength }) => {
@@ -58,7 +58,7 @@ test.each(RsaModulusLength.Choices)("RSA load %p", async (modulusLength) => {
   const verifier = await cert.createVerifier();
   expect(verifier.name).toEqualName(signer.name);
   expect(verifier.sigType).toBe(SigType.Sha256WithRsa);
-  await expect(verifier.verify(cert.data)).resolves.toBeUndefined();
+  await verifier.verify(cert.data);
 });
 
 test.each(TestSignVerify.makeTable())("HMAC sign-verify %p", async ({ cls }) => {
@@ -90,5 +90,5 @@ test("HMAC verify", async () => {
   const [, key] = await generateSigningKey("/H/KEY/x", HMAC, {
     importRaw: fromHex("A0A1A2A3A4A5A6A7A8A9AAABACADAEAF"),
   });
-  await expect(key.verify(pkt)).resolves.toBeUndefined();
+  await key.verify(pkt);
 });

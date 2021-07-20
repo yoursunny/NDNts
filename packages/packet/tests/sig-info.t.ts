@@ -193,8 +193,8 @@ describe("SignedInterestPolicy", () => {
     expect(interest1.sigInfo!.seqNum).toBeDefined();
     expect(interest1.sigInfo!.seqNum!).toBeGreaterThan(interest0.sigInfo!.seqNum!);
 
-    await expect(verifyFunc(interest0)).resolves.toBeUndefined();
-    await expect(verifyFunc(interest1)).resolves.toBeUndefined();
+    await verifyFunc(interest0);
+    await verifyFunc(interest1);
   });
 
   test("verify not signed Interest", async () => {
@@ -212,8 +212,8 @@ describe("SignedInterestPolicy", () => {
 
     await expect(verifier0.verify(data)).rejects.toThrow();
     await expect(verifier0.verify(interest)).rejects.toThrow();
-    await expect(verifier1.verify(data)).resolves.toBeUndefined();
-    await expect(verifier1.verify(interest)).resolves.toBeUndefined();
+    await verifier1.verify(data);
+    await verifier1.verify(interest);
   });
 
   test("no save on bad signature", async () => {
@@ -226,9 +226,9 @@ describe("SignedInterestPolicy", () => {
     interest2.sigValue[0] ^= 0xFF;
 
     const verifier = policyS.makeVerifier(digestSigning);
-    await expect(verifier.verify(interest0)).resolves.toBeUndefined();
+    await verifier.verify(interest0);
     await expect(verifier.verify(interest2)).rejects.toThrow();
-    await expect(verifier.verify(interest1)).resolves.toBeUndefined();
+    await verifier.verify(interest1);
   });
 
   test("missing field", async () => {

@@ -89,7 +89,7 @@ test("simple", async () => {
   await expect(c.decrypt(appData)).rejects.toThrow();
 
   await kekH.grant(cCert.name);
-  await expect(c.decrypt(appData)).resolves.toBeUndefined();
+  await c.decrypt(appData);
   expect(appData.content).toEqualUint8Array(appContent);
 
   pP.close();

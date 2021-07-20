@@ -193,7 +193,7 @@ test("signer", async () => {
   const nlsrCertName = await issueCertificate(nlsrCert, rtrCertName);
 
   const lsaData = new Data(lsa.name);
-  await expect(signer.sign(lsaData)).resolves.toBeUndefined();
+  await signer.sign(lsaData);
   expect(lsaData.sigInfo.keyLocator).toHaveName(nlsrCertName);
 
   const unrelatedData = new Data("/U");

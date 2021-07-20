@@ -45,19 +45,6 @@ test("simple", () => {
   expect(decoder.eof).toBeTruthy();
 });
 
-test("from", () => {
-  const decoder = new Decoder(new Uint8Array());
-  expect(Decoder.isInput(decoder)).toBeTruthy();
-  expect(Decoder.from(decoder)).toBe(decoder);
-
-  const wire = new Uint8Array();
-  expect(Decoder.isInput(wire)).toBeTruthy();
-  expect(Decoder.from(wire)).toBeInstanceOf(Decoder);
-
-  expect(Decoder.isInput({})).toBeFalsy();
-  expect(() => Decoder.from({} as any)).toThrow();
-});
-
 test("error on incomplete VAR-NUMBER", () => {
   let decoder = new Decoder(new Uint8Array());
   expect(() => decoder.read()).toThrow();

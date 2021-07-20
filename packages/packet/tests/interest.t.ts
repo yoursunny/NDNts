@@ -96,7 +96,7 @@ test("decode", async () => {
   expect(interest.sigValue).toHaveLength(0);
 
   // noop for non parameterized Interest
-  await expect(interest.validateParamsDigest()).resolves.toBeUndefined();
+  await interest.validateParamsDigest();
 });
 
 test("modify", () => {
@@ -155,7 +155,7 @@ test("encode parameterized", async () => {
   expect(Encoder.encode(interest)).toBeInstanceOf(Uint8Array);
 
   // immediately verifiable
-  await expect(interest.validateParamsDigest()).resolves.toBeUndefined();
+  await interest.validateParamsDigest();
 
   // cannot encode placeholder
   interest = new Interest(
@@ -197,7 +197,7 @@ test("decode parameterized", async () => {
   await expect(interest[LLVerify.OP](verify)).rejects.toThrow();
   expect(verify).not.toHaveBeenCalled();
 
-  await expect(interest.validateParamsDigest()).resolves.toBeUndefined();
+  await interest.validateParamsDigest();
 
   decoder = new Decoder(wire);
   interest = decoder.decode(Interest);
@@ -266,7 +266,7 @@ test("decode signed", async () => {
 
   // unrecognized elements should be preserved until modified
   const verify = jest.fn().mockResolvedValue(undefined);
-  await expect(interest[LLVerify.OP](verify)).resolves.toBeUndefined();
+  await interest[LLVerify.OP](verify);
   expect(verify).toHaveBeenCalledTimes(1);
   expect(verify.mock.calls[0][0]).toEqualUint8Array(Buffer.concat([name.value, signedParamsWire]));
   interest.sigInfo = new SigInfo(interest.sigInfo!); // modifying

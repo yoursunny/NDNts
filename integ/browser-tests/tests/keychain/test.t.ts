@@ -1,11 +1,13 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { EcCurve, RsaModulusLength } from "@ndn/keychain";
+import { CertNaming, EcCurve, KeyChain, RsaModulusLength } from "@ndn/keychain";
 import * as TestCertStore from "@ndn/keychain/test-fixture/cert-store";
 import * as TestKeyStore from "@ndn/keychain/test-fixture/key-store";
+import { SafeBag } from "@ndn/ndnsec";
 import { SafeBagEC, SafeBagRSA } from "@ndn/ndnsec/test-fixture/safe-bag";
-import { Name } from "@ndn/packet";
+import { Name, SigType } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
+import { Decoder } from "@ndn/tlv";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 import * as Serialize from "../../test-fixture/serialize";
@@ -52,9 +54,29 @@ test("HMAC", async () => {
 
 test.each([
   SafeBagEC, SafeBagRSA,
-])("import %#", async ({ sigType, certName, wire, passphrase }) => {
+])("SafeBagDecode %#", async ({ sigType, certName, wire, passphrase }) => {
   const [aSigType, aCertName] =
-    await pageInvoke<typeof window.testSafeBag>(page, "testSafeBag", Serialize.stringify(wire), passphrase);
+    await pageInvoke<typeof window.testSafeBagDecode>(page, "testSafeBagDecode", Serialize.stringify(wire), passphrase);
   expect(aSigType).toBe(sigType);
   expect(new Name(aCertName)).toEqualName(certName);
+});
+
+test("SafeBagEncode", async () => {
+  const passphrase = "9c570742-82ed-41a8-a370-8e0c8806e5e4";
+  const wire = Serialize.parse(
+    await pageInvoke<typeof window.testSafeBagEncode>(page, "testSafeBagEncode", passphrase));
+  console.log(Buffer.from(wire).toString("base64"));
+
+  const safeBag = new Decoder(wire).decode(SafeBag);
+  console.log(Buffer.from(safeBag.encryptedKey).toString("base64"));
+  const { certificate: cert } = safeBag;
+  expect(cert.isSelfSigned).toBeTruthy();
+  expect(CertNaming.toSubjectName(cert.name)).toEqualName("/S");
+  const keyName = CertNaming.toKeyName(cert.name);
+
+  const keyChain = KeyChain.createTemp();
+  await safeBag.saveKeyPair(passphrase, keyChain);
+  const pvt = await keyChain.getKey(keyName, "signer");
+  expect(pvt.name).toEqualName(keyName);
+  expect(pvt.sigType).toBe(SigType.Sha256WithEcdsa);
 });

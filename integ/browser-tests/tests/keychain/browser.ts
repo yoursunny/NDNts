@@ -1,12 +1,12 @@
 import "./webcrypto";
 
-import { EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength } from "@ndn/keychain";
+import { Certificate, EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, KeyChainImplWebCrypto as crypto, RSA, RsaModulusLength } from "@ndn/keychain";
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";
 import { execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
 import { SafeBag } from "@ndn/ndnsec";
 import { Data, digestSigning, Interest, Signer, Verifier } from "@ndn/packet";
 import { execute as testSignVerify } from "@ndn/packet/test-fixture/sign-verify";
-import { Decoder } from "@ndn/tlv";
+import { Decoder, Encoder } from "@ndn/tlv";
 
 import * as Serialize from "../../test-fixture/serialize";
 import type { SignVerifyTestResult } from "./api";
@@ -49,7 +49,7 @@ window.testHMAC = async () => {
   return testSigningKey(pvtA, pubA, pvtB, pubB);
 };
 
-window.testSafeBag = async (wire: Serialize.Value<Uint8Array>, passphrase: string) => {
+window.testSafeBagDecode = async (wire: Serialize.Value<Uint8Array>, passphrase: string) => {
   const keyChain = KeyChain.createTemp();
   const safeBag = new Decoder(Serialize.parse(wire)).decode(SafeBag);
   const certName = safeBag.certificate.name;
@@ -59,4 +59,15 @@ window.testSafeBag = async (wire: Serialize.Value<Uint8Array>, passphrase: strin
   const data = new Data("/D");
   await pvt.sign(data);
   return [data.sigInfo.type, `${certName}`];
+};
+
+window.testSafeBagEncode = async (passphrase: string) => {
+  const keyPair = await ECDSA.cryptoGenerate({}, true);
+  const pkcs8 = new Uint8Array(await crypto.subtle.exportKey("pkcs8", keyPair.privateKey));
+
+  const [privateKey, publicKey] = await generateSigningKey(
+    "/S", ECDSA, { importPkcs8: [pkcs8, keyPair.spki] });
+  const cert = await Certificate.selfSign({ privateKey, publicKey });
+  const safeBag = await SafeBag.create(cert, pkcs8, passphrase);
+  return Serialize.stringify(Encoder.encode(safeBag));
 };

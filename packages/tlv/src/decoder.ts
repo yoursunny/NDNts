@@ -136,25 +136,6 @@ export class Decoder {
 }
 
 export namespace Decoder {
-  /** Types acceptable to Decoder.from(). */
-  export type Input = Decoder | Uint8Array;
-
-  /** Test whether obj is Decoder.Input. */
-  export function isInput(obj: unknown): obj is Input {
-    return obj instanceof Decoder || obj instanceof Uint8Array;
-  }
-
-  /** Construct from Uint8Array or return existing Decoder. */
-  export function from(obj: Input): Decoder {
-    if (obj instanceof Decoder) {
-      return obj;
-    }
-    if (obj instanceof Uint8Array) {
-      return new Decoder(obj);
-    }
-    throw new Error("Decoder.from: obj is not Decoder.Input");
-  }
-
   /** Decoded TLV. */
   export interface Tlv {
     /** TLV-TYPE. */

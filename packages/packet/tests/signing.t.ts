@@ -108,19 +108,19 @@ test.each(TABLE)("verify %#", async ({ cls, checkWire }) => {
   const wire = Encoder.encode(src);
   expect(wire).toMatchTlv(checkWire);
 
-  await expect(ALGO0.verify(src)).resolves.toBeUndefined();
+  await ALGO0.verify(src);
   await expect(ALGO1.verify(src)).rejects.toThrow(/incorrect/);
 
   const obj = new Decoder(wire).decode(cls);
-  await expect(ALGO0.verify(obj)).resolves.toBeUndefined();
+  await ALGO0.verify(obj);
   await expect(ALGO1.verify(obj)).rejects.toThrow(/incorrect/);
 });
 
 test("digestSigning simple", async () => {
   const data = new Data("/D");
-  await expect(digestSigning.sign(data)).resolves.toBeUndefined();
+  await digestSigning.sign(data);
   expect(data.sigInfo.type).toBe(SigType.Sha256);
-  await expect(digestSigning.verify(data)).resolves.toBeUndefined();
+  await digestSigning.verify(data);
 
   data.sigInfo.type = SigType.HmacWithSha256;
   await expect(digestSigning.verify(data)).rejects.toThrow();
@@ -140,11 +140,11 @@ test("nullSigner", async () => {
   expect(data.sigInfo.type).toBe(SigType.Null);
   expect(data.sigValue).toHaveLength(0);
 
-  await expect(digestSigning.sign(data)).resolves.toBeUndefined();
+  await digestSigning.sign(data);
   expect(data.sigInfo.type).not.toBe(SigType.Null);
   expect(data.sigValue).not.toHaveLength(0);
 
-  await expect(nullSigner.sign(data)).resolves.toBeUndefined();
+  await nullSigner.sign(data);
   expect(data.sigInfo.type).toBe(SigType.Null);
   expect(data.sigValue).toHaveLength(0);
 });
