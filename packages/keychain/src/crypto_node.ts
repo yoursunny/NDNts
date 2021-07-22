@@ -1,3 +1,4 @@
 import { Crypto as peculiarCrypto } from "@peculiar/webcrypto";
+import * as nodeCrypto from "crypto";
 
-export const crypto = new peculiarCrypto() as Crypto; // export as DOM Crypto type
+export const crypto: Crypto = (nodeCrypto as any).webcrypto ?? new peculiarCrypto();

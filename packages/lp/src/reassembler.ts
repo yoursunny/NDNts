@@ -3,7 +3,7 @@ import { LpPacket } from "./packet";
 class PartialPacket {
   constructor(public readonly seqNumBase: bigint) {}
 
-  private buffer: Array<LpPacket | undefined> = [];
+  private readonly buffer: Array<LpPacket | undefined> = [];
   private accepted = 0;
   private payloadLength = 0;
 

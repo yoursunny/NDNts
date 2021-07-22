@@ -48,11 +48,11 @@ export class LpService {
     return flatMap1((tlv) => this.decode(tlv), iterable);
   };
 
-  private *decode(tlv: Decoder.Tlv) {
+  private *decode(dtlv: Decoder.Tlv) {
+    const { type, decoder, tlv } = dtlv;
     try {
-      const { type, decoder } = tlv;
       if (type !== TT.LpPacket) {
-        yield this.decodeL3(tlv);
+        yield this.decodeL3(dtlv);
         return;
       }
 
@@ -73,7 +73,7 @@ export class LpService {
       l3pkt.token = lpp.pitToken;
       yield l3pkt;
     } catch (err: unknown) {
-      yield new LpService.RxError(err as Error, tlv.tlv);
+      yield new LpService.RxError(err as Error, tlv);
     }
   }
 

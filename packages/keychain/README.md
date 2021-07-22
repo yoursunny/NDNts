@@ -6,10 +6,10 @@ This package provides signing algorithms, encryption algorithms, and certificate
 
 The implementation uses [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API).
 
-* Modern browsers natively support WebCrypto.
+* Modern browsers and Node.js 16.x natively support WebCrypto.
 * Most browsers restrict WebCrypto to [secure contexts](https://www.w3.org/TR/powerful-features/) only.
   During development, you may use `http://localhost` or [ngrok](https://ngrok.com/).
-* In Node.js, [@peculiar/webcrypto](https://www.npmjs.com/package/@peculiar/webcrypto) wraps Node.js Crypto API and exports them as WebCrypto.
+* In Node.js 14.x, [@peculiar/webcrypto](https://www.npmjs.com/package/@peculiar/webcrypto) wraps Node.js Crypto API and exports them as WebCrypto.
 
 ## Signing Algorithms
 

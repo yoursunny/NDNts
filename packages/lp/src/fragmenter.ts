@@ -27,8 +27,8 @@ export class Fragmenter {
     this.fragmentRoom = mtu - OVERHEAD;
   }
 
-  private seqNumGen = new SeqNumGen();
-  private fragmentRoom: number;
+  private readonly seqNumGen = new SeqNumGen();
+  private readonly fragmentRoom: number;
 
   /**
    * Fragment a packet.

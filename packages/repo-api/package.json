@@ -30,7 +30,7 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/rdr": "workspace:*",
-    "duplexify": "^4.1.1",
+    "duplexify": "^4.1.2",
     "graceful-fs": "^4.2.6",
     "is-stream": "^2.0.0",
     "it-pushable": "^1.4.2",

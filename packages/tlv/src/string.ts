@@ -10,22 +10,17 @@ export function printTT(tlvType: number): string {
   return `0x${s.padStart(8, "0")}`;
 }
 
-let hexTable: string[] | undefined;
-
-function getHexTable(): string[] {
-  if (!hexTable) {
-    hexTable = [];
-    for (let b = 0; b <= 0xFF; ++b) {
-      hexTable.push(b.toString(16).padStart(2, "0").toUpperCase());
-    }
-  }
-  return hexTable;
+const INT2HEX: string[] = [];
+const HEX2INT: Record<string, number> = {};
+for (let b = 0; b <= 0xFF; ++b) {
+  const s = b.toString(16).padStart(2, "0").toUpperCase();
+  INT2HEX.push(s);
+  HEX2INT[s] = b;
 }
 
 /** Convert byte array to upper-case hexadecimal string. */
 export function toHex(buf: Uint8Array): string {
-  const table = getHexTable();
-  return Array.from(buf, (b) => table[b]).join("");
+  return Array.from(buf, (b) => INT2HEX[b]).join("");
 }
 
 /**
@@ -34,9 +29,10 @@ export function toHex(buf: Uint8Array): string {
  * This function lacks error handling. Use on trusted input only.
  */
 export function fromHex(s: string): Uint8Array {
+  s = s.toUpperCase();
   const b = new Uint8Array(s.length / 2);
   for (let i = 0; i < b.length; ++i) {
-    b[i] = Number.parseInt(s.slice(i * 2, (i + 1) * 2), 16);
+    b[i] = HEX2INT[s.slice(i * 2, (i + 1) * 2)]!;
   }
   return b;
 }
