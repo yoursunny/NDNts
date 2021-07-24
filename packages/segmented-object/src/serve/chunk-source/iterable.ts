@@ -6,7 +6,7 @@ import { Chunk, ChunkOptions, ChunkSource, getMaxChunkSize, getMinChunkSize } fr
 class ScatteredChunk {
   constructor(private readonly minSize: number, private readonly maxSize: number) {}
 
-  private vector: Uint8Array[] = [];
+  private readonly vector: Uint8Array[] = [];
   private length = 0;
 
   public append(buf: Uint8Array) {

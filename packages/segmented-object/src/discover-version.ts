@@ -1,22 +1,24 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Interest, Name } from "@ndn/packet";
 
-import { defaultSegmentConvention, defaultVersionConvention, VersionConvention } from "./convention";
+import { defaultSegmentConvention, defaultVersionConvention, SegmentConvention, VersionConvention } from "./convention";
 import { fetch } from "./fetch/mod";
 
 /** Discover version with CanBePrefix. */
-export async function discoverVersion(name: Name, opts: discoverVersion.Options = {}): Promise<Name> {
-  const {
-    endpoint = new Endpoint(),
-    describe,
-    versionConvention = defaultVersionConvention,
-    segmentNumConvention = defaultSegmentConvention,
-    expectedSuffixLen = 2,
-    modifyInterest,
-    retxLimit = 2,
-    signal,
-    verifier,
-  } = opts;
+export async function discoverVersion(name: Name, {
+  endpoint = new Endpoint(),
+  describe,
+  versionConvention = defaultVersionConvention,
+  segmentNumConvention = defaultSegmentConvention,
+  conventions: conventionsInput = [],
+  expectedSuffixLen = 2,
+  modifyInterest,
+  retxLimit = 2,
+  signal,
+  verifier,
+}: discoverVersion.Options = {}): Promise<discoverVersion.Result> {
+  const conventions: ReadonlyArray<[VersionConvention, SegmentConvention]> =
+    conventionsInput.length > 0 ? conventionsInput : [[versionConvention, segmentNumConvention]];
 
   const interest = new Interest(name, Interest.CanBePrefix, Interest.MustBeFresh);
   const data = await endpoint.consume(interest, {
@@ -27,13 +29,18 @@ export async function discoverVersion(name: Name, opts: discoverVersion.Options 
     verifier,
   });
 
+  const vComp = data.name.get(-2);
+  const sComp = data.name.get(-1);
+  let conventionIndex: number;
   if ((expectedSuffixLen !== discoverVersion.ANY_SUFFIX_LEN &&
        data.name.length !== name.length + expectedSuffixLen) ||
-      !versionConvention.match(data.name.get(-2)!) ||
-      !segmentNumConvention.match(data.name.get(-1)!)) {
+      (conventionIndex = conventions.findIndex(([v, s]) => v.match(vComp!) && s.match(sComp!))) < 0) {
     throw new Error(`cannot extract version from ${data.name}`);
   }
-  return data.name.getPrefix(-1);
+  return Object.defineProperties(data.name.getPrefix(-1), {
+    versionConvention: { value: conventions[conventionIndex]![0] },
+    segmentNumConvention: { value: conventions[conventionIndex]![1] },
+  }) as discoverVersion.Result;
 }
 
 export namespace discoverVersion {
@@ -47,10 +54,24 @@ export namespace discoverVersion {
     versionConvention?: VersionConvention;
 
     /**
+     * List of acceptable version+segment naming convention combinations.
+     * If this is specified and non-empty, it overrides versionConvention,segmentNumConvention.
+     */
+    conventions?: ReadonlyArray<[VersionConvention, SegmentConvention]>;
+
+    /**
      * Expected number of suffix components, including Version and Segment.
      * Minimum and default are 2, i.e. Version and Segment components.
      * ANY_SUFFIX_LEN allows any suffix length.
      */
     expectedSuffixLen?: number | typeof ANY_SUFFIX_LEN;
   }
+
+  export type Result = Name & {
+    /** Recognized version naming convention. */
+    versionConvention: VersionConvention;
+
+    /** Recognized segment number naming convention. */
+    segmentNumConvention: SegmentConvention;
+  };
 }

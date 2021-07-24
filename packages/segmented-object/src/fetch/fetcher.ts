@@ -44,6 +44,7 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
   }
 
   public close() {
+    this.on("error", () => undefined); // ignore further errors
     (this.opts.signal as AbortSignal | undefined)?.removeEventListener("abort", this.handleAbort);
     this.logic.close();
     this.face.close();
