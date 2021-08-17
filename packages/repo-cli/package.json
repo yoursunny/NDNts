@@ -31,15 +31,15 @@
     "@ndn/repo": "workspace:*",
     "@ndn/repo-api": "workspace:*",
     "hard-rejection": "^2.1.0",
-    "leveldown": "^6.0.0",
+    "leveldown": "^6.0.1",
     "progress": "^2.0.3",
     "streaming-iterables": "^6.0.0",
-    "tslib": "^2.3.0",
-    "yargs": "^17.0.1"
+    "tslib": "^2.3.1",
+    "yargs": "^17.1.1"
   },
   "devDependencies": {
     "@types/leveldown": "^4.0.3",
-    "@types/progress": "^2.0.4",
+    "@types/progress": "^2.0.5",
     "@types/yargs": "^17.0.2"
   }
 }

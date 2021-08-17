@@ -26,6 +26,9 @@ export class WsServer extends NetServerBase<WebSocketServer, WebSocket> {
   }
 
   public override async close(): Promise<void> {
+    for (const client of this.server.clients) {
+      client.close();
+    }
     this.server.close();
     this.http.close();
     await pEvent(this.http, "close");

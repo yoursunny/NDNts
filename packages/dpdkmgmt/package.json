@@ -29,7 +29,7 @@
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
     "graphql": "^15.5.1",
-    "graphql-request": "^3.4.0",
-    "tslib": "^2.3.0"
+    "graphql-request": "^3.5.0",
+    "tslib": "^2.3.1"
   }
 }

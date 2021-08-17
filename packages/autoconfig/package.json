@@ -38,13 +38,13 @@
     "node-fetch": "^2.6.1",
     "p-any": "^3.0.0",
     "streaming-iterables": "^6.0.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.1"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
     "@types/default-gateway": "^3.0.1",
     "@types/koa": "^2.13.4",
-    "@types/node-fetch": "^2.5.11",
+    "@types/node-fetch": "^2.5.12",
     "koa": "^2.13.1"
   }
 }

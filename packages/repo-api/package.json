@@ -31,13 +31,13 @@
     "@ndn/packet": "workspace:*",
     "@ndn/rdr": "workspace:*",
     "duplexify": "^4.1.2",
-    "graceful-fs": "^4.2.6",
+    "graceful-fs": "^4.2.8",
     "is-stream": "^2.0.0",
     "it-pushable": "^1.4.2",
     "p-defer": "^3.0.0",
     "streaming-iterables": "^6.0.0",
     "throat": "^6.0.1",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.1"
   },
   "devDependencies": {
     "@ndn/node-transport": "workspace:*",

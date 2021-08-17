@@ -173,7 +173,7 @@ article: _site/"article"/category/year/month <= author
 
 // Notice the variable name distinction between 'adminName' and 'authorName', which is necessary
 // to allow them to have different values. Also, the variables cannot be named 'admin' and 'author'
-// because that would clash with the pattern name that is implicitly declared as variables.
+// because that would clash with the pattern names that are implicitly declared as variables.
 admin: _site/"admin"/adminName/_KEY <= root
 author: _site/_role/authorName/_KEY & { _role: "author" } <= admin
 

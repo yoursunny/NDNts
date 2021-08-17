@@ -34,6 +34,7 @@ const ESM_IMPORTS = new Set([
   "graphql-request",
   "idb-keyval",
   "streaming-iterables",
+  "ws",
   "yargs",
 ]);
 

@@ -27,6 +27,7 @@ LD_LIBRARY_PATH=build ./build/examples/psync-full-sync /psync-interop /psync-mem
 NDNTS_NFDREG=1 npm run literate packages/sync/interop-test/psync-partial-publisher.ts
 
 # in PSync directory
+# PSync should be compiled with: ./waf configure --with-examples
 export NDN_LOG=examples.PartialSyncConsumerApp=INFO
 LD_LIBRARY_PATH=build ./build/examples/psync-consumer /psync-interop 5
 ```
@@ -35,6 +36,7 @@ LD_LIBRARY_PATH=build ./build/examples/psync-consumer /psync-interop 5
 
 ```bash
 # in PSync directory
+# PSync should be compiled with: ./waf configure --with-examples
 export NDN_LOG=examples.PartialSyncProducerApp=INFO
 LD_LIBRARY_PATH=build ./build/examples/psync-producer /psync-interop /psync-memphis/${RANDOM} 10 1000
 

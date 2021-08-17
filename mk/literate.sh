@@ -15,7 +15,7 @@ literate_run() {
     codedown ts <README.md >$TSFILE
   fi
   export TS_CONFIG_PATH=$ROOTDIR/mk/tsconfig-literate.json
-  node --loader @k-foss/ts-esnode --experimental-specifier-resolution=node $TSFILE
+  node --loader $ROOTDIR/mk/loader.mjs --experimental-specifier-resolution=node $TSFILE
   popd >/dev/null
 }
 
