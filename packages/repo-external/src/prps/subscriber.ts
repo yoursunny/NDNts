@@ -78,7 +78,7 @@ class Subscription implements PrpsSubscriber.Subscription {
     const messageInterest = new Interest(publisher.append(
       MsgSuffix, ...this.topic.comps, new Component(undefined, nonce)));
     if (publisherFwHint) {
-      messageInterest.fwHint = new FwHint([new FwHint.Delegation(publisherFwHint)]);
+      messageInterest.fwHint = new FwHint(publisherFwHint);
     }
     messageInterest.lifetime = this.msgInterestLifetime;
     const messageData = await this.endpoint.consume(messageInterest, {

@@ -172,12 +172,10 @@ test("FwHint", async () => {
     return new Data(interest.name.append("B"));
   });
 
-  await expect(ep.consume(new Interest("/C", Interest.CanBePrefix,
-    new FwHint([new FwHint.Delegation("/A")]),
-  ))).resolves.toHaveName("/C/A");
-  await expect(ep.consume(new Interest("/C", Interest.CanBePrefix,
-    new FwHint([new FwHint.Delegation("/B")]),
-  ))).resolves.toHaveName("/C/B");
+  await expect(ep.consume(new Interest("/C", Interest.CanBePrefix, new FwHint("/A"))))
+    .resolves.toHaveName("/C/A");
+  await expect(ep.consume(new Interest("/C", Interest.CanBePrefix, new FwHint("/B"))))
+    .resolves.toHaveName("/C/B");
 });
 
 test("Data without token", async () => {

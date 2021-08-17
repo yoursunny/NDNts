@@ -3,32 +3,39 @@ import { Decoder, Encoder, EvDecoder, NNI, toHex } from "@ndn/tlv";
 import { TT } from "./an";
 import { Name, NameLike } from "./name/mod";
 
-const EVD = new EvDecoder<FwHint.Delegation>("Delegation", TT.Delegation)
+const DelEVD = new EvDecoder<FwHint.Delegation>("Delegation", TT.Delegation)
   .add(TT.Preference, (t, { nni }) => t.preference = nni)
   .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name));
+
+const DelsEVD = new EvDecoder<FwHint.Delegation[]>("FwHint")
+  .add(TT.Delegation, (t, { decoder }) => t.push(decoder.decode(FwHint.Delegation)), { repeat: true });
 
 /** ForwardingHint in Interest. */
 export class FwHint {
   public static decodeValue(value: Uint8Array): FwHint {
-    const dels = [] as FwHint.Delegation[];
-    for (const decoder = new Decoder(value); !decoder.eof;) {
-      dels.push(decoder.decode(FwHint.Delegation));
-    }
-    return new FwHint(dels);
+    return new FwHint(DelsEVD.decodeValue([] as FwHint.Delegation[], new Decoder(value)));
   }
 
   constructor(copy?: FwHint);
 
+  constructor(name: NameLike);
+
   constructor(delegations: readonly FwHint.Delegation[]);
 
-  constructor(arg?: FwHint | readonly FwHint.Delegation[]) {
+  constructor(arg?: FwHint | NameLike | readonly FwHint.Delegation[]) {
     if (Array.isArray(arg)) {
       for (const del of arg) {
-        this.m.set(toHex(del.name.value), del);
+        this.add(del);
       }
     } else if (arg instanceof FwHint) {
       this.m = new Map(arg.m);
+    } else if (Name.isNameLike(arg)) {
+      this.add(new FwHint.Delegation(arg));
     }
+  }
+
+  private add(del: FwHint.Delegation): void {
+    this.m.set(toHex(del.name.value), del);
   }
 
   public get delegations(): readonly FwHint.Delegation[] {
@@ -46,7 +53,7 @@ export namespace FwHint {
   /** Delegation in ForwardingHint. */
   export class Delegation {
     public static decodeFrom(decoder: Decoder): Delegation {
-      return EVD.decode(new Delegation(), decoder);
+      return DelEVD.decode(new Delegation(), decoder);
     }
 
     constructor(name: NameLike = "", public preference = 0) {

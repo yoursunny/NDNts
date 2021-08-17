@@ -53,7 +53,7 @@ export class Name {
         break;
       }
       case Array.isArray(arg1):
-        this.comps = (arg1 as readonly ComponentLike[]).map(Component.from);
+        this.comps = Array.from(arg1 as readonly ComponentLike[], Component.from);
         break;
       case arg1 instanceof Uint8Array: {
         this.value = arg1 as Uint8Array;
@@ -119,8 +119,7 @@ export class Name {
   public append(...args: unknown[]) {
     if (args.length === 2 && typeof args[0] === "object" &&
         typeof (args[0] as any).create === "function") {
-      const convention = args[0] as NamingConvention<any>;
-      return this.append(convention.create(args[1]));
+      return this.append((args[0] as NamingConvention<any>).create(args[1]));
     }
     const suffix = args as readonly ComponentLike[];
     return new Name([...this.comps, ...suffix]);

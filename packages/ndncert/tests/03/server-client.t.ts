@@ -260,7 +260,7 @@ let server: Server;
 beforeEach(async () => {
   repo = await makeDataStore();
   const fwName = new Name("/fh");
-  repoFwHint = new FwHint([new FwHint.Delegation(fwName)]);
+  repoFwHint = new FwHint(fwName);
   repoProducer = RepoProducer.create(repo, { reg: PrefixRegStatic(fwName) });
 });
 afterEach(async () => {
