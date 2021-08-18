@@ -114,6 +114,7 @@ class Printer {
   }
 }
 
+/** Print policy to VerSec 2021 syntax. */
 export function print(policy: TrustSchemaPolicy): string {
   const d = new Printer();
   for (const [id, p] of policy.listPatterns()) {

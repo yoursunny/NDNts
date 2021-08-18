@@ -14,7 +14,7 @@ This package implements trust schemas.
   * [ ] automatically request certificates from remote certificate authority
 
 ```ts
-import { TrustSchema, TrustSchemaSigner, TrustSchemaVerifier, versec2019, versec2021 } from "@ndn/trust-schema";
+import { TrustSchema, TrustSchemaSigner, TrustSchemaVerifier, printESM, versec2019, versec2021 } from "@ndn/trust-schema";
 
 // other imports for examples
 import { Certificate, KeyChain, ValidityPeriod, generateSigningKey } from "@ndn/keychain";
@@ -186,6 +186,17 @@ _KEY: "KEY"/_/_/_
 ```ts
 console.group("VerSec2021 policy");
 console.log(versec2021.print(policy2021));
+console.groupEnd();
+```
+
+`printESM()` function prints the policy as ECMAScript module.
+It shows how you can define the same policy in code.
+However, it cannot automatically convert certain VerSec features, and manual edits would be necessary in such cases.
+Writing the policy in code can reduce JavaScript bundle size in a web application, because the VerSec compiler is no longer needed at runtime.
+
+```ts
+console.group("VerSec2021 policy in ESM");
+console.log(printESM(policy2021));
 console.groupEnd();
 ```
 
