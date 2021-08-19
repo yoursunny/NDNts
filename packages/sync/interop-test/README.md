@@ -13,7 +13,7 @@ Test environment:
 
 ```bash
 # in NDNts directory
-NDNTS_NFDREG=1 npm run literate packages/sync/interop-test/psync-full.ts
+npm run literate packages/sync/interop-test/psync-full.ts
 
 # in PSync directory
 export NDN_LOG=examples.FullSyncApp=INFO
@@ -24,7 +24,7 @@ LD_LIBRARY_PATH=build ./build/examples/psync-full-sync /psync-interop /psync-mem
 
 ```bash
 # in NDNts directory
-NDNTS_NFDREG=1 npm run literate packages/sync/interop-test/psync-partial-publisher.ts
+npm run literate packages/sync/interop-test/psync-partial-publisher.ts
 
 # in PSync directory
 # PSync should be compiled with: ./waf configure --with-examples
@@ -68,7 +68,7 @@ g++ -o packages/sync/interop-test/syncps-ind.exe \
   -lprotobuf -llog4cxx -lpthread
 
 # start NDNts interop test script
-NDNTS_NFDREG=1 npm run literate packages/sync/interop-test/syncps.ts
+npm run literate packages/sync/interop-test/syncps.ts
 
 # start C++ interop test program
 packages/sync/interop-test/syncps-ind.exe /syncps-interop /syncps-interop-data /syncps-interop-data/ind/$RANDOM >/dev/null
@@ -83,5 +83,5 @@ packages/sync/interop-test/syncps-ind.exe /syncps-interop /syncps-interop-data /
 LD_LIBRARY_PATH=build ./build/examples/chat ${RANDOM}
 
 # in NDNts directory
-NDNTS_NFDREG=1 npm run literate packages/sync/interop-test/svsync.ts
+npm run literate packages/sync/interop-test/svsync.ts
 ```

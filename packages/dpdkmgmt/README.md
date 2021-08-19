@@ -24,11 +24,11 @@ import { strict as assert } from "assert";
 
 const gqlServer = process.env.DEMO_DPDKMGMT_GQLSERVER;
 const localHost = process.env.DEMO_DPDKMGMT_LOCAL;
-if (!gqlServer || !localHost) {
+if (!gqlServer) {
   console.log(`
 To run @ndn/dpdkmgmt demo, set the following environment variables:
-DEMO_DPDKMGMT_GQLSERVER= NDN-DPDK forwarder GraphQL server URI
-DEMO_DPDKMGMT_LOCAL= IPv4 address to reach local host from NDN-DPDK forwarder
+DEMO_DPDKMGMT_GQLSERVER= NDN-DPDK forwarder management endpoint (required)
+DEMO_DPDKMGMT_LOCAL= IP address to reach local host from NDN-DPDK (optional)
 `);
   return;
 }

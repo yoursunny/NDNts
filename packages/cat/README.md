@@ -35,10 +35,10 @@ It accepts the following arguments:
 dd if=/dev/urandom of=/tmp/1.bin bs=1M count=1
 
 # producer: serve from stdin
-NDNTS_NFDREG=1 ndncat put-segmented /A </tmp/1.bin
+ndncat put-segmented /A </tmp/1.bin
 
 # producer: serve from file, 8KB chunks
-NDNTS_NFDREG=1 ndncat put-segmented /A --file=/tmp/1.bin --chunk-size=8192
+ndncat put-segmented /A --file=/tmp/1.bin --chunk-size=8192
 
 # consumer: perform version discovery via RDR protocol
 ndncat get-segmented /A >/tmp/2.bin
@@ -47,7 +47,7 @@ ndncat get-segmented /A >/tmp/2.bin
 ndncat get-segmented --ver=cbp /A >/tmp/2.bin
 
 # producer: use 2014 convention; retrieve with ndncatchunks
-NDNTS_NFDREG=1 ndncat put-segmented --convention1 /A </tmp/1.bin
+ndncat put-segmented --convention1 /A </tmp/1.bin
 ndncatchunks /A >/tmp/2.bin
 
 # consumer: use 2014 convention; retrieve from ndnputchunks

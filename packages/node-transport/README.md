@@ -36,7 +36,7 @@ try {
 }
 
 // TcpTransport.connect() establishes a TCP tunnel.
-// It accepts either host+port or an options object for net.createConnection().
+// It accepts either host+port or an options object for net.connect().
 try {
   const tcp4 = await TcpTransport.connect("hobo.cs.arizona.edu", 6363);
   await useInL3Face(tcp4);

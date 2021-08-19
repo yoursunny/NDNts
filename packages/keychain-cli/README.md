@@ -190,7 +190,7 @@ ndnts-keychain ndncert03-show-profile --profile /tmp/ca.data
 
 # start CA with PIN challenge
 nfd-start
-NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndnts-keychain ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge pin
+NDNTS_KEYCHAIN=/tmp/ca-keychain ndnts-keychain ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge pin
 ```
 
 Client using PIN challenge, with NDNts keychain:
@@ -234,7 +234,7 @@ export CA_EMAIL_FROM=$CA_EMAIL_USER
 
 # start CA with email challenge
 nfd-start
-NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndnts-keychain ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge email
+NDNTS_KEYCHAIN=/tmp/ca-keychain ndnts-keychain ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge email
 
 # generate key pair
 REQCERT=$(NDNTS_KEYCHAIN=/tmp/req-keychain ndnts-keychain gen-key /M)
@@ -266,7 +266,7 @@ NDNTS_KEYCHAIN=/tmp/ca-keychain ndnts-keychain ndncert03-make-profile --out /tmp
 
 # start CA with possession challenge
 nfd-start
-NDNTS_KEYCHAIN=/tmp/ca-keychain NDNTS_NFDREG=1 ndnts-keychain ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge possession --possession-issuer /tmp/O.ndncert
+NDNTS_KEYCHAIN=/tmp/ca-keychain ndnts-keychain ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge possession --possession-issuer /tmp/O.ndncert
 
 # request certificate with possession challenge
 REQKEY=$(ndnsec list -k | gawk '$1=="+->*" && $2 ~ "^/E/" { print $2 }')

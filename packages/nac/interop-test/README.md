@@ -13,7 +13,7 @@ rm -rf $HOME/.ndn
 ndnsec key-gen -tr /member
 
 # in NDNts directory
-NDNTS_NFDREG=1 npm run literate packages/nac/interop-test/producer.ts
+npm run literate packages/nac/interop-test/producer.ts
 # wait for 'ready' message
 
 # in name-based-access-control directory

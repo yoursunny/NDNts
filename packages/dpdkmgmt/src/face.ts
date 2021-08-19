@@ -2,17 +2,36 @@ import { Forwarder, FwFace } from "@ndn/fw";
 import { L3Face } from "@ndn/l3face";
 import { joinHostPort, splitHostPort, udp_helper, UdpTransport } from "@ndn/node-transport";
 import { gql, GraphQLClient } from "graphql-request";
+import * as net from "net";
+import pEvent from "p-event";
 
 import { NdndpdkPrefixReg } from "./prefix-reg";
+
+async function detectLocalAddress(gqlServer: string): Promise<string> {
+  const { host, port = 80 } = splitHostPort(new URL(gqlServer).host);
+  if (host === "127.0.0.1") {
+    return host;
+  }
+
+  const tcpConn = net.connect(port, host);
+  await pEvent(tcpConn, "connect");
+  const { localAddress } = tcpConn;
+  tcpConn.destroy();
+  return localAddress;
+}
 
 /** Open a face on NDN-DPDK. */
 export async function openFace({
   gqlServer = "http://localhost:3030",
   fw = Forwarder.getDefault(),
   attributes = {},
-  localHost = "127.0.0.1",
+  localHost,
   udp: udpOptionsInput,
 }: openFace.Options = {}): Promise<FwFace> {
+  if (!localHost) {
+    localHost = await detectLocalAddress(gqlServer);
+  }
+
   const sock = await udp_helper.openSocket({
     bind: { address: localHost },
     ...udpOptionsInput,
@@ -77,8 +96,12 @@ export namespace openFace {
     /** NDNts face attributes. */
     attributes?: L3Face.Attributes;
 
-    /** Local IPv4 address. */
+    /**
+     * IP address to reach local host from NDN-DPDK.
+     * Default is auto-detected from GraphQL HTTP client.
+     */
     localHost?: string;
+
     /** UDP socket options. */
     udp?: udp_helper.OpenSocketOptions;
   }

@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@ndn/autoconfig": "workspace:*",
+    "@ndn/dpdkmgmt": "workspace:*",
     "@ndn/fw": "workspace:*",
     "@ndn/keychain": "workspace:*",
     "@ndn/l3face": "workspace:*",
