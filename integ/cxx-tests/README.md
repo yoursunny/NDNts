@@ -1,7 +1,27 @@
 # NDNts ndn-cxx Compatibility Tests
 
 These integration tests confirm NDNts is compatible with ndn-cxx reference implementation.
-They only work on Ubuntu Linux, and require `build-essential clang-format-6.0 libndn-cxx-dev` packages.
+They only work on Linux, and require `build-essential libndn-cxx-dev` packages.
 
-* `npm test` executes the tests. C++ compilation is handled automatically.
-* `npm run lint` fixes C++ code style.
+`npm test` executes the tests.
+C++ compilation is handled automatically.
+
+`npm run clang-format` at the codebase root fixes C++ code style.
+This requires `clang-format-11` package.
+
+## Run in Docker
+
+```bash
+docker build -t ndnts-cxx - <<EOT
+  FROM node:16-bullseye
+  RUN echo "deb [trusted=yes] https://nfd-nightly-apt.ndn.today/debian bullseye main" > /etc/apt/sources.list.d/nfd-nightly.list \
+   && apt-get update \
+   && apt-get -y -qq install --no-install-recommends clang-format-11 libndn-cxx-dev ndnsec \
+   && rm -rf /var/lib/apt/lists/*
+EOT
+
+docker run -it --rm \
+  --network host --mount type=bind,source=$(pwd),target=/NDNts \
+  --user $(id -u):$(id -g) --workdir /NDNts \
+  ndnts-cxx bash
+```

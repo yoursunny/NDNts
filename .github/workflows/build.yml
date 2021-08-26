@@ -47,7 +47,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo add-apt-repository ppa:named-data/ppa
-          sudo apt-get install --no-install-recommends build-essential clang-format-8 libndn-cxx-dev nfd
+          sudo apt-get install --no-install-recommends libndn-cxx-dev nfd
       - run: npm run bootstrap
       - run: npm run build
       - run: npm run literate lint
