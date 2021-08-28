@@ -80,22 +80,25 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
 
   async cryptoGenerate({ curve = EcCurve.Default, importPkcs8 }: ECDSA.GenParams, extractable: boolean) {
     const params = makeGenParams(curve);
-    let pair: CryptoKeyPair;
+    let privateKey: CryptoKey;
+    let publicKey: CryptoKey;
     if (importPkcs8) {
       const [pkcs8, spki] = importPkcs8;
-      const [privateKey, publicKey] = await Promise.all([
+      [privateKey, publicKey] = await Promise.all([
         crypto.subtle.importKey("pkcs8", pkcs8, params, extractable, this.keyUsages.private),
         importNamedCurve(curve, spki),
       ]);
-      pair = { privateKey, publicKey };
     } else {
-      pair = await crypto.subtle.generateKey(params, extractable,
+      const pair = await crypto.subtle.generateKey(params, extractable,
         [...this.keyUsages.private, ...this.keyUsages.public]);
+      privateKey = pair.privateKey!;
+      publicKey = pair.publicKey!;
     }
 
-    const spki = new Uint8Array(await crypto.subtle.exportKey("spki", pair.publicKey));
+    const spki = new Uint8Array(await crypto.subtle.exportKey("spki", publicKey!));
     return {
-      ...pair,
+      privateKey,
+      publicKey,
       jwkImportParams: params,
       spki,
       info: { curve },

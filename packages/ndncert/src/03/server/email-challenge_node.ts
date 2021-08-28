@@ -4,8 +4,6 @@ import { fromUtf8, toHex } from "@ndn/tlv";
 import applyMixins from "applymixins";
 import { EventEmitter } from "node:events";
 import type { SendMailOptions, SentMessageInfo, Transporter } from "nodemailer";
-// @ts-expect-error typing unavailable
-import replaceall from "replaceall";
 import type TypedEmitter from "typed-emitter";
 
 import type { ChallengeRequest } from "../packet/mod";
@@ -29,7 +27,7 @@ interface MailSub {
 
 function templateSub(input: string, sub: MailSub): string {
   for (const key of ["caPrefix", "requestId", "subjectName", "keyName", "pin"] as Array<keyof MailSub>) {
-    input = replaceall(`$${key}$`, sub[key], input);
+    input = input.replace(new RegExp(`\\$${key}\\$`, "g"), sub[key]);
   }
   return input;
 }

@@ -113,15 +113,15 @@ export class Server {
     } while (this.state.has(requestIdHex));
 
     const salt = crypto.makeSalt();
-    const { privateKey: ecdhPvt, publicKey: ecdhPub } = await crypto.generateEcdhKey();
-    const sessionKey = await crypto.makeSessionKey(ecdhPvt, request.ecdhPub, salt, requestId);
+    const ecdhPair = await crypto.generateEcdhKey();
+    const sessionKey = await crypto.makeSessionKey(ecdhPair.privateKey!, request.ecdhPub, salt, requestId);
 
     this.state.set(requestIdHex, new Context(request, sessionKey, this.profile));
 
     const response = await NewResponse.build({
       profile: this.profile,
       request,
-      ecdhPub,
+      ecdhPub: ecdhPair.publicKey!,
       salt,
       requestId,
       challenges: Array.from(this.challenges.keys()),

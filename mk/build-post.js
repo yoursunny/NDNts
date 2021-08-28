@@ -119,7 +119,7 @@ class TransformJs {
     }
 
     let [, action, allAs = "", imports, specifier] = m;
-    if (specifier.startsWith(".")) {
+    if (/^\.(?:[^/]*\/)*[^/.]+$/.test(specifier)) {
       if (specifier.endsWith("_node")) {
         specifier = specifier.slice(0, -5); // trim "_node"
       }

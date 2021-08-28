@@ -17,7 +17,7 @@
     "@strictsoftware/typedoc-plugin-monorepo": "^0.4.2",
     "@types/jest": "^27.0.1",
     "@types/node": "^16.7.4",
-    "@types/web": "0.0.1",
+    "@types/web": "0.0.26",
     "@yoursunny/xo-config": "^0.44.0",
     "codedown": "^2.1.7",
     "expect": "^27.1.0",

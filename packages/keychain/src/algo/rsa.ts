@@ -30,26 +30,29 @@ class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenParams> {
   protected readonly genParams: RsaHashedKeyGenParams;
 
   async cryptoGenerate({ modulusLength = RsaModulusLength.Default, importPkcs8 }: RSA.GenParams, extractable: boolean) {
-    let pair: CryptoKeyPair;
+    let privateKey: CryptoKey;
+    let publicKey: CryptoKey;
     if (importPkcs8) {
       const [pkcs8, spki] = importPkcs8;
-      const [privateKey, publicKey] = await Promise.all([
+      [privateKey, publicKey] = await Promise.all([
         crypto.subtle.importKey("pkcs8", pkcs8, this.importParams, extractable, this.keyUsages.private),
         crypto.subtle.importKey("spki", spki, this.importParams, true, this.keyUsages.public),
       ]);
-      pair = { privateKey, publicKey };
     } else {
       const genParams: RsaHashedKeyGenParams = {
         ...this.genParams,
         modulusLength,
       };
-      pair = await crypto.subtle.generateKey(genParams, extractable,
+      const pair = await crypto.subtle.generateKey(genParams, extractable,
         [...this.keyUsages.private, ...this.keyUsages.public]);
+      privateKey = pair.privateKey!;
+      publicKey = pair.publicKey!;
     }
 
-    const spki = new Uint8Array(await crypto.subtle.exportKey("spki", pair.publicKey));
+    const spki = new Uint8Array(await crypto.subtle.exportKey("spki", publicKey));
     return {
-      ...pair,
+      privateKey,
+      publicKey,
       jwkImportParams: this.importParams,
       spki,
       info: {},

@@ -19,6 +19,7 @@ jobs:
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
       - run: npm run build
+      - run: npm run literate
       - run: npm run lint
   unittest:
     runs-on: ubuntu-20.04
@@ -70,9 +71,7 @@ jobs:
       - name: check C++ code style
         run: |
           npm run clang-format
-          if [[ $(git status --porcelain | tee /dev/stderr | wc -l) -ne 0 ]]; then
-            git diff && false
-          fi
+          git diff --exit-code
   publish:
     needs: [build, unittest, integ]
     if: ${{ github.repository == 'yoursunny/NDNts' && github.event_name == 'push' }}

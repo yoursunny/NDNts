@@ -10,6 +10,15 @@ if [[ $ACT == lint ]]; then
     XOFLAG=
   fi
 
+  if [[ $1 == diff ]]; then
+    LINTDIFF=HEAD
+    shift
+    if [[ -n $1 ]]; then
+      LINTDIFF=$1
+      shift
+    fi
+  fi
+
   if [[ -n $1 ]]; then
     if [[ $1 == all ]]; then
       shift
@@ -20,6 +29,9 @@ if [[ $ACT == lint ]]; then
   ROOTDIR=$(pwd)
   for DIR in $(pnpm -r exec pwd); do
     if [[ $DIR == $ROOTDIR ]]; then
+      continue
+    fi
+    if [[ -n $LINTDIFF ]] && git diff --quiet $LINTDIFF $DIR; then
       continue
     fi
     echo -e '\n\e[96m'LINTING $DIR'\e[39m'
