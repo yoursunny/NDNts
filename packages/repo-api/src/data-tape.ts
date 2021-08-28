@@ -189,9 +189,7 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
 
   public insert(...args: S.Insert.Args<{}>): Promise<void> {
     const { pkts } = S.Insert.parseArgs<{}>(args);
-    return this.useWriter((write) => {
-      return write(pkts);
-    });
+    return this.useWriter((write) => write(pkts));
   }
 }
 

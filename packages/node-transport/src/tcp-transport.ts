@@ -1,6 +1,6 @@
 import { L3Face, StreamTransport } from "@ndn/l3face";
 import type { AbortSignal } from "abort-controller";
-import * as net from "net";
+import * as net from "node:net";
 
 import { joinHostPort } from "./hostport";
 

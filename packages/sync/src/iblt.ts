@@ -104,13 +104,11 @@ export class IBLT {
     const peel = new Hashtable(this.p.nEntries, this.p.serializeLittleEndian);
     for (let i = 0; i < this.p.nEntries; ++i) {
       const entries = hts.map((ht) => ht.get(i));
-      peel.set(i, entries.reduce((a, b) => {
-        return {
-          count: a.count - b.count,
-          keySum: a.keySum ^ b.keySum,
-          keyCheck: a.keyCheck ^ b.keyCheck,
-        };
-      }));
+      peel.set(i, entries.reduce((a, b) => ({
+        count: a.count - b.count,
+        keySum: a.keySum ^ b.keySum,
+        keyCheck: a.keyCheck ^ b.keyCheck,
+      })));
     }
 
     const positive = new Set<number>();

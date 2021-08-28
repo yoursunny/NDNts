@@ -1,7 +1,7 @@
-import { EventEmitter } from "events";
 import hirestime from "hirestime";
 import assert from "minimalistic-assert";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
+import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
 import { CongestionAvoidance } from "./congestion-avoidance";

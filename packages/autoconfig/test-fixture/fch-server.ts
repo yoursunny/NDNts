@@ -1,6 +1,6 @@
-import type { Server } from "http";
 import Koa from "koa";
-import type { AddressInfo } from "net";
+import type { Server } from "node:http";
+import type { AddressInfo } from "node:net";
 
 export class FchServer {
   public static async create(): Promise<FchServer> {

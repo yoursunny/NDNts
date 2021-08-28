@@ -1,4 +1,4 @@
-import { createPrivateKey } from "crypto";
+import { createPrivateKey } from "node:crypto";
 
 /** Create EncryptedPrivateKeyInfo. */
 export async function create(privateKey: Uint8Array, passphrase: string | Uint8Array): Promise<Uint8Array> {

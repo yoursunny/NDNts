@@ -1,5 +1,5 @@
 import { Data, Interest, Nack, Name } from "@ndn/packet";
-import { EventEmitter } from "events";
+import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
 import { FaceImpl, FwFace } from "./face";

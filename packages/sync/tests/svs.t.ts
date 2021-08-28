@@ -42,9 +42,7 @@ test("example", async () => {
   const bridge = Bridge.create({
     fwA: fwAB,
     fwB: fwC,
-    relayAB: (it) => {
-      return filter(() => !lossToC, it);
-    },
+    relayAB: (it) => filter(() => !lossToC, it),
   });
   bridge.faceA.addRoute(new Name());
   bridge.faceB.addRoute(new Name());

@@ -71,7 +71,7 @@ class BuildState {
 /** Structure of a name. */
 export abstract class Pattern {
   /** Convert to a simpler pattern if possible. */
-  public simplify(): Pattern {
+  public simplify(): Pattern { // eslint-disable-line @typescript-eslint/prefer-return-this-type
     return this;
   }
 

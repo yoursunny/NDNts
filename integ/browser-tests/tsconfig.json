@@ -3,7 +3,8 @@
   "compilerOptions": {
     "types": [
       "expect-puppeteer",
-      "jest-environment-puppeteer"
+      "jest-environment-puppeteer",
+      "web"
     ]
   }
 }

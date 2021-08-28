@@ -2,7 +2,7 @@ import { Forwarder, FwFace } from "@ndn/fw";
 import { L3Face } from "@ndn/l3face";
 import { joinHostPort, splitHostPort, udp_helper, UdpTransport } from "@ndn/node-transport";
 import { gql, GraphQLClient } from "graphql-request";
-import * as net from "net";
+import * as net from "node:net";
 import pEvent from "p-event";
 
 import { NdndpdkPrefixReg } from "./prefix-reg";

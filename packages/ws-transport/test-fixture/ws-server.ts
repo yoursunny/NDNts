@@ -1,6 +1,6 @@
 import { NetServerBase } from "@ndn/node-transport/test-fixture/net-server";
-import * as http from "http";
-import * as net from "net";
+import * as http from "node:http";
+import * as net from "node:net";
 import pEvent from "p-event";
 import WebSocket, { Server as WebSocketServer } from "ws";
 

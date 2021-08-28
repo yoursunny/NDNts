@@ -2,7 +2,7 @@ import { Forwarder } from "@ndn/fw";
 import { L3Face, Transport } from "@ndn/l3face";
 import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
 import { Name } from "@ndn/packet";
-import * as dgram from "dgram";
+import * as dgram from "node:dgram";
 
 import { joinHostPort } from "../src/hostport";
 import * as udp from "../src/udp-helper";

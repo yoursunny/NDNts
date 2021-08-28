@@ -7,7 +7,5 @@ import type { Producer } from "./producer";
  * among stored Data. This should be passed to Producer.create() options.
  */
 export function respondRdr(opts: apiRespondRdr.Options = {}): Producer.FallbackHandler {
-  return async (interest, producer, store) => {
-    return apiRespondRdr(interest, store, opts);
-  };
+  return async (interest, producer, store) => apiRespondRdr(interest, store, opts);
 }

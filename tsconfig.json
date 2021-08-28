@@ -6,7 +6,8 @@
     "rootDir": ".",
     "sourceMap": true,
     "types": [
-      "jest"
+      "jest",
+      "web"
     ]
   }
 }

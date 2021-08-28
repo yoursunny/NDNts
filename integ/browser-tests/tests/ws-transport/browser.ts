@@ -13,6 +13,4 @@ window.connectWsTransportPair = async (uri) => {
   ]);
 };
 
-window.testWsTransportPair = async () => {
-  return testTransport(transportA, transportB);
-};
+window.testWsTransportPair = async () => testTransport(transportA, transportB);

@@ -10,7 +10,8 @@ import { fchQuery, connectToNetwork } from "@ndn/autoconfig";
 // other imports for examples
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
-import { strict as assert } from "assert";
+import { strict as assert } from "node:assert";
+
 (async () => {
 if (process.env.CI) { return; }
 ```

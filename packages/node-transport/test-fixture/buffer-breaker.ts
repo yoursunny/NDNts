@@ -1,4 +1,4 @@
-import { pipeline, Transform } from "stream";
+import { pipeline, Transform } from "node:stream";
 
 /** Break packet-sized buffers into random-sized buffers, for testing TCP/Unix transports. */
 export class BufferBreaker extends Transform {

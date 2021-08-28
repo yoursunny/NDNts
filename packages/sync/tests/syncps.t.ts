@@ -20,7 +20,7 @@ class DebugPrinter {
     }
     sync.on("debug", ({ action, name, content }) => {
       process.stderr.write(`${Date.now() - this.t0} ${title} ${action} ${name ? name : ""
-      } ${content ? `[${content.map((name) => `${name}`).join()}]` : ""}\n`);
+      } ${content ? `[${content.map((name) => `${name}`).join(",")}]` : ""}\n`);
     });
   }
 

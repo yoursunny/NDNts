@@ -160,13 +160,11 @@ export const CBC: Encryption<{}, GenParams> = new AesCommon("AES-CBC", "a3840ac4
 });
 
 const ctrIvGen = new DefaultWeakMap<CryptoAlgorithm.SecretKey<CTR.Info>, IvGen>(
-  ({ info: { counterLength } }) => {
-    return new CounterIvGen({
-      ivLength: CTR.ivLength,
-      counterBits: counterLength,
-      blockSize,
-    });
-  });
+  ({ info: { counterLength } }) => new CounterIvGen({
+    ivLength: CTR.ivLength,
+    counterBits: counterLength,
+    blockSize,
+  }));
 
 /**
  * AES-CTR encryption algorithm.

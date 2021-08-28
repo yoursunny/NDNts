@@ -1,7 +1,7 @@
 import { Data, Interest, Nack, Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
-import { EventEmitter } from "events";
 import MultiSet from "mnemonist/multi-set.js";
+import { EventEmitter } from "node:events";
 import Fifo from "p-fifo";
 import { buffer, filter, pipeline, tap } from "streaming-iterables";
 import type TypedEmitter from "typed-emitter";

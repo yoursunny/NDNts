@@ -1,4 +1,3 @@
-const builtins = require("builtins")();
 const { promises: fs } = require("graceful-fs");
 const { pipeline } = require("stream");
 const split2 = require("split2");
@@ -30,7 +29,6 @@ async function transformDeclaration(filename) {
 
 // Allowlist of packages published with ES Module entrypoint.
 const ESM_IMPORTS = new Set([
-  ...builtins,
   "graphql-request",
   "idb-keyval",
   "streaming-iterables",
@@ -63,9 +61,8 @@ class TransformJs {
   }
 
   async execute() {
-    const input = (await fs.readFile(this.filename, { encoding: "utf-8" })).split("\n");
-    for (let line of input) {
-      line = line.replace(/\r$/, "");
+    const input = (await fs.readFile(this.filename, { encoding: "utf-8" })).split(/\r?\n/);
+    for (const line of input) {
       switch (true) {
         case line.startsWith("import ") || line.startsWith("export "):
           this.transformImportExport(line);
@@ -135,6 +132,13 @@ class TransformJs {
     const pkg = specifier.split("/").slice(0, specifier.startsWith("@") ? 2 : 1).join("/");
     if (pkg.startsWith("@ndn/") || ESM_IMPORTS.has(pkg)) {
       return this.emitLine(line);
+    }
+    if (pkg.startsWith("node:")) {
+      const browserSpecifier = specifier.slice(5); // trim "node:"
+      return this.emitLine(
+        `${action} ${allAs}${imports} from "${specifier}";`,
+        `${action} ${allAs}${imports} from "${browserSpecifier}";`,
+      );
     }
 
     const importVar = `_cjsDefaultImport${this.nCjsImports++}`;

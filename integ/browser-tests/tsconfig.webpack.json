@@ -2,7 +2,8 @@
   "extends": "../../mk/tsconfig-base.json",
   "compilerOptions": {
     "types": [
-      "jest"
+      "jest",
+      "web"
     ]
   },
   "include": [

@@ -1,5 +1,5 @@
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
-import * as dgram from "dgram";
+import * as dgram from "node:dgram";
 import { collect } from "streaming-iterables";
 
 import { udp_helper as udp, UdpTransport } from "..";

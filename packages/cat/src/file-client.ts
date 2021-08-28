@@ -6,7 +6,7 @@ import { fetch } from "@ndn/segmented-object";
 import AbortController, { AbortSignal } from "abort-controller";
 import * as fs from "graceful-fs";
 import pushable from "it-pushable";
-import { posix as path } from "path";
+import { posix as path } from "node:path";
 import { consume, parallelMap, writeToStream } from "streaming-iterables";
 import type { Arguments, Argv, CommandModule } from "yargs";
 

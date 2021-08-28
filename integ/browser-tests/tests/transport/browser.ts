@@ -49,9 +49,9 @@ async function testH3() {
     <button>OK</button>
     </form>
   `;
-  const $form = document.querySelector("form");
+  const $form = document.querySelector("form")!;
   const [router, prefix] = await new Promise((resolve) => {
-    $form!.addEventListener("submit", (evt) => {
+    $form.addEventListener("submit", (evt) => {
       evt.preventDefault();
       resolve([
         document.querySelector<HTMLInputElement>("input[name=router]")!.value,

@@ -46,9 +46,7 @@ export class Ndncert03MakeProfileCommand implements CommandModule<{}, Args> {
         desc: "maximum validity period",
         type: "number",
       })
-      .check(({ cert }) => {
-        return CertNaming.isCertName(new Name(cert));
-      });
+      .check(({ cert }) => CertNaming.isCertName(new Name(cert)));
   }
 
   public async handler(args: Arguments<Args>) {

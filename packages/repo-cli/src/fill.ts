@@ -87,9 +87,7 @@ export class FillStoreCommand extends FillCommandBase implements CommandModule<{
   public command = "fillstore";
   public describe = "fill repo with demo data via store transaction";
 
-  public builder = (argv: Argv): Argv<FillStoreArgs> => {
-    return declareStoreArgs(this.buildBaseArgv(argv));
-  };
+  public builder = (argv: Argv): Argv<FillStoreArgs> => declareStoreArgs(this.buildBaseArgv(argv));
 
   public handler = async (args: Arguments<FillStoreArgs>) => {
     openStore(args);
@@ -106,19 +104,17 @@ export class FillBiCommand extends FillCommandBase implements CommandModule<{}, 
   public command = "fillbi";
   public describe = "fill repo with demo data via bulk insertion";
 
-  public builder = (argv: Argv): Argv<FillBiArgs> => {
-    return this.buildBaseArgv(argv)
-      .option("host", {
-        default: "127.0.0.1",
-        desc: "destination host",
-        type: "string",
-      })
-      .option("port", {
-        default: 7376,
-        desc: "destination port",
-        type: "number",
-      });
-  };
+  public builder = (argv: Argv): Argv<FillBiArgs> => this.buildBaseArgv(argv)
+    .option("host", {
+      default: "127.0.0.1",
+      desc: "destination host",
+      type: "string",
+    })
+    .option("port", {
+      default: 7376,
+      desc: "destination port",
+      type: "number",
+    });
 
   public handler = async (args: Arguments<FillBiArgs>) => {
     const face = new L3Face(await TcpTransport.connect(args.host, args.port));

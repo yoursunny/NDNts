@@ -1,8 +1,8 @@
 import type { FwFace } from "@ndn/fw";
 import { splitHostPort, TcpTransport, UdpTransport } from "@ndn/node-transport";
 import defaultGateway from "default-gateway";
+import * as os from "node:os";
 import nodeFetch from "node-fetch";
-import * as os from "os";
 
 import type { PlatformFchDefaults } from "./fch";
 import type { ConnectRouterOptions } from "./router";
@@ -12,10 +12,8 @@ export function fetch(input: RequestInfo, init?: RequestInit): Promise<Response>
 }
 
 function hasAddressFamily(family: os.NetworkInterfaceInfo["family"]): () => boolean {
-  return () => {
-    return Object.values(os.networkInterfaces()).some(
-      (addrs) => addrs?.some((addr) => addr.family === family));
-  };
+  return () => Object.values(os.networkInterfaces()).some(
+    (addrs) => addrs?.some((addr) => addr.family === family));
 }
 
 export const FCH_DEFAULTS: PlatformFchDefaults = {

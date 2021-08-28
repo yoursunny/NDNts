@@ -4,7 +4,7 @@ import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, Interest, Name } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
-import { EventEmitter } from "events";
+import { EventEmitter } from "node:events";
 
 import { ControlCommand, enableNfdPrefixReg } from "..";
 

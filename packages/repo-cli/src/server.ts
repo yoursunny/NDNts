@@ -1,6 +1,6 @@
 import { getSigner, openUplinks } from "@ndn/cli-common";
 import { BulkInsertTarget, RepoProducer, respondRdr } from "@ndn/repo";
-import { createServer } from "net";
+import { createServer } from "node:net";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { declareStoreArgs, openStore, store, StoreArgs } from "./util";

@@ -2,7 +2,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { CancelInterest, Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { Data, Interest, Name, Verifier } from "@ndn/packet";
 import type { AbortSignal } from "abort-controller";
-import { EventEmitter } from "events";
+import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
 import { defaultSegmentConvention, SegmentConvention } from "../convention";
@@ -64,9 +64,7 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
         modify(interest);
         return FwPacket.create(interest, segNum);
       },
-      ({ interest: { l3, token } }) => {
-        return new CancelInterest(l3, token);
-      },
+      ({ interest: { l3, token } }) => new CancelInterest(l3, token),
     );
   }
 

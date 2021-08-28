@@ -30,9 +30,7 @@ export class AltUriConverter {
   };
 
   /** Print name in alternate URI syntax. */
-  public ofName = (name: Name): string => {
-    return `/${name.comps.map((comp) => this.ofComponent(comp)).join("/")}`;
-  };
+  public ofName = (name: Name): string => `/${name.comps.map((comp) => this.ofComponent(comp)).join("/")}`;
 
   /** Parse component from alternate URI syntax */
   public parseComponent = (input: string): Component => {
@@ -46,9 +44,7 @@ export class AltUriConverter {
   };
 
   /** Parse name from alternate URI syntax. */
-  public parseName = (input: string): Name => {
-    return new Name(input, this.parseComponent);
-  };
+  public parseName = (input: string): Name => new Name(input, this.parseComponent);
 }
 
 class Generic implements NamingConvention<never>, NamingConvention.WithAltUri {

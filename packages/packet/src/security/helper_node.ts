@@ -1,4 +1,4 @@
-import { createHash, randomBytes, timingSafeEqual as nodeTimingSafeEqual } from "crypto";
+import { createHash, randomBytes, timingSafeEqual as nodeTimingSafeEqual } from "node:crypto";
 
 export function randBytes(size: number): Uint8Array {
   return randomBytes(size);

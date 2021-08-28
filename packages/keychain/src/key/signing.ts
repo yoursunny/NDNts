@@ -53,9 +53,7 @@ class NamedCryptoSigner<I> extends PlainCryptoSigner<I> implements NamedSigner {
 
   public withKeyLocator(keyLocator: KeyLocator.CtorArg) {
     return {
-      sign: (pkt: Signer.Signable) => {
-        return this.signWithKeyLocator(pkt, keyLocator);
-      },
+      sign: (pkt: Signer.Signable) => this.signWithKeyLocator(pkt, keyLocator),
     };
   }
 }

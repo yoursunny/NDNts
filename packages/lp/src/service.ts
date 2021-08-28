@@ -44,9 +44,7 @@ export class LpService {
   private readonly fragmenter?: Fragmenter;
   private readonly reassembler: Reassembler;
 
-  public rx = (iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<LpService.Packet | LpService.RxError> => {
-    return flatMap1((tlv) => this.decode(tlv), iterable);
-  };
+  public rx = (iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<LpService.Packet | LpService.RxError> => flatMap1((tlv) => this.decode(tlv), iterable);
 
   private *decode(dtlv: Decoder.Tlv) {
     const { type, decoder, tlv } = dtlv;
@@ -88,14 +86,12 @@ export class LpService {
     }
   }
 
-  public tx = (iterable: AsyncIterable<LpService.Packet>): AsyncIterable<Uint8Array | LpService.TxError> => {
-    return flatMap1(
-      (pkt) => this.encode(pkt),
-      this.keepAlive ?
-        itKeepAlive<LpService.Packet | false>(() => false, { timeout: this.keepAlive })(iterable) :
-        iterable,
-    );
-  };
+  public tx = (iterable: AsyncIterable<LpService.Packet>): AsyncIterable<Uint8Array | LpService.TxError> => flatMap1(
+    (pkt) => this.encode(pkt),
+    this.keepAlive ?
+      itKeepAlive<LpService.Packet | false>(() => false, { timeout: this.keepAlive })(iterable) :
+      iterable,
+  );
 
   private *encode(pkt: LpService.Packet | false): Iterable<Uint8Array | LpService.TxError> {
     if (pkt === false) {

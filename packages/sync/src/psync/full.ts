@@ -2,7 +2,7 @@ import { Endpoint, Producer, ProducerHandler } from "@ndn/endpoint";
 import { Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import AbortController from "abort-controller";
-import { EventEmitter } from "events";
+import { EventEmitter } from "node:events";
 import pDefer, { DeferredPromise } from "p-defer";
 import type TypedEmitter from "typed-emitter";
 
@@ -149,11 +149,9 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
       return this.sendSyncData(interest, state, "p-full", recvIblt);
     }
 
-    const state = this.c.list(({ id: prefix, seqNum, key }) => {
-      return seqNum > 0 &&
+    const state = this.c.list(({ id: prefix, seqNum, key }) => seqNum > 0 &&
              positive.has(key) &&
-             !negative.has(this.c.joinPrefixSeqNum({ prefix, seqNum: seqNum + 1 }).hash);
-    });
+             !negative.has(this.c.joinPrefixSeqNum({ prefix, seqNum: seqNum + 1 }).hash));
     if (state.length > 0) {
       return this.sendSyncData(interest, state, "p-diff", recvIblt);
     }
@@ -184,9 +182,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
         continue;
       }
 
-      const state = this.c.list(({ seqNum, key }) => {
-        return seqNum > 0 && positive.has(key);
-      });
+      const state = this.c.list(({ seqNum, key }) => seqNum > 0 && positive.has(key));
       if (state.length > 0 && this.pPendings.delete(ibltCompHex)) {
         clearTimeout(expire);
         defer.resolve(this.sendSyncData(interest, state, "p-satisfy", recvIblt));

@@ -1,7 +1,7 @@
-import type { UrlObject } from "url";
-// @ts-expect-error
+import type { UrlObject } from "node:url";
+// @ts-expect-error typing unavailable
 import urlFormat from "url-format-lax";
-// @ts-expect-error
+// @ts-expect-error typing unavailable
 import urlParse from "url-parse-lax";
 
 /** Combine host and port into a network address of the form "host:port". */

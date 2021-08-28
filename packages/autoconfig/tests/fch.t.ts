@@ -12,22 +12,20 @@ afterAll(() => server.close());
 
 test("json", async () => {
   const updated = Date.now() - 300000;
-  server.handle = async () => {
-    return {
-      updated,
-      routers: [
-        {
-          transport: "udp",
-          connect: "127.0.0.1:7001",
-        },
-        {
-          transport: "udp",
-          connect: "127.0.0.1:7002",
-          prefix: "/7002",
-        },
-      ],
-    };
-  };
+  server.handle = async () => ({
+    updated,
+    routers: [
+      {
+        transport: "udp",
+        connect: "127.0.0.1:7001",
+      },
+      {
+        transport: "udp",
+        connect: "127.0.0.1:7002",
+        prefix: "/7002",
+      },
+    ],
+  });
 
   const res = await fchQuery({
     server: server.uri,

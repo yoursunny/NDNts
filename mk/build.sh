@@ -9,7 +9,24 @@ if [[ $ACT == lint ]]; then
   if [[ $CI == true ]]; then
     XOFLAG=
   fi
-  exec env NODE_OPTIONS='--max-old-space-size=4096' xo $XOFLAG "$@"
+
+  if [[ -n $1 ]]; then
+    if [[ $1 == all ]]; then
+      shift
+    fi
+    exec env NODE_OPTIONS='--max-old-space-size=2048' xo $XOFLAG "$@"
+  fi
+
+  ROOTDIR=$(pwd)
+  for DIR in $(pnpm -r exec pwd); do
+    if [[ $DIR == $ROOTDIR ]]; then
+      continue
+    fi
+    echo -e '\n\e[96m'LINTING $DIR'\e[39m'
+    bash mk/build.sh lint $DIR
+  done
+  echo -e '\n\e[96m'LINTING CODEBASE ROOT'\e[39m'
+  exec bash mk/build.sh lint all
 fi
 
 if [[ $ACT == cover ]]; then

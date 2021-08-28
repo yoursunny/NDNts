@@ -14,6 +14,7 @@ import { WsTransport } from "@ndn/ws-transport";
 // other imports for examples
 import { Endpoint } from "@ndn/endpoint";
 import { Data, Interest, Name } from "@ndn/packet";
+
 (async () => {
 if (process.env.CI) { return; }
 

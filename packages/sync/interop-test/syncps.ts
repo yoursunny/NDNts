@@ -15,7 +15,7 @@ const ownName = new Name(`/syncps-interop-data/NDNts/${Date.now()}`);
   if (process.env.NDNTS_SYNC_DEBUG === "1") {
     sync.on("debug", ({ action, name, content }) => {
       console.log(`DEBUG ${action} ${name ? name : ""
-      } ${content ? `[${content.map((name) => `${name}`).join()}]` : ""}`);
+      } ${content ? `[${content.map((name) => `${name}`).join(",")}]` : ""}`);
     });
   }
 

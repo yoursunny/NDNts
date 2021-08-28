@@ -3,7 +3,7 @@ import { Component, Name, Verifier } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import { BloomFilter, Parameters as BloomParameters } from "@yoursunny/psync-bloom";
 import AbortController from "abort-controller";
-import { EventEmitter } from "events";
+import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
 import { computeInterval, IntervalFunc } from "../detail/interval";

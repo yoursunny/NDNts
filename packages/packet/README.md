@@ -9,7 +9,8 @@ import { TT, Name, Component, ImplicitDigest, AltUri, Interest, Data, digestSign
 
 // other imports for examples
 import { Decoder, Encoder, fromUtf8, toUtf8 } from "@ndn/tlv";
-import { strict as assert } from "assert";
+import { strict as assert } from "node:assert";
+
 (async () => {
 ```
 

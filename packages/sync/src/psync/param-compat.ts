@@ -1,7 +1,7 @@
 import { Segment as segmentNumConvention, Version as versionConvention } from "@ndn/naming-convention1";
 import { AltUri, Component, Name, NamingConvention, TT } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
-// @ts-expect-error
+// @ts-expect-error typing unavailable
 import murmurHash3 from "murmurhash3js-revisited";
 
 import type { IBLT } from "../iblt";

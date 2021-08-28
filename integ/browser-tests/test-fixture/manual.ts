@@ -1,6 +1,6 @@
 export function addManualTest(title: string, f: () => Promise<string | string[]>) {
   const handler = () => {
-    for (const btn of document.querySelectorAll("button")) {
+    for (const btn of document.querySelectorAll("button") as unknown as Iterable<HTMLButtonElement>) {
       btn.disabled = true;
     }
     void (async () => {

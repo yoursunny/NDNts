@@ -1,7 +1,7 @@
 import "../test-fixture/expect";
 
 import { Decoder, Encoder } from "@ndn/tlv";
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 
 import { FwHint, Interest, LLSign, LLVerify, Name, ParamsDigest, SigInfo, SigType, TT } from "..";
 

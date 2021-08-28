@@ -5,3 +5,6 @@ LIBS ?= `pkg-config --libs libndn-cxx`
 
 %/a.out: %/*.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
+
+clean:
+	find -name a.out -delete

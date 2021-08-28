@@ -90,13 +90,9 @@ export class Server {
     this.producers.map((producer) => producer.close());
   }
 
-  private handleInfoInterest: ProducerHandler = async () => {
-    return this.profile.data;
-  };
+  private handleInfoInterest: ProducerHandler = async () => this.profile.data;
 
-  private handleProbeInterest: ProducerHandler = async (interest) => {
-    return ErrorMsg.makeData(ErrorCode.NoAvailableName, interest, this.signer);
-  };
+  private handleProbeInterest: ProducerHandler = async (interest) => ErrorMsg.makeData(ErrorCode.NoAvailableName, interest, this.signer);
 
   private handleNewInterest: ProducerHandler = async (interest) => {
     let request: NewRequest;
@@ -237,9 +233,7 @@ export class Server {
     };
   }
 
-  private lookupContext = async (requestId: Uint8Array) => {
-    return this.state.get(toHex(requestId));
-  };
+  private lookupContext = async (requestId: Uint8Array) => this.state.get(toHex(requestId));
 
   private deleteContext({ requestId }: ChallengeRequest) {
     this.state.delete(toHex(requestId));

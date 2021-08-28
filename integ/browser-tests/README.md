@@ -17,7 +17,7 @@ docker run -it --rm \
   --network host --mount type=bind,source=$(pwd),target=/NDNts \
   --security-opt seccomp=~/seccomp-chrome.json \
   --user $(id -u):$(id -g) --workdir /NDNts/integ/browser-tests \
-  buildkite/puppeteer:10.0.0 bash
+  aliginberlin/puppeteer:latest bash
 ```
 
 Type `npm test` to run the tests.

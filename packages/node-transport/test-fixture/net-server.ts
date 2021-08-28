@@ -1,5 +1,5 @@
-import type { EventEmitter } from "events";
-import * as net from "net";
+import type { EventEmitter } from "node:events";
+import * as net from "node:net";
 import pEvent from "p-event";
 import { tmpNameSync } from "tmp";
 

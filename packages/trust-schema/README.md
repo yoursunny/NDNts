@@ -19,7 +19,8 @@ import { TrustSchema, TrustSchemaSigner, TrustSchemaVerifier, printESM, versec20
 // other imports for examples
 import { Certificate, KeyChain, ValidityPeriod, generateSigningKey } from "@ndn/keychain";
 import { Component, Data } from "@ndn/packet";
-import { strict as assert } from "assert";
+import { strict as assert } from "node:assert";
+
 (async () => {
 ```
 

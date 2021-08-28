@@ -1,7 +1,7 @@
 import { Endpoint, Producer, ProducerHandler } from "@ndn/endpoint";
 import { Interest, Name, nullSigner, Signer, Verifier } from "@ndn/packet";
 import { fromUtf8, toHex, toUtf8 } from "@ndn/tlv";
-import { EventEmitter } from "events";
+import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
 import { SyncNode, SyncProtocol, SyncUpdate } from "../types";

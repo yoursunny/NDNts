@@ -1,5 +1,5 @@
 import * as K from "@k-foss/ts-esnode";
-import path from "path";
+import path from "node:path";
 
 export const resolve = K.resolve;
 export const transformSource = K.transformSource;

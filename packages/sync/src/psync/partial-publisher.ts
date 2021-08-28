@@ -3,7 +3,7 @@ import { Segment } from "@ndn/naming-convention2";
 import { Data, Interest, Name, Signer } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import { BloomFilter } from "@yoursunny/psync-bloom";
-import { EventEmitter } from "events";
+import { EventEmitter } from "node:events";
 import pDefer, { DeferredPromise } from "p-defer";
 import type TypedEmitter from "typed-emitter";
 
@@ -146,10 +146,8 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
 
     const bloomComps = interest.name.slice(-1 - this.codec.encodeBloomLength, -1).comps;
     const bloom = await this.codec.decodeBloom(BloomFilter, bloomComps);
-    const state = this.c.list(({ id: prefix, key }) => {
-      return positive.has(key) &&
-             bloom.contains(this.codec.toBloomKey(prefix));
-    });
+    const state = this.c.list(({ id: prefix, key }) => positive.has(key) &&
+             bloom.contains(this.codec.toBloomKey(prefix)));
     if (total >= this.c.threshold || state.length > 0) {
       return this.sendStateData(interest, state, "s-reply", this.sFreshness);
     }

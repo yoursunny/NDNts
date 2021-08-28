@@ -1,5 +1,5 @@
-import * as dgram from "dgram";
-import * as os from "os";
+import * as dgram from "node:dgram";
+import * as os from "node:os";
 import pEvent from "p-event";
 
 const DEFAULT_UNICAST_PORT = 6363;

@@ -65,9 +65,9 @@ export class EndpointConsumer {
     const promise = new Promise<Data>((resolve, reject) => {
       const rx = pushable<FwPacket>();
 
-      let timer: NodeJS.Timeout | undefined;
+      let timer: NodeJS.Timeout | number | undefined;
       const cancelRetx = () => {
-        if (timer) { clearTimeout(timer); }
+        if (timer) { clearTimeout(timer as any); }
         timer = undefined;
       };
 

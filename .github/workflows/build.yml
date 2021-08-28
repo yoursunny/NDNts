@@ -4,35 +4,46 @@ on:
   pull_request:
 
 jobs:
-  unittest:
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        node: ['14', '16']
-      fail-fast: false
+  build:
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           path: ~/.pnpm-store
-          key: ${{ matrix.node }}-${{ hashFiles('**/package.json') }}
+          key: 14-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 14
+      - run: npm run bootstrap
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+      - run: npm run build
+      - run: npm run lint
+  unittest:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/.pnpm-store
+          key: 16-${{ hashFiles('**/package.json') }}
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
       - name: install dependencies
         run: |
-          sudo add-apt-repository ppa:named-data/ppa
+          echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu focal main" \
+            | sudo tee /etc/apt/sources.list.d/nfd-nightly.list
+          sudo apt-get update
           sudo apt-get install --no-install-recommends ndnsec
       - run: npm run bootstrap
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
-      - name: check code style
-        run: npm run lint
       - run: npm run cover -- --colors
       - uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-        if: ${{ matrix.node == '16' }}
   integ:
     runs-on: ubuntu-20.04
     steps:
@@ -46,7 +57,9 @@ jobs:
           node-version: 16
       - name: install dependencies
         run: |
-          sudo add-apt-repository ppa:named-data/ppa
+          echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu focal main" \
+            | sudo tee /etc/apt/sources.list.d/nfd-nightly.list
+          sudo apt-get update
           sudo apt-get install --no-install-recommends libndn-cxx-dev nfd
       - run: npm run bootstrap
       - run: npm run build
@@ -57,12 +70,12 @@ jobs:
       - name: check C++ code style
         run: |
           npm run clang-format
-          if ! [[ $(git status --porcelain | tee /dev/stderr | wc -l) -eq 0 ]]; then
+          if [[ $(git status --porcelain | tee /dev/stderr | wc -l) -ne 0 ]]; then
             git diff && false
           fi
   publish:
-    needs: [unittest, integ]
-    if: ${{ github.event_name == 'push' }}
+    needs: [build, unittest, integ]
+    if: ${{ github.repository == 'yoursunny/NDNts' && github.event_name == 'push' }}
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2

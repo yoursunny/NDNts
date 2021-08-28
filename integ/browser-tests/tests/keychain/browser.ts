@@ -11,13 +11,9 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import * as Serialize from "../../test-fixture/serialize";
 import type { SignVerifyTestResult } from "./api";
 
-window.testKeyStore = () => {
-  return testKeyStore(KeyChain.open("296616c2-7abb-4d9e-94b3-a97e4fd327b5"));
-};
+window.testKeyStore = () => testKeyStore(KeyChain.open("296616c2-7abb-4d9e-94b3-a97e4fd327b5"));
 
-window.testCertStore = () => {
-  return testCertStore(KeyChain.open("005a04be-9752-4f1f-adaf-b52f31742b37"));
-};
+window.testCertStore = () => testCertStore(KeyChain.open("005a04be-9752-4f1f-adaf-b52f31742b37"));
 
 async function testSigningKey(pvtA: Signer, pubA: Verifier,
     pvtB: Signer, pubB: Verifier): Promise<Serialize.Value<SignVerifyTestResult>> {
@@ -27,9 +23,7 @@ async function testSigningKey(pvtA: Signer, pubA: Verifier,
   ]));
 }
 
-window.testDigestSigning = () => {
-  return testSigningKey(digestSigning, digestSigning, digestSigning, digestSigning);
-};
+window.testDigestSigning = () => testSigningKey(digestSigning, digestSigning, digestSigning, digestSigning);
 
 window.testECDSA = async (curve: EcCurve) => {
   const [pvtA, pubA] = await generateSigningKey("/EC-A", ECDSA, { curve });

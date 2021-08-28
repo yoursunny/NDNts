@@ -15,7 +15,8 @@ import { generateSigningKey } from "@ndn/keychain";
 import { UnixTransport } from "@ndn/node-transport";
 import { Data, Interest, Name } from "@ndn/packet";
 import { fromUtf8, toUtf8 } from "@ndn/tlv";
-import { strict as assert } from "assert";
+import { strict as assert } from "node:assert";
+
 (async () => {
 ```
 

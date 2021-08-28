@@ -1,5 +1,5 @@
 import execa from "execa";
-import * as path from "path";
+import * as path from "node:path";
 
 jest.setTimeout(20000);
 

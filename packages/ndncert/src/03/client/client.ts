@@ -64,7 +64,7 @@ export async function requestCertificate({
     }
   }
   if (!challenge) {
-    throw new Error(`no acceptable challenge in [${serverChallenges.join()}]`);
+    throw new Error(`no acceptable challenge in [${serverChallenges.join(",")}]`);
   }
 
   let challengeParameters = await challenge.start({ requestId });

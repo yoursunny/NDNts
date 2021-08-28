@@ -2,9 +2,9 @@ import { AltUri } from "@ndn/naming-convention2";
 import type { Name } from "@ndn/packet";
 import { fromUtf8, toHex } from "@ndn/tlv";
 import applyMixins from "applymixins";
-import { EventEmitter } from "events";
+import { EventEmitter } from "node:events";
 import type { SendMailOptions, SentMessageInfo, Transporter } from "nodemailer";
-// @ts-expect-error
+// @ts-expect-error typing unavailable
 import replaceall from "replaceall";
 import type TypedEmitter from "typed-emitter";
 

@@ -11,7 +11,7 @@ import { Keyword, Version, Segment, AltUri } from "@ndn/naming-convention2";
 
 // other imports for examples
 import { Name } from "@ndn/packet";
-import { strict as assert } from "assert";
+import { strict as assert } from "node:assert";
 
 // convention.create() returns a Component.
 let name = new Name(["A", Keyword.create("metadata")]);

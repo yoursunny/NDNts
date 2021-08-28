@@ -16,9 +16,7 @@ async function makeEndpointBuffered(autoBuffer?: boolean, bo?: DataStoreBuffer.O
 
 test("Data non-match", async () => {
   const ep = new Endpoint();
-  const handler = jest.fn(async (interest: Interest) => {
-    return new Data("/A/0");
-  });
+  const handler = jest.fn(async (interest: Interest) => new Data("/A/0"));
   ep.produce("/A", handler);
 
   await expect(ep.consume(new Interest("/A/9", Interest.Lifetime(100)))).rejects.toThrow();
@@ -49,9 +47,7 @@ test("fill buffer in handler", async () => {
 
 test("prefill buffer", async () => {
   const [ep, dataStoreBuffer] = await makeEndpointBuffered();
-  const handler = jest.fn(async (interest: Interest) => {
-    return new Data(interest.name);
-  });
+  const handler = jest.fn(async (interest: Interest) => new Data(interest.name));
   const producer = ep.produce("/A", handler);
 
   await dataStoreBuffer.insert(new Data("/A/0"), new Data("/A/1"));

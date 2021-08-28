@@ -47,10 +47,8 @@ test("bufferBehind bufferAhead", async () => {
   });
 
   const endpoint = new Endpoint();
-  const retrieveSegment = (segmentNum: number) => {
-    return endpoint.consume(
-      new Interest(prefix.append(Segment, segmentNum), Interest.Lifetime(500)));
-  };
+  const retrieveSegment = (segmentNum: number) => endpoint.consume(
+    new Interest(prefix.append(Segment, segmentNum), Interest.Lifetime(500)));
 
   await expect(retrieveSegment(19)).resolves.toBeInstanceOf(Data);
   await new Promise((r) => setTimeout(r, 200));

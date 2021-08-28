@@ -1,5 +1,6 @@
 const fs = require("graceful-fs");
 const path = require("path");
+
 const rootdir = path.resolve(__dirname, "..");
 
 const tsconfig = {
