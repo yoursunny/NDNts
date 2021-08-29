@@ -15,8 +15,11 @@ import { Ndncert03MakeProfileCommand } from "./ndncert03-make-profile";
 import { Ndncert03ShowProfileCommand } from "./ndncert03-show-profile";
 import { ShowCertCommand } from "./show-cert";
 
+// TypeDoc needs an export to include the package.
+export const COMMAND = "ndnts-keychain";
+
 void yargs(hideBin(process.argv))
-  .scriptName("ndnts-keychain")
+  .scriptName(COMMAND)
   .command(new GenKeyCommand())
   .command(new ShowCertCommand())
   .command(new DeleteCommand())
