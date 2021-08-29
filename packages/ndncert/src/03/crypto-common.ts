@@ -6,8 +6,9 @@ const ECDH_PARAMS: EcKeyGenParams & EcKeyImportParams = {
   namedCurve: "P-256",
 };
 
-export async function generateEcdhKey(): Promise<CryptoKeyPair> {
-  return crypto.subtle.generateKey(ECDH_PARAMS, false, ["deriveBits"]);
+export async function generateEcdhKey(): Promise<[pvt: CryptoKey, pub: CryptoKey]> {
+  const { privateKey, publicKey } = await crypto.subtle.generateKey(ECDH_PARAMS, false, ["deriveBits"]);
+  return [privateKey!, publicKey!];
 }
 
 export async function importEcdhPub(raw: Uint8Array): Promise<CryptoKey> {
@@ -63,7 +64,7 @@ export async function makeSessionKey(
       salt,
       info: requestId,
       hash: "SHA-256",
-    } as any,
+    },
     hkdfKey,
     AES.GCM.makeAesKeyGenParams({ length: 128 }),
     false,

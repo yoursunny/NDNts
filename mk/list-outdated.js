@@ -10,7 +10,7 @@ for (const [folder, { specifiers, dependencies, devDependencies }] of Object.ent
       if (/[*:]/.test(specifier)) {
         continue;
       }
-      if (!version.startsWith(specifier.replace(/^[^]/, ""))) {
+      if (!version.startsWith(specifier.replace(/^[~^]/, ""))) {
         process.stdout.write(`${folder}\t${dep}\t${specifier}\t${version}\n`);
       }
     }

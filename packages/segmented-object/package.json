@@ -34,7 +34,7 @@
     "event-iterator": "^2.0.0",
     "graceful-fs": "^4.2.8",
     "hirestime": "^6.1.0",
-    "is-stream": "^2.0.0",
+    "is-stream": "^2.0.1",
     "mnemonist": "^0.38.3",
     "minimalistic-assert": "^1.0.1",
     "p-defer": "^3.0.0",

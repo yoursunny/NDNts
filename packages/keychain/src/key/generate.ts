@@ -16,7 +16,7 @@ export async function generateKeyInternal<Algo extends CryptoAlgorithm>(
   const algo = a.shift() as Algo ?? defaultAlgo;
   const genParams = a.shift() ?? {};
 
-  const useJwk = keyChain ? keyChain.needJwk : false;
+  const useJwk = !!(keyChain?.needJwk);
   const gen = await algo.cryptoGenerate(genParams, useJwk);
 
   if (keyChain) {

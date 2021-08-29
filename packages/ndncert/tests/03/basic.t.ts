@@ -15,8 +15,8 @@ beforeAll(async () => {
 });
 
 test("crypto", async () => {
-  const { privateKey: ecdhPvtA, publicKey: ecdhPubA } = await crypto.generateEcdhKey();
-  const { privateKey: ecdhPvtB, publicKey: ecdhPubB } = await crypto.generateEcdhKey();
+  const [ecdhPvtA, ecdhPubA] = await crypto.generateEcdhKey();
+  const [ecdhPvtB, ecdhPubB] = await crypto.generateEcdhKey();
 
   const salt = crypto.makeSalt();
   expect(() => crypto.checkSalt(salt)).not.toThrow();
@@ -57,11 +57,11 @@ test("packets", async () => {
 
   const reqSIP = crypto.makeSignedInterestPolicy();
   const [reqPvt, reqPub] = await generateSigningKey("/requester", ECDSA);
-  const reqEcdh = await crypto.generateEcdhKey();
+  const [reqEcdhPvt, reqEcdhPub] = await crypto.generateEcdhKey();
   const newRequest = await NewRequest.build({
     profile,
     signedInterestPolicy: reqSIP,
-    ecdhPub: reqEcdh.publicKey,
+    ecdhPub: reqEcdhPub,
     publicKey: reqPub,
     privateKey: reqPvt,
   });
@@ -71,15 +71,15 @@ test("packets", async () => {
   expect(newInterest.sigInfo).toBeDefined();
   expect(CertNaming.toSubjectName(newRequest.certRequest.name)).toEqualName("/requester");
 
-  const caEcdh = await crypto.generateEcdhKey();
+  const [caEcdhPvt, caEcdhPub] = await crypto.generateEcdhKey();
   const salt = crypto.makeSalt();
   const requestId = crypto.makeRequestId();
   const caSessionKey = await crypto.makeSessionKey(
-    caEcdh.privateKey, newRequest.ecdhPub, salt, requestId);
+    caEcdhPvt, newRequest.ecdhPub, salt, requestId);
   const newResponse = await NewResponse.build({
     profile,
     request: newRequest,
-    ecdhPub: caEcdh.publicKey,
+    ecdhPub: caEcdhPub,
     salt,
     requestId,
     challenges: ["pin"],
@@ -92,7 +92,7 @@ test("packets", async () => {
   expect(newResponse.challenges).toEqual(["pin"]);
 
   const reqSessionKey = await crypto.makeSessionKey(
-    reqEcdh.privateKey, newResponse.ecdhPub, salt, requestId);
+    reqEcdhPvt, newResponse.ecdhPub, salt, requestId);
   const { interest: challengeInterest } = await ChallengeRequest.build({
     profile,
     signedInterestPolicy: reqSIP,
@@ -153,11 +153,11 @@ test("expired CA certificate", async () => {
 
   const reqSIP = crypto.makeSignedInterestPolicy();
   const [reqPvt, reqPub] = await generateSigningKey("/requester");
-  const reqEcdh = await crypto.generateEcdhKey();
+  const [, reqEcdhPub] = await crypto.generateEcdhKey();
   await expect(NewRequest.build({
     profile,
     signedInterestPolicy: reqSIP,
-    ecdhPub: reqEcdh.publicKey,
+    ecdhPub: reqEcdhPub,
     publicKey: reqPub,
     privateKey: reqPvt,
   })).rejects.toThrow(/ValidityPeriod/);
