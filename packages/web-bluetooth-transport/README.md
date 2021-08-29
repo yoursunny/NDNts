@@ -2,15 +2,15 @@
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-This package implements a Bluetooth Low Energy (BLE) client transport using [Web Bluetooth API](https://developers.google.com/web/updates/2015/07/interact-with-ble-devices-on-the-web).
+This package implements a Bluetooth Low Energy (BLE) client transport using [Web Bluetooth API](https://web.dev/bluetooth/).
+As of 2021-08-29, Web Bluetooth API is only available in Chrome-based browsers.
 The protocol is compatible with [esp8266ndn](https://github.com/yoursunny/esp8266ndn) `BleServerTransport` class, summarized in the next section.
 
-This package supports Chrome browser only.
 Tested combinations:
 
-* Chrome on Windows 10 as client, nRF52832 as server: works.
-* Chrome on Windows 10 as client, ESP32 as server: does not work, exception in `Characteristic.startNotifications()`.
-* Chrome on Android as client, nRF52832 as server: does not work, [insufficient MTU](https://github.com/WebBluetoothCG/web-bluetooth/issues/284#issuecomment-244738626).
+* Chrome 92 on Windows 10, nRF52832: works.
+* Chrome 92 on Windows 10, ESP32: works; however, the client is unable to enable notification (`startNotifications` throws error) and relies on `readValue` polling to receive packets, causing higher latency and increased power consumption.
+* Chrome on Android: does not work, [insufficient MTU](https://github.com/WebBluetoothCG/web-bluetooth/issues/284#issuecomment-244738626).
 
 ## NDN-BLE protocol
 
@@ -30,4 +30,4 @@ To transmit a packet from client to server, the client shall write a value to th
 **SC characteristic** enables server-to-client transmission.
 Its UUID is 972f9527-0d83-4261-b95d-b1b2fc73bde4.
 The client should enable notifications on this characteristic.
-To transmit a packet from server to client, the server shall write a value to this characteristic, then initiate a notification.
+To transmit a packet from server to client, the server shall write a value to this characteristic, then post a notification.
