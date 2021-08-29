@@ -1,4 +1,6 @@
-import { Name } from "@ndn/packet";
+import "@ndn/packet/test-fixture/expect";
+
+import { Name, NameLike } from "@ndn/packet";
 
 import { TrustSchemaPolicy, versec2021 } from "../..";
 
@@ -135,4 +137,33 @@ test("compile", () => {
   expect(() => versec2021.load("s: timestamp(\"a\")")).toThrow(/timestamp\(.*arguments/);
   expect(() => versec2021.load("s: replace()")).toThrow(/replace\(.*arguments/);
   expect(() => versec2021.load("s: a/sysid(\"b\")")).toThrow(/sysid\(.*arguments/);
+});
+
+test("replace", () => {
+  const policy = versec2021.load(`
+    a: _b/_c
+    _c: "C"
+
+    d: a & { _b: "D" }
+    e: d & { _b: "E" }
+    f: replace(d, _b, "F")
+
+    g: replace(a, _b, "G")
+    h: g & { _b: "H" }
+    i: replace(g, _b, "I")
+  `);
+
+  const checkPatternName = (id: string, name: NameLike): void => {
+    const names = Array.from(policy.getPattern(id).build());
+    expect(names).toHaveLength(1);
+    expect(names[0]).toEqualName(name);
+  };
+
+  checkPatternName("d", "/D/C");
+  expect(Array.from(policy.getPattern("e").build())).toHaveLength(0);
+  checkPatternName("f", "/F/C");
+
+  checkPatternName("g", "/G/C");
+  checkPatternName("h", "/G/C");
+  checkPatternName("i", "/G/C");
 });

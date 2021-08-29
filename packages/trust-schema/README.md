@@ -160,8 +160,8 @@ Some notes and limitations:
 * This implementation has very limited compile-time schema validation.
 * Binary schema format is not supported.
 * You can have multiple trust anchors, despite that the VerSec spec allows only one trust anchor.
-* You can create a `CertNamePattern` by writing `"KEY"/_/_/_`.
-  It should be included at the end of each certificate name.
+* `CertNamePattern` is created by `"KEY"/_/_/_`, which should be included at the end of each certificate name.
+* Identifiers starting with `_` cannot be used in signing constraints and signing chains.
 
 `versec2021.load()` function imports a policy:
 

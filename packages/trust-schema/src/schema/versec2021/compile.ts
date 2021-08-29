@@ -95,15 +95,19 @@ class CompilePatternCtx {
    * @param overrideTerm new replacement term.
    */
   public andFilter(f: VariablePattern.Filter, overrideTerm?: string): CompilePatternCtx {
-    return new CompilePatternCtx(this.parentDefs,
-      ((f) => {
-        if (this.filter && f) {
-          return F.simplify(new F.And([this.filter, f]));
-        }
-        return this.filter ?? f;
-      })(F.simplify(f, undefined, this.overridden)),
-      overrideTerm ? new Set([...this.overridden, overrideTerm]) : this.overridden,
-    );
+    let oldF: VariablePattern.Filter | undefined = this.filter;
+    let newF: VariablePattern.Filter | undefined = f;
+    const overridden = new Set(this.overridden);
+    if (overrideTerm) {
+      oldF = oldF && F.simplify(oldF, undefined, new Set([overrideTerm]));
+      overridden.add(overrideTerm);
+    } else {
+      newF = newF && F.simplify(newF, undefined, overridden);
+    }
+
+    const constraints = [oldF, newF].filter((f): f is VariablePattern.Filter => !!f);
+    const combineF = constraints.length <= 0 ? constraints[0] : F.simplify(new F.And(constraints));
+    return new CompilePatternCtx(this.parentDefs, combineF, overridden);
   }
 }
 
@@ -274,30 +278,30 @@ class Compiler {
 
   private makeConstraintFilterUnopt(cc: A.ComponentConstraintEq, ctx: CompilePatternCtx): VariablePattern.Filter {
     let filters: VariablePattern.Filter[];
-    let op = "&";
+    let op: typeof F.Or | typeof F.And = F.And;
     if (cc instanceof A.ComponentConstraint) {
-      filters = cc.terms.map((term) => this.makeConstraintTermFilter(term, ctx));
+      filters = cc.terms.map((term) => this.makeConstraintTermFilter(term, ctx))
+        .filter((f): f is VariablePattern.Filter => !!f);
     } else if (cc instanceof A.ComponentConstraintRel) {
       filters = [
         this.makeConstraintFilter(cc.left, ctx),
         this.makeConstraintFilter(cc.right, ctx),
       ];
       if (cc.op instanceof T.Or) {
-        op = "|";
+        op = F.Or;
       }
     } else {
       /* istanbul ignore next */
       assert(false, `unexpected component constraint type ${cc.constructor.name}`);
     }
-
-    if (op === "|") {
-      return new F.Or(filters);
-    }
-    return new F.And(filters);
+    return new op(filters);
   }
 
-  private makeConstraintTermFilter(term: A.ComponentConstraintTerm, ctx: CompilePatternCtx): VariablePattern.Filter {
+  private makeConstraintTermFilter(term: A.ComponentConstraintTerm, ctx: CompilePatternCtx): VariablePattern.Filter | undefined {
     const id = term.tag.id;
+    if (ctx.overridden.has(id)) {
+      return undefined;
+    }
     const pattern = this.makePattern(term.expr, ctx);
     return new F.ConstraintTerm(id, pattern);
   }

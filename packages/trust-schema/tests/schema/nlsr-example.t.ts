@@ -4,7 +4,7 @@ import { Certificate, CertNaming, generateSigningKey, KeyChain, NamedSigner, Val
 import { Component, Data, Name } from "@ndn/packet";
 import { collect, take } from "streaming-iterables";
 
-import { pattern as P, TrustSchema, TrustSchemaPolicy, TrustSchemaSigner, versec2019 } from "../..";
+import { pattern as P, printESM, TrustSchema, TrustSchemaPolicy, TrustSchemaSigner, versec2019 } from "../..";
 
 const NLSR_POLICY = `
 # adapted from https://pollere.net/Pdfdocs/BuildingBridge.pdf
@@ -93,6 +93,7 @@ beforeAll(async () => {
 
 test("print", () => {
   expect(versec2019.print(policy)).toMatch(/ = /);
+  expect(printESM(policy)).toMatch(/policy\.addPattern/);
 });
 
 test("classify", () => {

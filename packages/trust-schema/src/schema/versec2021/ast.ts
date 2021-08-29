@@ -120,7 +120,7 @@ export class Name extends Expr {
   }
 
   protected override exprParens(parent: Expr) {
-    return !(parent instanceof Name || parent instanceof Constrained || parent instanceof Alt || this.comps.length === 1);
+    return !(parent instanceof Name || parent instanceof Constrained || this.comps.length === 1);
   }
 
   protected override *exprToTokens(): Iterable<T.Token> {

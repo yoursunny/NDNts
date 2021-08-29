@@ -200,7 +200,7 @@ export function print(tokens: Iterable<Token>): string {
     if (token instanceof Operator) {
       depth += token.nest;
       if (token instanceof Comma && depth === 0) {
-        s.push("\n");
+        s.splice(-1, 1, "\n");
       }
     }
   }
