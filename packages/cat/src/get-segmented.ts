@@ -1,18 +1,14 @@
-import { closeUplinks } from "@ndn/cli-common";
 import { Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { discoverVersion, fetch } from "@ndn/segmented-object";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { CommonArgs, segmentNumConvention, versionConvention } from "./common";
-
-const discoverVersionChoices = { none: true, cbp: true, rdr: true };
-type DiscoverVersionChoice = keyof typeof discoverVersionChoices;
+import { checkVersionArg, CommonArgs, segmentNumConvention, versionConvention } from "./common";
 
 interface Args extends CommonArgs {
   name: string;
-  ver: DiscoverVersionChoice;
+  ver: string;
 }
 
 async function main(args: Args) {
@@ -28,6 +24,9 @@ async function main(args: Args) {
       break;
     case "rdr":
       name = (await retrieveMetadata(name)).name;
+      break;
+    default:
+      name = name.append(versionConvention, Number.parseInt(args.ver, 10));
       break;
   }
 
@@ -47,20 +46,17 @@ export class GetSegmentedCommand implements CommandModule<CommonArgs, Args> {
       })
       .demandOption("name")
       .option("ver", {
-        choices: Object.keys(discoverVersionChoices),
-        default: "rdr" as DiscoverVersionChoice,
-        desc: ["version discovery method",
-          "none: no discovery",
+        default: "rdr",
+        desc: ["version number or discovery method",
+          "none: no version component",
           "cbp: send Interest with CanBePrefix",
           "rdr: use RDR protocol"].join("\n"),
-      });
+        type: "string",
+      })
+      .check(checkVersionArg(["none", "cbp", "rdr"]));
   }
 
   public async handler(args: Arguments<Args>) {
-    try {
-      await main(args);
-    } finally {
-      closeUplinks();
-    }
+    await main(args);
   }
 }

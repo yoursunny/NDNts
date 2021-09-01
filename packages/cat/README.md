@@ -25,7 +25,8 @@ It accepts the following arguments:
 * Positional argument: name prefix.
 * `NDNTS_UPLINK` environment variable, as explained in `@ndn/cli-common` package.
 * `--convention1` selects 2014 Naming Convention instead of 2019 Naming Convention for version and segment components.
-* `--ver=none` disables version discovery and assumes either Data has no version component or the input name has version component.
+* `--ver=42` inserts a specific version number as version component.
+* `--ver=none` disables version discovery and assumes Data has no version component.
 * `--ver=cbp` sends Interest with CanBePrefix and MustBeFresh to discover version.
 * `--ver=rdr` (default) sends an RDR discovery Interest to discover version.
 

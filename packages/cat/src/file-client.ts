@@ -1,8 +1,8 @@
-import { closeUplinks } from "@ndn/cli-common";
 import { Keyword } from "@ndn/naming-convention2";
 import { ComponentLike, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
+import { fromUtf8 } from "@ndn/tlv";
 import AbortController, { AbortSignal } from "abort-controller";
 import * as fs from "graceful-fs";
 import pushable from "it-pushable";
@@ -10,7 +10,6 @@ import { posix as path } from "node:path";
 import { consume, parallelMap, writeToStream } from "streaming-iterables";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { fromUtf8 } from "../../naming-convention2/node_modules/@ndn/tlv/src/string";
 import { CommonArgs, segmentNumConvention } from "./common";
 
 interface Args extends CommonArgs {
@@ -52,12 +51,7 @@ export class FileClientCommand implements CommandModule<CommonArgs, Args> {
   public async handler(args: Arguments<Args>) {
     const dl = new Downloader(new Name(args.remote), args.local, args.jobs, args.retx);
     const abort = new AbortController();
-    try {
-      await dl.run(abort.signal);
-    } finally {
-      abort.abort();
-      closeUplinks();
-    }
+    await dl.run(abort.signal);
   }
 }
 

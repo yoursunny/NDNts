@@ -1,4 +1,4 @@
-import { getSigner, openUplinks } from "@ndn/cli-common";
+import { closeUplinks, getSigner, openUplinks } from "@ndn/cli-common";
 import { Segment as Segment1, Version as Version1 } from "@ndn/naming-convention1";
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
 import { NamingConvention, Signer } from "@ndn/packet";
@@ -19,4 +19,21 @@ export async function applyCommonArgs(args: CommonArgs) {
     versionConvention = Version1;
     segmentNumConvention = Segment1;
   }
+}
+
+export function cleanupCommon() {
+  closeUplinks();
+}
+
+export function checkVersionArg(keywords: readonly string[]): (args: { ver: string }) => boolean {
+  return ({ ver }) => {
+    if (keywords.includes(ver)) {
+      return true;
+    }
+    const n = Number.parseInt(ver, 10);
+    if (Number.isSafeInteger(n) && n >= 0) {
+      return true;
+    }
+    throw new Error(`--ver must be '${keywords.join("' or '")}' or a non-negative integer`);
+  };
 }

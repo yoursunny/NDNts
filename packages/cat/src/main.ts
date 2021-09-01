@@ -1,7 +1,7 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import { applyCommonArgs } from "./common";
+import { applyCommonArgs, cleanupCommon } from "./common";
 import { FileClientCommand } from "./file-client";
 import { GetSegmentedCommand } from "./get-segmented";
 import { PutSegmentedCommand } from "./put-segmented";
@@ -21,4 +21,7 @@ void yargs(hideBin(process.argv))
   .command(new PutSegmentedCommand())
   .command(new FileClientCommand())
   .demandCommand()
-  .parse();
+  .exitProcess(false)
+  .parseAsync()
+  .catch(() => undefined)
+  .finally(cleanupCommon);

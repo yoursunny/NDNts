@@ -29,6 +29,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
+    "@ndn/tlv": "workspace:*",
     "abort-controller": "^3.0.0",
     "graceful-fs": "^4.2.8",
     "hard-rejection": "^2.1.0",

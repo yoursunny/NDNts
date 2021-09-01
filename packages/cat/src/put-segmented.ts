@@ -2,7 +2,7 @@ import { Metadata, serveMetadata } from "@ndn/rdr";
 import { FileChunkSource, serve, serveVersioned, StreamChunkSource } from "@ndn/segmented-object";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { CommonArgs, segmentNumConvention, signer, versionConvention } from "./common";
+import { checkVersionArg, CommonArgs, segmentNumConvention, signer, versionConvention } from "./common";
 
 interface Args extends CommonArgs {
   name: string;
@@ -59,12 +59,7 @@ export class PutSegmentedCommand implements CommandModule<CommonArgs, Args> {
         desc: "segment payload size",
         type: "number",
       })
-      .check(({ ver }) => {
-        if (!(["none", "now"].includes(ver) || Number.parseInt(ver, 10) >= 0)) {
-          throw new Error("--ver must be either a non-negative integer or 'none' or 'now'");
-        }
-        return true;
-      });
+      .check(checkVersionArg(["none", "now"]));
   }
 
   public handler(args: Arguments<Args>) {
