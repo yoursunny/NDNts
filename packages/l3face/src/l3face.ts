@@ -229,10 +229,25 @@ export namespace L3Face {
   export type RxError = LpService.RxError;
   export type TxError = LpService.TxError;
 
+  /** Options to createFace function as first parameter. */
   export interface CreateFaceOptions {
+    /**
+     * Forwarder instance to add the face to.
+     * Default is the default Forwarder.
+     */
     fw?: Forwarder;
+
+    /** L3Face attributes. */
     l3?: Attributes;
+
+    /** NDNLP service options. */
     lp?: LpService.Options;
+
+    /**
+     * A callback to receive Transport, L3Face, and FwFace objects.
+     * This can be useful for reading counters or listening to events on these objects.
+     */
+    callback?: (transport: Transport, l3face: L3Face, fwFace: FwFace) => void;
   }
 
   /**
@@ -242,23 +257,27 @@ export namespace L3Face {
    * Returns FwFace.
    */
   export type CreateFaceFunc<
-    P extends any[],
     R extends Transport | Transport[],
+    P extends any[],
   > = (opts: CreateFaceOptions, ...args: P) => Promise<R extends Transport[] ? FwFace[] : FwFace>;
 
   export function makeCreateFace<
     C extends (...args: any[]) => Promise<Transport | Transport[]>,
-    P extends any[] = C extends (...args: infer P) => any ? P : never,
-    R extends Transport | Transport[] = C extends (...args: any[]) => Promise<infer R> ? R : never,
-  >(createTransport: C): CreateFaceFunc<P, R> {
-    return (async (opts: CreateFaceOptions, ...args: P) => {
+  >(createTransport: C): CreateFaceFunc<C extends (...args: any[]) => Promise<infer R> ? R : never, Parameters<C>> {
+    return (async (opts: CreateFaceOptions, ...args: Parameters<C>) => {
       const created = await createTransport(...args);
       const {
         fw = Forwarder.getDefault(),
         l3,
         lp,
+        callback,
       } = opts;
-      const makeFace = (transport: Transport) => fw.addFace(new L3Face(transport, l3, lp));
+      const makeFace = (transport: Transport) => {
+        const l3face = new L3Face(transport, l3, lp);
+        const fwFace = fw.addFace(l3face);
+        callback?.(transport, l3face, fwFace);
+        return fwFace;
+      };
       return Array.isArray(created) ? created.map(makeFace) : makeFace(created);
     }) as any;
   }
