@@ -62,7 +62,8 @@ export class PutSegmentedCommand implements CommandModule<CommonArgs, Args> {
       .check(checkVersionArg(["none", "now"]));
   }
 
-  public handler(args: Arguments<Args>) {
+  public async handler(args: Arguments<Args>) {
     main(args);
+    await new Promise(() => undefined);
   }
 }

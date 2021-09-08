@@ -13,16 +13,17 @@ if (env.pktTrace) {
 }
 
 async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
-  let preferTcp = false;
+  let autoconfigPreferTcp = false;
+  let dpdkScheme: dpdkOpenFace.Options["scheme"] = "udp";
   switch (env.uplink.protocol) {
     case "autoconfig-tcp:":
-      preferTcp = true;
+      autoconfigPreferTcp = true;
       // fallthrough
     case "autoconfig:": {
       try {
         const faces = await connectToNetwork({
           mtu: env.mtu,
-          preferTcp,
+          preferTcp: autoconfigPreferTcp,
           addRoutes: [],
         });
         return [faces[0]!, true];
@@ -41,10 +42,19 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
       face.addRoute(new Name("/"), false);
       return [face, true];
     }
+    case "ndndpdk-memif:":
+      dpdkScheme = "memif";
+      // fallthrough
+    case "ndndpdk-udp:":
     case "ndndpdk:": {
       const face = await dpdkOpenFace({
         gqlServer: env.dpdkGql,
         localHost: env.dpdkLocal,
+        scheme: dpdkScheme,
+        memif: {
+          socketPath: env.dpdkMemifSocketPath,
+          dataroom: 9000,
+        },
       });
       face.addRoute(new Name("/"), false);
       return [face, false];

@@ -27,8 +27,22 @@ export abstract class Transport {
 
 export namespace Transport {
   export interface Attributes extends Record<string, any> {
+    /**
+     * Textual description.
+     * Default is automatically generated from constructor name.
+     */
     describe?: string;
+
+    /**
+     * Whether the transport connects to a destination on the local machine.
+     * Default is false.
+     */
     local?: boolean;
+
+    /**
+     * Whether the transport can possibly talk to multiple peers.
+     * Default is false;
+     */
     multicast?: boolean;
   }
 

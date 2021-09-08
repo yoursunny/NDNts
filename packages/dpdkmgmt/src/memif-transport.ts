@@ -9,7 +9,7 @@ export class MemifTransport extends Transport {
 
   /**
    * Access the underlying Memif instance.
-   * You may read its counters or add up/down event handlers, but not send/receive packets.
+   * You may read counters and monitor "memif:up" "memif:down" events, but not send/receive packets.
    */
   public readonly memif: Memif;
 
@@ -18,6 +18,7 @@ export class MemifTransport extends Transport {
       describe: `Memif(${opts.socketName}:${opts.id ?? 0})`,
       local: true,
       multicast: false,
+      mtu: opts.dataroom!,
     });
 
     this.memif = new Memif(opts);
@@ -31,8 +32,9 @@ export namespace MemifTransport {
 
   /** Create a memif transport. */
   export async function connect(opts: Options): Promise<MemifTransport> {
+    opts.dataroom ??= 2048;
     const transport = new MemifTransport(opts);
-    await pEvent(transport.memif, "up");
+    await pEvent(transport.memif, "memif:up");
     return transport;
   }
 

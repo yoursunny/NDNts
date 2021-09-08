@@ -27,7 +27,8 @@ It supports:
 * connect to NFD (or similar) via Unix socket, e.g. `unix:///run/nfd.sock`
 * connect to NFD via TCP, e.g. `tcp://192.0.2.1:6363`
 * connect to NFD via UDP unicast, e.g. `udp://192.0.2.1:6363`
-* connect to NDN-DPDK: `ndndpdk:`
+* connect to NDN-DPDK via UDP: `ndndpdk:` or `ndndpdk-udp:`
+* connect to NDN-DPDK via memif: `ndndpdk-memif:`
 * perform NDN-FCH query and connect to global NDN network: `autoconfig:` (prefer UDP) or `autoconfig-tcp:` (prefer TCP)
 
 The default is:
@@ -38,7 +39,8 @@ The default is:
 
 `NDNTS_MTU` environment variable sets the MTU for fragmentation of outgoing packets.
 It must be a positive integer, and the default value is 1450.
-It applies to UDP uplinks only.
+It applies to UDP only.
+The MTU for memif is hard-coded to be 9000.
 
 `NDNTS_NFDREG=0` environment variable disables prefix registration on the uplink using NFD management protocol.
 The default is enabling NFD prefix registration if the uplink is possibly connected to NFD.
@@ -49,10 +51,13 @@ The default is using the same key as `NDNTS_KEY`.
 
 `NDNTS_NDNDPDK_GQLSERVER` environment variable specifies the NDN-DPDK GraphQL server endpoint.
 The default is `http://127.0.0.1:3030`.
-This is only used when `NDNTS_UPLINK=ndndpdk:` is set.
+This is only used when `NDNTS_UPLINK` is set to `ndndpdk:` or `ndndpdk-memif:`.
 
 `NDNTS_NDNDPDK_LOCAL` environment variable specifies a local IP address that is reachable from NDN-DPDK.
 The default is auto-detected from GraphQL HTTP client.
+
+`NDNTS_NDNDPDK_MEMIF_SOCKETPATH` environment variable specifies a directory for memif control socket.
+The default is `/run/ndn`.
 
 ## API
 
@@ -60,7 +65,7 @@ The default is auto-detected from GraphQL HTTP client.
 `getSigner` function returns a signer using the default signing key.
 
 `openUplinks` function creates the uplink.
-It also enables prefix registration unless disabled.
+It also enables prefix registration unless explicitly disabled.
 
 `closeUplinks` function closes the uplink.
 This is called automatically upon SIGINT; you may disable this behavior with `process.off("SIGINT", closeUplinks)`.

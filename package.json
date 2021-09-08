@@ -16,7 +16,7 @@
     "@k-foss/ts-esnode": "^2.0.2",
     "@strictsoftware/typedoc-plugin-monorepo": "^0.4.2",
     "@types/jest": "^27.0.1",
-    "@types/node": "^16.7.11",
+    "@types/node": "^16.7.13",
     "@types/web": "0.0.29",
     "@yoursunny/xo-config": "^0.44.0",
     "codedown": "^2.1.7",

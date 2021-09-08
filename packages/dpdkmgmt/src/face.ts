@@ -31,7 +31,7 @@ async function openFaceImpl(
       attributes = {},
     }: openFace.Options,
     locator: unknown,
-    prepareTransport: (locator: unknown) => Promise<Transport>,
+    prepareTransport: (locator: unknown) => Promise<[transport: Transport, mtu: number]>,
 ): Promise<FwFace> {
   const client = new GraphQLClient(gqlServer);
   const { createFace: { id, locator: loc } } = await client.request<{
@@ -63,8 +63,9 @@ async function openFaceImpl(
   };
 
   let transport: Transport;
+  let mtu: number;
   try {
-    transport = await prepareTransport(loc);
+    [transport, mtu] = await prepareTransport(loc);
   } catch (err: unknown) {
     await cleanup();
     throw err;
@@ -75,6 +76,8 @@ async function openFaceImpl(
     advertiseFrom: false,
     describe: `NDN-DPDK(${id})`,
     ...attributes,
+  }, {
+    mtu,
   }));
   face.on("close", cleanup);
   return face;
@@ -103,7 +106,7 @@ async function openFaceUdp(opts: openFace.Options) {
           throw new Error(`unexpected locator: ${JSON.stringify(loc)}`);
         }
         await udp_helper.connect(sock, { host, port });
-        return new UdpTransport(sock);
+        return [new UdpTransport(sock), 1450];
       });
   } catch (err: unknown) {
     sock.close();
@@ -131,13 +134,16 @@ async function openFaceMemif(opts: openFace.Options) {
       dataroom,
       ringCapacity,
     },
-    () => MemifTransport.connect({
-      role: "client",
-      socketName,
-      id: 0,
-      dataroom,
-      ringCapacity,
-    }));
+    async () => {
+      const transport = await MemifTransport.connect({
+        role: "client",
+        socketName,
+        id: 0,
+        dataroom,
+        ringCapacity,
+      });
+      return [transport, dataroom];
+    });
 }
 
 /** Open a face on NDN-DPDK. */

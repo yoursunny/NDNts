@@ -65,4 +65,10 @@ export const env = makeEnv({
     required: false,
     defaultValue: undefined,
   },
+  dpdkMemifSocketPath: {
+    envVarName: "NDNTS_NDNDPDK_MEMIF_SOCKETPATH",
+    parser: parsers.string,
+    required: false,
+    defaultValue: undefined,
+  },
 });
