@@ -13,28 +13,38 @@ export class MemifTransport extends Transport {
    */
   public readonly memif: Memif;
 
-  constructor(opts: MemifTransport.Options) {
+  constructor(opts: MemifTransport.Options, memif: Memif) {
     super({
       describe: `Memif(${opts.socketName}:${opts.id ?? 0})`,
       local: true,
       multicast: false,
-      mtu: opts.dataroom!,
+      mtu: Math.min(memif.dataroom, opts.dataroom ?? Infinity),
     });
 
-    this.memif = new Memif(opts);
+    this.memif = memif;
     this.rx = rxFromPacketIterable(this.memif);
     this.tx = txToStream(this.memif);
   }
 }
 
 export namespace MemifTransport {
-  export type Options = Memif.Options;
+  export interface Options extends Memif.Options {
+    /**
+     * Whether to wait until the connection is up.
+     * Default is true;
+     */
+    waitUp?: boolean;
+  }
 
   /** Create a memif transport. */
   export async function connect(opts: Options): Promise<MemifTransport> {
-    opts.dataroom ??= 2048;
-    const transport = new MemifTransport(opts);
-    await pEvent(transport.memif, "memif:up");
+    const {
+      waitUp = true,
+    } = opts;
+    const transport = new MemifTransport(opts, new Memif(opts));
+    if (waitUp) {
+      await pEvent(transport.memif, "memif:up");
+    }
     return transport;
   }
 

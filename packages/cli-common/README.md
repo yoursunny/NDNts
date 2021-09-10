@@ -37,10 +37,9 @@ The default is:
 * Windows: `tcp://127.0.0.1:6363`
 * other platforms: `unix:///var/run/nfd.sock`
 
-`NDNTS_MTU` environment variable sets the MTU for fragmentation of outgoing packets.
+`NDNTS_MTU` environment variable sets the MTU for fragmentation of outgoing packets, applicable to UDP and memif.
 It must be a positive integer, and the default value is 1450.
-It applies to UDP only.
-The MTU for memif is hard-coded to be 9000.
+It's recommended to increase this value when using memif.
 
 `NDNTS_NFDREG=0` environment variable disables prefix registration on the uplink using NFD management protocol.
 The default is enabling NFD prefix registration if the uplink is possibly connected to NFD.

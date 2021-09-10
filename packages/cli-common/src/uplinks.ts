@@ -53,7 +53,7 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
         scheme: dpdkScheme,
         memif: {
           socketPath: env.dpdkMemifSocketPath,
-          dataroom: 9000,
+          dataroom: env.mtu,
         },
       });
       face.addRoute(new Name("/"), false);

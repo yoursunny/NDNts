@@ -7,7 +7,6 @@ It can create faces (either UDP or memif) for the NDNts application, and perform
 
 Currently, there are several limitations using this package:
 
-* You can have only one memif face; UDP faces are unlimited but slower.
 * Prefix registration replaces a FIB entry, and does not preserve other prefix registrations on the same prefix.
 * If the application crashes, the face would not be closed on NDN-DPDK side.
 
@@ -25,14 +24,13 @@ import { strict as assert } from "node:assert";
 
 const gqlServer = process.env.DEMO_DPDKMGMT_GQLSERVER;
 const localHost = process.env.DEMO_DPDKMGMT_LOCAL;
-const useMemif = process.env.DEMO_DPDKMGMT_MEMIF;
+const scheme = process.env.DEMO_DPDKMGMT_MEMIF === "1" ? "memif" : "udp";
 if (!gqlServer) {
   console.log(`
 To run @ndn/dpdkmgmt demo, set the following environment variables:
 DEMO_DPDKMGMT_GQLSERVER= NDN-DPDK forwarder management endpoint (required)
 DEMO_DPDKMGMT_LOCAL= IP address to reach local host from NDN-DPDK (optional)
-DEMO_DPDKMGMT_MEMIF=C use memif instead of UDP for consumer face (optional)
-DEMO_DPDKMGMT_MEMIF=P use memif instead of UDP for producer face (optional)
+DEMO_DPDKMGMT_MEMIF=1 use memif instead of UDP (optional)
 `);
   return;
 }
@@ -54,31 +52,34 @@ const uplinkC = await openFace({
   fw: fwC,
   gqlServer,
   localHost,
-  scheme: useMemif === "C" ? "memif" : "udp",
+  scheme,
 });
 uplinkC.addRoute(new Name("/"));
 const uplinkP = await openFace({
   fw: fwP,
   gqlServer,
   localHost,
-  scheme: useMemif === "P" ? "memif" : "udp",
+  scheme,
 });
-console.log(`uplinkC=${uplinkC}`, `uplinkP=${uplinkP}`);
+console.log(`uplinkC=${uplinkC}`, `uplinkP=${uplinkP}, transport=${scheme}`);
 
 // Start a producer.
+let t0 = 0;
 const producer = new Endpoint({ fw: fwP }).produce("/P",
   async (interest) => {
-    console.log("producing");
+    console.log(`producing Data, latency=${Date.now() - t0}ms`);
     return new Data(interest.name, Data.FreshnessPeriod(1000), toUtf8("NDNts + NDN-DPDK"));
   });
 await new Promise((r) => setTimeout(r, 500));
 
 // Start a consumer, fetching Data from the producer via NDN-DPDK.
+t0 = Date.now();
 const data = await new Endpoint({ fw: fwC }).consume(
   new Interest(`/P/${Math.floor(Math.random() * 1e9)}`, Interest.MustBeFresh),
 );
+const t1 = Date.now();
 const payloadText = fromUtf8(data.content);
-console.log("received", `${data.name} ${payloadText}`);
+console.log(`received ${data.name} ${payloadText}, rtt=${t1 - t0}ms`);
 assert.equal(payloadText, "NDNts + NDN-DPDK");
 
 // Close faces.
