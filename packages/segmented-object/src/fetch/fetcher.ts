@@ -10,7 +10,7 @@ import { FetchLogic } from "./logic";
 
 interface Events {
   /** Emitted when a Data segment arrives. */
-  segment: (segNum: number, data: Data) => void;
+  segment: (seg: Fetcher.SegmentData) => void;
   /** Emitted after all data chunks arrive. */
   end: () => void;
   /** Emitted upon error. */
@@ -48,6 +48,10 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
     (this.opts.signal as AbortSignal | undefined)?.removeEventListener("abort", this.handleAbort);
     this.logic.close();
     this.face.close();
+  }
+
+  public pause() {
+    return this.logic.pause();
   }
 
   private tx(): AsyncIterable<FwPacket> {
@@ -95,7 +99,7 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
       }
     }
     ++this.count_;
-    this.emit("segment", segNum, data);
+    this.emit("segment", { segNum, data });
   }
 
   private fail(err: Error): void {
@@ -142,5 +146,10 @@ export namespace Fetcher {
 
     /** If specified, verify received Data. */
     verifier?: Verifier;
+  }
+
+  export interface SegmentData {
+    segNum: number;
+    data: Data;
   }
 }

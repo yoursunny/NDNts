@@ -9,6 +9,7 @@ class FileHandleChunkSource extends KnownSizeChunkSource {
   }
 
   protected async getPayload(i: number, offset: number, chunkSize: number): Promise<Uint8Array> {
+    void i;
     const payload = new Uint8Array(chunkSize);
     await this.fh.read(payload, 0, chunkSize, offset);
     return payload;
@@ -38,17 +39,17 @@ export class FileChunkSource implements ChunkSource {
 
   /* istanbul ignore next: not used when getChunk is present */
   public async *listChunks(): AsyncIterable<Chunk> {
-    const inner = await this.opening;
-    yield* inner.listChunks();
+    const h = await this.opening;
+    yield* h.listChunks();
   }
 
   public async getChunk(i: number): Promise<Chunk | undefined> {
-    const inner = await this.opening;
-    return inner.getChunk(i);
+    const h = await this.opening;
+    return h.getChunk(i);
   }
 
   public async close() {
-    const inner = await this.opening;
-    await inner.close();
+    const h = await this.opening;
+    await h.close();
   }
 }

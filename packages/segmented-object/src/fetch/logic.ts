@@ -2,6 +2,7 @@ import hirestime from "hirestime";
 import assert from "minimalistic-assert";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import { EventEmitter } from "node:events";
+import pDefer from "p-defer";
 import type TypedEmitter from "typed-emitter";
 
 import { CongestionAvoidance } from "./congestion-avoidance";
@@ -65,6 +66,7 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
 
   private running = true;
   private processCancels = false;
+  private paused?: Promise<void>;
 
   constructor({
     rtte,
@@ -95,12 +97,26 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
     this.tl.put(this.pending.size - this.retxQueue.size);
   }
 
+  /**
+   * Pause outgoing Interests, for backpressure from Data consumer.
+   * Return a function for resuming.
+   */
+  public pause(): () => void {
+    const defer = pDefer<void>();
+    this.paused = defer.promise;
+    return () => {
+      defer.resolve();
+      this.paused = undefined;
+    };
+  }
+
   /** Generate stream of outgoing requests. */
   public async *outgoing<T, C>(
       makeInterest: (req: SegRequest<unknown>) => T,
       cancelInterest: (req: SegRequest<T>) => C,
   ): AsyncGenerator<T | C> {
     while (this.running) {
+      await this.paused;
       await this.tl.take();
       if (!this.running) {
         this.tl.put();

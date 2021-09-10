@@ -17,13 +17,17 @@ class FetchResult implements fetch.Result {
     assert(!this.ctx, "fetch.Result is already used");
     const ctx = new Fetcher(this.name, this.opts);
     this.ctx = ctx;
-    return new EventIterator<[segNum: number, data: Data]>(({ push, stop, fail }) => {
-      const handleSegment = (segNum: number, data: Data) => push([segNum, data]);
-      ctx.on("segment", handleSegment);
+    return new EventIterator<Fetcher.SegmentData>(({ push, stop, fail, on }) => {
+      let resume: () => void | undefined;
+      on("highWater", () => { resume = ctx.pause(); });
+      on("lowWater", () => { resume?.(); });
+
+      ctx.on("segment", push);
       ctx.on("end", stop);
       ctx.on("error", fail);
       return () => {
-        ctx.off("segment", handleSegment);
+        resume?.();
+        ctx.off("segment", push);
         ctx.off("end", stop);
         ctx.off("error", fail);
       };
@@ -31,12 +35,12 @@ class FetchResult implements fetch.Result {
   }
 
   public unordered() {
-    return map(([, data]) => data, this.startFetcher());
+    return map(({ data }) => data, this.startFetcher());
   }
 
   private async *ordered() {
     const reorder = new Reorder<Data>(this.opts.segmentRange?.[0]);
-    for await (const [segNum, data] of this.startFetcher()) {
+    for await (const { segNum, data } of this.startFetcher()) {
       const ordered = reorder.push(segNum, data);
       yield* ordered;
     }
