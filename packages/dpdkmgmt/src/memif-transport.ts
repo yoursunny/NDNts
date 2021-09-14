@@ -1,6 +1,9 @@
 import { L3Face, rxFromPacketIterable, Transport, txToStream } from "@ndn/l3face";
-import { Memif } from "memif";
+import type { Memif } from "memif";
+import { createRequire } from "node:module";
 import pEvent from "p-event";
+
+const require = createRequire(import.meta.url);
 
 /** Shared Memory Packet Interface (memif) transport. */
 export class MemifTransport extends Transport {
@@ -41,7 +44,11 @@ export namespace MemifTransport {
     const {
       waitUp = true,
     } = opts;
-    const transport = new MemifTransport(opts, new Memif(opts));
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+    const MemifConstructor: typeof Memif = require("memif").Memif;
+    const transport = new MemifTransport(opts, new MemifConstructor(opts));
+
     if (waitUp) {
       await pEvent(transport.memif, "memif:up");
     }
