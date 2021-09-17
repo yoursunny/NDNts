@@ -151,7 +151,7 @@ export class Pit {
    * Cancel timers and other I/O resources.
    * This instance should not be used after this operation.
    */
-  public discard(): void {
+  public close(): void {
     for (const entry of this.byName.values()) {
       clearTimeout(entry.expireTimer as number);
     }

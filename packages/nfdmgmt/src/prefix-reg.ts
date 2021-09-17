@@ -20,9 +20,10 @@ type Options = CommandOptions & RouteOptions & {
 
   /** Local KeyChain to collect preloaded certificates. */
   preloadFromKeyChain?: KeyChain;
-};
 
-const PRELOAD_INTEREST_LIFETIME = Interest.Lifetime(500);
+  /** InterestLifetime for retrieving preloaded certificates. */
+  preloadInterestLifetime?: number;
+};
 
 interface State {
   refreshTimer?: NodeJS.Timeout;
@@ -34,6 +35,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
   private readonly refreshInterval: number | false;
   private readonly preloadCertName?: Name;
   private readonly preloadFromKeyChain?: KeyChain;
+  private readonly preloadInterestLifetime: ReturnType<typeof Interest.Lifetime>;
   private readonly preloadCerts = new Map<string, Certificate>();
 
   constructor(private readonly face: FwFace, opts: Options) {
@@ -54,6 +56,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     this.refreshInterval = opts.refreshInterval ?? 300000;
     this.preloadCertName = opts.preloadCertName;
     this.preloadFromKeyChain = opts.preloadFromKeyChain;
+    this.preloadInterestLifetime = Interest.Lifetime(opts.preloadInterestLifetime ?? 500);
 
     face.on("up", this.handleFaceUp);
     face.once("close", () => this.disable());
@@ -116,7 +119,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
       } catch {}
     }
 
-    const interest = new Interest(name, Interest.CanBePrefix, PRELOAD_INTEREST_LIFETIME);
+    const interest = new Interest(name, Interest.CanBePrefix, this.preloadInterestLifetime);
     const data = await endpoint.consume(interest);
     return Certificate.fromData(data);
   }

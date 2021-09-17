@@ -49,7 +49,7 @@ export class Readvertise {
    * Cancel timers and other I/O resources.
    * This instance should not be used after this operation.
    */
-  public discard(): void {
+  public close(): void {
     for (const dest of this.destinations) {
       dest.disable();
     }

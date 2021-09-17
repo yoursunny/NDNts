@@ -1,12 +1,19 @@
 import "@ndn/packet/test-fixture/expect";
 
+import { Endpoint } from "@ndn/endpoint";
 import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
-import { Data, Interest, Name } from "@ndn/packet";
+import { Certificate, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
+import { Bridge } from "@ndn/l3face/test-fixture/bridge";
+import { Closers } from "@ndn/l3face/test-fixture/closers";
+import { Component, Data, Interest, Name } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
 import { EventEmitter } from "node:events";
 
 import { ControlCommand, enableNfdPrefixReg } from "..";
+
+const closers = new Closers();
+afterEach(closers.close);
 
 interface Row {
   faceIsLocal?: boolean;
@@ -55,6 +62,7 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
     }
   }();
   const uplink = fw.addFace(uplinkL3, { local: faceIsLocal });
+  closers.push(uplink);
   enableNfdPrefixReg(uplink, {
     commandPrefix,
     retry: {
@@ -96,6 +104,66 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
   uplinkL3.emit("up");
   await new Promise((r) => setTimeout(r, 100));
   expect(verbs).toHaveLength(6);
+});
 
-  uplink.close();
+test("preloadCert", async () => {
+  const [rootPvt, rootPub] = await generateSigningKey("/root");
+  const rootCert = await Certificate.selfSign({
+    validity: ValidityPeriod.daysFromNow(90),
+    privateKey: rootPvt,
+    publicKey: rootPub,
+  });
+  const [interPvt, interPub] = await generateSigningKey("/root/inter");
+  const interCert = await Certificate.issue({
+    validity: ValidityPeriod.daysFromNow(60),
+    issuerId: Component.from("h"),
+    issuerPrivateKey: rootPvt.withKeyLocator(rootCert.name),
+    publicKey: interPub,
+  });
+  const userKeyChain = KeyChain.createTemp();
+  const [userPvt, userPub] = await generateSigningKey(userKeyChain, "/root/inter/user");
+  const userCert = await Certificate.issue({
+    validity: ValidityPeriod.daysFromNow(30),
+    issuerId: Component.from("h"),
+    issuerPrivateKey: interPvt.withKeyLocator(interCert.name),
+    publicKey: userPub,
+  });
+  await userKeyChain.insertCert(userCert);
+
+  const nfdFw = Forwarder.create();
+  const nfdEp = new Endpoint({ fw: nfdFw });
+  const interP = new Endpoint({
+    fw: nfdFw,
+    announcement: false,
+  }).produce(interPub.name, async () => interCert.data);
+  let nCommands = 0;
+  const nfdP = nfdEp.produce("/localhop/nfd", async (interest) => {
+    interP.close();
+    await expect(nfdEp.consume(userCert.name)).resolves.toBeInstanceOf(Data);
+    await expect(nfdEp.consume(interCert.name)).resolves.toBeInstanceOf(Data);
+    ++nCommands;
+    return new Data(interest.name, Encoder.encode([0x65,
+      [0x66, NNI(200)],
+      [0x67]]));
+  });
+
+  const userFw = Forwarder.create();
+  const bridge = Bridge.create({ fwA: nfdFw, fwB: userFw });
+  bridge.faceA.addRoute(new Name("/"), false);
+  bridge.faceB.addRoute(new Name("/"), false);
+  closers.push(nfdFw, nfdP, interP, userFw, bridge);
+
+  enableNfdPrefixReg(bridge.faceB, {
+    signer: userPvt.withKeyLocator(userCert.name),
+    preloadCertName: userCert.name,
+    preloadFromKeyChain: userKeyChain,
+    preloadInterestLifetime: 100,
+  });
+
+  const userEp = new Endpoint({ fw: userFw });
+  const userPA = userEp.produce("/A", async () => undefined);
+  const userPB = userEp.produce("/B", async () => undefined);
+  closers.push(userPA, userPB);
+  await new Promise((r) => setTimeout(r, 400));
+  expect(nCommands).toBe(2);
 });

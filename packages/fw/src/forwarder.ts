@@ -37,6 +37,12 @@ export interface Forwarder extends TypedEmitter<Events> {
 
   /** Add a logical face to the forwarding plane. */
   addFace(face: FwFace.RxTx | FwFace.RxTxDuplex, attributes?: FwFace.Attributes): FwFace;
+
+  /**
+   * Cancel timers and other I/O resources.
+   * This instance should not be used after this operation.
+   */
+  close(): void;
 }
 export namespace Forwarder {
   export interface Options {
@@ -80,7 +86,7 @@ export namespace Forwarder {
     if (!defaultInstance) {
       return;
     }
-    (defaultInstance as ForwarderImpl).discard();
+    defaultInstance.close();
     defaultInstance = undefined;
   }
 }
@@ -140,12 +146,8 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
     void nack;
   }
 
-  /**
-   * Cancel timers and other I/O resources.
-   * This instance should not be used after this operation.
-   */
-  public discard(): void {
-    this.pit.discard();
-    this.readvertise.discard();
+  public close(): void {
+    this.pit.close();
+    this.readvertise.close();
   }
 }

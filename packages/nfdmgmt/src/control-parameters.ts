@@ -1,26 +1,7 @@
 import { Name, TT } from "@ndn/packet";
 import { EncodableObj, EncodableTlv, Encoder, NNI, toUtf8 } from "@ndn/tlv";
 
-interface Fields {
-  name?: Name;
-  faceId?: number;
-  uri?: string;
-  localUri?: string;
-  origin?: number;
-  cost?: number;
-  capacity?: number;
-  count?: number;
-  baseCongestionMarkingInterval?: number;
-  defaultCongestionPeriod?: number;
-  mtu?: number;
-  flags?: number;
-  mask?: number;
-  strategy?: Name;
-  expirationPeriod?: number;
-  facePersistency?: number;
-}
-
-const fieldDefs = [
+const fieldDefs: Array<[number, keyof ControlParameters.Fields, any]> = [
   [TT.Name, "name", undefined],
   [0x69, "faceId", NNI],
   [0x72, "uri", String],
@@ -37,11 +18,11 @@ const fieldDefs = [
   [0x6B, "strategy", Name],
   [0x6D, "expirationPeriod", NNI],
   [0x85, "facePersistency", NNI],
-] as Array<[number, keyof Fields, any]>;
+];
 
 /** NFD Management ControlParameters struct (encoding only). */
 export class ControlParameters {
-  constructor(value: Fields = {}) {
+  constructor(value: ControlParameters.Fields = {}) {
     Object.assign(this, value);
   }
 
@@ -68,8 +49,23 @@ export class ControlParameters {
 }
 export interface ControlParameters extends ControlParameters.Fields {}
 
-type Fields_ = Fields;
-
 export namespace ControlParameters {
-  export type Fields = Fields_;
+  export interface Fields {
+    name?: Name;
+    faceId?: number;
+    uri?: string;
+    localUri?: string;
+    origin?: number;
+    cost?: number;
+    capacity?: number;
+    count?: number;
+    baseCongestionMarkingInterval?: number;
+    defaultCongestionPeriod?: number;
+    mtu?: number;
+    flags?: number;
+    mask?: number;
+    strategy?: Name;
+    expirationPeriod?: number;
+    facePersistency?: number;
+  }
 }
