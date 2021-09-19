@@ -43,6 +43,7 @@ jobs:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
       - run: npm run cover -- --colors
       - uses: coverallsapp/github-action@master
+        continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
   integ:
@@ -64,6 +65,8 @@ jobs:
           sudo apt-get install --no-install-recommends libndn-cxx-dev nfd
       - run: npm run bootstrap
       - run: npm run build
+      - name: check DefinitelyTyped dependencies
+        run: node mk/check-types-dep.mjs
       - run: npm run literate lint
       - run: npm run literate
       - run: cd integ/browser-tests && npm test
@@ -103,7 +106,7 @@ jobs:
           fqdn: ndnts-nightly.ndn.today
         env:
           GH_PAT: ${{ secrets.NIGHTLY_ACCESS_TOKEN }}
-      - uses: South-Paw/action-netlify-deploy@v1.2.0
+      - uses: South-Paw/action-netlify-deploy@v1.2.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}

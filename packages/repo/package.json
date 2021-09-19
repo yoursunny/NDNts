@@ -33,6 +33,8 @@
     "@ndn/repo-api": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@types/abstract-leveldown": "^5.0.2",
+    "@types/encoding-down": "^5.0.0",
+    "@types/levelup": "^4.3.3",
     "abstract-leveldown": "^7.0.0",
     "encoding-down": "^7.0.0",
     "levelup": "^5.0.1",
@@ -46,9 +48,7 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
-    "@types/encoding-down": "^5.0.0",
     "@types/level-errors": "^3.0.0",
-    "@types/levelup": "^4.3.3",
     "@types/memdown": "^3.0.0",
     "@types/minimalistic-assert": "^1.0.1",
     "memdown": "^6.0.0"
