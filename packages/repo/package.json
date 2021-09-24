@@ -35,7 +35,7 @@
     "@types/abstract-leveldown": "^5.0.2",
     "@types/encoding-down": "^5.0.0",
     "@types/levelup": "^4.3.3",
-    "abstract-leveldown": "^7.0.0",
+    "abstract-leveldown": "^7.1.0",
     "encoding-down": "^7.0.0",
     "levelup": "^5.0.1",
     "minimalistic-assert": "^1.0.1",

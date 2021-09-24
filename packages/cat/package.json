@@ -37,11 +37,11 @@
     "streaming-iterables": "^6.0.0",
     "stdout-stream": "^1.4.1",
     "tslib": "^2.3.1",
-    "yargs": "^17.1.1"
+    "yargs": "^17.2.0"
   },
   "devDependencies": {
     "@types/graceful-fs": "^4.1.5",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^17.0.2"
+    "@types/yargs": "^17.0.3"
   }
 }

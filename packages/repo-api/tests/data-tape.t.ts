@@ -5,7 +5,7 @@ import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
 import { BufferBreaker } from "@ndn/node-transport/test-fixture/buffer-breaker";
 import { Data, Interest, Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
-import * as fs from "graceful-fs";
+import fs from "graceful-fs";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, map, pipeline, writeToStream } from "streaming-iterables";
 import { tmpNameSync } from "tmp";

@@ -1,4 +1,4 @@
-import * as fs from "graceful-fs";
+import fs from "graceful-fs";
 
 import type { DataTape } from "./data-tape";
 

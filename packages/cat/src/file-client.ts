@@ -1,16 +1,17 @@
 import { Keyword } from "@ndn/naming-convention2";
-import { ComponentLike, Name } from "@ndn/packet";
+import { Component, ComponentLike, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
 import { fromUtf8 } from "@ndn/tlv";
 import AbortController, { AbortSignal } from "abort-controller";
-import * as fs from "graceful-fs";
+import fs from "graceful-fs";
 import pushable from "it-pushable";
 import { posix as path } from "node:path";
 import { consume, parallelMap, writeToStream } from "streaming-iterables";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { CommonArgs, segmentNumConvention } from "./common";
+import { FileMetadata } from "./file-metadata";
 
 interface Args extends CommonArgs {
   remote: string;
@@ -21,8 +22,7 @@ interface Args extends CommonArgs {
 
 export class FileClientCommand implements CommandModule<CommonArgs, Args> {
   public command = "file-client <remote> <local>";
-  public describe = "download a folder";
-  public aliases = ["mget"];
+  public describe = "download a folder from ndn6-file-server";
 
   public builder(argv: Argv<CommonArgs>): Argv<Args> {
     return argv
@@ -106,22 +106,27 @@ class Downloader {
 
   private deriveName(local: string, ...suffix: ComponentLike[]): Name {
     const relPath = path.relative(this.local, local);
-    if (relPath.startsWith("..")) {
-      throw new Error(`${local} is outside ${this.local}`);
-    }
-    const relName = new Name(`/${relPath}`);
-    return this.remote.append(...relName.comps, ...suffix);
+    const relComps = relPath.split("/").map((s) => {
+      if (s === "..") {
+        throw new Error(`${local} is outside ${this.local}`);
+      }
+      return new Component(undefined, s);
+    });
+    return this.remote.append(...relComps, ...suffix);
   }
 
-  private async mFetch(remote: Name): Promise<{ fetching: fetch.Result }> {
-    const metadata = await retrieveMetadata(remote, {
+  private async mFetch(remote: Name): Promise<MFetch> {
+    const metadata = await retrieveMetadata(remote, FileMetadata, {
       retx: this.retx,
       signal: this.signal,
     });
-    // fetch.Result is a PromiseLike, wrap in object to prevent premature execution
+    const { lastSeg } = metadata;
     return {
+      metadata,
       fetching: fetch(metadata.name, {
         segmentNumConvention,
+        segmentRange: lastSeg === undefined ? undefined : [0, 1 + lastSeg],
+        estimatedFinalSegNum: lastSeg,
         retxLimit: this.retx,
         signal: this.signal,
       }),
@@ -132,7 +137,10 @@ class Downloader {
     await fs.promises.mkdir(local, { recursive: true });
 
     const remote = this.deriveName(local, lsKeyword);
-    const { fetching } = await this.mFetch(remote);
+    const { metadata: { isDir }, fetching } = await this.mFetch(remote);
+    if (!isDir) {
+      throw new Error("not a directory");
+    }
     const ls = await fetching;
 
     for (const item of parseDirectoryListing(ls)) {
@@ -146,21 +154,36 @@ class Downloader {
 
   private async downloadFile(local: string) {
     const remote = this.deriveName(local);
-    const { fetching } = await this.mFetch(remote);
+    const { metadata: { isFile, atime = new Date(), mtime }, fetching } = await this.mFetch(remote);
+    if (!isFile) {
+      throw new Error("not a file");
+    }
 
     let file: fs.WriteStream | undefined;
+    let ok = false;
     try {
       file = fs.createWriteStream(local);
       await writeToStream(file, fetching.chunks());
+      ok = true;
     } finally {
       file?.close();
+      if (!ok) {
+        await fs.promises.unlink(local);
+      }
     }
+
+    await fs.promises.utimes(local, atime, mtime);
   }
 }
 
 interface Job {
   kind: "folder" | "file";
   local: string;
+}
+
+interface MFetch {
+  metadata: FileMetadata;
+  fetching: fetch.Result;
 }
 
 const lsKeyword = Keyword.create("ls");
