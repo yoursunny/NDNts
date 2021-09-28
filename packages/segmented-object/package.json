@@ -35,7 +35,7 @@
     "graceful-fs": "^4.2.8",
     "hirestime": "^6.1.0",
     "is-stream": "^2.0.1",
-    "mnemonist": "^0.38.3",
+    "mnemonist": "^0.38.4",
     "minimalistic-assert": "^1.0.1",
     "p-defer": "^3.0.0",
     "p-lazy": "^3.1.0",

@@ -6,8 +6,8 @@ import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Certificate, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Closers } from "@ndn/l3face/test-fixture/closers";
-import { Component, Data, Interest, Name } from "@ndn/packet";
-import { Encoder, NNI } from "@ndn/tlv";
+import { Component, Data, Interest, Name, TT } from "@ndn/packet";
+import { Decoder, Encoder, NNI } from "@ndn/tlv";
 import { EventEmitter } from "node:events";
 
 import { ControlCommand, enableNfdPrefixReg } from "..";
@@ -42,11 +42,36 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
   const verbs: string[] = [];
   const remoteProcess = (interest: Interest, token: unknown) => {
     expect(interest.name).toHaveLength(expectedPrefix.length as number + 7);
-    verbs.push(interest.name.at(-6).text);
-    expect(interest.name.at(-5).value).toMatchTlv(({ type, vd }) => {
+    const verb = interest.name.at(-6).text;
+    verbs.push(verb);
+
+    const cpMatcher = [
+      ({ type, decoder }: Decoder.Tlv) => {
+        expect(type).toBe(TT.Name);
+        expect(decoder.decode(Name)).toEqualName("/R");
+      },
+      ({ type, nni }: Decoder.Tlv) => {
+        expect(type).toBe(0x6F); // Origin
+        expect(nni).toBe(65);
+      },
+    ];
+    if (verb === "register") {
+      cpMatcher.push(
+        ({ type, nni }: Decoder.Tlv) => {
+          expect(type).toBe(0x6A); // Cost
+          expect(nni).toBe(0);
+        },
+        ({ type, nni }: Decoder.Tlv) => {
+          expect(type).toBe(0x6C); // Flags
+          expect(nni).toBe(0x02);
+        },
+      );
+    }
+    expect(interest.name.at(-5).value).toMatchTlv(({ type, value }) => {
       expect(type).toBe(0x68);
-      expect(vd.decode(Name)).toEqualName("/R");
+      expect(value).toMatchTlv(...cpMatcher);
     });
+
     const status = [1, 5].includes(verbs.length) ? 400 : 200;
     const data = new Data(interest.name, Encoder.encode([0x65,
       [0x66, NNI(status)],

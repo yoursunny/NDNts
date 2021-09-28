@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@ndn/l3face": "workspace:*",
-    "@types/ws": "^7.4.7",
+    "@types/ws": "^8.2.0",
     "abort-controller": "^3.0.0",
     "p-event": "^4.2.0",
     "streaming-iterables": "^6.0.0",
