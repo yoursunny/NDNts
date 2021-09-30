@@ -1,6 +1,6 @@
 {
   "name": "@ndn/fw",
-  "version": "0.0.20210203",
+  "version": "0.0.20210930",
   "description": "NDNts: Forwarding Plane",
   "keywords": [
     "NDN",

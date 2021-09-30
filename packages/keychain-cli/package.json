@@ -1,6 +1,6 @@
 {
   "name": "@ndn/keychain-cli",
-  "version": "0.0.20210203",
+  "version": "0.0.20210930",
   "description": "NDNts: KeyChain management",
   "keywords": [
     "NDN",
@@ -24,9 +24,9 @@
   },
   "dependencies": {
     "@ndn/cli-common": "workspace:*",
+    "@ndn/keychain": "workspace:*",
     "@ndn/ndncert": "workspace:*",
     "@ndn/ndnsec": "workspace:*",
-    "@ndn/keychain": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/repo": "workspace:*",
     "@ndn/tlv": "workspace:*",
@@ -35,7 +35,7 @@
     "get-stdin": "^8.0.0",
     "graceful-fs": "^4.2.8",
     "hard-rejection": "^2.1.0",
-    "leveldown": "^6.0.3",
+    "leveldown": "^6.1.0",
     "nodemailer": "^6.6.5",
     "prompts": "^2.4.1",
     "stdout-stream": "^1.4.1",

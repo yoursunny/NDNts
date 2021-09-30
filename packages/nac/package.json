@@ -1,6 +1,6 @@
 {
   "name": "@ndn/nac",
-  "version": "0.0.20210203",
+  "version": "0.0.20210930",
   "description": "NDNts: Name Based Access Control",
   "keywords": [
     "NDN",
@@ -42,6 +42,6 @@
     "@ndn/repo": "workspace:*",
     "@types/memdown": "^3.0.0",
     "@types/minimalistic-assert": "^1.0.1",
-    "memdown": "^6.0.0"
+    "memdown": "^6.1.0"
   }
 }

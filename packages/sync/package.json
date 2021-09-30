@@ -1,6 +1,6 @@
 {
   "name": "@ndn/sync",
-  "version": "0.0.20210203",
+  "version": "0.0.20210930",
   "description": "NDNts: Synchronization Protocols",
   "keywords": [
     "NDN",
@@ -32,7 +32,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@yoursunny/psync-bloom": "yoursunny/PSyncBloom-wasm#build",
+    "@yoursunny/psync-bloom": "github:yoursunny/PSyncBloom-wasm#build",
     "abort-controller": "^3.0.0",
     "applymixins": "^1.1.0",
     "minimalistic-assert": "^1.0.1",

@@ -1,6 +1,6 @@
 {
   "name": "@ndn/autoconfig",
-  "version": "0.0.20210203",
+  "version": "0.0.20210930",
   "description": "NDNts: automatic connection establishment",
   "keywords": [
     "NDN",
@@ -35,7 +35,7 @@
     "abort-controller": "^3.0.0",
     "default-gateway": "^6.0.3",
     "hirestime": "^6.1.0",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.5",
     "p-any": "^3.0.0",
     "streaming-iterables": "^6.0.0",
     "tslib": "^2.3.1"

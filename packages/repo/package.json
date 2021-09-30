@@ -1,6 +1,6 @@
 {
   "name": "@ndn/repo",
-  "version": "0.0.20210203",
+  "version": "0.0.20210930",
   "description": "NDNts: Data Repository",
   "keywords": [
     "NDN",
@@ -35,7 +35,7 @@
     "@types/abstract-leveldown": "^5.0.2",
     "@types/encoding-down": "^5.0.0",
     "@types/levelup": "^4.3.3",
-    "abstract-leveldown": "^7.1.0",
+    "abstract-leveldown": "^7.2.0",
     "encoding-down": "^7.0.0",
     "levelup": "^5.0.1",
     "minimalistic-assert": "^1.0.1",
@@ -51,6 +51,6 @@
     "@types/level-errors": "^3.0.0",
     "@types/memdown": "^3.0.0",
     "@types/minimalistic-assert": "^1.0.1",
-    "memdown": "^6.0.0"
+    "memdown": "^6.1.0"
   }
 }
