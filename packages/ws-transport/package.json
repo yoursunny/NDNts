@@ -32,7 +32,7 @@
     "p-event": "^4.2.0",
     "streaming-iterables": "^6.0.0",
     "tslib": "^2.3.1",
-    "ws": "^8.2.2"
+    "ws": "^8.2.3"
   },
   "devDependencies": {
     "@ndn/node-transport": "workspace:*",

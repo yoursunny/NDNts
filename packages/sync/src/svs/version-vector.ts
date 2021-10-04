@@ -28,7 +28,7 @@ export class SvVersionVector {
         yield {
           node,
           hex,
-          loSeqNum: thisSeqNum,
+          loSeqNum: thisSeqNum + 1,
           hiSeqNum: otherSeqNum,
         };
       }

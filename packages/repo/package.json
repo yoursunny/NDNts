@@ -36,8 +36,8 @@
     "@types/encoding-down": "^5.0.0",
     "@types/levelup": "^4.3.3",
     "abstract-leveldown": "^7.2.0",
-    "encoding-down": "^7.0.0",
-    "levelup": "^5.0.1",
+    "encoding-down": "^7.1.0",
+    "levelup": "^5.1.1",
     "minimalistic-assert": "^1.0.1",
     "streaming-iterables": "^6.0.0",
     "throat": "^6.0.1",
@@ -51,6 +51,6 @@
     "@types/level-errors": "^3.0.0",
     "@types/memdown": "^3.0.0",
     "@types/minimalistic-assert": "^1.0.1",
-    "memdown": "^6.1.0"
+    "memdown": "^6.1.1"
   }
 }
