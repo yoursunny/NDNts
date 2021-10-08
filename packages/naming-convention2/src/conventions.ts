@@ -19,16 +19,18 @@ class TypedString extends Typed implements NamingConvention<string> {
   }
 }
 
-type NumberConvention = NamingConvention<number> & NamingConvention.WithAltUri;
-class TypedNumber extends Typed implements NumberConvention {
+abstract class TypedNumberBase extends Typed {
   private readonly altUriRegex: RegExp;
 
-  constructor(tt: number, private readonly altUriPrefix: string) {
+  constructor(
+      tt: number,
+      private readonly altUriPrefix: string,
+  ) {
     super(tt);
     this.altUriRegex = new RegExp(`^${altUriPrefix}=(\\d+)$`);
   }
 
-  public create(v: number): Component {
+  public create(v: number | bigint): Component {
     return new Component(this.tt, Encoder.encode(NNI(v), 8));
   }
 
@@ -36,12 +38,12 @@ class TypedNumber extends Typed implements NumberConvention {
     return super.match(comp) && NNI.isValidLength(comp.length);
   }
 
-  public parse(comp: Component): number {
-    return NNI.decode(comp.value);
+  protected parseRaw(comp: Component): bigint {
+    return NNI.decode(comp.value, { big: true });
   }
 
   public toAltUri(comp: Component): string {
-    return `${this.altUriPrefix}=${this.parse(comp)}`;
+    return `${this.altUriPrefix}=${this.parseRaw(comp)}`;
   }
 
   public fromAltUri(input: string): Component | undefined {
@@ -49,49 +51,65 @@ class TypedNumber extends Typed implements NumberConvention {
     if (!m) {
       return undefined;
     }
-    const v = Number.parseInt(m[1]!, 10);
-    return this.create(v); // throws upon !Number.isSafeInteger(v)
+    return this.create(BigInt(m[1]!));
   }
 }
 
-const timestampNumber = new TypedNumber(0x24, "t");
+interface NumberConvention<A = never, R extends number | bigint = number> extends NamingConvention<number | bigint | A, R>, NamingConvention.WithAltUri {}
 
-type TimestampConvention = NamingConvention<number | Date, number> & NamingConvention.WithAltUri;
-class TypedTimestamp extends Typed implements TimestampConvention {
+class TypedNumber extends TypedNumberBase implements NumberConvention {
+  public parse(comp: Component): number {
+    return NNI.decode(comp.value);
+  }
+}
+
+class TypedBig extends TypedNumberBase implements NumberConvention<never, bigint> {
+  public parse(comp: Component): bigint {
+    return NNI.decode(comp.value, { big: true });
+  }
+}
+
+interface NumberBigConvention<A = never> extends NumberConvention<A> {
+  big: NumberConvention<A, bigint>;
+}
+
+class TypedNumberBig extends TypedNumber implements NumberBigConvention {
+  constructor(...args: ConstructorParameters<typeof TypedNumberBase>) {
+    super(...args);
+    this.big = new TypedBig(...args);
+  }
+
+  public readonly big: TypedBig;
+}
+
+class TypedTimestamp extends TypedNumber implements NumberConvention<Date> {
   constructor(
       private readonly unit: number,
       private readonly max = Number.MAX_SAFE_INTEGER,
   ) {
-    super(0x24);
+    super(0x24, "t");
   }
 
-  public create(v: number | Date): Component {
-    if (typeof v === "number") {
-      v *= this.unit;
-    } else {
+  public override create(v: number | bigint | Date): Component {
+    if (v instanceof Date) {
       v = v.getTime() * 1000;
+    } else {
+      v = Number(v) * this.unit;
     }
-    return timestampNumber.create(v);
+    this.checkMax(v);
+    return super.create(v);
   }
 
-  public override match(comp: Component): boolean {
-    return timestampNumber.match(comp);
-  }
-
-  public parse(comp: Component): number {
-    const v = timestampNumber.parse(comp);
-    if (v > this.max) {
-      throw new Error("timestamp number too large");
-    }
+  public override parse(comp: Component): number {
+    const v = super.parse(comp);
+    this.checkMax(v);
     return v / this.unit;
   }
 
-  public toAltUri(comp: Component): string {
-    return timestampNumber.toAltUri(comp);
-  }
-
-  public fromAltUri(input: string): Component | undefined {
-    return timestampNumber.fromAltUri(input);
+  private checkMax(v: number): void {
+    if (v > this.max) {
+      throw new Error("timestamp number too large");
+    }
   }
 }
 
@@ -99,16 +117,16 @@ class TypedTimestamp extends Typed implements TimestampConvention {
 export const Keyword: NamingConvention<string> = new TypedString(0x20);
 
 /** SegmentNameComponent, interpreted as number. */
-export const Segment: NumberConvention = new TypedNumber(0x21, "seg");
+export const Segment: NumberBigConvention = new TypedNumberBig(0x21, "seg");
 
 /** ByteOffsetNameComponent, interpreted as number. */
-export const ByteOffset: NumberConvention = new TypedNumber(0x22, "off");
+export const ByteOffset: NumberBigConvention = new TypedNumberBig(0x22, "off");
 
 /** VersionNameComponent, interpreted as number. */
-export const Version: NumberConvention = new TypedNumber(0x23, "v");
+export const Version: NumberBigConvention = new TypedNumberBig(0x23, "v");
 
-// Beyond 8787511468039992, v/1000 may lose precision.
-const timestampMs = new TypedTimestamp(1000, 8787511468039992) as TimestampConvention;
+const timestampMs: NumberConvention<Date> = new TypedTimestamp(1000, 8787511468039992);
+const timestampUs: NumberConvention<Date> = new TypedTimestamp(1);
 
 /** TimestampNameComponent, interpreted as number in milliseconds. */
 export const Timestamp = Object.assign(
@@ -117,8 +135,8 @@ export const Timestamp = Object.assign(
     /** TimestampNameComponent, interpreted as number in milliseconds. */
     ms: timestampMs,
     /** TimestampNameComponent, interpreted as number in microseconds. */
-    us: new TypedTimestamp(1) as TimestampConvention,
+    us: timestampUs,
   });
 
 /** SequenceNumNameComponent, interpreted as number. */
-export const SequenceNum: NumberConvention = new TypedNumber(0x25, "seq");
+export const SequenceNum: NumberBigConvention = new TypedNumberBig(0x25, "seq");

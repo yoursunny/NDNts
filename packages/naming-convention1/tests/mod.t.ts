@@ -1,15 +1,15 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Component, Name, NamingConvention } from "@ndn/packet";
+import { Component, Name } from "@ndn/packet";
 
 import { ByteOffset, Segment, SequenceNum, Timestamp, Version } from "..";
 
 interface Row {
   marker: number;
-  convention: NamingConvention<number>;
+  convention: typeof Segment;
 }
 
-const TABLE = [
+const TABLE: Row[] = [
   {
     marker: 0x00,
     convention: Segment,
@@ -30,13 +30,17 @@ const TABLE = [
     marker: 0xFE,
     convention: SequenceNum,
   },
-] as Row[];
+];
 
 test.each(TABLE)("%p", ({ marker, convention }) => {
-  const name = new Name().append(convention, 0x00010203);
-  expect(name.at(0)).toEqualComponent(`%${marker.toString(16).padStart(2, "0")}%00%01%02%03`);
+  const markerHex = marker.toString(16).padStart(2, "0");
+  const name = new Name().append(convention, 0x00010203).append(convention, 0x0405n);
+  expect(name.at(0)).toEqualComponent(`%${markerHex}%00%01%02%03`);
   expect(name.at(0).is(convention)).toBeTruthy();
   expect(name.at(0).as(convention)).toBe(0x00010203);
+  expect(name.at(1)).toEqualComponent(`%${markerHex}%04%05`);
+  expect(name.at(1).is(convention)).toBeTruthy();
+  expect(name.at(1).as(convention)).toBe(0x0405);
 
   expect(new Component(0x20, name.at(0).value).is(convention)).toBeFalsy();
   expect(new Component(name.at(0).type, name.at(0).value.subarray(0, 4)).is(convention)).toBeFalsy();

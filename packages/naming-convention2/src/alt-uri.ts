@@ -7,7 +7,7 @@ export const AltUri = new AltUriConverter([
   Segment,
   ByteOffset,
   Version,
-  Timestamp,
+  Timestamp.us,
   SequenceNum,
   ...baseAltUri.conventions,
 ]);

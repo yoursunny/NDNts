@@ -1,7 +1,9 @@
 import { Component, NamingConvention, TT } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
 
-class Markered implements NamingConvention<number> {
+interface NumberConvention extends NamingConvention<number | bigint, number> {}
+
+class Markered implements NumberConvention {
   private readonly marker: Uint8Array;
 
   constructor(marker: number) {
@@ -14,8 +16,8 @@ class Markered implements NamingConvention<number> {
            comp.value[0] === this.marker[0];
   }
 
-  public create(v: number): Component {
-    return new Component(TT.GenericNameComponent, Encoder.encode([this.marker, NNI(v)], 8));
+  public create(v: number | bigint): Component {
+    return new Component(undefined, Encoder.encode([this.marker, NNI(v)], 9));
   }
 
   public parse(comp: Component): number {
@@ -24,16 +26,16 @@ class Markered implements NamingConvention<number> {
 }
 
 /** Segment number marker. */
-export const Segment = new Markered(0x00);
+export const Segment: NumberConvention = new Markered(0x00);
 
 /** Byte offset marker. */
-export const ByteOffset = new Markered(0xFB);
+export const ByteOffset: NumberConvention = new Markered(0xFB);
 
 /** Version marker. */
-export const Version = new Markered(0xFD);
+export const Version: NumberConvention = new Markered(0xFD);
 
 /** Timestamp marker. */
-export const Timestamp = new Markered(0xFC);
+export const Timestamp: NumberConvention = new Markered(0xFC);
 
 /** Sequence number marker. */
-export const SequenceNum = new Markered(0xFE);
+export const SequenceNum: NumberConvention = new Markered(0xFE);

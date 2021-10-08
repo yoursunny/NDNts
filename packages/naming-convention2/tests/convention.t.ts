@@ -23,12 +23,15 @@ test("Segment", () => {
 });
 
 test("ByteOffset", () => {
-  const name = new Name().append(ByteOffset, 0x0102);
+  const name = new Name().append(ByteOffset, 0x0102).append(ByteOffset, 0xFFFFFFFFFFFF0102n);
   expect(name.at(0)).toEqualComponent("34=%01%02");
   expect(name.at(0).is(ByteOffset)).toBeTruthy();
   expect(name.at(0).as(ByteOffset)).toBe(0x0102);
-  expect(AltUri.ofName(name)).toBe("/off=258");
-  expect(AltUri.parseName("/off=258")).toEqualName(name);
+  expect(name.at(1)).toEqualComponent("34=%FF%FF%FF%FF%FF%FF%01%02");
+  expect(name.at(1).is(ByteOffset.big)).toBeTruthy();
+  expect(name.at(1).as(ByteOffset.big)).toBe(0xFFFFFFFFFFFF0102n);
+  expect(AltUri.ofName(name)).toBe("/off=258/off=18446744073709486338");
+  expect(AltUri.parseName("/off=258/off=18446744073709486338")).toEqualName(name);
 });
 
 test("Version", () => {
