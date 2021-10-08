@@ -8,6 +8,23 @@ import { filter } from "streaming-iterables";
 
 import { SvSync } from "..";
 
+class UpdateHandler {
+  constructor(sync: SvSync) {
+    sync.on("update", (update) => {
+      const id = update.id.text;
+      expect(update.loSeqNum).toBe(this.lastSeqNum.get(id) + 1);
+      expect(update.loSeqNum).toBeLessThanOrEqual(update.hiSeqNum);
+      this.lastSeqNum.set(id, update.hiSeqNum);
+    });
+  }
+
+  public readonly lastSeqNum = new DefaultMap<string, number>(() => -1);
+
+  public get lastSeqNumRecord(): Record<string, number> {
+    return Object.fromEntries(this.lastSeqNum.entries());
+  }
+}
+
 class DebugHandler {
   public static printing = process.env.NDNTS_SYNC_DEBUG === "1";
   private readonly t0 = Date.now();
@@ -59,12 +76,15 @@ test("example", async () => {
   const pA = new SvSync({ ...opts, describe: "A" });
   const nA = pA.add("A");
   nA.seqNum = 10;
+  const uA = new UpdateHandler(pA);
   const pB = new SvSync({ ...opts, describe: "B" });
   const nB = pB.add("B");
   nB.seqNum = 15;
+  const uB = new UpdateHandler(pB);
   const pC = new SvSync({ ...opts, describe: "C", endpoint: new Endpoint({ fw: fwC }) });
   const nC = pC.add("C");
   nC.seqNum = 25;
+  const uC = new UpdateHandler(pC);
   closers.push(pA, pB, pC);
 
   await delay(200);
@@ -105,4 +125,8 @@ test("example", async () => {
 
   expect(debugHandler.cnt.get("C:send")).toBe(1);
   expect(debugHandler.cnt.get("A:send") + debugHandler.cnt.get("B:send")).toBeLessThanOrEqual(2);
+
+  expect(uA.lastSeqNumRecord).toEqual({ B: 15, C: 25 });
+  expect(uB.lastSeqNumRecord).toEqual({ C: 25, A: 11 });
+  expect(uC.lastSeqNumRecord).toEqual({ A: 11, B: 15 });
 });

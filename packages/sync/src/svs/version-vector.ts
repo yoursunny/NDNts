@@ -12,8 +12,8 @@ export class SvVersionVector {
   private readonly m = new Map<string, [Uint8Array, number]>();
 
   /** Get sequence number of a node. */
-  public get(hex: string): number {
-    return this.m.get(hex)?.[1] ?? 0;
+  public get(hex: string): number | undefined {
+    return this.m.get(hex)?.[1];
   }
 
   /** Set sequence number of a node. */
@@ -23,7 +23,7 @@ export class SvVersionVector {
 
   private *iterOlderThan(other: SvVersionVector): Iterable<SvVersionVector.DiffEntry> {
     for (const [hex, [node, otherSeqNum]] of other.m) {
-      const thisSeqNum = this.get(hex);
+      const thisSeqNum = this.get(hex) ?? -1;
       if (thisSeqNum < otherSeqNum) {
         yield {
           node,

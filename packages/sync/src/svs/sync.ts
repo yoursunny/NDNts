@@ -251,9 +251,11 @@ export namespace SvSync {
       return fromUtf8(this.value);
     }
   }
+
+  export interface Node extends SyncNode<ID> {}
 }
 
-class SvSyncNode implements SyncNode<SvSync.ID> {
+class SvSyncNode implements SvSync.Node {
   constructor(
       public readonly id: SvSync.ID,
       private readonly own: SvVersionVector,
