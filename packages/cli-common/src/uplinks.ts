@@ -3,7 +3,6 @@ import { openFace as dpdkOpenFace } from "@ndn/dpdkmgmt";
 import { FwFace, FwTracer } from "@ndn/fw";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { UnixTransport } from "@ndn/node-transport";
-import { Name } from "@ndn/packet";
 
 import { env } from "./env";
 import { getSignerImpl, openKeyChain } from "./keychain";
@@ -39,7 +38,6 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
         { preferTcp: false, mtu: env.mtu, testConnection: false })).face, true];
     case "unix:": {
       const face = await UnixTransport.createFace({}, env.uplink.pathname);
-      face.addRoute(new Name("/"), false);
       return [face, true];
     }
     case "ndndpdk-memif:":
@@ -56,7 +54,6 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
           dataroom: env.mtu,
         },
       });
-      face.addRoute(new Name("/"), false);
       return [face, false];
     }
     default:

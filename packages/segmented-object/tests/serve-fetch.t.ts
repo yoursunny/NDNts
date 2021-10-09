@@ -198,7 +198,6 @@ test("congestion avoidance", async () => {
     relayBA: relay,
   });
   closers.push(bridge);
-  bridge.faceA.addRoute(new Name("/"));
 
   const fetched = fetch("/R");
   await expect(fetched).resolves.toEqualUint8Array(objectBody);

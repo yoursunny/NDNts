@@ -10,7 +10,6 @@ window.addEventListener("load", () => {
   upload.id = "upload-input";
   upload.type = "file";
   document.body.append(upload);
-  document.append();
 });
 
 window.testBlobChunkSource = async (): Promise<FetchedInfo> => {

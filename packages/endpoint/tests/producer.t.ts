@@ -1,8 +1,9 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { generateSigningKey } from "@ndn/keychain";
-import { Data, Interest } from "@ndn/packet";
+import { Data, Interest, NameLike } from "@ndn/packet";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
+import { AbortController } from "abort-controller";
 
 import { DataStoreBuffer, Endpoint, Options, Producer, ProducerHandler } from "..";
 
@@ -14,13 +15,64 @@ async function makeEndpointBuffered(autoBuffer?: boolean, bo?: DataStoreBuffer.O
   return [ep, dataStoreBuffer];
 }
 
-test("Data non-match", async () => {
-  const ep = new Endpoint();
-  const handler = jest.fn(async (interest: Interest) => new Data("/A/0"));
-  ep.produce("/A", handler);
+describe("unsatisfied", () => {
+  let pAbort: AbortController;
+  let pEndpoint: Endpoint;
+  const pHandler = jest.fn<ReturnType<ProducerHandler>, Parameters<ProducerHandler>>(
+    async (interest) => new Data(interest.name));
+  let p: Producer;
+  let cEndpoint: Endpoint;
+  beforeEach(() => {
+    pAbort = new AbortController();
+    pEndpoint = new Endpoint({ signal: pAbort.signal });
+    pHandler.mockReset();
+    cEndpoint = new Endpoint();
+  });
 
-  await expect(ep.consume(new Interest("/A/9", Interest.Lifetime(100)))).rejects.toThrow();
-  expect(handler).toHaveBeenCalledTimes(1);
+  const expectTimeout = async (name: NameLike) => {
+    await expect(cEndpoint.consume(new Interest(name, Interest.Lifetime(100)))).rejects.toThrow(/expire/);
+  };
+
+  describe("with route", () => {
+    beforeEach(() => {
+      p = pEndpoint.produce("/A", pHandler);
+    });
+
+    test("Data non-match", async () => {
+      pHandler.mockResolvedValue(new Data("/A/0"));
+      await expectTimeout("/A/9");
+      expect(pHandler).toHaveBeenCalledTimes(1);
+    });
+
+    test("handler throws", async () => {
+      pHandler.mockRejectedValue(new Error("mock error"));
+      await expectTimeout("/A/1");
+      expect(pHandler).toHaveBeenCalledTimes(1);
+    });
+
+    test("producer closed", async () => {
+      p.close();
+      await expectTimeout("/A/2");
+      expect(pHandler).not.toHaveBeenCalled();
+    });
+
+    test("producer aborted", async () => {
+      p.close();
+      await expectTimeout("/A/3");
+      expect(pHandler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("without route", () => {
+    beforeEach(() => {
+      p = pEndpoint.produce(undefined, pHandler);
+    });
+
+    test("Data no route", async () => {
+      await expectTimeout("/A/4");
+      expect(pHandler).not.toHaveBeenCalled();
+    });
+  });
 });
 
 test("fill buffer in handler", async () => {
@@ -48,7 +100,8 @@ test("fill buffer in handler", async () => {
 test("prefill buffer", async () => {
   const [ep, dataStoreBuffer] = await makeEndpointBuffered();
   const handler = jest.fn(async (interest: Interest) => new Data(interest.name));
-  const producer = ep.produce("/A", handler);
+  const producer = ep.produce(undefined, handler);
+  producer.face.addRoute("/A");
 
   await dataStoreBuffer.insert(new Data("/A/0"), new Data("/A/1"));
   await expect(producer.processInterest(new Interest("/A/0"))).resolves.toHaveName("/A/0");

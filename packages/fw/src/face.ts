@@ -1,4 +1,4 @@
-import { Data, Interest, Nack, Name } from "@ndn/packet";
+import { Data, Interest, Nack, Name, NameLike } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import MultiSet from "mnemonist/multi-set.js";
 import { EventEmitter } from "node:events";
@@ -31,19 +31,19 @@ export interface FwFace extends TypedEmitter<Events> {
   toString(): string;
 
   /** Determine if a route is present on the face. */
-  hasRoute(name: Name): boolean;
+  hasRoute(name: NameLike): boolean;
 
   /** Add a route toward the face. */
-  addRoute(name: Name, announcement?: FwFace.RouteAnnouncement): void;
+  addRoute(name: NameLike, announcement?: FwFace.RouteAnnouncement): void;
 
   /** Remove a route toward the face. */
-  removeRoute(name: Name, announcement?: FwFace.RouteAnnouncement): void;
+  removeRoute(name: NameLike, announcement?: FwFace.RouteAnnouncement): void;
 
   /** Add a prefix announcement associated with the face. */
-  addAnnouncement(name: Name): void;
+  addAnnouncement(name: NameLike): void;
 
   /** Remove a prefix announcement associated with the face. */
-  removeAnnouncement(name: Name): void;
+  removeAnnouncement(name: NameLike): void;
 }
 
 export namespace FwFace {
@@ -62,7 +62,7 @@ export namespace FwFace {
     routeCapture?: boolean;
   }
 
-  export type RouteAnnouncement = boolean | number | Name;
+  export type RouteAnnouncement = boolean | number | NameLike;
 
   export interface RxTxEvents {
     up: () => void;
@@ -106,7 +106,7 @@ function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement)
     case "boolean":
       return announcement ? name : undefined;
   }
-  return announcement;
+  return new Name(announcement);
 }
 
 export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) implements FwFace {
@@ -172,13 +172,16 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
     return this.attributes.describe ?? "FwFace";
   }
 
-  public hasRoute(name: Name): boolean {
+  public hasRoute(nameInput: NameLike): boolean {
+    const name = new Name(nameInput);
     return this.routes.has(toHex(name.value));
   }
 
-  public addRoute(name: Name, announcement: FwFace.RouteAnnouncement = true): void {
-    this.fw.emit("prefixadd", this, name);
+  public addRoute(nameInput: NameLike, announcement: FwFace.RouteAnnouncement = true): void {
+    const name = new Name(nameInput);
     const nameHex = toHex(name.value);
+
+    this.fw.emit("prefixadd", this, name);
     this.routes.add(nameHex);
     if (this.routes.count(nameHex) === 1) {
       this.fw.fib.insert(this, nameHex, this.attributes.routeCapture!);
@@ -186,17 +189,19 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
 
     const ann = computeAnnouncement(name, announcement);
     if (ann) {
-      this.addAnnouncement(ann);
+      this.addAnnouncement(ann, nameHex);
     }
   }
 
-  public removeRoute(name: Name, announcement: FwFace.RouteAnnouncement = true): void {
+  public removeRoute(nameInput: NameLike, announcement: FwFace.RouteAnnouncement = true): void {
+    const name = new Name(nameInput);
+    const nameHex = toHex(name.value);
+
     const ann = computeAnnouncement(name, announcement);
     if (ann) {
-      this.removeAnnouncement(ann);
+      this.removeAnnouncement(ann, nameHex);
     }
 
-    const nameHex = toHex(name.value);
     this.routes.remove(nameHex);
     if (this.routes.count(nameHex) === 0) {
       this.fw.fib.delete(this, nameHex);
@@ -204,22 +209,24 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
     this.fw.emit("prefixrm", this, name);
   }
 
-  public addAnnouncement(name: Name): void {
+  public addAnnouncement(nameInput: NameLike, nameHex?: string): void {
     if (!this.attributes.advertiseFrom) {
       return;
     }
-    const nameHex = toHex(name.value);
+    const name = new Name(nameInput);
+    nameHex ??= toHex(name.value);
     this.announcements.add(nameHex);
     if (this.announcements.count(nameHex) === 1) {
       this.fw.readvertise.addAnnouncement(this, name, nameHex);
     }
   }
 
-  public removeAnnouncement(name: Name): void {
+  public removeAnnouncement(nameInput: NameLike, nameHex?: string): void {
     if (!this.attributes.advertiseFrom) {
       return;
     }
-    const nameHex = toHex(name.value);
+    const name = new Name(nameInput);
+    nameHex ??= toHex(name.value);
     this.announcements.remove(nameHex);
     if (this.announcements.count(nameHex) === 0) {
       this.fw.readvertise.removeAnnouncement(this, name, nameHex);

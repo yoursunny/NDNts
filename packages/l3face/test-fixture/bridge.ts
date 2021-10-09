@@ -1,4 +1,5 @@
 import type { Forwarder, FwFace } from "@ndn/fw";
+import { NameLike } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 import pushable from "it-pushable";
 import pDefer from "p-defer";
@@ -79,6 +80,8 @@ export namespace Bridge {
     fwB: Forwarder;
     relayAB?: RelayFunc | RelayOptions;
     relayBA?: RelayFunc | RelayOptions;
+    routesAB?: NameLike[];
+    routesBA?: NameLike[];
   }
 
   /**
@@ -91,14 +94,18 @@ export namespace Bridge {
     fwB,
     relayAB = (x) => x,
     relayBA = (x) => x,
+    routesAB,
+    routesBA,
   }: CreateOptions): Bridge {
     const close = pDefer<undefined>();
     const tA = new BridgeTransport(bridgeName, makeRelayFunc(relayBA), close.promise);
     const tB = new BridgeTransport(bridgeName, makeRelayFunc(relayAB), close.promise);
     tA.bridgePeer = tB;
     tB.bridgePeer = tA;
-    const faceA = fwA.addFace(new L3Face(tA));
-    const faceB = fwB.addFace(new L3Face(tB));
+    const faceA = fwA.addFace(new L3Face(tA, { advertiseFrom: false }));
+    L3Face.processAddRoutes(faceA, routesAB);
+    const faceB = fwB.addFace(new L3Face(tB, { advertiseFrom: false }));
+    L3Face.processAddRoutes(faceB, routesBA);
     return {
       faceA,
       faceB,

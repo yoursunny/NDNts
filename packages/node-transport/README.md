@@ -10,7 +10,7 @@ import { TcpTransport, UdpTransport, UnixTransport } from "@ndn/node-transport";
 // other imports for examples
 import { FwPacket } from "@ndn/fw";
 import { L3Face, Transport } from "@ndn/l3face";
-import { Data, Interest, Name } from "@ndn/packet";
+import { Data, Interest } from "@ndn/packet";
 
 (async () => {
 if (process.env.CI) { return; }
@@ -30,7 +30,7 @@ The `connect()` function of each transport creates a transport.
 // UnixTransport.connect() establishes a UNIX socket connection.
 // It accepts a Unix socket path.
 try {
-  const unix = await UnixTransport.connect("/run/nfd.sock");
+  const unix = await UnixTransport.connect(process.env.DEMO_NFD_UNIX ?? "/run/nfd.sock");
   await useInL3Face(unix);
 } catch (err: unknown) { // NFD is not running
   console.warn("unix", err);
@@ -96,7 +96,6 @@ See `@ndn/ws-transport` package documentation for a complete example of `createF
 // Subsequent parameters are same as the corresponding connect() function.
 // It returns a FwFace instance (from @ndn/fw package).
 const face = await UdpTransport.createFace({}, "ndnhub.ipv6.lip6.fr");
-face.addRoute(new Name("/ndn"));
 face.close();
 // TcpTransport.createFace() and UnixTransport.createFace() behave similarly.
 

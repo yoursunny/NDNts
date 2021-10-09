@@ -69,7 +69,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
 
   private async tap(): Promise<[opts: ControlCommand.Options, untap: () => void]> {
     const tapFace = TapFace.create(this.face);
-    tapFace.addRoute(new Name("/"));
+    tapFace.addRoute("/");
     const endpoint = new Endpoint({
       announcement: false,
       describe: "NfdPrefixReg",

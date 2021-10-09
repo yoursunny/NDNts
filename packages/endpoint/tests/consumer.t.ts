@@ -57,10 +57,10 @@ describe("retx limit", () => {
     const promise = ep.consume(
       new Interest("/A", Interest.Lifetime(2000)),
       {
+        signal: abort.signal,
         retx: {
           limit: 2,
         },
-        signal: abort.signal,
       });
     setTimeout(() => abort.abort(), 100);
     await expect(promise).rejects.toThrow();

@@ -39,9 +39,12 @@ test("RX error", async () => {
 test("createFace", async () => {
   const fw = Forwarder.create();
   const [face2, [sock0, sock1]] = await Promise.all([
-    UnixTransport.createFace({ fw }, server.path),
+    UnixTransport.createFace({ fw, addRoutes: ["/Q"] }, server.path),
     server.waitNClients(2),
   ]);
+  expect(face2.attributes.advertiseFrom).toBe(false);
+  expect(face2.hasRoute("/")).toBeFalsy();
+  expect(face2.hasRoute("/Q")).toBeTruthy();
   BufferBreaker.duplex(sock0!, sock1!);
 
   const rx = jest.fn();

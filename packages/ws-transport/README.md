@@ -21,11 +21,10 @@ if (process.env.CI) { return; }
 // Create a WebSocket face.
 // Unless other specified, the face is added to the default Forwarder instance.
 // You may set an alternate Forwarder instance in the first argument.
+//
+// A route for "/" prefix is added automatically.
+// You may customize the route prefixes via addRoutes property in the first argument.
 const uplink = await WsTransport.createFace({}, "wss://hobo.cs.arizona.edu/ws/");
-
-// The face is ready for receiving incoming packets. To make the forwarder send Interests
-// to it, add a route toward the face.
-uplink.addRoute(new Name("/ndn"));
 
 // Construct an Endpoint on the default Forwarder instance.
 const endpoint = new Endpoint();

@@ -19,7 +19,6 @@ function saveUpdate(update: SyncUpdate<unknown>): void {
 
 window.startPSyncPartial = async (uri) => {
   face = await WsTransport.createFace({}, uri);
-  face.addRoute(new Name());
   sub = new PSyncPartialSubscriber({
     p: makePSyncCompatParam(),
     syncPrefix: new Name("/psync-test"),

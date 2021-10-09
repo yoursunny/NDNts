@@ -174,8 +174,6 @@ test("preloadCert", async () => {
 
   const userFw = Forwarder.create();
   const bridge = Bridge.create({ fwA: nfdFw, fwB: userFw });
-  bridge.faceA.addRoute(new Name("/"), false);
-  bridge.faceB.addRoute(new Name("/"), false);
   closers.push(nfdFw, nfdP, interP, userFw, bridge);
 
   enableNfdPrefixReg(bridge.faceB, {

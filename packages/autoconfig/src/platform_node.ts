@@ -32,10 +32,11 @@ export function createFace(router: string, {
   preferTcp = false,
   mtu,
   connectTimeout,
+  addRoutes,
 }: ConnectRouterOptions): Promise<FwFace> {
   const { host, port } = splitHostPort(router);
   if (preferTcp) {
-    return TcpTransport.createFace({ fw }, { host, port, connectTimeout });
+    return TcpTransport.createFace({ fw, addRoutes }, { host, port, connectTimeout });
   }
-  return UdpTransport.createFace({ fw, lp: { mtu } }, { host, port });
+  return UdpTransport.createFace({ fw, addRoutes, lp: { mtu } }, { host, port });
 }

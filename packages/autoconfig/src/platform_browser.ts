@@ -27,6 +27,7 @@ export function createFace(router: string, {
   H3Transport,
   mtu = 1200,
   connectTimeout,
+  addRoutes,
 }: ConnectRouterOptions): Promise<FwFace> {
   const uri = (() => {
     try {
@@ -39,12 +40,12 @@ export function createFace(router: string, {
   switch (uri.protocol) {
     case "ws:":
     case "wss:":
-      return WsTransport.createFace({ fw }, uri.toString(), { connectTimeout });
+      return WsTransport.createFace({ fw, addRoutes }, uri.toString(), { connectTimeout });
     case "https:":
       if (!H3Transport) {
         throw new Error("H3Transport unavailable");
       }
-      return H3Transport.createFace({ fw, lp: { mtu } }, uri.toString());
+      return H3Transport.createFace({ fw, addRoutes, lp: { mtu } }, uri.toString());
     default:
       throw new Error(`unknown protocol ${uri.protocol}`);
   }

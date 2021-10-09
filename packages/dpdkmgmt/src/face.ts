@@ -1,6 +1,7 @@
 import { Forwarder, FwFace } from "@ndn/fw";
 import { L3Face, Transport } from "@ndn/l3face";
 import { joinHostPort, splitHostPort, udp_helper, UdpTransport } from "@ndn/node-transport";
+import { NameLike } from "@ndn/packet";
 import { gql, GraphQLClient } from "graphql-request";
 import * as net from "node:net";
 import * as path from "node:path";
@@ -28,6 +29,7 @@ async function openFaceImpl(
     {
       gqlServer = "http://127.0.0.1:3030",
       fw = Forwarder.getDefault(),
+      addRoutes,
       attributes = {},
     }: openFace.Options,
     locator: unknown,
@@ -79,6 +81,7 @@ async function openFaceImpl(
   }, {
     mtu,
   }));
+  L3Face.processAddRoutes(face, addRoutes);
   face.on("close", cleanup);
   return face;
 }
@@ -178,6 +181,8 @@ export namespace openFace {
     fw?: Forwarder;
     /** NDNts face attributes. */
     attributes?: L3Face.Attributes;
+    /** Routes to be added on the created face. Default is ["/"]. */
+    addRoutes?: readonly NameLike[];
 
     /**
      * Transport scheme.

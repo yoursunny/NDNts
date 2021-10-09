@@ -25,20 +25,20 @@ test("simple", async () => {
   dest.enable(fw);
 
   const faceA = fw.addFace(new NoopFace());
-  faceA.addRoute(new Name("/M"));
-  faceA.addRoute(new Name("/M"));
+  faceA.addRoute("/M");
+  faceA.addRoute("/M");
   await new Promise((r) => setTimeout(r, 10));
   expect(dest.doAdvertise).toHaveBeenCalledTimes(1);
   expect(dest.doAdvertise.mock.calls[0][0]).toEqualName("/M");
   expect(annadd).toHaveBeenCalledTimes(1);
 
   const faceB = fw.addFace(new NoopFace());
-  faceB.addRoute(new Name("/M"));
+  faceB.addRoute("/M");
   await new Promise((r) => setTimeout(r, 10));
   expect(dest.doAdvertise).toHaveBeenCalledTimes(1);
-  faceB.addRoute(new Name("/N/A/1"), -1);
-  faceB.addRoute(new Name("/N/B/1"), new Name("/N/B"));
-  faceB.addRoute(new Name("/N/C/1"), false);
+  faceB.addRoute("/N/A/1", -1);
+  faceB.addRoute("/N/B/1", "/N/B");
+  faceB.addRoute("/N/C/1", false);
   await new Promise((r) => setTimeout(r, 10));
   expect(dest.doAdvertise).toHaveBeenCalledTimes(3);
   expect(dest.doAdvertise.mock.calls[1][0]).toEqualName("/N/A");
@@ -64,7 +64,7 @@ test("simple", async () => {
   expect(annrm).toHaveBeenCalledTimes(3);
 
   const faceC = fw.addFace(new NoopFace(), { advertiseFrom: false });
-  faceC.addRoute(new Name("/Q"));
+  faceC.addRoute("/Q");
   await new Promise((r) => setTimeout(r, 10));
   expect(dest.doAdvertise).toHaveBeenCalledTimes(3);
 });

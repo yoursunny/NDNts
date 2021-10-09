@@ -46,14 +46,13 @@ const fwP = Forwarder.create();
 // Connect to NFD using Unix socket transport.
 let uplinkC: FwFace;
 try {
-  uplinkC = await UnixTransport.createFace({ fw: fwC }, "/run/nfd.sock");
+  uplinkC = await UnixTransport.createFace({ fw: fwC }, process.env.DEMO_NFD_UNIX ?? "/run/nfd.sock");
 } catch {
   // Skip the example if NFD is not running.
   console.warn("NFD not running");
   return;
 }
-uplinkC.addRoute(new Name("/"));
-const uplinkP = await UnixTransport.createFace({ fw: fwP }, "/run/nfd.sock");
+const uplinkP = await UnixTransport.createFace({ fw: fwP, addRoutes: [] }, "/run/nfd.sock");
 
 // Enable NFD prefix registration.
 enableNfdPrefixReg(uplinkP, { signer: privateKey });

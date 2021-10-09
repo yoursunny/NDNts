@@ -1,6 +1,6 @@
 import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { LpService } from "@ndn/lp";
-import { Interest } from "@ndn/packet";
+import { Interest, NameLike } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import AbortController from "abort-controller";
 import abortable, { AbortError as IteratorAbortError } from "abortable-iterator";
@@ -223,6 +223,7 @@ export namespace L3Face {
   }
 
   export interface Attributes extends Transport.Attributes {
+    /** Whether to readvertise registered routes. */
     advertiseFrom?: boolean;
   }
 
@@ -237,7 +238,13 @@ export namespace L3Face {
      */
     fw?: Forwarder;
 
-    /** L3Face attributes. */
+    /** Routes to be added on the created face. Default is ["/"]. */
+    addRoutes?: NameLike[];
+
+    /**
+     * L3Face attributes.
+     * l3.advertiseFrom defaults to false in createFace function.
+     */
     l3?: Attributes;
 
     /** NDNLP service options. */
@@ -268,17 +275,25 @@ export namespace L3Face {
       const created = await createTransport(...args);
       const {
         fw = Forwarder.getDefault(),
+        addRoutes,
         l3,
         lp,
         callback,
       } = opts;
       const makeFace = (transport: Transport) => {
-        const l3face = new L3Face(transport, l3, lp);
+        const l3face = new L3Face(transport, { advertiseFrom: false, ...l3 }, lp);
         const fwFace = fw.addFace(l3face);
+        processAddRoutes(fwFace, addRoutes);
         callback?.(transport, l3face, fwFace);
         return fwFace;
       };
       return Array.isArray(created) ? created.map(makeFace) : makeFace(created);
     }) as any;
+  }
+
+  export function processAddRoutes(fwFace: FwFace, addRoutes: readonly NameLike[] = ["/"]): void {
+    for (const routeName of addRoutes) {
+      fwFace.addRoute(routeName);
+    }
   }
 }

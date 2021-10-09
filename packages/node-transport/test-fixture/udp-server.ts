@@ -1,7 +1,6 @@
 import { Forwarder } from "@ndn/fw";
 import { L3Face, Transport } from "@ndn/l3face";
 import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
-import { Name } from "@ndn/packet";
 import * as dgram from "node:dgram";
 
 import { joinHostPort } from "../src/hostport";
@@ -98,6 +97,6 @@ export class UdpServerForwarder extends UdpServer {
 
   protected override handleNewTransport(transport: UdpServerTransport): void {
     const face = this.fw.addFace(new L3Face(transport));
-    face.addRoute(new Name());
+    face.addRoute("/");
   }
 }

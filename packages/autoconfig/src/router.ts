@@ -1,6 +1,6 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder, FwFace, TapFace } from "@ndn/fw";
-import { Interest, Name } from "@ndn/packet";
+import { Interest, Name, NameLike } from "@ndn/packet";
 import type { H3Transport } from "@ndn/quic-transport";
 import AbortController from "abort-controller";
 import hirestime from "hirestime";
@@ -56,8 +56,8 @@ export interface ConnectRouterOptions {
    */
   testConnectionTimeout?: number;
 
-  /** Routes to be added on the create face. Default is ["/"]. */
-  addRoutes?: Name[];
+  /** Routes to be added on the created face. Default is ["/"]. */
+  addRoutes?: NameLike[];
 }
 
 export interface ConnectRouterResult {
@@ -75,9 +75,6 @@ const getNow = hirestime();
 
 /** Connect to a router and test the connection. */
 export async function connectToRouter(router: string, opts: ConnectRouterOptions = {}): Promise<ConnectRouterResult> {
-  const {
-    addRoutes = [new Name("/")],
-  } = opts;
   const face = await createFace(router, opts);
 
   const testConnectionStart = getNow();
@@ -89,10 +86,6 @@ export async function connectToRouter(router: string, opts: ConnectRouterOptions
   } catch (err: unknown) {
     face.close();
     throw err;
-  }
-
-  for (const routeName of addRoutes) {
-    face.addRoute(routeName, false);
   }
   return { router, face, testConnectionDuration, testConnectionResult };
 }
@@ -115,7 +108,7 @@ async function testConnection(
   }
 
   const tapFace = TapFace.create(face);
-  tapFace.addRoute(new Name());
+  tapFace.addRoute("/");
   const abort = new AbortController();
   try {
     const endpoint = new Endpoint({ fw: tapFace.fw, signal: abort.signal });

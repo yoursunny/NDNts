@@ -54,7 +54,6 @@ const uplinkC = await openFace({
   localHost,
   scheme,
 });
-uplinkC.addRoute(new Name("/"));
 const uplinkP = await openFace({
   fw: fwP,
   gqlServer,

@@ -1,6 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { FwFace, FwTracer } from "@ndn/fw";
-import { Name } from "@ndn/packet";
+import { FwTracer } from "@ndn/fw";
 import { H3Transport } from "@ndn/quic-transport";
 import { WebBluetoothTransport } from "@ndn/web-bluetooth-transport";
 
@@ -8,10 +7,7 @@ import { addManualTest } from "../../test-fixture/manual";
 
 FwTracer.enable();
 
-async function facePing(facePromise: Promise<FwFace>, pingPrefix: string) {
-  const face = await facePromise;
-  face.addRoute(new Name("/"));
-
+async function facePing(pingPrefix: string) {
   const endpoint = new Endpoint();
   const names = [] as string[];
   const rtts = [] as number[];
@@ -33,8 +29,9 @@ async function facePing(facePromise: Promise<FwFace>, pingPrefix: string) {
   return lines;
 }
 
-function testWebBluetooth() {
-  return facePing(WebBluetoothTransport.createFace({}), "/example/esp8266/ble/ping");
+async function testWebBluetooth() {
+  await WebBluetoothTransport.createFace({});
+  return facePing("/example/esp8266/ble/ping");
 }
 
 async function testH3() {
@@ -60,7 +57,8 @@ async function testH3() {
       document.body.innerHTML = "";
     });
   });
-  return facePing(H3Transport.createFace({}, router), prefix);
+  await H3Transport.createFace({}, router);
+  return facePing(prefix);
 }
 
 addManualTest("test WebBluetoothTransport", testWebBluetooth);

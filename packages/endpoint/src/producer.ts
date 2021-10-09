@@ -1,5 +1,6 @@
 import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { Data, Interest, Name, NameLike, Signer, SigType } from "@ndn/packet";
+import type { AbortSignal } from "abort-controller";
 import { flatTransform } from "streaming-iterables";
 
 import type { DataBuffer } from "./data-buffer";
@@ -14,11 +15,14 @@ import type { DataBuffer } from "./data-buffer";
  * unless Options.autoBuffer is set to false. If the handler returns `undefined`, the Interest is used
  * to query the DataBuffer, and any matching Data may be sent.
  */
-export type Handler = (interest: Interest, producer: Producer) => Promise<Data | undefined>;
+export type ProducerHandler = (interest: Interest, producer: Producer) => Promise<Data | undefined>;
 
-export interface Options {
+export interface ProducerOptions {
   /** Description for debugging purpose. */
   describe?: string;
+
+  /** AbortSignal that allows closing the producer via AbortController. */
+  signal?: AbortSignal | globalThis.AbortSignal;
 
   /**
    * Whether routes registered by producer would cause @ndn/fw internal FIB to stop matching toward
@@ -84,17 +88,18 @@ export interface Producer {
 /** Producer functionality of Endpoint. */
 export class EndpointProducer {
   declare public fw: Forwarder;
-  declare public opts: Options;
+  declare public opts: ProducerOptions;
 
   /**
    * Start a producer.
    * @param prefixInput prefix registration; if undefined, prefixes may be added later.
    * @param handler function to handle incoming Interest.
    */
-  public produce(prefixInput: NameLike | undefined, handler: Handler, opts: Options = {}): Producer {
+  public produce(prefixInput: NameLike | undefined, handler: ProducerHandler, opts: ProducerOptions = {}): Producer {
     const prefix = prefixInput === undefined ? undefined : new Name(prefixInput);
     const {
       describe = `produce(${prefix})`,
+      signal,
       routeCapture = true,
       announcement,
       concurrency = 1,
@@ -154,12 +159,18 @@ export class EndpointProducer {
       face.addRoute(prefix, announcement);
     }
 
+    const onAbort = () => {
+      face.close();
+      (signal as AbortSignal | undefined)?.removeEventListener("abort", onAbort);
+    };
+    (signal as AbortSignal | undefined)?.addEventListener("abort", onAbort);
+
     producer = {
       prefix,
       face,
       dataBuffer,
       processInterest,
-      close() { face.close(); },
+      close: onAbort,
     };
     return producer;
   }

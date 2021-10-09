@@ -61,8 +61,6 @@ test("example", async () => {
     fwB: fwC,
     relayAB: (it) => filter(() => !lossToC, it),
   });
-  bridge.faceA.addRoute(new Name());
-  bridge.faceB.addRoute(new Name());
   closers.push(bridge);
 
   const opts: SvSync.Options = {

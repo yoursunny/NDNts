@@ -11,7 +11,7 @@ In each test case,
 ## Puppeteer Docker
 
 ```bash
-curl -sfL https://github.com/Zenika/alpine-chrome/raw/master/chrome.json > ~/seccomp-chrome.json
+curl -sfLS https://github.com/Zenika/alpine-chrome/raw/master/chrome.json > ~/seccomp-chrome.json
 
 docker run -it --rm \
   --network host --mount type=bind,source=$(pwd),target=/NDNts \

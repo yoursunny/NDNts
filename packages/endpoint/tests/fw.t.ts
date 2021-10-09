@@ -143,7 +143,7 @@ test("aggregate & retransmit", async () => {
       }
     },
   });
-  face.addRoute(new Name("/L"));
+  face.addRoute("/L");
 
   await Promise.all([
     expect(ep.consume(new Interest("/P/Q", Interest.CanBePrefix)))
@@ -188,7 +188,7 @@ test("Data without token", async () => {
     })(),
     tx: consume,
   });
-  face.addRoute(new Name("/P"));
+  face.addRoute("/P");
 
   await Promise.all([
     expect(ep.consume(new Interest("/P/Q", Interest.CanBePrefix)))
@@ -220,8 +220,8 @@ test("tracer", async () => {
   producerB.close();
 
   const faceC = fw.addFace(new NoopFace());
-  faceC.addRoute(new Name("/C"));
-  faceC.removeRoute(new Name("/C"));
+  faceC.addRoute("/C");
+  faceC.removeRoute("/C");
   tracer.disable();
   faceC.close();
 

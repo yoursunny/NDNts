@@ -5,9 +5,12 @@ import pushable from "it-pushable";
 
 import { makeRetxGenerator, RetxPolicy } from "./retx";
 
-export interface Options {
+export interface ConsumerOptions {
   /** Description for debugging purpose. */
   describe?: string;
+
+  /** AbortSignal that allows canceling the Interest via AbortController. */
+  signal?: AbortSignal | globalThis.AbortSignal;
 
   /**
    * Modify Interest according to specified options.
@@ -20,9 +23,6 @@ export interface Options {
    * Default is disabling retransmission.
    */
   retx?: RetxPolicy;
-
-  /** AbortSignal that allows canceling the Interest via AbortController. */
-  signal?: AbortSignal | globalThis.AbortSignal;
 
   /**
    * Data verifier.
@@ -37,7 +37,7 @@ export interface Options {
  * This is a Promise that resolves with the retrieved Data and rejects upon timeout,
  * annotated with the Interest and some counters.
  */
-export interface Context extends Promise<Data> {
+export interface ConsumerContext extends Promise<Data> {
   readonly interest: Interest;
   readonly nRetx: number;
 }
@@ -45,16 +45,16 @@ export interface Context extends Promise<Data> {
 /** Consumer functionality of Endpoint. */
 export class EndpointConsumer {
   declare public fw: Forwarder;
-  declare public opts: Options;
+  declare public opts: ConsumerOptions;
 
   /** Consume a single piece of Data. */
-  public consume(interestInput: Interest | NameLike, opts: Options = {}): Context {
+  public consume(interestInput: Interest | NameLike, opts: ConsumerOptions = {}): ConsumerContext {
     const interest = interestInput instanceof Interest ? interestInput : new Interest(interestInput);
     const {
       describe = `consume(${interest.name})`,
+      signal,
       modifyInterest,
       retx,
-      signal,
       verifier,
     } = { ...this.opts, ...opts };
     Interest.makeModifyFunc(modifyInterest)(interest);
@@ -73,7 +73,7 @@ export class EndpointConsumer {
 
       const sendInterest = () => {
         cancelRetx();
-        const { value, done } = retxGen.next() as IteratorYieldResult<number>;
+        const { value, done } = retxGen.next();
         if (!done) {
           timer = setTimeout(sendInterest, value);
         }
@@ -81,11 +81,11 @@ export class EndpointConsumer {
         ++nRetx;
       };
 
-      const onabort = () => {
+      const onAbort = () => {
         cancelRetx();
         rx.push(new CancelInterest(interest));
       };
-      (signal as AbortSignal | undefined)?.addEventListener("abort", onabort);
+      (signal as AbortSignal | undefined)?.addEventListener("abort", onAbort);
 
       this.fw.addFace({
         rx,
@@ -107,7 +107,7 @@ export class EndpointConsumer {
             }
           }
           cancelRetx();
-          (signal as AbortSignal | undefined)?.removeEventListener("abort", onabort);
+          (signal as AbortSignal | undefined)?.removeEventListener("abort", onAbort);
           rx.end();
         },
       },
@@ -122,6 +122,6 @@ export class EndpointConsumer {
     return Object.defineProperties(promise, {
       interest: { value: interest },
       nRetx: { get() { return nRetx; } },
-    }) as Context;
+    }) as ConsumerContext;
   }
 }

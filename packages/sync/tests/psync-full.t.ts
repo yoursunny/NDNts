@@ -86,8 +86,6 @@ class Fixture {
           maxDelay: 5,
         },
       });
-      bridge.faceA.addRoute(new Name());
-      bridge.faceB.addRoute(new Name());
 
       this.syncs.push(new PSyncFull({
         ...opts,

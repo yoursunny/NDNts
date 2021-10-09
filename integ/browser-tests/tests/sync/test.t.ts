@@ -36,7 +36,6 @@ test("PSyncPartial", async () => {
     (async () => {
       const sock = (await server.waitNClients(1))[0]!;
       face = await WsTransport.createFace({}, sock);
-      face.addRoute(new Name());
     })(),
   ]);
 
