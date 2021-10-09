@@ -31,12 +31,12 @@ function toMatchTlv(received: Uint8Array, ...checks: TlvMatcher[]) {
   }
   if (decoder.eof) {
     return {
-      message: `expected ${received} not to match TLV`,
+      message: () => `expected ${received} not to match TLV`,
       pass: true,
     };
   }
   return {
-    message: `expected ${received} to match TLV`,
+    message: () => `expected ${received} to match TLV`,
     pass: false,
   };
 }

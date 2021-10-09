@@ -18,7 +18,7 @@ class UpdateHandler {
     });
   }
 
-  public readonly lastSeqNum = new DefaultMap<string, number>(() => -1);
+  public readonly lastSeqNum = new DefaultMap<string, number>(() => 0);
 
   public get lastSeqNumRecord(): Record<string, number> {
     return Object.fromEntries(this.lastSeqNum.entries());
@@ -78,11 +78,11 @@ test("example", async () => {
   nA.seqNum = 10;
   const uA = new UpdateHandler(pA);
   const pB = new SvSync({ ...opts, describe: "B" });
-  const nB = pB.add("B");
+  const nB = pB.add(new SvSync.ID("B"));
   nB.seqNum = 15;
   const uB = new UpdateHandler(pB);
   const pC = new SvSync({ ...opts, describe: "C", endpoint: new Endpoint({ fw: fwC }) });
-  const nC = pC.add("C");
+  const nC = pC.add(Uint8Array.of("C".charCodeAt(0)));
   nC.seqNum = 25;
   const uC = new UpdateHandler(pC);
   closers.push(pA, pB, pC);

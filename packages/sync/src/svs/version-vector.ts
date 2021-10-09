@@ -9,24 +9,25 @@ const TT = {
 
 /** SVS version vector. */
 export class SvVersionVector {
-  private readonly m = new Map<string, [Uint8Array, number]>();
+  private readonly m = new Map<string, [id: Uint8Array, seqNum: number]>();
 
   /** Get sequence number of a node. */
-  public get(hex: string): number | undefined {
-    return this.m.get(hex)?.[1];
+  public get(hex: string): number {
+    const tuple = this.m.get(hex);
+    return tuple ? tuple[1] : 0;
   }
 
   /** Set sequence number of a node. */
-  public set(hex: string, node: Uint8Array, seqNum: number): void {
-    this.m.set(hex, [node, seqNum]);
+  public set(hex: string, id: Uint8Array, seqNum: number): void {
+    this.m.set(hex, [id, seqNum]);
   }
 
   private *iterOlderThan(other: SvVersionVector): Iterable<SvVersionVector.DiffEntry> {
-    for (const [hex, [node, otherSeqNum]] of other.m) {
-      const thisSeqNum = this.get(hex) ?? -1;
+    for (const [hex, [id, otherSeqNum]] of other.m) {
+      const thisSeqNum = this.get(hex);
       if (thisSeqNum < otherSeqNum) {
         yield {
-          node,
+          id,
           hex,
           loSeqNum: thisSeqNum + 1,
           hiSeqNum: otherSeqNum,
@@ -42,8 +43,8 @@ export class SvVersionVector {
 
   /** Update this version vector to have newer sequence numbers between this and other. */
   public mergeFrom(other: SvVersionVector): void {
-    for (const { node, hex, hiSeqNum } of this.iterOlderThan(other)) {
-      this.set(hex, node, hiSeqNum);
+    for (const { id, hex, hiSeqNum } of this.iterOlderThan(other)) {
+      this.set(hex, id, hiSeqNum);
     }
   }
 
@@ -98,7 +99,7 @@ export namespace SvVersionVector {
   export const NameComponentType = TT.VersionVector;
 
   export interface DiffEntry {
-    node: Uint8Array;
+    id: Uint8Array;
     hex: string;
     loSeqNum: number;
     hiSeqNum: number;

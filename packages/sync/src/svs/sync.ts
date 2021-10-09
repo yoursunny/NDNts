@@ -121,8 +121,8 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
     }, recv);
     this.own.mergeFrom(recv);
 
-    for (const { node, hex, loSeqNum, hiSeqNum } of ourOlder) {
-      this.emit("update", new SyncUpdate(this.makeNode(node, hex), loSeqNum, hiSeqNum));
+    for (const { id, hex, loSeqNum, hiSeqNum } of ourOlder) {
+      this.emit("update", new SyncUpdate(this.makeNode(id, hex), loSeqNum, hiSeqNum));
     }
 
     if (this.aggregated) { // in suppression state
@@ -239,9 +239,13 @@ export namespace SvSync {
 
   export class ID {
     constructor(input: IDLike, hex?: string) {
-      this.value = typeof input === "string" ? toUtf8(input) :
-        ArrayBuffer.isView(input) ? input : input.value;
-      this.hex = hex ?? toHex(this.value);
+      if (input instanceof ID) {
+        this.value = input.value;
+        this.hex = input.hex;
+      } else {
+        this.value = typeof input === "string" ? toUtf8(input) : input;
+        this.hex = hex ?? toHex(this.value);
+      }
     }
 
     public readonly value: Uint8Array;
@@ -263,7 +267,7 @@ class SvSyncNode implements SvSync.Node {
   ) {}
 
   public get seqNum(): number {
-    return this.own.get(this.id.hex) ?? 0;
+    return this.own.get(this.id.hex);
   }
 
   public set seqNum(n: number) {
