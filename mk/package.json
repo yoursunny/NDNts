@@ -2,7 +2,9 @@
   "name": "@ndn/mk",
   "private": true,
   "devDependencies": {
+    "@k-foss/ts-esnode": "^2.0.2",
     "@nodelib/fs.walk": "^1.2.8",
+    "graceful-fs": "^4.2.8",
     "js-yaml": "^4.1.0",
     "split2": "^4.1.0"
   }
