@@ -36,13 +36,13 @@
     "abort-controller": "^3.0.0",
     "applymixins": "^1.1.0",
     "minimalistic-assert": "^1.0.1",
-    "mnemonist": "^0.38.4",
+    "mnemonist": "^0.38.5",
     "murmurhash3js-revisited": "^3.0.0",
     "p-defer": "^3.0.0",
     "pako": "^2.0.4",
     "streaming-iterables": "^6.0.0",
     "tslib": "^2.3.1",
-    "typed-emitter": "^1.3.1"
+    "typed-emitter": "^1.4.0"
   },
   "devDependencies": {
     "@ndn/fw": "workspace:*",

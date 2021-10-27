@@ -28,8 +28,8 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "graphql": "^15.6.1",
-    "graphql-request": "^3.5.0",
+    "graphql": "^15.7.1",
+    "graphql-request": "^3.6.1",
     "p-event": "^4.2.0",
     "tslib": "^2.3.1"
   },

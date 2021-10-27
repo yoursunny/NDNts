@@ -22,7 +22,7 @@ async function detectLocalAddress(gqlServer: string): Promise<string> {
   await pEvent(tcpConn, "connect");
   const { localAddress } = tcpConn;
   tcpConn.destroy();
-  return localAddress;
+  return localAddress!;
 }
 
 async function openFaceImpl(

@@ -34,7 +34,7 @@
   "devDependencies": {
     "@ndn/fw": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "@types/tmp": "^0.2.1",
+    "@types/tmp": "^0.2.2",
     "@types/url-format-lax": "^2.0.0",
     "@types/url-parse-lax": "^5.0.0",
     "stream-mock": "^2.0.5",
