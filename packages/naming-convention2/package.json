@@ -1,7 +1,7 @@
 {
   "name": "@ndn/naming-convention2",
   "version": "0.0.20210930",
-  "description": "NDNts: Naming Convention rev2",
+  "description": "NDNts: Naming Convention rev2 and rev3",
   "keywords": [
     "NDN",
     "Named Data Networking"

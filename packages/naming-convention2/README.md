@@ -2,12 +2,24 @@
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-This package implements 2019-version NDN naming conventions as specified in [NDN-TR-0022 revision 2](https://named-data.net/publications/techreports/ndn-tr-22-2-ndn-memo-naming-conventions/) and [Name Component Type Assignment rev12](https://redmine.named-data.net/projects/ndn-tlv/wiki/NameComponentType/12).
-For 2014-version naming conventions, use `@ndn/naming-convention1` package.
+This package implements NDN naming conventions based on typed components.
+It supports two formats:
+
+* **rev2 format**, as specified in [NDN-TR-0022 revision 2](https://named-data.net/publications/techreports/ndn-tr-22-2-ndn-memo-naming-conventions/) and [Name Component Type Assignment rev12](https://redmine.named-data.net/projects/ndn-tlv/wiki/NameComponentType/12) published in 2019.
+* **rev3 format**, as specified in [NDN-TR-0022 revision 3](https://named-data.net/publications/techreports/ndn-tr-22-3-ndn-memo-naming-conventions/) and [Name Component Type Assignment rev24](https://redmine.named-data.net/projects/ndn-tlv/wiki/NameComponentType/24) published in 2021.
+
+The **rev3 format** is the current specification and recommended for new applications.
+However, most other implementations are still using **rev2 format**.
+
+You may select a revision by importing different identifiers:
+
+* `Keyword2`, `Segment2`, `ByteOffset2`, `Version2`, `Timestamp2`, `SequenceNum2` refer to **rev2 format**.
+* `Keyword3`, `Segment3`, `ByteOffset3`, `Version3`, `Timestamp3`, `SequenceNum3` refer to **rev3 format**.
+* `Keyword`, `Segment`, `ByteOffset`, `Version`, `Timestamp`, `SequenceNum` currently refer to **rev2 format**, but this will change later when the new format is added to other NDN implementations.
 
 ```ts
 import { Keyword, Version, Segment, AltUri } from "@ndn/naming-convention2";
-// We also have ByteOffset, Timestamp, and SequenceNum.
+// We also have ByteOffset, Timestamp, SequenceNum, as well identifiers to select rev2 or rev3 format.
 
 // other imports for examples
 import { Name } from "@ndn/packet";
@@ -42,6 +54,7 @@ assert.equal(name.at(-2).as(Version), 3);
 assert.equal(name.at(-1).as(Segment), 0);
 
 // If you need alternate URI syntax, use AltUri.ofName() or AltUri.ofComponent().
+// They support both rev2 format and rev3 format.
 // Make sure you are importing AltUri from this package, not from @ndn/packet package.
 assert.equal(AltUri.ofName(name), "/A/32=metadata/v=3/seg=0");
 assert.equal(AltUri.ofComponent(name.at(2)), "v=3");

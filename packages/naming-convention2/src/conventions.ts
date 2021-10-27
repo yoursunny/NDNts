@@ -84,10 +84,11 @@ class TypedNumberBig extends TypedNumber implements NumberBigConvention {
 
 class TypedTimestamp extends TypedNumber implements NumberConvention<Date> {
   constructor(
+      tt: number,
       private readonly unit: number,
       private readonly max = Number.MAX_SAFE_INTEGER,
   ) {
-    super(0x24, "t");
+    super(tt, "t");
   }
 
   public override create(v: number | bigint | Date): Component {
@@ -113,30 +114,58 @@ class TypedTimestamp extends TypedNumber implements NumberConvention<Date> {
   }
 }
 
-/** KeywordNameComponent, interpreted as string. */
-export const Keyword: NamingConvention<string> = new TypedString(0x20);
+interface TimestampConvention extends NumberConvention<Date> {
+  /** Timestamp interpreted as number in milliseconds. */
+  ms: NumberConvention<Date>;
+  /** Timestamp interpreted as number in microseconds. */
+  us: NumberConvention<Date>;
+}
 
-/** SegmentNameComponent, interpreted as number. */
-export const Segment: NumberBigConvention = new TypedNumberBig(0x21, "seg");
+function makeTimestampConvention(tt: number): TimestampConvention {
+  const ms = new TypedTimestamp(0x24, 1000, 8787511468039992);
+  const us = new TypedTimestamp(0x24, 1);
+  return Object.assign(ms, { ms, us });
+}
 
-/** ByteOffsetNameComponent, interpreted as number. */
-export const ByteOffset: NumberBigConvention = new TypedNumberBig(0x22, "off");
+/** KeywordNameComponent (rev2), interpreted as string. */
+export const Keyword2: NamingConvention<string> = new TypedString(0x20);
+/** KeywordNameComponent (rev3), interpreted as string. */
+export const Keyword3: NamingConvention<string> = new TypedString(0x30);
 
-/** VersionNameComponent, interpreted as number. */
-export const Version: NumberBigConvention = new TypedNumberBig(0x23, "v");
+/** SegmentNameComponent (rev2), interpreted as number. */
+export const Segment2: NumberBigConvention = new TypedNumberBig(0x21, "seg");
+/** SegmentNameComponent (rev3), interpreted as number. */
+export const Segment3: NumberBigConvention = new TypedNumberBig(0x32, "seg");
 
-const timestampMs: NumberConvention<Date> = new TypedTimestamp(1000, 8787511468039992);
-const timestampUs: NumberConvention<Date> = new TypedTimestamp(1);
+/** ByteOffsetNameComponent (rev2), interpreted as number. */
+export const ByteOffset2: NumberBigConvention = new TypedNumberBig(0x22, "off");
+/** ByteOffsetNameComponent (rev3), interpreted as number. */
+export const ByteOffset3: NumberBigConvention = new TypedNumberBig(0x34, "off");
 
-/** TimestampNameComponent, interpreted as number in milliseconds. */
-export const Timestamp = Object.assign(
-  timestampMs,
-  {
-    /** TimestampNameComponent, interpreted as number in milliseconds. */
-    ms: timestampMs,
-    /** TimestampNameComponent, interpreted as number in microseconds. */
-    us: timestampUs,
-  });
+/** VersionNameComponent (rev2), interpreted as number. */
+export const Version2: NumberBigConvention = new TypedNumberBig(0x23, "v");
+/** VersionNameComponent (rev3), interpreted as number. */
+export const Version3: NumberBigConvention = new TypedNumberBig(0x36, "v");
 
-/** SequenceNumNameComponent, interpreted as number. */
-export const SequenceNum: NumberBigConvention = new TypedNumberBig(0x25, "seq");
+/** TimestampNameComponent (rev2), interpreted as number in milliseconds. */
+export const Timestamp2 = makeTimestampConvention(0x24);
+/** TimestampNameComponent (rev3), interpreted as number in milliseconds. */
+export const Timestamp3 = makeTimestampConvention(0x38);
+
+/** SequenceNumNameComponent (rev2), interpreted as number. */
+export const SequenceNum2: NumberBigConvention = new TypedNumberBig(0x25, "seq");
+/** SequenceNumNameComponent (rev3), interpreted as number. */
+export const SequenceNum3: NumberBigConvention = new TypedNumberBig(0x3A, "seq");
+
+/** KeywordNameComponent (default format, currently rev2). */
+export const Keyword = Keyword2;
+/** SegmentNameComponent (default format, currently rev2). */
+export const Segment = Segment2;
+/** ByteOffsetNameComponent (default format, currently rev2). */
+export const ByteOffset = ByteOffset2;
+/** VersionNameComponent (default format, currently rev2). */
+export const Version = Version2;
+/** TimestampNameComponent (default format, currently rev2). */
+export const Timestamp = Timestamp2;
+/** SequenceNumNameComponent (default format, currently rev2). */
+export const SequenceNum = SequenceNum2;
