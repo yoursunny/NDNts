@@ -4,6 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Certificate, generateSigningKey, KeyChain, NamedSigner, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
 import { Name, NameLike } from "@ndn/packet";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
+import { setTimeout as delay } from "node:timers/promises";
 import { collect } from "streaming-iterables";
 
 import { CertFetcher, CertSource, KeyChainCertSource, TrustAnchorContainer } from "..";
@@ -123,7 +124,7 @@ describe("CertFetcher", () => {
     expect(found[0]).toHaveName(certB.name);
     expect(consumeFn).toHaveBeenCalledTimes(1); // cached positive response
 
-    await new Promise((r) => setTimeout(r, 300)); // cache expired
+    await delay(300); // cache expired
 
     found = await findIn(fetcher1, certB);
     expect(found).toHaveLength(1);
@@ -152,7 +153,7 @@ describe("CertFetcher", () => {
     expect(found).toHaveLength(0);
     expect(consumeFn).toHaveBeenCalledTimes(1); // cached negative response
 
-    await new Promise((r) => setTimeout(r, 300)); // cache expired
+    await delay(300); // cache expired
 
     found = await findIn(fetcher1, pubA);
     expect(found).toHaveLength(0);

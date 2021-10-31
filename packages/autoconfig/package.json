@@ -32,7 +32,6 @@
     "@ndn/packet": "workspace:*",
     "@ndn/quic-transport": "workspace:*",
     "@ndn/ws-transport": "workspace:*",
-    "abort-controller": "^3.0.0",
     "default-gateway": "^6.0.3",
     "hirestime": "^6.1.0",
     "node-fetch": "^2.6.5",

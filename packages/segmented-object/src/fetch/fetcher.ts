@@ -1,7 +1,6 @@
 import { Endpoint } from "@ndn/endpoint";
 import { CancelInterest, Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { Data, Interest, Name, Verifier } from "@ndn/packet";
-import type { AbortSignal } from "abort-controller";
 import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
@@ -40,12 +39,12 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
       describe: opts.describe ?? `fetch(${name})`,
     });
 
-    (opts.signal as AbortSignal | undefined)?.addEventListener("abort", this.handleAbort);
+    opts.signal?.addEventListener("abort", this.handleAbort);
   }
 
   public close() {
     this.on("error", () => undefined); // ignore further errors
-    (this.opts.signal as AbortSignal | undefined)?.removeEventListener("abort", this.handleAbort);
+    this.opts.signal?.removeEventListener("abort", this.handleAbort);
     this.logic.close();
     this.face.close();
   }
@@ -135,7 +134,7 @@ export namespace Fetcher {
     modifyInterest?: Interest.Modify;
 
     /** AbortSignal that allows canceling the Interest via AbortController. */
-    signal?: AbortSignal | globalThis.AbortSignal;
+    signal?: AbortSignal;
 
     /**
      * InterestLifetime added to RTO.

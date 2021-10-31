@@ -2,7 +2,6 @@ import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { LpService } from "@ndn/lp";
 import { Interest, NameLike } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
-import AbortController from "abort-controller";
 import abortable, { AbortError as IteratorAbortError } from "abortable-iterator";
 import pushable from "it-pushable";
 import { EventEmitter } from "node:events";

@@ -2,7 +2,6 @@ import { Endpoint } from "@ndn/endpoint";
 import { Forwarder, FwFace, TapFace } from "@ndn/fw";
 import { Interest, Name, NameLike } from "@ndn/packet";
 import type { H3Transport } from "@ndn/quic-transport";
-import AbortController from "abort-controller";
 import hirestime from "hirestime";
 import pAny from "p-any";
 

@@ -8,6 +8,7 @@ import { Name, NameLike } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 import DefaultMap from "mnemonist/default-map.js";
+import { setTimeout as delay } from "node:timers/promises";
 
 import { IBLT, makePSyncCompatParam, PSyncFull, SyncNode, SyncUpdate } from "..";
 
@@ -111,8 +112,8 @@ class Fixture {
   private readonly syncs: PSyncFull[] = [];
   private readonly updates: Array<jest.Mock<void, [SyncUpdate<Name>]>> = [];
 
-  public delay(multiple = 1): Promise<void> {
-    return new Promise((r) => setTimeout(r, 250 * multiple));
+  public delayTick(multiple = 1): Promise<void> {
+    return delay(250 * multiple);
   }
 
   public add(i: number, prefix: NameLike): SyncNode<Name> {
@@ -157,43 +158,43 @@ class Fixture {
 
 test("simple", async () => {
   const f = new Fixture(2);
-  await f.delay();
+  await f.delayTick();
 
   const nodeA0 = f.add(0, new Name("/A-0"));
   const nodeA1 = f.add(0, new Name("/A-1"));
   const nodeB0 = f.add(1, new Name("/B-0"));
 
   nodeA0.seqNum = 0; // no change
-  await f.delay();
+  await f.delayTick();
   f.expectUpdateTimes(0, 0);
   f.expectUpdateTimes(1, 0);
 
   nodeA0.seqNum++;
-  await f.delay();
+  await f.delayTick();
   f.expectUpdateTimes(0, 0);
   f.expectUpdateTimes(1, 1);
   f.expectLastUpdate(1, "/A-0", [1]);
 
   nodeA0.seqNum = 1; // no change
-  await f.delay();
+  await f.delayTick();
   f.expectUpdateTimes(0, 0);
   f.expectUpdateTimes(1, 1);
 
   nodeA0.seqNum++;
-  await f.delay();
+  await f.delayTick();
   f.expectUpdateTimes(0, 0);
   f.expectUpdateTimes(1, 2);
   f.expectLastUpdate(1, "/A-0", [2]);
 
   nodeA0.seqNum = 5; // increase by more than 1
-  await f.delay();
+  await f.delayTick();
   f.expectUpdateTimes(0, 0);
   f.expectUpdateTimes(1, 3);
   f.expectLastUpdate(1, "/A-0", [3, 4, 5]);
 
   nodeA1.seqNum++; // simultaneous publish on multiple instances
   nodeB0.seqNum++;
-  await f.delay();
+  await f.delayTick();
   f.expectUpdateTimes(0, 1);
   f.expectLastUpdate(0, "/B-0", [1]);
   f.expectUpdateTimes(1, 4);
@@ -201,7 +202,7 @@ test("simple", async () => {
 
   nodeA0.seqNum++; // simultaneous publish on multiple nodes
   nodeA1.seqNum++;
-  await f.delay();
+  await f.delayTick();
   f.expectUpdateTimes(0, 1);
   f.expectUpdateTimes(1, 6);
   {
@@ -217,13 +218,13 @@ test("simple", async () => {
 
 test.each([20, 50, 100])("many updates %p", async (count) => {
   const f = new Fixture(2);
-  await f.delay();
+  await f.delayTick();
 
   for (let i = 0; i < count; ++i) {
     f.add(0, `/A-${i}`).seqNum++;
   }
 
-  await f.delay(4);
+  await f.delayTick(4);
   f.expectUpdateTimes(1, count);
   for (let i = 0; i < count; ++i) {
     const node = f.get(1, `/A-${i}`);
@@ -234,13 +235,13 @@ test.each([20, 50, 100])("many updates %p", async (count) => {
 
 test.each([4, 6])("many nodes %p", async (count) => {
   const f = new Fixture(count);
-  await f.delay();
+  await f.delayTick();
 
   for (let i = 0; i < count; ++i) {
     f.add(i, `/${i}`).seqNum++;
   }
 
-  await f.delay(count ** 2);
+  await f.delayTick(count ** 2);
   for (let i = 0; i < count; ++i) {
     f.expectUpdateTimes(i, count - 1);
     for (let j = 0; j < count; ++j) {

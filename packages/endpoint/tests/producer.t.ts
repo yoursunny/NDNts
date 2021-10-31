@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { generateSigningKey } from "@ndn/keychain";
 import { Data, Interest, NameLike } from "@ndn/packet";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
-import { AbortController } from "abort-controller";
+import { setTimeout as delay } from "node:timers/promises";
 
 import { DataStoreBuffer, Endpoint, Options, Producer, ProducerHandler } from "..";
 
@@ -141,11 +141,11 @@ test("buffer expire", async () => {
   await expect(ep.consume(new Interest("/A", Interest.CanBePrefix))).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(1);
 
-  await new Promise((r) => setTimeout(r, 30));
+  await delay(30);
   await expect(ep.consume("/A/0")).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(1);
 
-  await new Promise((r) => setTimeout(r, 130));
+  await delay(130);
   await expect(ep.consume(new Interest("/A/0", Interest.Lifetime(100)))).rejects.toThrow();
   expect(handler).toHaveBeenCalledTimes(2);
 });

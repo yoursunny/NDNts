@@ -4,6 +4,7 @@ import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { UdpServer, UdpServerForwarder } from "@ndn/node-transport/test-fixture/udp-server";
 import { Data, Name } from "@ndn/packet";
 import defaultGateway from "default-gateway";
+import { setTimeout as delay } from "node:timers/promises";
 
 import { connectToNetwork } from "..";
 import { FchServer } from "../test-fixture/fch-server";
@@ -20,10 +21,10 @@ afterEach(() => {
 });
 afterAll(() => server.close());
 
-async function addServerWithDelayProducer(delay: number): Promise<string> {
+async function addServerWithDelayProducer(delayDuration: number): Promise<string> {
   const server = await UdpServer.create(UdpServerForwarder);
   const producer = new Endpoint({ fw: server.fw }).produce("/localhop/test-connection", async (interest) => {
-    await new Promise((r) => setTimeout(r, delay));
+    await delay(delayDuration);
     return new Data(interest.name);
   });
   closers.push(server, producer);

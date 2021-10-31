@@ -4,6 +4,7 @@ import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Name } from "@ndn/packet";
 import DefaultMap from "mnemonist/default-map.js";
+import { setTimeout as delay } from "node:timers/promises";
 import { filter } from "streaming-iterables";
 
 import { SvSync } from "..";
@@ -45,10 +46,6 @@ class DebugHandler {
 
 const closers = new Closers();
 afterEach(closers.close);
-
-function delay(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
-}
 
 // specification section 5.2 example
 test("example", async () => {

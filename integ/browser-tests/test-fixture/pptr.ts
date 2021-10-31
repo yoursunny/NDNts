@@ -1,4 +1,5 @@
 import * as path from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 
 import jestPuppeteerConfig from "../jest-puppeteer.config.js";
 
@@ -15,9 +16,9 @@ export function getPageUri(testcaseDirname: string) {
 }
 
 /** Navigate to test case page. */
-export async function navigateToPage(testcaseDirname: string, delay = 200) {
+export async function navigateToPage(testcaseDirname: string, delayDuration = 200) {
   await page.goto(getPageUri(testcaseDirname));
-  await new Promise((r) => setTimeout(r, delay));
+  await delay(delayDuration);
 }
 
 /**

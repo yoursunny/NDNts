@@ -2,6 +2,7 @@ import "@ndn/tlv/test-fixture/expect";
 
 import { Decodable, Decoder, Encodable, Encoder } from "@ndn/tlv";
 import * as crypto from "node:crypto";
+import { setTimeout as delay } from "node:timers/promises";
 
 import { Data, digestSigning, Interest, LLSign, LLVerify, Name, nullSigner, SigInfo, SigType, TT } from "..";
 import * as TestSignVerify from "../test-fixture/sign-verify";
@@ -11,7 +12,7 @@ class TestAlgo {
 
   public sign(pkt: LLSign.Signable) {
     return pkt[LLSign.OP](async (input) => {
-      await new Promise((r) => setTimeout(r, 5));
+      await delay(5);
       if (this.wantSignError) {
         throw new Error("mock-signing-error");
       }
@@ -21,7 +22,7 @@ class TestAlgo {
 
   public verify(pkt: LLVerify.Verifiable) {
     return pkt[LLVerify.OP](async (input, sig) => {
-      await new Promise((r) => setTimeout(r, 5));
+      await delay(5);
       // warning: this is insecure comparison, for test case only
       if (Buffer.compare(sig, this.computeSignature(input)) !== 0) {
         throw new Error("incorrect signature value");

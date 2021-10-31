@@ -7,7 +7,7 @@ import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Segment as Segment1 } from "@ndn/naming-convention1";
 import { Segment as Segment2 } from "@ndn/naming-convention2";
 import { Data, Name, Verifier } from "@ndn/packet";
-import AbortController from "abort-controller";
+import { setTimeout as delay } from "node:timers/promises";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, consume } from "streaming-iterables";
 
@@ -161,7 +161,7 @@ test("abort", async () => {
     const yieldSize = 8 * 1024;
     for (let i = 0; i < objectBody.length; i += yieldSize) {
       yield objectBody.subarray(i, i + yieldSize);
-      await new Promise((r) => setTimeout(r, 100));
+      await delay(100);
     }
   })();
   const server = serve("/R", new IterableChunkSource(src));
@@ -171,7 +171,7 @@ test("abort", async () => {
   const signal = abort.signal;
   await Promise.all([
     (async () => {
-      await new Promise((r) => setTimeout(r, 150));
+      await delay(150);
       abort.abort();
     })(),
     expect(fetch("/R", { signal })).rejects.toThrow(),

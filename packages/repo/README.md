@@ -14,6 +14,7 @@ import { DataStore, RepoProducer, PrefixRegShorter } from "@ndn/repo";
 import { Name, Interest, Data } from "@ndn/packet";
 import memdown from "memdown";
 import { strict as assert } from "node:assert";
+import { setTimeout as delay } from "node:timers/promises";
 
 (async () => {
 ```
@@ -39,7 +40,7 @@ await store.insert(new Data("/A/1"), new Data("/A/2"));
 
 // You can set an expiration time during insertion. Packets disappear upon expiration.
 await store.insert({ expireTime: Date.now() + 50 }, new Data("/A/3"));
-await new Promise((r) => setTimeout(r, 50)); // Poof, it's gone.
+await delay(50); // Poof, it's gone.
 // Inserting new Data packet with same name would overwrite previous packet, even if their implicit
 // digests differ. You cannot store two packets with same name.
 

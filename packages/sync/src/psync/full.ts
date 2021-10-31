@@ -1,7 +1,6 @@
 import { Endpoint, Producer, ProducerHandler } from "@ndn/endpoint";
 import { Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
-import AbortController from "abort-controller";
 import { EventEmitter } from "node:events";
 import pDefer, { DeferredPromise } from "p-defer";
 import type TypedEmitter from "typed-emitter";

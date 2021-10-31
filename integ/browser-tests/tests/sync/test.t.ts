@@ -6,6 +6,7 @@ import { Name } from "@ndn/packet";
 import { makePSyncCompatParam, PSyncPartialPublisher } from "@ndn/sync";
 import { WsTransport } from "@ndn/ws-transport";
 import { WsServer } from "@ndn/ws-transport/test-fixture/ws-server";
+import { setTimeout as delay } from "node:timers/promises";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 
@@ -46,14 +47,14 @@ test("PSyncPartial", async () => {
     pub.add(new Name("/P/3")),
   ];
   while (topics.length > 0) {
-    await new Promise((r) => setTimeout(r, 100));
+    await delay(100);
     for (const topic of topics) {
       ++topic.seqNum;
     }
     topics.shift();
   }
 
-  await new Promise((r) => setTimeout(r, 500));
+  await delay(500);
   const updates = await pageInvoke<typeof window.endPSyncPartial>(page, "endPSyncPartial");
   expect(updates).toHaveLength(3);
   expect(updates.map((u) => u.seqNum)).toEqual([1, 2, 3]);

@@ -1,6 +1,5 @@
 import { CancelInterest, Forwarder, FwPacket } from "@ndn/fw";
 import { Data, Interest, NameLike, Verifier } from "@ndn/packet";
-import type { AbortSignal } from "abort-controller";
 import pushable from "it-pushable";
 
 import { makeRetxGenerator, RetxPolicy } from "./retx";
@@ -10,7 +9,7 @@ export interface ConsumerOptions {
   describe?: string;
 
   /** AbortSignal that allows canceling the Interest via AbortController. */
-  signal?: AbortSignal | globalThis.AbortSignal;
+  signal?: AbortSignal;
 
   /**
    * Modify Interest according to specified options.
@@ -85,7 +84,7 @@ export class EndpointConsumer {
         cancelRetx();
         rx.push(new CancelInterest(interest));
       };
-      (signal as AbortSignal | undefined)?.addEventListener("abort", onAbort);
+      signal?.addEventListener("abort", onAbort);
 
       this.fw.addFace({
         rx,
@@ -107,7 +106,7 @@ export class EndpointConsumer {
             }
           }
           cancelRetx();
-          (signal as AbortSignal | undefined)?.removeEventListener("abort", onAbort);
+          signal?.removeEventListener("abort", onAbort);
           rx.end();
         },
       },

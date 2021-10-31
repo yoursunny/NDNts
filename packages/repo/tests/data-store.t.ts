@@ -4,6 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Data, Interest, Name } from "@ndn/packet";
 import { BufferChunkSource, fetch, serve } from "@ndn/segmented-object";
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
+import { setTimeout as delay } from "node:timers/promises";
 import { collect, map } from "streaming-iterables";
 
 import type { DataStore } from "..";
@@ -54,7 +55,7 @@ test("list find expire", async () => {
   expect(names).toEqual(["/8=A/8=1", "/8=A/8=2", "/8=B/8=1", "/8=B/8=2", "/8=C/8=1", "/8=C/8=2", "/8=C/8=3"]);
 
   await expect(store.find(new Interest("/C", Interest.CanBePrefix))).resolves.toBeDefined();
-  await new Promise((r) => setTimeout(r, 700));
+  await delay(700);
 
   names = await collect(map((name) => name.toString(), store.listNames()));
   names.sort((a, b) => a.localeCompare(b));

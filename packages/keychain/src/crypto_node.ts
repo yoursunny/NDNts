@@ -1,6 +1,3 @@
-import * as nodeCrypto from "node:crypto";
+import { webcrypto } from "node:crypto";
 
-// @ts-expect-error typing error in @peculiar/webcrypto as of @types/web 0.0.27
-import { Crypto as peculiarCrypto } from "../peculiar-webcrypto.cjs";
-
-export const crypto: Crypto = (nodeCrypto.webcrypto as any) ?? new peculiarCrypto();
+export const crypto: Crypto = webcrypto as any;

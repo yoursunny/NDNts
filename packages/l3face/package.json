@@ -30,7 +30,6 @@
     "@ndn/lp": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "abort-controller": "^3.0.0",
     "abortable-iterator": "^3.0.0",
     "it-pushable": "^1.4.2",
     "p-event": "^4.2.0",

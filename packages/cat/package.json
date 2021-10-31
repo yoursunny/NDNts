@@ -30,18 +30,17 @@
     "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "abort-controller": "^3.0.0",
     "graceful-fs": "^4.2.8",
     "hard-rejection": "^2.1.0",
     "it-pushable": "^1.4.2",
-    "streaming-iterables": "^6.0.0",
     "stdout-stream": "^1.4.1",
+    "streaming-iterables": "^6.0.0",
     "tslib": "^2.3.1",
     "yargs": "^17.2.1"
   },
   "devDependencies": {
     "@types/graceful-fs": "^4.1.5",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^17.0.4"
+    "@types/yargs": "^17.0.5"
   }
 }

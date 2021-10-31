@@ -6,7 +6,6 @@ import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Version } from "@ndn/naming-convention2";
 import { Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { Decoder, Extensible, Extension, ExtensionRegistry, NNI, toUtf8 } from "@ndn/tlv";
-import AbortController from "abort-controller";
 
 import { Metadata, retrieveMetadata, serveMetadata } from "..";
 

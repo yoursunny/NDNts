@@ -2,13 +2,14 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
 import { Name } from "@ndn/packet";
+import { setTimeout as delay } from "node:timers/promises";
 
 import { makePSyncCompatParam, PSyncPartialPublisher, PSyncPartialSubscriber, Subscription, SyncUpdate } from "..";
 
 afterEach(Endpoint.deleteDefaultForwarder);
 
-function delay(multiple = 1): Promise<void> {
-  return new Promise((r) => setTimeout(r, 300 * multiple));
+function delayTick(multiple = 1): Promise<void> {
+  return delay(300 * multiple);
 }
 
 test("simple", async () => {
@@ -22,7 +23,7 @@ test("simple", async () => {
     pub.add(new Name("/P/2")),
     pub.add(new Name("/P/3")),
   ];
-  await delay();
+  await delayTick();
 
   const sub = new PSyncPartialSubscriber({
     p: makePSyncCompatParam(),
@@ -46,25 +47,25 @@ test("simple", async () => {
       }
     });
   sub.on("state", subState);
-  await delay();
+  await delayTick();
   expect(subState).toHaveBeenCalledTimes(1);
   expect(st).toHaveLength(2);
 
   pt[0]!.seqNum = 1;
   pt[1]!.seqNum = 4;
   pt[3]!.seqNum = 2;
-  await delay();
+  await delayTick();
   expect(st[0]![1]).toHaveBeenCalledTimes(1);
   expect(st[1]![1]).toHaveBeenCalledTimes(0);
 
   pt[0]!.seqNum = 2;
   pt[2]!.seqNum = 2;
-  await delay();
+  await delayTick();
   expect(st[0]![1]).toHaveBeenCalledTimes(2);
   expect(st[1]![1]).toHaveBeenCalledTimes(1);
 
   pt[3]!.seqNum = 6;
-  await delay();
+  await delayTick();
   expect(st[0]![1]).toHaveBeenCalledTimes(2);
   expect(st[1]![1]).toHaveBeenCalledTimes(1);
 
@@ -72,7 +73,7 @@ test("simple", async () => {
   pt[0]!.seqNum = 6;
   pt[1]!.seqNum = 6;
   pt[2]!.seqNum = 6;
-  await delay();
+  await delayTick();
   expect(st[0]![1]).toHaveBeenCalledTimes(2);
   expect(st[1]![1]).toHaveBeenCalledTimes(2);
 

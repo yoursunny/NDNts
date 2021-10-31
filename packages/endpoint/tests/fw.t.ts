@@ -5,7 +5,7 @@ import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, FwHint, Interest, Name } from "@ndn/packet";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
 import { fromUtf8, toHex } from "@ndn/tlv";
-import AbortController from "abort-controller";
+import { setTimeout as delay } from "node:timers/promises";
 import { BufferWritableMock } from "stream-mock";
 import { consume } from "streaming-iterables";
 
@@ -29,7 +29,7 @@ test("simple", async () => {
 
   const producerP = ep.produce("/P",
     async (interest) => {
-      await new Promise((r) => setTimeout(r, 2));
+      await delay(2);
       const name = interest.name.toString();
       switch (name) {
         case "/8=P/8=prefix":
@@ -50,7 +50,7 @@ test("simple", async () => {
 
   const producerQ = ep.produce("/Q",
     async (interest) => {
-      await new Promise((r) => setTimeout(r, 120));
+      await delay(120);
       return new Data(interest.name);
     });
 
@@ -82,7 +82,7 @@ test("simple", async () => {
       .rejects.toThrow(),
   ]);
 
-  await new Promise((r) => setTimeout(r, 50));
+  await delay(50);
   expect(fw.faces.size).toBe(2);
   producerP.close();
   producerQ.close();
@@ -98,7 +98,7 @@ test("aggregate & retransmit", async () => {
         return undefined;
       }
       producedNames.add(nameHex);
-      await new Promise((r) => setTimeout(r, 100));
+      await delay(100);
       return new Data("/P/Q/R/S");
     },
     { concurrency: 8 });
@@ -110,13 +110,13 @@ test("aggregate & retransmit", async () => {
       yield FwPacket.create(new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0xC91585F2)), 1);
       yield FwPacket.create(new Interest("/P", Interest.CanBePrefix), 4);
       yield FwPacket.create(new Interest("/L", Interest.Lifetime(100)), 5); // no route other than self
-      await new Promise((r) => setTimeout(r, 20));
+      await delay(20);
       yield FwPacket.create(new Interest("/P/Q/R", Interest.CanBePrefix, Interest.Nonce(0x7B5BD99A)), 2);
       yield FwPacket.create(new Interest("/P/Q/R/S", Interest.Lifetime(400)), 3);
       yield new CancelInterest(new Interest("/P", Interest.CanBePrefix)); // cancel 4
       yield new CancelInterest(new Interest("/P/Q", Interest.CanBePrefix)); // no PitDn
       yield new CancelInterest(new Interest("/P/Q/R/S", Interest.MustBeFresh)); // no PitEntry
-      await new Promise((r) => setTimeout(r, 120));
+      await delay(120);
     })(),
     async tx(iterable) {
       for await (const { l3, reject, token: tokenU } of iterable) {
@@ -152,7 +152,7 @@ test("aggregate & retransmit", async () => {
       .resolves.toBeInstanceOf(Data),
     expect(ep.consume("/P/Q/R/S"))
       .resolves.toBeInstanceOf(Data),
-    new Promise((r) => setTimeout(r, 200)),
+    delay(200),
   ]);
 
   expect(rxDataTokens.size).toBe(2);
@@ -183,7 +183,7 @@ test("Data without token", async () => {
 
   const face = fw.addFace({
     rx: (async function*() {
-      await new Promise((r) => setTimeout(r, 50));
+      await delay(50);
       yield FwPacket.create(new Data("/P/Q/R/S", Data.FreshnessPeriod(500)));
     })(),
     tx: consume,

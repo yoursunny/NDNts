@@ -49,6 +49,6 @@
     "@types/nodemailer": "^6.4.4",
     "@types/prompts": "^2.0.14",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^17.0.4"
+    "@types/yargs": "^17.0.5"
   }
 }

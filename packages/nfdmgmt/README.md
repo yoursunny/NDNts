@@ -16,6 +16,7 @@ import { UnixTransport } from "@ndn/node-transport";
 import { Data, Interest, Name } from "@ndn/packet";
 import { fromUtf8, toUtf8 } from "@ndn/tlv";
 import { strict as assert } from "node:assert";
+import { setTimeout as delay } from "node:timers/promises";
 
 (async () => {
 ```
@@ -63,7 +64,7 @@ const producer = new Endpoint({ fw: fwP }).produce("/P",
     console.log("producing");
     return new Data("/P", Data.FreshnessPeriod(1000), toUtf8("NDNts + NFD"));
   });
-await new Promise((r) => setTimeout(r, 500));
+await delay(500);
 
 // Start a consumer, fetching Data from the producer via NFD.
 const data = await new Endpoint({ fw: fwC }).consume(

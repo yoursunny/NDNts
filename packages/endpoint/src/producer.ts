@@ -1,6 +1,5 @@
 import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
 import { Data, Interest, Name, NameLike, Signer, SigType } from "@ndn/packet";
-import type { AbortSignal } from "abort-controller";
 import { flatTransform } from "streaming-iterables";
 
 import type { DataBuffer } from "./data-buffer";
@@ -22,7 +21,7 @@ export interface ProducerOptions {
   describe?: string;
 
   /** AbortSignal that allows closing the producer via AbortController. */
-  signal?: AbortSignal | globalThis.AbortSignal;
+  signal?: AbortSignal;
 
   /**
    * Whether routes registered by producer would cause @ndn/fw internal FIB to stop matching toward
@@ -161,9 +160,9 @@ export class EndpointProducer {
 
     const onAbort = () => {
       face.close();
-      (signal as AbortSignal | undefined)?.removeEventListener("abort", onAbort);
+      signal?.removeEventListener("abort", onAbort);
     };
-    (signal as AbortSignal | undefined)?.addEventListener("abort", onAbort);
+    signal?.addEventListener("abort", onAbort);
 
     producer = {
       prefix,

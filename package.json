@@ -16,7 +16,7 @@
     "@strictsoftware/typedoc-plugin-monorepo": "^0.4.2",
     "@types/jest": "^27.0.2",
     "@types/node": "^16.11.6",
-    "@types/web": "0.0.43",
+    "@types/web": "0.0.44",
     "@types/wtfnode": "^0.7.0",
     "@yoursunny/xo-config": "^0.45.1",
     "codedown": "^2.1.7",
@@ -31,6 +31,6 @@
     "wtfnode": "^0.9.1"
   },
   "engines": {
-    "node": "^14.17.0 || ^16.8.0"
+    "node": "^16.13.0"
   }
 }

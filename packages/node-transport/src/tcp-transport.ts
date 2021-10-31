@@ -1,5 +1,4 @@
 import { L3Face, StreamTransport } from "@ndn/l3face";
-import type { AbortSignal } from "abort-controller";
 import * as net from "node:net";
 
 import { joinHostPort } from "./hostport";
@@ -28,7 +27,7 @@ export namespace TcpTransport {
     connectTimeout?: number;
 
     /** AbortSignal that allows canceling connection attempt via AbortController. */
-    signal?: AbortSignal | globalThis.AbortSignal;
+    signal?: AbortSignal;
   }
 
   /**
@@ -71,14 +70,14 @@ export namespace TcpTransport {
       const timeout = setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
 
       const onabort = () => fail(new Error("abort"));
-      (signal as AbortSignal | undefined)?.addEventListener("abort", onabort);
+      signal?.addEventListener("abort", onabort);
 
       sock.on("error", () => undefined);
       sock.once("error", fail);
       sock.once("connect", () => {
         clearTimeout(timeout);
         sock.off("error", fail);
-        (signal as AbortSignal | undefined)?.removeEventListener("abort", onabort);
+        signal?.removeEventListener("abort", onabort);
         resolve(new TcpTransport(sock, connectOpts));
       });
     });

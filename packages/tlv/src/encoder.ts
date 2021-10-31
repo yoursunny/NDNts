@@ -179,14 +179,14 @@ export namespace Encoder {
     }
   }
 
-  /** DataView.prototype.getBigUint64 with polyfill for iOS 14. */
+  /** DataView.prototype.getBigUint64 with ponyfill for iOS 14. */
   export const getBigUint64: (dv: DataView, byteOffset: number, littleEndian?: boolean) => bigint =
     typeof DataView.prototype.getBigUint64 === "function" ?
       (dv, byteOffset, littleEndian) => dv.getBigUint64(byteOffset, littleEndian) :
       /* istanbul ignore next */
       DataViewPolyfill.getBigUint64;
 
-  /** DataView.prototype.setBigUint64 with polyfill for iOS 14. */
+  /** DataView.prototype.setBigUint64 with ponyfill for iOS 14. */
   export const setBigUint64: (dv: DataView, byteOffset: number, value: bigint, littleEndian?: boolean) => void =
     typeof DataView.prototype.setBigUint64 === "function" ?
       (dv, byteOffset, value, littleEndian) => dv.setBigUint64(byteOffset, value, littleEndian) :

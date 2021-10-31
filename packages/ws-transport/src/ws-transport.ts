@@ -1,5 +1,4 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
-import type { AbortSignal } from "abort-controller";
 import pEvent from "p-event";
 import { map } from "streaming-iterables";
 import type WsWebSocket from "ws";
@@ -68,7 +67,7 @@ export namespace WsTransport {
     connectTimeout?: number;
 
     /** AbortSignal that allows canceling connection attempt via AbortController. */
-    signal?: AbortSignal | globalThis.AbortSignal;
+    signal?: AbortSignal;
 
     /** Buffer amount (in bytes) to start TX throttling. */
     highWaterMark?: number;
@@ -102,7 +101,7 @@ export namespace WsTransport {
       const timeout = setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
 
       const onabort = () => fail(new Error("abort"));
-      (signal as AbortSignal | undefined)?.addEventListener("abort", onabort);
+      signal?.addEventListener("abort", onabort);
 
       const onerror = (evt: Event) => {
         sock.close();
@@ -113,7 +112,7 @@ export namespace WsTransport {
       sock.addEventListener("open", () => {
         clearTimeout(timeout);
         sock.removeEventListener("error", onerror);
-        (signal as AbortSignal | undefined)?.removeEventListener("abort", onabort);
+        signal?.removeEventListener("abort", onabort);
         resolve(new WsTransport(sock, opts));
       });
     });

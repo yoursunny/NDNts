@@ -4,6 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
 import { Data, Interest, Name } from "@ndn/packet";
 import { DataTape } from "@ndn/repo-api";
+import { setTimeout as delay } from "node:timers/promises";
 import { DuplexMock } from "stream-mock";
 import { collect } from "streaming-iterables";
 
@@ -36,7 +37,7 @@ test("bufferBehind bufferAhead", async () => {
   const src = new IterableChunkSource((async function*() {
     for (offset = 0; offset < 10000; offset += 100) {
       yield objectBody.subarray(offset, offset + 100);
-      await new Promise((r) => setTimeout(r, 10));
+      await delay(10);
     }
   })(), { chunkSize: 100 });
 
@@ -51,7 +52,7 @@ test("bufferBehind bufferAhead", async () => {
     new Interest(prefix.append(Segment, segmentNum), Interest.Lifetime(500)));
 
   await expect(retrieveSegment(19)).resolves.toBeInstanceOf(Data);
-  await new Promise((r) => setTimeout(r, 200));
+  await delay(200);
   expect(offset).toBe(2200);
 
   await expect(retrieveSegment(10)).resolves.toBeInstanceOf(Data);
@@ -61,7 +62,7 @@ test("bufferBehind bufferAhead", async () => {
     expect(retrieveSegment(29)).resolves.toBeInstanceOf(Data),
     expect(retrieveSegment(27)).resolves.toBeInstanceOf(Data),
   ]);
-  await new Promise((r) => setTimeout(r, 200));
+  await delay(200);
   expect(offset).toBe(3200);
 
   await expect(retrieveSegment(20)).resolves.toBeInstanceOf(Data);

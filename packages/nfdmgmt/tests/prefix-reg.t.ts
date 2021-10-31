@@ -9,6 +9,7 @@ import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Component, Data, Interest, Name, TT } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
 import { EventEmitter } from "node:events";
+import { setTimeout as delay } from "node:timers/promises";
 
 import { ControlCommand, enableNfdPrefixReg } from "..";
 
@@ -99,35 +100,35 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
 
   const appFace = fw.addFace(new NoopFace());
   appFace.addAnnouncement(new Name("/R"));
-  await new Promise((r) => setTimeout(r, 70));
+  await delay(70);
   expect(verbs).toHaveLength(2);
   expect(verbs[0]).toBe("register"); // status 400
   expect(verbs[1]).toBe("register");
 
-  await new Promise((r) => setTimeout(r, 330));
+  await delay(330);
   expect(verbs).toHaveLength(3);
   expect(verbs[2]).toBe("register");
 
   uplinkL3.emit("down");
-  await new Promise((r) => setTimeout(r, 100));
+  await delay(100);
   uplinkL3.emit("up");
-  await new Promise((r) => setTimeout(r, 100));
+  await delay(100);
   expect(verbs).toHaveLength(4);
   expect(verbs[3]).toBe("register");
 
   appFace.removeAnnouncement(new Name("/R"));
-  await new Promise((r) => setTimeout(r, 70));
+  await delay(70);
   expect(verbs).toHaveLength(6);
   expect(verbs[4]).toBe("unregister"); // status 400
   expect(verbs[5]).toBe("unregister");
 
-  await new Promise((r) => setTimeout(r, 330));
+  await delay(330);
   expect(verbs).toHaveLength(6);
 
   uplinkL3.emit("down");
-  await new Promise((r) => setTimeout(r, 100));
+  await delay(100);
   uplinkL3.emit("up");
-  await new Promise((r) => setTimeout(r, 100));
+  await delay(100);
   expect(verbs).toHaveLength(6);
 });
 
@@ -187,6 +188,6 @@ test("preloadCert", async () => {
   const userPA = userEp.produce("/A", async () => undefined);
   const userPB = userEp.produce("/B", async () => undefined);
   closers.push(userPA, userPB);
-  await new Promise((r) => setTimeout(r, 400));
+  await delay(400);
   expect(nCommands).toBe(2);
 });

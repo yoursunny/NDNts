@@ -1,5 +1,6 @@
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import * as dgram from "node:dgram";
+import { setTimeout as delay } from "node:timers/promises";
 import { collect } from "streaming-iterables";
 
 import { udp_helper as udp, UdpTransport } from "..";
@@ -49,7 +50,7 @@ describe.each([
       expect(collect(transport.rx)).resolves.toHaveLength(0),
       // eslint-disable-next-line require-yield
       transport.tx((async function*() {
-        await new Promise((r) => setTimeout(r, 400));
+        await delay(400);
       })()),
     ]);
   });

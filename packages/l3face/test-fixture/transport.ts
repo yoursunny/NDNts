@@ -1,6 +1,5 @@
 import { FwPacket } from "@ndn/fw";
 import { Data, Interest } from "@ndn/packet";
-import AbortController from "abort-controller";
 import abortable from "abortable-iterator";
 
 import { L3Face, Transport } from "..";

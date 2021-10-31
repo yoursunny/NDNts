@@ -2,6 +2,7 @@ import { Forwarder, FwPacket } from "@ndn/fw";
 import { L3Face } from "@ndn/l3face";
 import { Interest } from "@ndn/packet";
 import * as net from "node:net";
+import { setTimeout as delay } from "node:timers/promises";
 import { collect } from "streaming-iterables";
 
 import { UnixTransport } from "..";
@@ -30,7 +31,7 @@ test("RX error", async () => {
   await Promise.all([
     expect(collect(face.rx)).resolves.toHaveLength(0),
     face.tx((async function*() { // eslint-disable-line require-yield
-      await new Promise((r) => setTimeout(r, 400));
+      await delay(400);
     })()),
     expect(new Promise((r) => face.once("rxerror", r))).resolves.toThrow(/F000/),
   ]);
@@ -50,7 +51,7 @@ test("createFace", async () => {
   const rx = jest.fn();
   fw.on("pktrx", rx);
   await Promise.all([
-    new Promise((r) => setTimeout(r, 100)),
+    delay(100),
     face.tx((async function*() {
       yield FwPacket.create(new Interest("/Z", Interest.Lifetime(50)));
     })()),

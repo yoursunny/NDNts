@@ -30,7 +30,6 @@
     "@ndn/fw": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "abort-controller": "^3.0.0",
     "event-iterator": "^2.0.0",
     "graceful-fs": "^4.2.8",
     "hirestime": "^6.1.0",

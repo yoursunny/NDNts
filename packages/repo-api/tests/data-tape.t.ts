@@ -6,6 +6,7 @@ import { BufferBreaker } from "@ndn/node-transport/test-fixture/buffer-breaker";
 import { Data, Interest, Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import fs from "graceful-fs";
+import { setTimeout as delay } from "node:timers/promises";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, map, pipeline, writeToStream } from "streaming-iterables";
 import { tmpNameSync } from "tmp";
@@ -22,7 +23,7 @@ function makeDataTapeReadStream(mode: DataTape.StreamMode): NodeJS.ReadableStrea
           for (let i = 0; i < 500; ++i) {
             yield new Data(`/A/${Math.floor(i / 100)}/${i % 100}`);
             if (i % 20 === 0) {
-              await new Promise((r) => setTimeout(r, Math.random() * 5));
+              await delay(Math.random() * 5);
             }
           }
         },
@@ -131,7 +132,7 @@ test("BulkInsertInitiator", async () => {
   const bi = new BulkInsertInitiator(new L3Face(transport));
   let n = 0;
   for (let i = 0; i < 10; ++i) {
-    await new Promise((r) => setTimeout(r, Math.random() * 20));
+    await delay(Math.random() * 20);
     const pkts: Data[] = [];
     const count = Math.floor(Math.random() * 64);
     for (let j = 0; j < count; ++j) {

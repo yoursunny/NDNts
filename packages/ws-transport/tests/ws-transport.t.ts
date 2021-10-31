@@ -1,6 +1,7 @@
 import * as TestReopen from "@ndn/l3face/test-fixture/reopen";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import pushable from "it-pushable";
+import { setTimeout as delay } from "node:timers/promises";
 import type WebSocket from "ws";
 
 import { WsTransport } from "..";
@@ -48,25 +49,25 @@ test("TX throttle", async () => {
     (async () => {
       bufferedAmount.mockReturnValue(0);
       clientTx.push(Uint8Array.of(0x01));
-      await new Promise((r) => setTimeout(r, 100));
+      await delay(100);
       expect(serverRx).toHaveBeenCalledTimes(1);
 
       bufferedAmount.mockReturnValue(2500);
       clientTx.push(Uint8Array.of(0x02)); // still sent, because bufferedAmount is read after sending
-      await new Promise((r) => setTimeout(r, 100));
+      await delay(100);
       expect(serverRx).toHaveBeenCalledTimes(2);
 
       bufferedAmount.mockReturnValue(1500);
       clientTx.push(Uint8Array.of(0x03)); // cannot send until bufferedAmount drops below lowWaterMark
-      await new Promise((r) => setTimeout(r, 100));
+      await delay(100);
       expect(serverRx).toHaveBeenCalledTimes(2);
 
       bufferedAmount.mockReturnValue(500);
-      await new Promise((r) => setTimeout(r, 100));
+      await delay(100);
       expect(serverRx).toHaveBeenCalledTimes(3);
 
       clientTx.push(Uint8Array.of(0x04));
-      await new Promise((r) => setTimeout(r, 100));
+      await delay(100);
       expect(serverRx).toHaveBeenCalledTimes(4);
 
       clientTx.end();

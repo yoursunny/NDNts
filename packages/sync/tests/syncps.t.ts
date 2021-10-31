@@ -6,6 +6,7 @@ import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Data, Name, NameLike } from "@ndn/packet";
 import assert from "minimalistic-assert";
+import { setTimeout as delay } from "node:timers/promises";
 
 import { makeSyncpsCompatParam, Subscription, SyncpsPubsub } from "..";
 
@@ -104,14 +105,14 @@ class Fixture {
     return [sub, update];
   }
 
-  public delay(multiple = 1): Promise<void> {
-    return new Promise((r) => setTimeout(r, 300 * multiple));
+  public delayTick(multiple = 1): Promise<void> {
+    return delay(300 * multiple);
   }
 }
 
 test("simple", async () => {
   const f = new Fixture(3);
-  await f.delay();
+  await f.delayTick();
 
   const [, updateAtR] = f.subscribe(0, "/");
   const [, updateAtP] = f.subscribe(0, "/P");
@@ -122,7 +123,7 @@ test("simple", async () => {
 
   subAtPZ.remove();
   await f.publish(1, "/P/Z/0");
-  await f.delay();
+  await f.delayTick();
   expect(updateAtR).toHaveBeenCalledTimes(0);
   expect(updateAtP).toHaveBeenCalledTimes(1);
   expect(updateAtP.mock.calls[0]![0]!.name.getPrefix(-1)).toEqualName("/P/Z/0");
@@ -139,7 +140,7 @@ test("simple", async () => {
     f.publish(1, "/Q/B/1"),
     f.publish(2, "/P/C/1"),
   ]);
-  await f.delay(2);
+  await f.delayTick(2);
   expect(updateAtR).toHaveBeenCalledTimes(1); // /Q/B/1
   expect(updateAtP).toHaveBeenCalledTimes(3); // /P/Z/0, /P/A/1, /P/C/1
   expect(updateAtP1).toHaveBeenCalledTimes(1); // /P/Z/0

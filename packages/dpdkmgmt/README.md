@@ -19,6 +19,7 @@ import { Forwarder } from "@ndn/fw";
 import { Name, Interest, Data } from "@ndn/packet";
 import { fromUtf8, toUtf8 } from "@ndn/tlv";
 import { strict as assert } from "node:assert";
+import { setTimeout as delay } from "node:timers/promises";
 
 (async () => {
 
@@ -69,7 +70,7 @@ const producer = new Endpoint({ fw: fwP }).produce("/P",
     console.log(`producing Data, latency=${Date.now() - t0}ms`);
     return new Data(interest.name, Data.FreshnessPeriod(1000), toUtf8("NDNts + NDN-DPDK"));
   });
-await new Promise((r) => setTimeout(r, 500));
+await delay(500);
 
 // Start a consumer, fetching Data from the producer via NDN-DPDK.
 t0 = Date.now();
@@ -83,7 +84,7 @@ assert.equal(payloadText, "NDNts + NDN-DPDK");
 
 // Close faces.
 producer.close();
-await new Promise((r) => setTimeout(r, 500));
+await delay(500);
 uplinkC.close();
 uplinkP.close();
 })();

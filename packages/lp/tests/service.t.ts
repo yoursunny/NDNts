@@ -2,6 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Data, digestSigning, Interest, Nack, NackReason, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
+import { setTimeout as delay } from "node:timers/promises";
 import { collect, filter, map, pipeline, tap } from "streaming-iterables";
 
 import { LpService, TT } from "..";
@@ -77,22 +78,22 @@ test("rx", async () => {
 
 test("tx", async () => {
   async function* input(): AsyncIterable<LpService.Packet> {
-    await new Promise((r) => setTimeout(r, 10));
+    await delay(10);
     const pkt0 = new Data("/D");
     await digestSigning.sign(pkt0);
     yield { l3: pkt0 };
 
-    await new Promise((r) => setTimeout(r, 10));
+    await delay(10);
     const pkt1 = new Interest("/I");
     yield { l3: pkt1 };
 
-    await new Promise((r) => setTimeout(r, 10));
+    await delay(10);
     const pkt2 = new Nack(new Interest("/N", Interest.Nonce(0xA0A1A2A3)));
     yield { l3: pkt2 };
 
     // pkt3 IDLE
 
-    await new Promise((r) => setTimeout(r, 200));
+    await delay(200);
     const pkt4 = new Interest("/P");
     yield { l3: pkt4, token: Uint8Array.of(0xD4, 0xD5) };
   }
@@ -141,7 +142,7 @@ test("tx", async () => {
 test("fragmentation", async () => {
   async function* input(): AsyncIterable<LpService.Packet> {
     for (let i = 0; i < 50; ++i) {
-      await new Promise((r) => setTimeout(r, 10));
+      await delay(10);
       const pkt = new Data(`/${i}`);
       pkt.content = new Uint8Array(3000);
       pkt.content.fill(i);

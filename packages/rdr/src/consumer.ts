@@ -1,7 +1,6 @@
 import { Endpoint, RetxPolicy } from "@ndn/endpoint";
 import { Interest, Name, NameLike, Verifier } from "@ndn/packet";
 import { Decodable, Decoder } from "@ndn/tlv";
-import type { AbortSignal } from "abort-controller";
 
 import { Metadata, MetadataKeyword } from "./metadata";
 
@@ -57,7 +56,7 @@ export namespace retrieveMetadata {
     retx?: RetxPolicy;
 
     /** Abort signal to cancel retrieval. */
-    signal?: AbortSignal | globalThis.AbortSignal;
+    signal?: AbortSignal;
 
     /** Data verifier. Default is no verify. */
     verifier?: Verifier;

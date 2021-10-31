@@ -11,6 +11,7 @@ import { TcpTransport, UdpTransport, UnixTransport } from "@ndn/node-transport";
 import { FwPacket } from "@ndn/fw";
 import { L3Face, Transport } from "@ndn/l3face";
 import { Data, Interest } from "@ndn/packet";
+import { setTimeout as delay } from "node:timers/promises";
 
 (async () => {
 if (process.env.CI) { return; }
@@ -131,12 +132,12 @@ async function useInL3Face(transport: Transport) {
       // Send five Interests.
       let seq = Math.floor(Math.random() * 1e9);
       for (let i = 0; i < 5; ++i) {
-        await new Promise((r) => setTimeout(r, 50));
+        await delay(50);
         const interest = new Interest(`/ndn/edu/arizona/ping/NDNts/${seq++}`);
         console.log(`${transport} <I ${interest.name}`);
         yield FwPacket.create(interest);
       }
-      await new Promise((r) => setTimeout(r, 500));
+      await delay(500);
     } }),
     (async () => {
       let nData = 0;

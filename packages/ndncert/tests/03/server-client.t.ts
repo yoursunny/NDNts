@@ -8,6 +8,7 @@ import { DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 import { fetch } from "@ndn/segmented-object";
 import { toHex } from "@ndn/tlv";
+import { setTimeout as delay } from "node:timers/promises";
 import { createTransport as createMT, SentMessageInfo } from "nodemailer";
 import { collect } from "streaming-iterables";
 
@@ -26,7 +27,7 @@ function makePinChallengeWithWrongInputs(nWrongInputs = 0): Row["makeChallengeLi
 
     let nPrompts = 0;
     const client = new ClientPinChallenge(async () => {
-      await new Promise((r) => setTimeout(r, 100 * Math.random()));
+      await delay(100 * Math.random());
       if (++nPrompts <= nWrongInputs) {
         return `x${lastPin}`;
       }

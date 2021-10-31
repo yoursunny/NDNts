@@ -9,8 +9,7 @@
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
   "files": [
-    "lib",
-    "peculiar-webcrypto.cjs"
+    "lib"
   ],
   "type": "module",
   "main": "src/mod.ts",
@@ -32,7 +31,6 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@peculiar/webcrypto": "^1.2.0",
     "@yoursunny/asn1": "^0.0.20200718",
     "data-store": "github:jonschlinkert/data-store#4.1.0",
     "idb-keyval": "^6.0.3",

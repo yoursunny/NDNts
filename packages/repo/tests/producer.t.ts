@@ -5,6 +5,7 @@ import { Forwarder } from "@ndn/fw";
 import { Segment, SequenceNum, Version } from "@ndn/naming-convention2";
 import { Component, Data, Interest, Name, NameLike } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
+import { setTimeout as delay } from "node:timers/promises";
 
 import { DataStore, PrefixRegShorter, PrefixRegStatic, PrefixRegStrip, RepoProducer, respondRdr } from "..";
 import { makeDataStore } from "../test-fixture/data-store";
@@ -38,7 +39,7 @@ test("simple", async () => {
   const producer = RepoProducer.create(store, {
     reg: PrefixRegStatic(new Name("/A"), new Name("/B")),
   });
-  await new Promise((r) => setTimeout(r, 50));
+  await delay(50);
   expect(listAnnounced()).toEqual(["/8=A", "/8=B"]);
 
   const endpoint = new Endpoint();
@@ -49,7 +50,7 @@ test("simple", async () => {
   ]);
 
   producer.close();
-  await new Promise((r) => setTimeout(r, 50));
+  await delay(50);
   expect(listAnnounced()).toHaveLength(0);
 });
 
@@ -58,19 +59,19 @@ test("prefixreg shorter", async () => {
   const producer = RepoProducer.create(store, {
     reg: PrefixRegShorter(1),
   });
-  await new Promise((r) => setTimeout(r, 50));
+  await delay(50);
   expect(listAnnounced()).toEqual(["/8=A/8=B", "/8=C/8=D"]);
 
   await insertData("/C/D/4", "/E/F/1");
-  await new Promise((r) => setTimeout(r, 50));
+  await delay(50);
   expect(listAnnounced()).toEqual(["/8=A/8=B", "/8=C/8=D", "/8=E/8=F"]);
 
   await store.delete(new Name("/C/D/3"), new Name("/C/D/4"));
-  await new Promise((r) => setTimeout(r, 50));
+  await delay(50);
   expect(listAnnounced()).toEqual(["/8=A/8=B", "/8=E/8=F"]);
 
   producer.close();
-  await new Promise((r) => setTimeout(r, 50));
+  await delay(50);
   expect(listAnnounced()).toHaveLength(0);
 });
 
@@ -81,11 +82,11 @@ test("prefixreg strip non-generic", async () => {
     "/J/K",
   );
   const producer = RepoProducer.create(store);
-  await new Promise((r) => setTimeout(r, 50));
+  await delay(50);
   expect(listAnnounced()).toEqual(["/8=A", "/8=B", "/8=J/8=K"]);
 
   producer.close();
-  await new Promise((r) => setTimeout(r, 50));
+  await delay(50);
   expect(listAnnounced()).toHaveLength(0);
 });
 
@@ -98,7 +99,7 @@ test("prefixreg strip custom", async () => {
   const producer = RepoProducer.create(store, {
     reg: PrefixRegStrip(Segment, "K", Component.from("L")),
   });
-  await new Promise((r) => setTimeout(r, 50));
+  await delay(50);
   expect(listAnnounced()).toEqual([
     `${new Name("/A").append(Version, 1)}`,
     `${new Name("/B").append(Version, 1).append(SequenceNum, 4)}`,
@@ -106,7 +107,7 @@ test("prefixreg strip custom", async () => {
   ]);
 
   producer.close();
-  await new Promise((r) => setTimeout(r, 50));
+  await delay(50);
   expect(listAnnounced()).toHaveLength(0);
 });
 

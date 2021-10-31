@@ -6,7 +6,6 @@ import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Segment as Segment1, Version as Version1 } from "@ndn/naming-convention1";
 import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
 import { Data, Interest, Name } from "@ndn/packet";
-import AbortController from "abort-controller";
 
 import { BufferChunkSource, ChunkSource, discoverVersion, serve, serveVersioned } from "..";
 
