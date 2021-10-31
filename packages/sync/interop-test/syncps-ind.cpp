@@ -1,8 +1,7 @@
 #include "syncps.hpp"
 #include <iostream>
-#include <ndn-ind/encoding/tlv-0_3-wire-format.hpp>
 
-/** @brief Timestamp naming convention (2019). */
+/** @brief Timestamp naming convention (rev2). */
 namespace Timestamp {
 
 using TlvType = std::integral_constant<int, 0x24>;
@@ -38,7 +37,7 @@ main(int argc, char** argv)
 {
   INIT_LOGGERS();
   log4cxx::Logger::getRootLogger()->setLevel(log4cxx::Level::getTrace());
-  ndn::WireFormat::setDefaultWireFormat(ndn::Tlv0_3WireFormat::get());
+  // ndn::WireFormat::setDefaultWireFormat(ndn::Tlv0_3WireFormat::get());
 
   if (argc != 4) {
     std::cerr << "./demo SYNC-PREFIX SUB-PREFIX PUB-PREFIX" << std::endl;
@@ -49,6 +48,11 @@ main(int argc, char** argv)
   ndn::Name pubPrefix(argv[3]);
 
   ndn::KeyChain keyChain;
+  try {
+    keyChain.getDefaultCertificateName();
+  } catch (const ndn::Pib::Error&) {
+    keyChain.createIdentityV2("/operator");
+  }
   ndn::ThreadsafeFace face;
   face.setCommandSigningInfo(keyChain, keyChain.getDefaultCertificateName());
   syncps::SyncPubsub sync(

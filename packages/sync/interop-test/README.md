@@ -2,14 +2,25 @@
 
 Test environment:
 
-* Node.js 14.17.0
-* ndn-cxx and NFD 0.7.1 (install from PPA)
-* [PSync C++ library](https://github.com/named-data/PSync) commit `32b97d7654f5a3851388804ec3a0cbc2fde2c06f` (2020-12-31)
-* [ndn-ind](https://github.com/operantnetworks/ndn-ind) commit `dd934a7a5106cda6ea14675554427e12df1ce18f` (2020-12-23)
-* syncps in [DNMP-v2](https://github.com/pollere/DNMP-v2) commit `c9431460f85c326a410758aa4ff2a26bfcf0df69` (2020-10-17)
-* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `38f24ee8f9a9c935d3685d1565fbf7c3967478a1` (2021-04-26)
+* Ubuntu 20.04
+* Node.js 16.13.0
 
-## PSyncFull
+## PSync
+
+Reference implementation:
+
+* ndn-cxx and NFD 0.7.1 (install from PPA)
+* [PSync C++ library](https://github.com/named-data/PSync) commit `51189595bdab97ae6704407bf63f67ff7bff0ed9` (2021-10-02)
+
+Build reference program:
+
+```bash
+# in PSync directory
+./waf configure --with-examples
+./waf
+```
+
+Test `PSyncFull`:
 
 ```bash
 # in NDNts directory
@@ -20,23 +31,21 @@ export NDN_LOG=examples.FullSyncApp=INFO
 LD_LIBRARY_PATH=build ./build/examples/psync-full-sync /psync-interop /psync-memphis/${RANDOM} 10 1000
 ```
 
-## PSyncPartialPublisher
+Test `PSyncPartialPublisher`:
 
 ```bash
 # in NDNts directory
 npm run literate packages/sync/interop-test/psync-partial-publisher.ts
 
 # in PSync directory
-# PSync should be compiled with: ./waf configure --with-examples
 export NDN_LOG=examples.PartialSyncConsumerApp=INFO
 LD_LIBRARY_PATH=build ./build/examples/psync-consumer /psync-interop 5
 ```
 
-## PSyncPartialSubscriber
+Test `PSyncPartialSubscriber`:
 
 ```bash
 # in PSync directory
-# PSync should be compiled with: ./waf configure --with-examples
 export NDN_LOG=examples.PartialSyncProducerApp=INFO
 LD_LIBRARY_PATH=build ./build/examples/psync-producer /psync-interop /psync-memphis/${RANDOM} 10 1000
 
@@ -44,11 +53,18 @@ LD_LIBRARY_PATH=build ./build/examples/psync-producer /psync-interop /psync-memp
 npm run literate packages/sync/interop-test/psync-partial-subscriber.ts
 ```
 
-## SyncpsPubsub
+## syncps
+
+Reference implementation:
+
+* [ndn-ind](https://github.com/operantnetworks/ndn-ind) commit `8bc5d60b40afa2f03e11ecb591a852dff8a66422` (2021-09-19)
+* syncps in [DNMP-v2](https://github.com/pollere/DNMP-v2) commit `d42092e40a88b676c2181615d13b3b0bbaea5699` (2021-01-15)
+
+Build reference program:
 
 ```bash
-# these dependencies must be installed before compiling ndn-ind
-sudo apt install build-essential clang-8 liblog4cxx-dev libprotobuf-dev libssl-dev protobuf-compiler
+# install dependencies before building ndn-ind
+sudo apt install --no-install-recommends build-essential libboost-chrono-dev libboost-filesystem-dev libboost-iostreams-dev libboost-system-dev liblog4cxx-dev libprotobuf-dev libsqlite3-dev libssl-dev pkg-config protobuf-compiler
 
 # in ndn-ind directory
 ./configure
@@ -56,30 +72,46 @@ make -j$(nproc)
 sudo make install
 sudo ldconfig
 
-# in NDNts directory
+# in DNMP-v2 directory
+DNMPV2=$(pwd)
+make syncps/syncps-content.pb.cc
 
-# build C++ interop test program
-DNMPV2=$HOME/code/DNMP-v2
-make -C ${DNMPV2} syncps/syncps-content.pb.cc
+# in NDNts directory
 g++ -o packages/sync/interop-test/syncps-ind.exe \
   -std=c++17 $(pkg-config --cflags libndn-ind) -I${DNMPV2}/syncps \
   packages/sync/interop-test/syncps-ind.cpp ${DNMPV2}/syncps/syncps-content.pb.cc \
-  $(pkg-config --libs libndn-ind) -lboost_iostreams -lboost_chrono -lboost_system \
-  -lprotobuf -llog4cxx -lpthread
+  $(pkg-config --libs libndn-ind) -lboost_iostreams -lboost_system -lprotobuf -llog4cxx -lpthread
+```
 
-# start NDNts interop test script
-npm run literate packages/sync/interop-test/syncps.ts
+Test `SyncpsPubsub`:
 
-# start C++ interop test program
+```bash
+# in NDNts directory
 packages/sync/interop-test/syncps-ind.exe /syncps-interop /syncps-interop-data /syncps-interop-data/ind/$RANDOM >/dev/null
+
+# in NDNts directory
+npm run literate packages/sync/interop-test/syncps.ts
 ```
 
 ## SvSync
+
+Reference implementation:
+
+* ndn-cxx and NFD 0.7.1 (install from PPA)
+* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `a5dee089253f055e553081cb202cc6da108d9d12` (2021-07-27)
+
+Build reference program:
 
 ```bash
 # in ndn-svs directory
 ./waf configure --with-examples
 ./waf
+```
+
+Test `SvSync`:
+
+```bash
+# in ndn-svs directory
 LD_LIBRARY_PATH=build ./build/examples/chat ${RANDOM}
 
 # in NDNts directory
