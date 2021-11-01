@@ -11,10 +11,11 @@ export const COMMAND = "ndncat";
 
 void yargs(hideBin(process.argv))
   .scriptName(COMMAND)
-  .option("convention1", {
-    default: false,
-    desc: "use 2014 Naming Convention",
-    type: "boolean",
+  .option("convention", {
+    choices: [1, 2, 3],
+    default: 2,
+    desc: "Naming Convention revision",
+    type: "number",
   })
   .middleware(applyCommonArgs)
   .command(new GetSegmentedCommand())

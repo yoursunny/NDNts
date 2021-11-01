@@ -1,23 +1,30 @@
 import { closeUplinks, getSigner, openUplinks } from "@ndn/cli-common";
 import { Segment as Segment1, Version as Version1 } from "@ndn/naming-convention1";
-import { Segment as Segment2, Version as Version2 } from "@ndn/naming-convention2";
+import { Segment2, Segment3, Version2, Version3 } from "@ndn/naming-convention2";
 import { NamingConvention, Signer } from "@ndn/packet";
 
 export interface CommonArgs {
-  convention1: boolean;
+  convention: number;
 }
 
-export let versionConvention: NamingConvention<number> = Version2;
-export let segmentNumConvention: NamingConvention<number> = Segment2;
+export let versionConvention: NamingConvention<number>;
+export let segmentNumConvention: NamingConvention<number>;
 export let signer: Signer;
 
 export async function applyCommonArgs(args: CommonArgs) {
   await openUplinks();
   signer = await getSigner();
 
-  if (args.convention1) {
-    versionConvention = Version1;
-    segmentNumConvention = Segment1;
+  switch (args.convention) {
+    case 1:
+      [versionConvention, segmentNumConvention] = [Version1, Segment1];
+      break;
+    case 2:
+      [versionConvention, segmentNumConvention] = [Version2, Segment2];
+      break;
+    case 3:
+      [versionConvention, segmentNumConvention] = [Version3, Segment3];
+      break;
   }
 }
 
