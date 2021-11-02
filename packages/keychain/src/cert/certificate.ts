@@ -64,18 +64,18 @@ export class Certificate {
   }
 
   /** Create verifier from SPKI. */
-  public async createVerifier(): Promise<NamedVerifier.PublicKey> {
+  public async createVerifier(algoList = SigningAlgorithmList): Promise<NamedVerifier.PublicKey> {
     if (!this.verifier) {
-      const [algo, key] = await this.importPublicKey(SigningAlgorithmList);
+      const [algo, key] = await this.importPublicKey(algoList);
       this.verifier = createVerifier(CertNaming.toKeyName(this.name), algo, key);
     }
     return this.verifier;
   }
 
   /** Create encrypter from SPKI. */
-  public async createEncrypter(): Promise<NamedEncrypter.PublicKey> {
+  public async createEncrypter(algoList = EncryptionAlgorithmList): Promise<NamedEncrypter.PublicKey> {
     if (!this.encrypter) {
-      const [algo, key] = await this.importPublicKey(EncryptionAlgorithmList);
+      const [algo, key] = await this.importPublicKey(algoList);
       this.encrypter = createEncrypter(CertNaming.toKeyName(this.name), algo, key);
     }
     return this.encrypter;
@@ -120,14 +120,13 @@ export namespace Certificate {
     publicKey: PublicKey;
   }
 
-  export async function issue(options: IssueOptions): Promise<Certificate> {
-    let { issuerPrivateKey: pvt, issuerId, publicKey: { name, spki } } = options;
+  export async function issue(opts: IssueOptions): Promise<Certificate> {
+    let { issuerPrivateKey: pvt, issuerId, publicKey: { name, spki } } = opts;
     name = CertNaming.makeCertName(name, { issuerId });
     if (!spki) {
       throw new Error("options.publicKey.spki unavailable");
     }
-    const opts: BuildOptions = { ...options, name, publicKeySpki: spki, signer: pvt };
-    return build(opts);
+    return build({ ...opts, name, publicKeySpki: spki, signer: pvt });
   }
 
   export interface SelfSignOptions {
@@ -137,17 +136,16 @@ export namespace Certificate {
     publicKey: PublicKey;
   }
 
-  export async function selfSign(options: SelfSignOptions): Promise<Certificate> {
-    const { privateKey: { name: pvtName }, publicKey: { name: pubName } } = options;
+  export async function selfSign(opts: SelfSignOptions): Promise<Certificate> {
+    const { privateKey: { name: pvtName }, publicKey: { name: pubName } } = opts;
     if (!pvtName.equals(pubName)) {
       throw new Error("key pair mismatch");
     }
-    const opts: IssueOptions = {
+    return issue({
       validity: ValidityPeriod.MAX,
-      ...options,
+      ...opts,
       issuerId: CertNaming.ISSUER_SELF,
-      issuerPrivateKey: options.privateKey,
-    };
-    return issue(opts);
+      issuerPrivateKey: opts.privateKey,
+    });
   }
 }

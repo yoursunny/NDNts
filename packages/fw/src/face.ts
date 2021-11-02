@@ -135,11 +135,11 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
 
     void pipeline(
       () => this.txLoop(),
-      buffer(this.fw.options.faceTxBuffer),
+      buffer(this.fw.opts.faceTxBuffer),
       tap((pkt) => fw.emit("pkttx", this, pkt)),
       duplexFromRxTx(rxtx),
       tap((pkt) => fw.emit("pktrx", this, pkt)),
-      buffer(this.fw.options.faceRxBuffer),
+      buffer(this.fw.opts.faceRxBuffer),
       this.rxLoop,
     );
 

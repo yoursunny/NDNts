@@ -98,9 +98,9 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
   public readonly pit: Pit;
   public readonly readvertise = new Readvertise(this);
 
-  constructor(public readonly options: Required<Forwarder.Options>) {
+  constructor(public readonly opts: Required<Forwarder.Options>) {
     super();
-    this.pit = new Pit(options.dataNoTokenMatch);
+    this.pit = new Pit(opts.dataNoTokenMatch);
   }
 
   public addFace(face: FwFace.RxTx | FwFace.RxTxDuplex, attributes: FwFace.Attributes = {}): FwFace {

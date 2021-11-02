@@ -24,7 +24,6 @@ const NamedCurveOids: Record<string, EcCurve> = {
 };
 
 export type EcCurve = keyof typeof PointSizes;
-
 export namespace EcCurve {
   export const Default: EcCurve = "P-256";
   export const Choices = Object.keys(PointSizes) as readonly EcCurve[];

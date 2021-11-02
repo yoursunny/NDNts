@@ -102,8 +102,8 @@ export function parseCertName(name: Name): CertNameFields {
  * Create certificate name from subject name, key name, or certificate name.
  * @param name subject name, key name, or certificate name.
  * @param opts.keyId keyId component, used only if input name is subject name.
- * @param opts.issuerId keyId, used only if input name is subject name.
- * @param opts.version keyId, used only if input name is subject name.
+ * @param opts.issuerId keyId, used only if input name is subject name or key name.
+ * @param opts.version keyId, used only if input name is subject name or key name.
  */
 export function makeCertName(name: Name, opts: Partial<Omit<CertNameFields, "subjectName">> = {}): Name {
   if (isCertName(name)) {
