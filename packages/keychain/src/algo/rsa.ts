@@ -43,10 +43,8 @@ class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenParams> {
         ...this.genParams,
         modulusLength,
       };
-      const pair = await crypto.subtle.generateKey(genParams, extractable,
-        [...this.keyUsages.private, ...this.keyUsages.public]);
-      privateKey = pair.privateKey!;
-      publicKey = pair.publicKey!;
+      ({ privateKey, publicKey } = await crypto.subtle.generateKey(genParams, extractable,
+        [...this.keyUsages.private, ...this.keyUsages.public]));
     }
 
     const spki = new Uint8Array(await crypto.subtle.exportKey("spki", publicKey));

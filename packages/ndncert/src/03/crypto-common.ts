@@ -8,7 +8,7 @@ const ECDH_PARAMS: EcKeyGenParams & EcKeyImportParams = {
 
 export async function generateEcdhKey(): Promise<[pvt: CryptoKey, pub: CryptoKey]> {
   const { privateKey, publicKey } = await crypto.subtle.generateKey(ECDH_PARAMS, false, ["deriveBits"]);
-  return [privateKey!, publicKey!];
+  return [privateKey, publicKey];
 }
 
 export async function importEcdhPub(raw: Uint8Array): Promise<CryptoKey> {

@@ -7,4 +7,4 @@ if [[ -n $GTAGID ]]; then
   GTAG="--gaID $GTAGID"
 fi
 
-typedoc --tsconfig mk/tsconfig-typedoc.json $(find packages -maxdepth 3 '(' -name 'mod.ts' -o -name 'main.ts' ')' -path 'packages/*/src/*.ts' -printf '--entryPoints %p\n') $GTAG
+exec env NODE_OPTIONS='--max-old-space-size=4096' typedoc --tsconfig mk/tsconfig-typedoc.json --entryPoints 'packages/*' $GTAG

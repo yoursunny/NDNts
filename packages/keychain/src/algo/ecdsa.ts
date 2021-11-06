@@ -88,10 +88,8 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
         importNamedCurve(curve, spki),
       ]);
     } else {
-      const pair = await crypto.subtle.generateKey(params, extractable,
-        [...this.keyUsages.private, ...this.keyUsages.public]);
-      privateKey = pair.privateKey!;
-      publicKey = pair.publicKey!;
+      ({ privateKey, publicKey } = await crypto.subtle.generateKey(params, extractable,
+        [...this.keyUsages.private, ...this.keyUsages.public]));
     }
 
     const spki = new Uint8Array(await crypto.subtle.exportKey("spki", publicKey!));

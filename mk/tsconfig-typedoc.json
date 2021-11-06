@@ -12,14 +12,12 @@
     "../packages/*/src/**/*"
   ],
   "typedocOptions": {
+    "entryPointStrategy": "packages",
     "exclude": ["**/node_modules", "**/literate-temp.ts", "**/interop-test", "**/lib", "**/test-fixture", "**/tests"],
     "excludeExternals": true,
     "excludePrivate": true,
-    "out": "../docs/typedoc",
-    "theme": "default",
     "name": "NDNts",
-    "readme": "./typedoc-README.md",
-    "plugin": ["@strictsoftware/typedoc-plugin-monorepo"],
-    "external-modulemap": ".*packages\/([^\/]+)\/.*",
+    "out": "../docs/typedoc",
+    "readme": "./typedoc-README.md"
   }
 }
