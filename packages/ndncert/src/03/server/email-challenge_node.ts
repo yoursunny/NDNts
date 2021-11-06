@@ -27,7 +27,7 @@ interface MailSub {
 
 function templateSub(input: string, sub: MailSub): string {
   for (const key of ["caPrefix", "requestId", "subjectName", "keyName", "pin"] as Array<keyof MailSub>) {
-    input = input.replace(new RegExp(`\\$${key}\\$`, "g"), sub[key]);
+    input = input.replaceAll(`$${key}$`, sub[key]);
   }
   return input;
 }

@@ -3,7 +3,6 @@ import { Forwarder, FwFace, TapFace } from "@ndn/fw";
 import { Interest, Name, NameLike } from "@ndn/packet";
 import type { H3Transport } from "@ndn/quic-transport";
 import hirestime from "hirestime";
-import pAny from "p-any";
 
 import { createFace } from "./platform_node";
 
@@ -111,7 +110,9 @@ async function testConnection(
   const abort = new AbortController();
   try {
     const endpoint = new Endpoint({ fw: tapFace.fw, signal: abort.signal });
-    await pAny(tc.map((pkt) => {
+    // https://github.com/dustinspecker/obj-props/issues/4
+    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
+    await Promise.any(tc.map((pkt) => {
       if (typeof pkt === "string") {
         pkt = pkt.endsWith("/*") ?
           new Name(pkt.slice(0, -2)).append(Math.floor(Math.random() * 1e8).toString().padStart(8, "0")) :
