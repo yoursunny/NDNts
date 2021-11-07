@@ -106,7 +106,7 @@ const wrongNames = [
   new Name("/A").append(Version2, 2).append("C"),
 ];
 
-test.each(wrongNames)("discover wrong name %#", async (dataName) => {
+test.each(wrongNames)("discover wrong name $#", async (dataName) => {
   const producer = new Endpoint().produce("/A",
     async () => new Data(dataName, Data.FreshnessPeriod(1000)));
   closers.push(producer);

@@ -1,6 +1,6 @@
 import "./webcrypto";
 
-import { Certificate, EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, KeyChainImplWebCrypto as crypto, RSA, RsaModulusLength } from "@ndn/keychain";
+import { Certificate, CryptoAlgorithmListFull, EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, KeyChainImplWebCrypto as crypto, RSA, RsaModulusLength } from "@ndn/keychain";
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";
 import { execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
 import { SafeBag } from "@ndn/ndnsec";
@@ -11,7 +11,7 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import * as Serialize from "../../test-fixture/serialize";
 import type { SignVerifyTestResult } from "./api";
 
-window.testKeyStore = () => testKeyStore(KeyChain.open("296616c2-7abb-4d9e-94b3-a97e4fd327b5"));
+window.testKeyStore = () => testKeyStore(KeyChain.open("296616c2-7abb-4d9e-94b3-a97e4fd327b5", CryptoAlgorithmListFull));
 
 window.testCertStore = () => testCertStore(KeyChain.open("005a04be-9752-4f1f-adaf-b52f31742b37"));
 
@@ -44,7 +44,7 @@ window.testHMAC = async () => {
 };
 
 window.testSafeBagDecode = async (wire: Serialize.Value<Uint8Array>, passphrase: string) => {
-  const keyChain = KeyChain.createTemp();
+  const keyChain = KeyChain.createTemp(CryptoAlgorithmListFull);
   const safeBag = new Decoder(Serialize.parse(wire)).decode(SafeBag);
   const certName = safeBag.certificate.name;
   await safeBag.saveKeyPair(passphrase, keyChain);

@@ -54,7 +54,7 @@ test("HMAC", async () => {
 
 test.each([
   SafeBagEC, SafeBagRSA,
-])("SafeBagDecode %#", async ({ sigType, certName, wire, passphrase }) => {
+])("SafeBagDecode $#", async ({ sigType, certName, wire, passphrase }) => {
   const [aSigType, aCertName] =
     await pageInvoke<typeof window.testSafeBagDecode>(page, "testSafeBagDecode", Serialize.stringify(wire), passphrase);
   expect(aSigType).toBe(sigType);

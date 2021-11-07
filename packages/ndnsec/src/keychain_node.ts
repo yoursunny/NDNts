@@ -1,4 +1,4 @@
-import { Certificate, CertNaming, CryptoAlgorithm, KeyChain, KeyChainImplWebCrypto as crypto, KeyStore, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, CryptoAlgorithm, ECDSA, KeyChain, KeyChainImplWebCrypto as crypto, KeyStore, RSA, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, Name } from "@ndn/packet";
 import { Decodable, Decoder, Encoder } from "@ndn/tlv";
 import execa from "execa";
@@ -8,6 +8,7 @@ import { SafeBag } from "./safe-bag";
 
 const IMPORTING_ISSUER = Component.from("08c5a687-7be5-43ee-a966-2683fb339c1d");
 const PASSPHRASE = "PASSPHRASE";
+const ALGO_LIST = [ECDSA, RSA];
 
 /** Access ndn-cxx KeyChain. */
 export class NdnsecKeyChain extends KeyChain {
@@ -32,7 +33,7 @@ export class NdnsecKeyChain extends KeyChain {
   private readonly importOptions?: SafeBag.ImportOptions;
   private readonly mutex = throat(1);
   private cached?: KeyChain;
-  private readonly insertKeyLoader = new KeyStore.Loader(true);
+  private readonly insertKeyLoader = new KeyStore.Loader(true, ALGO_LIST);
 
   private async invokeNdnsec(argv: string[], input?: Uint8Array): Promise<{
     lines: string[];
@@ -90,7 +91,7 @@ export class NdnsecKeyChain extends KeyChain {
 
   private async load() {
     if (!this.cached) {
-      this.cached = await this.copyTo(KeyChain.createTemp());
+      this.cached = await this.copyTo(KeyChain.createTemp(ALGO_LIST));
     }
     return this.cached;
   }

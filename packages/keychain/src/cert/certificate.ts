@@ -2,7 +2,7 @@ import { Component, Data, Name, SigInfo, Signer } from "@ndn/packet";
 import * as asn1 from "@yoursunny/asn1";
 import assert from "minimalistic-assert";
 
-import { EncryptionAlgorithmList, SigningAlgorithmList } from "../algo/mod";
+import { EncryptionAlgorithmListSlim, SigningAlgorithmListSlim } from "../algolist/mod";
 import { createEncrypter, CryptoAlgorithm, NamedEncrypter, NamedSigner, NamedVerifier, PublicKey } from "../key/mod";
 import { createVerifier } from "../key/signing";
 import * as CertNaming from "../naming";
@@ -52,19 +52,26 @@ export class Certificate {
       algoList: readonly A[],
   ): Promise<[A, CryptoAlgorithm.PublicKey<I>]> {
     const der = asn1.parseVerbose(this.publicKeySpki);
+    const errs: string[] = [];
     for (const algo of algoList) {
       if (!algo.importSpki) {
         continue;
       }
       try {
         return [algo, await algo.importSpki(this.publicKeySpki, der)];
-      } catch {}
+      } catch (err: unknown) {
+        errs.push(`${algo.uuid}: ${err}`);
+      }
     }
-    throw new Error("cannot import key");
+    throw new Error(`cannot import key\n${errs.join("\n")}\n(you may need to specify an algoList with more algorithms)`);
   }
 
-  /** Create verifier from SPKI. */
-  public async createVerifier(algoList = SigningAlgorithmList): Promise<NamedVerifier.PublicKey> {
+  /**
+   * Create verifier from SPKI.
+   * @param algoList list of recognized algorithms.
+   *                 Use SigningAlgorithmListFull for all algorithms, at the cost of larger bundle size.
+   */
+  public async createVerifier(algoList = SigningAlgorithmListSlim): Promise<NamedVerifier.PublicKey> {
     if (!this.verifier) {
       const [algo, key] = await this.importPublicKey(algoList);
       this.verifier = createVerifier(CertNaming.toKeyName(this.name), algo, key);
@@ -72,8 +79,12 @@ export class Certificate {
     return this.verifier;
   }
 
-  /** Create encrypter from SPKI. */
-  public async createEncrypter(algoList = EncryptionAlgorithmList): Promise<NamedEncrypter.PublicKey> {
+  /**
+   * Create encrypter from SPKI.
+   * @param algoList list of recognized algorithms.
+   *                 Use EncryptionAlgorithmListFull for all algorithms, at the cost of larger bundle size.
+   */
+  public async createEncrypter(algoList = EncryptionAlgorithmListSlim): Promise<NamedEncrypter.PublicKey> {
     if (!this.encrypter) {
       const [algo, key] = await this.importPublicKey(algoList);
       this.encrypter = createEncrypter(CertNaming.toKeyName(this.name), algo, key);

@@ -51,9 +51,22 @@ Both Interest and Data are signable.
 * [X] RSA-OAEP
   * [X] low-level encryption and decryption
 
+## Algorithm List (algoList)
+
+Several functions accept an `algoList` argument that contains the crypto algorithms it can recognize.
+Typically, the default value of this argument is `SigningAlgorithmListSlim`, `EncryptionAlgorithmListSlim`, or `CryptoAlgorithmListSlim`.
+These *slim* lists include only ECDSA algorithm, which is the most commonly used in NDN applications.
+
+If you need to use other algorithms or communicate with applications that use other algorithms, you should pass `SigningAlgorithmListFull`, `EncryptionAlgorithmListFull`, or `CryptoAlgorithmListFull` to these functions.
+These *full* lists include all algorithms implemented in NDNts.
+
+If you know which algorithms are needed, you can import individual algorithms and an array of desired algorithms.
+
+This design is a trade-off for reducing browser bundle size.
+
 ## Certificate Management and Storage
 
-`Certificate` class provides basic operations with [NDN Certificate Format 2.0](https://named-data.net/doc/ndn-cxx/0.7.0/specs/certificate-format.html).
+`Certificate` class provides basic operations with [NDN Certificate Format 2.0](https://named-data.net/doc/ndn-cxx/0.7.1/specs/certificate-format.html).
 
 * [X] generate self-signed certificate
 * [X] issue certificate to another public key

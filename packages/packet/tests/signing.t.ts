@@ -93,7 +93,7 @@ const TABLE = [
   },
 ] as Row[];
 
-test.each(TABLE)("sign %#", async ({ cls }) => {
+test.each(TABLE)("sign $#", async ({ cls }) => {
   const pkt = new cls(new Name("/A"));
   pkt.sigInfo = new SigInfo(SigType.HmacWithSha256, Uint8Array.of(0xA0, 0xA1));
   await expect(ALGO1.sign(pkt)).rejects.toThrow(/mock-signing-error/);
@@ -102,7 +102,7 @@ test.each(TABLE)("sign %#", async ({ cls }) => {
   expect(() => Encoder.encode(pkt)).not.toThrow();
 });
 
-test.each(TABLE)("verify %#", async ({ cls, checkWire }) => {
+test.each(TABLE)("verify $#", async ({ cls, checkWire }) => {
   const src = new cls(new Name("/A"));
   src.sigInfo = new SigInfo(SigType.Sha256);
   await ALGO0.sign(src);

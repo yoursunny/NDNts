@@ -166,7 +166,7 @@ describe("SignedInterestPolicy", () => {
       (interest: Interest) => policyNTS.makeSigner(digestSigning).sign(interest),
       (interest: Interest) => policyNTS.makeVerifier(digestSigning).verify(interest),
     ],
-  ])("update %#", async (signFunc, verifyFunc) => {
+  ])("update $#", async (signFunc, verifyFunc) => {
     const interest0 = new Interest("/A/0");
     const interest1 = new Interest("/A/1");
     const t0 = Date.now();

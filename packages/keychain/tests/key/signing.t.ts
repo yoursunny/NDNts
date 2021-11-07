@@ -4,7 +4,7 @@ import { Data, Name, SigType } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 import { Decoder, fromHex } from "@ndn/tlv";
 
-import { Certificate, EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength } from "../..";
+import { Certificate, EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, SigningAlgorithmListFull } from "../..";
 
 test.each(TestSignVerify.makeTable("curve", EcCurve.Choices))("ECDSA sign-verify %p", async ({ cls, curve }) => {
   const [pvtA, pubA] = await generateSigningKey("/A/KEY/x", ECDSA, { curve });
@@ -47,7 +47,7 @@ test.each(TestSignVerify.makeTable("modulusLength", RsaModulusLength.Choices))("
 });
 
 test.each(RsaModulusLength.Choices)("RSA load %p", async (modulusLength) => {
-  const keyChain = KeyChain.createTemp();
+  const keyChain = KeyChain.createTemp(SigningAlgorithmListFull);
   const name = new Name("/my/KEY/x");
   await generateSigningKey(keyChain, name, RSA, { modulusLength });
 
@@ -55,7 +55,7 @@ test.each(RsaModulusLength.Choices)("RSA load %p", async (modulusLength) => {
   expect(signer.sigType).toBe(SigType.Sha256WithRsa);
 
   const cert = await Certificate.selfSign({ privateKey: signer, publicKey });
-  const verifier = await cert.createVerifier();
+  const verifier = await cert.createVerifier(SigningAlgorithmListFull);
   expect(verifier.name).toEqualName(signer.name);
   expect(verifier.sigType).toBe(SigType.Sha256WithRsa);
   await verifier.verify(cert.data);

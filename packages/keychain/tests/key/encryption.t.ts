@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Component, Name } from "@ndn/packet";
 
-import { AES, Certificate, CounterIvChecker, EncryptionAlgorithm, generateEncryptionKey, generateSigningKey, KeyChain, KeyChainImplWebCrypto as crypto, NamedDecrypter, NamedEncrypter, RSAOAEP, ValidityPeriod } from "../..";
+import { AES, Certificate, CounterIvChecker, EncryptionAlgorithm, EncryptionAlgorithmListFull, generateEncryptionKey, generateSigningKey, KeyChain, KeyChainImplWebCrypto as crypto, NamedDecrypter, NamedEncrypter, RSAOAEP, ValidityPeriod } from "../..";
 
 async function testEncryptDecrypt(encrypter: NamedEncrypter, decrypter: NamedDecrypter, aead: boolean) {
   expect(encrypter.name).toEqualName(decrypter.name);
@@ -45,8 +45,8 @@ test.each([
   [AES.CTR, undefined],
   [AES.CTR, { counterLength: 16, length: 192 }],
   [AES.GCM, undefined],
-])("AES encrypt-decrypt %#", async (algo: EncryptionAlgorithm, genParams: any) => {
-  const keyChain = KeyChain.createTemp();
+])("AES encrypt-decrypt $#", async (algo: EncryptionAlgorithm, genParams: any) => {
+  const keyChain = KeyChain.createTemp(EncryptionAlgorithmListFull);
   const name = new Name("/my/KEY/x");
   await generateEncryptionKey(keyChain, name, algo, genParams);
 
@@ -59,7 +59,7 @@ test.each([
   [AES.CTR, 20],
   [AES.CTR, 24],
   [AES.GCM, 32],
-])("AES CounterIvGen %#", async (algo: EncryptionAlgorithm, counterLength: number) => {
+])("AES CounterIvGen $#", async (algo: EncryptionAlgorithm, counterLength: number) => {
   const p0 = crypto.getRandomValues(new Uint8Array(32));
   const p1 = crypto.getRandomValues(new Uint8Array(33));
   const p2 = crypto.getRandomValues(new Uint8Array(1));
@@ -122,7 +122,7 @@ test.each([
 });
 
 test("RSA-OAEP encrypt-decrypt", async () => {
-  const keyChain = KeyChain.createTemp();
+  const keyChain = KeyChain.createTemp(EncryptionAlgorithmListFull);
   const name = new Name("/my/KEY/x");
   await generateEncryptionKey(keyChain, name, RSAOAEP);
 
@@ -134,6 +134,6 @@ test("RSA-OAEP encrypt-decrypt", async () => {
     issuerPrivateKey: signer,
     publicKey,
   });
-  const encrypter = await cert.createEncrypter();
+  const encrypter = await cert.createEncrypter(EncryptionAlgorithmListFull);
   await testEncryptDecrypt(encrypter, decrypter, true);
 });

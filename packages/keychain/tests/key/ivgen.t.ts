@@ -5,7 +5,7 @@ import { CounterIvChecker, CounterIvGen, CounterIvOptions } from "../..";
 test.each([
   { fixedType: "uint8array", lenC: 8, lenD: 1 },
   { fixedType: "bigint", lenC: 4, lenD: 5 },
-])("CounterIvGen %#", async ({ fixedType, lenC, lenD }) => {
+])("CounterIvGen $#", async ({ fixedType, lenC, lenD }) => {
   const ivOpts: CounterIvOptions = {
     ivLength: 4,
     fixedBits: 12,

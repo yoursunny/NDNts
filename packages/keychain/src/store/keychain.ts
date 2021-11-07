@@ -1,7 +1,8 @@
 import { Name, Signer } from "@ndn/packet";
 
 import type { Certificate } from "../cert/mod";
-import type { NamedSigner } from "../key/mod";
+import type { CryptoAlgorithm, NamedSigner } from "../key/mod";
+import { CryptoAlgorithmListSlim } from "../mod";
 import * as CertNaming from "../naming";
 import { CertStore } from "./cert-store";
 import { KeyStore } from "./key-store";
@@ -222,21 +223,29 @@ export namespace KeyChain {
   /**
    * Open a persistent keychain.
    * @param locator in Node.js, a filesystem directory; in browser, a database name.
+   * @param algoList list of recognized algorithms. Default is CryptoAlgorithmListSlim.
+   *                 Use CryptoAlgorithmListFull for all algorithms, at the cost of larger bundle size.
    */
-  export function open(locator: string): KeyChain;
+  export function open(locator: string, algoList?: readonly CryptoAlgorithm[]): KeyChain;
 
   /** Open a keychain from given KeyStore and CertStore. */
   export function open(keys: KeyStore, certs: CertStore): KeyChain;
 
-  export function open(arg1: string | KeyStore, arg2?: CertStore): KeyChain {
-    const [pvts, certs] = typeof arg1 === "string" ? openStores(arg1) : [arg1, arg2!];
-    return new KeyChainImpl(pvts, certs);
+  export function open(arg1: any, arg2: any): KeyChain {
+    if (typeof arg1 === "string") {
+      return new KeyChainImpl(...openStores(arg1, arg2 ?? CryptoAlgorithmListSlim));
+    }
+    return new KeyChainImpl(arg1, arg2);
   }
 
-  /** Create an in-memory ephemeral keychain. */
-  export function createTemp(): KeyChain {
+  /**
+   * Create an in-memory ephemeral keychain.
+   * @param algoList list of recognized algorithms.
+   *                 Use CryptoAlgorithmListFull for all algorithms, at the cost of larger bundle size.
+   */
+  export function createTemp(algoList = CryptoAlgorithmListSlim): KeyChain {
     return new KeyChainImpl(
-      new KeyStore(new MemoryStoreProvider()),
+      new KeyStore(new MemoryStoreProvider(), algoList),
       new CertStore(new MemoryStoreProvider()),
     );
   }

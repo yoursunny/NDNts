@@ -1,4 +1,4 @@
-import { Certificate, NamedVerifier } from "@ndn/keychain";
+import { Certificate, NamedVerifier, SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
 import { Segment, Version } from "@ndn/naming-convention2";
 import { Data, Name, Signer } from "@ndn/packet";
 import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI, toHex, toUtf8 } from "@ndn/tlv";
@@ -15,7 +15,11 @@ const EVD = new EvDecoder<CaProfile.Fields>("CaProfile", undefined)
 
 /** CA profile packet. */
 export class CaProfile {
-  public static async fromData(data: Data): Promise<CaProfile> {
+  /**
+   * Decode CA profile from Data packet.
+   * @param algoList list of recognized algorithms for CA certificate.
+   */
+  public static async fromData(data: Data, algoList = SigningAlgorithmListSlim): Promise<CaProfile> {
     const profile = new CaProfile(data);
     if (!(data.name.getPrefix(-4).equals(profile.prefix) &&
           data.name.at(-4).equals(C.CA) &&
@@ -24,7 +28,7 @@ export class CaProfile {
           data.name.at(-1).is(Segment))) {
       throw new Error("bad Name");
     }
-    profile.publicKey_ = await profile.cert.createVerifier();
+    profile.publicKey_ = await profile.cert.createVerifier(algoList);
     await profile.publicKey_.verify(data);
     profile.certDigest_ = await profile.cert.data.computeImplicitDigest();
     return profile;
@@ -67,6 +71,7 @@ export namespace CaProfile {
   export type Options = Fields & {
     signer: Signer;
     version?: number;
+    algoList?: readonly SigningAlgorithm[];
   };
 
   export async function build({
@@ -77,6 +82,7 @@ export namespace CaProfile {
     cert,
     signer,
     version = Date.now(),
+    algoList = SigningAlgorithmListSlim,
   }: Options): Promise<CaProfile> {
     const payload = Encoder.encode([
       [TT.CaPrefix, prefix],
@@ -92,6 +98,6 @@ export namespace CaProfile {
     data.content = payload;
     data.isFinalBlock = true;
     await signer.sign(data);
-    return CaProfile.fromData(data);
+    return CaProfile.fromData(data, algoList);
   }
 }

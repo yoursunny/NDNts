@@ -1,4 +1,4 @@
-import { Certificate, NamedSigner, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, NamedSigner, NamedVerifier, SigningAlgorithm, SigningAlgorithmListSlim, ValidityPeriod } from "@ndn/keychain";
 import { Data, Interest, SignedInterestPolicy } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 
@@ -12,7 +12,15 @@ const EVD = new EvDecoder<NewRequest.Fields>("NewRequest", undefined)
 
 /** NEW request packet. */
 export class NewRequest {
-  public static async fromInterest(interest: Interest, { profile, signedInterestPolicy }: NewRequest.Context): Promise<NewRequest> {
+  /**
+   * Decode NEW request from Interest packet.
+   * @param algoList list of recognized algorithms for certificate request.
+   */
+  public static async fromInterest(
+      interest: Interest,
+      { profile, signedInterestPolicy }: NewRequest.Context,
+      algoList = SigningAlgorithmListSlim,
+  ): Promise<NewRequest> {
     if (!(interest.name.getPrefix(-3).equals(profile.prefix) &&
     interest.name.at(-3).equals(C.CA) &&
           interest.name.at(-2).equals(C.NEW))) {
@@ -26,7 +34,7 @@ export class NewRequest {
     }
 
     request.ecdhPub_ = await crypto.importEcdhPub(request.ecdhPubRaw);
-    request.publicKey_ = await request.certRequest.createVerifier();
+    request.publicKey_ = await request.certRequest.createVerifier(algoList);
     await signedInterestPolicy.makeVerifier(request.publicKey).verify(interest);
     return request;
   }
@@ -76,6 +84,7 @@ export namespace NewRequest {
     publicKey: NamedVerifier.PublicKey;
     privateKey: NamedSigner.PrivateKey;
     validity?: ValidityPeriod;
+    algoList?: readonly SigningAlgorithm[];
   }
 
   export async function build({
@@ -85,6 +94,7 @@ export namespace NewRequest {
     publicKey,
     privateKey,
     validity = ValidityPeriod.MAX,
+    algoList = SigningAlgorithmListSlim,
   }: Options) {
     validity = truncateValidity(validity, profile, false);
     if (!validity.includes(Date.now())) {
@@ -106,6 +116,6 @@ export namespace NewRequest {
     interest.mustBeFresh = true;
     interest.appParameters = payload;
     await signedInterestPolicy.makeSigner(privateKey).sign(interest);
-    return NewRequest.fromInterest(interest, { profile, signedInterestPolicy });
+    return NewRequest.fromInterest(interest, { profile, signedInterestPolicy }, algoList);
   }
 }

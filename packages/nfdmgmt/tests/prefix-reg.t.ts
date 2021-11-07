@@ -37,7 +37,7 @@ const TABLE = [
   },
 ] as Row[];
 
-test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }) => {
+test.each(TABLE)("reg $#", async ({ faceIsLocal, commandPrefix, expectedPrefix }) => {
   const fw = Forwarder.create();
 
   const verbs: string[] = [];

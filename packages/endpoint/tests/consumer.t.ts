@@ -41,7 +41,7 @@ describe("retx limit", () => {
     [function*() { yield 400; }, 2], // retx after timeout
     [0, 1],
     [1, 2],
-  ])("reject %#", async (retx, nInterests) => {
+  ])("reject $#", async (retx, nInterests) => {
     const promise = ep.consume(
       new Interest("/A", Interest.Lifetime(200)),
       { retx },

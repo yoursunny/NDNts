@@ -1,4 +1,4 @@
-import { Certificate, KeyChainImplWebCrypto, SigningAlgorithm, SigningAlgorithmList } from "@ndn/keychain";
+import { Certificate, KeyChainImplWebCrypto, SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
 import { Data, Name, Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
@@ -30,6 +30,7 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
   constructor(
       private readonly verifier: Verifier,
       private readonly assignmentPolicy?: ServerPossessionChallenge.AssignmentPolicy,
+      private readonly algoList = SigningAlgorithmListSlim,
   ) {}
 
   public process(request: ChallengeRequest, context: ServerChallengeContext<State>): Promise<ServerChallengeResponse> {
@@ -74,7 +75,7 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
       await this.verifier.verify(data);
       await this.assignmentPolicy?.(subjectName, cert);
 
-      const [algo, key] = await cert.importPublicKey(SigningAlgorithmList);
+      const [algo, key] = await cert.importPublicKey(this.algoList);
       const llVerify = (algo as SigningAlgorithm<any, true>).makeLLVerify(key);
       await llVerify(nonce, proof);
     } catch {

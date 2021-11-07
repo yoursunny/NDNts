@@ -1,81 +1,19 @@
 import type { Name } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
-import { CryptoAlgorithmList } from "../algo/mod";
 import { crypto } from "../crypto_node";
 import { createDecrypter, createEncrypter, createSigner, createVerifier, CryptoAlgorithm, KeyKind, NamedDecrypter, NamedEncrypter, NamedSigner, NamedVerifier, PublicKey } from "../key/mod";
 import { StoreBase } from "./store-base";
-
-function findAlgo(uuid: string): CryptoAlgorithm<unknown> | undefined {
-  return CryptoAlgorithmList.find((algo) => algo.uuid === uuid);
-}
-
-class KeyLoader {
-  constructor(private readonly extractable = false) {}
-
-  public async loadKey(name: Name, stored: KeyStore.StoredKey): Promise<KeyStore.KeyPair> {
-    const algo = findAlgo(stored.algo);
-    if (!algo) {
-      throw new Error(`unknown algorithm uuid ${stored.algo}`);
-    }
-
-    if (CryptoAlgorithm.isAsym(algo)) {
-      return this.loadAsymmetric(name, algo, stored);
-    }
-    assert(CryptoAlgorithm.isSym(algo));
-    return this.loadSymmetric(name, algo as CryptoAlgorithm<any, false>, stored);
-  }
-
-  private async loadAsymmetric(name: Name, algo: CryptoAlgorithm<any, true>, {
-    info,
-    jwkImportParams,
-    privateKey,
-    publicKey,
-    publicKeySpki,
-  }: KeyStore.StoredKey) {
-    if (!privateKey || !publicKey || !publicKeySpki) {
-      throw new Error("bad algorithm or key");
-    }
-
-    if (jwkImportParams) {
-      [privateKey, publicKey] = await Promise.all([
-        crypto.subtle.importKey("jwk", privateKey as JsonWebKey, jwkImportParams,
-          this.extractable, algo.keyUsages.private),
-        crypto.subtle.importKey("jwk", publicKey as JsonWebKey, jwkImportParams,
-          this.extractable, algo.keyUsages.public),
-      ]);
-    }
-
-    return new KeyStore.KeyPair(
-      name,
-      algo,
-      { info, privateKey: privateKey as CryptoKey },
-      { info, publicKey: publicKey as CryptoKey, spki: StoreBase.bufferFromStorable(publicKeySpki) },
-    );
-  }
-
-  private async loadSymmetric(name: Name, algo: CryptoAlgorithm<any, false>, {
-    info,
-    jwkImportParams,
-    secretKey,
-  }: KeyStore.StoredKey) {
-    if (!secretKey) {
-      throw new Error("bad algorithm or key");
-    }
-
-    if (jwkImportParams) {
-      secretKey = await crypto.subtle.importKey("jwk", secretKey as JsonWebKey,
-        jwkImportParams, this.extractable, algo.keyUsages.secret);
-    }
-
-    const key = { info, secretKey: secretKey as CryptoKey };
-    return new KeyStore.KeyPair(name, algo, key, key);
-  }
-}
+import type { StoreProvider } from "./store-provider";
 
 /** Storage of key pairs. */
 export class KeyStore extends StoreBase<KeyStore.StoredKey> {
-  private loader = new KeyLoader();
+  constructor(provider: StoreProvider<KeyStore.StoredKey>, algoList: readonly CryptoAlgorithm[]) {
+    super(provider);
+    this.loader = new KeyStore.Loader(false, algoList);
+  }
+
+  private readonly loader: KeyStore.Loader;
 
   public async get(name: Name): Promise<KeyStore.KeyPair> {
     const stored = await this.getValue(name);
@@ -83,7 +21,7 @@ export class KeyStore extends StoreBase<KeyStore.StoredKey> {
   }
 
   public async insert(name: Name, stored: KeyStore.StoredKey): Promise<void> {
-    const algo = findAlgo(stored.algo);
+    const algo = this.loader.findAlgo(stored.algo);
     if (!algo) {
       throw new Error(`unknown algorithm uuid ${stored.algo}`);
     }
@@ -96,8 +34,6 @@ export class KeyStore extends StoreBase<KeyStore.StoredKey> {
 }
 
 export namespace KeyStore {
-  export const Loader = KeyLoader;
-
   export class KeyPair<Asym extends boolean = any, I = any> {
     constructor(
         public readonly name: Name,
@@ -154,5 +90,75 @@ export namespace KeyStore {
     publicKey?: CryptoKey | JsonWebKey;
     publicKeySpki?: Uint8Array | string;
     secretKey?: CryptoKey | JsonWebKey;
+  }
+
+  export class Loader {
+    constructor(
+        private readonly extractable: boolean,
+        private readonly algoList: readonly CryptoAlgorithm[],
+    ) {}
+
+    public findAlgo(uuid: string): CryptoAlgorithm<unknown> | undefined {
+      return this.algoList.find((algo) => algo.uuid === uuid);
+    }
+
+    public async loadKey(name: Name, stored: StoredKey): Promise<KeyPair> {
+      const algo = this.findAlgo(stored.algo);
+      if (!algo) {
+        throw new Error(`unknown algorithm uuid ${stored.algo}`);
+      }
+
+      if (CryptoAlgorithm.isAsym(algo)) {
+        return this.loadAsymmetric(name, algo, stored);
+      }
+      assert(CryptoAlgorithm.isSym(algo));
+      return this.loadSymmetric(name, algo as CryptoAlgorithm<any, false>, stored);
+    }
+
+    private async loadAsymmetric(name: Name, algo: CryptoAlgorithm<any, true>, {
+      info,
+      jwkImportParams,
+      privateKey,
+      publicKey,
+      publicKeySpki,
+    }: StoredKey) {
+      if (!privateKey || !publicKey || !publicKeySpki) {
+        throw new Error("bad algorithm or key");
+      }
+
+      if (jwkImportParams) {
+        [privateKey, publicKey] = await Promise.all([
+          crypto.subtle.importKey("jwk", privateKey as JsonWebKey, jwkImportParams,
+            this.extractable, algo.keyUsages.private),
+          crypto.subtle.importKey("jwk", publicKey as JsonWebKey, jwkImportParams,
+            this.extractable, algo.keyUsages.public),
+        ]);
+      }
+
+      return new KeyPair(
+        name,
+        algo,
+        { info, privateKey: privateKey as CryptoKey },
+        { info, publicKey: publicKey as CryptoKey, spki: StoreBase.bufferFromStorable(publicKeySpki) },
+      );
+    }
+
+    private async loadSymmetric(name: Name, algo: CryptoAlgorithm<any, false>, {
+      info,
+      jwkImportParams,
+      secretKey,
+    }: StoredKey) {
+      if (!secretKey) {
+        throw new Error("bad algorithm or key");
+      }
+
+      if (jwkImportParams) {
+        secretKey = await crypto.subtle.importKey("jwk", secretKey as JsonWebKey,
+          jwkImportParams, this.extractable, algo.keyUsages.secret);
+      }
+
+      const key = { info, secretKey: secretKey as CryptoKey };
+      return new KeyPair(name, algo, key, key);
+    }
   }
 }

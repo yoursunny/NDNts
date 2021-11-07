@@ -3,18 +3,18 @@ import "@ndn/packet/test-fixture/expect";
 import { Component, Data, digestSigning, KeyLocator, Name } from "@ndn/packet";
 import { dirSync as tmpDir } from "tmp";
 
-import { Certificate, CertNaming, generateSigningKey, KeyChain, NamedSigner, NamedVerifier, ValidityPeriod } from "../..";
+import { Certificate, CertNaming, generateSigningKey, KeyChain, NamedSigner, NamedVerifier, SigningAlgorithmListFull, ValidityPeriod } from "../..";
 import * as TestCertStore from "../../test-fixture/cert-store";
 import * as TestKeyStore from "../../test-fixture/key-store";
 
 test("temp KeyStore", async () => {
-  const keyChain = KeyChain.createTemp();
+  const keyChain = KeyChain.createTemp(SigningAlgorithmListFull);
   const record = await TestKeyStore.execute(keyChain);
   TestKeyStore.check(record);
 });
 
 test("temp CertStore", async () => {
-  const keyChain = KeyChain.createTemp();
+  const keyChain = KeyChain.createTemp(SigningAlgorithmListFull);
   const record = await TestCertStore.execute(keyChain);
   TestCertStore.check(record);
 });
@@ -32,20 +32,20 @@ describe("persistent", () => {
   });
 
   test("persistent KeyStore", async () => {
-    const keyChain = KeyChain.open(locator);
+    const keyChain = KeyChain.open(locator, SigningAlgorithmListFull);
     const record = await TestKeyStore.execute(keyChain);
     TestKeyStore.check(record);
   });
 
   test("persistent CertStore", async () => {
-    const keyChain = KeyChain.open(locator);
+    const keyChain = KeyChain.open(locator, SigningAlgorithmListFull);
     const record = await TestCertStore.execute(keyChain);
     TestCertStore.check(record);
   });
 });
 
 describe("getSigner", () => {
-  const keyChain = KeyChain.createTemp();
+  const keyChain = KeyChain.createTemp(SigningAlgorithmListFull);
   let pvtA: NamedSigner.PrivateKey;
   let pubA: NamedVerifier.PublicKey;
   let selfA: Certificate;

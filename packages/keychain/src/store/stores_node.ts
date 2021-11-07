@@ -1,5 +1,6 @@
 import Store from "data-store";
 
+import type { CryptoAlgorithm } from "../key/mod";
 import { CertStore } from "./cert-store";
 import { KeyStore } from "./key-store";
 import type { StoreProvider } from "./store-provider";
@@ -38,9 +39,9 @@ class FileStoreProvider<T> implements StoreProvider<T> {
   }
 }
 
-export function openStores(locator: string): [KeyStore, CertStore] {
+export function openStores(locator: string, algoList: readonly CryptoAlgorithm[]): [KeyStore, CertStore] {
   return [
-    new KeyStore(new FileStoreProvider(`${locator}/fdd08d47-ec4d-4112-a5ce-898338ab0399.json`)),
+    new KeyStore(new FileStoreProvider(`${locator}/fdd08d47-ec4d-4112-a5ce-898338ab0399.json`), algoList),
     new CertStore(new FileStoreProvider(`${locator}/d29e6de4-d5dd-4222-b2e2-d06e4046e7f9.json`)),
   ];
 }

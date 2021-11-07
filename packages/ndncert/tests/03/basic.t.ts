@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Certificate, CertNaming, ECDSA, generateSigningKey, NamedSigner, NamedVerifier, RSA, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, ECDSA, generateSigningKey, NamedSigner, NamedVerifier, RSA, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
 import { Name } from "@ndn/packet";
 import { toUtf8 } from "@ndn/tlv";
 
@@ -44,6 +44,7 @@ test("packets", async () => {
     cert: rootCert,
     signer: rootPvt,
     version: 7,
+    algoList: SigningAlgorithmListFull,
   });
   const { data: profileData } = profile;
   expect(profileData.name).toEqualName("/root/CA/INFO/35=%07/33=%00");

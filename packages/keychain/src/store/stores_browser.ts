@@ -1,5 +1,6 @@
 import { createStore, del, get, keys, set, UseStore } from "idb-keyval";
 
+import type { CryptoAlgorithm } from "../key/mod";
 import { CertStore } from "./cert-store";
 import { KeyStore } from "./key-store";
 import type { StoreProvider } from "./store-provider";
@@ -35,9 +36,9 @@ class IdbStoreProvider<T> implements StoreProvider<T> {
   }
 }
 
-export function openStores(locator: string): [KeyStore, CertStore] {
+export function openStores(locator: string, algoList: readonly CryptoAlgorithm[]): [KeyStore, CertStore] {
   return [
-    new KeyStore(new IdbStoreProvider(`${locator} e3617e69-4f2c-4221-955a-bea86832595f`)),
+    new KeyStore(new IdbStoreProvider(`${locator} e3617e69-4f2c-4221-955a-bea86832595f`), algoList),
     new CertStore(new IdbStoreProvider(`${locator} 9503f5a4-a0a3-4cb0-b764-b0e78afd4ada`)),
   ];
 }

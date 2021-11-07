@@ -1,4 +1,4 @@
-import { Certificate, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
 import { Component, Name } from "@ndn/packet";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
@@ -48,7 +48,7 @@ export class IssueCertCommand implements CommandModule<{}, Args> {
     const issuerPrivateKey = await keyChain.getSigner(new Name(issuer), { useKeyNameKeyLocator });
 
     const certReq = await inputCertBase64();
-    const publicKey = await certReq.createVerifier();
+    const publicKey = await certReq.createVerifier(SigningAlgorithmListFull);
 
     const issuerId = Component.from(issuerIdInput);
 

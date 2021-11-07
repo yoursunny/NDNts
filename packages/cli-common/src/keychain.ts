@@ -1,4 +1,4 @@
-import { KeyChain } from "@ndn/keychain";
+import { CryptoAlgorithmListFull, KeyChain } from "@ndn/keychain";
 import { digestSigning, Name, Signer } from "@ndn/packet";
 
 import { env } from "./env";
@@ -9,9 +9,9 @@ let theKeyChain: KeyChain | undefined;
 export function openKeyChain(): KeyChain {
   if (!theKeyChain) {
     if (env.keychain) {
-      theKeyChain = KeyChain.open(env.keychain);
+      theKeyChain = KeyChain.open(env.keychain, CryptoAlgorithmListFull);
     } else {
-      theKeyChain = KeyChain.createTemp();
+      theKeyChain = KeyChain.createTemp(CryptoAlgorithmListFull);
     }
   }
   return theKeyChain;

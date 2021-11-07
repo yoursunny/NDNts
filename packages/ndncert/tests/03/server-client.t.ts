@@ -1,7 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
-import { Certificate, CertNaming, ECDSA, generateSigningKey, NamedSigner, NamedVerifier, RSA, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, generateSigningKey, NamedSigner, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
 import { Component, FwHint, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
@@ -240,7 +240,7 @@ let profile: CaProfile;
 let reqPvt: NamedSigner.PrivateKey;
 let reqPub: NamedVerifier.PublicKey;
 beforeAll(async () => {
-  [caPvt, caPub] = await generateSigningKey("/authority", RSA);
+  [caPvt, caPub] = await generateSigningKey("/authority");
   caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
   profile = await CaProfile.build({
     prefix: new Name("/authority"),
@@ -251,7 +251,7 @@ beforeAll(async () => {
     signer: caPvt,
     version: 7,
   });
-  [reqPvt, reqPub] = await generateSigningKey("/requester", ECDSA);
+  [reqPvt, reqPub] = await generateSigningKey("/requester");
 });
 
 let repo: DataStore;
@@ -308,7 +308,7 @@ test("unsupported or malformed commands", async () => {
   expect(() => ErrorMsg.throwOnError(challengeErr)).toThrow();
 });
 
-test.each(TABLE)("challenge %#", async ({
+test.each(TABLE)("challenge $#", async ({
   makeChallengeLists,
   clientShouldFail = false,
 }) => {

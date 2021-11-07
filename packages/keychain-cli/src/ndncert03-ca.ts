@@ -1,4 +1,5 @@
 import { openUplinks } from "@ndn/cli-common";
+import { SigningAlgorithmListFull } from "@ndn/keychain";
 import { Server, ServerChallenge, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "@ndn/ndncert";
 import type { Verifier } from "@ndn/packet";
 import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
@@ -141,7 +142,7 @@ Otherwise, please disregard this message.`,
           let verifier: Verifier;
           if (issuerFile) {
             const issuerCert = await inputCertBase64(issuerFile);
-            verifier = await issuerCert.createVerifier();
+            verifier = await issuerCert.createVerifier(SigningAlgorithmListFull);
           } else {
             verifier = profile.publicKey;
           }
