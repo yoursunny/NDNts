@@ -1,6 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Name } from "@ndn/packet";
+import { Name, NameLike } from "@ndn/packet";
+import { toHex } from "@ndn/tlv";
 import { setTimeout as delay } from "node:timers/promises";
 
 import { Forwarder, ReadvertiseDestination } from "..";
@@ -12,62 +13,85 @@ beforeEach(() => {
 });
 
 class SimpleDest extends ReadvertiseDestination {
-  public override doAdvertise = jest.fn().mockResolvedValue(undefined);
-  public override doWithdraw = jest.fn().mockResolvedValue(undefined);
+  public override doAdvertise = jest.fn<Promise<void>, [Name, {}, string]>().mockResolvedValue(undefined);
+  public override doWithdraw = jest.fn<Promise<void>, [Name, {}, string]>().mockResolvedValue(undefined);
+
+  public readonly annadd = jest.fn<void, [Name]>();
+  public readonly annrm = jest.fn<void, [Name]>();
+
+  public attachEventHandlers(fw: Forwarder): void {
+    fw.on("annadd", this.annadd);
+    fw.on("annrm", this.annrm);
+  }
+
+  public expectAdvertise(names: NameLike[]): void {
+    SimpleDest.check(this.doAdvertise, this.annadd, names);
+  }
+
+  public expectWithdraw(names: NameLike[]): void {
+    SimpleDest.check(this.doWithdraw, this.annrm, names);
+  }
+
+  private static check(
+      doFn: jest.Mock<Promise<void>, [Name, {}, string]>,
+      onFn: jest.Mock<void, [Name]>,
+      names: NameLike[],
+  ) {
+    expect(doFn).toHaveBeenCalledTimes(names.length);
+    expect(onFn).toHaveBeenCalledTimes(names.length);
+    for (const [i, nameLike] of names.entries()) {
+      const name = new Name(nameLike);
+      expect(doFn.mock.calls[i]![0]).toEqualName(name);
+      expect(doFn.mock.calls[i]![2]).toBe(toHex(name.value));
+      expect(onFn.mock.calls[i]![0]).toEqualName(name);
+    }
+    doFn.mockClear();
+    onFn.mockClear();
+  }
 }
 
 test("simple", async () => {
-  const annadd = jest.fn<void, [Name]>();
-  fw.on("annadd", annadd);
-  const annrm = jest.fn<void, [Name]>();
-  fw.on("annrm", annrm);
-
   const dest = new SimpleDest();
   dest.enable(fw);
+  dest.attachEventHandlers(fw);
 
   const faceA = fw.addFace(new NoopFace());
   faceA.addRoute("/M");
   faceA.addRoute("/M");
-  await delay(10);
-  expect(dest.doAdvertise).toHaveBeenCalledTimes(1);
-  expect(dest.doAdvertise.mock.calls[0][0]).toEqualName("/M");
-  expect(annadd).toHaveBeenCalledTimes(1);
+  await delay(5);
+  dest.expectAdvertise(["/M"]);
 
   const faceB = fw.addFace(new NoopFace());
   faceB.addRoute("/M");
-  await delay(10);
-  expect(dest.doAdvertise).toHaveBeenCalledTimes(1);
+  await delay(5);
+  dest.expectAdvertise([]);
   faceB.addRoute("/N/A/1", -1);
   faceB.addRoute("/N/B/1", "/N/B");
   faceB.addRoute("/N/C/1", false);
-  await delay(10);
-  expect(dest.doAdvertise).toHaveBeenCalledTimes(3);
-  expect(dest.doAdvertise.mock.calls[1][0]).toEqualName("/N/A");
-  expect(dest.doAdvertise.mock.calls[2][0]).toEqualName("/N/B");
-  expect(annadd).toHaveBeenCalledTimes(3);
+  await delay(5);
+  dest.expectAdvertise(["/N/A", "/N/B"]);
 
-  faceA.removeRoute(new Name("/M"));
-  faceA.removeRoute(new Name("/M"));
-  await delay(10);
-  expect(dest.doWithdraw).toHaveBeenCalledTimes(0);
+  faceA.removeRoute("/M");
+  faceA.removeRoute("/M");
+  await delay(5);
+  dest.expectWithdraw([]);
 
-  faceB.removeRoute(new Name("/M"));
-  await delay(10);
-  expect(dest.doWithdraw).toHaveBeenCalledTimes(1);
-  expect(dest.doWithdraw.mock.calls[0][0]).toEqualName("/M");
-  expect(annrm).toHaveBeenCalledTimes(1);
+  faceB.removeRoute("/M");
+  await delay(5);
+  dest.expectWithdraw(["/M"]);
+
+  faceB.removeRoute("/N/B/1", "/N/B");
+  await delay(5);
+  dest.expectWithdraw(["/N/B"]);
 
   faceB.close();
-  await delay(10);
-  expect(dest.doWithdraw).toHaveBeenCalledTimes(3);
-  expect(dest.doWithdraw.mock.calls[1][0]).toEqualName("/N/A");
-  expect(dest.doWithdraw.mock.calls[2][0]).toEqualName("/N/B");
-  expect(annrm).toHaveBeenCalledTimes(3);
+  await delay(5);
+  dest.expectWithdraw(["/N/A"]);
 
   const faceC = fw.addFace(new NoopFace(), { advertiseFrom: false });
   faceC.addRoute("/Q");
-  await delay(10);
-  expect(dest.doAdvertise).toHaveBeenCalledTimes(3);
+  await delay(5);
+  dest.expectAdvertise([]);
 });
 
 class StatefulDest extends ReadvertiseDestination<{ S: true }> {

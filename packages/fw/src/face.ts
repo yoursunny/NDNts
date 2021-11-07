@@ -189,7 +189,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
 
     const ann = computeAnnouncement(name, announcement);
     if (ann) {
-      this.addAnnouncement(ann, nameHex);
+      this.addAnnouncement(ann);
     }
   }
 
@@ -199,7 +199,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
 
     const ann = computeAnnouncement(name, announcement);
     if (ann) {
-      this.removeAnnouncement(ann, nameHex);
+      this.removeAnnouncement(ann);
     }
 
     this.routes.remove(nameHex);
