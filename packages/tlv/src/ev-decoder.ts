@@ -141,7 +141,7 @@ export class EvDecoder<T> {
     }
 
     if (missingTlvTypes.size > 0) {
-      throw new Error(`TLV-TYPE ${Array.from(missingTlvTypes).map(printTT).join(",")} ${missingTlvTypes.size === 1 ? "is" : "are"} missing in ${this.typeName}`);
+      throw new Error(`TLV-TYPE ${Array.from(missingTlvTypes, printTT).join(",")} ${missingTlvTypes.size === 1 ? "is" : "are"} missing in ${this.typeName}`);
     }
 
     for (const cb of this.afterValueCallbacks) {

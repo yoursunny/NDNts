@@ -35,7 +35,7 @@ export class Name {
 
   constructor(
       arg1?: NameLike | Uint8Array | readonly ComponentLike[],
-      parseComponentUri = Component.from as any,
+      parseComponent = Component.from as any,
   ) {
     let valueEncoderBufSize = 256;
     switch (true) {
@@ -48,7 +48,7 @@ export class Name {
       case typeof arg1 === "string": {
         const uri = arg1 as string;
         this.comps = uri.replace(/^(?:ndn:)?\/?/, "").split("/")
-          .filter((comp) => comp !== "").map(parseComponentUri);
+          .filter((comp) => comp !== "").map(parseComponent);
         valueEncoderBufSize = uri.length + 4 * this.comps.length;
         break;
       }

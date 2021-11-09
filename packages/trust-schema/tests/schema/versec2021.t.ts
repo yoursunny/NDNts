@@ -99,7 +99,7 @@ test("compile", () => {
   const userCommand = new Name("/example/net2/command/DAL/ping/LAX/36=%01");
   const reply = new Name("/example/net2/reply/DAL/ping/LAX/36=%01/DAL/36=%02");
 
-  const match = (name: Name) => Array.from(policy.match(name)).map(({ id }) => id);
+  const match = (name: Name) => Array.from(policy.match(name), ({ id }) => id);
 
   let m = match(adminCert);
   expect(m).toContain("adminCert");

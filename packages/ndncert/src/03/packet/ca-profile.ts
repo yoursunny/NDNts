@@ -1,4 +1,4 @@
-import { Certificate, NamedVerifier, SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
+import { Certificate, createVerifier, NamedVerifier, SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
 import { Segment, Version } from "@ndn/naming-convention2";
 import { Data, Name, Signer } from "@ndn/packet";
 import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI, toHex, toUtf8 } from "@ndn/tlv";
@@ -28,7 +28,7 @@ export class CaProfile {
           data.name.at(-1).is(Segment))) {
       throw new Error("bad Name");
     }
-    profile.publicKey_ = await profile.cert.createVerifier(algoList);
+    profile.publicKey_ = await createVerifier(profile.cert, algoList);
     await profile.publicKey_.verify(data);
     profile.certDigest_ = await profile.cert.data.computeImplicitDigest();
     return profile;

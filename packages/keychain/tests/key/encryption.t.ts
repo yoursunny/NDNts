@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Component, Name } from "@ndn/packet";
 
-import { AES, Certificate, CounterIvChecker, EncryptionAlgorithm, EncryptionAlgorithmListFull, generateEncryptionKey, generateSigningKey, KeyChain, KeyChainImplWebCrypto as crypto, NamedDecrypter, NamedEncrypter, RSAOAEP, ValidityPeriod } from "../..";
+import { AesBlockSize, AESCBC, AESCTR, AESGCM, Certificate, CounterIvChecker, createEncrypter, EncryptionAlgorithm, EncryptionAlgorithmListFull, generateEncryptionKey, generateSigningKey, KeyChain, KeyChainImplWebCrypto as crypto, NamedDecrypter, NamedEncrypter, RSAOAEP, ValidityPeriod } from "../..";
 
 async function testEncryptDecrypt(encrypter: NamedEncrypter, decrypter: NamedDecrypter, aead: boolean) {
   expect(encrypter.name).toEqualName(decrypter.name);
@@ -40,25 +40,25 @@ async function testEncryptDecrypt(encrypter: NamedEncrypter, decrypter: NamedDec
 }
 
 test.each([
-  [AES.CBC, undefined],
-  [AES.CBC, { length: 256 }],
-  [AES.CTR, undefined],
-  [AES.CTR, { counterLength: 16, length: 192 }],
-  [AES.GCM, undefined],
+  [AESCBC, undefined],
+  [AESCBC, { length: 256 }],
+  [AESCTR, undefined],
+  [AESCTR, { counterLength: 16, length: 192 }],
+  [AESGCM, undefined],
 ])("AES encrypt-decrypt $#", async (algo: EncryptionAlgorithm, genParams: any) => {
   const keyChain = KeyChain.createTemp(EncryptionAlgorithmListFull);
   const name = new Name("/my/KEY/x");
   await generateEncryptionKey(keyChain, name, algo, genParams);
 
   const { encrypter, decrypter } = await keyChain.getKeyPair(name);
-  await testEncryptDecrypt(encrypter, decrypter, algo === AES.GCM);
+  await testEncryptDecrypt(encrypter, decrypter, algo === AESGCM);
 });
 
 test.each([
-  [AES.CTR, 16],
-  [AES.CTR, 20],
-  [AES.CTR, 24],
-  [AES.GCM, 32],
+  [AESCTR, 16],
+  [AESCTR, 20],
+  [AESCTR, 24],
+  [AESGCM, 32],
 ])("AES CounterIvGen $#", async (algo: EncryptionAlgorithm, counterLength: number) => {
   const p0 = crypto.getRandomValues(new Uint8Array(32));
   const p1 = crypto.getRandomValues(new Uint8Array(33));
@@ -74,9 +74,9 @@ test.each([
   const cB2 = await encB.llEncrypt({ plaintext: p2 });
 
   const ivChk = new CounterIvChecker({
-    ivLength: algo === AES.CTR ? 16 : 12,
+    ivLength: algo === AESCTR ? 16 : 12,
     counterBits: counterLength,
-    blockSize: AES.blockSize,
+    blockSize: AesBlockSize,
     requireSameRandom: true,
   });
 
@@ -134,6 +134,6 @@ test("RSA-OAEP encrypt-decrypt", async () => {
     issuerPrivateKey: signer,
     publicKey,
   });
-  const encrypter = await cert.createEncrypter(EncryptionAlgorithmListFull);
+  const encrypter = await createEncrypter(cert, EncryptionAlgorithmListFull);
   await testEncryptDecrypt(encrypter, decrypter, true);
 });

@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Data, Name, SigType } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { Certificate, CertNaming, generateSigningKey, SigningAlgorithmListFull, SigningAlgorithmListSlim, ValidityPeriod } from "../..";
+import { Certificate, CertNaming, createVerifier, generateSigningKey, SigningAlgorithmListFull, SigningAlgorithmListSlim, ValidityPeriod } from "../..";
 import * as ndn_testbed_certs from "../../test-fixture/ndn-testbed-certs";
 
 test("encode decode", async () => {
@@ -49,7 +49,7 @@ test("decode testbed certs", async () => {
   expect(cert0.validity.notAfter).toBe(1609459199000);
   expect(cert0.publicKeySpki).toEqualUint8Array(ndn_testbed_certs.ROOT_V2_SPKI);
   expect(cert0.isSelfSigned).toBeTruthy();
-  const pub0 = await cert0.createVerifier();
+  const pub0 = await createVerifier(cert0);
   expect(pub0.sigType).toBe(SigType.Sha256WithEcdsa);
 
   const data1 = new Decoder(ndn_testbed_certs.ARIZONA_20190312).decode(Data);
@@ -58,7 +58,7 @@ test("decode testbed certs", async () => {
   const cert1 = Certificate.fromData(data1);
   expect(cert1.isSelfSigned).toBeFalsy();
   expect(cert1.issuer).toEqualName(certName0.keyName);
-  await expect(cert1.createVerifier(SigningAlgorithmListSlim)).rejects.toThrow();
-  const pub1 = await cert1.createVerifier(SigningAlgorithmListFull);
+  await expect(createVerifier(cert1, SigningAlgorithmListSlim)).rejects.toThrow();
+  const pub1 = await createVerifier(cert1, SigningAlgorithmListFull);
   expect(pub1.sigType).toBe(SigType.Sha256WithRsa);
 });

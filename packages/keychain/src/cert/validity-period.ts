@@ -22,17 +22,13 @@ function decodeTimestamp(str: string): number {
   return Date.UTC(y, m - 1, d, h, i, s);
 }
 
+function padDateNum(n: number, size = 2): string {
+  return n.toString().padStart(size, "0");
+}
+
 function encodeTimestampString(timestamp: number): string {
   const d = new Date(timestamp);
-  return [
-    d.getUTCFullYear().toString().padStart(4, "0"),
-    (d.getUTCMonth() + 1).toString().padStart(2, "0"),
-    d.getUTCDate().toString().padStart(2, "0"),
-    "T",
-    d.getUTCHours().toString().padStart(2, "0"),
-    d.getUTCMinutes().toString().padStart(2, "0"),
-    d.getUTCSeconds().toString().padStart(2, "0"),
-  ].join("");
+  return `${padDateNum(d.getUTCFullYear(), 4)}${padDateNum(1 + d.getUTCMonth())}${padDateNum(d.getUTCDate())}T${padDateNum(d.getUTCHours())}${padDateNum(d.getUTCMinutes())}${padDateNum(d.getUTCSeconds())}`;
 }
 
 function encodeTimestamp(timestamp: number): Uint8Array {

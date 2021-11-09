@@ -231,7 +231,7 @@ for (const field of FIELD_LIST) {
   });
 }
 
-const ctorAssign = Symbol("Interest.ctorAssign");
+const ctorAssign = Symbol("Data.ctorAssign");
 interface CtorTag {
   [ctorAssign]: (f: Fields) => void;
 }
@@ -252,7 +252,7 @@ export namespace Data {
   }
 
   /** Constructor argument to set the current packet as FinalBlock. */
-  export const FinalBlock = Symbol("FinalBlock");
+  export const FinalBlock = Symbol("Data.FinalBlock");
 
   /** Constructor argument. */
   export type CtorArg = NameLike | CtorTag | typeof FinalBlock | Uint8Array;

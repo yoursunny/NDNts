@@ -31,7 +31,7 @@ export abstract class StoreBase<T> {
   }
 
   protected bufferToStorable(input: Uint8Array | string): Uint8Array | string {
-    if (!this.canSClone && ArrayBuffer.isView(input)) {
+    if (!this.canSClone && input instanceof Uint8Array) {
       return toHex(input);
     }
     return input;
@@ -40,7 +40,7 @@ export abstract class StoreBase<T> {
 
 export namespace StoreBase {
   export function bufferFromStorable(input: Uint8Array | string): Uint8Array {
-    if (ArrayBuffer.isView(input)) {
+    if (input instanceof Uint8Array) {
       return input;
     }
     return fromHex(input);

@@ -16,10 +16,6 @@ class Fields {
     for (const arg of args) {
       if (Name.isNameLike(arg)) {
         this.name = new Name(arg);
-      } else if (arg === Interest.CanBePrefix) {
-        this.canBePrefix = true;
-      } else if (arg === Interest.MustBeFresh) {
-        this.mustBeFresh = true;
       } else if (arg instanceof FwHint) {
         this.fwHint = new FwHint(arg);
       } else if (arg instanceof Uint8Array) {
@@ -55,9 +51,18 @@ class Fields {
   public signedPortion?: Uint8Array;
   public paramsPortion?: Uint8Array;
 }
-const FIELD_LIST: Array<keyof Fields> = ["name", "canBePrefix", "mustBeFresh", "fwHint", "nonce", "lifetime", "hopLimit", "appParameters", "sigInfo", "sigValue"];
-const FIELD_SIGNED_LIST = new Set<keyof Fields>(["name", "appParameters", "sigInfo"]);
-const FIELD_PARAMS_LIST = new Set<keyof Fields>(["appParameters", "sigInfo", "sigValue"]);
+const FIELD_LIST: Partial<Record<keyof Fields, Array<keyof Fields>>> = {
+  name: ["signedPortion"],
+  canBePrefix: [],
+  mustBeFresh: [],
+  fwHint: [],
+  nonce: [],
+  lifetime: [],
+  hopLimit: [],
+  appParameters: ["signedPortion", "paramsPortion"],
+  sigInfo: ["signedPortion", "paramsPortion"],
+  sigValue: ["paramsPortion"],
+};
 
 const EVD = new EvDecoder<Fields>("Interest", TT.Interest)
   .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
@@ -231,18 +236,15 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
   }
 }
 export interface Interest extends Fields {}
-for (const field of FIELD_LIST) {
+for (const [field, clearing] of Object.entries(FIELD_LIST) as Iterable<[keyof Fields, Array<keyof Fields>]>) {
   Object.defineProperty(Interest.prototype, field, {
     enumerable: true,
     get(this: Interest) { return this[FIELDS][field]; },
     set(this: Interest, v: any) {
       const f = this[FIELDS];
       (f[field] as any) = v;
-      if (FIELD_SIGNED_LIST.has(field)) {
-        f.signedPortion = undefined;
-      }
-      if (FIELD_PARAMS_LIST.has(field)) {
-        f.paramsPortion = undefined;
+      for (const c of clearing) {
+        (f[c] as any) = undefined;
       }
     },
   });
@@ -266,10 +268,14 @@ export namespace Interest {
   export const DefaultLifetime = 4000;
 
   /** Constructor argument to set CanBePrefix flag. */
-  export const CanBePrefix = Symbol("Interest.CanBePrefix");
+  export const CanBePrefix: CtorTag = {
+    [ctorAssign](f: Fields) { f.canBePrefix = true; },
+  };
 
   /** Constructor argument to set MustBeFresh flag. */
-  export const MustBeFresh = Symbol("Interest.MustBeFresh");
+  export const MustBeFresh: CtorTag = {
+    [ctorAssign](f: Fields) { f.mustBeFresh = true; },
+  };
 
   /** Constructor argument to set Nonce field. */
   export function Nonce(v = generateNonce()): CtorTag {
@@ -293,8 +299,7 @@ export namespace Interest {
   }
 
   /** Constructor argument. */
-  export type CtorArg = NameLike | typeof CanBePrefix | typeof MustBeFresh | FwHint |
-  CtorTag | Uint8Array;
+  export type CtorArg = NameLike | FwHint | CtorTag | Uint8Array;
 
   /** A function to modify an existing Interest. */
   export type ModifyFunc = (interest: Interest) => void;

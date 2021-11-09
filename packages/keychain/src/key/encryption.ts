@@ -1,6 +1,8 @@
 import { LLDecrypt, LLEncrypt, Name, NameLike } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
+import { EncryptionAlgorithmListSlim } from "../algolist/mod";
+import type { Certificate } from "../cert/mod";
 import * as CertNaming from "../naming";
 import type { KeyChain } from "../store/mod";
 import { generateKeyInternal } from "./generate";
@@ -74,12 +76,31 @@ export function createEncrypter<I>(algo: EncryptionAlgorithm<I>, key: CryptoAlgo
 /** Create a named encrypter from crypto key. */
 export function createEncrypter<I, Asym extends boolean>(name: Name, algo: EncryptionAlgorithm<I, Asym>, key: CryptoAlgorithm.PublicSecretKey<I>): NamedEncrypter<Asym>;
 
-export function createEncrypter(arg1: any, arg2: any, arg3?: any): any {
+/**
+ * Create a named encrypter from certificate public key.
+ * @param algoList list of recognized algorithms. Default is EncryptionAlgorithmListSlim.
+ *                 Use EncryptionAlgorithmListFull for all algorithms, at the cost of larger bundle size.
+ */
+export function createEncrypter(cert: Certificate, algoList?: readonly EncryptionAlgorithm[]): Promise<NamedEncrypter.PublicKey>;
+
+export function createEncrypter(arg1: any, arg2: any = EncryptionAlgorithmListSlim, arg3?: any): any {
   if (arg3) {
     return new NamedCryptoEncrypter(arg1, arg2, arg3);
   }
+  if (Array.isArray(arg2)) {
+    return (async (cert: Certificate, algoList: readonly EncryptionAlgorithm[]) => {
+      let encrypter = certEncrypters.get(cert);
+      if (!encrypter) {
+        const [algo, key] = await cert.importPublicKey(algoList);
+        encrypter = new NamedCryptoEncrypter(CertNaming.toKeyName(cert.name), algo, key);
+      }
+      return encrypter;
+    })(arg1, arg2);
+  }
   return new PlainCryptoEncrypter(arg1, arg2);
 }
+
+const certEncrypters = new WeakMap<Certificate, NamedEncrypter>();
 
 /** Create a plain decrypter from crypto key. */
 export function createDecrypter<I>(algo: EncryptionAlgorithm<I>, key: CryptoAlgorithm.PrivateSecretKey<I>): LLDecrypt.Key;

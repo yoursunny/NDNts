@@ -44,7 +44,10 @@ export namespace KeyLocator {
     return arg instanceof KeyLocator || Name.isNameLike(arg) || arg instanceof Uint8Array;
   }
 
-  /** Throw if KeyLocator is missing or does not have Name. */
+  /**
+   * Extract KeyLocator name.
+   * @throws KeyLocator is missing or does not have Name.
+   */
   export function mustGetName(kl?: KeyLocator): Name {
     if (!kl || !kl.name) {
       throw new Error("KeyLocator does not have name");

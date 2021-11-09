@@ -11,7 +11,7 @@ class DigestComp implements NamingConvention<Uint8Array>, NamingConvention.WithA
   private readonly altUriRegex: RegExp;
 
   constructor(private readonly tt: number, private readonly altUriPrefix: string) {
-    this.altUriRegex = new RegExp(`^${altUriPrefix}=([0-9a-fA-F]{64})$`);
+    this.altUriRegex = new RegExp(`^${altUriPrefix}=([0-9a-fA-F]{${2 * DIGEST_LENGTH}})$`);
   }
 
   public match(comp: Component): boolean {

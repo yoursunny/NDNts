@@ -91,15 +91,7 @@ export namespace SigInfo {
   export function Nonce(v?: Uint8Array | number): CtorTag {
     return {
       [ctorAssign](si: SigInfo) {
-        switch (typeof v) {
-          case "number":
-          case "undefined":
-            si.nonce = generateNonce(v);
-            break;
-          default:
-            si.nonce = v;
-            break;
-        }
+        si.nonce = v instanceof Uint8Array ? v : generateNonce(v);
       },
     };
   }

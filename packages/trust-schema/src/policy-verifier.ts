@@ -1,4 +1,4 @@
-import { Certificate, SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
+import { Certificate, createVerifier, SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
 import { KeyLocator, Name, Verifier } from "@ndn/packet";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
@@ -78,7 +78,7 @@ export abstract class PolicyVerifier<Context = unknown> implements Verifier {
   }
 
   private async cryptoVerifyUncached(cert: Certificate, packet: Verifier.Verifiable): Promise<void> {
-    const key = await cert.createVerifier(this.algoList);
+    const key = await createVerifier(cert, this.algoList);
     return key.verify(packet);
   }
 

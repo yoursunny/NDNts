@@ -1,4 +1,4 @@
-import { AES, CounterIvChecker, createDecrypter, createEncrypter, KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
+import { AesBlockSize, AESGCM, CounterIvChecker, createDecrypter, createEncrypter, KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
 import { LLDecrypt, LLEncrypt, SignedInterestPolicy } from "@ndn/packet";
 
 const ECDH_PARAMS: EcKeyGenParams & EcKeyImportParams = {
@@ -66,20 +66,20 @@ export async function makeSessionKey(
       hash: "SHA-256",
     },
     hkdfKey,
-    AES.GCM.makeAesKeyGenParams({ length: 128 }),
+    AESGCM.makeAesKeyGenParams({ length: 128 }),
     false,
-    AES.GCM.keyUsages.secret,
+    AESGCM.keyUsages.secret,
   );
 
   const key = { secretKey, info: {} };
   const ivChk = new CounterIvChecker({
-    ivLength: AES.GCM.ivLength,
+    ivLength: AESGCM.ivLength,
     counterBits: 32,
-    blockSize: AES.blockSize,
+    blockSize: AesBlockSize,
     requireSameRandom: true,
   });
-  const sessionEncrypter = createEncrypter(AES.GCM, key);
-  const sessionLocalDecrypter = createDecrypter(AES.GCM, key);
+  const sessionEncrypter = createEncrypter(AESGCM, key);
+  const sessionLocalDecrypter = createDecrypter(AESGCM, key);
   const sessionDecrypter = ivChk.wrap(sessionLocalDecrypter);
   return {
     sessionEncrypter,

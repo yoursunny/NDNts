@@ -1,4 +1,4 @@
-import { AES, createEncrypter } from "@ndn/keychain";
+import { AESCBC, createEncrypter } from "@ndn/keychain";
 import type { Data, Encrypter, LLEncrypt, Name, Signer } from "@ndn/packet";
 import type { DataStore as S } from "@ndn/repo-api";
 import { Encoder } from "@ndn/tlv";
@@ -27,7 +27,7 @@ export class Producer {
   ) {}
 
   private readonly keys = new DefaultWeakMap<KeyEncryptionKey, Promise<[ContentKey, LLEncrypt.Key]>>(async (kek: KeyEncryptionKey): Promise<[ContentKey, LLEncrypt.Key]> => {
-    const key = await AES.CBC.cryptoGenerate({}, true);
+    const key = await AESCBC.cryptoGenerate({}, true);
     const ck = await ContentKey.build({
       kek,
       key,
@@ -35,7 +35,7 @@ export class Producer {
       signer: this.signer,
     });
     await this.dataStore.insert(ck.data);
-    const llEncrypter = createEncrypter(AES.CBC, key);
+    const llEncrypter = createEncrypter(AESCBC, key);
     return [ck, llEncrypter];
   });
 

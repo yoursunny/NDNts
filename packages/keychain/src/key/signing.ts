@@ -2,6 +2,8 @@ import { KeyLocator, LLSign, LLVerify, Name, NameLike, Signer, Verifier } from "
 import assert from "minimalistic-assert";
 
 import { ECDSA } from "../algo/mod";
+import { SigningAlgorithmListSlim } from "../algolist/mod";
+import type { Certificate } from "../cert/mod";
 import * as CertNaming from "../naming";
 import type { KeyChain } from "../store/mod";
 import { generateKeyInternal } from "./generate";
@@ -124,12 +126,31 @@ export function createVerifier<I>(algo: SigningAlgorithm<I>, key: CryptoAlgorith
 /** Create a named verifier from crypto key. */
 export function createVerifier<I, Asym extends boolean>(name: Name, algo: SigningAlgorithm<I, Asym>, key: CryptoAlgorithm.PublicSecretKey<I>): NamedVerifier<Asym>;
 
-export function createVerifier(arg1: any, arg2: any, arg3?: any): any {
+/**
+ * Create a named verifier from certificate public key.
+ * @param algoList list of recognized algorithms. Default is SigningAlgorithmListSlim.
+ *                 Use SigningAlgorithmListFull for all algorithms, at the cost of larger bundle size.
+ */
+export function createVerifier(cert: Certificate, algoList?: readonly SigningAlgorithm[]): Promise<NamedVerifier.PublicKey>;
+
+export function createVerifier(arg1: any, arg2: any = SigningAlgorithmListSlim, arg3?: any): any {
   if (arg3) {
     return new NamedCryptoVerifier(arg1, arg2, arg3);
   }
+  if (Array.isArray(arg2)) {
+    return (async (cert: Certificate, algoList: readonly SigningAlgorithm[]) => {
+      let verifier = certVerifiers.get(cert);
+      if (!verifier) {
+        const [algo, key] = await cert.importPublicKey(algoList);
+        verifier = new NamedCryptoVerifier(CertNaming.toKeyName(cert.name), algo, key);
+      }
+      return verifier;
+    })(arg1, arg2);
+  }
   return new PlainCryptoVerifier(arg1, arg2);
 }
+
+const certVerifiers = new WeakMap<Certificate, NamedVerifier>();
 
 type SigningOptG<I, Asym extends boolean, G> =
   {} extends G ? [SigningAlgorithm<I, Asym, G>, G?] : [SigningAlgorithm<I, Asym, G>, G];

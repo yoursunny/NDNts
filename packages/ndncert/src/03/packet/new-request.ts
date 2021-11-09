@@ -1,4 +1,4 @@
-import { Certificate, NamedSigner, NamedVerifier, SigningAlgorithm, SigningAlgorithmListSlim, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, createVerifier, NamedSigner, NamedVerifier, SigningAlgorithm, SigningAlgorithmListSlim, ValidityPeriod } from "@ndn/keychain";
 import { Data, Interest, SignedInterestPolicy } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 
@@ -34,7 +34,7 @@ export class NewRequest {
     }
 
     request.ecdhPub_ = await crypto.importEcdhPub(request.ecdhPubRaw);
-    request.publicKey_ = await request.certRequest.createVerifier(algoList);
+    request.publicKey_ = await createVerifier(request.certRequest, algoList);
     await signedInterestPolicy.makeVerifier(request.publicKey).verify(interest);
     return request;
   }

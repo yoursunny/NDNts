@@ -1,4 +1,4 @@
-import { AES, Certificate, EcCurve, ECDSA, generateEncryptionKey, generateSigningKey, HMAC, KeyChain, NamedDecrypter, NamedEncrypter, NamedSigner, NamedVerifier, RSA, RsaModulusLength, RSAOAEP } from "@ndn/keychain";
+import { AESCBC, AESGCM, AesKeyLength, Certificate, createVerifier, EcCurve, ECDSA, generateEncryptionKey, generateSigningKey, HMAC, KeyChain, NamedDecrypter, NamedEncrypter, NamedSigner, NamedVerifier, RSA, RsaModulusLength, RSAOAEP } from "@ndn/keychain";
 import * as ndn_testbed_certs from "@ndn/keychain/test-fixture/ndn-testbed-certs";
 import { Data, digestSigning, LLVerify, Signer, Verifier } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
@@ -65,10 +65,10 @@ interface GenEncryptionKey extends GenBase {
 }
 
 async function* listEncryptionKeys(keyChain: KeyChain): AsyncGenerator<GenEncryptionKey> {
-  for (const length of AES.KeyLength.Choices) {
+  for (const length of AesKeyLength.Choices) {
     const gen: GenEncryptionKey = { title: `AES-CBC ${length}` };
     try {
-      const [enc, dec] = await generateEncryptionKey(keyChain, "/E", AES.CBC, { length });
+      const [enc, dec] = await generateEncryptionKey(keyChain, "/E", AESCBC, { length });
       await keyChain.deleteKey(enc.name);
       [gen.enc, gen.dec] = [enc, dec];
     } catch (err: unknown) {
@@ -76,10 +76,10 @@ async function* listEncryptionKeys(keyChain: KeyChain): AsyncGenerator<GenEncryp
     }
     yield gen;
   }
-  for (const length of AES.KeyLength.Choices) {
+  for (const length of AesKeyLength.Choices) {
     const gen: GenEncryptionKey = { title: `AES-GCM ${length}`, aead: true };
     try {
-      const [enc, dec] = await generateEncryptionKey(keyChain, "/E", AES.GCM, { length });
+      const [enc, dec] = await generateEncryptionKey(keyChain, "/E", AESGCM, { length });
       await keyChain.deleteKey(enc.name);
       [gen.enc, gen.dec] = [enc, dec];
     } catch (err: unknown) {
@@ -118,7 +118,7 @@ async function checkWebCrypto() {
           publicKey: pub as NamedVerifier.PublicKey,
           privateKey: pvt as NamedSigner.PrivateKey,
         });
-        await cert.createVerifier();
+        await createVerifier(cert);
       }
       let pkt = new Data("/D");
       await pvt!.sign(pkt);
@@ -142,11 +142,11 @@ async function checkWebCrypto() {
   let testbedRootKey: NamedVerifier.PublicKey | undefined;
   await run({ title: "import testbed root certificate" }, async () => {
     const cert = Certificate.fromData(new Decoder(ndn_testbed_certs.ROOT_V2_NDNCERT).decode(Data));
-    testbedRootKey = await cert.createVerifier();
+    testbedRootKey = await createVerifier(cert);
   });
   await run({ title: "import and verify testbed site certificate" }, async () => {
     const cert = Certificate.fromData(new Decoder(ndn_testbed_certs.ARIZONA_20190312).decode(Data));
-    await cert.createVerifier();
+    await createVerifier(cert);
     await testbedRootKey?.verify(cert.data);
   });
 

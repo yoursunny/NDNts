@@ -1,4 +1,4 @@
-import { AES, CryptoAlgorithm, KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
+import { AESCBC, CryptoAlgorithm, KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
 import { Timestamp } from "@ndn/naming-convention2";
 import { Component, Data, LLDecrypt, Name, Signer } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
@@ -31,7 +31,7 @@ export class ContentKey {
 
   public async loadKey(decrypter: LLDecrypt.Key): Promise<CryptoAlgorithm.GeneratedSecretKey> {
     const { plaintext } = await decrypter.llDecrypt({ ciphertext: this.encryptedKey });
-    return AES.CBC.cryptoGenerate({ importRaw: plaintext }, false);
+    return AESCBC.cryptoGenerate({ importRaw: plaintext }, false);
   }
 }
 export interface ContentKey extends Readonly<ContentKey.NameParts>, Readonly<ContentKey.Fields> {}

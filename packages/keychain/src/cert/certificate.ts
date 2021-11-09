@@ -2,9 +2,7 @@ import { Component, Data, Name, SigInfo, Signer } from "@ndn/packet";
 import * as asn1 from "@yoursunny/asn1";
 import assert from "minimalistic-assert";
 
-import { EncryptionAlgorithmListSlim, SigningAlgorithmListSlim } from "../algolist/mod";
-import { createEncrypter, CryptoAlgorithm, NamedEncrypter, NamedSigner, NamedVerifier, PublicKey } from "../key/mod";
-import { createVerifier } from "../key/signing";
+import { CryptoAlgorithm, NamedSigner, PublicKey } from "../key/mod";
 import * as CertNaming from "../naming";
 import { ContentTypeKEY } from "./an";
 import { ValidityPeriod } from "./validity-period";
@@ -65,35 +63,6 @@ export class Certificate {
     }
     throw new Error(`cannot import key\n${errs.join("\n")}\n(you may need to specify an algoList with more algorithms)`);
   }
-
-  /**
-   * Create verifier from SPKI.
-   * @param algoList list of recognized algorithms.
-   *                 Use SigningAlgorithmListFull for all algorithms, at the cost of larger bundle size.
-   */
-  public async createVerifier(algoList = SigningAlgorithmListSlim): Promise<NamedVerifier.PublicKey> {
-    if (!this.verifier) {
-      const [algo, key] = await this.importPublicKey(algoList);
-      this.verifier = createVerifier(CertNaming.toKeyName(this.name), algo, key);
-    }
-    return this.verifier;
-  }
-
-  /**
-   * Create encrypter from SPKI.
-   * @param algoList list of recognized algorithms.
-   *                 Use EncryptionAlgorithmListFull for all algorithms, at the cost of larger bundle size.
-   */
-  public async createEncrypter(algoList = EncryptionAlgorithmListSlim): Promise<NamedEncrypter.PublicKey> {
-    if (!this.encrypter) {
-      const [algo, key] = await this.importPublicKey(algoList);
-      this.encrypter = createEncrypter(CertNaming.toKeyName(this.name), algo, key);
-    }
-    return this.encrypter;
-  }
-
-  private verifier?: NamedVerifier.PublicKey;
-  private encrypter?: NamedEncrypter.PublicKey;
 }
 
 const DEFAULT_FRESHNESS = 3600000;

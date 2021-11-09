@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { AES, createDecrypter, NamedDecrypter, RSAOAEP } from "@ndn/keychain";
+import { AESCBC, createDecrypter, NamedDecrypter, RSAOAEP } from "@ndn/keychain";
 import { Data, Decrypter, Interest, Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
@@ -40,7 +40,7 @@ export class Consumer implements Decrypter {
     const kdk = await KeyDecryptionKey.fromData(kdkData);
 
     const kdkDecrypter = createDecrypter(RSAOAEP, await kdk.loadKeyPair(this.memberDecrypter));
-    const ckDecrypter = createDecrypter(AES.CBC, await ck.loadKey(kdkDecrypter));
+    const ckDecrypter = createDecrypter(AESCBC, await ck.loadKey(kdkDecrypter));
     const { plaintext } = await ckDecrypter.llDecrypt(enc);
     data.content = plaintext;
   }

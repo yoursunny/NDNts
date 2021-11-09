@@ -1,4 +1,4 @@
-import { AES, RSAOAEP } from "../algo/mod";
+import { AESCBC, AESCTR, AESGCM, RSAOAEP } from "../algo/mod";
 import type { EncryptionAlgorithm } from "../key/mod";
 
 /**
@@ -6,8 +6,8 @@ import type { EncryptionAlgorithm } from "../key/mod";
  * This list is currently empty.
  */
 export const EncryptionAlgorithmListFull: readonly EncryptionAlgorithm[] = [
-  AES.CBC,
-  AES.CTR,
-  AES.GCM,
+  AESCBC,
+  AESCTR,
+  AESGCM,
   RSAOAEP,
 ];

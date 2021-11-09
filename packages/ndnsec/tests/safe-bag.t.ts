@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { CertNaming, CryptoAlgorithmListFull, KeyChain, SigningAlgorithmListFull } from "@ndn/keychain";
+import { CertNaming, createVerifier, CryptoAlgorithmListFull, KeyChain, SigningAlgorithmListFull } from "@ndn/keychain";
 import { Data } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
@@ -28,7 +28,7 @@ test.each([
     const data = new Data("/D");
     await pvt.sign(data);
     expect(data.sigInfo.type).toBe(sigType);
-    const verifier = await cert.createVerifier(SigningAlgorithmListFull);
+    const verifier = await createVerifier(cert, SigningAlgorithmListFull);
     await verifier.verify(data);
   }
 

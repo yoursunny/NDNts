@@ -14,15 +14,11 @@ function assertType(t: number): void {
   }
 }
 
-const CHAR_ENCODE = (() => {
-const UNESCAPED = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
-const a: string[] = [];
+const CHAR_ENCODE: string[] = [];
 for (let ch = 0x00; ch <= 0xFF; ++ch) {
   const s = String.fromCharCode(ch);
-  a.push(UNESCAPED.includes(s) ? s : `%${ch.toString(16).padStart(2, "0").toUpperCase()}`);
+  CHAR_ENCODE.push(/[\w.~-]/i.test(s) ? s : `%${ch.toString(16).padStart(2, "0").toUpperCase()}`);
 }
-return a;
-})();
 const CHARCODE_PERCENT = "%".charCodeAt(0);
 const CHARCODE_PERIOD = ".".charCodeAt(0);
 
@@ -98,34 +94,18 @@ export class Component {
   /** Construct from TLV. */
   constructor(tlv: Uint8Array);
 
-  constructor(arg1?: number | Uint8Array, arg2?: Uint8Array | string) {
-    switch (typeof arg1) {
-      case "object": {
-        this.tlv = arg1;
-        const decoder = new Decoder(arg1);
-        ({ type: this.type, value: this.value } = decoder.read());
-        assertType(this.type);
-        return;
-      }
-      case "undefined":
-        this.type = TT.GenericNameComponent;
-        break;
-      case "number":
-        this.type = arg1;
-        assertType(this.type);
-        break;
+  constructor(arg1: number | Uint8Array = TT.GenericNameComponent, arg2?: Uint8Array | string) {
+    if (arg1 instanceof Uint8Array) {
+      this.tlv = arg1;
+      const decoder = new Decoder(arg1);
+      ({ type: this.type, value: this.value } = decoder.read());
+      assertType(this.type);
+      return;
     }
-    switch (typeof arg2) {
-      case "undefined":
-        this.value = new Uint8Array();
-        break;
-      case "string":
-        this.value = toUtf8(arg2);
-        break;
-      case "object":
-        this.value = arg2;
-        break;
-    }
+
+    this.type = arg1;
+    assertType(this.type);
+    this.value = typeof arg2 === "string" ? toUtf8(arg2) : (arg2 ?? new Uint8Array());
     this.tlv = Encoder.encode([this.type, this.value], 10 + this.value.length);
   }
 
