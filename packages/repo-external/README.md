@@ -31,7 +31,7 @@ import { Data, digestSigning, Name } from "@ndn/packet";
     `);
     return;
   }
-  const dataPrefix = new Name(`/NDNts-repo-external/${Math.floor(Math.random() * 1e9)}`);
+  const dataPrefix = new Name(`/NDNts-repo-external/${Math.trunc(Math.random() * 1e8)}`);
 
   const face = await UnixTransport.createFace({}, process.env.DEMO_NFD_UNIX ?? "/run/nfd.sock");
   enableNfdPrefixReg(face);

@@ -162,9 +162,9 @@ export namespace NNI {
   export function constrain(n: number, typeName: string, limit0?: number, limit1?: number): number {
     const [min = 0, max = Number.MAX_SAFE_INTEGER] =
       typeof limit1 === "number" ? [limit0, limit1] : [0, limit0];
-    if (n < min || n > max) {
+    if (!(n >= min && n <= max)) {
       throw new RangeError(`${n} is out of ${typeName} valid range`);
     }
-    return Math.floor(n);
+    return Math.trunc(n);
   }
 }

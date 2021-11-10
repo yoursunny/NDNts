@@ -3,12 +3,11 @@ import { Encoder } from "@ndn/tlv";
 import { LpPacket } from "./packet";
 
 class SeqNumGen {
-  private current = (BigInt(Math.floor(Math.random() * 0x100000000)) << 32n) |
-                    BigInt(Math.floor(Math.random() * 0x100000000));
+  private current = (BigInt(Math.trunc(Math.random() * 0x100000000)) << 32n) |
+                    BigInt(Math.trunc(Math.random() * 0x100000000));
 
   public next(): bigint {
-    ++this.current;
-    this.current = BigInt.asUintN(64, this.current);
+    this.current = BigInt.asUintN(64, this.current + 1n);
     return this.current;
   }
 }

@@ -109,7 +109,7 @@ export class IpcServer extends NetServer {
 
   private makePath(): string {
     return process.platform === "win32" ?
-      `//./pipe/2a8370be-8abc-448f-bb09-54d8b243cf7a/${Math.floor(Math.random() * 0xFFFFFFFF)}` :
+      `//./pipe/2a8370be-8abc-448f-bb09-54d8b243cf7a/${Math.trunc(Math.random() * 0x100000000)}` :
       tmpNameSync();
   }
 

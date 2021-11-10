@@ -21,7 +21,7 @@ function makeDataTapeReadStream(mode: DataTape.StreamMode): NodeJS.ReadableStrea
       await pipeline(
         async function*() {
           for (let i = 0; i < 500; ++i) {
-            yield new Data(`/A/${Math.floor(i / 100)}/${i % 100}`);
+            yield new Data(`/A/${Math.trunc(i / 100)}/${i % 100}`);
             if (i % 20 === 0) {
               await delay(Math.random() * 5);
             }
@@ -134,7 +134,7 @@ test("BulkInsertInitiator", async () => {
   for (let i = 0; i < 10; ++i) {
     await delay(Math.random() * 20);
     const pkts: Data[] = [];
-    const count = Math.floor(Math.random() * 64);
+    const count = Math.trunc(Math.random() * 64);
     for (let j = 0; j < count; ++j) {
       pkts.push(new Data(`/D/${++n}`));
     }

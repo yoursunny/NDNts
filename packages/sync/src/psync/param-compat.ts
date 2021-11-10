@@ -35,7 +35,7 @@ export function makeIbltParams(
     keyToBufferLittleEndian: boolean,
     serializeLittleEndian = false,
 ): IBLT.Parameters {
-  let nEntries = Math.floor(expectedEntries * 1.5);
+  let nEntries = Math.trunc(expectedEntries * 1.5);
   const rem = nEntries % 3;
   if (rem !== 0) {
     nEntries += nHash - rem;
@@ -91,7 +91,7 @@ export function makePSyncCompatParam({
 }: makePSyncCompatParam.Options = {}): PSyncFull.Parameters & PSyncPartialPublisher.Parameters & PSyncPartialSubscriber.Parameters {
   return {
     iblt: makeIbltParams(expectedEntries, keyToBufferLittleEndian),
-    threshold: Math.floor(expectedEntries / 2),
+    threshold: Math.trunc(expectedEntries / 2),
     joinPrefixSeqNum,
 
     versionConvention,
@@ -125,7 +125,7 @@ export function makePSyncCompatParam({
     encodeBloom(bf) {
       return [
         GenericNumber.create(bf.projectedElementCount),
-        GenericNumber.create(Math.floor(bf.falsePositiveProbability * 1000)),
+        GenericNumber.create(Math.trunc(bf.falsePositiveProbability * 1000)),
         new Component(undefined, bf.encode()),
       ];
     },

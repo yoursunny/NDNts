@@ -26,7 +26,7 @@ const ownPrefix = new Name(`/psync-NDNts/${Date.now()}`);
   }
 
   setInterval(() => {
-    const node = nodes[Math.floor(nodes.length * Math.random())];
+    const node = nodes[Math.trunc(Math.random() * nodes.length)];
     node.seqNum++;
     console.log(`PUBLISH ${node.id} ${node.seqNum}`);
   }, 2000);

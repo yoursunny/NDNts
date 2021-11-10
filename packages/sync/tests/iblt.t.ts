@@ -77,7 +77,7 @@ test("diff long", () => {
   const iblt2 = new IBLT(paramCompat10);
 
   for (let i = 0; i < 40; ++i) {
-    const key = Math.floor(0x80000000 * Math.random());
+    const key = Math.trunc(Math.random() * 0x80000000);
     iblt1.insert(key);
     iblt2.insert(key);
   }

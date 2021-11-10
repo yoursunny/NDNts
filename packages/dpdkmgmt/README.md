@@ -75,7 +75,7 @@ await delay(500);
 // Start a consumer, fetching Data from the producer via NDN-DPDK.
 t0 = Date.now();
 const data = await new Endpoint({ fw: fwC }).consume(
-  new Interest(`/P/${Math.floor(Math.random() * 1e9)}`, Interest.MustBeFresh),
+  new Interest(`/P/${Math.trunc(Math.random() * 1e8)}`, Interest.MustBeFresh),
 );
 const t1 = Date.now();
 const payloadText = fromUtf8(data.content);

@@ -8,7 +8,7 @@ class SignedInterest02 implements Signer.Signable {
   constructor(public name: Name, private readonly timestamp: number) {}
 
   public async [LLSign.OP](sign: LLSign) {
-    const nonce = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+    const nonce = Math.trunc(Math.random() * Number.MAX_SAFE_INTEGER);
     const signedPortion = Encoder.encode([
       ...this.name.comps,
       [TT.GenericNameComponent, NNI(this.timestamp)],

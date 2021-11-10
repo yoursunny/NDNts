@@ -142,7 +142,7 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
     if (!immediate) {
       const [ms, jitter] = this.aggregated ? this.suppressionTimer : this.steadyTimer;
       const maxJitter = ms * Math.max(0, Math.min(jitter, 1));
-      timeout = Math.floor(ms - maxJitter + Math.random() * 2 * maxJitter);
+      timeout = Math.trunc(ms - maxJitter + Math.random() * 2 * maxJitter);
     }
     this.timer = setTimeout(this.handleTimer, timeout);
   }

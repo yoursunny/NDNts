@@ -19,7 +19,7 @@ import { Data, Interest, Name } from "@ndn/packet";
 if (process.env.CI) { return; }
 
 // Create a WebSocket face.
-// Unless other specified, the face is added to the default Forwarder instance.
+// Unless otherwise specified, the face is added to the default Forwarder instance.
 // You may set an alternate Forwarder instance in the first argument.
 //
 // A route for "/" prefix is added automatically.
@@ -30,7 +30,7 @@ const uplink = await WsTransport.createFace({}, "wss://hobo.cs.arizona.edu/ws/")
 const endpoint = new Endpoint();
 
 // We can now send Interests and retrieve Data.
-let seq = Math.floor(Math.random() * 1e9);
+let seq = Math.trunc(Math.random() * 1e8);
 for (let i = 0; i < 5; ++i) {
   try {
     const interest = new Interest(`/ndn/edu/arizona/ping/NDNts/${seq++}`);

@@ -14,7 +14,7 @@ export class TokenLimiter {
   /** Change total number of tokens. */
   public set capacity(v) {
     assert(v >= 0);
-    this.capacity_ = Math.floor(v);
+    this.capacity_ = Math.trunc(v);
     this.unblock();
   }
 

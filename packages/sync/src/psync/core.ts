@@ -112,7 +112,7 @@ export class PSyncNode implements SyncNode<Name>, PSyncCore.PrefixSeqNum {
    * @param triggerEvent whether to trigger onIncreaseSeqNum callback.
    */
   public setSeqNum(v: number, triggerEvent = true): void {
-    assert(Math.floor(v) === v);
+    assert(Math.trunc(v) === v);
     assert(v <= Number.MAX_SAFE_INTEGER);
     if (v <= this.seq) {
       if (v < this.seq) {

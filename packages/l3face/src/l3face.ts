@@ -32,7 +32,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
   public readonly attributes: L3Face.Attributes;
   public readonly lp: LpService;
   public readonly rx: AsyncIterable<FwPacket>;
-  private readonly wireTokenPrefix = Math.floor(Math.random() * 0x10000);
+  private readonly wireTokenPrefix = Math.trunc(Math.random() * 0x10000);
 
   public get state() { return this.state_; }
   private set state(newState) {

@@ -261,7 +261,7 @@ export namespace Interest {
 
   /** Generate a random nonce. */
   export function generateNonce(): number {
-    return Math.floor(Math.random() * 0x100000000);
+    return Math.trunc(Math.random() * 0x100000000);
   }
 
   /** Default InterestLifetime. */

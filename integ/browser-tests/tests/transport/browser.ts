@@ -13,7 +13,7 @@ async function facePing(pingPrefix: string) {
   const rtts = [] as number[];
   for (let i = 0; i < 50; ++i) {
     const t0 = Date.now();
-    const data = await endpoint.consume(`${pingPrefix}/${Math.floor(Math.random() * 1e9)}`);
+    const data = await endpoint.consume(`${pingPrefix}/${Math.trunc(Math.random() * 1e8)}`);
     const t1 = Date.now();
     rtts.push(t1 - t0);
     names.push(data.name.toString());

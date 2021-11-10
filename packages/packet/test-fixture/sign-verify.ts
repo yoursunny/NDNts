@@ -83,7 +83,7 @@ export async function execute(cls: PacketCtor, pvtA: Signer, pubA: Verifier,
   pktMi.sigValue = (() => {
     const sig = new Uint8Array(pktMi.sigValue.byteLength + 1);
     sig.set(pktMi.sigValue, 0);
-    const offset = 1 + Math.floor(Math.random() * sig.byteLength - 2);
+    const offset = 1 + Math.trunc(Math.random() * sig.byteLength - 2);
     sig.copyWithin(offset + 1, offset);
     sig[offset] = 0xBB;
     return sig;
@@ -92,7 +92,7 @@ export async function execute(cls: PacketCtor, pvtA: Signer, pubA: Verifier,
   const pktMd = cls.decodeFrom(new Decoder(sA0.wire));
   pktMd.sigValue = (() => {
     const sig = Uint8Array.from(pktMd.sigValue);
-    const offset = Math.floor(Math.random() * (sig.byteLength - 1));
+    const offset = Math.trunc(Math.random() * (sig.byteLength - 1));
     sig.copyWithin(offset, offset + 1);
     return sig.subarray(0, -1);
   })();
@@ -103,7 +103,7 @@ export async function execute(cls: PacketCtor, pvtA: Signer, pubA: Verifier,
     // Changing one bit is sometimes insufficient to break the signature,
     // so change five bits to reduce test failures.
     for (let i = 0; i < 5; ++i) {
-      const offset = Math.floor(Math.random() * sig.byteLength);
+      const offset = Math.trunc(Math.random() * sig.byteLength);
       sig[offset] ^= 0x01;
     }
     return sig;

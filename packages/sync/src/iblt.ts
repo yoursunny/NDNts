@@ -74,7 +74,7 @@ export class IBLT {
   private update(change: number, key: number): void {
     assert(key >= 0);
     assert(key <= 0xFFFFFFFF);
-    assert(Math.floor(key) === key);
+    assert(Math.trunc(key) === key);
     const keyB = this.keyToBuffer(key);
     this.update2(this.ht, change, key, keyB, this.checkHash(keyB));
   }
@@ -232,11 +232,11 @@ export namespace IBLT {
       nEntries,
     }: Parameters) {
       assert(nHash >= 1);
-      assert(Math.floor(nHash) === nHash);
+      assert(Math.trunc(nHash) === nHash);
       assert(checkSeed >= nHash);
-      assert(Math.floor(checkSeed) === checkSeed);
+      assert(Math.trunc(checkSeed) === checkSeed);
       assert(nEntries >= nHash);
-      assert(Math.floor(nEntries) === nEntries);
+      assert(Math.trunc(nEntries) === nEntries);
       assert(nEntries % nHash === 0);
 
       const self = this as Parameters;

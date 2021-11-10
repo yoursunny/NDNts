@@ -130,7 +130,7 @@ async function useInL3Face(transport: Transport) {
   await Promise.all([
     face.tx({ async *[Symbol.asyncIterator]() {
       // Send five Interests.
-      let seq = Math.floor(Math.random() * 1e9);
+      let seq = Math.trunc(Math.random() * 1e8);
       for (let i = 0; i < 5; ++i) {
         await delay(50);
         const interest = new Interest(`/ndn/edu/arizona/ping/NDNts/${seq++}`);
