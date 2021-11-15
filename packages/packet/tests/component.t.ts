@@ -59,8 +59,8 @@ test("from URI or string", () => {
   expect(comp.value).toEqualUint8Array([0x2E, 0x2E]);
   expect(comp.text).toBe("..");
 
-  comp = Component.from("36=%0f%a0");
-  expect(comp.type).toBe(0x24);
+  comp = Component.from("56=%0f%a0");
+  expect(comp.type).toBe(0x38);
   expect(comp).toHaveLength(2);
   expect(comp.value).toEqualUint8Array([0x0F, 0xA0]);
 

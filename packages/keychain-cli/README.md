@@ -45,7 +45,7 @@ This command prints a list of certificate names to standard output.
 ## `ndnts-keychain show-cert`: Show Certificate
 
 ```bash
-NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain show-cert /A/KEY/36=%00%05%96%BA%2C%A5%89%F8/self/35=%00%00%01nD%24%01%87
+NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain show-cert /A/KEY/56=%00%05%96%BA%2C%A5%89%F8/self/52=%00%00%01nD%24%01%87
 ```
 
 This command prints the specified certificate in Base64 format to standard output.
@@ -70,18 +70,18 @@ Example:
 
 ```shell
 $ NDNTS_KEYCHAIN=/tmp/issuer ndnts-keychain gen-key /issuer
-/issuer/KEY/36=%00%05%96%BAy%B2%60%90/self/35=%00%00%01nD7%BB%12
+/issuer/KEY/56=%00%05%96%BAy%B2%60%90/self/54=%00%00%01nD7%BB%12
 
 $ NDNTS_KEYCHAIN=/tmp/user ndnts-keychain gen-key /user
-/user/KEY/36=%00%05%96%BAz%FCl%C0/self/35=%00%00%01nD8%0F%8E
+/user/KEY/56=%00%05%96%BAz%FCl%C0/self/54=%00%00%01nD8%0F%8E
 
-$ NDNTS_KEYCHAIN=/tmp/user ndnts-keychain show-cert /user/KEY/36=%00%05%96%BAz%FCl%C0/self/35=%00%00%01nD8%0F%8E \
+$ NDNTS_KEYCHAIN=/tmp/user ndnts-keychain show-cert /user/KEY/56=%00%05%96%BAz%FCl%C0/self/54=%00%00%01nD8%0F%8E \
   | NDNTS_KEYCHAIN=/tmp/issuer ndnts-keychain issue-cert --issuer /issuer --issuer-id parent --valid-days 72 \
   | NDNTS_KEYCHAIN=/tmp/user ndnts-keychain add-cert
 
 $ NDNTS_KEYCHAIN=/tmp/user ndnts-keychain list-certs
-/user/KEY/36=%00%05%96%BAz%FCl%C0/self/35=%00%00%01nD8%0F%8E
-/user/KEY/36=%00%05%96%BAz%FCl%C0/parent/35=%00%00%01nD9L%05
+/user/KEY/56=%00%05%96%BAz%FCl%C0/self/54=%00%00%01nD8%0F%8E
+/user/KEY/56=%00%05%96%BAz%FCl%C0/parent/54=%00%00%01nD9L%05
 ```
 
 1. Generate `/issuer` key in issuer's KeyChain.

@@ -32,11 +32,11 @@
     "html-webpack-plugin": "^5.5.0",
     "jest": "^27.3.1",
     "jest-environment-puppeteer": "^6.0.0",
-    "puppeteer": "^10.4.0",
+    "puppeteer": "^11.0.0",
     "ts-loader": "^9.2.6",
     "tslib": "^2.3.1",
-    "webpack": "^5.62.1",
+    "webpack": "^5.64.0",
     "webpack-cli": "^4.9.1",
-    "webpack-dev-server": "^4.4.0"
+    "webpack-dev-server": "^4.5.0"
   }
 }

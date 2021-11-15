@@ -1,10 +1,10 @@
 #include "syncps.hpp"
 #include <iostream>
 
-/** @brief Timestamp naming convention (rev2). */
+/** @brief Timestamp naming convention (rev3). */
 namespace Timestamp {
 
-using TlvType = std::integral_constant<int, 0x24>;
+using TlvType = std::integral_constant<int, 0x38>;
 
 inline uint64_t
 now()

@@ -4,8 +4,7 @@ import { Endpoint, ProducerHandler } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Closers } from "@ndn/l3face/test-fixture/closers";
-import { Segment as Segment1 } from "@ndn/naming-convention1";
-import { Segment as Segment2 } from "@ndn/naming-convention2";
+import { Segment2, Segment3 } from "@ndn/naming-convention2";
 import { Data, Name, Verifier } from "@ndn/packet";
 import { setTimeout as delay } from "node:timers/promises";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
@@ -87,7 +86,7 @@ test("iterable to unordered", async () => {
   const receivedSegments = new Set<number>();
   const fetched = fetch("/R");
   for await (const data of fetched.unordered()) {
-    const segNum = data.name.at(-1).as(Segment2);
+    const segNum = data.name.at(-1).as(Segment3);
     expect(receivedSegments.has(segNum)).toBeFalsy();
     receivedSegments.add(segNum);
     expect(data.content.length).toBeLessThanOrEqual(6000);
@@ -121,15 +120,15 @@ describe("empty object", () => {
   beforeEach(() => {
     handler1.mockReset();
     const server = serve("/R", new BufferChunkSource(new Uint8Array()));
-    const producer1 = new Endpoint().produce(server.prefix.append(Segment2, 1), handler1);
+    const producer1 = new Endpoint().produce(server.prefix.append(Segment3, 1), handler1);
     closers.push(server, producer1);
   });
 
   test("consume single", async () => {
     const ep = new Endpoint({ modifyInterest: { lifetime: 50 } });
-    await expect(ep.consume(new Name("/R").append(Segment2, 2)))
+    await expect(ep.consume(new Name("/R").append(Segment3, 2)))
       .rejects.toThrow();
-    const data = await ep.consume(new Name("/R").append(Segment2, 0));
+    const data = await ep.consume(new Name("/R").append(Segment3, 0));
     expect(data.content).toHaveLength(0);
   });
 
@@ -150,7 +149,7 @@ describe("empty object", () => {
 });
 
 test("segment number convention mismatch", async () => {
-  const server = serve("/R", new BufferChunkSource(objectBody), { segmentNumConvention: Segment1 });
+  const server = serve("/R", new BufferChunkSource(objectBody), { segmentNumConvention: Segment2 });
   closers.push(server);
 
   await expect(fetch("/R", { retxLimit: 1 })).rejects.toThrow();

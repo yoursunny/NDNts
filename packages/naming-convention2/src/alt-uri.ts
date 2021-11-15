@@ -22,5 +22,5 @@ export const AltUri3 = new AltUriConverter([
   ...baseAltUri.conventions,
 ]);
 
-/** Print conventions (default format, currently rev2) in alternate URI syntax. */
-export const AltUri = AltUri2;
+/** Print conventions (default format, currently rev3) in alternate URI syntax. */
+export const AltUri = AltUri3;

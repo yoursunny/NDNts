@@ -122,8 +122,8 @@ interface TimestampConvention extends NumberConvention<Date> {
 }
 
 function makeTimestampConvention(tt: number): TimestampConvention {
-  const ms = new TypedTimestamp(0x24, 1000, 8787511468039992);
-  const us = new TypedTimestamp(0x24, 1);
+  const ms = new TypedTimestamp(tt, 1000, 8787511468039992);
+  const us = new TypedTimestamp(tt, 1);
   return Object.assign(ms, { ms, us });
 }
 
@@ -134,33 +134,33 @@ export const Keyword: NamingConvention<string> = new TypedString(0x20);
 export const Segment2: NumberBigConvention = new TypedNumberBig(0x21, "seg");
 /** SegmentNameComponent (rev3), interpreted as number. */
 export const Segment3: NumberBigConvention = new TypedNumberBig(0x32, "seg");
-/** SegmentNameComponent (default format, currently rev2). */
-export const Segment = Segment2;
+/** SegmentNameComponent (default format, currently rev3). */
+export const Segment = Segment3;
 
 /** ByteOffsetNameComponent (rev2), interpreted as number. */
 export const ByteOffset2: NumberBigConvention = new TypedNumberBig(0x22, "off");
 /** ByteOffsetNameComponent (rev3), interpreted as number. */
 export const ByteOffset3: NumberBigConvention = new TypedNumberBig(0x34, "off");
-/** ByteOffsetNameComponent (default format, currently rev2). */
-export const ByteOffset = ByteOffset2;
+/** ByteOffsetNameComponent (default format, currently rev3). */
+export const ByteOffset = ByteOffset3;
 
 /** VersionNameComponent (rev2), interpreted as number. */
 export const Version2: NumberBigConvention = new TypedNumberBig(0x23, "v");
 /** VersionNameComponent (rev3), interpreted as number. */
 export const Version3: NumberBigConvention = new TypedNumberBig(0x36, "v");
-/** VersionNameComponent (default format, currently rev2). */
-export const Version = Version2;
+/** VersionNameComponent (default format, currently rev3). */
+export const Version = Version3;
 
 /** TimestampNameComponent (rev2), interpreted as number in milliseconds. */
 export const Timestamp2 = makeTimestampConvention(0x24);
 /** TimestampNameComponent (rev3), interpreted as number in milliseconds. */
 export const Timestamp3 = makeTimestampConvention(0x38);
-/** TimestampNameComponent (default format, currently rev2). */
-export const Timestamp = Timestamp2;
+/** TimestampNameComponent (default format, currently rev3). */
+export const Timestamp = Timestamp3;
 
 /** SequenceNumNameComponent (rev2), interpreted as number. */
 export const SequenceNum2: NumberBigConvention = new TypedNumberBig(0x25, "seq");
 /** SequenceNumNameComponent (rev3), interpreted as number. */
 export const SequenceNum3: NumberBigConvention = new TypedNumberBig(0x3A, "seq");
-/** SequenceNumNameComponent (default format, currently rev2). */
-export const SequenceNum = SequenceNum2;
+/** SequenceNumNameComponent (default format, currently rev3). */
+export const SequenceNum = SequenceNum3;

@@ -95,9 +95,9 @@ test("compile", () => {
   const adminCert = new Name("/example/net2/admin/yoursunny/KEY/7daa8ebf");
   const userCert = new Name("/example/net2/user/sales/person/KEY/c00240ba");
   const deviceCert = new Name("/example/net2/device/DAL/KEY/2e77f31e");
-  const adminCommand = new Name("/example/net2/command/DAL/traceroute/LAX/36=%01");
-  const userCommand = new Name("/example/net2/command/DAL/ping/LAX/36=%01");
-  const reply = new Name("/example/net2/reply/DAL/ping/LAX/36=%01/DAL/36=%02");
+  const adminCommand = new Name("/example/net2/command/DAL/traceroute/LAX/56=%01");
+  const userCommand = new Name("/example/net2/command/DAL/ping/LAX/56=%01");
+  const reply = new Name("/example/net2/reply/DAL/ping/LAX/56=%01/DAL/56=%02");
 
   const match = (name: Name) => Array.from(policy.match(name), ({ id }) => id);
 

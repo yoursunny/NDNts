@@ -47,7 +47,7 @@ test("packets", async () => {
     algoList: SigningAlgorithmListFull,
   });
   const { data: profileData } = profile;
-  expect(profileData.name).toEqualName("/root/CA/INFO/35=%07/33=%00");
+  expect(profileData.name).toEqualName("/root/CA/INFO/54=%07/50=%00");
   expect(profileData.isFinalBlock).toBeTruthy();
   expect(profileData.sigInfo.keyLocator?.name).toEqualName(rootPub.name);
   expect(profile.prefix).toEqualName("/root");
