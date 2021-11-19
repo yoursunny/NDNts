@@ -6,7 +6,6 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["ES2021"],
     "importHelpers": true,
     "module": "ES2020",
     "moduleResolution": "Node",
@@ -18,8 +17,7 @@
     "strict": true,
     "target": "ES2021",
     "types": [
-      "node",
-      "web"
+      "node"
     ]
   },
   "exclude": [
