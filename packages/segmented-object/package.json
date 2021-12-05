@@ -35,7 +35,7 @@
     "hirestime": "^6.1.0",
     "is-stream": "^2.0.1",
     "minimalistic-assert": "^1.0.1",
-    "mnemonist": "^0.38.5",
+    "mnemonist": "^0.39.0",
     "p-defer": "^3.0.0",
     "p-lazy": "^3.1.0",
     "streaming-iterables": "^6.0.0",

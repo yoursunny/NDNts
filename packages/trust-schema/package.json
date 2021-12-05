@@ -32,7 +32,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "minimalistic-assert": "^1.0.1",
-    "mnemonist": "^0.38.5",
+    "mnemonist": "^0.39.0",
     "tslib": "^2.3.1"
   },
   "devDependencies": {

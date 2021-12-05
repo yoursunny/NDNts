@@ -35,7 +35,7 @@
     "data-store": "github:jonschlinkert/data-store#4.1.0",
     "idb-keyval": "^6.0.3",
     "minimalistic-assert": "^1.0.1",
-    "mnemonist": "^0.38.5",
+    "mnemonist": "^0.39.0",
     "throat": "^6.0.1",
     "tslib": "^2.3.1"
   },

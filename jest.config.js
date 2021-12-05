@@ -1,7 +1,6 @@
 const path = require("path");
 
-/** @typedef {import('ts-jest')} */
-/** @type {import('@jest/types').Config.InitialOptions} */
+/** @type {import("@jest/types").Config.InitialOptions} */
 module.exports = {
   preset: "ts-jest",
   testEnvironment: path.resolve(__dirname, "mk", "jest-env-node"),

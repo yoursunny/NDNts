@@ -35,11 +35,11 @@
     "progress": "^2.0.3",
     "streaming-iterables": "^6.0.0",
     "tslib": "^2.3.1",
-    "yargs": "^17.2.1"
+    "yargs": "^17.3.0"
   },
   "devDependencies": {
     "@types/leveldown": "^4.0.3",
     "@types/progress": "^2.0.5",
-    "@types/yargs": "^17.0.5"
+    "@types/yargs": "^17.0.7"
   }
 }

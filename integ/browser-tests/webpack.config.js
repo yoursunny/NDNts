@@ -39,9 +39,6 @@ const config = {
     allowedHosts: "all",
     host: "0.0.0.0",
     port: jestPuppeteerConfig.server.port,
-    headers: {
-      "Origin-Trial": "An6rhP9kx5wibLrfVBgGmY3MKPaAlLex0hci5Hu6BRIZ3JhmGKQ6QNFSFcmTaaVugda/PY7NgtQVdfe91e5ogwEAAABPeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjkzMjciLCJmZWF0dXJlIjoiV2ViVHJhbnNwb3J0IiwiZXhwaXJ5IjoxNjM0MDgzMTk5fQ==", // Chromium WebTransport origin trial token for http://localhost:9327 expires 2021-09-03
-    },
   },
 };
 
