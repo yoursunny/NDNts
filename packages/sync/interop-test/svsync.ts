@@ -1,13 +1,13 @@
 import { openUplinks } from "@ndn/cli-common";
 import { Endpoint } from "@ndn/endpoint";
 import { createSigner, createVerifier, HMAC } from "@ndn/keychain";
-import { Component, Data, Name } from "@ndn/packet";
+import { Data, Name } from "@ndn/packet";
 import { SvSync } from "@ndn/sync";
 import { NNI, toUtf8 } from "@ndn/tlv";
 
 const syncPrefix = new Name("/ndn/svs");
-const id = `${Date.now()}`;
-const myDataPrefix = new Name().append(new Component(undefined, `${id}`), ...syncPrefix.comps);
+const myID = new Name(`/${Date.now()}`);
+const myDataPrefix = new Name().append(...myID.comps, ...syncPrefix.comps);
 
 (async () => {
 await openUplinks();
@@ -28,9 +28,9 @@ sync.on("update", ({ id, loSeqNum, hiSeqNum }) => {
   console.log(`UPDATE ${id.text} ${loSeqNum}${loSeqNum === hiSeqNum ? "" : `..${hiSeqNum}`}`);
 });
 
-const node = sync.add(id);
+const node = sync.add(myID);
 setInterval(() => {
   node.seqNum++;
-  console.log(`PUBLISH ${id} ${node.seqNum}`);
+  console.log(`PUBLISH ${myID} ${node.seqNum}`);
 }, 5000);
 })();

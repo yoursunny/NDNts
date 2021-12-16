@@ -12,13 +12,14 @@ import { SvSync } from "..";
 class UpdateHandler {
   constructor(sync: SvSync) {
     sync.on("update", (update) => {
-      const id = update.id.text;
+      const id = update.id.text.slice(-1);
       expect(update.loSeqNum).toBe(this.lastSeqNum.get(id) + 1);
       expect(update.loSeqNum).toBeLessThanOrEqual(update.hiSeqNum);
       this.lastSeqNum.set(id, update.hiSeqNum);
     });
   }
 
+  // key is last character of node ID
   public readonly lastSeqNum = new DefaultMap<string, number>(() => 0);
 
   public get lastSeqNumRecord(): Record<string, number> {
@@ -69,15 +70,15 @@ test("example", async () => {
   };
 
   const pA = new SvSync({ ...opts, describe: "A" });
-  const nA = pA.add("A");
+  const nA = pA.add("/A");
   nA.seqNum = 10;
   const uA = new UpdateHandler(pA);
   const pB = new SvSync({ ...opts, describe: "B" });
-  const nB = pB.add(new SvSync.ID("B"));
+  const nB = pB.add(new SvSync.ID("/B"));
   nB.seqNum = 15;
   const uB = new UpdateHandler(pB);
   const pC = new SvSync({ ...opts, describe: "C", endpoint: new Endpoint({ fw: fwC }) });
-  const nC = pC.add(Uint8Array.of("C".charCodeAt(0)));
+  const nC = pC.add(new Name("/C"));
   nC.seqNum = 25;
   const uC = new UpdateHandler(pC);
   closers.push(pA, pB, pC);

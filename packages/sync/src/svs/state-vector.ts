@@ -1,15 +1,15 @@
-import { Component } from "@ndn/packet";
+import { Component, Name } from "@ndn/packet";
 import { Decoder, Encoder, NNI, toHex } from "@ndn/tlv";
 
 const TT = {
-  VersionVector: 0xC9,
-  VersionVectorKey: 0xCA,
-  VersionVectorValue: 0xCB,
+  StateVector: 0xC9,
+  StateVectorEntry: 0xCA,
+  SeqNo: 0xCC,
 };
 
-/** SVS version vector. */
-export class SvVersionVector {
-  private readonly m = new Map<string, [id: Uint8Array, seqNum: number]>();
+/** SVS state vector. */
+export class SvStateVector {
+  private readonly m = new Map<string, [id: Name, seqNum: number]>();
 
   /** Get sequence number of a node. */
   public get(hex: string): number {
@@ -18,11 +18,11 @@ export class SvVersionVector {
   }
 
   /** Set sequence number of a node. */
-  public set(hex: string, id: Uint8Array, seqNum: number): void {
+  public set(hex: string, id: Name, seqNum: number): void {
     this.m.set(hex, [id, seqNum]);
   }
 
-  private *iterOlderThan(other: SvVersionVector): Iterable<SvVersionVector.DiffEntry> {
+  private *iterOlderThan(other: SvStateVector): Iterable<SvStateVector.DiffEntry> {
     for (const [hex, [id, otherSeqNum]] of other.m) {
       const thisSeqNum = this.get(hex);
       if (thisSeqNum < otherSeqNum) {
@@ -37,12 +37,12 @@ export class SvVersionVector {
   }
 
   /** List nodes with older sequence number in this version vector than other. */
-  public listOlderThan(other: SvVersionVector): SvVersionVector.DiffEntry[] {
+  public listOlderThan(other: SvStateVector): SvStateVector.DiffEntry[] {
     return Array.from(this.iterOlderThan(other));
   }
 
   /** Update this version vector to have newer sequence numbers between this and other. */
-  public mergeFrom(other: SvVersionVector): void {
+  public mergeFrom(other: SvStateVector): void {
     for (const { id, hex, hiSeqNum } of this.iterOlderThan(other)) {
       this.set(hex, id, hiSeqNum);
     }
@@ -60,46 +60,49 @@ export class SvVersionVector {
   public encodeTo(encoder: Encoder): void {
     const list = Array.from(this.m);
     list.sort(([a], [b]) => -a.localeCompare(b));
-    for (const [, [node, seqNum]] of list) {
-      encoder.prependTlv(TT.VersionVectorValue, NNI(seqNum));
-      encoder.prependTlv(TT.VersionVectorKey, node);
+    for (const [, [id, seqNum]] of list) {
+      encoder.prependTlv(TT.StateVectorEntry,
+        id,
+        [TT.SeqNo, NNI(seqNum)],
+      );
     }
   }
 
   /** Encode to name component. */
   public toComponent(): Component {
-    return new Component(TT.VersionVector, Encoder.encode(this));
+    return new Component(TT.StateVector, Encoder.encode(this));
   }
 
   /** Decode TLV-VALUE of name component. */
-  public static decodeFrom(decoder: Decoder): SvVersionVector {
-    const vv = new SvVersionVector();
+  public static decodeFrom(decoder: Decoder): SvStateVector {
+    const vv = new SvStateVector();
     while (!decoder.eof) {
-      const nodeTlv = decoder.read();
-      const seqNumTlv = decoder.read();
-      if (nodeTlv.type !== TT.VersionVectorKey || seqNumTlv.type !== TT.VersionVectorValue) {
-        throw new Error("unexpected TLV-TYPE in VersionVector");
+      const { type: entryT, vd: d1 } = decoder.read();
+      const id = d1.decode(Name);
+      const { type: seqNumT, nni: seqNum } = d1.read();
+      if (entryT !== TT.StateVectorEntry || seqNumT !== TT.SeqNo || !d1.eof) {
+        throw new Error("invalid StateVector");
       }
-      vv.set(toHex(nodeTlv.value), nodeTlv.value, seqNumTlv.nni);
+      vv.set(toHex(id.value), id, seqNum);
     }
     return vv;
   }
 
   /** Decode from name component. */
-  public static fromComponent(comp: Component): SvVersionVector {
-    if (comp.type !== TT.VersionVector) {
+  public static fromComponent(comp: Component): SvStateVector {
+    if (comp.type !== TT.StateVector) {
       throw new Error("unexpected NameComponent TLV-TYPE");
     }
-    return SvVersionVector.decodeFrom(new Decoder(comp.value));
+    return SvStateVector.decodeFrom(new Decoder(comp.value));
   }
 }
 
-export namespace SvVersionVector {
+export namespace SvStateVector {
   /** TLV-TYPE of name component. */
-  export const NameComponentType = TT.VersionVector;
+  export const NameComponentType = TT.StateVector;
 
   export interface DiffEntry {
-    id: Uint8Array;
+    id: Name;
     hex: string;
     loSeqNum: number;
     hiSeqNum: number;

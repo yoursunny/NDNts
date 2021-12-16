@@ -3,7 +3,7 @@
 Test environment:
 
 * Ubuntu 20.04
-* Node.js 16.13.0
+* Node.js 16.13.1
 
 ## PSync
 
@@ -98,7 +98,7 @@ npm run literate packages/sync/interop-test/syncps.ts
 Reference implementation:
 
 * ndn-cxx and NFD 0.7.1 (install from PPA)
-* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `a5dee089253f055e553081cb202cc6da108d9d12` (2021-07-27)
+* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `cc6ab06b9e0bdad63eed8f4d666a8ec04ff9bc3e` (2021-12-09)
 
 Build reference program:
 

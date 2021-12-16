@@ -19,14 +19,14 @@ literate_run() {
   popd >/dev/null
 }
 
-if [[ $1 == 'extract' ]]; then
+if [[ $1 == extract ]]; then
   for F in $(grep -l '```ts' packages/*/README.md); do
     codedown ts <$F >$(dirname $F)/literate-temp.ts
   done
   exit
 fi
 
-if [[ $1 == 'lint' ]]; then
+if [[ $1 == lint ]]; then
   for F in $(grep -l '```ts' packages/*/README.md); do
     codedown ts <$F | xo --stdin --stdin-filename=$F.ts
   done

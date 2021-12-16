@@ -1,11 +1,11 @@
 import { Endpoint, Producer, ProducerHandler } from "@ndn/endpoint";
-import { Interest, Name, nullSigner, Signer, Verifier } from "@ndn/packet";
-import { fromUtf8, toHex, toUtf8 } from "@ndn/tlv";
+import { Interest, Name, NameLike, nullSigner, Signer, Verifier } from "@ndn/packet";
+import { toHex } from "@ndn/tlv";
 import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
 import { SyncNode, SyncProtocol, SyncUpdate } from "../types";
-import { SvVersionVector } from "./version-vector";
+import { SvStateVector } from "./state-vector";
 
 interface DebugEntry {
   action: string;
@@ -61,19 +61,19 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
 
   private readonly producer: Producer;
 
-  /** Own version vector. */
-  private readonly own = new SvVersionVector();
+  /** Own state vector. */
+  private readonly own = new SvStateVector();
 
   /**
    * In steady state, undefined.
-   * In suppression state, aggregated version vector of incoming sync Interests.
+   * In suppression state, aggregated state vector of incoming sync Interests.
    */
-  private aggregated?: SvVersionVector;
+  private aggregated?: SvStateVector;
 
   /** Sync Interest timer. */
   private timer!: NodeJS.Timeout;
 
-  private debug(action: string, entry: Partial<DebugEntry> = {}, recv?: SvVersionVector): void {
+  private debug(action: string, entry: Partial<DebugEntry> = {}, recv?: SvStateVector): void {
     if (this.listenerCount("debug") > 0) {
       this.emit("debug", {
         action,
@@ -110,7 +110,7 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
 
   private readonly handleSyncInterest: ProducerHandler = async (interest) => {
     await this.verifier?.verify(interest);
-    const recv = SvVersionVector.fromComponent(interest.name.at(this.syncPrefix.length));
+    const recv = SvStateVector.fromComponent(interest.name.at(this.syncPrefix.length));
 
     const ourOlder = this.own.listOlderThan(recv);
     const ourNewer = recv.listOlderThan(this.own);
@@ -235,24 +235,24 @@ export namespace SvSync {
     verifier?: Verifier;
   }
 
-  export type IDLike = string | Uint8Array | ID;
+  export type IDLike = ID | NameLike;
 
   export class ID {
     constructor(input: IDLike, hex?: string) {
       if (input instanceof ID) {
-        this.value = input.value;
+        this.name = input.name;
         this.hex = input.hex;
       } else {
-        this.value = typeof input === "string" ? toUtf8(input) : input;
-        this.hex = hex ?? toHex(this.value);
+        this.name = new Name(input);
+        this.hex = hex ?? toHex(this.name.value);
       }
     }
 
-    public readonly value: Uint8Array;
+    public readonly name: Name;
     public readonly hex: string;
 
     public get text(): string {
-      return fromUtf8(this.value);
+      return this.name.toString();
     }
   }
 
@@ -262,7 +262,7 @@ export namespace SvSync {
 class SvSyncNode implements SvSync.Node {
   constructor(
       public readonly id: SvSync.ID,
-      private readonly own: SvVersionVector,
+      private readonly own: SvStateVector,
       private readonly handlePublish: () => void,
   ) {}
 
@@ -275,7 +275,7 @@ class SvSyncNode implements SvSync.Node {
       return;
     }
 
-    this.own.set(this.id.hex, this.id.value, n);
+    this.own.set(this.id.hex, this.id.name, n);
     this.handlePublish();
   }
 
