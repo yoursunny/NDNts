@@ -14,7 +14,7 @@ const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse", undefin
   .add(TT.RemainingTries, (t, { nni }) => t.remainingTries = nni, { order: 3 })
   .add(TT.RemainingTime, (t, { nni }) => t.remainingTime = nni * 1000, { order: 4 })
   .add(TT.IssuedCertName, (t, { vd }) => t.issuedCertName = vd.decode(Name), { order: 6 })
-  .add(l3TT.ForwardingHint, (t, { value }) => t.fwHint = FwHint.decodeValue(value), { order: 7 });
+  .add(l3TT.ForwardingHint, (t, { vd }) => t.fwHint = FwHint.decodeValue(vd), { order: 7 });
 parameter_kv.parseEvDecoder(EVD, 5);
 
 /** CHALLENGE response packet. */

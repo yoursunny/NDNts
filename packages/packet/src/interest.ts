@@ -68,7 +68,7 @@ const EVD = new EvDecoder<Fields>("Interest", TT.Interest)
   .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
   .add(TT.CanBePrefix, (t) => t.canBePrefix = true)
   .add(TT.MustBeFresh, (t) => t.mustBeFresh = true)
-  .add(TT.ForwardingHint, (t, { value }) => t.fwHint = FwHint.decodeValue(value))
+  .add(TT.ForwardingHint, (t, { vd }) => t.fwHint = FwHint.decodeValue(vd))
   .add(TT.Nonce, (t, { value }) => t.nonce = NNI.decode(value, { len: 4 }))
   .add(TT.InterestLifetime, (t, { nni }) => t.lifetime = nni)
   .add(TT.HopLimit, (t, { value }) => t.hopLimit = NNI.decode(value, { len: 1 }))
@@ -113,6 +113,7 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
    * - Name or name URI
    * - Interest.CanBePrefix
    * - Interest.MustBeFresh
+   * - FwHint
    * - Interest.Nonce(v)
    * - Interest.Lifetime(v)
    * - Interest.HopLimit(v)

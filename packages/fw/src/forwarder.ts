@@ -108,7 +108,7 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
   }
 
   private pickInterestForwardingName(interest: Interest): Name {
-    const fhName = interest.fwHint?.delegations[0]?.name;
+    const fhName = interest.fwHint?.delegations[0];
     if (fhName && this.nodeNames.every((nodeName) => !fhName.isPrefixOf(nodeName))) {
       return fhName;
     }
