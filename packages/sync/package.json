@@ -47,6 +47,6 @@
     "@ndn/fw": "workspace:*",
     "@ndn/l3face": "workspace:*",
     "@types/minimalistic-assert": "^1.0.1",
-    "@types/pako": "^1.0.2"
+    "@types/pako": "^1.0.3"
   }
 }

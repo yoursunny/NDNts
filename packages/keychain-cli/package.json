@@ -40,7 +40,7 @@
     "prompts": "^2.4.2",
     "stdout-stream": "^1.4.1",
     "tslib": "^2.3.1",
-    "yargs": "^17.3.0"
+    "yargs": "^17.3.1"
   },
   "devDependencies": {
     "@types/fast-chunk-string": "^1.0.1",
@@ -49,6 +49,6 @@
     "@types/nodemailer": "^6.4.4",
     "@types/prompts": "^2.0.14",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^17.0.7"
+    "@types/yargs": "^17.0.8"
   }
 }

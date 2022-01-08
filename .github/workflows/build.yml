@@ -22,16 +22,19 @@ jobs:
       - run: npm run literate
       - run: npm run lint
   unittest:
+    strategy:
+      matrix:
+        node: [16, 17]
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           path: ~/.pnpm-store
-          key: 16-${{ hashFiles('**/package.json') }}
+          key: ${{ matrix.node }}-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: ${{ matrix.node }}
       - name: install dependencies
         run: |
           echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu focal main" \
@@ -43,6 +46,7 @@ jobs:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
       - run: npm run cover -- --colors
       - uses: coverallsapp/github-action@master
+        if: ${{ matrix.node == 16 }}
         continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -53,10 +57,10 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.pnpm-store
-          key: 16-${{ hashFiles('**/package.json') }}
+          key: 17-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 17
       - name: install dependencies
         run: |
           echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu focal main" \

@@ -16,7 +16,7 @@ afterEach(() => server.close());
 
 test("pair", async () => {
   const [tA, tB, [sockA, sockB]] = await Promise.all([
-    TcpTransport.connect("localhost", server.port),
+    TcpTransport.connect("127.0.0.1", server.port),
     TcpTransport.connect({ port: server.port }),
     server.waitNClients(2),
   ]);
