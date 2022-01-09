@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Component, Data, digestSigning, KeyLocator, Name } from "@ndn/packet";
 import { dirSync as tmpDir } from "tmp";
 
-import { Certificate, CertNaming, generateSigningKey, KeyChain, NamedSigner, NamedVerifier, SigningAlgorithmListFull, ValidityPeriod } from "../..";
+import { Certificate, CertNaming, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, SigningAlgorithmListFull, ValidityPeriod } from "../..";
 import * as TestCertStore from "../../test-fixture/cert-store";
 import * as TestKeyStore from "../../test-fixture/key-store";
 

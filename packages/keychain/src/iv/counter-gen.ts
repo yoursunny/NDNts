@@ -1,6 +1,6 @@
 import { fromHex } from "@ndn/tlv";
 
-import { CounterIncrement, CounterIvOptions, parseCounterIvOptions } from "./counter-common";
+import { CounterIncrement, type CounterIvOptions, parseCounterIvOptions } from "./counter-common";
 import { IvGen } from "./gen";
 
 /** IV generator using fixed+random+counter structure. */

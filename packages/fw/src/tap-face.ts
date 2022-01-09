@@ -3,7 +3,7 @@ import assert from "minimalistic-assert";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import MultiMap from "mnemonist/multi-map.js";
 
-import { FaceImpl, FwFace } from "./face";
+import { FaceImpl, type FwFace } from "./face";
 import { Forwarder } from "./forwarder";
 import type { FwPacket } from "./packet";
 

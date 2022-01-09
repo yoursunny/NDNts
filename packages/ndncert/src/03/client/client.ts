@@ -1,9 +1,9 @@
 import { ConsumerOptions, Endpoint, RetxPolicy } from "@ndn/endpoint";
-import { Certificate, NamedSigner, NamedVerifier, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, type NamedSigner, type NamedVerifier, ValidityPeriod } from "@ndn/keychain";
 import { FwHint, Interest, Name } from "@ndn/packet";
 
 import * as crypto from "../crypto-common";
-import { CaProfile, ChallengeRequest, ChallengeResponse, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
+import { type CaProfile, ChallengeRequest, ChallengeResponse, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
 import type { ClientChallenge } from "./challenge";
 
 export interface ClientOptions {

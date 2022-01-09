@@ -1,10 +1,10 @@
-import { Endpoint, Producer, ProducerHandler } from "@ndn/endpoint";
-import { Interest, Name, NameLike, nullSigner, Signer, Verifier } from "@ndn/packet";
+import { Endpoint, Producer, type ProducerHandler } from "@ndn/endpoint";
+import { Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
-import { SyncNode, SyncProtocol, SyncUpdate } from "../types";
+import { type SyncNode, type SyncProtocol, SyncUpdate } from "../types";
 import { SvStateVector } from "./state-vector";
 
 interface DebugEntry {

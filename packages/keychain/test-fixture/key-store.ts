@@ -1,6 +1,6 @@
 import { Name, SigType } from "@ndn/packet";
 
-import { ECDSA, generateSigningKey, HMAC, KeyChain, NamedSigner, NamedVerifier, RSA } from "..";
+import { ECDSA, generateSigningKey, HMAC, KeyChain, type NamedSigner, type NamedVerifier, RSA } from "..";
 
 interface Options {
   skipHmac?: boolean;

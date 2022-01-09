@@ -3,7 +3,7 @@ import { BulkInsertTarget, RepoProducer, respondRdr } from "@ndn/repo";
 import { createServer } from "node:net";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { declareStoreArgs, openStore, store, StoreArgs } from "./util";
+import { declareStoreArgs, openStore, store, type StoreArgs } from "./util";
 
 interface Args extends StoreArgs {
   rdr: boolean;

@@ -1,6 +1,6 @@
-import { AESCBC, AESGCM, AesKeyLength, Certificate, createVerifier, EcCurve, ECDSA, generateEncryptionKey, generateSigningKey, HMAC, KeyChain, NamedDecrypter, NamedEncrypter, NamedSigner, NamedVerifier, RSA, RsaModulusLength, RSAOAEP } from "@ndn/keychain";
+import { AESCBC, AESGCM, AesKeyLength, Certificate, createVerifier, EcCurve, ECDSA, generateEncryptionKey, generateSigningKey, HMAC, KeyChain, type NamedDecrypter, type NamedEncrypter, type NamedSigner, type NamedVerifier, RSA, RsaModulusLength, RSAOAEP } from "@ndn/keychain";
 import * as ndn_testbed_certs from "@ndn/keychain/test-fixture/ndn-testbed-certs";
-import { Data, digestSigning, LLVerify, Signer, Verifier } from "@ndn/packet";
+import { Data, digestSigning, LLVerify, type Signer, type Verifier } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { addManualTest } from "../../test-fixture/manual";

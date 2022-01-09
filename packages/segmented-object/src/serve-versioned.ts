@@ -1,7 +1,7 @@
-import { Component, ComponentLike, Name, NameLike } from "@ndn/packet";
+import { Component, type ComponentLike, Name, type NameLike } from "@ndn/packet";
 
-import { defaultVersionConvention, VersionConventionFromNumber } from "./convention";
-import { ChunkSource, serve, ServeOptions, Server } from "./serve/mod";
+import { defaultVersionConvention, type VersionConventionFromNumber } from "./convention";
+import { type ChunkSource, serve, type ServeOptions, type Server } from "./serve/mod";
 
 type GivenVersionOptions = {
   version: ComponentLike;

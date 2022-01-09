@@ -1,5 +1,5 @@
 import { Segment, Version } from "@ndn/naming-convention2";
-import { NamingConvention } from "@ndn/packet";
+import type { NamingConvention } from "@ndn/packet";
 
 export type VersionConvention = NamingConvention<any>;
 export type VersionConventionFromNumber = NamingConvention<number, unknown>;

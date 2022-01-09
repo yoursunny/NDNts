@@ -1,6 +1,6 @@
-import { Endpoint, Producer } from "@ndn/endpoint";
+import { Endpoint, type Producer } from "@ndn/endpoint";
 import { Segment, Version } from "@ndn/naming-convention2";
-import { Data, digestSigning, Interest, Name, NameLike, Signer } from "@ndn/packet";
+import { Data, digestSigning, type Interest, Name, type NameLike, type Signer } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 
 import { Metadata, MetadataKeyword } from "./metadata";

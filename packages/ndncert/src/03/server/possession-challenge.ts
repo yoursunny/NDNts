@@ -1,4 +1,4 @@
-import { Certificate, KeyChainImplWebCrypto, SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
+import { Certificate, KeyChainImplWebCrypto, type SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
 import { Data, Name, Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 

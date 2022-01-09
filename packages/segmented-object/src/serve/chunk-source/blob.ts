@@ -1,6 +1,6 @@
 /* eslint-env browser */
 
-import { ChunkOptions, ChunkSource, getMaxChunkSize, KnownSizeChunkSource } from "./common";
+import { type ChunkOptions, type ChunkSource, getMaxChunkSize, KnownSizeChunkSource } from "./common";
 
 function readBlobAsBuffer(blob: Blob): Promise<ArrayBuffer> {
   return blob.arrayBuffer();

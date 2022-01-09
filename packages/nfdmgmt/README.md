@@ -10,7 +10,7 @@ import { enableNfdPrefixReg, signInterest02 } from "@ndn/nfdmgmt";
 
 // other imports for examples
 import { Endpoint } from "@ndn/endpoint";
-import { Forwarder, FwFace } from "@ndn/fw";
+import { Forwarder, type FwFace } from "@ndn/fw";
 import { generateSigningKey } from "@ndn/keychain";
 import { UnixTransport } from "@ndn/node-transport";
 import { Data, Interest, Name } from "@ndn/packet";

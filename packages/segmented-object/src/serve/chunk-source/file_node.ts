@@ -1,7 +1,7 @@
 import { promises as fs } from "graceful-fs";
 import PLazy from "p-lazy";
 
-import { Chunk, ChunkOptions, ChunkSource, getMaxChunkSize, KnownSizeChunkSource } from "./common";
+import { type Chunk, type ChunkOptions, type ChunkSource, getMaxChunkSize, KnownSizeChunkSource } from "./common";
 
 class FileHandleChunkSource extends KnownSizeChunkSource {
   constructor(private readonly fh: fs.FileHandle, chunkSize: number, totalSize: number) {

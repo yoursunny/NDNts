@@ -1,10 +1,10 @@
 import { Endpoint } from "@ndn/endpoint";
 import { CancelInterest, Forwarder, FwFace, FwPacket } from "@ndn/fw";
-import { Data, Interest, Name, Verifier } from "@ndn/packet";
+import { Data, Interest, type Name, type Verifier } from "@ndn/packet";
 import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
-import { defaultSegmentConvention, SegmentConvention } from "../convention";
+import { defaultSegmentConvention, type SegmentConvention } from "../convention";
 import { FetchLogic } from "./logic";
 
 interface Events {

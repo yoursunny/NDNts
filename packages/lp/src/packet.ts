@@ -1,5 +1,5 @@
 import { NackHeader } from "@ndn/packet";
-import { Decoder, Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { type Decoder, type Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
 import { TT } from "./an";
 

@@ -1,4 +1,4 @@
-import { Encodable, Encoder } from "./encoder";
+import { type Encodable, Encoder } from "./encoder";
 import { toHex } from "./string";
 
 class Nni1 {

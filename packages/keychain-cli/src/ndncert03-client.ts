@@ -1,6 +1,6 @@
 import { closeUplinks, openUplinks } from "@ndn/cli-common";
 import { CertNaming } from "@ndn/keychain";
-import { ClientChallenge, ClientChallengeContext, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, requestCertificate } from "@ndn/ndncert";
+import { type ClientChallenge, type ClientChallengeContext, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, requestCertificate } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";

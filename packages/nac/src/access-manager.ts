@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Certificate, CertNaming, createEncrypter, CryptoAlgorithm, NamedDecrypter, NamedEncrypter, RSAOAEP } from "@ndn/keychain";
+import { Certificate, CertNaming, createEncrypter, type CryptoAlgorithm, type NamedDecrypter, type NamedEncrypter, RSAOAEP } from "@ndn/keychain";
 import { Component, Interest, Name, Signer, Verifier } from "@ndn/packet";
 import type { DataStore as S } from "@ndn/repo-api";
 

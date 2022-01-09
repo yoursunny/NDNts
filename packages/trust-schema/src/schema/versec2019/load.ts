@@ -1,4 +1,4 @@
-import { AlternatePattern, CertNamePattern, ConcatPattern, ConstPattern, Pattern, VariablePattern } from "../pattern";
+import { AlternatePattern, CertNamePattern, ConcatPattern, ConstPattern, type Pattern, VariablePattern } from "../pattern";
 import { TrustSchemaPolicy } from "../policy";
 
 class Parser {

@@ -1,6 +1,6 @@
 import { connectToNetwork, connectToRouter } from "@ndn/autoconfig";
 import { openFace as dpdkOpenFace } from "@ndn/dpdkmgmt";
-import { FwFace, FwTracer } from "@ndn/fw";
+import { type FwFace, FwTracer } from "@ndn/fw";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { UnixTransport } from "@ndn/node-transport";
 

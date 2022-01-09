@@ -1,5 +1,5 @@
-import { Data, FwHint, LLDecrypt, LLEncrypt, Name, Signer, TT as l3TT } from "@ndn/packet";
-import { Decoder, Encodable, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
+import { Data, FwHint, type LLDecrypt, type LLEncrypt, Name, type Signer, TT as l3TT } from "@ndn/packet";
+import { Decoder, type Encodable, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 
 import { Status, TT } from "./an";
 import type { CaProfile } from "./ca-profile";

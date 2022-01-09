@@ -1,6 +1,6 @@
-import { Endpoint, Producer, ProducerHandler } from "@ndn/endpoint";
+import { Endpoint, Producer, type ProducerHandler } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
-import { Data, Interest, Name, Signer } from "@ndn/packet";
+import { Data, Interest, Name, type Signer } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import { BloomFilter } from "@yoursunny/psync-bloom";
 import { EventEmitter } from "node:events";

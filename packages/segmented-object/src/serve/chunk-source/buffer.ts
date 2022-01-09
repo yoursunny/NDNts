@@ -1,4 +1,4 @@
-import { ChunkOptions, ChunkSource, getMaxChunkSize, KnownSizeChunkSource } from "./common";
+import { type ChunkOptions, type ChunkSource, getMaxChunkSize, KnownSizeChunkSource } from "./common";
 
 /** Generate chunks from a fixed buffer. */
 export class BufferChunkSource extends KnownSizeChunkSource implements ChunkSource {

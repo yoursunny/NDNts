@@ -1,5 +1,5 @@
 import { Segment as segmentNumConvention, Version as versionConvention } from "@ndn/naming-convention1";
-import { AltUri, Component, Name, NamingConvention, TT } from "@ndn/packet";
+import { AltUri, Component, Name, type NamingConvention, TT } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 // @ts-expect-error typing unavailable
 import murmurHash3 from "murmurhash3js-revisited";
@@ -8,7 +8,7 @@ import type { IBLT } from "../iblt";
 import type { PSyncCodec } from "./codec";
 import type { PSyncCore } from "./core";
 import type { PSyncFull } from "./full";
-import { PSyncPartialPublisher } from "./partial-publisher";
+import type { PSyncPartialPublisher } from "./partial-publisher";
 import type { PSyncPartialSubscriber } from "./partial-subscriber";
 
 const GenericNumber: NamingConvention<number, number> = {

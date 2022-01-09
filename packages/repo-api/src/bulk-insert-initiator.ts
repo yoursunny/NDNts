@@ -1,7 +1,7 @@
 import { L3Face } from "@ndn/l3face";
 import type { Data } from "@ndn/packet";
 import pushable from "it-pushable";
-import pDefer, { DeferredPromise } from "p-defer";
+import pDefer, { type DeferredPromise } from "p-defer";
 import { consume, map } from "streaming-iterables";
 
 import * as S from "./data-store";

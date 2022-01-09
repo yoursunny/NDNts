@@ -1,5 +1,5 @@
-import { Certificate, EcCurve, ECDSA, generateSigningKey, NamedSigner, NamedVerifier, PrivateKey, PublicKey, RSA, RsaModulusLength } from "@ndn/keychain";
-import { NameLike } from "@ndn/packet";
+import { Certificate, EcCurve, ECDSA, generateSigningKey, type NamedSigner, type NamedVerifier, type PrivateKey, type PublicKey, RSA, RsaModulusLength } from "@ndn/keychain";
+import type { NameLike } from "@ndn/packet";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
 

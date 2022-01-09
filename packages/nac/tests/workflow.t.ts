@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
 import { Certificate, generateEncryptionKey, generateSigningKey, KeyChainImplWebCrypto as crypto, RSAOAEP, ValidityPeriod } from "@ndn/keychain";
-import { Component, Data, Name, Verifier } from "@ndn/packet";
+import { Component, Data, Name, type Verifier } from "@ndn/packet";
 import { PrefixRegStatic } from "@ndn/repo";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
 

@@ -1,6 +1,6 @@
-import { ConsumerOptions, Endpoint, RetxPolicy } from "@ndn/endpoint";
+import { ConsumerOptions, Endpoint, type RetxPolicy } from "@ndn/endpoint";
 import { Certificate, CertNaming } from "@ndn/keychain";
-import { Interest, Name } from "@ndn/packet";
+import { Interest, type Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 
 import type { CertSource } from "./types";

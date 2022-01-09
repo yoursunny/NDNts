@@ -1,4 +1,4 @@
-import { Data, Interest, Name } from "@ndn/packet";
+import { Data, type Interest, type Name } from "@ndn/packet";
 import type { AnyIterable } from "streaming-iterables";
 
 export interface Close {

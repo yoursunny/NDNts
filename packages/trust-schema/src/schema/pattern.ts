@@ -1,6 +1,6 @@
 import { CertNaming } from "@ndn/keychain";
 import type { NamingConvention } from "@ndn/packet";
-import { Component, Name, NameLike } from "@ndn/packet";
+import { Component, Name, type NameLike } from "@ndn/packet";
 
 export type Vars = Map<string, Name>;
 export type VarsLike = Vars | Readonly<Record<string, NameLike>>;

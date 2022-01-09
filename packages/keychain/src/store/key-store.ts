@@ -2,7 +2,7 @@ import type { Name } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
 import { crypto } from "../crypto_node";
-import { createDecrypter, createEncrypter, createSigner, createVerifier, CryptoAlgorithm, KeyKind, NamedDecrypter, NamedEncrypter, NamedSigner, NamedVerifier, PublicKey } from "../key/mod";
+import { createDecrypter, createEncrypter, createSigner, createVerifier, CryptoAlgorithm, KeyKind, type NamedDecrypter, type NamedEncrypter, type NamedSigner, type NamedVerifier, type PublicKey } from "../key/mod";
 import { StoreBase } from "./store-base";
 import type { StoreProvider } from "./store-provider";
 

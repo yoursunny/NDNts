@@ -1,4 +1,4 @@
-import { Encodable, EncodableTlv, EvDecoder, toUtf8 } from "@ndn/tlv";
+import { type Encodable, type EncodableTlv, EvDecoder, toUtf8 } from "@ndn/tlv";
 
 import { TT } from "./an";
 

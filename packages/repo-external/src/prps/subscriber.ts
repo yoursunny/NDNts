@@ -1,5 +1,5 @@
-import { Endpoint, Producer, ProducerHandler, RetxPolicy } from "@ndn/endpoint";
-import { Component, Data, digestSigning, FwHint, Interest, Name, Signer, Verifier } from "@ndn/packet";
+import { Endpoint, Producer, type ProducerHandler, type RetxPolicy } from "@ndn/endpoint";
+import { Component, Data, digestSigning, FwHint, Interest, Name, type Signer, type Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 import pushable from "it-pushable";
 

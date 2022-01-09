@@ -2,7 +2,7 @@ import { Component, Data, Name, SigInfo, Signer } from "@ndn/packet";
 import * as asn1 from "@yoursunny/asn1";
 import assert from "minimalistic-assert";
 
-import { CryptoAlgorithm, NamedSigner, PublicKey } from "../key/mod";
+import type { CryptoAlgorithm, NamedSigner, PublicKey } from "../key/mod";
 import * as CertNaming from "../naming";
 import { ContentTypeKEY } from "./an";
 import { ValidityPeriod } from "./validity-period";

@@ -1,6 +1,6 @@
-import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
+import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { LpService } from "@ndn/lp";
-import { Interest, NameLike } from "@ndn/packet";
+import { Interest, type NameLike } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import abortable, { AbortError as IteratorAbortError } from "abortable-iterator";
 import pushable from "it-pushable";

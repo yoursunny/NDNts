@@ -1,6 +1,6 @@
-import { Certificate, CertNaming, CryptoAlgorithm, ECDSA, generateEncryptionKey, generateSigningKey, KeyChain, RSA, RSAOAEP } from "@ndn/keychain";
+import { Certificate, CertNaming, CryptoAlgorithm, ECDSA, generateEncryptionKey, generateSigningKey, type KeyChain, RSA, RSAOAEP } from "@ndn/keychain";
 import { Data, TT as l3TT } from "@ndn/packet";
-import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
+import { type Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 
 import { TT } from "./an";

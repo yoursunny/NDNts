@@ -1,5 +1,5 @@
 import { CryptoAlgorithmListFull, KeyChain } from "@ndn/keychain";
-import { digestSigning, Name, Signer } from "@ndn/packet";
+import { digestSigning, Name, type Signer } from "@ndn/packet";
 
 import { env } from "./env";
 

@@ -5,7 +5,7 @@ import { EventEmitter } from "node:events";
 import pDefer from "p-defer";
 import type TypedEmitter from "typed-emitter";
 
-import { CongestionAvoidance } from "./congestion-avoidance";
+import type { CongestionAvoidance } from "./congestion-avoidance";
 import { RttEstimator } from "./rtt-estimator";
 import { TcpCubic } from "./tcp-cubic";
 import { TokenLimiter } from "./token-limiter";

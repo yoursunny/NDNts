@@ -1,6 +1,6 @@
 import "@ndn/tlv/test-fixture/expect";
 
-import { Endpoint, ProducerHandler } from "@ndn/endpoint";
+import { Endpoint, type ProducerHandler } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Closers } from "@ndn/l3face/test-fixture/closers";

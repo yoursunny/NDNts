@@ -1,4 +1,4 @@
-import { Encoder } from "./mod";
+import { Encoder } from "./encoder";
 import { NNI } from "./nni";
 import { fromUtf8 } from "./string";
 

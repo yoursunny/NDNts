@@ -1,9 +1,9 @@
-import { Name, NameLike } from "@ndn/packet";
+import { Name, type NameLike } from "@ndn/packet";
 
 import { crypto } from "../crypto_node";
 import * as CertNaming from "../naming";
 import type { KeyChain, KeyStore } from "../store/mod";
-import { CryptoAlgorithm } from "./types";
+import type { CryptoAlgorithm } from "./types";
 
 export async function generateKeyInternal<Algo extends CryptoAlgorithm>(
     defaultAlgo: Algo, a: unknown[],

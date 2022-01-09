@@ -1,5 +1,5 @@
 import { Name, TT } from "@ndn/packet";
-import { EncodableObj, EncodableTlv, Encoder, NNI, toUtf8 } from "@ndn/tlv";
+import { type EncodableObj, type EncodableTlv, Encoder, NNI, toUtf8 } from "@ndn/tlv";
 
 const fieldDefs: Array<[number, keyof ControlParameters.Fields, any]> = [
   [TT.Name, "name", undefined],

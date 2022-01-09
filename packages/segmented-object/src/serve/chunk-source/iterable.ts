@@ -1,6 +1,6 @@
 import type { AnyIterable } from "streaming-iterables";
 
-import { Chunk, ChunkOptions, ChunkSource, getMaxChunkSize, getMinChunkSize } from "./common";
+import { type Chunk, type ChunkOptions, type ChunkSource, getMaxChunkSize, getMinChunkSize } from "./common";
 
 /** Gather chunks of acceptable size from scattered buffers. */
 class ScatteredChunk {

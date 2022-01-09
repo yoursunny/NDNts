@@ -1,7 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
-import { Forwarder, FwFace, FwPacket } from "@ndn/fw";
+import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Certificate, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";

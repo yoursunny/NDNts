@@ -1,4 +1,4 @@
-import { Decoder, EvDecoder } from "@ndn/tlv";
+import { type Decoder, EvDecoder } from "@ndn/tlv";
 
 const EVD = new EvDecoder<ControlResponse>("ControlResponse", 0x65)
   .add(0x66, (t, { nni }) => t.statusCode = nni)

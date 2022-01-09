@@ -1,4 +1,4 @@
-import { Decoder, Encodable, Encoder } from "@ndn/tlv";
+import { Decoder, type Encodable, Encoder } from "@ndn/tlv";
 import abortable, { AbortError as IteratorAbortError } from "abortable-iterator";
 import pushable from "it-pushable";
 import { consume, pipeline, tap } from "streaming-iterables";

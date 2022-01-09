@@ -1,7 +1,7 @@
 import type { EcCurve, RsaModulusLength } from "@ndn/keychain";
-import { TestRecord as CertStoreRecord } from "@ndn/keychain/test-fixture/cert-store";
-import { TestRecord as KeyStoreRecord } from "@ndn/keychain/test-fixture/key-store";
-import { TestRecord as SignVerifyRecord } from "@ndn/packet/test-fixture/sign-verify";
+import type { TestRecord as CertStoreRecord } from "@ndn/keychain/test-fixture/cert-store";
+import type { TestRecord as KeyStoreRecord } from "@ndn/keychain/test-fixture/key-store";
+import type { TestRecord as SignVerifyRecord } from "@ndn/packet/test-fixture/sign-verify";
 
 import type * as Serialize from "../../test-fixture/serialize";
 

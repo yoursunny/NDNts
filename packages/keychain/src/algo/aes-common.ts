@@ -2,7 +2,7 @@ import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
 
 import { crypto } from "../crypto_node";
 import type { IvGen } from "../iv/mod";
-import { CryptoAlgorithm, EncryptionAlgorithm } from "../key/mod";
+import type { CryptoAlgorithm, EncryptionAlgorithm } from "../key/mod";
 
 export interface AesEncryption<I, G extends AesGenParams> extends EncryptionAlgorithm<I, false, G> {
   readonly ivLength: number;

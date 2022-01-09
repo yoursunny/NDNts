@@ -1,6 +1,6 @@
-import { Data, Interest, Nack, Name } from "@ndn/packet";
+import { Data, Interest, Nack, type Name } from "@ndn/packet";
 
-import { FwFace } from "./face";
+import type { FwFace } from "./face";
 import { Forwarder } from "./forwarder";
 import type { FwPacket } from "./packet";
 import { makeTracerOutput } from "./tracer-output_node";

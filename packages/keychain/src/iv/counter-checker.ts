@@ -2,7 +2,7 @@ import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 
 import { IvChecker } from "./checker";
-import { CounterIncrement, CounterIvOptions, parseCounterIvOptions, throwCounterIvError } from "./counter-common";
+import { CounterIncrement, type CounterIvOptions, parseCounterIvOptions, throwCounterIvError } from "./counter-common";
 
 /** Check IVs of fixed+random+counter structure to detect duplication. */
 export class CounterIvChecker extends IvChecker {

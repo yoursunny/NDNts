@@ -1,7 +1,7 @@
-import { Certificate, createVerifier, NamedVerifier, SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
+import { Certificate, createVerifier, type NamedVerifier, type SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
 import { Segment, Version } from "@ndn/naming-convention2";
-import { Data, Name, Signer } from "@ndn/packet";
-import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI, toHex, toUtf8 } from "@ndn/tlv";
+import { Data, Name, type Signer } from "@ndn/packet";
+import { Decoder, type EncodableTlv, Encoder, EvDecoder, NNI, toHex, toUtf8 } from "@ndn/tlv";
 import indentString from "indent-string";
 
 import { C, TT } from "./an";

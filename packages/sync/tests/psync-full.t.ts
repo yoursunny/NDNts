@@ -4,13 +4,13 @@ import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Closers } from "@ndn/l3face/test-fixture/closers";
-import { Name, NameLike } from "@ndn/packet";
+import { Name, type NameLike } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 import DefaultMap from "mnemonist/default-map.js";
 import { setTimeout as delay } from "node:timers/promises";
 
-import { IBLT, makePSyncCompatParam, PSyncFull, SyncNode, SyncUpdate } from "..";
+import { type IBLT, makePSyncCompatParam, PSyncFull, type SyncNode, type SyncUpdate } from "..";
 
 class DebugPrinter {
   public static enabled = process.env.NDNTS_SYNC_DEBUG === "1";

@@ -1,6 +1,6 @@
 import "../test-fixture/expect";
 
-import { Decoder, Encodable, Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI } from "..";
+import { Decoder, type Encodable, Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI } from "..";
 
 const EXTENSIONS: ExtensionRegistry<ExtTestTarget> = new ExtensionRegistry<ExtTestTarget>();
 

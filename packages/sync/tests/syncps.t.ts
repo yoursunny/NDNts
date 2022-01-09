@@ -4,11 +4,11 @@ import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Closers } from "@ndn/l3face/test-fixture/closers";
-import { Data, Name, NameLike } from "@ndn/packet";
+import { Data, Name, type NameLike } from "@ndn/packet";
 import assert from "minimalistic-assert";
 import { setTimeout as delay } from "node:timers/promises";
 
-import { makeSyncpsCompatParam, Subscription, SyncpsPubsub } from "..";
+import { makeSyncpsCompatParam, type Subscription, SyncpsPubsub } from "..";
 
 class DebugPrinter {
   public static enabled = process.env.NDNTS_SYNC_DEBUG === "1";

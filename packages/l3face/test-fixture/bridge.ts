@@ -1,5 +1,5 @@
 import type { Forwarder, FwFace } from "@ndn/fw";
-import { NameLike } from "@ndn/packet";
+import type { NameLike } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 import pushable from "it-pushable";
 import pDefer from "p-defer";

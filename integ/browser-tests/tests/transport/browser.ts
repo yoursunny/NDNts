@@ -9,8 +9,8 @@ FwTracer.enable();
 
 async function facePing(pingPrefix: string) {
   const endpoint = new Endpoint();
-  const names = [] as string[];
-  const rtts = [] as number[];
+  const names: string[] = [];
+  const rtts: number[] = [];
   for (let i = 0; i < 50; ++i) {
     const t0 = Date.now();
     const data = await endpoint.consume(`${pingPrefix}/${Math.trunc(Math.random() * 1e8)}`);
@@ -46,8 +46,8 @@ async function testH3() {
     <button>OK</button>
     </form>
   `;
-  const $form = document.querySelector("form")!;
-  const [router, prefix] = await new Promise((resolve) => {
+  const [router, prefix] = await new Promise<[string, string]>((resolve) => {
+    const $form = document.querySelector("form")!;
     $form.addEventListener("submit", (evt) => {
       evt.preventDefault();
       resolve([

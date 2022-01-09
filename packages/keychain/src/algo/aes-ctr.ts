@@ -1,8 +1,8 @@
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
-import { CounterIvGen, IvGen } from "../iv/mod";
+import { CounterIvGen, type IvGen } from "../iv/mod";
 import type { CryptoAlgorithm } from "../key/mod";
-import { AesBlockSize, AesCommon, AesEncryption, AesGenParams } from "./aes-common";
+import { AesBlockSize, AesCommon, type AesEncryption, type AesGenParams } from "./aes-common";
 
 const ivgens = new DefaultWeakMap<CryptoAlgorithm.SecretKey<AESCTR.Info>, IvGen>(
   ({ info: { counterLength } }) => new CounterIvGen({

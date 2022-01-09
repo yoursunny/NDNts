@@ -1,7 +1,7 @@
 import { Endpoint, Producer, ProducerHandler, RetxPolicy } from "@ndn/endpoint";
 import { SequenceNum } from "@ndn/naming-convention2";
-import { Component, Data, digestSigning, Interest, Name, Signer } from "@ndn/packet";
-import { Encodable, Encoder, toHex } from "@ndn/tlv";
+import { Component, Data, digestSigning, Interest, Name, type Signer } from "@ndn/packet";
+import { type Encodable, Encoder, toHex } from "@ndn/tlv";
 
 import { MsgSuffix, NotifyParams, NotifySuffix } from "./packet";
 

@@ -1,4 +1,4 @@
-import { Decoder, EncodableObj, Encoder, EvDecoder, Extensible, ExtensionRegistry, NNI } from "@ndn/tlv";
+import { type Decoder, type EncodableObj, Encoder, EvDecoder, Extensible, ExtensionRegistry, NNI } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 
 import { SigType, TT } from "./an";

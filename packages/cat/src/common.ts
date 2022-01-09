@@ -1,7 +1,7 @@
 import { closeUplinks, getSigner, openUplinks } from "@ndn/cli-common";
 import { Segment as Segment1, Version as Version1 } from "@ndn/naming-convention1";
 import { Segment2, Segment3, Version2, Version3 } from "@ndn/naming-convention2";
-import { NamingConvention, Signer } from "@ndn/packet";
+import type { NamingConvention, Signer } from "@ndn/packet";
 
 export interface CommonArgs {
   convention: number;

@@ -1,5 +1,5 @@
-import { Endpoint, Producer as EpProducer, ProducerHandler } from "@ndn/endpoint";
-import { Data, Interest } from "@ndn/packet";
+import { Endpoint, type Producer as EpProducer, type ProducerHandler } from "@ndn/endpoint";
+import type { Data, Interest } from "@ndn/packet";
 
 import { DataStore } from "./data-store";
 import { PrefixRegStrip } from "./prefix-reg/mod";

@@ -1,8 +1,8 @@
-import { CancelInterest, Forwarder, FwPacket } from "@ndn/fw";
-import { Data, Interest, NameLike, Verifier } from "@ndn/packet";
+import { CancelInterest, type Forwarder, FwPacket } from "@ndn/fw";
+import { Data, Interest, type NameLike, type Verifier } from "@ndn/packet";
 import pushable from "it-pushable";
 
-import { makeRetxGenerator, RetxPolicy } from "./retx";
+import { makeRetxGenerator, type RetxPolicy } from "./retx";
 
 export interface ConsumerOptions {
   /** Description for debugging purpose. */

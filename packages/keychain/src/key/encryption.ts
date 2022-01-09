@@ -1,4 +1,4 @@
-import { LLDecrypt, LLEncrypt, Name, NameLike } from "@ndn/packet";
+import type { LLDecrypt, LLEncrypt, Name, NameLike } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
 import { EncryptionAlgorithmListSlim } from "../algolist/mod";
@@ -6,7 +6,7 @@ import type { Certificate } from "../cert/mod";
 import * as CertNaming from "../naming";
 import type { KeyChain } from "../store/mod";
 import { generateKeyInternal } from "./generate";
-import { CryptoAlgorithm, EncryptionAlgorithm, KeyKind, NamedDecrypter, NamedEncrypter } from "./types";
+import { CryptoAlgorithm, type EncryptionAlgorithm, KeyKind, type NamedDecrypter, type NamedEncrypter } from "./types";
 
 class PlainCryptoEncrypter<I> {
   constructor(

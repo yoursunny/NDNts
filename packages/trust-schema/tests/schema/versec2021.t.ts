@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Name, NameLike } from "@ndn/packet";
+import { Name, type NameLike } from "@ndn/packet";
 
 import { TrustSchemaPolicy, versec2021 } from "../..";
 

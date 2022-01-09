@@ -1,4 +1,4 @@
-import { Data, ImplicitDigest, Interest, Name } from "@ndn/packet";
+import { type Data, ImplicitDigest, type Interest, type Name } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
 import { Encoder, toHex, toUtf8 } from "@ndn/tlv";
 import type { AbstractLevelDOWN } from "abstract-leveldown";
@@ -8,7 +8,7 @@ import { collect, filter, fromStream, map, pipeline, transform } from "streaming
 import throat from "throat";
 import type TypedEmitter from "typed-emitter";
 
-import { Db, DbChain, filterExpired, isExpired, openDb, Record } from "./db";
+import { type Db, type DbChain, filterExpired, isExpired, openDb, type Record } from "./db";
 
 interface Events {
   /** Emitted when a new record is inserted. */

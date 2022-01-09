@@ -1,4 +1,4 @@
-import { digestSigning, Interest, LLSign, Name, SigInfo, Signer, TT } from "@ndn/packet";
+import { digestSigning, Interest, LLSign, Name, type SigInfo, type Signer, TT } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
 
 class SignedInterest02 implements Signer.Signable {

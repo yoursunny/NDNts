@@ -1,7 +1,7 @@
-import { Forwarder, FwFace } from "@ndn/fw";
+import { Forwarder, type FwFace } from "@ndn/fw";
 import { L3Face, Transport } from "@ndn/l3face";
 import { joinHostPort, splitHostPort, udp_helper, UdpTransport } from "@ndn/node-transport";
-import { NameLike } from "@ndn/packet";
+import type { NameLike } from "@ndn/packet";
 import { gql, GraphQLClient } from "graphql-request";
 import * as net from "node:net";
 import * as path from "node:path";

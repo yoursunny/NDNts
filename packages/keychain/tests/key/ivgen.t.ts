@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { CounterIvChecker, CounterIvGen, CounterIvOptions } from "../..";
+import { CounterIvChecker, CounterIvGen, type CounterIvOptions } from "../..";
 
 test.each([
   { fixedType: "uint8array", lenC: 8, lenD: 1 },

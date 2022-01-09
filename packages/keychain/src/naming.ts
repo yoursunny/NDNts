@@ -1,5 +1,5 @@
 import { Timestamp, Version } from "@ndn/naming-convention2";
-import { Component, Name, TT } from "@ndn/packet";
+import { Component, type Name, TT } from "@ndn/packet";
 import assert from "minimalistic-assert";
 
 /** 'KEY' component. */

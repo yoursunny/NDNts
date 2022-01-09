@@ -1,7 +1,7 @@
-import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { type Decoder, type EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
 import { TT } from "./an";
-import { Name, NameLike } from "./name/mod";
+import { Name, type NameLike } from "./name/mod";
 
 interface DelTLV {
   name: Name;

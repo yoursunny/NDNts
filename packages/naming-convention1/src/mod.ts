@@ -1,4 +1,4 @@
-import { Component, NamingConvention, TT } from "@ndn/packet";
+import { Component, type NamingConvention, TT } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
 
 interface NumberConvention extends NamingConvention<number | bigint, number> {}
