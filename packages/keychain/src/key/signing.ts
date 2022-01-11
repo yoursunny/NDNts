@@ -7,7 +7,7 @@ import type { Certificate } from "../cert/mod";
 import * as CertNaming from "../naming";
 import type { KeyChain } from "../store/mod";
 import { generateKeyInternal } from "./generate";
-import { CryptoAlgorithm, KeyKind, type NamedSigner, type NamedVerifier, type SigningAlgorithm } from "./types";
+import { type NamedSigner, type NamedVerifier, type SigningAlgorithm, CryptoAlgorithm, KeyKind } from "./types";
 
 class PlainCryptoSigner<I> implements Signer {
   constructor(

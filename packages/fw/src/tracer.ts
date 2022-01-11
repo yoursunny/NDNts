@@ -1,4 +1,4 @@
-import { Data, Interest, Nack, type Name } from "@ndn/packet";
+import { type Name, Data, Interest, Nack } from "@ndn/packet";
 
 import type { FwFace } from "./face";
 import { Forwarder } from "./forwarder";

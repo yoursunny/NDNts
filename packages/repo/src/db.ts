@@ -2,7 +2,7 @@ import { Data, Name } from "@ndn/packet";
 import { Decoder, fromUtf8 } from "@ndn/tlv";
 import type { AbstractIterator, AbstractLevelDOWN } from "abstract-leveldown";
 import EncodingDown from "encoding-down";
-import level, { LevelUp, LevelUpChain } from "levelup";
+import levelup, { LevelUp, LevelUpChain } from "levelup";
 
 export interface Record {
   readonly data: Data;
@@ -16,7 +16,7 @@ export type Db = LevelUp<EncodingDown<Name, Record>, AbstractIterator<Name, Reco
 export type DbChain = LevelUpChain<Name, Record>;
 
 export function openDb(db: AbstractLevelDOWN): Db {
-  return level(EncodingDown<Name, Record>(db, {
+  return (levelup as unknown as typeof LevelUp)(EncodingDown<Name, Record>(db, {
     keyEncoding: {
       encode(name: Name): Buffer {
         const { buffer, byteOffset, byteLength } = name.value;

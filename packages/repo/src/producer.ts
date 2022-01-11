@@ -1,4 +1,4 @@
-import { Endpoint, type Producer as EpProducer, type ProducerHandler } from "@ndn/endpoint";
+import { type Producer as EpProducer, type ProducerHandler, Endpoint } from "@ndn/endpoint";
 import type { Data, Interest } from "@ndn/packet";
 
 import { DataStore } from "./data-store";

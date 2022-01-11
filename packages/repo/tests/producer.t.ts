@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment, SequenceNum, Version } from "@ndn/naming-convention2";
-import { Component, Data, Interest, Name, type NameLike } from "@ndn/packet";
+import { type NameLike, Component, Data, Interest, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { setTimeout as delay } from "node:timers/promises";
 

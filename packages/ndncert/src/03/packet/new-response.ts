@@ -1,5 +1,5 @@
-import { Data, type Signer } from "@ndn/packet";
-import { Decoder, type EncodableTlv, Encoder, EvDecoder, toUtf8 } from "@ndn/tlv";
+import { type Signer, Data } from "@ndn/packet";
+import { type EncodableTlv, Decoder, Encoder, EvDecoder, toUtf8 } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
 import { TT } from "./an";

@@ -1,7 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
-import { Certificate, CertNaming, generateSigningKey, type NamedSigner, type NamedVerifier, ValidityPeriod } from "@ndn/keychain";
+import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, generateSigningKey, ValidityPeriod } from "@ndn/keychain";
 import { Component, FwHint, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
@@ -9,7 +9,7 @@ import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 import { fetch } from "@ndn/segmented-object";
 import { toHex } from "@ndn/tlv";
 import { setTimeout as delay } from "node:timers/promises";
-import { createTransport as createMT, type SentMessageInfo } from "nodemailer";
+import { type SentMessageInfo, createTransport as createMT } from "nodemailer";
 import { collect } from "streaming-iterables";
 
 import { CaProfile, ClientChallenge, ClientChallengeContext, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, requestCertificate, Server, ServerChallenge, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "../..";

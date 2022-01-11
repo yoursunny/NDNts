@@ -1,5 +1,5 @@
 import { RandomIvGen } from "../iv/mod";
-import { AesCommon, type AesEncryption, type AesGenParams } from "./aes-common";
+import { type AesEncryption, type AesGenParams, AesCommon } from "./aes-common";
 
 /**
  * AES-CBC encryption algorithm.

@@ -1,5 +1,5 @@
 import { ConsumerOptions, Endpoint, RetxPolicy } from "@ndn/endpoint";
-import { Certificate, type NamedSigner, type NamedVerifier, ValidityPeriod } from "@ndn/keychain";
+import { type NamedSigner, type NamedVerifier, Certificate, ValidityPeriod } from "@ndn/keychain";
 import { FwHint, Interest, Name } from "@ndn/packet";
 
 import * as crypto from "../crypto-common";

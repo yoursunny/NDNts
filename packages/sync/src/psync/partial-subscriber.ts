@@ -1,11 +1,11 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Component, Name, Verifier } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
-import { BloomFilter, type Parameters as BloomParameters } from "@yoursunny/psync-bloom";
+import { type Parameters as BloomParameters, BloomFilter } from "@yoursunny/psync-bloom";
 import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
-import { computeInterval, type IntervalFunc } from "../detail/interval";
+import { type IntervalFunc, computeInterval } from "../detail/interval";
 import { SubscriptionTable } from "../detail/subscription-table";
 import { IBLT } from "../iblt";
 import { type Subscriber, type Subscription, SyncUpdate } from "../types";

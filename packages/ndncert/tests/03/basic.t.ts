@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Certificate, CertNaming, ECDSA, generateSigningKey, type NamedSigner, type NamedVerifier, RSA, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
+import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, ECDSA, generateSigningKey, RSA, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
 import { Name } from "@ndn/packet";
 import { toUtf8 } from "@ndn/tlv";
 

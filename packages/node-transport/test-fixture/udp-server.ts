@@ -1,5 +1,5 @@
 import { Forwarder } from "@ndn/fw";
-import { L3Face, type Transport } from "@ndn/l3face";
+import { type Transport, L3Face } from "@ndn/l3face";
 import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
 import * as dgram from "node:dgram";
 

@@ -2,7 +2,7 @@ import { Forwarder } from "@ndn/fw";
 import applyMixins from "applymixins";
 
 import { type ConsumerOptions, EndpointConsumer } from "./consumer";
-import { EndpointProducer, type ProducerOptions } from "./producer";
+import { type ProducerOptions, EndpointProducer } from "./producer";
 
 export interface Options extends ConsumerOptions, ProducerOptions {
   fw?: Forwarder;

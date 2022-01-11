@@ -1,6 +1,6 @@
-import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
+import { type FwFace, Forwarder, FwPacket } from "@ndn/fw";
 import { LpService } from "@ndn/lp";
-import { Interest, type NameLike } from "@ndn/packet";
+import { type NameLike, Interest } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import abortable, { AbortError as IteratorAbortError } from "abortable-iterator";
 import pushable from "it-pushable";
@@ -158,7 +158,6 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
 
       const abort = new AbortController();
       const onStateChange = pEvent(this, "state");
-      // eslint-disable-next-line promise/prefer-await-to-then
       void onStateChange.then(() => abort.abort());
 
       try {

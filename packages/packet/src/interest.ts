@@ -3,7 +3,7 @@ import assert from "minimalistic-assert";
 
 import { TT } from "./an";
 import { FwHint } from "./fwhint";
-import { Name, type NameLike, ParamsDigest } from "./name/mod";
+import { type NameLike, Name, ParamsDigest } from "./name/mod";
 import { sha256 } from "./security/helper_node";
 import { LLSign, LLVerify, Signer, Verifier } from "./security/signing";
 import { SigInfo } from "./sig-info";

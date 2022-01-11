@@ -1,12 +1,12 @@
-import { Endpoint, Producer, type ProducerHandler } from "@ndn/endpoint";
-import { Certificate, CertNaming, type NamedVerifier, ValidityPeriod } from "@ndn/keychain";
+import { type ProducerHandler, Endpoint, Producer } from "@ndn/endpoint";
+import { type NamedVerifier, Certificate, CertNaming, ValidityPeriod } from "@ndn/keychain";
 import type { FwHint, Signer } from "@ndn/packet";
-import { Component, type ComponentLike, Data } from "@ndn/packet";
+import { type ComponentLike, Component, Data } from "@ndn/packet";
 import { Metadata, serveMetadata } from "@ndn/rdr";
 import { toHex } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
-import { C, type CaProfile, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
+import { type CaProfile, C, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
 import type { ServerChallenge, ServerChallengeContext } from "./challenge";
 
 export interface ServerOptions {

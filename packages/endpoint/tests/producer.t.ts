@@ -1,11 +1,11 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { generateSigningKey } from "@ndn/keychain";
-import { Data, Interest, type NameLike } from "@ndn/packet";
+import { type NameLike, Data, Interest } from "@ndn/packet";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 import { setTimeout as delay } from "node:timers/promises";
 
-import { DataStoreBuffer, Endpoint, type Options, Producer, ProducerHandler } from "..";
+import { type Options, DataStoreBuffer, Endpoint, Producer, ProducerHandler } from "..";
 
 afterEach(() => Endpoint.deleteDefaultForwarder());
 

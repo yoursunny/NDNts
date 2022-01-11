@@ -4,13 +4,13 @@ import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Closers } from "@ndn/l3face/test-fixture/closers";
-import { Name, type NameLike } from "@ndn/packet";
+import { type NameLike, Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import assert from "minimalistic-assert";
 import DefaultMap from "mnemonist/default-map.js";
 import { setTimeout as delay } from "node:timers/promises";
 
-import { type IBLT, makePSyncCompatParam, PSyncFull, type SyncNode, type SyncUpdate } from "..";
+import { type IBLT, type SyncNode, type SyncUpdate, makePSyncCompatParam, PSyncFull } from "..";
 
 class DebugPrinter {
   public static enabled = process.env.NDNTS_SYNC_DEBUG === "1";
@@ -97,7 +97,7 @@ class Fixture {
     closers.push(...this.syncs);
 
     for (const [i, sync] of this.syncs.entries()) {
-      const title = String.fromCharCode(0x41 + i);
+      const title = String.fromCodePoint(0x41 + i);
       debugPrinter.start(title, sync);
 
       const handleUpdate = jest.fn<void, [SyncUpdate<Name>]>()

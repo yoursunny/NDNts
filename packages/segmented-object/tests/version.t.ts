@@ -6,7 +6,7 @@ import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Segment2, Segment3, Version2, Version3 } from "@ndn/naming-convention2";
 import { Data, Interest, Name } from "@ndn/packet";
 
-import { BufferChunkSource, type ChunkSource, discoverVersion, serve, serveVersioned } from "..";
+import { type ChunkSource, BufferChunkSource, discoverVersion, serve, serveVersioned } from "..";
 
 const closers = new Closers();
 

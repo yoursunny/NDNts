@@ -1,7 +1,7 @@
 import { Endpoint, Producer } from "@ndn/endpoint";
 import { FwFace, ReadvertiseDestination, TapFace } from "@ndn/fw";
-import { Certificate, type KeyChain } from "@ndn/keychain";
-import { Interest, type Name } from "@ndn/packet";
+import { type KeyChain, Certificate } from "@ndn/keychain";
+import { type Name, Interest } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 
 import { ControlCommand } from "./control-command";

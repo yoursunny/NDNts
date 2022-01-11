@@ -1,11 +1,11 @@
 import type { ProducerHandler } from "@ndn/endpoint";
-import { Data, digestSigning, Interest, Name, type Signer } from "@ndn/packet";
+import { type Signer, Data, digestSigning, Interest, Name } from "@ndn/packet";
 import assert from "minimalistic-assert";
 import DefaultMap from "mnemonist/default-map.js";
 import pDefer, { type DeferredPromise } from "p-defer";
 import { getIterator } from "streaming-iterables";
 
-import { defaultSegmentConvention, type SegmentConvention } from "../convention";
+import { type SegmentConvention, defaultSegmentConvention } from "../convention";
 import type { Chunk, ChunkSource } from "./chunk-source/mod";
 
 /** Produce Data for requested segment. */

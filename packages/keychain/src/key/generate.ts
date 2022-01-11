@@ -1,4 +1,4 @@
-import { Name, type NameLike } from "@ndn/packet";
+import { type NameLike, Name } from "@ndn/packet";
 
 import { crypto } from "../crypto_node";
 import * as CertNaming from "../naming";

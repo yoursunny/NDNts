@@ -1,5 +1,5 @@
 import { L3Face, StreamTransport } from "@ndn/l3face";
-import { Data, type Interest, type Name } from "@ndn/packet";
+import { type Interest, type Name, Data } from "@ndn/packet";
 import duplexify from "duplexify";
 import { readable as isReadable, writable as isWritable } from "is-stream";
 import pushable, { type Pushable } from "it-pushable";

@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Certificate, ECDSA, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, RSA, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
+import { type NamedSigner, type NamedVerifier, Certificate, ECDSA, generateSigningKey, KeyChain, RSA, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, digestSigning, NameLike, Signer, Verifier } from "@ndn/packet";
 import { PrefixRegShorter } from "@ndn/repo";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";

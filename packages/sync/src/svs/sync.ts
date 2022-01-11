@@ -1,5 +1,5 @@
-import { Endpoint, Producer, type ProducerHandler } from "@ndn/endpoint";
-import { Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
+import { type ProducerHandler, Endpoint, Producer } from "@ndn/endpoint";
+import { type NameLike, type Signer, type Verifier, Interest, Name, nullSigner } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";

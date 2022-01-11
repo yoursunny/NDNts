@@ -1,4 +1,4 @@
-import { Data, Interest, Nack, Name, type NameLike } from "@ndn/packet";
+import { type NameLike, Data, Interest, Nack, Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import MultiSet from "mnemonist/multi-set.js";
 import { EventEmitter } from "node:events";

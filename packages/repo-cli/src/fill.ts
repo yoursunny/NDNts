@@ -7,7 +7,7 @@ import ProgressBar from "progress";
 import { batch, consume, pipeline, tap, transform } from "streaming-iterables";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { declareStoreArgs, openStore, store, type StoreArgs } from "./util";
+import { type StoreArgs, declareStoreArgs, openStore, store } from "./util";
 
 interface GenDataArgs {
   prefix: string;

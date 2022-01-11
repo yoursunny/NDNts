@@ -1,15 +1,15 @@
-import { Endpoint, Producer, type ProducerHandler } from "@ndn/endpoint";
-import { Data, Interest, Name, type Signer, type Verifier } from "@ndn/packet";
+import { type ProducerHandler, Endpoint, Producer } from "@ndn/endpoint";
+import { type Signer, type Verifier, Data, Interest, Name } from "@ndn/packet";
 import { toHex } from "@ndn/tlv";
 import { EventEmitter } from "node:events";
 import pDefer, { type DeferredPromise } from "p-defer";
 import type TypedEmitter from "typed-emitter";
 
-import { computeInterval, type IntervalFunc, type IntervalRange } from "../detail/interval";
+import { type IntervalFunc, type IntervalRange, computeInterval } from "../detail/interval";
 import type { IBLT } from "../iblt";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "../types";
 import { PSyncCodec } from "./codec";
-import { PSyncCore, type PSyncNode } from "./core";
+import { type PSyncNode, PSyncCore } from "./core";
 import { PSyncStateFetcher } from "./state-fetcher";
 import { PSyncStateProducerBuffer } from "./state-producer-buffer";
 

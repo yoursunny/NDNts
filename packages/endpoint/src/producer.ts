@@ -1,5 +1,5 @@
 import { type Forwarder, type FwFace, FwPacket } from "@ndn/fw";
-import { Data, Interest, Name, type NameLike, type Signer, SigType } from "@ndn/packet";
+import { type NameLike, type Signer, Data, Interest, Name, SigType } from "@ndn/packet";
 import { flatTransform } from "streaming-iterables";
 
 import type { DataBuffer } from "./data-buffer";

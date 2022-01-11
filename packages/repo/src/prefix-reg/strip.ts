@@ -1,4 +1,4 @@
-import { Component, type ComponentLike, NamingConvention, TT } from "@ndn/packet";
+import { type ComponentLike, Component, NamingConvention, TT } from "@ndn/packet";
 
 import { PrefixRegDynamic } from "./dynamic";
 import type { PrefixRegController } from "./types";

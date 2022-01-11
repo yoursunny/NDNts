@@ -1,4 +1,4 @@
-import { Certificate, CertNaming, type CryptoAlgorithm, ECDSA, KeyChain, KeyChainImplWebCrypto as crypto, KeyStore, RSA, ValidityPeriod } from "@ndn/keychain";
+import { type CryptoAlgorithm, Certificate, CertNaming, ECDSA, KeyChain, KeyChainImplWebCrypto as crypto, KeyStore, RSA, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, Name } from "@ndn/packet";
 import { type Decodable, Decoder, Encoder } from "@ndn/tlv";
 import execa from "execa";

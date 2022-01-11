@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Data, type Interest, Name, type NameLike } from "@ndn/packet";
+import { type Interest, type NameLike, Data, Name } from "@ndn/packet";
 
 import type { ChunkSource } from "./chunk-source/mod";
 import { DataProducer } from "./data-producer";

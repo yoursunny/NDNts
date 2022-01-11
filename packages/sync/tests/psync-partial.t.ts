@@ -4,7 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Name } from "@ndn/packet";
 import { setTimeout as delay } from "node:timers/promises";
 
-import { makePSyncCompatParam, PSyncPartialPublisher, PSyncPartialSubscriber, type Subscription, type SyncUpdate } from "..";
+import { type Subscription, type SyncUpdate, makePSyncCompatParam, PSyncPartialPublisher, PSyncPartialSubscriber } from "..";
 
 afterEach(Endpoint.deleteDefaultForwarder);
 

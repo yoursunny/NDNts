@@ -1,7 +1,7 @@
 import { FwFace } from "@ndn/fw";
 import { collect, filter, pipeline, transform } from "streaming-iterables";
 
-import { fchQuery, type FchRequest } from "./fch";
+import { type FchRequest, fchQuery } from "./fch";
 import { FCH_DEFAULTS, getDefaultGateway } from "./platform_node";
 import { type ConnectRouterOptions, type ConnectRouterResult, connectToRouter } from "./router";
 

@@ -1,13 +1,13 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
-import { Certificate, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, ValidityPeriod } from "@ndn/keychain";
-import { Name, type NameLike } from "@ndn/packet";
+import { type NamedSigner, type NamedVerifier, Certificate, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
+import { type NameLike, Name } from "@ndn/packet";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
 import { setTimeout as delay } from "node:timers/promises";
 import { collect } from "streaming-iterables";
 
-import { CertFetcher, type CertSource, KeyChainCertSource, TrustAnchorContainer } from "..";
+import { type CertSource, CertFetcher, KeyChainCertSource, TrustAnchorContainer } from "..";
 
 let keyChain: KeyChain;
 let pvtA: NamedSigner.PrivateKey;

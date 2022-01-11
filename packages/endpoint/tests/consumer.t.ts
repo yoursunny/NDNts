@@ -1,8 +1,8 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Data, Interest, type Verifier } from "@ndn/packet";
+import { type Verifier, Data, Interest } from "@ndn/packet";
 
-import { Endpoint, type ProducerHandler, type RetxPolicy } from "..";
+import { type ProducerHandler, type RetxPolicy, Endpoint } from "..";
 
 let ep: Endpoint;
 beforeEach(() => ep = new Endpoint());

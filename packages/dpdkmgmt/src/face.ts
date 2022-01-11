@@ -1,4 +1,4 @@
-import { Forwarder, type FwFace } from "@ndn/fw";
+import { type FwFace, Forwarder } from "@ndn/fw";
 import { L3Face, Transport } from "@ndn/l3face";
 import { joinHostPort, splitHostPort, udp_helper, UdpTransport } from "@ndn/node-transport";
 import type { NameLike } from "@ndn/packet";

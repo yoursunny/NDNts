@@ -6,7 +6,7 @@ import type { Certificate } from "../cert/mod";
 import * as CertNaming from "../naming";
 import type { KeyChain } from "../store/mod";
 import { generateKeyInternal } from "./generate";
-import { CryptoAlgorithm, type EncryptionAlgorithm, KeyKind, type NamedDecrypter, type NamedEncrypter } from "./types";
+import { type EncryptionAlgorithm, type NamedDecrypter, type NamedEncrypter, CryptoAlgorithm, KeyKind } from "./types";
 
 class PlainCryptoEncrypter<I> {
   constructor(

@@ -2,9 +2,9 @@ import { type Decoder, type Encodable, type EncodableTlv, Encoder, EvDecoder, NN
 
 import { TT } from "./an";
 import type { Interest } from "./interest";
-import { Component, ImplicitDigest, Name, type NameLike } from "./name/mod";
+import { type NameLike, Component, ImplicitDigest, Name } from "./name/mod";
 import { sha256 } from "./security/helper_node";
-import { LLSign, LLVerify, type Signer, type Verifier } from "./security/signing";
+import { type Signer, type Verifier, LLSign, LLVerify } from "./security/signing";
 import { SigInfo } from "./sig-info";
 
 const FIELDS = Symbol("Data.FIELDS");

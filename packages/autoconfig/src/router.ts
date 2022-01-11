@@ -1,6 +1,6 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder, FwFace, TapFace } from "@ndn/fw";
-import { Interest, Name, type NameLike } from "@ndn/packet";
+import { type NameLike, Interest, Name } from "@ndn/packet";
 import type { H3Transport } from "@ndn/quic-transport";
 import hirestime from "hirestime";
 

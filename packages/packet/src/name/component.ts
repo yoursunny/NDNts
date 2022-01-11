@@ -16,11 +16,11 @@ function assertType(t: number): void {
 
 const CHAR_ENCODE: string[] = [];
 for (let ch = 0x00; ch <= 0xFF; ++ch) {
-  const s = String.fromCharCode(ch);
+  const s = String.fromCodePoint(ch);
   CHAR_ENCODE.push(/[\w.~-]/i.test(s) ? s : `%${ch.toString(16).padStart(2, "0").toUpperCase()}`);
 }
-const CHARCODE_PERCENT = "%".charCodeAt(0);
-const CHARCODE_PERIOD = ".".charCodeAt(0);
+const CODEPOINT_PERCENT = "%".codePointAt(0);
+const CODEPOINT_PERIOD = ".".codePointAt(0);
 
 export type ComponentLike = Component | string;
 
@@ -66,9 +66,9 @@ export class Component {
     const value = new Uint8Array(sValue.length);
     let length = 0;
     for (let i = 0; i < sValue.length;) {
-      let ch = sValue.charCodeAt(i);
+      let ch = sValue.codePointAt(i)!;
       let hex: string;
-      if (ch === CHARCODE_PERCENT && /^[\da-f]{2}$/i.test(hex = sValue.slice(i + 1, i + 3))) {
+      if (ch === CODEPOINT_PERCENT && /^[\da-f]{2}$/i.test(hex = sValue.slice(i + 1, i + 3))) {
         ch = Number.parseInt(hex, 16);
         i += 3;
       } else {
@@ -114,7 +114,7 @@ export class Component {
     let b = `${this.type}=`;
     let hasNonPeriods = false;
     for (const ch of this.value) {
-      hasNonPeriods ||= ch !== CHARCODE_PERIOD;
+      hasNonPeriods ||= ch !== CODEPOINT_PERIOD;
       b += CHAR_ENCODE[ch];
     }
     if (!hasNonPeriods) {

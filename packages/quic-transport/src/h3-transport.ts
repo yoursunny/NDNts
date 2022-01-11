@@ -65,7 +65,7 @@ export namespace H3Transport {
    */
   export async function connect(uri: string): Promise<H3Transport> {
     const tr = new (globalThis as any).WebTransport(uri) as WebTransport;
-    tr.closed.catch(() => undefined); // eslint-disable-line promise/prefer-await-to-then
+    void tr.closed.catch(() => undefined);
     await tr.ready;
     return new H3Transport(uri, tr);
   }

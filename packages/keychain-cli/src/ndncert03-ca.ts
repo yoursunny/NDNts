@@ -1,6 +1,6 @@
 import { openUplinks } from "@ndn/cli-common";
 import { createVerifier, SigningAlgorithmListFull } from "@ndn/keychain";
-import { Server, type ServerChallenge, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "@ndn/ndncert";
+import { type ServerChallenge, Server, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "@ndn/ndncert";
 import type { Verifier } from "@ndn/packet";
 import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
 import { toHex } from "@ndn/tlv";

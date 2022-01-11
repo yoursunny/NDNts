@@ -4,7 +4,7 @@ import { Certificate, CryptoAlgorithmListFull, EcCurve, ECDSA, generateSigningKe
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";
 import { execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
 import { SafeBag } from "@ndn/ndnsec";
-import { Data, digestSigning, Interest, type Signer, type Verifier } from "@ndn/packet";
+import { type Signer, type Verifier, Data, digestSigning, Interest } from "@ndn/packet";
 import { execute as testSignVerify } from "@ndn/packet/test-fixture/sign-verify";
 import { Decoder, Encoder } from "@ndn/tlv";
 
