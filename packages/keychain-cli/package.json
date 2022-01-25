@@ -33,7 +33,7 @@
     "@strattadb/environment": "^8.0.2",
     "fast-chunk-string": "^1.0.1",
     "get-stdin": "^8.0.0",
-    "graceful-fs": "^4.2.8",
+    "graceful-fs": "^4.2.9",
     "hard-rejection": "^2.1.0",
     "leveldown": "^6.1.0",
     "nodemailer": "^6.7.2",

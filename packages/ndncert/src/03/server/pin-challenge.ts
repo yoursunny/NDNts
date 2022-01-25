@@ -6,10 +6,10 @@ import type { ChallengeRequest } from "../packet/mod";
 import type { ServerChallenge } from "./challenge";
 import { ServerPinLikeChallenge } from "./pin-like-challenge";
 
-interface Events {
+type Events = {
   /** Emitted when a pin code has been generated. */
   newpin: (requestId: Uint8Array, pin: string) => void;
-}
+};
 
 /** The "pin" challenge where client receives a pin code through offline means. */
 export class ServerPinChallenge extends (EventEmitter as new() => TypedEmitter<Events>) implements ServerChallenge {

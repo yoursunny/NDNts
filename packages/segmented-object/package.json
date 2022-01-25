@@ -31,7 +31,7 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "event-iterator": "^2.0.0",
-    "graceful-fs": "^4.2.8",
+    "graceful-fs": "^4.2.9",
     "hirestime": "^6.1.0",
     "is-stream": "^2.0.1",
     "minimalistic-assert": "^1.0.1",
@@ -40,7 +40,7 @@
     "p-lazy": "^3.1.0",
     "streaming-iterables": "^6.0.0",
     "tslib": "^2.3.1",
-    "typed-emitter": "^1.4.0"
+    "typed-emitter": "^2.1.0"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",

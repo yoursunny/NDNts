@@ -35,7 +35,7 @@ type SegRequest<T> = Pick<Readonly<SegState>, "segNum" | "isRetx" | "rto"> & {
 
 const UNBLOCK = Symbol("UNBLOCK");
 
-interface Events {
+type Events = {
   [UNBLOCK]: () => void;
 
   /** Fetching finished. */
@@ -43,7 +43,7 @@ interface Events {
 
   /** A segment request has exceeded maximum retx limit and will not be retried. */
   exceedRetxLimit: (segNum: number) => void;
-}
+};
 
 /** Congestion control logic. */
 export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) {

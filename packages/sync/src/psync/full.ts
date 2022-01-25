@@ -27,9 +27,9 @@ interface DebugEntry {
   state?: PSyncCore.State;
 }
 
-interface Events extends SyncProtocol.Events<Name> {
+type Events = SyncProtocol.Events<Name> & {
   debug: (entry: DebugEntry) => void;
-}
+};
 
 /** PSync - FullSync participant. */
 export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)

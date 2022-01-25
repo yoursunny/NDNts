@@ -9,14 +9,14 @@ import type TypedEmitter from "typed-emitter";
 import type { Forwarder, ForwarderImpl } from "./forwarder";
 import type { FwPacket } from "./packet";
 
-interface Events {
+type Events = {
   /** Emitted upon face is up as reported by lower layer. */
   up: () => void;
   /** Emitted upon face is down as reported by lower layer. */
   down: () => void;
   /** Emitted upon face is closed. */
   close: () => void;
-}
+};
 
 /** A socket or network interface associated with forwarding plane. */
 export interface FwFace extends TypedEmitter<Events> {
@@ -64,13 +64,16 @@ export namespace FwFace {
 
   export type RouteAnnouncement = boolean | number | NameLike;
 
-  export interface RxTxEvents {
+  export type RxTxEvents = {
     up: () => void;
     down: () => void;
-  }
+  };
 
-  export interface RxTxBase extends Partial<TypedEmitter<RxTxEvents>> {
+  export interface RxTxBase {
     readonly attributes?: Attributes;
+
+    on?: (...args: Parameters<TypedEmitter<RxTxEvents>["on"]>) => void;
+    off?: (...args: Parameters<TypedEmitter<RxTxEvents>["off"]>) => void;
   }
 
   export interface RxTx extends RxTxBase {

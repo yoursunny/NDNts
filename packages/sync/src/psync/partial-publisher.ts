@@ -26,9 +26,9 @@ interface DebugEntry {
   interestName?: Name;
 }
 
-interface Events extends SyncProtocol.Events<Name> {
+type Events = SyncProtocol.Events<Name> & {
   debug: (entry: DebugEntry) => void;
-}
+};
 
 /** PSync - PartialSync publisher. */
 export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitter<Events>)

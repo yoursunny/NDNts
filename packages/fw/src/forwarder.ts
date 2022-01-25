@@ -8,7 +8,7 @@ import type { FwPacket } from "./packet";
 import { Pit } from "./pit";
 import { Readvertise } from "./readvertise";
 
-interface Events {
+type Events = {
   /** Emitted before adding face. */
   faceadd: (face: FwFace) => void;
   /** Emitted after removing face. */
@@ -25,7 +25,7 @@ interface Events {
   pktrx: (face: FwFace, pkt: FwPacket) => void;
   /** Emitted before packet transmission. */
   pkttx: (face: FwFace, pkt: FwPacket) => void;
-}
+};
 
 /** Forwarding plane. */
 export interface Forwarder extends TypedEmitter<Events> {

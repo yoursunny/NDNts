@@ -10,12 +10,12 @@ import type TypedEmitter from "typed-emitter";
 
 import { type Db, type DbChain, type Record, filterExpired, isExpired, openDb } from "./db";
 
-interface Events {
+type Events = {
   /** Emitted when a new record is inserted. */
   insert: (name: Name) => void;
   /** Emitted when an existing record is deleted. */
   delete: (name: Name) => void;
-}
+};
 
 /** Data packet storage based on LevelDB or other abstract-leveldown store. */
 export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)

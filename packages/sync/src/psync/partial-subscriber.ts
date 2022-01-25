@@ -20,10 +20,10 @@ interface DebugEntry {
   action: string;
 }
 
-interface Events {
+type Events = {
   debug: (entry: DebugEntry) => void;
   state: (topics: readonly PSyncPartialSubscriber.TopicInfo[]) => void;
-}
+};
 
 /** PSync - PartialSync subscriber. */
 export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitter<Events>)

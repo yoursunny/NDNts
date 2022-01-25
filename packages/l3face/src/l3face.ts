@@ -12,7 +12,7 @@ import type TypedEmitter from "typed-emitter";
 
 import { Transport } from "./transport";
 
-interface Events {
+type Events = {
   /** Emitted upon face state change. */
   state: (state: L3Face.State) => void;
   /** Emitted upon state becomes UP. */
@@ -25,7 +25,7 @@ interface Events {
   rxerror: (err: L3Face.RxError) => void;
   /** Emitted upon TX preparation error. */
   txerror: (err: L3Face.TxError) => void;
-}
+};
 
 /** Network layer face for sending and receiving L3 packets. */
 export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) implements FwFace.RxTx {

@@ -7,14 +7,14 @@ import type TypedEmitter from "typed-emitter";
 import { type SegmentConvention, defaultSegmentConvention } from "../convention";
 import { FetchLogic } from "./logic";
 
-interface Events {
+type Events = {
   /** Emitted when a Data segment arrives. */
   segment: (seg: Fetcher.SegmentData) => void;
   /** Emitted after all data chunks arrive. */
   end: () => void;
   /** Emitted upon error. */
   error: (err: Error) => void;
-}
+};
 
 /** Fetch Data packets as guided by FetchLogic. */
 export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {

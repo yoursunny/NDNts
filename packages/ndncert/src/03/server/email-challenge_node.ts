@@ -32,13 +32,13 @@ function templateSub(input: string, sub: MailSub): string {
   return input;
 }
 
-interface Events {
+type Events = {
   /** Emitted after sending an email. */
   emailsent: (requestId: Uint8Array, sent: SentMessageInfo) => void;
 
   /** Emitted after failure to send an email. */
   emailerror: (requestId: Uint8Array, err: Error) => void;
-}
+};
 
 /** The "email" challenge where client receives a pin code via email. */
 export class ServerEmailChallenge extends (EventEmitter as new() => TypedEmitter<Events>) implements ServerChallenge {

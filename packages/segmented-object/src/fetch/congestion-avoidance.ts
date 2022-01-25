@@ -2,9 +2,9 @@ import assert from "minimalistic-assert";
 import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
-interface Events {
+type Events = {
   cwndupdate: (cwnd: number) => void;
-}
+};
 
 const CWND = Symbol("CongestionAvoidance.CWND");
 

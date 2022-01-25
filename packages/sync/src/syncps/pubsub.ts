@@ -43,9 +43,9 @@ interface DebugEntry {
   content?: Name[];
 }
 
-interface Events {
+type Events = {
   debug: (entry: DebugEntry) => void;
-}
+};
 
 function defaultModifyPublication(pub: Data) {
   pub.name = pub.name.append(Timestamp, Date.now());

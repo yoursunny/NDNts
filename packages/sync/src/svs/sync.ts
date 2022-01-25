@@ -17,9 +17,9 @@ interface DebugEntry {
   ourNewer?: number;
 }
 
-interface Events extends SyncProtocol.Events<SvSync.ID> {
+type Events = SyncProtocol.Events<SvSync.ID> & {
   debug: (entry: DebugEntry) => void;
-}
+};
 
 /** StateVectorSync participant. */
 export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)

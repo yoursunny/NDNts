@@ -15,10 +15,10 @@ export interface SyncProtocol<ID = any> extends TypedEmitter<SyncProtocol.Events
 }
 
 export namespace SyncProtocol {
-  export interface Events<ID> {
+  export type Events<ID> = {
     /** Emitted when a node is updated, i.e. has new sequence numbers. */
     update: (update: SyncUpdate<ID>) => void;
-  }
+  };
 }
 
 /**
@@ -97,8 +97,8 @@ export interface Subscription<Topic = Name, Update = SyncUpdate<Topic>> extends 
 }
 
 export namespace Subscription {
-  export interface Events<Update> {
+  export type Events<Update> = {
     /** Emitted when a subscription update is received. */
     update: (update: Update) => void;
-  }
+  };
 }
