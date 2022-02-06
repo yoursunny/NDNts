@@ -9,7 +9,7 @@ mkdir -p mk/nightly-output/
 
 git add .
 VERSION=$(git show -s --format='%ct %H' | gawk '{ printf "0.0.%s-nightly-%s", strftime("%Y%m%d", $1, 1), substr($2, 1, 7) }')
-./node_modules/.bin/pnpm -r --filter ./packages exec -- bash -c 'node '$ROOTDIR'/mk/edit-packagejson.js VCDN '$VERSION' && mv $(npm pack .) '$ROOTDIR'/mk/nightly-output/$(basename $(pwd)).tgz'
+corepack pnpm -r --filter ./packages exec -- bash -c 'node '$ROOTDIR'/mk/edit-packagejson.js VCDN '$VERSION' && mv $(corepack pnpm pack .) '$ROOTDIR'/mk/nightly-output/$(basename $(pwd)).tgz'
 git checkout -- .
 
 pushd mk/nightly-output/ >/dev/null

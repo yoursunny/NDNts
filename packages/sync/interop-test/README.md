@@ -24,7 +24,7 @@ Test `PSyncFull`:
 
 ```bash
 # in NDNts directory
-npm run literate packages/sync/interop-test/psync-full.ts
+corepack pnpm literate packages/sync/interop-test/psync-full.ts
 
 # in PSync directory
 export NDN_LOG=examples.FullSyncApp=INFO
@@ -35,7 +35,7 @@ Test `PSyncPartialPublisher`:
 
 ```bash
 # in NDNts directory
-npm run literate packages/sync/interop-test/psync-partial-publisher.ts
+corepack pnpm literate packages/sync/interop-test/psync-partial-publisher.ts
 
 # in PSync directory
 export NDN_LOG=examples.PartialSyncConsumerApp=INFO
@@ -50,7 +50,7 @@ export NDN_LOG=examples.PartialSyncProducerApp=INFO
 LD_LIBRARY_PATH=build ./build/examples/psync-producer /psync-interop /psync-memphis/${RANDOM} 10 1000
 
 # in NDNts directory
-npm run literate packages/sync/interop-test/psync-partial-subscriber.ts
+corepack pnpm literate packages/sync/interop-test/psync-partial-subscriber.ts
 ```
 
 ## syncps
@@ -90,7 +90,7 @@ Test `SyncpsPubsub`:
 packages/sync/interop-test/syncps-ind.exe /syncps-interop /syncps-interop-data /syncps-interop-data/ind/$RANDOM >/dev/null
 
 # in NDNts directory
-npm run literate packages/sync/interop-test/syncps.ts
+corepack pnpm literate packages/sync/interop-test/syncps.ts
 ```
 
 ## SvSync
@@ -115,5 +115,5 @@ Test `SvSync`:
 LD_LIBRARY_PATH=build ./build/examples/chat ${RANDOM}
 
 # in NDNts directory
-npm run literate packages/sync/interop-test/svsync.ts
+corepack pnpm literate packages/sync/interop-test/svsync.ts
 ```

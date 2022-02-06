@@ -15,12 +15,12 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-      - run: npm run bootstrap
+      - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
-      - run: npm run build
-      - run: npm run literate
-      - run: npm run lint
+      - run: corepack pnpm build
+      - run: corepack pnpm literate
+      - run: corepack pnpm lint
   unittest:
     strategy:
       matrix:
@@ -41,10 +41,10 @@ jobs:
             | sudo tee /etc/apt/sources.list.d/nfd-nightly.list
           sudo apt-get update
           sudo apt-get install --no-install-recommends ndnsec
-      - run: npm run bootstrap
+      - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
-      - run: npm run cover -- --colors
+      - run: corepack pnpm cover -- --colors
       - uses: coverallsapp/github-action@master
         if: ${{ matrix.node == 16 }}
         continue-on-error: true
@@ -67,17 +67,17 @@ jobs:
             | sudo tee /etc/apt/sources.list.d/nfd-nightly.list
           sudo apt-get update
           sudo apt-get install --no-install-recommends libndn-cxx-dev nfd
-      - run: npm run bootstrap
-      - run: npm run build
+      - run: corepack pnpm install
+      - run: corepack pnpm build
       - name: check DefinitelyTyped dependencies
         run: node mk/check-types-dep.mjs
-      - run: npm run literate lint
-      - run: npm run literate
-      - run: cd integ/browser-tests && npm test
-      - run: cd integ/cxx-tests && npm test
+      - run: corepack pnpm literate lint
+      - run: corepack pnpm literate
+      - run: cd integ/browser-tests && corepack pnpm test
+      - run: cd integ/cxx-tests && corepack pnpm test
       - name: check C++ code style
         run: |
-          npm run clang-format
+          corepack pnpm clang-format
           git diff --exit-code
   publish:
     needs: [build, unittest, integ]
@@ -92,14 +92,14 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-      - run: npm run bootstrap
+      - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
-      - run: npm run build
+      - run: corepack pnpm build
       - run: bash mk/publish-nightly.sh
         env:
           GTAGID: UA-935676-11
-      - run: npm run typedoc
+      - run: corepack pnpm typedoc
         env:
           GTAGID: UA-935676-11
       - uses: crazy-max/ghaction-github-pages@v2

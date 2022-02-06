@@ -3,10 +3,10 @@
 These integration tests confirm NDNts is compatible with ndn-cxx reference implementation.
 They only work on Linux, and require `build-essential libndn-cxx-dev` packages.
 
-`npm test` runs the tests.
+`corepack pnpm test` runs the tests.
 C++ compilation is handled automatically.
 
-`npm run clang-format` at the codebase root fixes C++ code style.
+`corepack pnpm clang-format` at the codebase root fixes C++ code style.
 This requires `clang-format-11` package.
 
 ## Run in Docker

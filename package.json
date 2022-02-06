@@ -2,16 +2,17 @@
   "name": "@ndn/root",
   "private": true,
   "scripts": {
-    "bootstrap": "npx pnpm install && bash mk/bootstrap.sh",
     "build": "bash mk/build.sh",
     "clang-format": "git ls-files '*.cpp' | xargs clang-format-11 -i -style=file",
     "cover": "bash mk/build.sh cover",
     "lint": "bash mk/build.sh lint",
     "literate": "bash mk/literate.sh",
+    "postinstall": "bash mk/bootstrap.sh",
     "preinstall": "npx only-allow pnpm",
     "test": "jest",
     "typedoc": "bash mk/typedoc.sh"
   },
+  "packageManager": "pnpm@6.29.1",
   "devDependencies": {
     "@types/jest": "^27.4.0",
     "@types/node": "^16.11.21",
@@ -22,7 +23,6 @@
     "expect": "^27.4.6",
     "jest": "^27.4.7",
     "jest-environment-node": "^27.4.6",
-    "pnpm": "^6.28.0",
     "ts-jest": "^27.1.3",
     "tslib": "^2.3.1",
     "typedoc": "^0.22.11",

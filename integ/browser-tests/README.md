@@ -22,4 +22,4 @@ docker run -it --rm \
   aliginberlin/puppeteer:latest bash
 ```
 
-Type `npm test` to run the tests.
+Type `corepack pnpm test` to run the tests.
