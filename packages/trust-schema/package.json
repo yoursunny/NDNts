@@ -38,6 +38,6 @@
   "devDependencies": {
     "@ndn/repo": "workspace:*",
     "@types/minimalistic-assert": "^1.0.1",
-    "streaming-iterables": "^6.0.0"
+    "streaming-iterables": "^6.2.0"
   }
 }

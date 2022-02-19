@@ -44,6 +44,6 @@
     "@ndn/node-transport": "workspace:*",
     "@ndn/repo": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
-    "streaming-iterables": "^6.0.0"
+    "streaming-iterables": "^6.2.0"
   }
 }

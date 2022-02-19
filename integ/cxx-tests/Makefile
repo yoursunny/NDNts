@@ -1,7 +1,9 @@
 CXX ?= g++
-CXXFLAGS ?= -std=c++14 -Wall -Werror `pkg-config --cflags libndn-cxx`
+CXXFLAGS ?= -std=c++17 -Wall -Werror `pkg-config --cflags libndn-cxx`
 LDFLAGS ?=
 LIBS ?= `pkg-config --libs libndn-cxx`
+
+all:
 
 %/a.out: %/*.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)

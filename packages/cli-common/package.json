@@ -33,7 +33,7 @@
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@strattadb/environment": "^8.0.2",
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.0.0",
     "tslib": "^2.3.1"
   }
 }

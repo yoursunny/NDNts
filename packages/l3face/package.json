@@ -34,7 +34,7 @@
     "it-pushable": "^1.4.2",
     "p-event": "^4.2.0",
     "retry": "^0.13.1",
-    "streaming-iterables": "^6.0.0",
+    "streaming-iterables": "^6.2.0",
     "tslib": "^2.3.1",
     "typed-emitter": "^2.1.0"
   },
