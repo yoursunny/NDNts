@@ -66,7 +66,7 @@ This design is a trade-off for reducing browser bundle size.
 
 ## Certificate Management and Storage
 
-`Certificate` class provides basic operations with [NDN Certificate Format 2.0](https://named-data.net/doc/ndn-cxx/0.7.1/specs/certificate-format.html).
+`Certificate` class provides basic operations with [NDN Certificate Format 2.0](https://named-data.net/doc/ndn-cxx/0.8.0/specs/certificate.html).
 
 * [X] generate self-signed certificate
 * [X] issue certificate to another public key

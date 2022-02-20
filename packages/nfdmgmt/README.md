@@ -21,10 +21,10 @@ import { setTimeout as delay } from "node:timers/promises";
 (async () => {
 ```
 
-## 2014 Signed Interest
+## Signed Interest 0.2
 
-While `@ndn/keychain` package only supports 2019 Signed Interest format, NFD Management protocol is using [2014 Signed Interest format](https://named-data.net/doc/ndn-cxx/0.6.6/specs/signed-interest.html).
-`signInterest02` function provides basic support for that format.
+NFD Management protocol is using the deprecated [Signed Interest 0.2 format](https://named-data.net/doc/ndn-cxx/0.8.0/specs/signed-interest.html) that differs from the [Signed Interest format in NDN packet spec](https://named-data.net/doc/NDN-packet-spec/0.3/signed-interest.html).
+`signInterest02` function provides basic support for this older format.
 
 ```ts
 // Generate a signing key.
@@ -45,15 +45,16 @@ const fwC = Forwarder.create();
 const fwP = Forwarder.create();
 
 // Connect to NFD using Unix socket transport.
+const unixSocket = process.env.DEMO_NFD_UNIX ?? "/run/nfd.sock";
 let uplinkC: FwFace;
 try {
-  uplinkC = await UnixTransport.createFace({ fw: fwC }, process.env.DEMO_NFD_UNIX ?? "/run/nfd.sock");
+  uplinkC = await UnixTransport.createFace({ fw: fwC }, unixSocket);
 } catch {
   // Skip the example if NFD is not running.
   console.warn("NFD not running");
   return;
 }
-const uplinkP = await UnixTransport.createFace({ fw: fwP, addRoutes: [] }, "/run/nfd.sock");
+const uplinkP = await UnixTransport.createFace({ fw: fwP, addRoutes: [] }, unixSocket);
 
 // Enable NFD prefix registration.
 enableNfdPrefixReg(uplinkP, { signer: privateKey });
@@ -66,10 +67,8 @@ const producer = new Endpoint({ fw: fwP }).produce("/P",
   });
 await delay(500);
 
-// Start a consumer, fetching Data from the producer via NFD.
-const data = await new Endpoint({ fw: fwC }).consume(
-  new Interest("/P", Interest.MustBeFresh),
-);
+// Start a consumer, fetch Data from the producer via NFD.
+const data = await new Endpoint({ fw: fwC }).consume(new Interest("/P", Interest.MustBeFresh));
 const payloadText = fromUtf8(data.content);
 console.log("received", `${data.name} ${payloadText}`);
 assert.equal(payloadText, "NDNts + NFD");

@@ -12,7 +12,7 @@
     "test": "jest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@6.29.1",
+  "packageManager": "pnpm@6.31.0",
   "devDependencies": {
     "@types/jest": "^27.4.0",
     "@types/node": "^16.11.25",

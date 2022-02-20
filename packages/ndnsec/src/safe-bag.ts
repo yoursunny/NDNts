@@ -17,7 +17,7 @@ const EVD = new EvDecoder<SafeBagFields>("SafeBag", TT.SafeBag)
 
 /**
  * ndn-cxx exported credentials.
- * @see https://named-data.net/doc/ndn-cxx/0.7.1/specs/safe-bag.html
+ * @see https://named-data.net/doc/ndn-cxx/0.8.0/specs/safe-bag.html
  */
 export class SafeBag {
   public static async create(certificate: Certificate, privateKey: Uint8Array, passphrase: string | Uint8Array): Promise<SafeBag> {
