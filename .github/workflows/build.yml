@@ -69,8 +69,8 @@ jobs:
           sudo apt-get install --no-install-recommends libndn-cxx-dev nfd
       - run: corepack pnpm install
       - run: corepack pnpm build
-      - name: check DefinitelyTyped dependencies
-        run: node mk/check-types-dep.mjs
+      - name: check dependencies vs devDependencies
+        run: node mk/check-dep.mjs
       - run: corepack pnpm literate lint
       - run: corepack pnpm literate
       - run: cd integ/browser-tests && corepack pnpm test

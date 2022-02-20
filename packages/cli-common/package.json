@@ -28,7 +28,6 @@
     "@ndn/dpdkmgmt": "workspace:*",
     "@ndn/fw": "workspace:*",
     "@ndn/keychain": "workspace:*",
-    "@ndn/l3face": "workspace:*",
     "@ndn/nfdmgmt": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",

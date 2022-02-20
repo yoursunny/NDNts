@@ -28,7 +28,6 @@
   "dependencies": {
     "@ndn/endpoint": "workspace:*",
     "@ndn/fw": "workspace:*",
-    "@ndn/l3face": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/repo-api": "workspace:*",
     "@ndn/tlv": "workspace:*",

@@ -28,7 +28,6 @@
   "dependencies": {
     "@ndn/fw": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "applymixins": "^1.1.0",
     "it-pushable": "^1.4.2",
