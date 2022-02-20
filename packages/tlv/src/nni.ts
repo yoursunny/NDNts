@@ -39,8 +39,7 @@ class Nni8Big {
   constructor(private readonly n: bigint) {}
 
   public encodeTo(encoder: Encoder) {
-    const dv = Encoder.asDataView(encoder.prependRoom(8));
-    Encoder.setBigUint64(dv, 0, this.n);
+    Encoder.asDataView(encoder.prependRoom(8)).setBigUint64(0, this.n);
   }
 }
 
@@ -139,7 +138,7 @@ export namespace NNI {
 
     const dv = Encoder.asDataView(value);
     if (big) {
-      return dv.byteLength === 8 ? Encoder.getBigUint64(dv, 0) : BigInt(decode32(dv));
+      return dv.byteLength === 8 ? dv.getBigUint64(0) : BigInt(decode32(dv));
     }
 
     if (dv.byteLength === 8) {
