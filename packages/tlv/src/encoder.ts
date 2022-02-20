@@ -10,7 +10,7 @@ export interface EncodableObj {
  * Optional second item could be OmitEmpty to omit the TLV if TLV-VALUE is empty.
  * Subsequent items are Encodables for TLV-VALUE.
  */
-export type EncodableTlv = [number, ...any[]];
+export type EncodableTlv = [number, ...Encodable[]] | [number, typeof Encoder.OmitEmpty, ...Encodable[]];
 
 /** An object acceptable to Encoder.encode(). */
 export type Encodable = Uint8Array | undefined | EncodableObj | EncodableTlv;
@@ -105,7 +105,7 @@ export class Encoder {
   /**
    * Prepend TLV structure.
    * @param tlvType TLV-TYPE number.
-   * @param omitEmpty omit TLV altogether if set to Encoder.OmitEmpty
+   * @param omitEmpty omit TLV altogether if set to Encoder.OmitEmpty.
    * @param tlvValue TLV-VALUE objects.
    */
   public prependTlv(tlvType: number, omitEmpty?: typeof Encoder.OmitEmpty | Encodable,
@@ -136,7 +136,7 @@ export class Encoder {
       (obj as EncodableObj).encodeTo(this);
     } else if (Array.isArray(obj)) {
       if (typeof obj[0] === "number") {
-        this.prependTlv(...obj);
+        this.prependTlv(...(obj as [any]));
       } else {
         this.prependValue(...(obj as readonly Encodable[]));
       }

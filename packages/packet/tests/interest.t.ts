@@ -264,7 +264,7 @@ test("decode signed", async () => {
   const signedParamsWire = Encoder.encode([
     [TT.AppParameters, Uint8Array.of(0xC0, 0xC1)],
     new SigInfo(SigType.Sha256).encodeAs(TT.ISigInfo),
-    [0xF0, 0x00], // unrecognized non-critical
+    [0xF0], // unrecognized non-critical
   ]);
   const sigValueWire = Encoder.encode([TT.ISigValue, new Uint8Array(4)]);
   const paramsDigest = createHash("sha256")

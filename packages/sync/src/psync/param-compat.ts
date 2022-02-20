@@ -1,6 +1,6 @@
 import { Segment as segmentNumConvention, Version as versionConvention } from "@ndn/naming-convention1";
 import { type NamingConvention, AltUri, Component, Name, TT } from "@ndn/packet";
-import { Decoder, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
+import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 // @ts-expect-error typing unavailable
 import murmurHash3 from "murmurhash3js-revisited";
 
@@ -104,7 +104,7 @@ export function makePSyncCompatParam({
     encodeState(state) {
       return Encoder.encode([
         TTPSyncContent,
-        ...state.map((ps) => [TT.Name, joinPrefixSeqNum(ps).value]),
+        ...state.map((ps): EncodableTlv => [TT.Name, joinPrefixSeqNum(ps).value]),
       ]);
     },
     decodeState(payload) {
