@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
+    "@ndn/util": "workspace:*",
     "@types/default-gateway": "^3.0.1",
     "@types/koa": "^2.13.4",
     "@types/node-fetch": "^2.6.1",

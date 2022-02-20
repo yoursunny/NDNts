@@ -2,9 +2,9 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
-import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Segment2, Segment3, Version2, Version3 } from "@ndn/naming-convention2";
 import { Data, Interest, Name } from "@ndn/packet";
+import { Closers } from "@ndn/util";
 
 import { type ChunkSource, BufferChunkSource, discoverVersion, serve, serveVersioned } from "..";
 

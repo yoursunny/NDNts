@@ -3,16 +3,16 @@ import "@ndn/util/test-fixture/expect";
 import { type ProducerHandler, Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
-import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Segment2, Segment3 } from "@ndn/naming-convention2";
 import { Data, Name, Verifier } from "@ndn/packet";
+import { Closers } from "@ndn/util";
+import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";
 import { setTimeout as delay } from "node:timers/promises";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, consume } from "streaming-iterables";
 
 import { BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, makeChunkSource, serve } from "..";
 import { makeObjectBody } from "../test-fixture/object-body";
-import { deleteTmpFiles, writeTmpFile } from "../test-fixture/tmpfile";
 
 const closers = new Closers();
 const objectBody = makeObjectBody();

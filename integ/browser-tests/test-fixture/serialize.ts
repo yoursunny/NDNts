@@ -1,4 +1,4 @@
-import { fromHex, toHex } from "@ndn/tlv";
+import { fromHex, toHex } from "@ndn/util";
 
 export type Value<T> = string & { "browser-tests/serialize.Value": T };
 

@@ -2,13 +2,6 @@ import expect from "expect";
 
 import { toHex } from "..";
 
-function toBeVoid() {
-  return {
-    message: () => "expected to be void",
-    pass: true,
-  };
-}
-
 export type Uint8ArrayExpect = Uint8Array | Array<number | undefined>;
 
 export function toEqualUint8Array(received: Uint8Array, expected: Uint8ArrayExpect) {
@@ -30,14 +23,12 @@ export function toEqualUint8Array(received: Uint8Array, expected: Uint8ArrayExpe
 }
 
 expect.extend({
-  toBeVoid,
   toEqualUint8Array,
 });
 
 declare global {
   namespace jest {
     interface Matchers<R, T> {
-      toBeVoid: () => R;
       toEqualUint8Array: (expected: Uint8ArrayExpect) => R;
     }
   }

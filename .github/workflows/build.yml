@@ -5,6 +5,8 @@ on:
 
 jobs:
   build:
+    strategy:
+      fail-fast: false
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -25,6 +27,7 @@ jobs:
     strategy:
       matrix:
         node: [16, 17]
+      fail-fast: false
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -51,6 +54,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
   integ:
+    strategy:
+      fail-fast: false
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2

@@ -1,8 +1,8 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder, FwFace } from "@ndn/fw";
-import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { UdpServer, UdpServerForwarder } from "@ndn/node-transport/test-fixture/udp-server";
 import { Data, Name } from "@ndn/packet";
+import { Closers } from "@ndn/util";
 import defaultGateway from "default-gateway";
 import { setTimeout as delay } from "node:timers/promises";
 

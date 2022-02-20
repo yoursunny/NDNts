@@ -3,9 +3,8 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
-import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { type NameLike, Name } from "@ndn/packet";
-import { assert, toHex } from "@ndn/util";
+import { assert, Closers, toHex } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
 import { setTimeout as delay } from "node:timers/promises";
 

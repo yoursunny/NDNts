@@ -2,10 +2,10 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
 import { generateSigningKey } from "@ndn/keychain";
-import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Version } from "@ndn/naming-convention2";
 import { Interest, Name, Signer, Verifier } from "@ndn/packet";
-import { Decoder, Extensible, Extension, ExtensionRegistry, NNI, toUtf8 } from "@ndn/tlv";
+import { Decoder, Extensible, Extension, ExtensionRegistry, NNI } from "@ndn/tlv";
+import { Closers, toUtf8 } from "@ndn/util";
 
 import { Metadata, retrieveMetadata, serveMetadata } from "..";
 

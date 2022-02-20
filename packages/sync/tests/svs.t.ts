@@ -1,8 +1,8 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
-import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Name } from "@ndn/packet";
+import { Closers } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
 import { setTimeout as delay } from "node:timers/promises";
 import { filter } from "streaming-iterables";

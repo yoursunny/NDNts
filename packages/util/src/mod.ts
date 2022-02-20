@@ -8,5 +8,6 @@ export {
 } from "./platform_node";
 
 export * from "./buffer";
+export * from "./closers";
 export * from "./crypto";
 export * from "./string";

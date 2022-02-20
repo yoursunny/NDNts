@@ -47,10 +47,6 @@
     "@ndn/repo-api": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@types/graceful-fs": "^4.1.5",
-    "@types/tmp": "^0.2.3",
-    "@types/write": "^2.0.1",
-    "stream-mock": "^2.0.5",
-    "tmp": "^0.2.1",
-    "write": "^2.0.0"
+    "stream-mock": "^2.0.5"
   }
 }

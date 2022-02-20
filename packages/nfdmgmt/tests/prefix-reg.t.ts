@@ -5,9 +5,9 @@ import { type FwFace, Forwarder, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Certificate, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
-import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { Component, Data, Interest, Name, TT } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
+import { Closers } from "@ndn/util";
 import { EventEmitter } from "node:events";
 import { setTimeout as delay } from "node:timers/promises";
 
