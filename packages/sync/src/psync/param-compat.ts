@@ -1,6 +1,6 @@
-import { Segment as segmentNumConvention, Version as versionConvention } from "@ndn/naming-convention1";
-import { type NamingConvention, AltUri, Component, Name, TT } from "@ndn/packet";
-import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
+import { Segment as segmentNumConvention, Version as versionConvention } from "@ndn/naming-convention2";
+import { type NamingConvention, Component, Name, TT } from "@ndn/packet";
+import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 // @ts-expect-error typing unavailable
 import murmurHash3 from "murmurhash3js-revisited";
 
@@ -57,8 +57,7 @@ function joinPrefixSeqNum({ prefix, seqNum }: PSyncCore.PrefixSeqNum) {
       return name.value;
     },
     get hash() {
-      const uri = AltUri.ofName(name);
-      return hash(checkSeed, toUtf8(uri));
+      return hash(checkSeed, name.value);
     },
   };
 }
@@ -119,7 +118,7 @@ export function makePSyncCompatParam({
       falsePositiveProbability: 0.001,
     },
     toBloomKey(prefix) {
-      return AltUri.ofName(prefix);
+      return prefix.value;
     },
     encodeBloomLength: 3,
     encodeBloom(bf) {

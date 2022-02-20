@@ -1,23 +1,30 @@
 # `@ndn/sync` Interoperability Test
 
+## PSync
+
 Test environment:
 
 * Ubuntu 20.04
 * Node.js 16.13.1
 
-## PSync
-
 Reference implementation:
 
-* ndn-cxx and NFD 0.7.1 (install from PPA)
-* [PSync C++ library](https://github.com/named-data/PSync) commit `51189595bdab97ae6704407bf63f67ff7bff0ed9` (2021-10-02)
+* ndn-cxx 0.8.0
+* NFD 22.02
+* libpsync 0.3.0-9-g32ccfc4
 
 Build reference program:
 
 ```bash
-# in PSync directory
+# in PSync directory, build library and examples
 ./waf configure --with-examples
 ./waf
+
+# in PSync directory, build examples only
+mkdir -p build/examples
+for F in examples/*.cpp; do
+  g++ -o build/examples/psync-$(basename -s .cpp $F) $F $(pkg-config --cflags --libs libndn-cxx PSync)
+done
 ```
 
 Test `PSyncFull`:
@@ -54,6 +61,11 @@ corepack pnpm literate packages/sync/interop-test/psync-partial-subscriber.ts
 ```
 
 ## syncps
+
+Test environment:
+
+* Ubuntu 20.04
+* Node.js 16.13.1
 
 Reference implementation:
 
@@ -95,9 +107,14 @@ corepack pnpm literate packages/sync/interop-test/syncps.ts
 
 ## SvSync
 
+Test environment:
+
+* Ubuntu 20.04
+* Node.js 16.13.1
+
 Reference implementation:
 
-* ndn-cxx and NFD 0.7.1 (install from PPA)
+* ndn-cxx and NFD 0.7.1
 * [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `cc6ab06b9e0bdad63eed8f4d666a8ec04ff9bc3e` (2021-12-09)
 
 Build reference program:
