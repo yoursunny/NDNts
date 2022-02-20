@@ -19,7 +19,8 @@
     "@ndn/sync": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/web-bluetooth-transport": "workspace:*",
-    "@ndn/ws-transport": "workspace:*"
+    "@ndn/ws-transport": "workspace:*",
+    "events": "^3.3.0"
   },
   "devDependencies": {
     "@types/expect-puppeteer": "^4.4.7",

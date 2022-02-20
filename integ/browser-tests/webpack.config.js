@@ -26,6 +26,9 @@ const config = {
   resolve: {
     extensions: [".ts", ".mjs", ".js"],
     symlinks: true,
+    fallback: {
+      events: require.resolve("events/"),
+    },
   },
   node: false,
   plugins: [
