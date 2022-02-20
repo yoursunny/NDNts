@@ -60,6 +60,10 @@ The default is `/run/ndn`.
 
 ## API
 
+`exitClosers` array allows schedule objects to be closed at exit.
+`exitHandler` function is registered as SIGINT handle that is triggered upon pressing CTRL+C, which closes the objects in `exitClosers`.
+You may disable this handler with `process.off("SIGINT", exitHandler)`.
+
 `openKeyChain` function returns the specified KeyChain.
 `getSigner` function returns a signer using the default signing key.
 
@@ -67,4 +71,4 @@ The default is `/run/ndn`.
 It also enables prefix registration unless explicitly disabled.
 
 `closeUplinks` function closes the uplink.
-This is called automatically upon SIGINT; you may disable this behavior with `process.off("SIGINT", closeUplinks)`.
+Uplinks are also automatically closed at exit via `exitClosers`.

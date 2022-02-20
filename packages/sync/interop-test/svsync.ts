@@ -1,4 +1,4 @@
-import { openUplinks } from "@ndn/cli-common";
+import { exitClosers, openUplinks } from "@ndn/cli-common";
 import { Endpoint } from "@ndn/endpoint";
 import { createSigner, createVerifier, HMAC } from "@ndn/keychain";
 import { Data, Name } from "@ndn/packet";
@@ -9,7 +9,6 @@ const syncPrefix = new Name("/ndn/svs");
 const myID = new Name(`/${Date.now()}`);
 const myDataPrefix = new Name().append(...myID.comps, ...syncPrefix.comps);
 
-(async () => {
 await openUplinks();
 new Endpoint().produce(myDataPrefix, async (interest) => {
   const n = NNI.decode(interest.name.at(myDataPrefix.length).value, { big: true });
@@ -24,13 +23,13 @@ const sync = new SvSync({
   signer: await createSigner(HMAC, key),
   verifier: await createVerifier(HMAC, key),
 });
+exitClosers.push(sync);
 sync.on("update", ({ id, loSeqNum, hiSeqNum }) => {
   console.log(`UPDATE ${id.text} ${loSeqNum}${loSeqNum === hiSeqNum ? "" : `..${hiSeqNum}`}`);
 });
 
 const node = sync.add(myID);
-setInterval(() => {
+exitClosers.addTimeout(setInterval(() => {
   node.seqNum++;
   console.log(`PUBLISH ${myID} ${node.seqNum}`);
-}, 5000);
-})();
+}, 5000));

@@ -5,7 +5,7 @@
 Test environment:
 
 * Ubuntu 20.04
-* Node.js 16.13.1
+* Node.js 17.3.0
 
 Reference implementation:
 

@@ -1,6 +1,8 @@
+import { setTimeout as delay } from "node:timers/promises";
+
 import { Closers } from "..";
 
-test("closers", () => {
+test("closers", async () => {
   const closers = new Closers();
   expect(closers).toHaveLength(0);
 
@@ -24,4 +26,19 @@ test("closers", () => {
   expect(closers).toHaveLength(0);
   expect(c0.close).toHaveBeenCalledTimes(1);
   expect(c1.close).toHaveBeenCalledTimes(1);
+
+  const f2 = jest.fn<void, []>();
+  const f3 = jest.fn<void, []>();
+  const f4 = jest.fn<void, []>();
+  closers.addTimeout(setTimeout(f2, 10));
+  closers.addTimeout(setTimeout(f3, 500));
+  const t4 = closers.addTimeout(setTimeout(f3, 500));
+  clearTimeout(t4);
+  await delay(200);
+  closers.close();
+  await delay(500);
+  expect(closers).toHaveLength(0);
+  expect(f2).toHaveBeenCalledTimes(1);
+  expect(f3).toHaveBeenCalledTimes(0);
+  expect(f4).toHaveBeenCalledTimes(0);
 });

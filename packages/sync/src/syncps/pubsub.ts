@@ -205,6 +205,9 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
    *          It does not mean the publication has reached other participants.
    */
   public async publish(pub: Data, cb?: SyncpsPubsub.PublishCallback): Promise<void> {
+    if (this.closed) {
+      throw new Error("closed");
+    }
     this.dModify(pub);
     await this.dSigner.sign(pub);
 
@@ -403,6 +406,9 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
   }
 
   private addToActive(key: number, pub: Data, own: boolean, cb?: SyncpsPubsub.PublishCallback) {
+    if (this.closed) {
+      throw new Error("unexpected addToActive");
+    }
     if (own) {
       ++this.nOwnPubs;
       if (cb) {

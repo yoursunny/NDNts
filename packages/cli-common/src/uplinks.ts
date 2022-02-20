@@ -3,8 +3,10 @@ import { openFace as dpdkOpenFace } from "@ndn/dpdkmgmt";
 import { type FwFace, FwTracer } from "@ndn/fw";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { UnixTransport } from "@ndn/node-transport";
+import { Closers } from "@ndn/util";
 
 import { env } from "./env";
+import { exitClosers } from "./exit";
 import { getSignerImpl, openKeyChain } from "./keychain";
 
 if (env.pktTrace) {
@@ -61,10 +63,10 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
   }
 }
 
-let theUplinks: FwFace[] | undefined;
+let theUplinks: Closers<FwFace> | undefined;
 
 /** Open the uplinks specified by NDNTS_UPLINK environ. */
-export async function openUplinks(): Promise<FwFace[]> {
+export async function openUplinks({ autoClose = true }: openUplinks.Options = {}): Promise<FwFace[]> {
   if (!theUplinks) {
     const [face, nfd] = await makeFace();
     if (nfd && env.nfdReg) {
@@ -76,20 +78,26 @@ export async function openUplinks(): Promise<FwFace[]> {
         preloadFromKeyChain: openKeyChain(),
       });
     }
-    theUplinks = [face];
+    theUplinks = new Closers();
+    theUplinks.push(face);
+    if (autoClose) {
+      exitClosers.push(theUplinks);
+    }
   }
   return theUplinks;
+}
+export namespace openUplinks {
+  export interface Options {
+    /**
+     * Whether to automatically close uplinks at exit.
+     * Default is true.
+     */
+    autoClose?: boolean;
+  }
 }
 
 /** Close the uplinks. */
 export function closeUplinks() {
-  if (!theUplinks) {
-    return;
-  }
-  for (const uplink of theUplinks) {
-    uplink.close();
-  }
+  theUplinks?.close();
   theUplinks = undefined;
 }
-
-process.once("SIGINT", closeUplinks);
