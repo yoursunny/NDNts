@@ -1,5 +1,5 @@
+import { assert } from "@ndn/util";
 import hirestime from "hirestime";
-import assert from "minimalistic-assert";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import { EventEmitter } from "node:events";
 import pDefer from "p-defer";

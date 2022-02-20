@@ -1,7 +1,6 @@
-import { toHex } from "@ndn/tlv";
+import { crypto, toHex } from "@ndn/util";
 import type * as asn1 from "@yoursunny/asn1";
 
-import { crypto } from "../crypto_node";
 import type { CryptoAlgorithm } from "../key/mod";
 import type { RSA } from "./rsa";
 

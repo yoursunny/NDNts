@@ -1,7 +1,7 @@
 import { Data, Interest, Nack, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
+import { assert } from "@ndn/util";
 import itKeepAlive from "it-keepalive";
-import assert from "minimalistic-assert";
 
 import { TT } from "./an";
 import { Fragmenter } from "./fragmenter";

@@ -1,6 +1,4 @@
-import { KeyChainImplWebCrypto as crypto } from "@ndn/keychain";
-import { LLVerify } from "@ndn/packet";
-import { fromUtf8 } from "@ndn/tlv";
+import { crypto, fromUtf8, timingSafeEqual } from "@ndn/util";
 
 import type { ChallengeRequest } from "../packet/mod";
 import type { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";
@@ -49,7 +47,7 @@ export namespace ServerPinLikeChallenge {
     public get pinString() { return fromUtf8(this.pin); }
 
     public verify(code: Uint8Array): boolean {
-      return LLVerify.timingSafeEqual(this.pin, code);
+      return timingSafeEqual(this.pin, code);
     }
   }
 }

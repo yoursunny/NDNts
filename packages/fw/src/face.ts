@@ -1,5 +1,5 @@
 import { type NameLike, Data, Interest, Nack, Name } from "@ndn/packet";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 import MultiSet from "mnemonist/multi-set.js";
 import { EventEmitter } from "node:events";
 import Fifo from "p-fifo";

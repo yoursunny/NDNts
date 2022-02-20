@@ -1,6 +1,6 @@
-import "@ndn/tlv/test-fixture/expect";
+import "@ndn/util/test-fixture/expect";
 
-import { fromHex } from "@ndn/tlv";
+import { fromHex } from "@ndn/util";
 
 import { IBLT, makePSyncCompatParam } from "..";
 

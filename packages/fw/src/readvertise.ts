@@ -1,5 +1,5 @@
 import { Name } from "@ndn/packet";
-import { fromHex } from "@ndn/tlv";
+import { fromHex } from "@ndn/util";
 import pushable from "it-pushable";
 import MultiMap from "mnemonist/multi-map.js";
 import * as retry from "retry";

@@ -1,7 +1,8 @@
 import { type NamedDecrypter, type NamedEncrypter, type NamedSigner, type NamedVerifier, AESCBC, AESGCM, AesKeyLength, Certificate, createVerifier, EcCurve, ECDSA, generateEncryptionKey, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, RSAOAEP } from "@ndn/keychain";
 import * as ndn_testbed_certs from "@ndn/keychain/test-fixture/ndn-testbed-certs";
-import { type Signer, type Verifier, Data, digestSigning, LLVerify } from "@ndn/packet";
+import { type Signer, type Verifier, Data, digestSigning } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
+import { timingSafeEqual } from "@ndn/util";
 
 import { addManualTest } from "../../test-fixture/manual";
 
@@ -133,7 +134,7 @@ async function checkWebCrypto() {
       const additionalData = aead ? crypto.getRandomValues(new Uint8Array(17)) : undefined;
       const encrypted = await enc!.llEncrypt({ plaintext, additionalData });
       const decrypted = await dec!.llDecrypt({ additionalData, ...encrypted });
-      if (!LLVerify.timingSafeEqual(plaintext, decrypted.plaintext)) {
+      if (!timingSafeEqual(plaintext, decrypted.plaintext)) {
         throw new Error("decryption result differs");
       }
     });

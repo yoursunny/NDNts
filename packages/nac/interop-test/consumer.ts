@@ -3,7 +3,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Consumer } from "@ndn/nac";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Interest, Name } from "@ndn/packet";
-import { fromUtf8 } from "@ndn/tlv";
+import { fromUtf8 } from "@ndn/util";
 
 (async () => {
   await openUplinks();

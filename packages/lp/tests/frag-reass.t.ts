@@ -1,4 +1,4 @@
-import "@ndn/tlv/test-fixture/expect";
+import "@ndn/util/test-fixture/expect";
 
 import { Encoder } from "@ndn/tlv";
 

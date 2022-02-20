@@ -1,7 +1,8 @@
-import { type CryptoAlgorithm, type NamedEncrypter, Certificate, CertNaming, createEncrypter, KeyChainImplWebCrypto as crypto, RSAOAEP, ValidityPeriod } from "@ndn/keychain";
+import { type CryptoAlgorithm, type NamedEncrypter, Certificate, CertNaming, createEncrypter, RSAOAEP, ValidityPeriod } from "@ndn/keychain";
 import { SafeBag } from "@ndn/ndnsec";
 import { type LLDecrypt, type Name, type Signer, Component, Data } from "@ndn/packet";
-import { Decoder, Encoder, EvDecoder, toHex, toUtf8 } from "@ndn/tlv";
+import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
+import { crypto, toHex, toUtf8 } from "@ndn/util";
 
 import { DefaultFreshness, Keyword, TT } from "./an";
 import { KeyEncryptionKey, makeNameInternal as makeKekName, parseNameInternal as parseKekName } from "./kek";

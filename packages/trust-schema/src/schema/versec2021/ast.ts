@@ -1,5 +1,5 @@
 import type { Component as ndnComponent } from "@ndn/packet";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 import * as N from "./nest";
 import * as T from "./token";

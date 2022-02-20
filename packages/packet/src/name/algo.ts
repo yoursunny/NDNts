@@ -1,4 +1,4 @@
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 
 import type { Name } from "./name";
 

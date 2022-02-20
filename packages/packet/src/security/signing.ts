@@ -1,8 +1,9 @@
+import { sha256, timingSafeEqual } from "@ndn/util";
+
 import { SigType } from "../an";
 import { KeyLocator } from "../key-locator";
 import type { Name } from "../name/mod";
 import { SigInfo } from "../sig-info";
-import { sha256, timingSafeEqual as timingSafeEqual_ } from "./helper_node";
 
 /**
  * Low level signing function.
@@ -31,8 +32,6 @@ export namespace LLVerify {
   export interface Verifiable {
     [OP]: (verifier: LLVerify) => Promise<void>;
   }
-
-  export const timingSafeEqual = timingSafeEqual_;
 }
 
 interface PacketWithSignature {
@@ -123,7 +122,7 @@ export const digestSigning: Signer & Verifier = {
     Verifier.checkSigType(pkt, SigType.Sha256);
     return pkt[LLVerify.OP](async (input, sig) => {
       const h = await sha256(input);
-      const ok = LLVerify.timingSafeEqual(sig, h);
+      const ok = timingSafeEqual(sig, h);
       Verifier.throwOnBadSig(ok);
     });
   },

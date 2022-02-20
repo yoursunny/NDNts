@@ -1,0 +1,36 @@
+{
+  "name": "@ndn/util",
+  "version": "0.0.0",
+  "description": "NDNts: general utilities",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "main": "src/mod.ts",
+  "module": "lib/mod_browser.js",
+  "sideEffects": false,
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "packages/util"
+  },
+  "publishConfig": {
+    "main": "lib/mod_node.js",
+    "types": "lib/mod.d.ts"
+  },
+  "dependencies": {
+    "@types/minimalistic-assert": "^1.0.1",
+    "minimalistic-assert": "^1.0.1",
+    "tslib": "^2.3.1"
+  },
+  "engines": {
+    "node": "^16.13.0 || ^17.3.0"
+  }
+}

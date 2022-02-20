@@ -3,7 +3,7 @@ import { createVerifier, SigningAlgorithmListFull } from "@ndn/keychain";
 import { type ServerChallenge, Server, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "@ndn/ndncert";
 import type { Verifier } from "@ndn/packet";
 import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 import { makeEnv, parsers } from "@strattadb/environment";
 import leveldown from "leveldown";
 import { createTransport as createMT } from "nodemailer";

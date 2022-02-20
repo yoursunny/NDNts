@@ -1,4 +1,5 @@
-import { crypto } from "../crypto_node";
+import { crypto } from "@ndn/util";
+
 import { IvGen } from "./gen";
 
 /** IV generator using all random bits. */

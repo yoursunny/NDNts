@@ -1,6 +1,6 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Component, Name, Verifier } from "@ndn/packet";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 import { type Parameters as BloomParameters, BloomFilter } from "@yoursunny/psync-bloom";
 import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";

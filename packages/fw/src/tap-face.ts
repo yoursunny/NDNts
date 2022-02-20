@@ -1,5 +1,5 @@
+import { assert } from "@ndn/util";
 import pushable from "it-pushable";
-import assert from "minimalistic-assert";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import MultiMap from "mnemonist/multi-map.js";
 

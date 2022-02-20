@@ -44,7 +44,7 @@ test.each(TestSignVerify.makeTable("modulusLength", RsaModulusLength.Choices))("
   TestSignVerify.check(record, { deterministic: true });
   expect(record.sA0.sigInfo.type).toBe(SigType.Sha256WithRsa);
   expect(record.sA0.sigInfo.keyLocator?.name).toEqualName(pvtA.name);
-});
+}, 10000);
 
 test.each(RsaModulusLength.Choices)("RSA load %p", async (modulusLength) => {
   const keyChain = KeyChain.createTemp(SigningAlgorithmListFull);

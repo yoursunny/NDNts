@@ -1,9 +1,9 @@
 import { type Name, Data, Interest, Nack } from "@ndn/packet";
+import { console } from "@ndn/util";
 
 import type { FwFace } from "./face";
 import { Forwarder } from "./forwarder";
 import type { FwPacket } from "./packet";
-import { makeTracerOutput } from "./tracer-output_node";
 
 /** Print trace logs from Forwarder events. */
 export class Tracer {
@@ -15,7 +15,7 @@ export class Tracer {
   private readonly fw: Forwarder;
 
   constructor({
-    output = makeTracerOutput(),
+    output = console,
     fw = Forwarder.getDefault(),
     face = true,
     prefix = true,

@@ -5,7 +5,7 @@ import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { type NameLike, Data, Name } from "@ndn/packet";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 import { setTimeout as delay } from "node:timers/promises";
 
 import { type Subscription, makeSyncpsCompatParam, SyncpsPubsub } from "..";

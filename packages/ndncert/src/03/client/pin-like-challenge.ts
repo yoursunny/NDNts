@@ -1,4 +1,4 @@
-import { toUtf8 } from "@ndn/tlv";
+import { toUtf8 } from "@ndn/util";
 
 import type { ParameterKV } from "../packet/mod";
 import type { ClientChallenge, ClientChallengeContext } from "./challenge";

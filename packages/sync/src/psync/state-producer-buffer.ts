@@ -1,7 +1,7 @@
 import type { Endpoint } from "@ndn/endpoint";
 import type { Name, Signer } from "@ndn/packet";
 import { type Server, BufferChunkSource, serveVersioned } from "@ndn/segmented-object";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 import type { PSyncCodec } from "./codec";
 import { PSyncCore } from "./core";

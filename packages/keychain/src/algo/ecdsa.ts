@@ -1,8 +1,7 @@
 import { SigType, Verifier } from "@ndn/packet";
-import { fromHex, toHex } from "@ndn/tlv";
+import { crypto, fromHex, toHex } from "@ndn/util";
 import * as asn1 from "@yoursunny/asn1";
 
-import { crypto } from "../crypto_node";
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
 
 const SignVerifyParams: EcdsaParams = { name: "ECDSA", hash: "SHA-256" };

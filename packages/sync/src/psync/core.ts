@@ -1,6 +1,5 @@
 import type { Name } from "@ndn/packet";
-import { toHex } from "@ndn/tlv";
-import assert from "minimalistic-assert";
+import { assert, toHex } from "@ndn/util";
 
 import { IBLT } from "../iblt";
 import type { SyncNode } from "../types";

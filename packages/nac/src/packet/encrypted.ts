@@ -1,6 +1,6 @@
 import { LLDecrypt, LLEncrypt, Name, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 import { TT } from "./an";
 

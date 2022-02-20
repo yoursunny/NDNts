@@ -1,6 +1,6 @@
 import type { ProducerHandler } from "@ndn/endpoint";
 import { type Signer, Data, digestSigning, Interest, Name } from "@ndn/packet";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
 import pDefer, { type DeferredPromise } from "p-defer";
 import { getIterator } from "streaming-iterables";

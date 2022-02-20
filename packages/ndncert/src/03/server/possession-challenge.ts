@@ -1,5 +1,5 @@
-import { type SigningAlgorithm, Certificate, KeyChainImplWebCrypto, SigningAlgorithmListSlim } from "@ndn/keychain";
-import { Data, Name, Verifier } from "@ndn/packet";
+import { type SigningAlgorithm, Certificate, SigningAlgorithmListSlim } from "@ndn/keychain";
+import { Data, Name, SigInfo, Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
 import type { ChallengeRequest } from "../packet/mod";
@@ -48,7 +48,7 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
       return invalidResponse;
     }
 
-    const nonce = KeyChainImplWebCrypto.getRandomValues(new Uint8Array(16));
+    const nonce = SigInfo.generateNonce(16);
     context.challengeState = { cert, nonce };
     return {
       challengeStatus: "need-proof",

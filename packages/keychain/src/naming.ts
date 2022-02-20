@@ -1,6 +1,6 @@
 import { Timestamp, Version } from "@ndn/naming-convention2";
 import { type Name, Component, TT } from "@ndn/packet";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 /** 'KEY' component. */
 export const KEY = new Component(TT.GenericNameComponent, "KEY");

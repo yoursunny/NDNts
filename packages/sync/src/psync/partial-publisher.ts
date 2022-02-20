@@ -1,7 +1,7 @@
 import { type ProducerHandler, Endpoint, Producer } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
 import { type Signer, Data, Interest, Name } from "@ndn/packet";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 import { BloomFilter } from "@yoursunny/psync-bloom";
 import { EventEmitter } from "node:events";
 import pDefer, { DeferredPromise } from "p-defer";

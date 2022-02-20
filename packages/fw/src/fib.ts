@@ -1,5 +1,5 @@
 import { lpm, Name } from "@ndn/packet";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
 
 import type { FaceImpl } from "./face";

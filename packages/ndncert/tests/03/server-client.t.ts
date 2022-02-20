@@ -7,7 +7,7 @@ import { retrieveMetadata } from "@ndn/rdr";
 import { DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 import { fetch } from "@ndn/segmented-object";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 import { setTimeout as delay } from "node:timers/promises";
 import { type SentMessageInfo, createTransport as createMT } from "nodemailer";
 import { collect } from "streaming-iterables";

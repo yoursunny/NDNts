@@ -1,5 +1,4 @@
-import { toHex } from "@ndn/tlv";
-import assert from "minimalistic-assert";
+import { assert, toHex } from "@ndn/util";
 
 import { IvChecker } from "./checker";
 import { type CounterIvOptions, CounterIncrement, parseCounterIvOptions, throwCounterIvError } from "./counter-common";

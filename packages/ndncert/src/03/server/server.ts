@@ -3,7 +3,7 @@ import { type NamedVerifier, Certificate, CertNaming, ValidityPeriod } from "@nd
 import type { FwHint, Signer } from "@ndn/packet";
 import { type ComponentLike, Component, Data } from "@ndn/packet";
 import { Metadata, serveMetadata } from "@ndn/rdr";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 
 import * as crypto from "../crypto-common";
 import { type CaProfile, C, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";

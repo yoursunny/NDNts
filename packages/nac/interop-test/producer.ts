@@ -5,7 +5,7 @@ import { AccessManager, Producer } from "@ndn/nac";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Data, Name } from "@ndn/packet";
 import { DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
-import { toUtf8 } from "@ndn/tlv";
+import { toUtf8 } from "@ndn/util";
 import memdown from "memdown";
 
 (async () => {

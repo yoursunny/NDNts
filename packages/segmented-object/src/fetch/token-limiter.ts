@@ -1,4 +1,4 @@
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 /** A token-based throttle limiter. */
 export class TokenLimiter {

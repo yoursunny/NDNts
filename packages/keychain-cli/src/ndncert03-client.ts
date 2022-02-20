@@ -3,7 +3,7 @@ import { CertNaming } from "@ndn/keychain";
 import { type ClientChallenge, type ClientChallengeContext, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, requestCertificate } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 import prompts from "prompts";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";

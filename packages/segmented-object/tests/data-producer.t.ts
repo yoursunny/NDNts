@@ -1,4 +1,4 @@
-import "@ndn/tlv/test-fixture/expect";
+import "@ndn/util/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";

@@ -1,6 +1,7 @@
-import { type CryptoAlgorithm, Certificate, CertNaming, ECDSA, KeyChain, KeyChainImplWebCrypto as crypto, KeyStore, RSA, ValidityPeriod } from "@ndn/keychain";
+import { type CryptoAlgorithm, Certificate, CertNaming, ECDSA, KeyChain, KeyStore, RSA, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, Name } from "@ndn/packet";
 import { type Decodable, Decoder, Encoder } from "@ndn/tlv";
+import { crypto } from "@ndn/util";
 import execa from "execa";
 import throat from "throat";
 

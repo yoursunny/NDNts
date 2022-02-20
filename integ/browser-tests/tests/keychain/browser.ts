@@ -1,6 +1,6 @@
 import "./webcrypto";
 
-import { Certificate, CryptoAlgorithmListFull, EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, KeyChainImplWebCrypto as crypto, RSA, RsaModulusLength } from "@ndn/keychain";
+import { Certificate, CryptoAlgorithmListFull, EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength } from "@ndn/keychain";
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";
 import { execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
 import { SafeBag } from "@ndn/ndnsec";

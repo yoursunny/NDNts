@@ -1,5 +1,5 @@
 import { Data, Interest } from "@ndn/packet";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 import hirestime from "hirestime";
 import DefaultMap from "mnemonist/default-map.js";
 import { filter, flatMap, pipeline, reduce, tap } from "streaming-iterables";

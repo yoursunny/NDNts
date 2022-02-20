@@ -1,6 +1,6 @@
 import { Component, Data, Name, SigInfo, Signer } from "@ndn/packet";
+import { assert } from "@ndn/util";
 import * as asn1 from "@yoursunny/asn1";
-import assert from "minimalistic-assert";
 
 import type { CryptoAlgorithm, NamedSigner, PublicKey } from "../key/mod";
 import * as CertNaming from "../naming";

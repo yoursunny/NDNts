@@ -1,6 +1,6 @@
 import { CertNaming } from "@ndn/keychain";
 import { Name } from "@ndn/packet";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 import { AlternatePattern, CertNamePattern, ConcatPattern, ConstPattern, Pattern, VariablePattern } from "../pattern";
 import { TrustSchemaPolicy } from "../policy";

@@ -1,7 +1,7 @@
 import { type KeyChain, Certificate, CertNaming, CryptoAlgorithm, ECDSA, generateEncryptionKey, generateSigningKey, RSA, RSAOAEP } from "@ndn/keychain";
 import { Data, TT as l3TT } from "@ndn/packet";
 import { type Decoder, Encoder, EvDecoder } from "@ndn/tlv";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 import { TT } from "./an";
 import * as EncryptedPrivateKeyInfo from "./epki_node";

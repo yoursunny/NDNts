@@ -2,7 +2,7 @@ import "./api";
 
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
 import { deleteTmpFiles, writeTmpFile } from "@ndn/segmented-object/test-fixture/tmpfile";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 import { createHash } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 

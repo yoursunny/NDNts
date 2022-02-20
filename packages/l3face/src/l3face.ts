@@ -1,7 +1,7 @@
 import { type FwFace, Forwarder, FwPacket } from "@ndn/fw";
 import { LpService } from "@ndn/lp";
 import { type NameLike, Interest } from "@ndn/packet";
-import { Encoder } from "@ndn/tlv";
+import { asDataView } from "@ndn/util";
 import abortable, { AbortError as IteratorAbortError } from "abortable-iterator";
 import pushable from "it-pushable";
 import { EventEmitter } from "node:events";
@@ -111,7 +111,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
         if (l3 instanceof Interest) {
           internalToken = wireToken;
         } else if (wireToken?.length === 6) {
-          const dv = Encoder.asDataView(wireToken);
+          const dv = asDataView(wireToken);
           if (dv.getUint16(0) === this.wireTokenPrefix) {
             internalToken = dv.getUint32(2);
           }
@@ -129,7 +129,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
         let wireToken: Uint8Array | undefined;
         if (typeof internalToken === "number") {
           wireToken = new Uint8Array(6);
-          const dv = Encoder.asDataView(wireToken);
+          const dv = asDataView(wireToken);
           dv.setUint16(0, this.wireTokenPrefix);
           dv.setUint32(2, internalToken);
         } else if (internalToken instanceof Uint8Array) {

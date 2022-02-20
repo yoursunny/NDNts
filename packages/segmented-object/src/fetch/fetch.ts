@@ -1,6 +1,6 @@
 import { type NameLike, Data, Name } from "@ndn/packet";
+import { assert } from "@ndn/util";
 import EventIterator from "event-iterator";
-import assert from "minimalistic-assert";
 import { collect, map, writeToStream } from "streaming-iterables";
 
 import { Fetcher } from "./fetcher";

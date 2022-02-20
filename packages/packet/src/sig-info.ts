@@ -1,9 +1,8 @@
 import { type Decoder, type EncodableObj, Encoder, EvDecoder, Extensible, ExtensionRegistry, NNI } from "@ndn/tlv";
-import assert from "minimalistic-assert";
+import { assert, crypto } from "@ndn/util";
 
 import { SigType, TT } from "./an";
 import { KeyLocator } from "./key-locator";
-import { randBytes } from "./security/helper_node";
 
 const EXTENSIONS: ExtensionRegistry<SigInfo> = new ExtensionRegistry<SigInfo>();
 
@@ -99,7 +98,7 @@ export namespace SigInfo {
   /** Generate a random nonce. */
   export function generateNonce(size = 8): Uint8Array {
     assert(size >= 1);
-    return randBytes(size);
+    return crypto.getRandomValues(new Uint8Array(size));
   }
 
   export function Time(v = Date.now()): CtorTag {

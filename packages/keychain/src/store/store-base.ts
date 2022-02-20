@@ -1,5 +1,5 @@
 import { Name } from "@ndn/packet";
-import { fromHex, toHex } from "@ndn/tlv";
+import { fromHex, toHex } from "@ndn/util";
 import throat from "throat";
 
 import type { StoreProvider } from "./store-provider";

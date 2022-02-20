@@ -1,4 +1,4 @@
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 interface Entry {
   count: number;

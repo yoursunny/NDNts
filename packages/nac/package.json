@@ -33,15 +33,14 @@
     "@ndn/packet": "workspace:*",
     "@ndn/repo-api": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "@yoursunny/asn1": "^0.0.20200718",
-    "minimalistic-assert": "^1.0.1",
     "mnemonist": "^0.39.0",
     "tslib": "^2.3.1"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:*",
     "@types/memdown": "^3.0.0",
-    "@types/minimalistic-assert": "^1.0.1",
     "memdown": "^6.1.1"
   }
 }

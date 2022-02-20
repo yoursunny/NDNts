@@ -2,7 +2,7 @@ import { Keyword } from "@ndn/naming-convention2";
 import { Component, ComponentLike, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
-import { fromUtf8 } from "@ndn/tlv";
+import { fromUtf8 } from "@ndn/util";
 import fs from "graceful-fs";
 import pushable from "it-pushable";
 import { posix as path } from "node:path";

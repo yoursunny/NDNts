@@ -1,6 +1,6 @@
 import { Certificate, CertNaming } from "@ndn/keychain";
 import type { Name } from "@ndn/packet";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 import MultiMap from "mnemonist/multi-map.js";
 
 import type { CertSource } from "./types";

@@ -1,4 +1,4 @@
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 

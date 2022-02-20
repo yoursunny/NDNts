@@ -30,6 +30,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/repo": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "@strattadb/environment": "^8.0.2",
     "fast-chunk-string": "^1.0.1",
     "get-stdin": "^8.0.0",

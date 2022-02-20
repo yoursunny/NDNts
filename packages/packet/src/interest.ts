@@ -1,10 +1,9 @@
 import { type Decoder, type Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
-import assert from "minimalistic-assert";
+import { assert, sha256 } from "@ndn/util";
 
 import { TT } from "./an";
 import { FwHint } from "./fwhint";
 import { type NameLike, Name, ParamsDigest } from "./name/mod";
-import { sha256 } from "./security/helper_node";
 import { LLSign, LLVerify, Signer, Verifier } from "./security/signing";
 import { SigInfo } from "./sig-info";
 

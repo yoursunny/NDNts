@@ -1,5 +1,5 @@
 import type { LLDecrypt, LLEncrypt, Name, NameLike } from "@ndn/packet";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 import { EncryptionAlgorithmListSlim } from "../algolist/mod";
 import type { Certificate } from "../cert/mod";

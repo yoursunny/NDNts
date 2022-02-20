@@ -1,7 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { type NameLike, Name } from "@ndn/packet";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 import { setTimeout as delay } from "node:timers/promises";
 
 import { Forwarder, ReadvertiseDestination } from "..";

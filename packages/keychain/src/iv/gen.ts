@@ -1,5 +1,5 @@
 import type { LLEncrypt } from "@ndn/packet";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 /** Initialization Vector generator. */
 export abstract class IvGen {

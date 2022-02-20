@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, ECDSA, generateSigningKey, RSA, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
 import { Name } from "@ndn/packet";
-import { toUtf8 } from "@ndn/tlv";
+import { toUtf8 } from "@ndn/util";
 
 import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, Status } from "../..";
 

@@ -32,9 +32,9 @@
     "@ndn/packet": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "@yoursunny/psync-bloom": "github:yoursunny/PSyncBloom-wasm#build",
     "applymixins": "^1.1.0",
-    "minimalistic-assert": "^1.0.1",
     "mnemonist": "^0.39.0",
     "murmurhash3js-revisited": "^3.0.0",
     "p-defer": "^3.0.0",
@@ -46,7 +46,6 @@
   "devDependencies": {
     "@ndn/fw": "workspace:*",
     "@ndn/l3face": "workspace:*",
-    "@types/minimalistic-assert": "^1.0.1",
     "@types/pako": "^1.0.3"
   }
 }

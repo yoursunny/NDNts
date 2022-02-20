@@ -1,6 +1,6 @@
-import { Encoder } from "./encoder";
+import { asDataView, fromUtf8 } from "@ndn/util";
+
 import { NNI } from "./nni";
-import { fromUtf8 } from "./string";
 
 export interface Decodable<R> {
   decodeFrom: (decoder: Decoder) => R;
@@ -66,7 +66,7 @@ export class Decoder {
   private offset = 0;
 
   constructor(private readonly input: Uint8Array) {
-    this.dv = Encoder.asDataView(input);
+    this.dv = asDataView(input);
   }
 
   /** Read TLV structure. */

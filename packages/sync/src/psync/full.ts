@@ -1,6 +1,6 @@
 import { type ProducerHandler, Endpoint, Producer } from "@ndn/endpoint";
 import { type Signer, type Verifier, Data, Interest, Name } from "@ndn/packet";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 import { EventEmitter } from "node:events";
 import pDefer, { type DeferredPromise } from "p-defer";
 import type TypedEmitter from "typed-emitter";

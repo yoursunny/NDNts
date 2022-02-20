@@ -1,6 +1,6 @@
 import { SigType, Verifier } from "@ndn/packet";
+import { crypto } from "@ndn/util";
 
-import { crypto } from "../crypto_node";
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
 
 const GenParams: HmacKeyGenParams & HmacImportParams = {

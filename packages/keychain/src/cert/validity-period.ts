@@ -1,5 +1,6 @@
 import { SigInfo } from "@ndn/packet";
-import { type Encodable, Decoder, Encoder, EvDecoder, Extension, toUtf8 } from "@ndn/tlv";
+import { type Encodable, Decoder, Encoder, EvDecoder, Extension } from "@ndn/tlv";
+import { toUtf8 } from "@ndn/util";
 
 import { TT } from "./an";
 

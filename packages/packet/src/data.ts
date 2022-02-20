@@ -1,9 +1,9 @@
 import { type Decoder, type Encodable, type EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { sha256 } from "@ndn/util";
 
 import { TT } from "./an";
 import type { Interest } from "./interest";
 import { type NameLike, Component, ImplicitDigest, Name } from "./name/mod";
-import { sha256 } from "./security/helper_node";
 import { type Signer, type Verifier, LLSign, LLVerify } from "./security/signing";
 import { SigInfo } from "./sig-info";
 

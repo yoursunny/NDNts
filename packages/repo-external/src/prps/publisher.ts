@@ -1,7 +1,8 @@
 import { Endpoint, Producer, ProducerHandler, RetxPolicy } from "@ndn/endpoint";
 import { SequenceNum } from "@ndn/naming-convention2";
 import { type Signer, Component, Data, digestSigning, Interest, Name } from "@ndn/packet";
-import { type Encodable, Encoder, toHex } from "@ndn/tlv";
+import { type Encodable, Encoder } from "@ndn/tlv";
+import { asDataView, toHex } from "@ndn/util";
 
 import { MsgSuffix, NotifyParams, NotifySuffix } from "./packet";
 
@@ -45,7 +46,7 @@ export class PrpsPublisher {
 
   public async publish(topic: Name, item: Item): Promise<void> {
     const notifyNonce = new Uint8Array(4);
-    const notifyNonceDataView = Encoder.asDataView(notifyNonce);
+    const notifyNonceDataView = asDataView(notifyNonce);
     let key: string;
     do {
       notifyNonceDataView.setUint32(0, Math.random() * 0xFFFFFFFF);

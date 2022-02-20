@@ -5,8 +5,7 @@ import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Closers } from "@ndn/l3face/test-fixture/closers";
 import { type NameLike, Name } from "@ndn/packet";
-import { toHex } from "@ndn/tlv";
-import assert from "minimalistic-assert";
+import { assert, toHex } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
 import { setTimeout as delay } from "node:timers/promises";
 

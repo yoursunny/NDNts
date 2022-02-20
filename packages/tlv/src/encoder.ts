@@ -1,3 +1,5 @@
+import { asDataView } from "@ndn/util";
+
 /** An object that knows how to prepend itself to an Encoder. */
 export interface EncodableObj {
   encodeTo: (encoder: Encoder) => void;
@@ -34,10 +36,10 @@ function writeVarNum(room: Uint8Array, off: number, n: number) {
     room[off++] = n;
   } else if (n <= 0xFFFF) {
     room[off++] = 0xFD;
-    Encoder.asDataView(room).setUint16(off, n);
+    asDataView(room).setUint16(off, n);
   } else {
     room[off++] = 0xFE;
-    Encoder.asDataView(room).setUint32(off, n);
+    asDataView(room).setUint32(off, n);
   }
 }
 
@@ -155,11 +157,6 @@ export class Encoder {
 }
 
 export namespace Encoder {
-  /** Create a DataView over a Uint8Array. */
-  export function asDataView(a: Uint8Array): DataView {
-    return new DataView(a.buffer, a.byteOffset, a.byteLength);
-  }
-
   export const OmitEmpty = Symbol("OmitEmpty");
 
   /** Encode a single object into Uint8Array. */

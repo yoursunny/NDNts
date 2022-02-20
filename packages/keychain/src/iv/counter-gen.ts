@@ -1,4 +1,4 @@
-import { fromHex } from "@ndn/tlv";
+import { fromHex } from "@ndn/util";
 
 import { type CounterIvOptions, CounterIncrement, parseCounterIvOptions } from "./counter-common";
 import { IvGen } from "./gen";

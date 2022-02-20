@@ -1,5 +1,5 @@
 import { SigType } from "@ndn/packet";
-import { fromHex } from "@ndn/tlv";
+import { fromHex } from "@ndn/util";
 
 /**
  * Provide a test vector for a SafeBag containing an ECDSA key.

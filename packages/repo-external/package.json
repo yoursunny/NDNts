@@ -31,6 +31,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/repo-api": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "it-keepalive": "^1.2.0",
     "it-pushable": "^1.4.2",
     "p-defer": "^3.0.0",

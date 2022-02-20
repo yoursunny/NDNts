@@ -1,4 +1,4 @@
-import { fromHex, toHex } from "@ndn/tlv";
+import { fromHex, toHex } from "@ndn/util";
 
 import { TT } from "../an";
 import { Component } from "./component";

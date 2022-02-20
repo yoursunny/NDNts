@@ -1,5 +1,5 @@
 import type { LLDecrypt } from "@ndn/packet";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 /** Initialization Vector checker. */
 export abstract class IvChecker {

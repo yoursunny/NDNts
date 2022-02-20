@@ -1,5 +1,4 @@
-import { toHex } from "@ndn/tlv";
-import assert from "minimalistic-assert";
+import { assert, toHex } from "@ndn/util";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
 import { Interest } from "../interest";

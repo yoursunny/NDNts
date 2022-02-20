@@ -1,5 +1,5 @@
 import type { Name } from "@ndn/packet";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 import type TypedEmitter from "typed-emitter";
 
 /** A sync protocol participant. */

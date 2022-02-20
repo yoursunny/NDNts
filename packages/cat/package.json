@@ -30,6 +30,7 @@
     "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "graceful-fs": "^4.2.9",
     "hard-rejection": "^2.1.0",
     "it-pushable": "^1.4.2",

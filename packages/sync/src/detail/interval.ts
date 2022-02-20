@@ -1,4 +1,4 @@
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 export type IntervalRange = [min: number, max: number];
 

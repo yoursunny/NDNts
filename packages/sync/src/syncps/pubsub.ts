@@ -1,7 +1,7 @@
 import { Endpoint, Producer } from "@ndn/endpoint";
 import { Timestamp } from "@ndn/naming-convention2";
 import { type Name, type Signer, type Verifier, Data, digestSigning, Interest, lpm } from "@ndn/packet";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import { EventEmitter } from "node:events";
 import pDefer, { type DeferredPromise } from "p-defer";

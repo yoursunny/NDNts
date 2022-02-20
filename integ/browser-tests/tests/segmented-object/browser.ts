@@ -1,5 +1,5 @@
 import { BlobChunkSource, fetch, serve } from "@ndn/segmented-object";
-import { toHex } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 
 import type { FetchedInfo } from "./api";
 

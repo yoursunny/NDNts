@@ -1,6 +1,7 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Component, Data, Name } from "@ndn/packet";
-import { Decoder, Encoder, toHex } from "@ndn/tlv";
+import { Decoder } from "@ndn/tlv";
+import { asDataView, toHex } from "@ndn/util";
 import itKeepAlive from "it-keepalive";
 
 import { PrpsPublisher, PrpsSubscriber } from "../prps/mod";
@@ -65,7 +66,7 @@ export class PyRepoClient {
 
   private async execute(verb: Component, parameter: CommandParameter): Promise<void> {
     const id = new Uint8Array(4);
-    const idDataView = Encoder.asDataView(id);
+    const idDataView = asDataView(id);
     let key: string;
     do {
       idDataView.setUint32(0, Math.random() * 0xFFFFFFFF);

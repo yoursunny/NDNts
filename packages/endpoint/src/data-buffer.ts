@@ -1,5 +1,5 @@
 import type { Data, Interest, Signer } from "@ndn/packet";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 import { signUnsignedData } from "./producer";
 

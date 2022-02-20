@@ -18,6 +18,7 @@
     "@ndn/segmented-object": "workspace:*",
     "@ndn/sync": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "@ndn/web-bluetooth-transport": "workspace:*",
     "@ndn/ws-transport": "workspace:*",
     "events": "^3.3.0"

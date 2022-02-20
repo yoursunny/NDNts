@@ -1,5 +1,5 @@
 import { KeyLocator, LLSign, LLVerify, Name, NameLike, Signer, Verifier } from "@ndn/packet";
-import assert from "minimalistic-assert";
+import { assert } from "@ndn/util";
 
 import { ECDSA } from "../algo/mod";
 import { SigningAlgorithmListSlim } from "../algolist/mod";

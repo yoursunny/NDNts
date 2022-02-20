@@ -1,8 +1,9 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Component, Name } from "@ndn/packet";
+import { crypto } from "@ndn/util";
 
-import { type EncryptionAlgorithm, type NamedDecrypter, type NamedEncrypter, AesBlockSize, AESCBC, AESCTR, AESGCM, Certificate, CounterIvChecker, createEncrypter, EncryptionAlgorithmListFull, generateEncryptionKey, generateSigningKey, KeyChain, KeyChainImplWebCrypto as crypto, RSAOAEP, ValidityPeriod } from "../..";
+import { type EncryptionAlgorithm, type NamedDecrypter, type NamedEncrypter, AesBlockSize, AESCBC, AESCTR, AESGCM, Certificate, CounterIvChecker, createEncrypter, EncryptionAlgorithmListFull, generateEncryptionKey, generateSigningKey, KeyChain, RSAOAEP, ValidityPeriod } from "../..";
 
 async function testEncryptDecrypt(encrypter: NamedEncrypter, decrypter: NamedDecrypter, aead: boolean) {
   expect(encrypter.name).toEqualName(decrypter.name);

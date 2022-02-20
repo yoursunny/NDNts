@@ -4,7 +4,7 @@ import { CancelInterest, Forwarder, FwPacket, FwTracer } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, FwHint, Interest, Name } from "@ndn/packet";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
-import { fromUtf8, toHex } from "@ndn/tlv";
+import { fromUtf8, toHex } from "@ndn/util";
 import { setTimeout as delay } from "node:timers/promises";
 import { BufferWritableMock } from "stream-mock";
 import { consume } from "streaming-iterables";

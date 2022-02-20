@@ -22,7 +22,7 @@ interface Row {
   expectedPrefix: Name;
 }
 
-const TABLE = [
+const TABLE: Row[] = [
   {
     faceIsLocal: true,
     expectedPrefix: ControlCommand.localhostPrefix,
@@ -35,7 +35,7 @@ const TABLE = [
     commandPrefix: new Name("/Q"),
     expectedPrefix: new Name("/Q"),
   },
-] as Row[];
+];
 
 test.each(TABLE)("reg $#", async ({ faceIsLocal, commandPrefix, expectedPrefix }) => {
   const fw = Forwarder.create();
@@ -112,7 +112,7 @@ test.each(TABLE)("reg $#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
   uplinkL3.emit("down");
   await delay(100);
   uplinkL3.emit("up");
-  await delay(100);
+  await delay(200);
   expect(verbs).toHaveLength(4);
   expect(verbs[3]).toBe("register");
 

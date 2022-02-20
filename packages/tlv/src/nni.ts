@@ -1,5 +1,6 @@
+import { asDataView, toHex } from "@ndn/util";
+
 import { type Encodable, Encoder } from "./encoder";
-import { toHex } from "./string";
 
 class Nni1 {
   constructor(private readonly n: number) {}
@@ -13,7 +14,7 @@ class Nni2 {
   constructor(private readonly n: number) {}
 
   public encodeTo(encoder: Encoder) {
-    Encoder.asDataView(encoder.prependRoom(2)).setUint16(0, this.n);
+    asDataView(encoder.prependRoom(2)).setUint16(0, this.n);
   }
 }
 
@@ -21,7 +22,7 @@ class Nni4 {
   constructor(private readonly n: number) {}
 
   public encodeTo(encoder: Encoder) {
-    Encoder.asDataView(encoder.prependRoom(4)).setUint32(0, this.n);
+    asDataView(encoder.prependRoom(4)).setUint32(0, this.n);
   }
 }
 
@@ -29,7 +30,7 @@ class Nni8Number {
   constructor(private readonly n: number) {}
 
   public encodeTo(encoder: Encoder) {
-    const dv = Encoder.asDataView(encoder.prependRoom(8));
+    const dv = asDataView(encoder.prependRoom(8));
     dv.setUint32(0, this.n / 0x100000000);
     dv.setUint32(4, this.n % 0x100000000);
   }
@@ -39,7 +40,7 @@ class Nni8Big {
   constructor(private readonly n: bigint) {}
 
   public encodeTo(encoder: Encoder) {
-    Encoder.asDataView(encoder.prependRoom(8)).setBigUint64(0, this.n);
+    asDataView(encoder.prependRoom(8)).setBigUint64(0, this.n);
   }
 }
 
@@ -136,7 +137,7 @@ export namespace NNI {
       throw new Error(`incorrect TLV-LENGTH of NNI${len}`);
     }
 
-    const dv = Encoder.asDataView(value);
+    const dv = asDataView(value);
     if (big) {
       return dv.byteLength === 8 ? dv.getBigUint64(0) : BigInt(decode32(dv));
     }
