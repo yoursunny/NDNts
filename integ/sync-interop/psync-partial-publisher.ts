@@ -1,6 +1,7 @@
 import { exitClosers, openUplinks } from "@ndn/cli-common";
 import { Name } from "@ndn/packet";
 import { makePSyncCompatParam, PSyncPartialPublisher, PSyncZlib, SyncNode } from "@ndn/sync";
+import { console } from "@ndn/util";
 
 const syncPrefix = new Name("/psync-interop");
 const ownPrefix = new Name(`/psync-NDNts/${Date.now()}`);

@@ -39,8 +39,6 @@
     "tslib": "^2.3.1"
   },
   "devDependencies": {
-    "@ndn/repo": "workspace:*",
-    "@types/memdown": "^3.0.0",
-    "memdown": "^6.1.1"
+    "@ndn/repo": "workspace:*"
   }
 }

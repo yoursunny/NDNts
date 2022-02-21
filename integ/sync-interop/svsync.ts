@@ -3,7 +3,8 @@ import { Endpoint } from "@ndn/endpoint";
 import { createSigner, createVerifier, HMAC } from "@ndn/keychain";
 import { Data, Name } from "@ndn/packet";
 import { SvSync } from "@ndn/sync";
-import { NNI, toUtf8 } from "@ndn/tlv";
+import { NNI } from "@ndn/tlv";
+import { console, toUtf8 } from "@ndn/util";
 
 const syncPrefix = new Name("/ndn/svs");
 const myID = new Name(`/${Date.now()}`);
@@ -20,8 +21,8 @@ const key = await HMAC.cryptoGenerate({
 }, false);
 const sync = new SvSync({
   syncPrefix,
-  signer: await createSigner(HMAC, key),
-  verifier: await createVerifier(HMAC, key),
+  signer: createSigner(HMAC, key),
+  verifier: createVerifier(HMAC, key),
 });
 exitClosers.push(sync);
 sync.on("update", ({ id, loSeqNum, hiSeqNum }) => {

@@ -31,7 +31,7 @@ Test `PSyncFull`:
 
 ```bash
 # in NDNts directory
-corepack pnpm literate packages/sync/interop-test/psync-full.ts
+corepack pnpm literate integ/sync-interop/psync-full.ts
 
 # in PSync directory
 export NDN_LOG=examples.FullSyncApp=INFO
@@ -42,7 +42,7 @@ Test `PSyncPartialPublisher`:
 
 ```bash
 # in NDNts directory
-corepack pnpm literate packages/sync/interop-test/psync-partial-publisher.ts
+corepack pnpm literate integ/sync-interop/psync-partial-publisher.ts
 
 # in PSync directory
 export NDN_LOG=examples.PartialSyncConsumerApp=INFO
@@ -57,7 +57,7 @@ export NDN_LOG=examples.PartialSyncProducerApp=INFO
 LD_LIBRARY_PATH=build ./build/examples/psync-producer /psync-interop /psync-memphis/${RANDOM} 10 1000
 
 # in NDNts directory
-corepack pnpm literate packages/sync/interop-test/psync-partial-subscriber.ts
+corepack pnpm literate integ/sync-interop/psync-partial-subscriber.ts
 ```
 
 ## syncps
@@ -89,9 +89,9 @@ DNMPV2=$(pwd)
 make syncps/syncps-content.pb.cc
 
 # in NDNts directory
-g++ -o packages/sync/interop-test/syncps-ind.exe \
+g++ -o integ/sync-interop/syncps-ind.exe \
   -std=c++17 $(pkg-config --cflags libndn-ind) -I${DNMPV2}/syncps \
-  packages/sync/interop-test/syncps-ind.cpp ${DNMPV2}/syncps/syncps-content.pb.cc \
+  integ/sync-interop/syncps-ind.cpp ${DNMPV2}/syncps/syncps-content.pb.cc \
   $(pkg-config --libs libndn-ind) -lboost_iostreams -lboost_system -lprotobuf -llog4cxx -lpthread
 ```
 
@@ -99,10 +99,10 @@ Test `SyncpsPubsub`:
 
 ```bash
 # in NDNts directory
-packages/sync/interop-test/syncps-ind.exe /syncps-interop /syncps-interop-data /syncps-interop-data/ind/$RANDOM >/dev/null
+integ/sync-interop/syncps-ind.exe /syncps-interop /syncps-interop-data /syncps-interop-data/ind/$RANDOM >/dev/null
 
 # in NDNts directory
-corepack pnpm literate packages/sync/interop-test/syncps.ts
+corepack pnpm literate integ/sync-interop/syncps.ts
 ```
 
 ## SvSync
@@ -132,5 +132,5 @@ Test `SvSync`:
 LD_LIBRARY_PATH=build ./build/examples/chat ${RANDOM}
 
 # in NDNts directory
-corepack pnpm literate packages/sync/interop-test/svsync.ts
+corepack pnpm literate integ/sync-interop/svsync.ts
 ```

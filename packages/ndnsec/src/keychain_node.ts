@@ -1,4 +1,4 @@
-import { type CryptoAlgorithm, Certificate, CertNaming, ECDSA, KeyChain, KeyStore, RSA, ValidityPeriod } from "@ndn/keychain";
+import { type CryptoAlgorithm, Certificate, CertNaming, ECDSA, KeyChain, KeyStore, RSA, RSAOAEP, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, Name } from "@ndn/packet";
 import { type Decodable, Decoder, Encoder } from "@ndn/tlv";
 import { crypto } from "@ndn/util";
@@ -9,7 +9,7 @@ import { SafeBag } from "./safe-bag";
 
 const IMPORTING_ISSUER = Component.from("08c5a687-7be5-43ee-a966-2683fb339c1d");
 const PASSPHRASE = "PASSPHRASE";
-const ALGO_LIST = [ECDSA, RSA];
+const ALGO_LIST = [ECDSA, RSA, RSAOAEP];
 
 /** Access ndn-cxx KeyChain. */
 export class NdnsecKeyChain extends KeyChain {

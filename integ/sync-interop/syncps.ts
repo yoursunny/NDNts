@@ -1,6 +1,7 @@
 import { exitClosers, openUplinks } from "@ndn/cli-common";
 import { Data, Name } from "@ndn/packet";
 import { makeSyncpsCompatParam, SyncpsPubsub } from "@ndn/sync";
+import { console } from "@ndn/util";
 
 const syncPrefix = new Name("/syncps-interop");
 const ownName = new Name(`/syncps-interop-data/NDNts/${Date.now()}`);
@@ -28,7 +29,7 @@ let seqNum = 0;
 exitClosers.addTimeout(setInterval(() => {
   const pub = new Data(ownName.append(`${++seqNum}`));
   console.log(`PUBLISH ${pub.name}`);
-  sync.publish(pub, ({ name }, confirmed) => {
+  void sync.publish(pub, ({ name }, confirmed) => {
     console.log(`${confirmed ? "CONFIRM" : "LOST"} ${name}`);
   });
 }, 600));

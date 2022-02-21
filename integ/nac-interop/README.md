@@ -14,7 +14,7 @@ rm -rf $HOME/.ndn
 ndnsec key-gen -tr /member
 
 # in NDNts directory
-corepack pnpm literate packages/nac/interop-test/producer.ts
+corepack pnpm literate integ/nac-interop/producer.ts
 # wait for 'ready' message
 
 # in name-based-access-control directory
@@ -31,5 +31,5 @@ ndnsec key-gen -tr /member
 LD_LIBRARY_PATH=build NDN_LOG="nac.*=DEBUG" build/examples/nac-producer
 
 # in NDNts directory
-corepack pnpm literate packages/nac/interop-test/consumer.ts
+corepack pnpm literate integ/nac-interop/consumer.ts
 ```
