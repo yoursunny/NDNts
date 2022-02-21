@@ -41,8 +41,6 @@
     "typed-emitter": "^2.1.0"
   },
   "devDependencies": {
-    "@ndn/l3face": "workspace:*",
-    "@ndn/node-transport": "workspace:*",
     "@ndn/repo": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "streaming-iterables": "^6.2.0"

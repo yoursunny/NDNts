@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 
 import fsWalk from "@nodelib/fs.walk";
+import Builtins from "builtins";
 import fs from "graceful-fs";
 import yaml from "js-yaml";
 import path from "node:path";
+
+const builtins = new Set(Builtins());
 
 function* listImports(filename) {
   const lines = fs.readFileSync(filename, { encoding: "utf8" }).split("\n");
@@ -16,7 +19,7 @@ function* listImports(filename) {
   }
 }
 
-const ignoredUnused = new Set(["graphql", "hard-rejection", "tslib"]);
+const ignoredUnused = new Set(["@types/web-bluetooth", "graphql", "hard-rejection", "tslib"]);
 const ignoredTypes = new Set(["yargs"]);
 
 let nWarnings = 0;
@@ -26,15 +29,16 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
     continue;
   }
   const unused = new Set(Object.keys(dependencies).filter((dep) => !ignoredUnused.has(dep)));
+  const unusedD = new Set(Object.keys(devDependencies).filter((dep) => !ignoredUnused.has(dep)));
 
-  const sources = fsWalk.walkSync(path.join(folder, "lib"), {
+  const jsFiles = fsWalk.walkSync(path.join(folder, "lib"), {
     entryFilter: ({ dirent, name }) => dirent.isFile() && !name.endsWith(".d.ts"),
   });
-  for (const { path: filename } of sources) {
+  for (const { path: filename } of jsFiles) {
     for (const dep of listImports(filename)) {
       unused.delete(dep);
-      if (devDependencies[dep] && !dependencies[dep]) {
-        process.stdout.write(`+\t${filename}\t${dep}\n`);
+      if (!dependencies[dep] && !builtins.has(dep)) {
+        process.stdout.write(`P+\t${filename}\t${dep}\n`);
         ++nWarnings;
       }
     }
@@ -55,8 +59,23 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
     }
   }
 
+  const tsFiles = fsWalk.walkSync(folder, {
+    deepFilter: ({ name }) => !["lib", "node_modules"].includes(name),
+    entryFilter: ({ dirent, name }) => dirent.isFile() && name.endsWith(".ts"),
+  });
+  for (const { path: filename } of tsFiles) {
+    for (const imp of listImports(filename)) {
+      unusedD.delete(imp);
+      unusedD.delete(`@types/${imp}`);
+    }
+  }
+
   for (const dep of unused) {
-    process.stdout.write(`-\t${folder}\t${dep}\n`);
+    process.stdout.write(`P-\t${folder}\t${dep}\n`);
+    ++nWarnings;
+  }
+  for (const dep of unusedD) {
+    process.stdout.write(`D-\t${folder}\t${dep}\n`);
     ++nWarnings;
   }
 }

@@ -35,7 +35,6 @@
   },
   "devDependencies": {
     "@ndn/node-transport": "workspace:*",
-    "@ndn/packet": "workspace:*",
     "it-pushable": "^1.4.2"
   }
 }

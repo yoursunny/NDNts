@@ -74,7 +74,7 @@ jobs:
           sudo apt-get install --no-install-recommends libndn-cxx-dev libpsync-dev nfd
       - run: corepack pnpm install
       - run: corepack pnpm build
-      - name: check dependencies vs devDependencies
+      - name: check dependencies and devDependencies
         run: node mk/check-dep.mjs
       - run: corepack pnpm literate lint
       - run: corepack pnpm literate

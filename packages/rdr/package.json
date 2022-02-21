@@ -34,7 +34,6 @@
   },
   "devDependencies": {
     "@ndn/keychain": "workspace:*",
-    "@ndn/l3face": "workspace:*",
     "@ndn/util": "workspace:*"
   }
 }

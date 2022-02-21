@@ -36,7 +36,6 @@
     "@types/tmp": "^0.2.3",
     "@types/url-format-lax": "^2.0.0",
     "@types/url-parse-lax": "^5.0.0",
-    "stream-mock": "^2.0.5",
     "streaming-iterables": "^6.2.0",
     "tmp": "^0.2.1"
   }

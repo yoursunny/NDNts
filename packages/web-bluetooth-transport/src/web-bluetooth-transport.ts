@@ -1,4 +1,5 @@
-import "web-bluetooth";
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference -- `import "web-bluetooth"` would show up in JavaScript output
+/// <reference types="web-bluetooth"/>
 
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 import EventIterator from "event-iterator";
