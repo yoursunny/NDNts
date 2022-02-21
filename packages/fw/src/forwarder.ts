@@ -149,5 +149,8 @@ export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events
   public close(): void {
     this.pit.close();
     this.readvertise.close();
+    for (const face of this.faces) {
+      face.close();
+    }
   }
 }

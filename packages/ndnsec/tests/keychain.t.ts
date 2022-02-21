@@ -6,7 +6,7 @@ import { dirSync as tmpDir } from "tmp";
 import { NdnsecKeyChain } from "..";
 
 describe("ndn-cxx keychain", () => {
-  if (execa.sync("which", ["ndnsec"], { reject: false }).exitCode !== 0) {
+  if (execa.sync("command", ["-v", "ndnsec"], { reject: false }).exitCode !== 0) {
     // eslint-disable-next-line jest/no-disabled-tests
     test.skip("ndnsec is not installed", () => undefined);
     return;
@@ -27,11 +27,11 @@ describe("ndn-cxx keychain", () => {
     const keyChain = new NdnsecKeyChain({ home });
     const record = await TestKeyStore.execute(keyChain, { skipHmac: true });
     TestKeyStore.check(record, { skipHmac: true });
-  }, 10000);
+  }, 20000);
 
   test("CertStore", async () => {
     const keyChain = new NdnsecKeyChain({ home });
     const record = await TestCertStore.execute(keyChain);
     TestCertStore.check(record);
-  }, 10000);
+  }, 20000);
 });

@@ -1,48 +1,69 @@
 import { Name, TT } from "@ndn/packet";
-import { type EncodableObj, type EncodableTlv, Encoder, NNI, toUtf8 } from "@ndn/tlv";
+import { type Decoder, type EncodableTlv, Encodable, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 
-const fieldDefs: Array<[number, keyof ControlParameters.Fields, any]> = [
-  [TT.Name, "name", undefined],
-  [0x69, "faceId", NNI],
-  [0x72, "uri", String],
-  [0x81, "localUri", String],
-  [0x6F, "origin", NNI],
-  [0x6A, "cost", NNI],
-  [0x83, "capacity", NNI],
-  [0x84, "count", NNI],
-  [0x87, "baseCongestionMarkingInterval", NNI],
-  [0x88, "defaultCongestionPeriod", NNI],
-  [0x89, "mtu", NNI],
-  [0x6C, "flags", NNI],
-  [0x70, "mask", NNI],
-  [0x6B, "strategy", Name],
-  [0x6D, "expirationPeriod", NNI],
-  [0x85, "facePersistency", NNI],
+const TtControlParameters = 0x68;
+
+type FieldDef<K extends keyof ControlParameters.Fields> = [
+  tt: number,
+  key: K,
+  encodeValue: (v: ControlParameters.Fields[K]) => Encodable,
+  decode: (tlv: Decoder.Tlv) => ControlParameters.Fields[K],
 ];
+
+function decodeNNI({ nni }: Decoder.Tlv) {
+  return nni;
+}
+
+function decodeString({ text }: Decoder.Tlv) {
+  return text;
+}
+
+const fieldDefs: Array<FieldDef<any>> = [
+  [TT.Name, "name", (name) => name.value, ({ decoder }) => decoder.decode(Name)],
+  [0x69, "faceId", NNI, decodeNNI],
+  [0x72, "uri", toUtf8, decodeString],
+  [0x81, "localUri", toUtf8, decodeString],
+  [0x6F, "origin", NNI, decodeNNI],
+  [0x6A, "cost", NNI, decodeNNI],
+  [0x83, "capacity", NNI, decodeNNI],
+  [0x84, "count", NNI, decodeNNI],
+  [0x87, "baseCongestionMarkingInterval", NNI, decodeNNI],
+  [0x88, "defaultCongestionPeriod", NNI, decodeNNI],
+  [0x89, "mtu", NNI, decodeNNI],
+  [0x6C, "flags", NNI, decodeNNI],
+  [0x70, "mask", NNI, decodeNNI],
+  [0x6B, "strategy", (name) => name, ({ vd }) => vd.decode(Name)],
+  [0x6D, "expirationPeriod", NNI, decodeNNI],
+  [0x85, "facePersistency", NNI, decodeNNI],
+];
+
+const EVD = new EvDecoder<ControlParameters>("ControlParameters", TtControlParameters)
+  .setIsCritical(() => false);
+for (const [tt, key,, decode] of fieldDefs) {
+  EVD.add(tt, (t, tlv) => {
+    (t as any)[key] = decode(tlv);
+  });
+}
 
 /** NFD Management ControlParameters struct (encoding only). */
 export class ControlParameters {
+  public static decodeFrom(decoder: Decoder): ControlParameters {
+    return EVD.decode(new ControlParameters(), decoder);
+  }
+
   constructor(value: ControlParameters.Fields = {}) {
     Object.assign(this, value);
   }
 
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(
-      0x68,
-      ...fieldDefs.map(([tt, key, type]) => {
-        const value = this[key];
-        switch (true) {
-          case value === undefined:
-            return undefined;
-          case type === NNI:
-            return [tt, NNI(value as number)] as EncodableTlv;
-          case type === String:
-            return [tt, toUtf8(value as string)] as EncodableTlv;
-          case type === Name:
-            return [tt, value as Name] as EncodableTlv;
-          default:
-            return value as EncodableObj;
+      TtControlParameters,
+      ...fieldDefs.map(([tt, key, encodeValue]) => {
+        const v = (this as any)[key];
+        if (v === undefined) {
+          return undefined;
         }
+        return [tt, encodeValue(v)] as EncodableTlv;
       }),
     );
   }

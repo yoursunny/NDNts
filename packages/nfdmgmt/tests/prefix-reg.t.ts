@@ -5,13 +5,13 @@ import { type FwFace, Forwarder, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Certificate, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
-import { Component, Data, Interest, Name, TT } from "@ndn/packet";
+import { Component, Data, Interest, Name } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
 import { Closers } from "@ndn/util";
 import { EventEmitter } from "node:events";
 import { setTimeout as delay } from "node:timers/promises";
 
-import { ControlCommand, enableNfdPrefixReg } from "..";
+import { ControlCommand, ControlParameters, ControlResponse, enableNfdPrefixReg } from "..";
 
 const closers = new Closers();
 afterEach(closers.close);
@@ -46,37 +46,19 @@ test.each(TABLE)("reg $#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
     const verb = interest.name.at(-6).text;
     verbs.push(verb);
 
-    const cpMatcher = [
-      ({ type, decoder }: Decoder.Tlv) => {
-        expect(type).toBe(TT.Name);
-        expect(decoder.decode(Name)).toEqualName("/R");
-      },
-      ({ type, nni }: Decoder.Tlv) => {
-        expect(type).toBe(0x6F); // Origin
-        expect(nni).toBe(65);
-      },
-    ];
+    const params = new Decoder(interest.name.at(-5).value).decode(ControlParameters);
+    expect(params.name).toEqualName("/R");
+    expect(params.origin).toBe(65);
     if (verb === "register") {
-      cpMatcher.push(
-        ({ type, nni }: Decoder.Tlv) => {
-          expect(type).toBe(0x6A); // Cost
-          expect(nni).toBe(0);
-        },
-        ({ type, nni }: Decoder.Tlv) => {
-          expect(type).toBe(0x6C); // Flags
-          expect(nni).toBe(0x02);
-        },
-      );
+      expect(params.cost).toBe(0);
+      expect(params.flags).toBe(0x02);
+    } else {
+      expect(params.cost).toBeUndefined();
+      expect(params.flags).toBeUndefined();
     }
-    expect(interest.name.at(-5).value).toMatchTlv(({ type, value }) => {
-      expect(type).toBe(0x68);
-      expect(value).toMatchTlv(...cpMatcher);
-    });
 
     const status = [1, 5].includes(verbs.length) ? 400 : 200;
-    const data = new Data(interest.name, Encoder.encode([0x65,
-      [0x66, NNI(status)],
-      [0x67]]));
+    const data = new Data(interest.name, Encoder.encode(new ControlResponse(status, "", params)));
     return FwPacket.create(data, token);
   };
   const uplinkL3 = new class extends EventEmitter implements FwFace.RxTxDuplex {

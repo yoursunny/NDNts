@@ -71,7 +71,7 @@ jobs:
           echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu focal main" \
             | sudo tee /etc/apt/sources.list.d/nfd-nightly.list
           sudo apt-get update
-          sudo apt-get install --no-install-recommends libndn-cxx-dev nfd
+          sudo apt-get install --no-install-recommends libndn-cxx-dev libpsync-dev nfd
       - run: corepack pnpm install
       - run: corepack pnpm build
       - name: check dependencies vs devDependencies

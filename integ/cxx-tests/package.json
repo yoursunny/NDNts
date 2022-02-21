@@ -5,9 +5,11 @@
     "test": "../../node_modules/.bin/jest"
   },
   "devDependencies": {
+    "@ndn/endpoint": "workspace:*",
     "@ndn/keychain": "workspace:*",
+    "@ndn/nfdmgmt": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "@ndn/segmented-object": "workspace:*",
+    "@ndn/sync": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "execa": "^5.1.1",
