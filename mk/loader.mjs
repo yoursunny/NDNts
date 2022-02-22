@@ -1,7 +1,18 @@
 import * as K from "@k-foss/ts-esnode";
 import codedown from "codedown";
 import fs from "graceful-fs";
+import { promisify } from "node:util";
+import readlink from "readlink";
 
+const readlinkPromise = promisify(readlink);
+
+/**
+ * Node.js loader resolve hook.
+ * @param {string} specifier
+ * @param {{ conditions: string[], parentURL: string | undefined }} context
+ * @param {typeof resolve} defaultResolve
+ * @returns {Promise<{ url: string }>}
+ */
 export async function resolve(specifier, context, defaultResolve) {
   try {
     const { protocol, pathname } = new URL(specifier);
@@ -12,18 +23,36 @@ export async function resolve(specifier, context, defaultResolve) {
       };
     }
   } catch {}
-  return K.resolve(specifier, context, defaultResolve);
+  const r = await K.resolve(specifier, context, defaultResolve);
+  try {
+    const u = new URL(r.url);
+    if (u.protocol === "file:") {
+      if (specifier.startsWith("@ndn/") && u.pathname.endsWith("/src/mod.ts")) {
+        u.pathname = u.pathname.replace(/\/src\/mod.ts$/, "/lib/mod_node.js");
+      }
+      u.pathname = await readlinkPromise(u.pathname);
+    }
+    r.url = u.toString();
+  } catch {}
+  return r;
 }
 
+/**
+ * Node.js loader load hook.
+ * @param {string} url
+ * @param {{ format: string }} context
+ * @param {typeof load} defaultLoad
+ * @returns {Promise<{ format: string, source: string | ArrayBuffer | SharedArrayBuffer | Uint8Array }>}
+ */
 export async function load(url, context, defaultLoad) {
-  let { pathname } = new URL(url);
-  if (!pathname.endsWith(".ts")) {
+  let { protocol, pathname } = new URL(url);
+  if (!(protocol === "file:" && pathname.endsWith(".ts"))) {
     return defaultLoad(url, context, defaultLoad);
   }
 
   const isLiterate = pathname.endsWith(".md.ts");
   if (isLiterate) {
-    pathname = pathname.slice(0, -3);
+    pathname = pathname.replace(/\.md\.ts$/, ".md");
   }
   let content = await fs.promises.readFile(pathname, { encoding: "utf-8" });
   if (isLiterate) {

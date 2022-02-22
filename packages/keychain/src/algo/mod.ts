@@ -1,5 +1,5 @@
 export * from "./aes-cbc";
-export { AesEncryption, AesKeyLength, AesBlockSize } from "./aes-common";
+export { type AesEncryption, AesKeyLength, AesBlockSize } from "./aes-common";
 export * from "./aes-ctr";
 export * from "./aes-gcm";
 export * from "./ecdsa";
