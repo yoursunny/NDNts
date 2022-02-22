@@ -13,8 +13,7 @@ import { L3Face, Transport } from "@ndn/l3face";
 import { Data, Interest } from "@ndn/packet";
 import { setTimeout as delay } from "node:timers/promises";
 
-(async () => {
-if (process.env.CI) { return; }
+if (process.env.CI) { process.exit(0); }
 ```
 
 ## Transport Types
@@ -106,7 +105,6 @@ const faces = await UdpTransport.createMulticastFaces({});
 for (const face of faces) {
   face.close();
 }
-})();
 ```
 
 ## L3Face Low-Level Details

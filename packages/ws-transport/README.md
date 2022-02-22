@@ -15,8 +15,7 @@ import { WsTransport } from "@ndn/ws-transport";
 import { Endpoint } from "@ndn/endpoint";
 import { Data, Interest, Name } from "@ndn/packet";
 
-(async () => {
-if (process.env.CI) { return; }
+if (process.env.CI) { process.exit(0); }
 
 // Create a WebSocket face.
 // Unless otherwise specified, the face is added to the default Forwarder instance.
@@ -48,5 +47,4 @@ for (let i = 0; i < 5; ++i) {
 
 // When the face is no longer needed, close it.
 uplink.close();
-})();
 ```

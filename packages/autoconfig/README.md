@@ -12,8 +12,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { strict as assert } from "node:assert";
 
-(async () => {
-if (process.env.CI) { return; }
+if (process.env.CI) { process.exit(0); }
 ```
 
 ## Query NDN-FCH Service
@@ -77,8 +76,4 @@ try {
 }
 
 fastestFace.close();
-```
-
-```ts
-})();
 ```

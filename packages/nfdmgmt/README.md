@@ -17,8 +17,6 @@ import { Data, Interest, Name } from "@ndn/packet";
 import { fromUtf8, toUtf8 } from "@ndn/tlv";
 import { strict as assert } from "node:assert";
 import { setTimeout as delay } from "node:timers/promises";
-
-(async () => {
 ```
 
 ## Signed Interest 0.2
@@ -52,7 +50,7 @@ try {
 } catch {
   // Skip the example if NFD is not running.
   console.warn("NFD not running");
-  return;
+  process.exit(0);
 }
 const uplinkP = await UnixTransport.createFace({ fw: fwP, addRoutes: [] }, unixSocket);
 
@@ -77,8 +75,4 @@ assert.equal(payloadText, "NDNts + NFD");
 uplinkC.close();
 uplinkP.close();
 producer.close();
-```
-
-```ts
-})();
 ```

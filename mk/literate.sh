@@ -7,29 +7,24 @@ literate_run() {
   if [[ $1 =~ .*\.ts ]]; then
     echo -e '\n\e[96m'RUNNING $1'\e[39m'
     pushd $(dirname $1) >/dev/null
-    TSFILE=$(basename $1)
+    FILE=$(basename $1)
   elif [[ -f $1/README.md ]]; then
-    echo -e '\n\e[96m'RUNNING EXAMPLES IN $1/README.md'\e[39m'
+    echo -e '\n\e[96m'RUNNING EXAMPLES IN ${1%/}/README.md'\e[39m'
     pushd $1 >/dev/null
-    TSFILE=literate-temp.ts
-    codedown ts <README.md >$TSFILE
+    FILE=README.md
   fi
   export TS_CONFIG_PATH=$ROOTDIR/mk/tsconfig-literate.json
-  node --loader $ROOTDIR/mk/loader.mjs --experimental-specifier-resolution=node $TSFILE
+  node --loader $ROOTDIR/mk/loader.mjs --experimental-specifier-resolution=node $FILE
   popd >/dev/null
 }
 
-if [[ $1 == extract ]]; then
-  for F in $(grep -l '```ts' packages/*/README.md); do
-    codedown ts <$F >$(dirname $F)/literate-temp.ts
-  done
-  exit
-fi
-
 if [[ $1 == lint ]]; then
+  trap "sed -i '/README.md.ts/ s/^#*\s*//' .gitignore" EXIT
+  sed -i '/README.md.ts/ s/^/# /' .gitignore
   for F in $(grep -l '```ts' packages/*/README.md); do
-    codedown ts <$F | xo --stdin --stdin-filename=$F.ts
+    codedown ts <$F >$F.ts
   done
+  xo packages/*/README.md.ts
   exit
 fi
 

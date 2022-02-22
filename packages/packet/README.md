@@ -10,8 +10,6 @@ import { TT, Name, Component, ImplicitDigest, AltUri, Interest, Data, digestSign
 // other imports for examples
 import { Decoder, Encoder, fromUtf8, toUtf8 } from "@ndn/tlv";
 import { strict as assert } from "node:assert";
-
-(async () => {
 ```
 
 ## Name Component
@@ -178,12 +176,8 @@ const data2 = new Decoder(dataWire).decode(Data);
 
 // Data signature should be verified.
 // If the verify() function does not throw, it means the signature is good.
-try {
-  await digestSigning.verify(data);
-} catch (err: unknown) {
-  console.log(err);
-  return;
-}
+await digestSigning.verify(data);
+
 // It's very important that you do not modify the Data if you need to verify its signature.
 // Otherwise, you'll get errors or incorrect results.
 
@@ -227,8 +221,4 @@ assert.equal(await data.canSatisfy(interest3), false);
 const data3 = new Decoder(dataWire).decode(Data);
 const interestWithFullName = new Interest(fullName);
 assert.equal(await data.canSatisfy(interestWithFullName), true);
-```
-
-```ts
-})();
 ```

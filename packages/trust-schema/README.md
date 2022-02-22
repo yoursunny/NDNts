@@ -20,8 +20,6 @@ import { TrustSchema, TrustSchemaSigner, TrustSchemaVerifier, printESM, versec20
 import { Certificate, KeyChain, ValidityPeriod, generateSigningKey } from "@ndn/keychain";
 import { Component, Data } from "@ndn/packet";
 import { strict as assert } from "node:assert";
-
-(async () => {
 ```
 
 ## Trust Schema Introduction
@@ -258,8 +256,4 @@ await schemaVerifier.verify(articleData);
 // Although an author could sign the other Data manually, it is not trusted by schema.
 await authorPvt.sign(otherData);
 await assert.rejects(schemaVerifier.verify(otherData));
-```
-
-```ts
-})();
 ```

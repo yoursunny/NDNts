@@ -6,8 +6,8 @@
 /coverage/
 /docs/typedoc/
 /npm-debug.log
+/packages/*/README.md.ts
 /packages/*/lib/
-/packages/*/literate-temp.ts
 /packages/*/tsconfig.json
 /pnpm-debug.log
 /pnpm-lock.yaml

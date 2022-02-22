@@ -21,8 +21,6 @@ import { fromUtf8, toUtf8 } from "@ndn/tlv";
 import { strict as assert } from "node:assert";
 import { setTimeout as delay } from "node:timers/promises";
 
-(async () => {
-
 const gqlServer = process.env.DEMO_DPDKMGMT_GQLSERVER;
 const localHost = process.env.DEMO_DPDKMGMT_LOCAL;
 const scheme = process.env.DEMO_DPDKMGMT_MEMIF === "1" ? "memif" : "udp";
@@ -33,7 +31,7 @@ DEMO_DPDKMGMT_GQLSERVER= NDN-DPDK forwarder management endpoint (required)
 DEMO_DPDKMGMT_LOCAL= IP address to reach local host from NDN-DPDK (optional)
 DEMO_DPDKMGMT_MEMIF=1 use memif instead of UDP (optional)
 `);
-  return;
+  process.exit(0);
 }
 
 // Topology of this demo
@@ -87,5 +85,4 @@ producer.close();
 await delay(500);
 uplinkC.close();
 uplinkP.close();
-})();
 ```

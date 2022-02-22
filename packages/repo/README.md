@@ -15,8 +15,6 @@ import { Name, Interest, Data } from "@ndn/packet";
 import memdown from "memdown";
 import { strict as assert } from "node:assert";
 import { setTimeout as delay } from "node:timers/promises";
-
-(async () => {
 ```
 
 ## DataStore
@@ -76,8 +74,4 @@ const p = RepoProducer.create(store, { reg: PrefixRegShorter(1) });
 // Close the RepoProducer and the DataStore.
 p.close();
 await store.close();
-```
-
-```ts
-})();
 ```

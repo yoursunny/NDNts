@@ -60,7 +60,11 @@ module.exports = {
       files: [
         "**/README.md.ts",
       ],
-      ...merge(js, ts, literate),
+      ...merge(js, ts, literate, {
+        rules: {
+          "unicorn/no-process-exit": "off",
+        },
+      }),
     },
   ],
 };
