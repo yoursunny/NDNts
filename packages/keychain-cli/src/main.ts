@@ -15,7 +15,7 @@ import { Ndncert03MakeProfileCommand } from "./ndncert03-make-profile";
 import { Ndncert03ShowProfileCommand } from "./ndncert03-show-profile";
 import { ShowCertCommand } from "./show-cert";
 
-const COMMAND = "ndnts-keychain";
+export const COMMAND = "ndnts-keychain";
 
 void yargs(hideBin(process.argv))
   .scriptName(COMMAND)

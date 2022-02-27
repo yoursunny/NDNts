@@ -57,7 +57,7 @@ if [[ $ACT == cover ]]; then
 fi
 
 if [[ $ACT == clean ]]; then
-  exec rm -rf packages/*/lib/ packages/*/literate-temp.ts packages/*/tsconfig.tsbuildinfo
+  exec rm -rf packages/*/lib/ packages/*/tsconfig.tsbuildinfo
 fi
 
 TSCFLAG=

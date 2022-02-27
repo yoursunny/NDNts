@@ -6,7 +6,7 @@ import { FileClientCommand } from "./file-client";
 import { GetSegmentedCommand } from "./get-segmented";
 import { PutSegmentedCommand } from "./put-segmented";
 
-const COMMAND = "ndncat";
+export const COMMAND = "ndncat";
 
 void yargs(hideBin(process.argv))
   .scriptName(COMMAND)

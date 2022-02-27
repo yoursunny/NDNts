@@ -13,6 +13,7 @@
     "cli.cjs"
   ],
   "type": "module",
+  "typedocMain": "src/main.ts",
   "bin": {
     "ndncat": "cli.cjs"
   },

@@ -12,9 +12,10 @@
     "test": "jest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@6.31.0",
+  "packageManager": "pnpm@6.32.2",
   "devDependencies": {
-    "@types/jest": "^27.4.0",
+    "@mshipov/typedoc-plugin-monorepo": "^0.2.2",
+    "@types/jest": "^27.4.1",
     "@types/node": "^16.11.25",
     "@types/wtfnode": "^0.7.0",
     "@typescript/lib-dom": "npm:@types/web@0.0.53",

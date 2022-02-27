@@ -13,11 +13,13 @@
   ],
   "typedocOptions": {
     "entryPointStrategy": "packages",
-    "exclude": ["**/node_modules", "**/literate-temp.ts", "**/interop-test", "**/lib", "**/test-fixture", "**/tests"],
+    "exclude": ["**/node_modules", "**/lib", "**/test-fixture", "**/tests"],
     "excludeExternals": true,
     "excludePrivate": true,
+    "externalModuleMap": "packages/([^/]+)/.*",
     "name": "NDNts",
     "out": "../docs/typedoc",
+    "plugin": ["@mshipov/typedoc-plugin-monorepo"],
     "readme": "./typedoc-README.md"
   }
 }
