@@ -24,7 +24,7 @@ function main({ name, rdr, ver, file, "chunk-size": chunkSize }: Args) {
     versionConvention,
   });
   if (ver !== "none" && rdr) {
-    serveMetadata(new Metadata(server.prefix), { signer });
+    serveMetadata(new Metadata(server.prefix), { signer, announcement: false });
   }
 }
 

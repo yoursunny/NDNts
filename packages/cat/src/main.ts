@@ -12,7 +12,7 @@ void yargs(hideBin(process.argv))
   .scriptName(COMMAND)
   .option("convention", {
     choices: [1, 2, 3],
-    default: 2,
+    default: 3,
     desc: "Naming Convention revision",
     type: "number",
   })

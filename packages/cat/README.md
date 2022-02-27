@@ -11,9 +11,7 @@ It accepts the following arguments:
 
 * Positional argument: name prefix.
 * `NDNTS_UPLINK`, `NDNTS_NFDREG`, `NDNTS_KEYCHAIN`, `NDNTS_KEY` environment variables, as explained in `@ndn/cli-common` package.
-* `--convention=1` encodes version and segment components in rev1 format.
-* `--convention=2` encodes version and segment components in rev2 format (current default).
-* `--convention=3` encodes version and segment components in rev3 format.
+* `--convention=R` encodes version and segment components in rev*R* format (default is rev3).
 * `--ver=42` inserts a specific version number as version component.
 * `--ver=now` (default) inserts current timestamp as version component.
 * `--ver=none` omits version component.
@@ -26,9 +24,7 @@ It accepts the following arguments:
 
 * Positional argument: name prefix.
 * `NDNTS_UPLINK` environment variable, as explained in `@ndn/cli-common` package.
-* `--convention=1` encodes version and segment components in rev1 format.
-* `--convention=2` encodes version and segment components in rev2 format (current default).
-* `--convention=3` encodes version and segment components in rev3 format.
+* `--convention=R` encodes version and segment components in rev*R* format (default is rev3).
 * `--ver=42` inserts a specific version number as version component.
 * `--ver=none` disables version discovery and assumes Data has no version component.
 * `--ver=cbp` sends Interest with CanBePrefix and MustBeFresh to discover version.
@@ -37,7 +33,10 @@ It accepts the following arguments:
 ### Example
 
 ```bash
+# generate test file
 dd if=/dev/urandom of=/tmp/1.bin bs=1M count=1
+
+# run one of the producer command and one of the consumer commands
 
 # producer: serve from stdin
 ndncat put-segmented /A </tmp/1.bin
@@ -45,20 +44,19 @@ ndncat put-segmented /A </tmp/1.bin
 # producer: serve from file, 8KB chunks
 ndncat put-segmented /A --file=/tmp/1.bin --chunk-size=8192
 
+# producer: use ndnputchunks from ndn-tools
+ndnputchunks /A </tmp/1.bin
+
 # consumer: perform version discovery via RDR protocol
 ndncat get-segmented /A >/tmp/2.bin
 
 # consumer: perform version discovery via CanBePrefix
 ndncat get-segmented --ver=cbp /A >/tmp/2.bin
 
-# producer: use convention rev1 format; retrieve with ndncatchunks
-ndncat put-segmented --convention=1 /A </tmp/1.bin
+# consumer: use ndncatchunks from ndn-tools
 ndncatchunks /A >/tmp/2.bin
 
-# consumer: use convention rev1 format; retrieve from ndnputchunks
-ndnputchunks /A </tmp/1.bin
-ndncat get-segmented --convention=1 --ver=rdr /A >/tmp/2.bin
-
+# compare and delete test file
 diff /tmp/1.bin /tmp/2.bin
 rm /tmp/1.bin /tmp/2.bin
 ```
