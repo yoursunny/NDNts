@@ -8,7 +8,8 @@ This package implements **Name**, **Interest**, and **Data** types as specified 
 import { TT, Name, Component, ImplicitDigest, AltUri, Interest, Data, digestSigning } from "@ndn/packet";
 
 // other imports for examples
-import { Decoder, Encoder, fromUtf8, toUtf8 } from "@ndn/tlv";
+import { Decoder, Encoder } from "@ndn/tlv";
+import { fromUtf8, toUtf8 } from "@ndn/util";
 import { strict as assert } from "node:assert";
 ```
 

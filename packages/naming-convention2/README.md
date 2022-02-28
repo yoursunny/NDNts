@@ -3,24 +3,13 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package implements NDN naming conventions based on typed components.
-It supports two formats:
 
-* **rev2 format**, as specified in [NDN-TR-0022 revision 2](https://named-data.net/publications/techreports/ndn-tr-22-2-ndn-memo-naming-conventions/) and [Name Component Type Assignment rev17](https://redmine.named-data.net/projects/ndn-tlv/wiki/NameComponentType/17) published in 2019.
-* **rev3 format**, as specified in [NDN-TR-0022 revision 3](https://named-data.net/publications/techreports/ndn-tr-22-3-ndn-memo-naming-conventions/) and [Name Component Type Assignment rev28](https://redmine.named-data.net/projects/ndn-tlv/wiki/NameComponentType/28) published in 2021.
-
-You may select a revision by importing different identifiers:
-
-* `Keyword` is the same in both **rev2 format** and **rev3 format**.
-* `Segment2`, `ByteOffset2`, `Version2`, `Timestamp2`, `SequenceNum2`, `AltUri2` refer to **rev2 format**.
-* `Segment3`, `ByteOffset3`, `Version3`, `Timestamp3`, `SequenceNum3`, `AltUri3` refer to **rev3 format**.
-* `Segment`, `ByteOffset`, `Version`, `Timestamp`, `SequenceNum`, `AltUri` refer to the default **rev3 format**.
-
-The **rev3 format** is the current specification and recommended for new applications.
-However, most other implementations and previously generated Data may still be using **rev2 format**.
+The current format, sometimes known as **rev3 format**, is specified in [NDN-TR-0022 revision 3](https://named-data.net/publications/techreports/ndn-tr-22-3-ndn-memo-naming-conventions/) and [Name Component Type Assignment rev28](https://redmine.named-data.net/projects/ndn-tlv/wiki/NameComponentType/28), published in 2021.
+It is supported in most other libraries and recommended for new applications.
 
 ```ts
 import { Keyword, Version, Segment, AltUri } from "@ndn/naming-convention2";
-// We also have ByteOffset, Timestamp, SequenceNum, as well identifiers to select rev2 or rev3 format.
+// We also have ByteOffset, Timestamp, SequenceNum.
 
 // other imports for examples
 import { Name } from "@ndn/packet";
@@ -60,7 +49,7 @@ assert.equal(AltUri.ofName(name), "/A/32=metadata/v=3/seg=0");
 assert.equal(AltUri.ofComponent(name.at(2)), "v=3");
 // This feature is not in the regular component.toString() and name.toString() methods,
 // because not every application would adopt this particular set of naming conventions.
-// It is incorrect to interpret "54=%03" as a "version 3" everywhere, because in some application
+// It is incorrect to interpret "54=%03" as "version 3" everywhere, because in some applications
 // it could mean something completely different.
 // Using AltUri from this package indicates you have adopted these naming conventions.
 
@@ -68,3 +57,7 @@ assert.equal(AltUri.ofComponent(name.at(2)), "v=3");
 assert(AltUri.parseName("/A/32=metadata/v=3/seg=0").equals(name));
 assert(AltUri.parseComponent("v=3").equals(name.at(2)));
 ```
+
+This package also implements **rev2 format**, as specified in [NDN-TR-0022 revision 2](https://named-data.net/publications/techreports/ndn-tr-22-2-ndn-memo-naming-conventions/) and [Name Component Type Assignment rev17](https://redmine.named-data.net/projects/ndn-tlv/wiki/NameComponentType/17), published in 2019.
+Import `Segment2`, `ByteOffset2`, `Version2`, `Timestamp2`, `SequenceNum2`, `AltUri2` to access this format.
+You should not use this outdated and obsolete format in new applications, except for accessing old data.

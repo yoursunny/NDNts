@@ -3,9 +3,9 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package implements NDN naming conventions based on marker octets.
-It is an outdated and obsolete format specified in [NDN-TR-0022 revision 1](https://named-data.net/publications/techreports/ndn-tr-22-ndn-memo-naming-conventions/), published in 2014.
-You should not use this format in new applications, except for accessing old data.
-Use `@ndn/naming-convention2` package instead.
+This format, sometimes known as **rev1 format**, is specified in [NDN-TR-0022 revision 1](https://named-data.net/publications/techreports/ndn-tr-22-ndn-memo-naming-conventions/), published in 2014.
+You should not use this outdated and obsolete format in new applications, except for accessing old data.
+Use **rev3 format** from `@ndn/naming-convention2` package instead.
 
 ```ts
 import { Version, Segment } from "@ndn/naming-convention1";
