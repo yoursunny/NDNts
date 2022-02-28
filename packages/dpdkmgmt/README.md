@@ -1,14 +1,14 @@
-# @ndn/nfdmgmt
+# @ndn/dpdkmgmt
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-This package enables interaction with [NDN-DPDK high-speed forwarder](https://github.com/usnistgov/ndn-dpdk).
-It can create faces (either UDP or memif) for the NDNts application, and perform prefix registrations.
+This package enables interaction with the [NDN-DPDK high-speed forwarder](https://github.com/usnistgov/ndn-dpdk).
+It can create faces (either UDP or memif) for the NDNts application and perform prefix registrations.
 
-Currently, there are several limitations using this package:
+Currently, there are several limitations when using this package:
 
 * Prefix registration replaces a FIB entry, and does not preserve other prefix registrations on the same prefix.
-* If the application crashes, the face would not be closed on NDN-DPDK side.
+* If the application crashes, the face will not be closed on NDN-DPDK side.
 
 ```ts
 import { openFace } from "@ndn/dpdkmgmt";
