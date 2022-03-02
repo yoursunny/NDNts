@@ -132,11 +132,10 @@ class SequentialDataProducer extends DataProducer {
   private async produce({ bufferBehind = Infinity, bufferAhead = 16 }: DataProducer.Options) {
     let i = -1;
     while (true) {
-      const { done, value } = await this.generator.next();
-      if (done || value === false) {
+      const { done, value: chunk } = await this.generator.next();
+      if (done) {
         break;
       }
-      const chunk: Chunk = value;
       ++i;
       assert(chunk.i === i, "unexpected chunk number");
 
