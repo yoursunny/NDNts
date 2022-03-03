@@ -4,7 +4,7 @@ import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, ECDSA, g
 import { Name } from "@ndn/packet";
 import { toUtf8 } from "@ndn/util";
 
-import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, ProbeRequest, ProbeResponse, Status } from "../..";
+import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, ProbeRequest, ProbeResponse, Status } from "..";
 
 let rootPvt: NamedSigner.PrivateKey;
 let rootPub: NamedVerifier.PublicKey;

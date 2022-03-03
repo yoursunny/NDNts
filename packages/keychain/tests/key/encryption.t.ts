@@ -137,4 +137,4 @@ test("RSA-OAEP encrypt-decrypt", async () => {
   });
   const encrypter = await createEncrypter(cert, EncryptionAlgorithmListFull);
   await testEncryptDecrypt(encrypter, decrypter, true);
-});
+}, 10000);

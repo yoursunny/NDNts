@@ -59,7 +59,7 @@ test.each(RsaModulusLength.Choices)("RSA load %p", async (modulusLength) => {
   expect(verifier.name).toEqualName(signer.name);
   expect(verifier.sigType).toBe(SigType.Sha256WithRsa);
   await verifier.verify(cert.data);
-});
+}, 10000);
 
 test.each(TestSignVerify.makeTable())("HMAC sign-verify %p", async ({ cls }) => {
   const [pvtA, pubA] = await generateSigningKey("/A/KEY/x", HMAC);

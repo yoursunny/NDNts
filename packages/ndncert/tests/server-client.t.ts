@@ -12,7 +12,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { type SentMessageInfo, createTransport as createMT } from "nodemailer";
 import { collect } from "streaming-iterables";
 
-import { type ClientChallenge, type ClientChallengeContext, type ParameterKV, type ServerChallenge, type ServerOptions, CaProfile, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, requestCertificate, requestProbe, Server, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "../..";
+import { type ClientChallenge, type ClientChallengeContext, type ParameterKV, type ServerChallenge, type ServerOptions, CaProfile, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, requestCertificate, requestProbe, Server, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "..";
 
 interface Row {
   makeChallengeLists: () => Promise<[ServerChallenge[], ClientChallenge[]]>;
