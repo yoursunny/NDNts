@@ -2,12 +2,14 @@
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-This package partially implements [NDN Certificate Management protocol v0.3](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3/2f5e2f9f0079a675dcad87e0d74be4ee3f027739) and [challenges](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3-Challenges/46700d99c67dc94d13d26f838e4594f1f66d7c76).
+This package partially implements [NDN Certificate Management protocol v0.3](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3/69d841e20515a5f7e8e5452e8366225e55bf2f86) and [challenges](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3-Challenges/46700d99c67dc94d13d26f838e4594f1f66d7c76).
 
 Features:
 
 * [X] CA profile (segmentation not supported)
-* [ ] PROBE command
+* [X] PROBE command
+* [ ] PROBE extension for redirection
+* [ ] PROBE extension for privacy
 * [X] certificate issuance: NEW and CHALLENGE commands
 * [ ] certificate renewal
 * [ ] certificate revocation

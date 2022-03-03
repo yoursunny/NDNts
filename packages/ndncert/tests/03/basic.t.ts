@@ -4,7 +4,7 @@ import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, ECDSA, g
 import { Name } from "@ndn/packet";
 import { toUtf8 } from "@ndn/util";
 
-import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, Status } from "../..";
+import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, ProbeRequest, ProbeResponse, Status } from "../..";
 
 let rootPvt: NamedSigner.PrivateKey;
 let rootPub: NamedVerifier.PublicKey;
@@ -55,6 +55,54 @@ test("packets", async () => {
   expect(profile.probeKeys).toEqual(["uid"]);
   expect(profile.maxValidityPeriod).toBe(86400000);
   expect(profile.cert.name).toEqualName(rootCert.name);
+
+  await expect(ProbeRequest.build({
+    profile,
+    parameters: {},
+  })).rejects.toThrow();
+  await expect(ProbeRequest.build({
+    profile,
+    parameters: { uid: toUtf8("my-uid"), other: Uint8Array.of(0x01) },
+  })).rejects.toThrow();
+  const probeRequest = await ProbeRequest.build({
+    profile,
+    parameters: { uid: toUtf8("my-uid") },
+  });
+  const { interest: probeInterest } = probeRequest;
+  expect(probeInterest.name).toHaveLength(4);
+  expect(probeInterest.name.getPrefix(3)).toEqualName("/root/CA/PROBE");
+  expect(probeInterest.appParameters).toBeDefined();
+  expect(probeInterest.sigInfo).toBeUndefined();
+
+  const caCertFullName = await rootCert.data.computeFullName();
+  await expect(ProbeResponse.build({
+    profile,
+    request: probeRequest,
+    signer: rootPvt,
+  })).rejects.toThrow();
+  await expect(ProbeResponse.build({
+    profile,
+    request: probeRequest,
+    signer: rootPvt,
+    redirects: [{ caCertFullName: caCertFullName.slice(0, -1) }],
+  })).rejects.toThrow();
+  await expect(ProbeResponse.build({
+    profile,
+    request: probeRequest,
+    signer: rootPvt,
+    redirects: [{ caCertFullName: caCertFullName.slice(0, -3).append(caCertFullName.at(-1)) }],
+  })).rejects.toThrow();
+  const probeResponse = await ProbeResponse.build({
+    profile,
+    request: probeRequest,
+    signer: rootPvt,
+    entries: [{ prefix: new Name("/allocated") }, { prefix: new Name("/also-allocated") }],
+    redirects: [{ caCertFullName }],
+  });
+  const { data: probeData } = probeResponse;
+  await expect(probeData.canSatisfy(probeInterest)).resolves.toBeTruthy();
+  expect(probeResponse.entries).toHaveLength(2);
+  expect(probeResponse.redirects).toHaveLength(1);
 
   const reqSIP = crypto.makeSignedInterestPolicy();
   const [reqPvt, reqPub] = await generateSigningKey("/requester", ECDSA);

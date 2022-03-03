@@ -7,12 +7,12 @@ import { retrieveMetadata } from "@ndn/rdr";
 import { DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 import { fetch } from "@ndn/segmented-object";
-import { toHex } from "@ndn/util";
+import { toHex, toUtf8 } from "@ndn/util";
 import { setTimeout as delay } from "node:timers/promises";
 import { type SentMessageInfo, createTransport as createMT } from "nodemailer";
 import { collect } from "streaming-iterables";
 
-import { CaProfile, ClientChallenge, ClientChallengeContext, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, requestCertificate, Server, ServerChallenge, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "../..";
+import { type ClientChallenge, type ClientChallengeContext, type ParameterKV, type ServerChallenge, type ServerOptions, CaProfile, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, requestCertificate, requestProbe, Server, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "../..";
 
 interface Row {
   makeChallengeLists: () => Promise<[ServerChallenge[], ClientChallenge[]]>;
@@ -271,13 +271,14 @@ afterEach(async () => {
   Endpoint.deleteDefaultForwarder();
 });
 
-function startServer(challenges: readonly ServerChallenge[] = [new ServerNopChallenge()]): Server {
+function startServer(opts: Partial<ServerOptions> = {}): Server {
   server = Server.create({
     profile,
     repo,
     repoFwHint,
     signer: caPvt.withKeyLocator(caCert.name),
-    challenges,
+    challenges: [new ServerNopChallenge()],
+    ...opts,
   });
   return server;
 }
@@ -308,12 +309,43 @@ test("unsupported or malformed commands", async () => {
   expect(() => ErrorMsg.throwOnError(challengeErr)).toThrow();
 });
 
+test("probe no result", async () => {
+  startServer({ async probe() { return {}; } });
+
+  await expect(requestProbe({
+    profile,
+    parameters: { uid: toUtf8("my-uid") },
+  })).rejects.toThrow();
+});
+
+test("probe simple", async () => {
+  startServer({
+    async probe(parameters: ParameterKV) {
+      expect(parameters.uid).toEqualUint8Array(toUtf8("my-uid"));
+      return {
+        entries: [
+          { prefix: new Name("/client/prefix"), maxSuffixLength: 2 },
+        ],
+      };
+    },
+  });
+
+  const { entries, redirects } = await requestProbe({
+    profile,
+    parameters: { uid: toUtf8("my-uid") },
+  });
+  expect(entries).toHaveLength(1);
+  expect(entries[0]!.prefix).toEqualName("/client/prefix");
+  expect(entries[0]!.maxSuffixLength).toBe(2);
+  expect(redirects).toHaveLength(0);
+});
+
 test.each(TABLE)("challenge $#", async ({
   makeChallengeLists,
   clientShouldFail = false,
 }) => {
   const [serverChallenges, reqChallenges] = await makeChallengeLists();
-  startServer(serverChallenges);
+  startServer({ challenges: serverChallenges });
 
   const reqPromise = requestCertificate({
     profile,

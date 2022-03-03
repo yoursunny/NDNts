@@ -22,7 +22,7 @@ export class NewRequest {
       algoList = SigningAlgorithmListSlim,
   ): Promise<NewRequest> {
     if (!(interest.name.getPrefix(-3).equals(profile.prefix) &&
-    interest.name.at(-3).equals(C.CA) &&
+          interest.name.at(-3).equals(C.CA) &&
           interest.name.at(-2).equals(C.NEW))) {
       throw new Error("bad Name");
     }

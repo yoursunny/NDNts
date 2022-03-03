@@ -6,3 +6,5 @@ export * from "./new-response";
 export * from "./challenge-request";
 export * from "./challenge-response";
 export * from "./error-msg";
+export * from "./probe-request";
+export * from "./probe-response";

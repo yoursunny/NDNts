@@ -6,7 +6,7 @@ import { Metadata, serveMetadata } from "@ndn/rdr";
 import { toHex } from "@ndn/util";
 
 import * as crypto from "../crypto-common";
-import { type CaProfile, C, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
+import { type CaProfile, type ParameterKV, C, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, NewRequest, NewResponse, ProbeRequest, ProbeResponse, Status } from "../packet/mod";
 import type { ServerChallenge, ServerChallengeContext } from "./challenge";
 
 export interface ServerOptions {
@@ -25,11 +25,16 @@ export interface ServerOptions {
   /** CA private key, must match the certificate in the CA profile. */
   signer: Signer;
 
+  probe?: ServerOptions.ProbeHandler;
+
   /** Supported challenges. */
   challenges: readonly ServerChallenge[];
 
   /** IssuerId on issued certificates. */
   issuerId?: ComponentLike;
+}
+export namespace ServerOptions {
+  export type ProbeHandler = (parameters: ParameterKV) => Promise<Partial<ProbeResponse.Fields>>;
 }
 
 interface RepoDataStore {
@@ -44,10 +49,11 @@ export class Server {
     repoFwHint,
     profile,
     signer,
+    probe,
     challenges,
     issuerId = "NDNts-NDNCERT",
   }: ServerOptions): Server {
-    return new Server(endpoint, repo, repoFwHint, profile, signer,
+    return new Server(endpoint, repo, repoFwHint, profile, signer, probe,
       new Map<string, ServerChallenge>(challenges.map((challenge) => [challenge.challengeId, challenge])),
       Component.from(issuerId));
   }
@@ -63,6 +69,7 @@ export class Server {
       private readonly repoFwHint: FwHint | undefined,
       private readonly profile: CaProfile,
       private readonly signer: Signer,
+      private readonly probe: ServerOptions.ProbeHandler | undefined,
       private readonly challenges: Map<string, ServerChallenge>,
       private readonly issuerId: Component,
   ) {
@@ -90,11 +97,34 @@ export class Server {
     this.producers.map((producer) => producer.close());
   }
 
-  private handleInfoInterest: ProducerHandler = async () => this.profile.data;
+  private readonly handleInfoInterest: ProducerHandler = async () => this.profile.data;
 
-  private handleProbeInterest: ProducerHandler = async (interest) => ErrorMsg.makeData(ErrorCode.NoAvailableName, interest, this.signer);
+  private readonly handleProbeInterest: ProducerHandler = async (interest) => {
+    let request: ProbeRequest;
+    try {
+      request = await ProbeRequest.fromInterest(interest, {
+        profile: this.profile,
+      });
+    } catch {
+      return ErrorMsg.makeData(ErrorCode.BadParameterFormat, interest, this.signer);
+    }
 
-  private handleNewInterest: ProducerHandler = async (interest) => {
+    const { entries = [], redirects = [] } = await this.probe?.(request.parameters) ?? {};
+    if (entries.length + redirects.length === 0) {
+      return ErrorMsg.makeData(ErrorCode.NoAvailableName, interest, this.signer);
+    }
+
+    const response = await ProbeResponse.build({
+      profile: this.profile,
+      request,
+      signer: this.signer,
+      entries,
+      redirects,
+    });
+    return response.data;
+  };
+
+  private readonly handleNewInterest: ProducerHandler = async (interest) => {
     let request: NewRequest;
     try {
       request = await NewRequest.fromInterest(interest, {
@@ -102,7 +132,7 @@ export class Server {
         signedInterestPolicy: this.signedInterestPolicy,
       });
     } catch {
-      return await ErrorMsg.makeData(ErrorCode.BadParameterFormat, interest, this.signer);
+      return ErrorMsg.makeData(ErrorCode.BadParameterFormat, interest, this.signer);
     }
 
     let requestId: Uint8Array;
@@ -130,7 +160,7 @@ export class Server {
     return response.data;
   };
 
-  private handleChallengeInterest: ProducerHandler = async (interest) => {
+  private readonly handleChallengeInterest: ProducerHandler = async (interest) => {
     let request: ChallengeRequest;
     try {
       request = await ChallengeRequest.fromInterest(interest, {
@@ -139,7 +169,7 @@ export class Server {
         lookupRequest: this.lookupContext,
       });
     } catch {
-      return await ErrorMsg.makeData(ErrorCode.BadParameterFormat, interest, this.signer);
+      return ErrorMsg.makeData(ErrorCode.BadParameterFormat, interest, this.signer);
     }
 
     const context = this.state.get(toHex(request.requestId))!;
@@ -233,7 +263,7 @@ export class Server {
     };
   }
 
-  private lookupContext = async (requestId: Uint8Array) => this.state.get(toHex(requestId));
+  private readonly lookupContext = async (requestId: Uint8Array) => this.state.get(toHex(requestId));
 
   private deleteContext({ requestId }: ChallengeRequest) {
     this.state.delete(toHex(requestId));

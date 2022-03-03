@@ -25,7 +25,7 @@ export class ChallengeRequest {
     lookupRequest,
   }: ChallengeRequest.Context): Promise<ChallengeRequest> {
     if (!(interest.name.getPrefix(-4).equals(profile.prefix) &&
-    interest.name.at(-4).equals(C.CA) &&
+          interest.name.at(-4).equals(C.CA) &&
           interest.name.at(-3).equals(C.CHALLENGE))) {
       throw new Error("bad Name");
     }

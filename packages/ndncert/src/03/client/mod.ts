@@ -5,3 +5,5 @@ export * from "./nop-challenge";
 export * from "./pin-challenge";
 export * from "./pin-like-challenge";
 export * from "./possession-challenge";
+export * from "./probe";
+export * from "./request";
