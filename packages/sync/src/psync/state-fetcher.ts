@@ -23,8 +23,6 @@ export class PSyncStateFetcher {
     const versioned = await discoverVersion(name, {
       endpoint: this.endpoint,
       describe: `${this.describe}[${describeSuffix}v]`,
-      versionConvention: this.codec.versionConvention,
-      segmentNumConvention: this.codec.segmentNumConvention,
       expectedSuffixLen: 2 + this.codec.nUselessCompsAfterIblt,
       modifyInterest: { lifetime: this.syncInterestLifetime },
       retxLimit: 0,
@@ -34,7 +32,6 @@ export class PSyncStateFetcher {
     const payload = await fetch(versioned, {
       endpoint: this.endpoint,
       describe: `${this.describe}[${describeSuffix}f]`,
-      segmentNumConvention: this.codec.segmentNumConvention,
       modifyInterest: { lifetime: this.syncInterestLifetime },
       retxLimit: 0,
       signal,

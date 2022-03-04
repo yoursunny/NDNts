@@ -1,4 +1,4 @@
-import { type NamingConvention, Component, Name } from "@ndn/packet";
+import { Component, Name } from "@ndn/packet";
 import type { BloomFilter } from "@yoursunny/psync-bloom";
 import applyMixins from "applymixins";
 
@@ -33,12 +33,6 @@ export namespace PSyncCodec {
   export type Compression = Compression_;
 
   export interface Parameters {
-    /** Version convention for SyncData. */
-    versionConvention: NamingConvention<number, number>;
-
-    /** Segment number convention for SyncData. */
-    segmentNumConvention: NamingConvention<number, number>;
-
     /** Compression method for IBLT in name component. */
     ibltCompression: Compression;
 

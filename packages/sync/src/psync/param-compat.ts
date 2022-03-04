@@ -1,4 +1,3 @@
-import { Segment as segmentNumConvention, Version as versionConvention } from "@ndn/naming-convention2";
 import { type NamingConvention, Component, Name, TT } from "@ndn/packet";
 import { Decoder, EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 // @ts-expect-error typing unavailable
@@ -92,9 +91,6 @@ export function makePSyncCompatParam({
     iblt: makeIbltParams(expectedEntries, keyToBufferLittleEndian),
     threshold: Math.trunc(expectedEntries / 2),
     joinPrefixSeqNum,
-
-    versionConvention,
-    segmentNumConvention,
 
     ibltCompression,
     nUselessCompsAfterIblt: 1,

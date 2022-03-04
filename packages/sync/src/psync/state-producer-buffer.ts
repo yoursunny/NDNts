@@ -26,8 +26,6 @@ export class PSyncStateProducerBuffer {
   public add(name: Name, state: PSyncCore.State, freshnessPeriod: number): Server {
     const source = new BufferChunkSource(this.codec.state2buffer(state));
     const server = serveVersioned(name, source, {
-      segmentNumConvention: this.codec.segmentNumConvention,
-      versionConvention: this.codec.versionConvention,
       freshnessPeriod,
       signer: this.signer,
       endpoint: this.endpoint,

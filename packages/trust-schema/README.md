@@ -145,7 +145,7 @@ const schema = new TrustSchema(policy, [rootCert]);
 
 ## VerSec2021 Syntax
 
-This package has partial support of the [VerSec Domain Specific Language](https://github.com/pollere/DCT/blob/main/versec/language.md) (VerSec2021) syntax, including:
+This package has partial support of the [VerSec Domain Specific Language](https://github.com/pollere/DCT/blob/77be693e41d4b8f4cb312d01d1880bf77896bc35/versec/language.md) (VerSec2021) syntax, including:
 
 * component constraints
 * `replace` function
