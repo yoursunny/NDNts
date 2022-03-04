@@ -63,7 +63,7 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
   }
 }
 
-let theUplinks: Closers<FwFace> | undefined;
+let theUplinks: Closers | undefined;
 
 /** Open the uplinks specified by NDNTS_UPLINK environ. */
 export async function openUplinks({ autoClose = true }: openUplinks.Options = {}): Promise<FwFace[]> {
@@ -84,7 +84,7 @@ export async function openUplinks({ autoClose = true }: openUplinks.Options = {}
       exitClosers.push(theUplinks);
     }
   }
-  return theUplinks;
+  return theUplinks as FwFace[];
 }
 export namespace openUplinks {
   export interface Options {

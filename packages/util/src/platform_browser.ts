@@ -1,12 +1,7 @@
-import { asUint8Array } from "./buffer";
-
 export const crypto = globalThis.crypto;
 
 // https://codahale.com/a-lesson-in-timing-attacks/
-export function timingSafeEqual(sa: BufferSource, sb: BufferSource): boolean {
-  const a = asUint8Array(sa);
-  const b = asUint8Array(sb);
-
+export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
   let result = 0;
   for (let i = 0; i < a.byteLength; ++i) {
     result |= a[i]! ^ b[i]!;

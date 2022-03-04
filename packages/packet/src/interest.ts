@@ -256,9 +256,6 @@ interface CtorTag {
 }
 
 export namespace Interest {
-  /** Signer that calculates ParamsDigest. */
-  export const Parameterize: LLSign = () => Promise.resolve(new Uint8Array());
-
   /** Generate a random nonce. */
   export function generateNonce(): number {
     return Math.trunc(Math.random() * 0x100000000);
@@ -305,48 +302,28 @@ export namespace Interest {
   export type ModifyFunc = (interest: Interest) => void;
 
   /** Common fields to assign onto an existing Interest. */
-  export interface ModifyFields {
-    canBePrefix?: boolean;
-    mustBeFresh?: boolean;
-    fwHint?: FwHint;
-    lifetime?: number;
-    hopLimit?: number;
-  }
+  export type ModifyFields = Partial<Pick<Fields, "canBePrefix" | "mustBeFresh" | "fwHint" | "lifetime" | "hopLimit">>;
 
   /** A structure to modify an existing Interest. */
   export type Modify = ModifyFunc | ModifyFields;
 
   /** Turn ModifyFields to ModifyFunc; return ModifyFunc as-is. */
   export function makeModifyFunc(input?: Modify): ModifyFunc {
-    switch (typeof input) {
-      case "function":
-        return input;
-      case "undefined":
-        return () => undefined;
+    if (!input) {
+      return () => undefined;
     }
-    const {
-      canBePrefix,
-      mustBeFresh,
-      fwHint,
-      lifetime,
-      hopLimit,
-    } = input;
+    if (typeof input === "function") {
+      return input;
+    }
+
+    const patch: any = {};
+    for (const key of ["canBePrefix", "mustBeFresh", "fwHint", "lifetime", "hopLimit"] as Array<keyof ModifyFields>) {
+      if (input[key] !== undefined) {
+        patch[key] = input[key];
+      }
+    }
     return (interest) => {
-      if (canBePrefix !== undefined) {
-        interest.canBePrefix = canBePrefix;
-      }
-      if (mustBeFresh !== undefined) {
-        interest.mustBeFresh = mustBeFresh;
-      }
-      if (fwHint !== undefined) {
-        interest.fwHint = fwHint;
-      }
-      if (lifetime !== undefined) {
-        interest.lifetime = lifetime;
-      }
-      if (hopLimit !== undefined) {
-        interest.hopLimit = hopLimit;
-      }
+      Object.assign(interest, patch);
     };
   }
 }
