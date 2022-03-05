@@ -8,7 +8,7 @@ interface StoredCert {
   certBuffer: Uint8Array | string;
 }
 
-/** Storage of certificates. */
+/** KV store of certificates. */
 export class CertStore extends StoreBase<StoredCert> {
   public async get(name: Name): Promise<Certificate> {
     let { certBuffer } = await this.getValue(name);

@@ -2,10 +2,9 @@ import type { Name } from "@ndn/packet";
 import { assert, crypto } from "@ndn/util";
 
 import { type NamedDecrypter, type NamedEncrypter, type NamedSigner, type NamedVerifier, type PublicKey, createDecrypter, createEncrypter, createSigner, createVerifier, CryptoAlgorithm, KeyKind } from "../key/mod";
-import { StoreBase } from "./store-base";
-import type { StoreProvider } from "./store-provider";
+import { type StoreProvider, StoreBase } from "./store-base";
 
-/** Storage of key pairs. */
+/** KV store of named key pairs. */
 export class KeyStore extends StoreBase<KeyStore.StoredKey> {
   constructor(provider: StoreProvider<KeyStore.StoredKey>, algoList: readonly CryptoAlgorithm[]) {
     super(provider);

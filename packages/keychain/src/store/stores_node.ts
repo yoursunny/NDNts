@@ -1,41 +1,73 @@
-import Store from "data-store";
+import { console } from "@ndn/util";
+import fs from "graceful-fs";
+import { dirname } from "node:path";
 
 import type { CryptoAlgorithm } from "../key/mod";
 import { CertStore } from "./cert-store";
 import { KeyStore } from "./key-store";
-import type { StoreProvider } from "./store-provider";
+import { type StoreProvider, MemoryStoreProvider } from "./store-base";
 
-class FileStoreProvider<T> implements StoreProvider<T> {
-  public readonly canSClone = false;
-  private store: Store;
+class FileStoreProvider<T> extends MemoryStoreProvider<T> implements StoreProvider<T> {
+  public override readonly canSClone = true;
+  private loaded = false;
+  // @ts-expect-error TS6133 https://github.com/microsoft/TypeScript/issues/44802
+  private saveDebounce?: NodeJS.Timeout;
 
-  constructor(path: string) {
-    this.store = new Store({ path });
+  constructor(private readonly path: string) {
+    super();
   }
 
-  public list(): Promise<string[]> {
-    return Promise.resolve(Object.keys(this.store.data));
-  }
-
-  public get(key: string): Promise<T> {
-    const value = this.store.data[key] as T | undefined;
-    if (value === undefined) {
-      return Promise.reject(new Error(`${key} does not exist`));
+  private load() {
+    if (this.loaded) {
+      return;
     }
-    return Promise.resolve(value);
+    try {
+      this.record = JSON.parse(fs.readFileSync(this.path, { encoding: "utf8" }));
+    } catch (err: unknown) {
+      if ((err as { code?: string }).code === "ENOENT" || (err as SyntaxError).name === "SyntaxError") {
+        this.record = {};
+      } else {
+        throw err;
+      }
+    }
+    this.loaded = true;
   }
 
-  public insert(key: string, value: T): Promise<void> {
-    this.store.data[key] = value;
-    this.store.save();
-    return Promise.resolve();
+  private save() {
+    this.saveDebounce ??= setTimeout(this.doSave, 200);
   }
 
-  public erase(key: string): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete this.store.data[key];
-    this.store.save();
-    return Promise.resolve();
+  private readonly doSave = () => {
+    try {
+      fs.mkdirSync(dirname(this.path), { recursive: true });
+      fs.writeFileSync(this.path, JSON.stringify(this.record));
+    } catch (err: unknown) {
+      console.error(`FileStoreProvider(${this.path}) write error ${err}`);
+    } finally {
+      this.saveDebounce = undefined;
+    }
+  };
+
+  public override async list(): Promise<string[]> {
+    this.load();
+    return super.list();
+  }
+
+  public override async get(key: string): Promise<T> {
+    this.load();
+    return super.get(key);
+  }
+
+  public override async insert(key: string, value: T): Promise<void> {
+    this.load();
+    await super.insert(key, value);
+    this.save();
+  }
+
+  public override async erase(key: string): Promise<void> {
+    this.load();
+    await super.erase(key);
+    this.save();
   }
 }
 

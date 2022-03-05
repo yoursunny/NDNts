@@ -1,7 +1,7 @@
 import { assert, toHex } from "@ndn/util";
 
 import { IvChecker } from "./checker";
-import { type CounterIvOptions, CounterIncrement, parseCounterIvOptions, throwCounterIvError } from "./counter-common";
+import { type CounterIvOptions, CounterIncrement, parseCounterIvOptions, throwCounterIvErrorIf } from "./counter-common";
 
 /** Check IVs of fixed+random+counter structure to detect duplication. */
 export class CounterIvChecker extends IvChecker {
@@ -50,20 +50,12 @@ export class CounterIvChecker extends IvChecker {
 
   protected override check(iv: Uint8Array, plaintextLength: number, ciphertextLength: number) {
     const { fixed, random, counter } = this.extract(iv);
-    if (fixed !== this.fixed) {
-      throwCounterIvError();
-    }
-
-    if (counter < this.ci.counter) {
-      throwCounterIvError();
-    }
+    throwCounterIvErrorIf(fixed !== this.fixed);
+    throwCounterIvErrorIf(counter < this.ci.counter);
 
     if (this.requireSameRandom) {
-      if (typeof this.lastRandom !== "bigint") {
-        this.lastRandom = random;
-      } else if (this.lastRandom !== random) {
-        throwCounterIvError();
-      }
+      this.lastRandom ??= random;
+      throwCounterIvErrorIf(this.lastRandom !== random);
     }
 
     this.ci.counter = counter;

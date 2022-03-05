@@ -1,7 +1,16 @@
 import type { LLEncrypt } from "@ndn/packet";
 import { assert } from "@ndn/util";
 
-/** Initialization Vector generator. */
+/**
+ * Initialization Vector generator.
+ *
+ * The .wrap() method creates an LLEncrypt.Key or LLEncrypt that generates an IV for each message
+ * before encryption, and updates the internal state of this class after encryption. Typically, a
+ * separate IVGen instance should be used for each key.
+ *
+ * If a message passed for encryption already has an IV associated, it would bypass this class: in
+ * that case, the IV is not checked and the internal state is not updated.
+ */
 export abstract class IvGen {
   constructor(public readonly ivLength: number) {
     assert(ivLength > 0);
@@ -10,9 +19,8 @@ export abstract class IvGen {
   public wrap<T extends LLEncrypt.Key>(key: T): T;
   public wrap(f: LLEncrypt): LLEncrypt;
   public wrap(arg1: LLEncrypt | LLEncrypt.Key) {
-    const key = arg1 as LLEncrypt.Key;
-    if (typeof key.llEncrypt === "function") {
-      return this.wrapKey(key);
+    if (typeof (arg1 as LLEncrypt.Key).llEncrypt === "function") {
+      return this.wrapKey(arg1 as LLEncrypt.Key);
     }
     return this.wrapLLEncrypt(arg1 as LLEncrypt);
   }
@@ -41,9 +49,12 @@ export abstract class IvGen {
     };
   }
 
+  /** Generate IV for next message. */
   protected abstract generate(): Uint8Array;
 
+  /** Update internal state after a message is encrypted.. */
   protected update(plaintextLength: number, ciphertextLength: number): void {
-    //
+    void plaintextLength;
+    void ciphertextLength;
   }
 }

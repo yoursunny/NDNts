@@ -1,7 +1,13 @@
 import type { LLDecrypt } from "@ndn/packet";
 import { assert } from "@ndn/util";
 
-/** Initialization Vector checker. */
+/**
+ * Initialization Vector checker.
+ *
+ * The .wrap() method creates an LLDecrypt.Key or LLDecrypt that checks the IV in each message
+ * before and after decryption, and updates the internal state of this class. Typically, a
+ * separate IvChecker instances should be used for each key.
+ */
 export abstract class IvChecker {
   constructor(public readonly ivLength: number) {
     assert(ivLength > 0);
@@ -10,9 +16,8 @@ export abstract class IvChecker {
   public wrap<T extends LLDecrypt.Key>(key: T): T;
   public wrap(f: LLDecrypt): LLDecrypt;
   public wrap(arg1: LLDecrypt | LLDecrypt.Key) {
-    const key = arg1 as LLDecrypt.Key;
-    if (typeof key.llDecrypt === "function") {
-      return this.wrapKey(key);
+    if (typeof (arg1 as LLDecrypt.Key).llDecrypt === "function") {
+      return this.wrapKey(arg1 as LLDecrypt.Key);
     }
     return this.wrapLLDecrypt(arg1 as LLDecrypt);
   }
@@ -36,11 +41,11 @@ export abstract class IvChecker {
         throw new Error("IV is missing or has wrong length");
       }
       const result = await f(params);
-      const { plaintext } = result;
-      this.check(iv, plaintext.length, ciphertext.length);
+      this.check(iv, result.plaintext.length, ciphertext.length);
       return result;
     };
   }
 
+  /** Check IV for incoming message and update internal state. */
   protected abstract check(iv: Uint8Array, plaintextLength: number, ciphertextLength: number): void;
 }

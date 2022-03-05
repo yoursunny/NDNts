@@ -104,21 +104,24 @@ export function parseCounterIvOptions({
   };
 }
 
-export function throwCounterIvError(): never {
-  throw new Error("CounterIv error");
+export function throwCounterIvErrorIf(cond: boolean): void {
+  if (cond) {
+    throw new Error("CounterIv error");
+  }
 }
 
 export class CounterIncrement {
-  constructor(public readonly blockSize: number, public readonly maxCounter: bigint) {
+  constructor(blockSize: number, public readonly maxCounter: bigint) {
     assert(blockSize > 0);
+    this.blockSize = BigInt(blockSize);
   }
 
+  public readonly blockSize: bigint;
   public counter = 0n;
 
   public appendBlocks(plaintextLength: number, ciphertextLength: number): void {
-    this.counter += BigInt(Math.ceil(Math.max(plaintextLength, ciphertextLength) / this.blockSize));
-    if (this.counter > this.maxCounter) {
-      throwCounterIvError();
-    }
+    const nOctets = BigInt(Math.max(plaintextLength, ciphertextLength));
+    this.counter += (nOctets + this.blockSize - 1n) / this.blockSize;
+    throwCounterIvErrorIf(this.counter > this.maxCounter);
   }
 }

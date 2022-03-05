@@ -1,4 +1,4 @@
-import { KeyLocator, LLSign, LLVerify, Name, NameLike, Signer, Verifier } from "@ndn/packet";
+import { type Name, type NameLike, KeyLocator, LLSign, LLVerify, Signer, Verifier } from "@ndn/packet";
 import { assert } from "@ndn/util";
 
 import { ECDSA } from "../algo/mod";
@@ -143,6 +143,7 @@ export function createVerifier(arg1: any, arg2: any = SigningAlgorithmListSlim, 
       if (!verifier) {
         const [algo, key] = await cert.importPublicKey(algoList);
         verifier = new NamedCryptoVerifier(CertNaming.toKeyName(cert.name), algo, key);
+        certVerifiers.set(cert, verifier);
       }
       return verifier;
     })(arg1, arg2);

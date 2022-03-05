@@ -3,7 +3,7 @@ import { createStore, del, get, keys, set, UseStore } from "idb-keyval";
 import type { CryptoAlgorithm } from "../key/mod";
 import { CertStore } from "./cert-store";
 import { KeyStore } from "./key-store";
-import type { StoreProvider } from "./store-provider";
+import type { StoreProvider } from "./store-base";
 
 class IdbStoreProvider<T> implements StoreProvider<T> {
   // Firefox does not support structured clone of ECDSA CryptoKey.

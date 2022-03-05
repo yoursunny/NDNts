@@ -94,9 +94,11 @@ export class ValidityPeriod {
 SigInfo.registerExtension({
   tt: TT.ValidityPeriod,
   decode(obj: SigInfo, { decoder }: Decoder.Tlv): ValidityPeriod {
+    void obj;
     return decoder.decode(ValidityPeriod);
   },
   encode(obj: SigInfo, value: ValidityPeriod): Encodable {
+    void obj;
     return value;
   },
 });

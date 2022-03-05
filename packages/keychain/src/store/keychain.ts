@@ -1,12 +1,12 @@
-import { Name, Signer } from "@ndn/packet";
+import { type Signer, Name } from "@ndn/packet";
 
+import { CryptoAlgorithmListSlim } from "../algolist/mod";
 import type { Certificate } from "../cert/mod";
 import type { CryptoAlgorithm, NamedSigner } from "../key/mod";
-import { CryptoAlgorithmListSlim } from "../mod";
 import * as CertNaming from "../naming";
 import { CertStore } from "./cert-store";
 import { KeyStore } from "./key-store";
-import { MemoryStoreProvider } from "./store-provider";
+import { MemoryStoreProvider } from "./store-base";
 import { openStores } from "./stores_node";
 
 /** Storage of own private keys and certificates. */
@@ -22,7 +22,7 @@ export abstract class KeyChain {
 
   /**
    * Retrieve key by key name.
-   * @param typ "signer", "verifier", etc
+   * @param typ "signer", "verifier", etc.
    */
   public async getKey<K extends keyof KeyChain.KeyPair>(name: Name, typ: K): Promise<KeyChain.KeyPair[K]> {
     const keyPair = await this.getKeyPair(name);
@@ -127,11 +127,11 @@ export abstract class KeyChain {
   }
 
   private async findSignerCertName(prefix: Name, filter: (certName: CertNaming.CertNameFields) => boolean): Promise<Name | undefined> {
-    const certNames = (await this.listCerts(prefix)).filter((certName) => {
+    const certName_ = (await this.listCerts(prefix)).find((certName) => {
       const parsed = CertNaming.parseCertName(certName);
       return !parsed.issuerId.equals(CertNaming.ISSUER_SELF) && filter(parsed);
     });
-    return certNames.length === 0 ? undefined : certNames[0];
+    return certName_;
   }
 }
 
@@ -182,20 +182,7 @@ export namespace KeyChain {
   export type KeyPair<Asym extends boolean = any> = KeyStore.KeyPair<Asym>;
 
   /**
-   * Create a signer from keys and certificates in the KeyChain.
-   * @param name subject name, key name, or certificate name.
-   * @param fallback invoked when no matching key or certificate is found.
-   * @param useKeyNameKeyLocator force KeyLocator to be key name instead of certificate name.
-   *
-   * @li If name is a certificate name, sign with the corresponding private key,
-   *     and use the specified certificate name as KeyLocator.
-   * @li If name is a key name, sign with the specified private key.
-   *     If a non-self-signed certificate exists for this key, use the certificate name as KeyLocator.
-   *     Otherwise, use the key name as KeyLocator.
-   * @li If name is neither certificate name nor key name, it is interpreted as a subject name.
-   *     A non-self-signed certificate of this subject name is preferred.
-   *     If such a certificate does not exist, use any key of this subject name.
-   * @li If prefixMatch is true, name can also be interpreted as a prefix of the subject name.
+   * keyChain.getSigner() options.
    */
   export interface GetSignerOptions {
     /**
@@ -221,25 +208,25 @@ export namespace KeyChain {
   }
 
   /**
-   * Open a persistent keychain.
+   * Open a persistent KeyChain.
    * @param locator in Node.js, a filesystem directory; in browser, a database name.
    * @param algoList list of recognized algorithms. Default is CryptoAlgorithmListSlim.
    *                 Use CryptoAlgorithmListFull for all algorithms, at the cost of larger bundle size.
    */
   export function open(locator: string, algoList?: readonly CryptoAlgorithm[]): KeyChain;
 
-  /** Open a keychain from given KeyStore and CertStore. */
+  /** Open a KeyChain from given KeyStore and CertStore. */
   export function open(keys: KeyStore, certs: CertStore): KeyChain;
 
-  export function open(arg1: any, arg2: any): KeyChain {
+  export function open(arg1: any, arg2: any = CryptoAlgorithmListSlim): KeyChain {
     if (typeof arg1 === "string") {
-      return new KeyChainImpl(...openStores(arg1, arg2 ?? CryptoAlgorithmListSlim));
+      return new KeyChainImpl(...openStores(arg1, arg2));
     }
     return new KeyChainImpl(arg1, arg2);
   }
 
   /**
-   * Create an in-memory ephemeral keychain.
+   * Create an in-memory ephemeral KeyChain.
    * @param algoList list of recognized algorithms.
    *                 Use CryptoAlgorithmListFull for all algorithms, at the cost of larger bundle size.
    */

@@ -20,7 +20,7 @@ const ivgens = new DefaultWeakMap<CryptoAlgorithm.SecretKey<{}>, IvGen>(
  * @li a 32-bit counter starting from zero.
  *
  * During decryption, quality of IV is not automatically checked.
- * Since the security of AES-CTR depends on having unique IVs, the application is recommended to
+ * Since the security of AES-GCM depends on having unique IVs, the application is recommended to
  * check IVs using CounterIvChecker type.
  */
 export const AESGCM: AesEncryption<{}, AESGCM.GenParams> = new AesCommon("AES-GCM", "a7e27aee-2f10-4150-bd6b-5e667c006274", {

@@ -93,6 +93,7 @@ export function createEncrypter(arg1: any, arg2: any = EncryptionAlgorithmListSl
       if (!encrypter) {
         const [algo, key] = await cert.importPublicKey(algoList);
         encrypter = new NamedCryptoEncrypter(CertNaming.toKeyName(cert.name), algo, key);
+        certEncrypters.set(cert, encrypter);
       }
       return encrypter;
     })(arg1, arg2);
