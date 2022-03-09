@@ -18,6 +18,12 @@ test("decode", () => {
   expect(comp.toString()).toEqual("240=A%01%A0");
   expect(AltUri.ofComponent(comp)).toEqual("240=A%01%A0");
 
+  comp = new Component(undefined, Uint8Array.of(0x2E, 0x2E, 0x2E, 0x42));
+  expect(comp.type).toBe(0x08);
+  expect(comp.value).toEqualUint8Array([0x2E, 0x2E, 0x2E, 0x42]);
+  expect(comp.toString()).toEqual("8=...B");
+  expect(AltUri.ofComponent(comp)).toEqual("...B");
+
   comp = new Component(0xFFFF, Uint8Array.of(0x41));
   expect(comp.type).toBe(0xFFFF);
   expect(comp.value).toEqualUint8Array([0x41]);
@@ -53,11 +59,22 @@ test("from URI or string", () => {
   expect(comp.value).toEqualUint8Array([0x41, 0x25, 0x30, 0x30, 0x42]);
   expect(comp.text).toBe("A%00B");
 
+  comp = Component.from("...");
+  expect(comp.type).toBe(0x08);
+  expect(comp).toHaveLength(0);
+  expect(comp.text).toBe("");
+
   comp = Component.from(".....");
   expect(comp.type).toBe(0x08);
   expect(comp).toHaveLength(2);
   expect(comp.value).toEqualUint8Array([0x2E, 0x2E]);
   expect(comp.text).toBe("..");
+
+  comp = Component.from("...B");
+  expect(comp.type).toBe(0x08);
+  expect(comp).toHaveLength(4);
+  expect(comp.value).toEqualUint8Array([0x2E, 0x2E, 0x2E, 0x42]);
+  expect(comp.text).toBe("...B");
 
   comp = Component.from("56=%0f%a0");
   expect(comp.type).toBe(0x38);
@@ -66,10 +83,20 @@ test("from URI or string", () => {
 
   // best effort parsing of invalid inputs
 
+  comp = Component.from("..");
+  expect(comp.type).toBe(0x08);
+  expect(comp).toHaveLength(2);
+  expect(comp.value).toEqualUint8Array([0x2E, 0x2E]);
+
   comp = Component.from("x=A");
   expect(comp.type).toBe(0x08);
   expect(comp).toHaveLength(3);
   expect(comp.value).toEqualUint8Array([0x78, 0x3D, 0x41]);
+
+  comp = Component.from("3x=A");
+  expect(comp.type).toBe(0x03);
+  expect(comp).toHaveLength(1);
+  expect(comp.value).toEqualUint8Array([0x41]);
 
   comp = Component.from("0=A");
   expect(comp.type).toBe(0x08);
@@ -83,13 +110,13 @@ test("from URI or string", () => {
 
   comp = Component.from("%0Q");
   expect(comp.type).toBe(0x08);
-  expect(comp).toHaveLength(3);
-  expect(comp.value).toEqualUint8Array([0x25, 0x30, 0x51]);
+  expect(comp).toHaveLength(1);
+  expect(comp.value).toEqualUint8Array([0x00]);
 
   comp = Component.from("%Q0");
   expect(comp.type).toBe(0x08);
-  expect(comp).toHaveLength(3);
-  expect(comp.value).toEqualUint8Array([0x25, 0x51, 0x30]);
+  expect(comp).toHaveLength(1);
+  expect(comp.value).toEqualUint8Array([0x00]);
 });
 
 test("compare", () => {

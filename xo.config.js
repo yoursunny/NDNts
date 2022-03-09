@@ -1,17 +1,7 @@
 /** @typedef {import("xo").Options} XoOptions */
 
 /** @type {import("@yoursunny/xo-config")} */
-const { js, ts: ts0, jest, literate, web, pptr, merge } = require("@yoursunny/xo-config");
-
-const ts = merge(ts0, {
-  rules: {
-    "@typescript-eslint/naming-convention": "off",
-    "@typescript-eslint/padding-line-between-statements": "off",
-    "no-bitwise": "off",
-    "no-constant-condition": ["error", { checkLoops: false }],
-    "no-lone-blocks": "off",
-  },
-});
+const { js, ts, jest, literate, web, pptr, merge } = require("@yoursunny/xo-config");
 
 /**
  * @param {string[]} pkgs

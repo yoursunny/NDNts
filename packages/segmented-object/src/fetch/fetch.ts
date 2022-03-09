@@ -68,6 +68,7 @@ class FetchResult implements fetch.Result {
     return output;
   }
 
+  // eslint-disable-next-line unicorn/no-thenable
   public then<R, J>(
       onfulfilled?: ((value: Uint8Array) => R | PromiseLike<R>) | null,
       onrejected?: ((reason: any) => J | PromiseLike<J>) | null,

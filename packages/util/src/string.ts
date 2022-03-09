@@ -1,6 +1,6 @@
-const INT2HEX: string[] = [];
+const INT2HEX: Record<number, string> = {};
 for (let b = 0; b <= 0xFF; ++b) {
-  INT2HEX.push(b.toString(16).padStart(2, "0").toUpperCase());
+  INT2HEX[b] = b.toString(16).padStart(2, "0").toUpperCase();
 }
 
 const HEX2INT: Record<string, number> = {};
@@ -14,9 +14,14 @@ for (let b = 0; b <= 0xF; ++b) {
 export function toHex(buf: Uint8Array): string {
   let s = "";
   for (const b of buf) {
-    s += INT2HEX[b];
+    s += INT2HEX[b]!;
   }
   return s;
+}
+
+export namespace toHex {
+  /** Conversion table from byte (0x00~0xFF) to upper-case hexadecimal. */
+  export const TABLE: Readonly<Record<number, string>> = INT2HEX;
 }
 
 /**
@@ -30,6 +35,11 @@ export function fromHex(s: string): Uint8Array {
     b[i] = (HEX2INT[s[i * 2]!]! << 4) | HEX2INT[s[i * 2 + 1]!]!;
   }
   return b;
+}
+
+export namespace fromHex {
+  /** Conversion table from hexadecimal digit (case insensitive) to nibble. */
+  export const TABLE: Readonly<Record<string, number>> = HEX2INT;
 }
 
 const textEncoder = new TextEncoder();

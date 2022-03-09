@@ -20,7 +20,7 @@ export class AltUriConverter {
   constructor(public readonly conventions: ReadonlyArray<NamingConvention<any> & NamingConvention.WithAltUri>) {}
 
   /** Print component in alternate URI syntax */
-  public ofComponent = (comp: Component): string => {
+  public readonly ofComponent = (comp: Component) => {
     for (const conv of this.conventions) {
       if (conv.match(comp)) {
         return conv.toAltUri(comp);
@@ -30,10 +30,10 @@ export class AltUriConverter {
   };
 
   /** Print name in alternate URI syntax. */
-  public ofName = (name: Name): string => `/${name.comps.map((comp) => this.ofComponent(comp)).join("/")}`;
+  public readonly ofName = (name: Name) => `/${name.comps.map((comp) => this.ofComponent(comp)).join("/")}`;
 
   /** Parse component from alternate URI syntax */
-  public parseComponent = (input: string): Component => {
+  public readonly parseComponent = (input: string) => {
     for (const conv of this.conventions) {
       const comp = conv.fromAltUri(input);
       if (comp) {
@@ -44,7 +44,7 @@ export class AltUriConverter {
   };
 
   /** Parse name from alternate URI syntax. */
-  public parseName = (input: string): Name => new Name(input, this.parseComponent);
+  public readonly parseName = (input: string) => new Name(input, this.parseComponent);
 }
 
 class Generic implements NamingConvention<never>, NamingConvention.WithAltUri {

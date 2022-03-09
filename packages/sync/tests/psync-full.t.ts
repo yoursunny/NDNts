@@ -133,7 +133,7 @@ class Fixture {
   public expectNthUpdate(i: number, n: number, prefix?: NameLike, seqNums?: readonly number[]): SyncUpdate<Name> {
     const fn = this.updates[i]!;
     if (n < 0) {
-      n += fn.mock.calls.length;
+      n += fn.mock.calls.length; // eslint-disable-line @typescript-eslint/restrict-plus-operands
     }
 
     const update = fn.mock.calls[n]![0]!;

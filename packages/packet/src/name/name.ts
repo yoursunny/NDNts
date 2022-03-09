@@ -4,6 +4,7 @@ import { TT } from "../an";
 import { type ComponentLike, Component } from "./component";
 import type { NamingConvention } from "./convention";
 
+/** Name or Name URI. */
 export type NameLike = Name | string;
 
 /**

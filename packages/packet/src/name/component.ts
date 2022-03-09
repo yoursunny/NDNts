@@ -1,4 +1,5 @@
-import { Decoder, Encoder, fromUtf8, toUtf8 } from "@ndn/tlv";
+import { Decoder, Encoder } from "@ndn/tlv";
+import { fromHex, fromUtf8, toHex, toUtf8 } from "@ndn/util";
 import bufferCompare from "buffer-compare";
 
 import { TT } from "../an";
@@ -14,14 +15,15 @@ function assertType(t: number): void {
   }
 }
 
-const CHAR_ENCODE: string[] = [];
-for (let ch = 0x00; ch <= 0xFF; ++ch) {
-  const s = String.fromCodePoint(ch);
-  CHAR_ENCODE.push(/[\w.~-]/i.test(s) ? s : `%${ch.toString(16).padStart(2, "0").toUpperCase()}`);
+const CHAR_ENCODE: Record<number, string> = {};
+for (let b = 0x00; b <= 0xFF; ++b) {
+  const s = String.fromCodePoint(b);
+  CHAR_ENCODE[b] = /[\w.~-]/i.test(s) ? s : `%${toHex.TABLE[b]}`;
 }
 const CODEPOINT_PERCENT = "%".codePointAt(0);
 const CODEPOINT_PERIOD = ".".codePointAt(0);
 
+/** Name component or component URI. */
 export type ComponentLike = Component | string;
 
 /**
@@ -29,6 +31,7 @@ export type ComponentLike = Component | string;
  * This type is immutable.
  */
 export class Component {
+  /** TLV-LENGTH. */
   public get length(): number {
     return this.value.length;
   }
@@ -49,38 +52,42 @@ export class Component {
       return input;
     }
 
-    let [sType, sValue] = input.split("=", 2) as [string, string?];
     let type = TT.GenericNameComponent;
-    let iType: number;
-    if (sValue === undefined) {
-      [sType, sValue] = ["", sType];
-    } else if (checkType(iType = Number.parseInt(sType, 10))) {
-      type = iType;
-    } else {
-      [sType, sValue] = ["", input];
-    }
-    if (/^\.*$/.test(sValue)) {
-      sValue = sValue.slice(3);
+    let posValue = 0;
+    const posEqual = input.indexOf("=");
+    if (posEqual >= 1) {
+      const iType = Number.parseInt(input, 10);
+      if (checkType(iType)) {
+        type = iType;
+        posValue = posEqual + 1;
+      }
     }
 
-    const value = new Uint8Array(sValue.length);
+    const value = new Uint8Array(input.length - posValue);
     let length = 0;
-    for (let i = 0; i < sValue.length;) {
-      let ch = sValue.codePointAt(i)!;
-      let hex: string;
-      if (ch === CODEPOINT_PERCENT && /^[\da-f]{2}$/i.test(hex = sValue.slice(i + 1, i + 3))) {
-        ch = Number.parseInt(hex, 16);
+    let hasNonPeriods = false;
+    for (let i = posValue; i < input.length;) {
+      let b = input.codePointAt(i)!;
+      hasNonPeriods ||= b !== CODEPOINT_PERIOD;
+      if (b === CODEPOINT_PERCENT) {
+        b = (fromHex.TABLE[input[i + 1]!]! << 4) | fromHex.TABLE[input[i + 2]!]!;
         i += 3;
       } else {
         ++i;
       }
-      value[length++] = ch;
+      value[length++] = b;
+    }
+    if (!hasNonPeriods && length >= 3) {
+      length -= 3;
     }
     return new Component(type, value.subarray(0, length));
   }
 
+  /** Whole TLV. */
   public readonly tlv: Uint8Array;
+  /** TLV-TYPE. */
   public readonly type: number;
+  /** TLV-VALUE. */
   public readonly value: Uint8Array;
 
   /**
@@ -94,7 +101,10 @@ export class Component {
   /** Construct from TLV. */
   constructor(tlv: Uint8Array);
 
-  constructor(arg1: number | Uint8Array = TT.GenericNameComponent, arg2?: Uint8Array | string) {
+  constructor(
+      arg1: number | Uint8Array = TT.GenericNameComponent,
+      value: Uint8Array | string = new Uint8Array(),
+  ) {
     if (arg1 instanceof Uint8Array) {
       this.tlv = arg1;
       const decoder = new Decoder(arg1);
@@ -105,22 +115,22 @@ export class Component {
 
     this.type = arg1;
     assertType(this.type);
-    this.value = typeof arg2 === "string" ? toUtf8(arg2) : (arg2 ?? new Uint8Array());
+    this.value = typeof value === "string" ? toUtf8(value) : value;
     this.tlv = Encoder.encode([this.type, this.value], 10 + this.value.length);
   }
 
   /** Get URI string. */
   public toString(): string {
-    let b = `${this.type}=`;
+    let s = `${this.type}=`;
     let hasNonPeriods = false;
-    for (const ch of this.value) {
-      hasNonPeriods ||= ch !== CODEPOINT_PERIOD;
-      b += CHAR_ENCODE[ch];
+    for (const b of this.value) {
+      hasNonPeriods ||= b !== CODEPOINT_PERIOD;
+      s += CHAR_ENCODE[b]!;
     }
     if (!hasNonPeriods) {
-      b += "...";
+      s += "...";
     }
-    return b;
+    return s;
   }
 
   public encodeTo(encoder: Encoder) {
