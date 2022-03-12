@@ -8,7 +8,7 @@ import { KeyStore } from "./key-store";
 import { type StoreProvider, MemoryStoreProvider } from "./store-base";
 
 class FileStoreProvider<T> extends MemoryStoreProvider<T> implements StoreProvider<T> {
-  public override readonly canSClone = true;
+  public override readonly canSClone: boolean = false;
   private loaded = false;
   // @ts-expect-error TS6133 https://github.com/microsoft/TypeScript/issues/44802
   private saveDebounce?: NodeJS.Timeout;

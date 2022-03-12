@@ -5,7 +5,7 @@ import { type FwFace, Forwarder, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Certificate, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
-import { Component, Data, Interest, Name } from "@ndn/packet";
+import { Component, Data, Interest, Name, ParamsDigest } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
 import { Closers } from "@ndn/util";
 import { EventEmitter } from "node:events";
@@ -42,11 +42,12 @@ test.each(TABLE)("reg $#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
 
   const verbs: string[] = [];
   const remoteProcess = (interest: Interest, token: unknown) => {
-    expect(interest.name).toHaveLength(expectedPrefix.length as number + 7);
-    const verb = interest.name.at(-6).text;
+    expect(interest.name).toHaveLength(expectedPrefix.length as number + 4);
+    expect(interest.name.at(-1).is(ParamsDigest)).toBeTruthy();
+    const verb = interest.name.at(-3).text;
     verbs.push(verb);
 
-    const params = new Decoder(interest.name.at(-5).value).decode(ControlParameters);
+    const params = new Decoder(interest.name.at(-2).value).decode(ControlParameters);
     expect(params.name).toEqualName("/R");
     expect(params.origin).toBe(65);
     if (verb === "register") {

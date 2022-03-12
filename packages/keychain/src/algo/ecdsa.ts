@@ -57,14 +57,14 @@ async function importSpecificCurve(curve: EcCurve, der: asn1.ElementBuffer): Pro
     makeGenParams(curve), true, ECDSA.keyUsages.public);
 }
 
-function toUintHex(array: Uint8Array, start: number, end: number): string {
+function toUintHex(array: Uint8Array): string {
   let msb: number;
-  for (msb = start; msb < end; ++msb) {
+  for (msb = 0; msb < array.byteLength - 1; ++msb) {
     if (array[msb]) {
       break;
     }
   }
-  return toHex(array.slice(msb, end));
+  return toHex(array.subarray(msb));
 }
 
 /** Sha256WithEcdsa signing algorithm. */
@@ -125,11 +125,11 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
 
   makeLLSign({ privateKey, info: { curve } }: CryptoAlgorithm.PrivateKey<ECDSA.Info>) {
     return async (input) => {
-      const raw = new Uint8Array(await crypto.subtle.sign(SignVerifyParams, privateKey, input));
+      const raw = await crypto.subtle.sign(SignVerifyParams, privateKey, input);
       const pointSize = PointSizes[curve];
       return fromHex(asn1.Any("30",
-        asn1.UInt(toUintHex(raw, 0, pointSize)),
-        asn1.UInt(toUintHex(raw, pointSize, 2 * pointSize)),
+        asn1.UInt(toUintHex(new Uint8Array(raw, 0, pointSize))),
+        asn1.UInt(toUintHex(new Uint8Array(raw, pointSize))),
       ));
     };
   },

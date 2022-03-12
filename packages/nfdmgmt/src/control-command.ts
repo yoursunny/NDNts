@@ -1,10 +1,9 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Component, Interest, Name, TT } from "@ndn/packet";
+import { type Signer, Component, digestSigning, Interest, Name, SignedInterestPolicy, TT } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { ControlParameters } from "./control-parameters";
 import { ControlResponse } from "./control-response";
-import { signInterest02 } from "./sign-interest-02";
 
 /**
  * Pick fields from ControlParameters.Fields.
@@ -27,11 +26,15 @@ interface Commands {
   "rib/unregister": CP<"name", "faceId" | "origin">;
 }
 
+const defaultSIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce(), SignedInterestPolicy.Time());
+
 /** NFD Management - Control Command client. */
 export namespace ControlCommand {
-  export interface Options extends signInterest02.Options {
+  export interface Options {
     endpoint?: Endpoint;
     commandPrefix?: Name;
+    signer?: Signer;
+    signedInterestPolicy?: SignedInterestPolicy;
   }
 
   export const localhostPrefix = new Name("/localhost/nfd");
@@ -42,21 +45,20 @@ export namespace ControlCommand {
   }
 
   /** Invoke a command and wait for response. */
-  export async function call<C extends keyof Commands>(
-      command: C, params: Commands[C], opts: Options = {}): Promise<ControlResponse> {
-    const {
-      endpoint = new Endpoint({ describe: `ControlCommand(${command})` }),
-      commandPrefix: prefix = localhostPrefix,
-    } = opts;
-
-    const name = new Name([
+  export async function call<C extends keyof Commands>(command: C, params: Commands[C], {
+    endpoint = new Endpoint(),
+    commandPrefix: prefix = localhostPrefix,
+    signer = digestSigning,
+    signedInterestPolicy = defaultSIP,
+  }: Options = {}): Promise<ControlResponse> {
+    const interest = new Interest(new Name([
       ...prefix.comps,
       ...command.split("/"),
-      new Component(TT.GenericNameComponent, Encoder.encode(new ControlParameters(params), 512)),
-    ]);
-    const interest = await signInterest02(new Interest(name), opts);
+      new Component(TT.GenericNameComponent, Encoder.encode(new ControlParameters(params))),
+    ]));
+    await signedInterestPolicy.makeSigner(signer).sign(interest);
 
-    const data = await endpoint.consume(interest);
+    const data = await endpoint.consume(interest, { describe: `ControlCommand(${command})` });
     return new Decoder(data.content).decode(ControlResponse);
   }
 }

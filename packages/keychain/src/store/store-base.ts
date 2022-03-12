@@ -21,7 +21,7 @@ export interface StoreProvider<T> {
 
 /** Memory based KV store provider. */
 export class MemoryStoreProvider<T> implements StoreProvider<T> {
-  public readonly canSClone = true;
+  public readonly canSClone: boolean = true;
   protected record: Record<string, T> = {};
 
   public async list(): Promise<string[]> {

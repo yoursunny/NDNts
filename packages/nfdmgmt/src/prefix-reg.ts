@@ -2,7 +2,7 @@ import { Endpoint, Producer } from "@ndn/endpoint";
 import { FwFace, ReadvertiseDestination, TapFace } from "@ndn/fw";
 import { type KeyChain, Certificate } from "@ndn/keychain";
 import { type Name, Interest } from "@ndn/packet";
-import { toHex } from "@ndn/util";
+import { Closers, toHex } from "@ndn/util";
 
 import { ControlCommand } from "./control-command";
 import type { ControlParameters } from "./control-parameters";
@@ -76,14 +76,12 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
       fw: tapFace.fw,
     });
     const preloadProducers = await this.preload(endpoint);
+
+    const closers = new Closers();
+    closers.push(...preloadProducers.values(), tapFace);
     return [
       { ...this.commandOptions, endpoint },
-      () => {
-        for (const p of preloadProducers.values()) {
-          p.close();
-        }
-        tapFace.close();
-      },
+      closers.close,
     ];
   }
 

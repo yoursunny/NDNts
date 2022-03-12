@@ -25,7 +25,6 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
         const faces = await connectToNetwork({
           mtu: env.mtu,
           preferTcp: autoconfigPreferTcp,
-          addRoutes: [],
         });
         return [faces[0]!, true];
       } catch {
@@ -71,10 +70,10 @@ export async function openUplinks({ autoClose = true }: openUplinks.Options = {}
     const [face, nfd] = await makeFace();
     if (nfd && env.nfdReg) {
       const signerName = env.nfdRegKey ?? env.key;
-      const signer = await getSignerImpl(signerName);
+      const [signer, klName] = await getSignerImpl(signerName);
       enableNfdPrefixReg(face, {
         signer,
-        preloadCertName: signerName,
+        preloadCertName: klName ?? signerName,
         preloadFromKeyChain: openKeyChain(),
       });
     }

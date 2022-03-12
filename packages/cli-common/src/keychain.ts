@@ -1,5 +1,5 @@
 import { CryptoAlgorithmListFull, KeyChain } from "@ndn/keychain";
-import { type Signer, digestSigning, Name } from "@ndn/packet";
+import { type Signer, Data, digestSigning, Name } from "@ndn/packet";
 
 import { env } from "./env";
 
@@ -17,15 +17,26 @@ export function openKeyChain(): KeyChain {
   return theKeyChain;
 }
 
-export async function getSignerImpl(prefix = new Name()): Promise<Signer> {
+export async function getSignerImpl(prefix = new Name()): Promise<[name: Signer, klName?: Name]> {
   const keyChain = openKeyChain();
-  return keyChain.getSigner(prefix, {
+  const signer = await keyChain.getSigner(prefix, {
     prefixMatch: true,
     fallback: digestSigning,
   });
+
+  let klName = (signer as { name?: Name }).name;
+  if (!(klName instanceof Name)) {
+    try {
+      const data = new Data("/klName");
+      await signer.sign(data);
+      klName = data.sigInfo.keyLocator?.name;
+    } catch {}
+  }
+  return [signer, klName];
 }
 
 /** Get the KeyChain signer specified by NDNTS_KEY environ. */
 export async function getSigner(): Promise<Signer> {
-  return getSignerImpl(env.key);
+  const [signer] = await getSignerImpl(env.key);
+  return signer;
 }

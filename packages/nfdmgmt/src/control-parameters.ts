@@ -1,12 +1,12 @@
 import { Name, TT } from "@ndn/packet";
-import { type Decoder, type EncodableTlv, Encodable, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
+import { type Decoder, type Encodable, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
 
 const TtControlParameters = 0x68;
 
 type FieldDef<K extends keyof ControlParameters.Fields> = [
   tt: number,
   key: K,
-  encodeValue: (v: ControlParameters.Fields[K]) => Encodable,
+  encodeValue: (v: NonNullable<ControlParameters.Fields[K]>) => Encodable,
   decode: (tlv: Decoder.Tlv) => ControlParameters.Fields[K],
 ];
 
@@ -45,7 +45,7 @@ for (const [tt, key,, decode] of fieldDefs) {
   });
 }
 
-/** NFD Management ControlParameters struct (encoding only). */
+/** NFD Management ControlParameters struct. */
 export class ControlParameters {
   public static decodeFrom(decoder: Decoder): ControlParameters {
     return EVD.decode(new ControlParameters(), decoder);
@@ -58,12 +58,12 @@ export class ControlParameters {
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(
       TtControlParameters,
-      ...fieldDefs.map(([tt, key, encodeValue]) => {
+      ...fieldDefs.map(([tt, key, encodeValue]): Encodable => {
         const v = (this as any)[key];
         if (v === undefined) {
           return undefined;
         }
-        return [tt, encodeValue(v)] as EncodableTlv;
+        return [tt, encodeValue(v)];
       }),
     );
   }

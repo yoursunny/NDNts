@@ -6,7 +6,7 @@ This package implements basic support for [NFD Management protocol](https://redm
 In particular, it enables prefix registration on NFD.
 
 ```ts
-import { enableNfdPrefixReg, signInterest02 } from "@ndn/nfdmgmt";
+import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 
 // other imports for examples
 import { Endpoint } from "@ndn/endpoint";
@@ -19,23 +19,11 @@ import { strict as assert } from "node:assert";
 import { setTimeout as delay } from "node:timers/promises";
 ```
 
-## Signed Interest 0.2
-
-NFD Management protocol is using the deprecated [Signed Interest 0.2 format](https://named-data.net/doc/ndn-cxx/0.8.0/specs/signed-interest.html) that differs from the [Signed Interest format in NDN packet spec](https://named-data.net/doc/NDN-packet-spec/0.3/signed-interest.html).
-`signInterest02` function provides basic support for this older format.
-
-```ts
-// Generate a signing key.
-const [privateKey] = await generateSigningKey("/K");
-
-// Prepare the Interest.
-const interest = new Interest("/I");
-await signInterest02(interest, { signer: privateKey });
-assert.equal(interest.name.length, 5);
-console.log(`${interest.name}`);
-```
-
 ## NFD Prefix Registration
+
+`enableNfdPrefixReg` function enables NFD prefix registration.
+The snippet here shows API usage.
+If you are using `@ndn/cli-common` package, this is called automatically if the uplink connects to NFD.
 
 ```ts
 // Create two forwarders, one as consumer and one as producer.
@@ -54,7 +42,8 @@ try {
 }
 const uplinkP = await UnixTransport.createFace({ fw: fwP, addRoutes: [] }, unixSocket);
 
-// Enable NFD prefix registration.
+// Generate a signing key and enable NFD prefix registration.
+const [privateKey] = await generateSigningKey("/K");
 enableNfdPrefixReg(uplinkP, { signer: privateKey });
 
 // Start a producer.
@@ -76,3 +65,11 @@ uplinkC.close();
 uplinkP.close();
 producer.close();
 ```
+
+## Signed Interest 0.2
+
+Previously, NFD Management protocol uses the deprecated [Signed Interest 0.2 format](https://named-data.net/doc/ndn-cxx/0.8.0/specs/signed-interest.html).
+`signInterest02` function provides basic support for this older format.
+
+NFD is now accepting the [Signed Interest format in NDN packet spec](https://named-data.net/doc/NDN-packet-spec/0.3/signed-interest.html) and this package has switched to it.
+However, `signInterest02` function is temporarily kept for interoperability with other programs that follows the structure of NFD Management protocol but still requires the old format.

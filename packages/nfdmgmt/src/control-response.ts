@@ -15,7 +15,7 @@ const EVD = new EvDecoder<ControlResponse>("ControlResponse", TT.ControlResponse
   })
   .setIsCritical(() => false);
 
-/** NFD Management ControlResponse struct (decoding only). */
+/** NFD Management ControlResponse struct. */
 export class ControlResponse {
   public static decodeFrom(decoder: Decoder): ControlResponse {
     return EVD.decode(new ControlResponse(), decoder);
