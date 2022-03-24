@@ -38,11 +38,11 @@
     "graceful-fs": "^4.2.9",
     "hard-rejection": "^2.1.0",
     "leveldown": "^6.1.0",
-    "nodemailer": "^6.7.2",
+    "nodemailer": "^6.7.3",
     "prompts": "^2.4.2",
     "stdout-stream": "^1.4.1",
     "tslib": "^2.3.1",
-    "yargs": "^17.3.1"
+    "yargs": "^17.4.0"
   },
   "devDependencies": {
     "@types/fast-chunk-string": "^1.0.1",
@@ -51,6 +51,6 @@
     "@types/nodemailer": "^6.4.4",
     "@types/prompts": "^2.0.14",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^17.0.8"
+    "@types/yargs": "^17.0.10"
   }
 }

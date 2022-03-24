@@ -3,7 +3,11 @@ import { type ComponentLike, Component, NamingConvention, TT } from "@ndn/packet
 import { PrefixRegDynamic } from "./dynamic";
 import type { PrefixRegController } from "./types";
 
-/** Register prefixes after stripping last few components matching a predicate. */
+/**
+ * Register prefixes after stripping last few components matching a predicate.
+ *
+ * Warning: this may misbehave when expireTime option is being used.
+ */
 export function PrefixRegStrip(...predicates: PrefixRegStrip.ComponentPredicate[]): PrefixRegController {
   const preds = predicates.map((pred) => {
     if (typeof pred === "function") {
@@ -28,7 +32,7 @@ export function PrefixRegStrip(...predicates: PrefixRegStrip.ComponentPredicate[
 }
 
 export namespace PrefixRegStrip {
-  export type ComponentPredicate = ComponentLike | ((comp: Component) => boolean) | NamingConvention<any>;
+  export type ComponentPredicate = ComponentLike | ((c: Component) => boolean) | NamingConvention<any>;
 
   /** A predicate that strips non-generic components. */
   export function stripNonGeneric(c: Component): boolean {

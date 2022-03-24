@@ -1,10 +1,10 @@
 import { type Data, type Interest, type Name, ImplicitDigest } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
-import { Encoder, toHex, toUtf8 } from "@ndn/tlv";
+import { assert, toHex } from "@ndn/util";
 import type { AbstractLevelDOWN } from "abstract-leveldown";
 import type { NotFoundError } from "level-errors";
 import { EventEmitter } from "node:events";
-import { collect, filter, fromStream, map, pipeline, transform } from "streaming-iterables";
+import { filter, map, pipeline } from "streaming-iterables";
 import throat from "throat";
 import type TypedEmitter from "typed-emitter";
 
@@ -38,9 +38,8 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
   }
 
   private async *iterRecords(prefix?: Name): AsyncGenerator<Record> {
-    const it = fromStream<{ key: Name; value: Record }>(
-      this.db.createReadStream(prefix ? { gte: prefix } : undefined));
-    for await (const { key: name, value: record } of it) {
+    const it = this.db.iterator(prefix ? { gte: prefix } : undefined);
+    for await (const [name, record] of it as unknown as AsyncIterable<[Name, Record]>) {
       if (prefix?.isPrefixOf(name) === false) {
         break;
       }
@@ -134,15 +133,13 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
 
 type InsertOptions = Pick<Record, "expireTime">;
 
-type Diff = ["insert" | "delete", Name];
+type Diff = [keyof Events, Name];
 
 /** DataStore update transaction. */
 export class Transaction {
   private readonly timestamp = Date.now();
   private readonly chain: DbChain;
   private readonly diffs?: Map<string, Diff>;
-  private encodePromises = [] as Array<Promise<void>>;
-  private encodeError?: Error;
 
   constructor(private readonly db: Db, private readonly store: DataStore) {
     this.chain = this.db.batch();
@@ -153,33 +150,15 @@ export class Transaction {
 
   /** Insert a Data packet. */
   public insert(data: Data, opts: InsertOptions = {}): this {
-    this.encodePromises.push((async () => {
-      try {
-        await this.insertImpl(data, opts);
-      } catch (err: unknown) {
-        // TODO AggregateError
-        this.encodeError = err as Error;
-      }
-    })());
-    return this;
-  }
-
-  private async insertImpl(data: Data, opts: InsertOptions): Promise<void> {
-    const record: Omit<Record, "name" | "data"> = {
+    const { name } = data;
+    this.chain.put(name, {
       ...opts,
       insertTime: this.timestamp,
-    };
-
-    const json = toUtf8(JSON.stringify(record));
-    const encoder = new Encoder();
-    encoder.prependRoom(json.byteLength).set(json);
-    encoder.encode(data);
-
-    const buf = encoder.output;
-    record.encodedBuffer = Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
-
-    this.chain.put(data.name, record as Record);
-    this.diffs?.set(toHex(data.name.value), ["insert", data.name]);
+      data,
+      name,
+    });
+    this.diffs?.set(toHex(name.value), ["insert", name]);
+    return this;
   }
 
   /** Delete a Data packet. */
@@ -191,11 +170,6 @@ export class Transaction {
 
   /** Commit the transaction. */
   public async commit(): Promise<void> {
-    await Promise.all(this.encodePromises);
-    if (this.encodeError) {
-      throw this.encodeError;
-    }
-
     if (this.diffs) {
       await this.store.mutex(() => this.commitWithDiff());
     } else {
@@ -204,25 +178,16 @@ export class Transaction {
   }
 
   private async commitWithDiff() {
-    const changes = await collect(pipeline(
-      () => this.diffs!.values(),
-      transform(8, async (diff) => {
-        const [act, name] = diff;
-        let exists = true;
-        try {
-          await this.db.get(name);
-        } catch {
-          exists = false;
-        }
-        return (exists ? act === "delete" : act === "insert") ? diff : undefined;
-      }),
-      filter((diff): diff is Diff => diff !== undefined),
-    ));
+    const requests = Array.from(this.diffs!.values());
+    const oldRecords = await this.db.getMany(requests.map(([, name]) => name));
+    assert.equal(requests.length, oldRecords.length);
 
     await this.chain.write();
 
-    for (const [act, name] of changes) {
-      this.store.emit(act, name);
+    for (const [i, [act, name]] of requests.entries()) {
+      if (act === (oldRecords[i] === undefined ? "insert" : "delete")) {
+        this.store.emit(act, name);
+      }
     }
   }
 }

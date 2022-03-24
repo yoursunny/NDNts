@@ -43,9 +43,6 @@ function writeVarNum(room: Uint8Array, off: number, n: number) {
   }
 }
 
-const BUF_INIT_SIZE = 2048;
-const BUF_GROW_SIZE = 2048;
-
 /** TLV encoder that accepts objects in reverse order. */
 export class Encoder {
   private buf: ArrayBuffer;
@@ -61,7 +58,7 @@ export class Encoder {
     return this.slice();
   }
 
-  constructor(initSize: number = BUF_INIT_SIZE) {
+  constructor(initSize = 2048) {
     this.buf = new ArrayBuffer(initSize);
     this.off = initSize;
   }
@@ -148,11 +145,11 @@ export class Encoder {
   }
 
   private grow(sizeofRoom: number) {
-    const sizeofGrow = BUF_GROW_SIZE + sizeofRoom;
-    const buf = new ArrayBuffer(sizeofGrow + this.size);
-    new Uint8Array(buf, sizeofGrow).set(this.output);
+    const sizeofGrowth = 2048 + sizeofRoom;
+    const buf = new ArrayBuffer(sizeofGrowth + this.size);
+    new Uint8Array(buf, sizeofGrowth).set(this.output);
     this.buf = buf;
-    this.off = sizeofGrow;
+    this.off = sizeofGrowth;
   }
 }
 
@@ -160,7 +157,7 @@ export namespace Encoder {
   export const OmitEmpty = Symbol("OmitEmpty");
 
   /** Encode a single object into Uint8Array. */
-  export function encode(obj: Encodable | readonly Encodable[], initBufSize: number = BUF_INIT_SIZE): Uint8Array {
+  export function encode(obj: Encodable | readonly Encodable[], initBufSize?: number): Uint8Array {
     const encoder = new Encoder(initBufSize);
     encoder.encode(obj);
     return encoder.output;

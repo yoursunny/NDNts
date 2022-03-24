@@ -52,7 +52,7 @@ assert.equal(`${rA1?.name}`, "/8=A/8=1");
 // Prefix name is supported too.
 const rA = await store.find(new Interest("/A", Interest.CanBePrefix));
 assert(["/8=A/8=1", "/8=A/8=2"].includes(`${rA?.name}`));
-// /A/3 has disappeared.
+// /A/3 has disappeared because it is expired.
 const rA3 = await store.find(new Interest("/A/3"));
 assert.equal(rA3, undefined);
 ```
@@ -68,7 +68,7 @@ assert.equal(rA3, undefined);
 // PrefixRegShorter(1) registers prefixes that are 1-component shorter than each Data name.
 // See test cases for more options.
 // These registrations stay with NDNts forwarding plane. Typically you'll want a package such as
-// '@ndn/nfdmgmt' to propagate them to the uplink(s).
+// @ndn/nfdmgmt to propagate them to the uplink(s).
 const p = RepoProducer.create(store, { reg: PrefixRegShorter(1) });
 
 // Close the RepoProducer and the DataStore.

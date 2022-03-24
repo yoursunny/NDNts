@@ -35,7 +35,7 @@ export class Producer {
     this.prod.close();
   }
 
-  private processInterest: ProducerHandler = async (interest: Interest): Promise<Data | undefined> => {
+  private readonly processInterest: ProducerHandler = async (interest) => {
     const found = await this.store.find(interest);
     return found ?? this.fallback(interest, this, this.store);
   };

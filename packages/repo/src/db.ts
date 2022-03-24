@@ -1,5 +1,6 @@
 import { Data, Name } from "@ndn/packet";
-import { Decoder, fromUtf8 } from "@ndn/tlv";
+import { Decoder, Encoder } from "@ndn/tlv";
+import { assert, fromUtf8 } from "@ndn/util";
 import type { AbstractIterator, AbstractLevelDOWN } from "abstract-leveldown";
 import EncodingDown from "encoding-down";
 import levelup, { LevelUp, LevelUpChain } from "levelup";
@@ -9,18 +10,22 @@ export interface Record {
   readonly name: Name;
   readonly insertTime: number;
   readonly expireTime?: number;
-  encodedBuffer?: Buffer;
 }
 
 export type Db = LevelUp<EncodingDown<Name, Record>, AbstractIterator<Name, Record>>;
 export type DbChain = LevelUpChain<Name, Record>;
 
+function asBuffer({ buffer, byteOffset, byteLength }: Uint8Array): Buffer {
+  return Buffer.from(buffer, byteOffset, byteLength);
+}
+
+const textEncoder = new TextEncoder();
+
 export function openDb(db: AbstractLevelDOWN): Db {
-  return (levelup as unknown as typeof LevelUp)(EncodingDown<Name, Record>(db, {
+  return levelup(EncodingDown<Name, Record>(db, {
     keyEncoding: {
       encode(name: Name): Buffer {
-        const { buffer, byteOffset, byteLength } = name.value;
-        return Buffer.from(buffer, byteOffset, byteLength);
+        return asBuffer(name.value);
       },
       decode(stored: Buffer): Name {
         return new Name(stored);
@@ -30,16 +35,23 @@ export function openDb(db: AbstractLevelDOWN): Db {
     },
     valueEncoding: {
       encode(record: Record): Buffer {
-        return record.encodedBuffer!;
+        const encoder = new Encoder();
+        const jText = JSON.stringify(record, ["insertTime", "expireTime"] as Array<keyof Record>);
+        const jBufCap = 3 * jText.length;
+        const jBuf = encoder.prependRoom(jBufCap);
+        const { read: jTextLen = 0, written: jBufLen = 0 } = textEncoder.encodeInto(jText, jBuf);
+        assert.equal(jTextLen, jText.length);
+        encoder.encode(record.data);
+        return asBuffer(encoder.slice(0, encoder.size - jBufCap + jBufLen));
       },
       decode(stored: Buffer): Record {
-        const { decoder, after } = new Decoder(stored).read();
-        const record = JSON.parse(fromUtf8(after)) as Record;
+        const tlv = new Decoder(stored).read();
+        const record = JSON.parse(fromUtf8(tlv.after)) as Record;
         Object.defineProperties(record, {
           data: {
             configurable: true,
             get() {
-              const value = decoder.decode(Data);
+              const value = tlv.decoder.decode(Data);
               Object.defineProperty(record, "data", { value });
               return value;
             },
@@ -60,8 +72,8 @@ export function openDb(db: AbstractLevelDOWN): Db {
   }));
 }
 
-export function isExpired(expireTime?: number, now = Date.now()): boolean {
-  return expireTime !== undefined && expireTime < now;
+export function isExpired(expireTime = Infinity, now = Date.now()): boolean {
+  return expireTime < now;
 }
 
 export function filterExpired(expired: boolean, now = Date.now()): (record: Record) => boolean {
