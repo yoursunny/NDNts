@@ -27,7 +27,7 @@ function sizeofVarNum(n: number): number {
   if (n <= 0xFFFFFFFF) {
     return 5;
   }
-  // JavaScript cannot reliably represent 64-bit integers
+  // 64-bit integers may lose precision in Number type, and it's rarely useful
   throw new Error("VAR-NUMBER is too large");
 }
 
@@ -65,10 +65,6 @@ export class Encoder {
 
   /** Obtain part of encoding output. */
   public slice(start = 0, length?: number) {
-    if (length === undefined) {
-      // iOS would interpret length=undefined as length=0, so we need a conditional
-      return new Uint8Array(this.buf, this.off + start);
-    }
     return new Uint8Array(this.buf, this.off + start, length);
   }
 
@@ -101,21 +97,17 @@ export class Encoder {
     }
   }
 
-  /**
-   * Prepend TLV structure.
-   * @param tlvType TLV-TYPE number.
-   * @param omitEmpty omit TLV altogether if set to Encoder.OmitEmpty.
-   * @param tlvValue TLV-VALUE objects.
-   */
+  /** Prepend TLV structure. */
+  public prependTlv(tlvType: number, ...tlvValue: Encodable[]): void;
+
+  /** Prepend TLV structure, but skip if TLV-VALUE is empty. */
+  public prependTlv(tlvType: number, omitEmpty: typeof Encoder.OmitEmpty, ...tlvValue: Encodable[]): void;
+
   public prependTlv(tlvType: number, omitEmpty?: typeof Encoder.OmitEmpty | Encodable,
       ...tlvValue: Encodable[]) {
-    let hasOmitEmpty = false;
-    if (omitEmpty) {
-      if (omitEmpty === Encoder.OmitEmpty) {
-        hasOmitEmpty = true;
-      } else {
-        tlvValue.unshift(omitEmpty);
-      }
+    const hasOmitEmpty = omitEmpty === Encoder.OmitEmpty;
+    if (!hasOmitEmpty) {
+      tlvValue.unshift(omitEmpty);
     }
 
     const sizeBefore = this.size;

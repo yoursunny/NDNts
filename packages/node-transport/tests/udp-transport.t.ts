@@ -59,8 +59,7 @@ describe.each([
 describe("multicast", () => {
   const intfs = udp.listMulticastIntfs();
   if (intfs.length === 0) {
-    // eslint-disable-next-line jest/no-disabled-tests
-    test.skip("no multicast interface", () => undefined);
+    test.skip("no multicast interface"); // eslint-disable-line jest/no-disabled-tests
     return;
   }
 

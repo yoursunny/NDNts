@@ -6,9 +6,8 @@ import { dirSync as tmpDir } from "tmp";
 import { NdnsecKeyChain } from "..";
 
 describe("ndn-cxx keychain", () => {
-  if (execa.sync("command", ["-v", "ndnsec"], { reject: false }).exitCode !== 0) {
-    // eslint-disable-next-line jest/no-disabled-tests
-    test.skip("ndnsec is not installed", () => undefined);
+  if (execa.sync("ndnsec", ["version"], { reject: false }).exitCode !== 0) {
+    test.skip("ndnsec is not installed"); // eslint-disable-line jest/no-disabled-tests
     return;
   }
 

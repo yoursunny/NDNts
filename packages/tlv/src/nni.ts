@@ -32,7 +32,7 @@ class Nni8Number {
   public encodeTo(encoder: Encoder) {
     const dv = asDataView(encoder.prependRoom(8));
     dv.setUint32(0, this.n / 0x100000000);
-    dv.setUint32(4, this.n % 0x100000000);
+    dv.setUint32(4, this.n);
   }
 }
 

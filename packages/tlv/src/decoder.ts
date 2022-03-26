@@ -51,8 +51,13 @@ class DecodedTlv {
     return this.buf.subarray(this.offsetE);
   }
 
-  constructor(public readonly type: number, private readonly buf: Uint8Array,
-      private readonly offsetT: number, private readonly offsetV: number, private readonly offsetE: number) {}
+  constructor(
+      public readonly type: number,
+      private readonly buf: Uint8Array,
+      private readonly offsetT: number,
+      private readonly offsetV: number,
+      private readonly offsetE: number,
+  ) {}
 }
 
 /** TLV decoder. */
@@ -72,12 +77,14 @@ export class Decoder {
   /** Read TLV structure. */
   public read(): Decoder.Tlv {
     const offsetT = this.offset;
-    const type = this.readType();
-    const length = this.readLength();
+    const type = this.readVarNum();
+    const length = this.readVarNum();
     const offsetV = this.offset;
-    this.skipValue(length);
-    const offsetE = this.offset;
-    return new DecodedTlv(type, this.input, offsetT, offsetV, offsetE);
+    if (length === undefined || (this.offset += length) > this.input.length) {
+      throw new Error(`TLV at offset ${offsetT} is incomplete`);
+    }
+    // length!==undefined implies type!==undefined
+    return new DecodedTlv(type!, this.input, offsetT, offsetV, this.offset);
   }
 
   /** Read a Decodable object. */
@@ -108,29 +115,6 @@ export class Decoder {
       default:
         this.offset += 1;
         return this.input[this.offset - 1]!;
-    }
-  }
-
-  private readType(): number {
-    const n = this.readVarNum();
-    if (n === undefined) {
-      throw new Error(`TLV-TYPE is missing near offset ${this.offset}`);
-    }
-    return n;
-  }
-
-  private readLength(): number {
-    const n = this.readVarNum();
-    if (n === undefined) {
-      throw new Error(`TLV-LENGTH is missing near offset ${this.offset}`);
-    }
-    return n;
-  }
-
-  private skipValue(length: number) {
-    this.offset += length;
-    if (this.offset > this.input.length) {
-      throw new Error(`TLV-VALUE is incomplete near offset ${this.offset}`);
     }
   }
 }
