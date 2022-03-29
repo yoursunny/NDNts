@@ -1,10 +1,13 @@
-import { Timestamp } from "@ndn/naming-convention2";
+import { SequenceNum, Timestamp } from "@ndn/naming-convention2";
 import type { Name } from "@ndn/packet";
 
 import { AlternatePattern, Pattern, VariablePattern, Vars } from "../pattern";
 
 /** A filter that matches Timestamp convention. */
 export const timestamp = new VariablePattern.ConventionFilter(Timestamp);
+
+/** A filter that matches SequenceNum convention. */
+export const seq = new VariablePattern.ConventionFilter(SequenceNum);
 
 /** A filter from a component constraint term. */
 export class ConstraintTerm implements VariablePattern.Filter {
@@ -51,11 +54,10 @@ export function simplify(filter: VariablePattern.Filter): VariablePattern.Filter
  * If allow set is specified, terms not in allow set are deleted.
  * If deny set is specified, terms in deny set are deleted.
  */
-export function simplify(filter: VariablePattern.Filter, allow: Set<string> | undefined, deny?: Set<string>): VariablePattern.Filter | undefined;
+export function simplify(filter: VariablePattern.Filter, allow: Set<string> | undefined): VariablePattern.Filter | undefined;
 
-export function simplify(filter: VariablePattern.Filter, allow?: Set<string>, deny?: Set<string>) {
-  if (filter instanceof ConstraintTerm &&
-      ((allow && !allow.has(filter.id) || deny?.has(filter.id)))) {
+export function simplify(filter: VariablePattern.Filter, allow?: Set<string>) {
+  if (filter instanceof ConstraintTerm && allow && !allow.has(filter.id)) {
     return undefined;
   }
 
@@ -65,7 +67,7 @@ export function simplify(filter: VariablePattern.Filter, allow?: Set<string>, de
   }
 
   const subs = (filter as And | Or).filters.flatMap((f) => {
-    const s = simplify(f, allow, deny);
+    const s = simplify(f, allow);
     return s instanceof combine ? s.filters : (s ?? []);
   });
   if (subs.length <= 1) {

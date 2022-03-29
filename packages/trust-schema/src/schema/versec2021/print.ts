@@ -58,11 +58,13 @@ class Printer {
       }
     }
 
-    if (!p.filter) {
-      return name;
-    }
-    if (p.filter === F.timestamp) {
-      return new A.Call("timestamp");
+    switch (p.filter) {
+      case undefined:
+        return name;
+      case F.timestamp:
+        return new A.Call("timestamp");
+      case F.seq:
+        return new A.Call("seq");
     }
     return new A.Constrained(name, this.translateFilter(p.filter));
   }

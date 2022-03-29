@@ -145,12 +145,12 @@ const schema = new TrustSchema(policy, [rootCert]);
 
 ## VerSec2021 Syntax
 
-This package has partial support of the [VerSec Domain Specific Language](https://github.com/pollere/DCT/blob/77be693e41d4b8f4cb312d01d1880bf77896bc35/versec/language.md) (VerSec2021) syntax, including:
+This package has partial support of the [VerSec Domain Specific Language](https://github.com/pollere/DCT/blob/a5399b6b74a185755d5fc5013b8bbef46a7f6ad6/tools/compiler/doc/language.md) (VerSec2021) syntax, including:
 
 * component constraints
-* `replace` function
 * `timestamp` function: translates to a `VariablePattern` that matches a Timestamp name component
-* `sysid` function: translates to a `VariablePattern` that assigns to *SYSID* variable
+* `seq` function: translates to a `VariablePattern` that matches a SequenceNum name component
+* `sysid`, `host`, `uid`, `pid` function: translates to a `VariablePattern` that assigns to a variable of the same name upper-cased
 * signing constraints and signing chains
 
 Some notes and limitations:

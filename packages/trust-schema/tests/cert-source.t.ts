@@ -35,7 +35,7 @@ beforeAll(async () => {
   await keyChain.insertCert(certB);
 });
 
-async function findIn(c: CertSource, name: NameLike | { name: Name }): Promise<Certificate[]> {
+function findIn(c: CertSource, name: NameLike | { name: Name }): Promise<Certificate[]> {
   if (typeof name === "object" && !(name instanceof Name)) {
     name = name.name;
   }

@@ -72,12 +72,10 @@ class CompilePatternCtx {
    * Constructor.
    * @param parentDefs parent definition IDs, for detecting cyclic dependencies.
    * @param filter constraints and replacements.
-   * @param overridden terms overridden via replace() and cannot be changed in additional filters.
    */
   constructor(
       public readonly parentDefs: readonly string[],
       public readonly filter?: VariablePattern.Filter,
-      public readonly overridden = new Set<string>(),
   ) {}
 
   /** Record a definition key, to prevent cyclic dependency. */
@@ -86,28 +84,16 @@ class CompilePatternCtx {
     if (this.parentDefs.includes(ident.id)) {
       throwCompileError(`cyclic dependency ${extended.join("->")}`, ident);
     }
-    return new CompilePatternCtx(extended, this.filter, this.overridden);
+    return new CompilePatternCtx(extended, this.filter);
   }
 
   /**
-   * Add a constraint or replacement.
-   * @param f filter that represents the constraint or replacement.
-   * @param overrideTerm new replacement term.
+   * Add a constraint.
+   * @param f filter that represents the constraint.
    */
-  public andFilter(f: VariablePattern.Filter, overrideTerm?: string): CompilePatternCtx {
-    let oldF: VariablePattern.Filter | undefined = this.filter;
-    let newF: VariablePattern.Filter | undefined = f;
-    const overridden = new Set(this.overridden);
-    if (overrideTerm) {
-      oldF = oldF && F.simplify(oldF, undefined, new Set([overrideTerm]));
-      overridden.add(overrideTerm);
-    } else {
-      newF = newF && F.simplify(newF, undefined, overridden);
-    }
-
-    const constraints = [oldF, newF].filter((f): f is VariablePattern.Filter => !!f);
-    const combineF = constraints.length <= 0 ? constraints[0] : F.simplify(new F.And(constraints));
-    return new CompilePatternCtx(this.parentDefs, combineF, overridden);
+  public andFilter(f: VariablePattern.Filter): CompilePatternCtx {
+    const combineF = this.filter ? F.simplify(new F.And([this.filter, f])) : f;
+    return new CompilePatternCtx(this.parentDefs, combineF);
   }
 }
 
@@ -215,30 +201,29 @@ class Compiler {
   }
 
   private makePatternCall(expr: A.Call, ctx: CompilePatternCtx): Pattern {
+    const requireNoArgument = () => {
+      if (expr.args.length > 0) {
+        throwCompileError(`${expr.func}() takes no arguments`, expr);
+      }
+    };
     switch (expr.func.toLowerCase()) {
       case "timestamp": {
-        if (expr.args.length > 0) {
-          throwCompileError("timestamp() takes no arguments", expr);
-        }
+        requireNoArgument();
         return new VariablePattern(this.makeAutoId(), { filter: F.timestamp });
       }
-      case "replace": {
-        if (expr.args.length !== 3 || !(expr.args[1] instanceof A.Ident)) {
-          throwCompileError("replace(input, find, repl) takes 3 arguments", expr);
-        }
-        const tag = expr.args[1].id;
-        const repl = this.makePattern(expr.args[2]!, ctx);
-        return this.makePattern(expr.args[0]!,
-          ctx.andFilter(new F.ConstraintTerm(tag, repl), tag));
+      case "seq": {
+        requireNoArgument();
+        return new VariablePattern(this.makeAutoId(), { filter: F.seq });
       }
-      case "sysid": {
-        if (expr.args.length > 0) {
-          throwCompileError("sysid() takes no arguments", expr);
-        }
+      case "sysid":
+      case "host":
+      case "uid":
+      case "pid": {
+        requireNoArgument();
         return new VariablePattern("SYSID");
       }
     }
-    return new VariablePattern(`!call:${expr.func}`);
+    throwCompileError(`unknown function ${expr.func}`, expr);
   }
 
   private makePatternAlt(expr: A.Alt, ctx: CompilePatternCtx): Pattern {
@@ -298,12 +283,8 @@ class Compiler {
   }
 
   private makeConstraintTermFilter(term: A.ComponentConstraintTerm, ctx: CompilePatternCtx): VariablePattern.Filter | undefined {
-    const id = term.tag.id;
-    if (ctx.overridden.has(id)) {
-      return undefined;
-    }
     const pattern = this.makePattern(term.expr, ctx);
-    return new F.ConstraintTerm(id, pattern);
+    return new F.ConstraintTerm(term.tag.id, pattern);
   }
 
   public processSigningChains(): void {

@@ -32,7 +32,7 @@
     "@ndn/repo": "workspace:*",
     "@ndn/repo-api": "workspace:*",
     "hard-rejection": "^2.1.0",
-    "leveldown": "^6.1.0",
+    "leveldown": "^6.1.1",
     "progress": "^2.0.3",
     "streaming-iterables": "^6.2.0",
     "tslib": "^2.3.1",

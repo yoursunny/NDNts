@@ -37,7 +37,7 @@
     "get-stdin": "^8.0.0",
     "graceful-fs": "^4.2.9",
     "hard-rejection": "^2.1.0",
-    "leveldown": "^6.1.0",
+    "leveldown": "^6.1.1",
     "nodemailer": "^6.7.3",
     "prompts": "^2.4.2",
     "stdout-stream": "^1.4.1",

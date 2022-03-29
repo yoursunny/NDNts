@@ -111,7 +111,7 @@ async function testConnection(
   try {
     const endpoint = new Endpoint({ fw: tapFace.fw, signal: abort.signal });
     // https://github.com/dustinspecker/obj-props/issues/4
-    // eslint-disable-next-line no-use-extend-native/no-use-extend-native
+
     await Promise.any(tc.map((pkt) => {
       if (typeof pkt === "string" && pkt.endsWith("/*")) {
         pkt = new Name(pkt.slice(0, -2)).append(Math.trunc(Math.random() * 1e8).toString().padStart(8, "0"));
