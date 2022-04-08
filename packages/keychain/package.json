@@ -33,7 +33,7 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "@yoursunny/asn1": "^0.0.20200718",
-    "graceful-fs": "^4.2.9",
+    "graceful-fs": "^4.2.10",
     "idb-keyval": "^6.1.0",
     "mnemonist": "^0.39.0",
     "throat": "^6.0.1",

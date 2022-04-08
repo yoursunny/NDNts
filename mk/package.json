@@ -5,7 +5,7 @@
     "@k-foss/ts-esnode": "^2.0.2",
     "@nodelib/fs.walk": "^1.2.8",
     "builtins": "^4.1.0",
-    "graceful-fs": "^4.2.9",
+    "graceful-fs": "^4.2.10",
     "js-yaml": "^4.1.0",
     "readlink": "^3.0.0",
     "split2": "^4.1.0"

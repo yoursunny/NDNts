@@ -1,25 +1,26 @@
 #!/bin/bash
-set -eo pipefail
+set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"/..
-ACT=$1
+ACT=${1:-}
 shift || true
 
 if [[ $ACT == lint ]]; then
   XOFLAG=--fix
-  if [[ $CI == true ]]; then
+  if [[ ${CI:-false} == true ]]; then
     XOFLAG=
   fi
 
-  if [[ $1 == diff ]]; then
+  LINTDIFF=
+  if [[ ${1:-} == diff ]]; then
     LINTDIFF=HEAD
     shift
-    if [[ -n $1 ]]; then
+    if [[ -n ${1:-} ]]; then
       LINTDIFF=$1
       shift
     fi
   fi
 
-  if [[ -n $1 ]]; then
+  if [[ -n ${1:-} ]]; then
     if [[ $1 == all ]]; then
       shift
     fi
@@ -61,11 +62,9 @@ if [[ $ACT == clean ]]; then
 fi
 
 TSCFLAG=
-if [[ $ACT == watch ]]; then
-  TSCFLAG=-w
-elif [[ $ACT == force ]]; then
-  TSCFLAG=-f
-fi
-
+case $ACT in
+  watch) TSCFLAG=-w;;
+  force) TSCFLAG=-f;;
+esac
 tsc -b mk/tsconfig-solution.json $TSCFLAG --listEmittedFiles \
   | node mk/build-post.js

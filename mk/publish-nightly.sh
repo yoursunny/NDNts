@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eo pipefail
+set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"/..
 ROOTDIR=$(pwd)
 BASEURI=${NDNTS_PUBLISH_URI:-https://ndnts-nightly.ndn.today}
@@ -21,7 +21,7 @@ pushd mk/nightly-output/ >/dev/null
   echo '<pre>'
   ls *.tgz | gawk '{ printf "'$BASEURI'/%s\n", $1 }'
   echo '</pre>'
-  if [[ -n $GTAGID ]]; then
+  if [[ -n ${GTAGID:-} ]]; then
     echo '<script async src="https://www.googletagmanager.com/gtag/js?id='$GTAGID'"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","'$GTAGID'");</script>'
   fi
 ) >index.html
