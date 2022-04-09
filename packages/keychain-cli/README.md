@@ -5,9 +5,9 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 **ndnts-keychain** is a command line utility to access an NDNts persistent KeyChain.
 
 `NDNTS_KEYCHAIN` environment variable specifies location of the KeyChain.
-If missing, the command will operate on a temporary in-memory KeyChain, which is not particularly useful.
+If missing, the command will operate on an in-memory ephemeral KeyChain, which is not particularly useful.
 
-NDNts does not provide a "default" KeyChain, because it is unsafe to access the same KeyChain from multiple processes simultaneously.
+NDNts does not provide a "default" KeyChain, because it is unsafe to access the same KeyChain from multiple processes concurrently.
 
 ## `ndnts-keychain list-keys`: List Keys
 
@@ -165,12 +165,14 @@ See `@ndn/ndnsec` package for more information.
 * `--ndnsec` uses ndn-cxx keychain instead of NDNts keychain.
 * `--key` specifies the key name to obtain certificate for.
   The key pair must exist in the keychain given in `NDNTS_KEYCHAIN` environment variable, or ndn-cxx keychain if `--ndnsec` is specified.
+  This also accepts a certificate name, whose key will be used.
 * `--challenge nop` enables "nop" challenge.
 * `--challenge pin` enables "pin" challenge.
 * `--challenge email` enables "email" challenge.
 * `--email` specifies email address to use in the email challenge.
 * `--challenge possession` enables "possession" challenge.
 * `--possession-cert` specifies existing certificate name to fulfill possession challenge.
+  If `--key` is a certificate name, this may be omitted if using the same certificate.
   The specified certificate and its corresponding private key must exist in the keychain.
 * You may specify multiple challenges, and the first one allowed by the server will be used.
 

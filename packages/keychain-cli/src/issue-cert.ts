@@ -1,4 +1,4 @@
-import { Certificate, createVerifier, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, createVerifier, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
 import { Component, Name } from "@ndn/packet";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
@@ -23,7 +23,7 @@ export class IssueCertCommand implements CommandModule<{}, Args> {
         type: "string",
       })
       .option("issuer-id", {
-        default: "",
+        default: CertNaming.ISSUER_DEFAULT.toString(),
         desc: "issuer id",
         type: "string",
       })

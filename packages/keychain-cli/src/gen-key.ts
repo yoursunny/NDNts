@@ -5,8 +5,8 @@ import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { keyChain } from "./util";
 
-type TypeChoice = "ec" | "rsa" | "hmac";
-const typeChoices: readonly TypeChoice[] = ["ec", "rsa", "hmac"];
+const typeChoices = { ec: true, rsa: true, hmac: true };
+type TypeChoice = keyof typeof typeChoices;
 
 interface Args extends GenKeyCommand.KeyParamArgs {
   name: string;
@@ -52,7 +52,7 @@ export namespace GenKeyCommand {
   export function declareKeyParamArgs<T>(argv: Argv<T>): Argv<T & KeyParamArgs> {
     return argv
       .option("type", {
-        choices: typeChoices,
+        choices: Object.keys(typeChoices),
         default: "ec" as TypeChoice,
         desc: "key type",
       })

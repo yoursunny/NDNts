@@ -43,7 +43,8 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
         type: "string",
       })
       .option("possession-issuer", {
-        desc: "possession challenge - filename of existing certificate issuer",
+        desc: "possession challenge - existing issuer certificate file",
+        defaultDescription: "CA certificate",
         type: "string",
       });
   }
