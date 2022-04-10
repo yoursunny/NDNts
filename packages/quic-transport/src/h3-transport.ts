@@ -21,13 +21,13 @@ interface WebTransportDatagramDuplexStream {
 /** HTTP/3 transport. */
 export class H3Transport extends Transport {
   /** Whether current browser supports WebTransport. */
-  public static supported = !!(globalThis as any).WebTransport;
+  public static readonly supported = !!(globalThis as any).WebTransport;
 
   public override readonly rx: Transport.Rx;
 
   constructor(private readonly uri: string, private readonly tr: WebTransport) {
     super({
-      describe: `QUIC(${uri})`,
+      describe: `H3(${uri})`,
     });
     this.rx = rxFromPacketIterable((async function*() {
       const reader = tr.datagrams.readable.getReader();
@@ -39,6 +39,10 @@ export class H3Transport extends Transport {
         yield result.value;
       }
     })());
+  }
+
+  public override get mtu() {
+    return this.tr.datagrams.maxDatagramSize;
   }
 
   public override readonly tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {

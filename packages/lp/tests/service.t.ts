@@ -51,7 +51,7 @@ test("rx", async () => {
   const output = await pipeline(
     function*() { yield* input; },
     map((buf: Uint8Array) => new Decoder(buf).read()),
-    new LpService().rx,
+    new LpService({}, { mtu: Infinity }).rx,
     collect,
   );
 
@@ -100,7 +100,7 @@ test("tx", async () => {
 
   const output = await pipeline(
     input,
-    new LpService({ keepAlive: 130 }).tx,
+    new LpService({ keepAlive: 130 }, { mtu: Infinity }).tx,
     collect,
   );
 
@@ -154,11 +154,11 @@ test("fragmentation", async () => {
   const fragments: Uint8Array[] = [];
   const output = await pipeline(
     input,
-    new LpService({ mtu: 1200 }).tx,
+    new LpService({ mtu: 1200 }, { mtu: Infinity }).tx,
     filter((item): item is Uint8Array => item instanceof Uint8Array),
     tap((fragment) => fragments.push(fragment)),
     map((buf: Uint8Array) => new Decoder(buf).read()),
-    new LpService({ reassemblerCapacity: 2 }).rx,
+    new LpService({ reassemblerCapacity: 2 }, { mtu: Infinity }).rx,
     filter((item: any): item is LpService.Packet => !!item.l3),
     collect,
   );

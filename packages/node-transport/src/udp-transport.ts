@@ -48,6 +48,8 @@ export class UdpTransport extends Transport {
     );
   }
 
+  public override get mtu() { return udp.DEFAULT_MTU; }
+
   public close() {
     try {
       this.rxSock.close();

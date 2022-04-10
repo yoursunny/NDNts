@@ -11,4 +11,6 @@ export class StreamTransport extends Transport {
     this.rx = rxFromStream(conn);
     this.tx = txToStream(conn);
   }
+
+  public override get mtu() { return Infinity; }
 }

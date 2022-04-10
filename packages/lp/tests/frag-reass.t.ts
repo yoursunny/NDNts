@@ -8,8 +8,8 @@ test("fragment single", () => {
   const lpp = new LpPacket();
   lpp.payload = new Uint8Array(256);
 
-  const f = new Fragmenter(1200);
-  const frags = f.fragment(lpp);
+  const f = new Fragmenter();
+  const frags = f.fragment(lpp, 1200);
   expect(frags).toHaveLength(1);
   expect(frags[0]!.payload).toEqualUint8Array(lpp.payload);
 });
@@ -19,12 +19,13 @@ test("fragment multi", () => {
   lpp.pitToken = Uint8Array.of(0xA0, 0xA1, 0xA2, 0xA3);
   lpp.payload = new Uint8Array(2000);
 
-  const f = new Fragmenter(1200);
-  const frags = f.fragment(lpp);
+  const MTU = 1200;
+  const f = new Fragmenter();
+  const frags = f.fragment(lpp, MTU);
   expect(frags).toHaveLength(2);
-  expect(Encoder.encode(frags[0]).length).toBeLessThanOrEqual(f.mtu);
+  expect(Encoder.encode(frags[0]).length).toBeLessThanOrEqual(MTU);
   expect(frags[0]!.pitToken).toEqualUint8Array(lpp.pitToken);
-  expect(Encoder.encode(frags[1]).length).toBeLessThanOrEqual(f.mtu);
+  expect(Encoder.encode(frags[1]).length).toBeLessThanOrEqual(MTU);
   expect(frags[1]!.pitToken).toBeUndefined();
   expect(frags[0]!.payload!.length + frags[1]!.payload!.length).toEqual(lpp.payload.length);
 });
@@ -33,8 +34,8 @@ test("fragment small MTU", () => {
   const lpp = new LpPacket();
   lpp.pitToken = Uint8Array.of(0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5);
 
-  const f = new Fragmenter(8);
-  const frags = f.fragment(lpp);
+  const f = new Fragmenter();
+  const frags = f.fragment(lpp, 8);
   expect(frags).toHaveLength(0);
 });
 

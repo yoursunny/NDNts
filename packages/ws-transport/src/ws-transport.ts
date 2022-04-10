@@ -28,6 +28,8 @@ export class WsTransport extends Transport {
     this.sock.close();
   }
 
+  public override get mtu() { return Infinity; }
+
   public override readonly tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
     try {
       for await (const pkt of iterable) {

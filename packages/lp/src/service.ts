@@ -10,7 +10,7 @@ import { Reassembler } from "./reassembler";
 
 /**
  * Map and flatten, but only do it once.
- * This differs from flatMap from streaming-iterables that recursively flattens the result.
+ * This differs from flatMap in streaming-iterables, which recursively flattens the result.
  */
 async function* flatOnceMap<T, R>(
     f: (item: T) => Iterable<R> | AsyncIterable<R>,
@@ -29,20 +29,17 @@ export class LpService {
     keepAlive = 60000,
     mtu = Infinity,
     reassemblerCapacity = 16,
-  }: LpService.Options = {}) {
+  }: LpService.Options, private readonly transport: LpService.Transport) {
     if (Number.isFinite(keepAlive) && keepAlive > 0) {
       this.keepAlive = Math.ceil(keepAlive as number);
     }
-    if (Number.isFinite(mtu)) {
-      this.mtu = mtu;
-      this.fragmenter = new Fragmenter(mtu);
-    }
+    this.mtu = mtu;
     this.reassembler = new Reassembler(reassemblerCapacity);
   }
 
   private readonly keepAlive?: number;
-  private readonly mtu = Infinity;
-  private readonly fragmenter?: Fragmenter;
+  private readonly mtu: number;
+  private readonly fragmenter = new Fragmenter();
   private readonly reassembler: Reassembler;
 
   public rx = (iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<LpService.Packet | LpService.RxError> => flatOnceMap((tlv) => this.decode(tlv), iterable);
@@ -100,13 +97,14 @@ export class LpService {
       return;
     }
 
+    const mtu = Math.min(this.mtu, this.transport.mtu);
     const { l3, token } = pkt;
     const lpp = new LpPacket();
     lpp.pitToken = token;
     try {
       if (l3 instanceof Interest || l3 instanceof Data) {
         const payload = Encoder.encode(l3);
-        if (!token && payload.length <= this.mtu) {
+        if (!token && payload.length <= mtu) {
           return yield payload;
         }
         lpp.payload = payload;
@@ -119,8 +117,8 @@ export class LpService {
       return yield new LpService.TxError(err as Error, l3);
     }
 
-    if (this.fragmenter) {
-      yield* this.fragmenter.fragment(lpp).map((fragment) => Encoder.encode(fragment, this.mtu));
+    if (Number.isFinite(mtu)) {
+      yield* this.fragmenter.fragment(lpp, mtu).map((fragment) => Encoder.encode(fragment, mtu));
     } else {
       yield Encoder.encode(lpp);
     }
@@ -128,6 +126,14 @@ export class LpService {
 }
 
 export namespace LpService {
+  /** An object to report transport MTU. */
+  export interface Transport {
+    /**
+     * Return current transport MTU.
+     */
+    readonly mtu: number;
+  }
+
   export interface Options {
     /**
      * How often to send IDLE packets if nothing else was sent, in milliseconds.
@@ -137,8 +143,8 @@ export namespace LpService {
     keepAlive?: false | number;
 
     /**
-     * MTU for fragmentation.
-     * Set Infinity to disable fragmentation.
+     * Administrative MTU.
+     * The lesser of this MTU and the transport's reported MTU is used for fragmentation.
      * @default Infinity
      */
     mtu?: number;

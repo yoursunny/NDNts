@@ -1,5 +1,7 @@
 import type { Decoder } from "@ndn/tlv";
 
+const DEFAULT_MTU = 1200;
+
 /**
  * Low-level transport.
  *
@@ -10,6 +12,12 @@ export abstract class Transport {
   public abstract readonly tx: Transport.Tx;
 
   protected constructor(public readonly attributes: Transport.Attributes) {}
+
+  /**
+   * Return the transport MTU, if known.
+   * The transport should be able to send TLV structure of up to this size.
+   */
+  public get mtu() { return DEFAULT_MTU; }
 
   /**
    * Reopen the transport after it has failed.

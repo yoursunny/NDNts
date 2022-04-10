@@ -22,21 +22,17 @@ const OVERHEAD = 0 +
 
 /** NDNLPv2 fragmenter. */
 export class Fragmenter {
-  constructor(public readonly mtu: number) {
-    this.fragmentRoom = mtu - OVERHEAD;
-  }
-
   private readonly seqNumGen = new SeqNumGen();
-  private readonly fragmentRoom: number;
 
   /**
    * Fragment a packet.
-   * @returns a sequence of fragment, or empty array if fragmentation fails.
+   * @returns a sequence of fragments, or empty array if fragmentation fails.
    */
-  public fragment(full: LpPacket): LpPacket[] {
+  public fragment(full: LpPacket, mtu: number): LpPacket[] {
+    const fragmentRoom = mtu - OVERHEAD;
     const sizeofL3Headers = Encoder.encode(full.encodeL3Headers()).length;
     const sizeofPayload = full.payload?.byteLength ?? 0;
-    const sizeofFirstFragment = Math.min(sizeofPayload, this.fragmentRoom - sizeofL3Headers);
+    const sizeofFirstFragment = Math.min(sizeofPayload, fragmentRoom - sizeofL3Headers);
 
     if (sizeofFirstFragment === sizeofPayload) { // no fragmentation necessary
       return [full];
@@ -53,11 +49,11 @@ export class Fragmenter {
     first.payload = full.payload!.subarray(0, sizeofFirstFragment);
     fragments.push(first);
 
-    for (let offset = sizeofFirstFragment; offset < sizeofPayload; offset += this.fragmentRoom) {
+    for (let offset = sizeofFirstFragment; offset < sizeofPayload; offset += fragmentRoom) {
       const fragment = new LpPacket();
       fragment.fragSeqNum = this.seqNumGen.next();
       fragment.fragIndex = fragments.length;
-      fragment.payload = full.payload!.subarray(offset, offset + this.fragmentRoom);
+      fragment.payload = full.payload!.subarray(offset, offset + fragmentRoom);
       fragments.push(fragment);
     }
 

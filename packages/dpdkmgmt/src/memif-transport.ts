@@ -16,19 +16,22 @@ export class MemifTransport extends Transport {
    * You may read counters and monitor "memif:up" "memif:down" events, but not send/receive packets.
    */
   public readonly memif: Memif;
+  private readonly mtu_: number;
 
   constructor(opts: MemifTransport.Options, memif: Memif) {
     super({
       describe: `Memif(${opts.socketName}:${opts.id ?? 0})`,
       local: true,
       multicast: false,
-      mtu: Math.min(memif.dataroom, opts.dataroom ?? Infinity),
     });
 
     this.memif = memif;
+    this.mtu_ = Math.min(memif.dataroom, opts.dataroom ?? Infinity);
     this.rx = rxFromPacketIterable(this.memif);
     this.tx = txToStream(this.memif);
   }
+
+  public override get mtu() { return this.mtu_; }
 }
 
 export namespace MemifTransport {

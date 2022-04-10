@@ -76,7 +76,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
       ...transport.attributes,
       ...attributes,
     };
-    this.lp = new LpService(lpOptions);
+    this.lp = new LpService(lpOptions, transport);
     this.rx = this.makeRx();
   }
 

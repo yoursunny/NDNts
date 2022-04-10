@@ -2,6 +2,7 @@ import * as dgram from "node:dgram";
 import * as os from "node:os";
 import pEvent from "p-event";
 
+export const DEFAULT_MTU = 65000;
 const DEFAULT_UNICAST_PORT = 6363;
 const DEFAULT_MULTICAST_GROUP = "224.0.23.170";
 const DEFAULT_MULTICAST_PORT = 56363;
