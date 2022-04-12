@@ -1,6 +1,5 @@
 import { type Producer, type ProducerHandler, Endpoint } from "@ndn/endpoint";
 import { type NameLike, type Signer, type Verifier, Interest, Name, nullSigner } from "@ndn/packet";
-import { toHex } from "@ndn/util";
 import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
@@ -98,9 +97,8 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
     return this.makeNode(id);
   }
 
-  private makeNode(...args: ConstructorParameters<typeof SvSync.ID>): SyncNode<SvSync.ID> {
-    const id = new SvSync.ID(...args);
-    return new SvSyncNode(id, this.own, this.handlePublish);
+  private makeNode(id: SvSync.IDLike): SyncNode<SvSync.ID> {
+    return new SvSyncNode(new SvSync.ID(id), this.own, this.handlePublish);
   }
 
   private readonly handlePublish = () => {
@@ -121,8 +119,8 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
     }, recv);
     this.own.mergeFrom(recv);
 
-    for (const { id, hex, loSeqNum, hiSeqNum } of ourOlder) {
-      this.emit("update", new SyncUpdate(this.makeNode(id, hex), loSeqNum, hiSeqNum));
+    for (const { id, loSeqNum, hiSeqNum } of ourOlder) {
+      this.emit("update", new SyncUpdate(this.makeNode(id), loSeqNum, hiSeqNum));
     }
 
     if (this.aggregated) { // in suppression state
@@ -238,18 +236,11 @@ export namespace SvSync {
   export type IDLike = ID | NameLike;
 
   export class ID {
-    constructor(input: IDLike, hex?: string) {
-      if (input instanceof ID) {
-        this.name = input.name;
-        this.hex = input.hex;
-      } else {
-        this.name = new Name(input);
-        this.hex = hex ?? toHex(this.name.value);
-      }
+    constructor(input: IDLike) {
+      this.name = input instanceof ID ? input.name : Name.from(input);
     }
 
     public readonly name: Name;
-    public readonly hex: string;
 
     public get text(): string {
       return this.name.toString();
@@ -267,7 +258,7 @@ class SvSyncNode implements SvSync.Node {
   ) {}
 
   public get seqNum(): number {
-    return this.own.get(this.id.hex);
+    return this.own.get(this.id.name);
   }
 
   public set seqNum(n: number) {
@@ -275,7 +266,7 @@ class SvSyncNode implements SvSync.Node {
       return;
     }
 
-    this.own.set(this.id.hex, this.id.name, n);
+    this.own.set(this.id.name, n);
     this.handlePublish();
   }
 

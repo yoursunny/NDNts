@@ -1,4 +1,5 @@
 import { Decoder, Encoder } from "@ndn/tlv";
+import { toHex } from "@ndn/util";
 
 import { TT } from "../an";
 import { type ComponentLike, Component } from "./component";
@@ -17,8 +18,6 @@ export class Name {
     return new Name(value);
   }
 
-  /** TLV-VALUE of the Name. */
-  public readonly value: Uint8Array;
   /** List of name components. */
   public readonly comps: readonly Component[];
 
@@ -38,44 +37,62 @@ export class Name {
       arg1?: NameLike | Uint8Array | readonly ComponentLike[],
       parseComponent = Component.from as any,
   ) {
-    let valueEncoderBufSize = 256;
     switch (true) {
       case arg1 instanceof Name: {
         const other = arg1 as Name;
-        this.value = other.value;
         this.comps = other.comps;
-        return;
+        this.value_ = other.value_;
+        break;
       }
       case typeof arg1 === "string": {
         const uri = arg1 as string;
-        this.comps = uri.replace(/^(?:ndn:)?\/?/, "").split("/")
+        this.comps = uri.replace(/^(?:ndn:)?\/*/, "").split("/")
           .filter((comp) => comp !== "").map(parseComponent);
-        valueEncoderBufSize = uri.length + 4 * this.comps.length;
+        this.valueEncoderBufSize = uri.length + 4 * this.comps.length;
         break;
       }
       case Array.isArray(arg1):
         this.comps = Array.from(arg1 as readonly ComponentLike[], Component.from);
         break;
       case arg1 instanceof Uint8Array: {
-        this.value = arg1 as Uint8Array;
+        this.value_ = arg1 as Uint8Array;
         const comps = [] as Component[];
-        const decoder = new Decoder(this.value);
+        const decoder = new Decoder(this.value_);
         while (!decoder.eof) {
           comps.push(decoder.decode(Component));
         }
         this.comps = comps;
-        return;
+        break;
       }
       default: // undefined
-        this.value = new Uint8Array();
         this.comps = [];
-        return;
+        this.valueEncoderBufSize = 0;
+        break;
     }
-    this.value = Encoder.encode(this.comps, valueEncoderBufSize);
   }
 
+  private readonly valueEncoderBufSize?: number;
+  private value_?: Uint8Array;
+  private uri_?: string;
+  private hex_?: string;
+
+  /** Number of name components. */
   public get length(): number {
     return this.comps.length;
+  }
+
+  /** Name TLV-VALUE. */
+  public get value(): Uint8Array {
+    if (!this.value_) {
+      this.value_ = Encoder.encode(this.comps, this.valueEncoderBufSize ?? 256);
+    }
+    return this.value_;
+  }
+
+  /** Name TLV-VALUE hexadecimal representation, good for map keys. */
+  public get valueHex(): string {
+    this.hex_ ??= toHex(this.value);
+    return this.hex_;
   }
 
   /** Retrieve i-th component. */
@@ -98,7 +115,8 @@ export class Name {
 
   /** Get URI string. */
   public toString(): string {
-    return `/${this.comps.map((comp) => comp.toString()).join("/")}`;
+    this.uri_ ??= `/${this.comps.map((comp) => comp.toString()).join("/")}`;
+    return this.uri_;
   }
 
   /** Get sub name [begin, end). */
@@ -118,8 +136,8 @@ export class Name {
   public append(...suffix: readonly ComponentLike[]): Name;
 
   public append(...args: unknown[]) {
-    if (args.length === 2 && typeof args[0] === "object" &&
-        typeof (args[0] as any).create === "function") {
+    if (args.length === 2 &&
+        typeof (args[0] as NamingConvention<any>).create === "function") {
       return this.append((args[0] as NamingConvention<any>).create(args[1]));
     }
     const suffix = args as readonly ComponentLike[];
@@ -135,7 +153,7 @@ export class Name {
 
   /** Compare with other name. */
   public compare(other: NameLike): Name.CompareResult {
-    const rhs = new Name(other);
+    const rhs = Name.from(other);
     const commonSize = Math.min(this.length, rhs.length);
     for (let i = 0; i < commonSize; ++i) {
       const cmp = this.comps[i]!.compare(rhs.comps[i]!);
@@ -171,6 +189,10 @@ export class Name {
 export namespace Name {
   export function isNameLike(obj: any): obj is NameLike {
     return obj instanceof Name || typeof obj === "string";
+  }
+
+  export function from(input: NameLike): Name {
+    return input instanceof Name ? input : new Name(input);
   }
 
   /** Name compare result. */

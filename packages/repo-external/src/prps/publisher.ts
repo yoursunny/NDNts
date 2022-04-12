@@ -1,8 +1,8 @@
 import { Endpoint, Producer, ProducerHandler, RetxPolicy } from "@ndn/endpoint";
 import { SequenceNum } from "@ndn/naming-convention2";
-import { type Signer, Component, Data, digestSigning, Interest, Name } from "@ndn/packet";
+import { type Signer, Component, Data, digestSigning, Interest, Name, NameMap } from "@ndn/packet";
 import { type Encodable, Encoder } from "@ndn/tlv";
-import { asDataView, toHex } from "@ndn/util";
+import { asDataView } from "@ndn/util";
 
 import { MsgSuffix, NotifyParams, NotifySuffix } from "./packet";
 
@@ -38,7 +38,7 @@ export class PrpsPublisher {
   private readonly notifyRetx: RetxPolicy;
   private readonly messagePrefix: Name;
   private readonly messageProducer: Producer;
-  private readonly pendings = new Map<string, Pending>();
+  private readonly pendings = new NameMap<Pending>();
 
   public close(): void {
     this.messageProducer.close();
@@ -47,11 +47,10 @@ export class PrpsPublisher {
   public async publish(topic: Name, item: Item): Promise<void> {
     const notifyNonce = new Uint8Array(4);
     const notifyNonceDataView = asDataView(notifyNonce);
-    let key: string;
+    let key: Name;
     do {
       notifyNonceDataView.setUint32(0, Math.random() * 0xFFFFFFFF);
-      const messageName = this.messagePrefix.append(...topic.comps, new Component(undefined, notifyNonce));
-      key = toHex(messageName.value);
+      key = this.messagePrefix.append(...topic.comps, new Component(undefined, notifyNonce));
     } while (this.pendings.has(key));
 
     this.pendings.set(key, {
@@ -76,8 +75,7 @@ export class PrpsPublisher {
   }
 
   private handleMessageInterest: ProducerHandler = async (interest) => {
-    const key = toHex(interest.name.value);
-    const pending = this.pendings.get(key);
+    const pending = this.pendings.get(interest.name);
     if (!pending) {
       return undefined;
     }

@@ -4,8 +4,9 @@ import { type Name, type Signer, type Verifier, Data, digestSigning, Interest, l
 import { toHex } from "@ndn/util";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import { EventEmitter } from "node:events";
+import filter from "obliterator/filter.js";
+import take from "obliterator/take.js";
 import pDefer, { type DeferredPromise } from "p-defer";
-import { take } from "streaming-iterables";
 import type TypedEmitter from "typed-emitter";
 
 import { SubscriptionTable } from "../detail/subscription-table";
@@ -138,7 +139,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
   private readonly pubs = new Map<number, PublicationEntry>();
   private readonly maxPubLifetime: number;
   private readonly maxClockSkew: number;
-  private readonly subs = new SubscriptionTable<Name, Data>((topic) => toHex(topic.value));
+  private readonly subs = new SubscriptionTable<Data>();
 
   private readonly dModify: SyncpsPubsub.ModifyPublicationCallback;
   private readonly dIsExpired: SyncpsPubsub.IsExpiredCallback;
@@ -230,7 +231,8 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
    * @param topic a name prefix.
    */
   public subscribe(topic: Name): Subscription<Name, Data> {
-    return this.subs.add(topic, undefined);
+    const { sub } = this.subs.subscribe(topic);
+    return sub;
   }
 
   private handleSyncInterest = async (interest: Interest): Promise<Data | undefined> => {
@@ -376,7 +378,9 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
         }
 
         this.addToActive(key, pub, false);
-        const [sub] = Array.from(take(1, lpm(pub.name, (prefixHex) => this.subs.get(prefixHex))));
+        const [sub] = take(filter(
+          lpm(pub.name, (prefixHex) => this.subs.list(prefixHex)),
+          (s) => s.size > 0), 1);
         if (sub) {
           this.debug("c-deliver", key, pub);
           this.subs.update(sub, pub);

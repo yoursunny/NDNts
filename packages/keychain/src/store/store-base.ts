@@ -48,7 +48,7 @@ export class MemoryStoreProvider<T> implements StoreProvider<T> {
 
 /** KV store where each key is a Name. */
 export abstract class StoreBase<T> {
-  private throttle = throat(1);
+  private readonly mutex = throat(1);
 
   constructor(private readonly provider: StoreProvider<T>) {}
 
@@ -56,21 +56,21 @@ export abstract class StoreBase<T> {
 
   /** List item names. */
   public async list(): Promise<Name[]> {
-    const keys = await this.throttle(() => this.provider.list());
+    const keys = await this.mutex(() => this.provider.list());
     return keys.map((k) => new Name(fromHex(k)));
   }
 
   /** Erase item by name. */
   public erase(name: Name): Promise<void> {
-    return this.throttle(() => this.provider.erase(toHex(name.value)));
+    return this.mutex(() => this.provider.erase(name.valueHex));
   }
 
   protected getValue(name: Name): Promise<T> {
-    return this.throttle(() => this.provider.get(toHex(name.value)));
+    return this.mutex(() => this.provider.get(name.valueHex));
   }
 
   protected insertValue(name: Name, value: T): Promise<void> {
-    return this.throttle(() => this.provider.insert(toHex(name.value), value));
+    return this.mutex(() => this.provider.insert(name.valueHex, value));
   }
 
   protected bufferToStorable(input: Uint8Array | string): Uint8Array | string {
@@ -83,9 +83,6 @@ export abstract class StoreBase<T> {
 
 export namespace StoreBase {
   export function bufferFromStorable(input: Uint8Array | string): Uint8Array {
-    if (input instanceof Uint8Array) {
-      return input;
-    }
-    return fromHex(input);
+    return input instanceof Uint8Array ? input : fromHex(input);
   }
 }

@@ -1,6 +1,6 @@
-import { type Data, type Interest, type Name, ImplicitDigest } from "@ndn/packet";
+import { type Data, type Interest, type Name, ImplicitDigest, NameMap } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
-import { assert, toHex } from "@ndn/util";
+import { assert } from "@ndn/util";
 import type { AbstractLevelDOWN } from "abstract-leveldown";
 import type { NotFoundError } from "level-errors";
 import { EventEmitter } from "node:events";
@@ -133,18 +133,16 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
 
 type InsertOptions = Pick<Record, "expireTime">;
 
-type Diff = [keyof Events, Name];
-
 /** DataStore update transaction. */
 export class Transaction {
   private readonly timestamp = Date.now();
   private readonly chain: DbChain;
-  private readonly diffs?: Map<string, Diff>;
+  private readonly diffs?: NameMap<keyof Events>;
 
   constructor(private readonly db: Db, private readonly store: DataStore) {
     this.chain = this.db.batch();
     if (this.store.listenerCount("insert") + this.store.listenerCount("delete") > 0) {
-      this.diffs = new Map<string, Diff>();
+      this.diffs = new NameMap<keyof Events>();
     }
   }
 
@@ -157,14 +155,14 @@ export class Transaction {
       data,
       name,
     });
-    this.diffs?.set(toHex(name.value), ["insert", name]);
+    this.diffs?.set(name, "insert");
     return this;
   }
 
   /** Delete a Data packet. */
   public delete(name: Name): this {
     this.chain.del(name);
-    this.diffs?.set(toHex(name.value), ["delete", name]);
+    this.diffs?.set(name, "delete");
     return this;
   }
 
@@ -178,13 +176,13 @@ export class Transaction {
   }
 
   private async commitWithDiff() {
-    const requests = Array.from(this.diffs!.values());
-    const oldRecords = await this.db.getMany(requests.map(([, name]) => name));
+    const requests = Array.from(this.diffs!);
+    const oldRecords = await this.db.getMany(requests.map(([name]) => name));
     assert.equal(requests.length, oldRecords.length);
 
     await this.chain.write();
 
-    for (const [i, [act, name]] of requests.entries()) {
+    for (const [i, [name, act]] of requests.entries()) {
       if (act === (oldRecords[i] === undefined ? "insert" : "delete")) {
         this.store.emit(act, name);
       }

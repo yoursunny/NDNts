@@ -1,11 +1,11 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Name, NameLike } from "@ndn/packet";
+import { type NameLike, Name } from "@ndn/packet";
 
 import { pattern as P } from "../..";
 
 function match(p: P.Pattern, name: NameLike): P.Vars[] {
-  return Array.from(p.match(new Name(name)));
+  return Array.from(p.match(Name.from(name)));
 }
 
 function build(p: P.Pattern, vars: P.VarsLike): Name[] {

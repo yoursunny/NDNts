@@ -1,7 +1,5 @@
-import { Name } from "@ndn/packet";
-import { fromHex } from "@ndn/util";
+import { Name, NameMap, NameMultiMap } from "@ndn/packet";
 import pushable from "it-pushable";
-import MultiMap from "mnemonist/multi-map.js";
 import * as retry from "retry";
 
 import type { FaceImpl } from "./face";
@@ -17,31 +15,28 @@ import type { Forwarder, ForwarderImpl } from "./forwarder";
 export class Readvertise {
   constructor(public readonly fw: ForwarderImpl) {}
 
-  public readonly announcements = new MultiMap<string, FaceImpl>(Set);
+  public readonly announcements = new NameMultiMap<FaceImpl>();
   public readonly destinations = new Set<ReadvertiseDestination>();
 
-  public addAnnouncement(face: FaceImpl, name: Name, nameHex: string) {
-    this.announcements.set(nameHex, face);
-    if (this.announcements.multiplicity(nameHex) > 1) {
+  public addAnnouncement(face: FaceImpl, name: Name) {
+    if (this.announcements.add(name, face) > 1) {
       return;
     }
 
     this.fw.emit("annadd", name);
     for (const dest of this.destinations) {
-      dest.advertise(name, nameHex);
+      dest.advertise(name);
     }
   }
 
-  public removeAnnouncement(face: FaceImpl, name: Name | undefined, nameHex: string) {
-    this.announcements.remove(nameHex, face);
-    if (this.announcements.multiplicity(nameHex) > 0) {
+  public removeAnnouncement(face: FaceImpl, name: Name) {
+    if (this.announcements.remove(name, face) > 0) {
       return;
     }
 
-    name ??= new Name(fromHex(nameHex));
     this.fw.emit("annrm", name);
     for (const dest of this.destinations) {
-      dest.withdraw(name, nameHex);
+      dest.withdraw(name);
     }
   }
 
@@ -64,8 +59,8 @@ export class Readvertise {
  */
 export abstract class ReadvertiseDestination<State extends {} = {}> {
   private readvertise?: Readvertise;
-  protected readonly table = new Map<string, ReadvertiseDestination.Record<State>>();
-  protected readonly queue = pushable<string>();
+  protected readonly table = new NameMap<ReadvertiseDestination.Record<State>>();
+  protected readonly queue = pushable<Name>();
   protected closed = false;
 
   constructor(private readonly retryOptions: ReadvertiseDestination.RetryOptions = {
@@ -79,8 +74,8 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
   public enable(fw: Forwarder): void {
     this.readvertise = (fw as ForwarderImpl).readvertise;
     this.readvertise.destinations.add(this);
-    for (const nameHex of this.readvertise.announcements.keys()) {
-      this.queue.push(nameHex);
+    for (const [name] of this.readvertise.announcements.associations()) {
+      this.queue.push(name);
     }
     void this.process();
   }
@@ -93,8 +88,8 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
   public disable(): void {
     this.readvertise?.destinations.delete(this);
     this.readvertise = undefined;
-    for (const [nameHex, record] of this.table) {
-      this.queue.push(nameHex);
+    for (const [name, record] of this.table) {
+      this.queue.push(name);
       record.status = ReadvertiseDestination.Status.WITHDRAWING;
     }
     this.queue.end();
@@ -102,52 +97,50 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
   }
 
   /** Set a prefix to be advertised. */
-  public advertise(name: Name, nameHex: string): void {
-    let record = this.table.get(nameHex);
+  public advertise(name: Name): void {
+    let record = this.table.get(name);
     if (!record) {
       record = {
-        name,
         status: ReadvertiseDestination.Status.ADVERTISING,
-        state: this.makeState(name, nameHex),
+        state: this.makeState(name),
       };
-      this.table.set(nameHex, record);
+      this.table.set(name, record);
     }
     record.status = ReadvertiseDestination.Status.ADVERTISING;
-    this.restart(nameHex, record);
+    this.restart(name, record);
   }
 
   /** Set a prefix to be withdrawn. */
-  public withdraw(name: Name, nameHex: string): void {
-    void name;
-    const record = this.table.get(nameHex);
+  public withdraw(name: Name): void {
+    const record = this.table.get(name);
     if (!record) {
       return;
     }
     record.status = ReadvertiseDestination.Status.WITHDRAWING;
-    this.restart(nameHex, record);
+    this.restart(name, record);
   }
 
-  protected restart(nameHex: string, record: ReadvertiseDestination.Record<State>) {
+  protected restart(name: Name, record: ReadvertiseDestination.Record<State>) {
     record.retry?.stop();
     record.retry = retry.operation(this.retryOptions);
     record.retry.attempt(() => {
       if (this.closed) {
         record.retry!.stop();
       } else {
-        this.queue.push(nameHex);
+        this.queue.push(name);
       }
     });
   }
 
   private async process() {
-    for await (const nameHex of this.queue) {
-      const record = this.table.get(nameHex);
+    for await (const name of this.queue) {
+      const record = this.table.get(name);
       if (!record) { continue; }
-      const { name, status, retry, state } = record;
+      const { status, retry, state } = record;
       switch (status) {
         case ReadvertiseDestination.Status.ADVERTISING:
           try {
-            await this.doAdvertise(name, state, nameHex);
+            await this.doAdvertise(name, state);
             if (record.status === ReadvertiseDestination.Status.ADVERTISING) {
               record.status = ReadvertiseDestination.Status.ADVERTISED;
               retry!.stop();
@@ -158,11 +151,11 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
           break;
         case ReadvertiseDestination.Status.WITHDRAWING:
           try {
-            await this.doWithdraw(record.name, state, nameHex);
+            await this.doWithdraw(name, state);
             if (record.status === ReadvertiseDestination.Status.WITHDRAWING) {
               record.status = ReadvertiseDestination.Status.WITHDRAWN;
               retry!.stop();
-              this.table.delete(nameHex);
+              this.table.delete(name);
             }
           } catch (err: unknown) {
             retry!.retry(err as Error);
@@ -173,17 +166,16 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
   }
 
   /** Create per-prefix state. */
-  protected makeState(name: Name, nameHex: string): State {
+  protected makeState(name: Name): State {
     void name;
-    void nameHex;
     return {} as any;
   }
 
   /** Advertise a prefix once. */
-  protected abstract doAdvertise(name: Name, state: State, nameHex: string): Promise<void>;
+  protected abstract doAdvertise(name: Name, state: State): Promise<void>;
 
   /** Withdraw a prefix once. */
-  protected abstract doWithdraw(name: Name, state: State, nameHex: string): Promise<void>;
+  protected abstract doWithdraw(name: Name, state: State): Promise<void>;
 }
 
 export namespace ReadvertiseDestination {
@@ -197,7 +189,6 @@ export namespace ReadvertiseDestination {
   }
 
   export interface Record<State> {
-    name: Name;
     status: Status;
     retry?: retry.RetryOperation;
     state: State;

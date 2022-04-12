@@ -1,7 +1,6 @@
 import { type ProducerHandler, Endpoint, Producer } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
-import { type Signer, Data, Interest, Name } from "@ndn/packet";
-import { toHex } from "@ndn/util";
+import { type Signer, Data, Interest, Name, NameMap } from "@ndn/packet";
 import { BloomFilter } from "@yoursunny/psync-bloom";
 import { EventEmitter } from "node:events";
 import pDefer, { DeferredPromise } from "p-defer";
@@ -79,7 +78,7 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
   private readonly hProducer: Producer;
   private readonly sFreshness: number;
   private readonly sProducer: Producer;
-  private readonly sPendings = new Map<string, PendingInterest>(); // toHex(name.value) => PI
+  private readonly sPendings = new NameMap<PendingInterest>();
 
   private debug(action: string, interest?: Interest): void {
     if (this.listenerCount("debug") === 0) {
@@ -127,8 +126,7 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
       return undefined;
     }
 
-    const nameHex = toHex(interest.name.value);
-    if (this.sPendings.has(nameHex)) {
+    if (this.sPendings.has(interest.name)) {
       // same as a pending Interest; if it could be answered, it would have been answered
       return undefined;
     }
@@ -158,7 +156,7 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
       recvIblt,
       bloom,
       expire: setTimeout(() => {
-        if (this.sPendings.delete(nameHex)) {
+        if (this.sPendings.delete(interest.name)) {
           this.debug("s-expire", pending.interest);
           pending.defer.resolve(undefined);
         }
@@ -166,7 +164,7 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
       }, interest.lifetime),
       defer: pDefer<Data | undefined>(),
     };
-    this.sPendings.set(nameHex, pending);
+    this.sPendings.set(interest.name, pending);
     return pending.defer.promise;
   };
 

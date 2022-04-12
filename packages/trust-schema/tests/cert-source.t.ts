@@ -39,7 +39,7 @@ function findIn(c: CertSource, name: NameLike | { name: Name }): Promise<Certifi
   if (typeof name === "object" && !(name instanceof Name)) {
     name = name.name;
   }
-  return collect(c.findCerts(new Name(name)));
+  return collect(c.findCerts(Name.from(name)));
 }
 
 test("TrustAnchorContainer", async () => {

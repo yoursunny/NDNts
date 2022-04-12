@@ -1,7 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { type NameLike, Name } from "@ndn/packet";
-import { toHex } from "@ndn/util";
 import { setTimeout as delay } from "node:timers/promises";
 
 import { Forwarder, ReadvertiseDestination } from "..";
@@ -13,8 +12,8 @@ beforeEach(() => {
 });
 
 class SimpleDest extends ReadvertiseDestination {
-  public override doAdvertise = jest.fn<Promise<void>, [Name, {}, string]>().mockResolvedValue(undefined);
-  public override doWithdraw = jest.fn<Promise<void>, [Name, {}, string]>().mockResolvedValue(undefined);
+  public override doAdvertise = jest.fn<Promise<void>, [Name, {}]>().mockResolvedValue(undefined);
+  public override doWithdraw = jest.fn<Promise<void>, [Name, {}]>().mockResolvedValue(undefined);
 
   public readonly annadd = jest.fn<void, [Name]>();
   public readonly annrm = jest.fn<void, [Name]>();
@@ -33,16 +32,15 @@ class SimpleDest extends ReadvertiseDestination {
   }
 
   private static check(
-      doFn: jest.Mock<Promise<void>, [Name, {}, string]>,
+      doFn: jest.Mock<Promise<void>, [Name, {}]>,
       onFn: jest.Mock<void, [Name]>,
       names: NameLike[],
   ) {
     expect(doFn).toHaveBeenCalledTimes(names.length);
     expect(onFn).toHaveBeenCalledTimes(names.length);
     for (const [i, nameLike] of names.entries()) {
-      const name = new Name(nameLike);
+      const name = Name.from(nameLike);
       expect(doFn.mock.calls[i]![0]).toEqualName(name);
-      expect(doFn.mock.calls[i]![2]).toBe(toHex(name.value));
       expect(onFn.mock.calls[i]![0]).toEqualName(name);
     }
     doFn.mockClear();
@@ -124,7 +122,7 @@ test("disable", async () => {
   dest.enable(fw);
 
   const faceA = fw.addFace(new NoopFace());
-  faceA.addAnnouncement(new Name("/M"));
+  faceA.addAnnouncement("/M");
   await delay(210);
   expect(dest.doAdvertise).toHaveBeenCalledTimes(2);
 
@@ -139,14 +137,14 @@ test("retry", async () => {
   dest.enable(fw);
 
   const faceA = fw.addFace(new NoopFace());
-  faceA.addAnnouncement(new Name("/M"));
+  faceA.addAnnouncement("/M");
   await delay(60);
   expect(dest.makeState).toHaveBeenCalledTimes(1);
   expect(dest.doAdvertise).toHaveBeenCalledTimes(1);
   await delay(180);
   expect(dest.doAdvertise).toHaveBeenCalledTimes(2);
 
-  faceA.removeAnnouncement(new Name("/M"));
+  faceA.removeAnnouncement("/M");
   await delay(60);
   expect(dest.doWithdraw).toHaveBeenCalledTimes(1);
   await delay(180);
@@ -160,8 +158,8 @@ test("withdraw during advertising", async () => {
   dest.enable(fw);
 
   const faceA = fw.addFace(new NoopFace());
-  faceA.addAnnouncement(new Name("/M"));
-  setTimeout(() => faceA.removeAnnouncement(new Name("/M")), 60);
+  faceA.addAnnouncement("/M");
+  setTimeout(() => faceA.removeAnnouncement("/M"), 60);
   await delay(270);
   expect(dest.doAdvertise).toHaveBeenCalledTimes(1);
   expect(dest.doWithdraw).toHaveBeenCalledTimes(2);

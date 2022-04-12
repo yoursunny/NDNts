@@ -84,7 +84,7 @@ class FetchResult implements fetch.Result {
 
 /** Fetch a segment object as AsyncIterable of payload. */
 export function fetch(name: NameLike, opts: fetch.Options = {}): fetch.Result {
-  return new FetchResult(new Name(name), opts);
+  return new FetchResult(Name.from(name), opts);
 }
 
 export namespace fetch {

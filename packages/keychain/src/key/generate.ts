@@ -17,7 +17,7 @@ export async function generateKeyInternal<Algo extends CryptoAlgorithm>(
   if (typeof (a[0] as KeyChain).listKeys === "function") {
     keyChain = a.shift() as KeyChain;
   }
-  const keyName = CertNaming.makeKeyName(new Name(a.shift() as NameLike));
+  const keyName = CertNaming.makeKeyName(Name.from(a.shift() as NameLike));
   const algo = a.shift() as Algo ?? defaultAlgo;
   const genParams = a.shift() ?? {};
 

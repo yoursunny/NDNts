@@ -95,7 +95,7 @@ class Fixture {
 
   public subscribe(i: number, topic: NameLike): [sub: Subscription, update: UpdateMock] {
     const title = String.fromCodePoint(0x41 + i);
-    topic = new Name(topic);
+    topic = Name.from(topic);
     const update = jest.fn<void, [Data]>()
       .mockImplementation((pub) => debugPrinter.log(title, `UPDATE ${topic} ${pub.name}`));
 

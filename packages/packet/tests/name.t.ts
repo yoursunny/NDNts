@@ -22,6 +22,8 @@ test("construct", () => {
     expect(name).toHaveLength(1);
     expect(name.at(0)).toEqualComponent("A");
     expect(name.toString()).toBe("/8=A");
+    expect(name.valueHex).toBe("080141");
+    expect(name.value).toEqualUint8Array([0x08, 0x01, 0x41]);
   }
 
   const decoder = new Decoder(Uint8Array.of(
@@ -110,4 +112,10 @@ test("NameLike", () => {
   expect(Name.isNameLike(new Name())).toBeTruthy();
   expect(Name.isNameLike("/")).toBeTruthy();
   expect(Name.isNameLike({})).toBeFalsy();
+
+  const nameQ = new Name("/Q");
+  expect(Name.from(nameQ)).toBe(nameQ);
+  const fromQ = Name.from("/Q");
+  expect(fromQ).toEqualName(nameQ);
+  expect(fromQ).not.toBe(nameQ);
 });

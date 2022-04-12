@@ -1,5 +1,5 @@
-import type { Name } from "@ndn/packet";
-import { assert, toHex } from "@ndn/util";
+import { Name, NameMap } from "@ndn/packet";
+import { assert } from "@ndn/util";
 
 import { IBLT } from "../iblt";
 import type { SyncNode } from "../types";
@@ -22,27 +22,26 @@ export class PSyncCore {
   public readonly threshold: number;
   public readonly joinPrefixSeqNum: (ps: PSyncCore.PrefixSeqNum) => PSyncCore.PrefixSeqNumEncoded;
 
-  public readonly nodes = new Map<string, PSyncNode>(); // prefixHex => node
+  public readonly nodes = new NameMap<PSyncNode>();
   public readonly keys = new Map<number, PSyncNode>(); // key => node
   public readonly iblt: IBLT;
 
   public get(prefix: Name): PSyncNode | undefined {
-    return this.nodes.get(toHex(prefix.value));
+    return this.nodes.get(prefix);
   }
 
   public add(prefix: Name): PSyncNode {
-    const prefixHex = toHex(prefix.value);
-    let node = this.nodes.get(prefixHex);
+    let node = this.nodes.get(prefix);
     if (!node) {
-      node = new PSyncNode(this, prefix, prefixHex);
-      this.nodes.set(prefixHex, node);
+      node = new PSyncNode(this, prefix);
+      this.nodes.set(prefix, node);
     }
     return node;
   }
 
   public list(filter: (node: PSyncNode) => boolean): PSyncCore.State {
     const state: PSyncCore.State = [];
-    for (const node of this.nodes.values()) {
+    for (const [, node] of this.nodes) {
       if (filter(node)) {
         state.push(node);
       }
@@ -81,7 +80,6 @@ export class PSyncNode implements SyncNode<Name>, PSyncCore.PrefixSeqNum {
   constructor(
       private readonly c: PSyncCore,
       public readonly id: Name,
-      private readonly prefixHex: string,
   ) {
     this.updateKey();
   }
@@ -111,8 +109,7 @@ export class PSyncNode implements SyncNode<Name>, PSyncCore.PrefixSeqNum {
    * @param triggerEvent whether to trigger onIncreaseSeqNum callback.
    */
   public setSeqNum(v: number, triggerEvent = true): void {
-    assert(Math.trunc(v) === v);
-    assert(v <= Number.MAX_SAFE_INTEGER);
+    assert(Number.isSafeInteger(v));
     if (v <= this.seq) {
       if (v < this.seq) {
         throw new Error("cannot decrease sequence number");
@@ -137,7 +134,7 @@ export class PSyncNode implements SyncNode<Name>, PSyncCore.PrefixSeqNum {
 
   public remove() {
     this.detachKey();
-    this.c.nodes.delete(this.prefixHex);
+    this.c.nodes.delete(this.prefix);
   }
 
   /** Recompute `this.k` after changing sequence number. */

@@ -1,57 +1,43 @@
-import MultiMap from "mnemonist/multi-map.js";
+import type { Name } from "@ndn/packet";
+import { KeyMultiMap } from "@ndn/util";
 import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
 import type { Subscription } from "../types";
 
-class Sub<Topic, Update> extends (EventEmitter as new() => TypedEmitter<Subscription.Events<any>>) implements Subscription<Topic, Update> {
+class Sub<Update> extends (EventEmitter as new() => TypedEmitter<Subscription.Events<any>>) implements Subscription<Name, Update> {
   constructor(
-      public readonly topic: Topic,
+      public readonly topic: Name,
       public readonly remove: () => void,
   ) {
     super();
   }
 }
 
-export class SubscriptionTable<Topic, Update, Key = unknown, SubscribeInfo = undefined>
-implements Iterable<[Key, Set<Subscription<Topic, Update>>]> {
-  constructor(
-      private readonly topic2key: (topic: Topic) => Key,
-  ) {}
-
-  public handleAddTopic?: (topic: Topic, key: Key, set: Set<Subscription<Topic, Update>>, info: SubscribeInfo) => void;
-  public handleRemoveTopic?: (topic: Topic, key: Key, set: Set<Subscription<Topic, Update>>) => void;
-
-  private readonly table = new MultiMap<Key, Sub<Topic, Update>>(Set);
-
-  public get(key: Key): Set<Subscription<Topic, Update>> | undefined {
-    return this.table.get(key);
+export class SubscriptionTable<Update> extends KeyMultiMap<Name, Sub<Update>, string, string> {
+  constructor() {
+    super((nameOrHex) => typeof nameOrHex === "string" ? nameOrHex : nameOrHex.valueHex);
   }
 
-  public [Symbol.iterator]() {
-    return this.table.associations();
-  }
+  public handleRemoveTopic?: (topic: Name, objKey: object) => void;
 
-  public add(topic: Topic, info: SubscribeInfo): Subscription<Topic, Update> {
-    const key = this.topic2key(topic);
-    const sub: Sub<Topic, Update> = new Sub(topic, () => this.remove(key, sub));
-    this.table.set(key, sub);
-
-    const set = this.table.get(key)!;
-    if (set.size === 1) {
-      this.handleAddTopic?.(topic, key, set, info);
+  public subscribe(topic: Name): { sub: Subscription<Name, Update>; objKey?: object } {
+    const sub: Sub<Update> = new Sub(topic, () => this.unsubscribe(topic, sub));
+    let objKey: object | undefined;
+    if (this.add(topic, sub) === 1) {
+      objKey = this.list(topic);
     }
-    return sub;
+    return { sub, objKey };
   }
 
-  private remove(key: Key, sub: Sub<Topic, Update>): void {
-    const set = this.table.get(key);
-    if (this.table.remove(key, sub) && !this.table.has(key)) {
-      this.handleRemoveTopic?.(sub.topic, key, set!);
+  private unsubscribe(topic: Name, sub: Sub<Update>): void {
+    const set = this.list(topic);
+    if (this.remove(topic, sub) === 0) {
+      this.handleRemoveTopic?.(topic, set);
     }
   }
 
-  public update(set: Set<Subscription<Topic, Update>>, update: Update): void {
+  public update(set: ReadonlySet<Subscription<Name, Update>>, update: Update): void {
     for (const sub of set) {
       sub.emit("update", update);
     }

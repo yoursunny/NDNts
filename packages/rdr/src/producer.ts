@@ -6,7 +6,7 @@ import { Encoder } from "@ndn/tlv";
 import { Metadata, MetadataKeyword } from "./metadata";
 
 function makeName(payload: Metadata, prefix?: NameLike): Name {
-  const name = prefix ? new Name(prefix) : payload.name.getPrefix(-1);
+  const name = prefix ? Name.from(prefix) : payload.name.getPrefix(-1);
   return name.append(MetadataKeyword, Version.create(Date.now()), Segment.create(0));
 }
 

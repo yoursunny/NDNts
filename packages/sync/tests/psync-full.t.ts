@@ -115,11 +115,11 @@ class Fixture {
   }
 
   public add(i: number, prefix: NameLike): SyncNode<Name> {
-    return this.syncs[i]!.add(new Name(prefix));
+    return this.syncs[i]!.add(Name.from(prefix));
   }
 
   public get(i: number, prefix: NameLike): SyncNode<Name> | undefined {
-    return this.syncs[i]!.get(new Name(prefix));
+    return this.syncs[i]!.get(Name.from(prefix));
   }
 
   public expectUpdateTimes(i: number, count: number): void {

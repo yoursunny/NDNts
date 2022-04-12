@@ -1,7 +1,6 @@
 import { type RetxPolicy, ConsumerOptions, Endpoint } from "@ndn/endpoint";
 import { Certificate, CertNaming } from "@ndn/keychain";
-import { type Name, Interest } from "@ndn/packet";
-import { toHex } from "@ndn/util";
+import { type Name, Interest, NameMap } from "@ndn/packet";
 
 import type { CertSource } from "./types";
 
@@ -11,7 +10,7 @@ interface CacheEntry {
 }
 
 class Cache {
-  private readonly table = new Map<string, CacheEntry>();
+  private readonly table = new NameMap<CacheEntry>();
   private nextCleanup = 0;
   private readonly positiveTtl: number;
   private readonly negativeTtl: number;
@@ -29,10 +28,9 @@ class Cache {
 
   public lookup(name: Name): CacheEntry | undefined {
     const now = this.cleanup();
-    const key = toHex(name.value);
-    const entry = this.table.get(key);
+    const entry = this.table.get(name);
     if (entry && entry.expire < now) {
-      this.table.delete(key);
+      this.table.delete(name);
       return undefined;
     }
     return entry;
@@ -44,13 +42,13 @@ class Cache {
       expire: now + this.positiveTtl,
       cert,
     };
-    this.table.set(toHex(cert.name.value), entry);
-    this.table.set(toHex(CertNaming.toKeyName(cert.name).value), entry);
+    this.table.set(cert.name, entry);
+    this.table.set(CertNaming.toKeyName(cert.name), entry);
   }
 
   public addNegative(name: Name): void {
     const now = this.cleanup();
-    this.table.set(toHex(name.value), {
+    this.table.set(name, {
       expire: now + this.negativeTtl,
     });
   }

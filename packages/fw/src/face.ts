@@ -1,6 +1,4 @@
-import { type NameLike, Data, Interest, Nack, Name } from "@ndn/packet";
-import { toHex } from "@ndn/util";
-import MultiSet from "mnemonist/multi-set.js";
+import { type NameLike, Data, Interest, Nack, Name, NameMultiSet } from "@ndn/packet";
 import { EventEmitter } from "node:events";
 import Fifo from "p-fifo";
 import { buffer, filter, pipeline, tap } from "streaming-iterables";
@@ -109,13 +107,13 @@ function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement)
     case "boolean":
       return announcement ? name : undefined;
   }
-  return new Name(announcement);
+  return Name.from(announcement);
 }
 
 export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) implements FwFace {
   public readonly attributes: FwFace.Attributes;
-  private readonly routes = new MultiSet<string>();
-  private readonly announcements = new MultiSet<string>();
+  private readonly routes = new NameMultiSet();
+  private readonly announcements = new NameMultiSet();
   public running = true;
   private readonly txQueue = new Fifo<FwPacket | false>();
   public txQueueLength = 0;
@@ -159,11 +157,11 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
     this.rxtx.off?.("down", this.handleLowerDown);
 
     this.fw.faces.delete(this);
-    for (const nameHex of this.routes.keys()) {
-      this.fw.fib.delete(this, nameHex);
+    for (const [name] of this.routes.multiplicities()) {
+      this.fw.fib.delete(this, name.valueHex);
     }
-    for (const nameHex of this.announcements.keys()) {
-      this.fw.readvertise.removeAnnouncement(this, undefined, nameHex);
+    for (const [name] of this.announcements.multiplicities()) {
+      this.fw.readvertise.removeAnnouncement(this, name);
     }
 
     void this.txQueue.push(false);
@@ -176,18 +174,16 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
   }
 
   public hasRoute(nameInput: NameLike): boolean {
-    const name = new Name(nameInput);
-    return this.routes.has(toHex(name.value));
+    const name = Name.from(nameInput);
+    return this.routes.count(name) > 0;
   }
 
   public addRoute(nameInput: NameLike, announcement: FwFace.RouteAnnouncement = true): void {
-    const name = new Name(nameInput);
-    const nameHex = toHex(name.value);
+    const name = Name.from(nameInput);
 
     this.fw.emit("prefixadd", this, name);
-    this.routes.add(nameHex);
-    if (this.routes.count(nameHex) === 1) {
-      this.fw.fib.insert(this, nameHex, this.attributes.routeCapture!);
+    if (this.routes.add(name) === 1) {
+      this.fw.fib.insert(this, name.valueHex, this.attributes.routeCapture!);
     }
 
     const ann = computeAnnouncement(name, announcement);
@@ -197,42 +193,36 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
   }
 
   public removeRoute(nameInput: NameLike, announcement: FwFace.RouteAnnouncement = true): void {
-    const name = new Name(nameInput);
-    const nameHex = toHex(name.value);
+    const name = Name.from(nameInput);
 
     const ann = computeAnnouncement(name, announcement);
     if (ann) {
       this.removeAnnouncement(ann);
     }
 
-    this.routes.remove(nameHex);
-    if (this.routes.count(nameHex) === 0) {
-      this.fw.fib.delete(this, nameHex);
+    if (this.routes.remove(name) === 0) {
+      this.fw.fib.delete(this, name.valueHex);
     }
     this.fw.emit("prefixrm", this, name);
   }
 
-  public addAnnouncement(nameInput: NameLike, nameHex?: string): void {
+  public addAnnouncement(nameInput: NameLike): void {
     if (!this.attributes.advertiseFrom) {
       return;
     }
-    const name = new Name(nameInput);
-    nameHex ??= toHex(name.value);
-    this.announcements.add(nameHex);
-    if (this.announcements.count(nameHex) === 1) {
-      this.fw.readvertise.addAnnouncement(this, name, nameHex);
+    const name = Name.from(nameInput);
+    if (this.announcements.add(name) === 1) {
+      this.fw.readvertise.addAnnouncement(this, name);
     }
   }
 
-  public removeAnnouncement(nameInput: NameLike, nameHex?: string): void {
+  public removeAnnouncement(nameInput: NameLike): void {
     if (!this.attributes.advertiseFrom) {
       return;
     }
-    const name = new Name(nameInput);
-    nameHex ??= toHex(name.value);
-    this.announcements.remove(nameHex);
-    if (this.announcements.count(nameHex) === 0) {
-      this.fw.readvertise.removeAnnouncement(this, name, nameHex);
+    const name = Name.from(nameInput);
+    if (this.announcements.remove(name) === 0) {
+      this.fw.readvertise.removeAnnouncement(this, name);
     }
   }
 

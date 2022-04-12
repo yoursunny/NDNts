@@ -68,7 +68,7 @@ export class SignedInterestPolicy {
     const key = (() => {
       const klName = sigInfo.keyLocator?.name;
       if (klName) {
-        return `N:${toHex(klName.value)}`;
+        return `N:${klName.valueHex}`;
       }
       const klDigest = sigInfo.keyLocator?.digest;
       if (klDigest) {

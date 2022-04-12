@@ -1,6 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Component, Name, Verifier } from "@ndn/packet";
-import { toHex } from "@ndn/util";
 import { type Parameters as BloomParameters, BloomFilter } from "@yoursunny/psync-bloom";
 import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
@@ -44,7 +43,6 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
     this.codec = new PSyncCodec(p, IBLT.PreparedParameters.prepare(p.iblt));
     this.encodeBloom = p.encodeBloom;
 
-    this.subs.handleAddTopic = this.handleAddTopic;
     this.subs.handleRemoveTopic = this.handleRemoveTopic;
 
     this.cFetcher = new PSyncStateFetcher(endpoint, this.describe, this.codec, syncInterestLifetime, verifier);
@@ -63,8 +61,8 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
   private readonly encodeBloom: PSyncPartialSubscriber.Parameters["encodeBloom"];
   private closed = false;
 
-  private readonly subs = new SubscriptionTable<Name, Update, string, PSyncPartialSubscriber.TopicInfo>((topic) => toHex(topic.value));
-  private readonly prevSeqNums = new WeakMap<Set<Sub>, number>();
+  private readonly subs = new SubscriptionTable<Update>();
+  private readonly prevSeqNums = new WeakMap<object, number>();
   private bloom!: BloomFilter;
   private ibltComp?: Component;
 
@@ -94,29 +92,24 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
   }
 
   public subscribe(topic: PSyncPartialSubscriber.TopicInfo): Sub {
-    return this.subs.add(topic.prefix, topic);
+    const { sub, objKey } = this.subs.subscribe(topic.prefix);
+    if (objKey) {
+      this.prevSeqNums.set(objKey, topic.seqNum);
+      this.bloom.insert(this.codec.toBloomKey(topic.prefix));
+    }
+    return sub;
   }
 
-  private handleAddTopic = (prefix: Name, topicHex: string, set: Set<Sub>, { seqNum }: PSyncPartialSubscriber.TopicInfo): void => {
-    this.prevSeqNums.set(set, seqNum);
-    this.bloom.insert(this.codec.toBloomKey(prefix));
-  };
-
-  private handleRemoveTopic = (topic: Name, topicHex: string, set: Set<Sub>): void => {
-    if (!this.prevSeqNums.delete(set)) {
+  private handleRemoveTopic = (topic: Name, objKey: object): void => {
+    void topic;
+    if (!this.prevSeqNums.delete(objKey)) {
       return;
     }
 
     this.bloom.clear();
-    for (const [, set] of this.subs) {
+    for (const [prefix, set] of this.subs.associations()) {
       if (!this.prevSeqNums.has(set)) {
         continue;
-      }
-
-      let prefix!: Name;
-      for (const sub of set) { // eslint-disable-line no-unreachable-loop
-        prefix = sub.topic;
-        break;
       }
       this.bloom.insert(this.codec.toBloomKey(prefix));
     }
@@ -192,9 +185,8 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
 
   private handleState(state: PSyncCore.State): void {
     for (const { prefix, seqNum } of state) {
-      const key = toHex(prefix.value);
-      const set = this.subs.get(key);
-      if (!set) {
+      const set = this.subs.list(prefix);
+      if (set.size === 0) {
         continue;
       }
 

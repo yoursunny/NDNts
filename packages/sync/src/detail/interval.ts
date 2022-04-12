@@ -12,6 +12,6 @@ export function computeInterval(input: IntervalRange | undefined, syncInterestLi
       return [min, max - min];
     }
     return [syncInterestLifetime / 2 + 100, 400];
-  })() as [number, number];
+  })();
   return () => (min + Math.random() * range);
 }

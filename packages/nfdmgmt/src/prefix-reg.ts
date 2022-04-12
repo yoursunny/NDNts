@@ -1,8 +1,9 @@
 import { Endpoint, Producer } from "@ndn/endpoint";
 import { FwFace, ReadvertiseDestination, TapFace } from "@ndn/fw";
 import { type KeyChain, Certificate } from "@ndn/keychain";
-import { type Name, Interest } from "@ndn/packet";
-import { Closers, toHex } from "@ndn/util";
+import { type Name, Interest, NameMap } from "@ndn/packet";
+import { Closers } from "@ndn/util";
+import map from "obliterator/map.js";
 
 import { ControlCommand } from "./control-command";
 import type { ControlParameters } from "./control-parameters";
@@ -36,7 +37,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
   private readonly preloadCertName?: Name;
   private readonly preloadFromKeyChain?: KeyChain;
   private readonly preloadInterestLifetime: ReturnType<typeof Interest.Lifetime>;
-  private readonly preloadCerts = new Map<string, Certificate>();
+  private readonly preloadCerts = new NameMap<Certificate>();
 
   constructor(private readonly face: FwFace, opts: Options) {
     super(opts.retry);
@@ -78,7 +79,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     const preloadProducers = await this.preload(endpoint);
 
     const closers = new Closers();
-    closers.push(...preloadProducers.values(), tapFace);
+    closers.push(...map(preloadProducers, ([, p]) => p), tapFace);
     return [
       { ...this.commandOptions, endpoint },
       closers.close,
@@ -86,17 +87,13 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
   }
 
   private async preload(endpoint: Endpoint) {
-    const producers = new Map<string, Producer>();
+    const producers = new NameMap<Producer>();
     let name = this.preloadCertName;
-    while (name) {
-      const key = toHex(name.value);
-      if (producers.has(key)) {
-        break;
-      }
+    while (name && !producers.has(name)) {
       try {
-        const cert = await this.retrievePreload(endpoint, key, name);
-        this.preloadCerts.set(key, cert);
-        producers.set(key, endpoint.produce(name, () => Promise.resolve(cert.data)));
+        const cert = await this.retrievePreload(endpoint, name);
+        this.preloadCerts.set(name, cert);
+        producers.set(name, endpoint.produce(name, async () => cert.data));
         name = cert.issuer;
       } catch {
         name = undefined;
@@ -105,8 +102,8 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     return producers;
   }
 
-  private async retrievePreload(endpoint: Endpoint, key: string, name: Name): Promise<Certificate> {
-    const cert = this.preloadCerts.get(key);
+  private async retrievePreload(endpoint: Endpoint, name: Name): Promise<Certificate> {
+    const cert = this.preloadCerts.get(name);
     if (cert) {
       return cert;
     }
@@ -123,14 +120,14 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
   }
 
   private readonly handleFaceUp = () => {
-    for (const [nameHex, { status, state }] of this.table) {
+    for (const [name, { status, state }] of this.table) {
       if (status === ReadvertiseDestination.Status.ADVERTISED) {
-        this.scheduleRefresh(nameHex, state, 100);
+        this.scheduleRefresh(name, state, 100);
       }
     }
   };
 
-  protected override async doAdvertise(name: Name, state: State, nameHex: string) {
+  protected override async doAdvertise(name: Name, state: State) {
     const [opts, untap] = await this.tap();
     try {
       const cr = await ControlCommand.call("rib/register", {
@@ -146,17 +143,17 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
       untap();
     }
     if (this.refreshInterval !== false) {
-      this.scheduleRefresh(nameHex, state, this.refreshInterval);
+      this.scheduleRefresh(name, state, this.refreshInterval);
     }
   }
 
-  private scheduleRefresh(nameHex: string, state: State, after: number): void {
+  private scheduleRefresh(name: Name, state: State, after: number): void {
     clearTimeout(state.refreshTimer!);
     state.refreshTimer = setTimeout(() => {
-      const record = this.table.get(nameHex);
+      const record = this.table.get(name);
       if (record?.status === ReadvertiseDestination.Status.ADVERTISED) {
         record.status = ReadvertiseDestination.Status.ADVERTISING;
-        this.restart(nameHex, record);
+        this.restart(name, record);
       }
     }, after);
   }

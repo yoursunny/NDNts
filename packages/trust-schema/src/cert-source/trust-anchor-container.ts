@@ -1,14 +1,12 @@
 import { Certificate, CertNaming } from "@ndn/keychain";
-import type { Name } from "@ndn/packet";
-import { toHex } from "@ndn/util";
-import MultiMap from "mnemonist/multi-map.js";
+import { Name, NameMap, NameMultiMap } from "@ndn/packet";
 
 import type { CertSource } from "./types";
 
 /** A container of trust anchors. */
 export class TrustAnchorContainer implements CertSource {
-  private readonly byCertName = new Map<string, Certificate>();
-  private readonly byKeyName = new MultiMap<string, Certificate>();
+  private readonly byCertName = new NameMap<Certificate>();
+  private readonly byKeyName = new NameMultiMap<Certificate>();
 
   constructor(certs: Certificate[]) {
     for (const cert of certs) {
@@ -17,33 +15,32 @@ export class TrustAnchorContainer implements CertSource {
   }
 
   public add(cert: Certificate): void {
-    const certNameHex = toHex(cert.name.value);
-    if (this.byCertName.has(certNameHex)) {
+    if (this.byCertName.has(cert.name)) {
       return;
     }
-    this.byCertName.set(certNameHex, cert);
-    this.byKeyName.set(toHex(CertNaming.toKeyName(cert.name).value), cert);
+    this.byCertName.set(cert.name, cert);
+    this.byKeyName.add(CertNaming.toKeyName(cert.name), cert);
   }
 
   public remove(cert: Certificate): void {
-    this.byCertName.delete(toHex(cert.name.value));
-    this.byKeyName.remove(toHex(CertNaming.toKeyName(cert.name).value), cert);
+    this.byCertName.delete(cert.name);
+    this.byKeyName.remove(CertNaming.toKeyName(cert.name), cert);
   }
 
   public has(cert: Certificate): boolean {
-    return this.byCertName.has(toHex(cert.name.value));
+    return this.byCertName.has(cert.name);
   }
 
   /** Find certificates among trust anchors. */
   public async *findCerts(keyLocator: Name): AsyncIterable<Certificate> {
     if (CertNaming.isCertName(keyLocator)) {
-      const cert = this.byCertName.get(toHex(keyLocator.value));
+      const cert = this.byCertName.get(keyLocator);
       if (cert) {
         yield cert;
       }
       return;
     }
 
-    yield* this.byKeyName.get(toHex(keyLocator.value)) ?? [];
+    yield* this.byKeyName.list(keyLocator);
   }
 }

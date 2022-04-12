@@ -14,7 +14,7 @@ class Fields {
   constructor(...args: Array<Interest | Interest.CtorArg>) {
     for (const arg of args) {
       if (Name.isNameLike(arg)) {
-        this.name = new Name(arg);
+        this.name = Name.from(arg);
       } else if (arg instanceof FwHint) {
         this.fwHint = new FwHint(arg);
       } else if (arg instanceof Uint8Array) {

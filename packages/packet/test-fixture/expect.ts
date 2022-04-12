@@ -19,7 +19,7 @@ expect.extend({
     };
   },
   toEqualName(received: Name | undefined, name: NameLike) {
-    const n = new Name(name);
+    const n = Name.from(name);
     if (received instanceof Name && received.equals(n)) {
       return {
         message: () => `expected ${received} not to equal ${n}`,
@@ -32,7 +32,7 @@ expect.extend({
     };
   },
   toHaveName(received: { readonly name?: Name } | undefined, name: NameLike) {
-    const n = new Name(name);
+    const n = Name.from(name);
     if (received?.name?.equals(n)) {
       return {
         message: () => `expected ${received} not to have name ${n}`,

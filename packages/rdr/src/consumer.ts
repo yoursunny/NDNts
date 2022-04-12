@@ -9,7 +9,7 @@ import { Metadata, MetadataKeyword } from "./metadata";
  * @param prefix prefix of RDR metadata packet; 32=metadata component is optional.
  */
 export function makeDiscoveryInterest(prefix: NameLike): Interest {
-  let name = new Name(prefix);
+  let name = Name.from(prefix);
   if (!name.get(-1)?.equals(MetadataKeyword)) {
     name = name.append(MetadataKeyword);
   }

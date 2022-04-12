@@ -14,7 +14,7 @@ class Fields {
     let isFinalBlock = false;
     for (const arg of args) {
       if (Name.isNameLike(arg)) {
-        this.name = new Name(arg);
+        this.name = Name.from(arg);
       } else if (arg instanceof Uint8Array) {
         this.content = arg;
       } else if (arg === Data.FinalBlock) {

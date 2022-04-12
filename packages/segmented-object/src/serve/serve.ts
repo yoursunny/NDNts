@@ -39,7 +39,7 @@ export interface Server {
  * @param opts other options.
  */
 export function serve(prefixInput: NameLike, source: ChunkSource, opts: ServeOptions = {}): Server {
-  const prefix = new Name(prefixInput);
+  const prefix = Name.from(prefixInput);
   const { endpoint = new Endpoint() } = opts;
   const producer = DataProducer.create(source, prefix, opts);
 

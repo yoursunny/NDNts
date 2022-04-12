@@ -32,12 +32,12 @@ export class FwHint {
   constructor(arg?: FwHint | NameLike | readonly NameLike[]) {
     if (Array.isArray(arg)) {
       for (const name of arg) {
-        this.delegations.push(new Name(name));
+        this.delegations.push(Name.from(name));
       }
     } else if (arg instanceof FwHint) {
       this.delegations = [...arg.delegations];
     } else if (Name.isNameLike(arg)) {
-      this.delegations = [new Name(arg)];
+      this.delegations = [Name.from(arg)];
     }
   }
 

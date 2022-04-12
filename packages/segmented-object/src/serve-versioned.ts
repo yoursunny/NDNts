@@ -26,7 +26,7 @@ export function serveVersioned(prefixInput: NameLike, source: ChunkSource,
     versionComp = Component.from(version);
   }
 
-  const producerPrefix = new Name(prefixInput);
+  const producerPrefix = Name.from(prefixInput);
   const prefix = producerPrefix.append(versionComp);
   return serve(prefix, source, {
     ...opts,

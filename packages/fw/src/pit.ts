@@ -1,5 +1,4 @@
 import { Data, Interest } from "@ndn/packet";
-import { toHex } from "@ndn/util";
 import hirestime from "hirestime";
 import DefaultMap from "mnemonist/default-map.js";
 import { filter, flatMap, pipeline, reduce, tap } from "streaming-iterables";
@@ -164,7 +163,7 @@ export class Pit {
   public lookup(interest: FwPacket<Interest>, canInsert: false): PitEntry | undefined;
 
   public lookup({ l3: interest }: FwPacket<Interest>, canInsert = true) {
-    const key = `${toHex(interest.name.value)} ${interest.canBePrefix ? "+" : "-"}${interest.mustBeFresh ? "+" : "-"}`;
+    const key = `${interest.name.valueHex} ${interest.canBePrefix ? "+" : "-"}${interest.mustBeFresh ? "+" : "-"}`;
     let entry = this.byName.get(key);
     if (!entry && canInsert) {
       entry = new PitEntry(this, key, interest);
@@ -202,7 +201,7 @@ export class Pit {
 
     let keySuffixes = [" ++", " +-", " -+", " --"];
     for (let prefix = data.name; prefix.length > 0; prefix = prefix.getPrefix(-1)) {
-      const prefixHex = toHex(prefix.value);
+      const prefixHex = prefix.valueHex;
       for (const keySuffix of keySuffixes) {
         const entry = this.byName.get(prefixHex + keySuffix);
         if (entry) {

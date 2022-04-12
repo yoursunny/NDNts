@@ -232,11 +232,11 @@ export namespace IBLT {
       nEntries,
     }: Parameters) {
       assert(nHash >= 1);
-      assert(Math.trunc(nHash) === nHash);
+      assert(Number.isSafeInteger(nHash));
       assert(checkSeed >= nHash);
-      assert(Math.trunc(checkSeed) === checkSeed);
+      assert(Number.isSafeInteger(checkSeed));
       assert(nEntries >= nHash);
-      assert(Math.trunc(nEntries) === nEntries);
+      assert(Number.isSafeInteger(nEntries));
       assert(nEntries % nHash === 0);
 
       const self = this as Parameters;

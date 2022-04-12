@@ -110,7 +110,7 @@ export abstract class Pattern {
     const varsM = new Map<string, Name>();
     for (const vars of varsL) {
       for (const [key, value] of VarsLike.toIterable(vars)) {
-        varsM.set(key, new Name(value));
+        varsM.set(key, Name.from(value));
       }
     }
 
@@ -135,7 +135,7 @@ export abstract class Pattern {
 export class ConstPattern extends Pattern {
   constructor(name: NameLike) {
     super();
-    this.name = new Name(name);
+    this.name = Name.from(name);
   }
 
   public readonly name: Name;

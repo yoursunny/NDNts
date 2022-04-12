@@ -1,5 +1,5 @@
-import { Component, Name } from "@ndn/packet";
-import { Decoder, Encoder, NNI, toHex } from "@ndn/tlv";
+import { Component, Name, NameMap } from "@ndn/packet";
+import { Decoder, Encoder, NNI } from "@ndn/tlv";
 
 const TT = {
   StateVector: 0xC9,
@@ -9,26 +9,24 @@ const TT = {
 
 /** SVS state vector. */
 export class SvStateVector {
-  private readonly m = new Map<string, [id: Name, seqNum: number]>();
+  private readonly m = new NameMap<number>();
 
   /** Get sequence number of a node. */
-  public get(hex: string): number {
-    const tuple = this.m.get(hex);
-    return tuple ? tuple[1] : 0;
+  public get(id: Name): number {
+    return this.m.get(id) ?? 0;
   }
 
   /** Set sequence number of a node. */
-  public set(hex: string, id: Name, seqNum: number): void {
-    this.m.set(hex, [id, seqNum]);
+  public set(id: Name, seqNum: number): void {
+    this.m.set(id, seqNum);
   }
 
   private *iterOlderThan(other: SvStateVector): Iterable<SvStateVector.DiffEntry> {
-    for (const [hex, [id, otherSeqNum]] of other.m) {
-      const thisSeqNum = this.get(hex);
+    for (const [id, otherSeqNum] of other.m) {
+      const thisSeqNum = this.get(id);
       if (thisSeqNum < otherSeqNum) {
         yield {
           id,
-          hex,
           loSeqNum: thisSeqNum + 1,
           hiSeqNum: otherSeqNum,
         };
@@ -43,15 +41,15 @@ export class SvStateVector {
 
   /** Update this version vector to have newer sequence numbers between this and other. */
   public mergeFrom(other: SvStateVector): void {
-    for (const { id, hex, hiSeqNum } of this.iterOlderThan(other)) {
-      this.set(hex, id, hiSeqNum);
+    for (const { id, hiSeqNum } of this.iterOlderThan(other)) {
+      this.set(id, hiSeqNum);
     }
   }
 
   public toJSON(): Record<string, number> {
     const o: Record<string, number> = {};
-    for (const [hex, [, seqNum]] of this.m) {
-      o[hex] = seqNum;
+    for (const [id, seqNum] of this.m) {
+      o[id.valueHex] = seqNum;
     }
     return o;
   }
@@ -59,8 +57,8 @@ export class SvStateVector {
   /** Encode TLV-VALUE of name component. */
   public encodeTo(encoder: Encoder): void {
     const list = Array.from(this.m);
-    list.sort(([a], [b]) => -a.localeCompare(b));
-    for (const [, [id, seqNum]] of list) {
+    list.sort(([a], [b]) => -a.compare(b));
+    for (const [id, seqNum] of list) {
       encoder.prependTlv(TT.StateVectorEntry,
         id,
         [TT.SeqNo, NNI(seqNum)],
@@ -83,7 +81,7 @@ export class SvStateVector {
       if (entryT !== TT.StateVectorEntry || seqNumT !== TT.SeqNo || !d1.eof) {
         throw new Error("invalid StateVector");
       }
-      vv.set(toHex(id.value), id, seqNum);
+      vv.set(id, seqNum);
     }
     return vv;
   }
@@ -103,7 +101,6 @@ export namespace SvStateVector {
 
   export interface DiffEntry {
     id: Name;
-    hex: string;
     loSeqNum: number;
     hiSeqNum: number;
   }
