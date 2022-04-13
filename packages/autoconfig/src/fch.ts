@@ -5,8 +5,8 @@ import type { ConnectRouterOptions } from "./router";
 
 export interface PlatformFchDefaults {
   transports: (opts?: ConnectRouterOptions) => string[];
-  hasIPv4: () => boolean | undefined;
-  hasIPv6: () => boolean | undefined;
+  readonly hasIPv4?: boolean;
+  readonly hasIPv6?: boolean;
 }
 
 /** FCH service request. */
@@ -43,53 +43,65 @@ export namespace FchResponse {
 
 /** FCH service query. */
 export async function fchQuery(req: FchRequest = {}): Promise<FchResponse> {
-  const { signal } = req;
+  const {
+    server = "https://fch.ndn.today",
+    ipv4 = FCH_DEFAULTS.hasIPv4,
+    ipv6 = FCH_DEFAULTS.hasIPv6,
+    position,
+    signal,
+  } = req;
+  const hQuery = async (tcs: TransportCount[], accept: string): Promise<Response> => {
+    const uri = new URL(server);
+    const search = uri.searchParams;
+    for (const [transport, count] of tcs) {
+      search.append("cap", transport);
+      search.append("k", `${count}`);
+    }
+    if (ipv4 !== undefined) {
+      search.set("ipv4", `${Number(ipv4)}`);
+    }
+    if (ipv6 !== undefined) {
+      search.set("ipv6", `${Number(ipv6)}`);
+    }
+    if (position?.length === 2) {
+      const [lon, lat] = position;
+      search.set("lon", `${lon.toFixed(5)}`);
+      search.set("lat", `${lat.toFixed(5)}`);
+    }
+
+    const hRes = await fetch(uri.toString(), { headers: { accept }, signal });
+    if (!hRes.ok) {
+      throw new Error(`HTTP ${hRes.status}`);
+    }
+    return hRes;
+  };
+
   const tcs = parseTransportCounts(req);
   const res = new FchResp();
 
   try {
-    const hRes = await fetch(makeRequest(req, tcs), {
-      headers: {
-        Accept: "application/json, text/plain, */*",
-      },
-      signal,
-    });
-    if (!hRes.ok) {
-      throw new Error(`HTTP ${hRes.status}`);
-    }
-
+    const hRes = await hQuery(tcs, "application/json, text/plain, */*");
     if (hRes.headers.get("Content-Type")?.startsWith("application/json")) {
       await res.setJsonResponse(hRes);
       return res;
     }
 
     if (tcs.length === 1) {
-      await res.addTextResponse(tcs[0]!.transport, hRes);
+      await res.addTextResponse(tcs[0]![0], hRes);
       return res;
     }
   } catch {}
 
   await Promise.all(tcs.map(async (tc) => {
     try {
-      const hRes = await fetch(makeRequest(req, [tc]), {
-        headers: {
-          Accept: "text/plain, */*",
-        },
-        signal,
-      });
-      if (!hRes.ok) {
-        throw new Error(`HTTP ${hRes.status}`);
-      }
-      await res.addTextResponse(tc.transport, hRes);
+      const hRes = await hQuery([tc], "text/plain, */*");
+      await res.addTextResponse(tc[0], hRes);
     } catch {}
   }));
   return res;
 }
 
-interface TransportCount {
-  transport: string;
-  count: number;
-}
+type TransportCount = [transport: string, count: number];
 
 function parseTransportCounts({
   count = 1,
@@ -97,39 +109,9 @@ function parseTransportCounts({
 }: FchRequest): TransportCount[] {
   if (Array.isArray(transports)) {
     return (transports as readonly string[])
-      .map((transport) => ({ transport, count }));
+      .map((transport) => [transport, count]);
   }
-  return Object.entries(transports as Record<string, number>)
-    .map(([transport, count]) => ({ transport, count }));
-}
-
-function makeRequest(req: FchRequest, tc: readonly TransportCount[]): string {
-  const {
-    server = "https://fch.ndn.today",
-    ipv4 = FCH_DEFAULTS.hasIPv4(),
-    ipv6 = FCH_DEFAULTS.hasIPv6(),
-    position,
-  } = req;
-
-  const uri = new URL(server);
-  for (const { transport, count } of tc) {
-    uri.searchParams.append("cap", transport);
-    uri.searchParams.append("k", `${count}`);
-  }
-  setBoolParam(uri.searchParams, "ipv4", ipv4);
-  setBoolParam(uri.searchParams, "ipv6", ipv6);
-  if (position?.length === 2) {
-    const [lon, lat] = position;
-    uri.searchParams.set("lon", `${lon.toFixed(5)}`);
-    uri.searchParams.set("lat", `${lat.toFixed(5)}`);
-  }
-  return uri.toString();
-}
-
-function setBoolParam(search: URLSearchParams, name: string, value: boolean | undefined): void {
-  if (typeof value === "boolean") {
-    search.set(name, `${Number(value)}`);
-  }
+  return Object.entries(transports as Record<string, number>);
 }
 
 class FchResp implements FchResponse {
@@ -147,7 +129,7 @@ class FchResp implements FchResponse {
   }
 
   public async addTextResponse(transport: string, hRes: Response): Promise<void> {
-    const body = await hRes.text();
+    const body = (await hRes.text()).trim();
     if (body === "") {
       return;
     }

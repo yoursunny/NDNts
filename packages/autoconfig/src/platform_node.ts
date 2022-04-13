@@ -11,15 +11,15 @@ export function fetch(input: RequestInfo, init?: RequestInit): Promise<Response>
   return nodeFetch(input as any, init as any) as any;
 }
 
-function hasAddressFamily(family: os.NetworkInterfaceInfo["family"]): () => boolean {
-  return () => Object.values(os.networkInterfaces()).some(
+function hasAddressFamily(family: os.NetworkInterfaceInfo["family"]): boolean {
+  return Object.values(os.networkInterfaces()).some(
     (addrs) => addrs?.some((addr) => addr.family === family));
 }
 
 export const FCH_DEFAULTS: PlatformFchDefaults = {
   transports() { return ["udp"]; },
-  hasIPv4: hasAddressFamily("IPv4"),
-  hasIPv6: hasAddressFamily("IPv6"),
+  get hasIPv4() { return hasAddressFamily("IPv4"); },
+  get hasIPv6() { return hasAddressFamily("IPv6"); },
 };
 
 export async function getDefaultGateway(): Promise<string> {

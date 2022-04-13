@@ -14,8 +14,6 @@ export const FCH_DEFAULTS: PlatformFchDefaults = {
     }
     return list;
   },
-  hasIPv4() { return undefined; },
-  hasIPv6() { return undefined; },
 };
 
 export async function getDefaultGateway(): Promise<string> {

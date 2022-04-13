@@ -1,5 +1,4 @@
 import { FwFace } from "@ndn/fw";
-import { collect, filter, pipeline, transform } from "streaming-iterables";
 
 import { type FchRequest, fchQuery } from "./fch";
 import { FCH_DEFAULTS, getDefaultGateway } from "./platform_node";
@@ -45,7 +44,7 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
     fastest = 1,
   } = opts;
 
-  let connected: ConnectRouterResult[] = [];
+  const connected: ConnectRouterResult[] = [];
   const errors: string[] = [];
   for await (const routers of
     (async function*(): AsyncIterable<string[]> {
@@ -54,20 +53,11 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
         fch.transports ??= FCH_DEFAULTS.transports(opts);
         const res = await fchQuery(fch);
 
-        /* istanbul ignore if */
-        if (preferH3) {
-          const h3routers = res.routers.filter((r) => r.transport === "http3");
-          if (h3routers.length > 0) {
-            yield h3routers.map((r) => r.connect);
-          }
-        }
-
+        const h3routers: string[] = [];
         for (const r of res.routers) {
-          /* istanbul ignore else */
-          if (!preferH3 || r.transport !== "http3") {
-            routers.push(r.connect);
-          }
+          (preferH3 && r.transport === "http3" ? h3routers : routers).push(r.connect);
         }
+        yield h3routers;
       }
       if (tryDefaultGateway) {
         try { routers.unshift(await getDefaultGateway()); } catch {}
@@ -76,19 +66,13 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
       yield fallback;
     })()
   ) {
-    connected = await pipeline(
-      () => routers,
-      transform(Infinity, async (router) => {
-        try {
-          return await connectToRouter(router, opts);
-        } catch (err: unknown) {
-          errors.push(`  ${router} ${err}`);
-          return undefined;
-        }
-      }),
-      filter((res): res is ConnectRouterResult => !!res),
-      collect,
-    );
+    await Promise.all(routers.map(async (router) => {
+      try {
+        connected.push(await connectToRouter(router, opts));
+      } catch (err: unknown) {
+        errors.push(`  ${router} ${err}`);
+      }
+    }));
     if (connected.length > 0) {
       break;
     }

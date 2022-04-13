@@ -35,7 +35,6 @@
     "default-gateway": "^6.0.3",
     "hirestime": "^6.1.0",
     "node-fetch": "^2.6.7",
-    "streaming-iterables": "^6.2.0",
     "tslib": "^2.3.1"
   },
   "devDependencies": {
