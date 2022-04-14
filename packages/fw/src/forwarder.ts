@@ -46,18 +46,11 @@ export interface Forwarder extends TypedEmitter<Events> {
 }
 export namespace Forwarder {
   export interface Options {
-    /** Per-face RX buffer length. */
-    faceRxBuffer?: number;
-    /** Per-face TX buffer length. */
-    faceTxBuffer?: number;
-
     /** Whether to try matching Data without PIT token. */
     dataNoTokenMatch?: boolean;
   }
 
   export const DefaultOptions: Required<Options> = {
-    faceRxBuffer: 16,
-    faceTxBuffer: 16,
     dataNoTokenMatch: true,
   };
 

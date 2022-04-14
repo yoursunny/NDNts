@@ -33,6 +33,8 @@
   "devDependencies": {
     "@types/tmp": "^0.2.3",
     "@types/write": "^2.0.1",
+    "it-pushable": "^1.4.2",
+    "streaming-iterables": "^6.2.0",
     "tmp": "^0.2.1",
     "write": "^2.0.0"
   },

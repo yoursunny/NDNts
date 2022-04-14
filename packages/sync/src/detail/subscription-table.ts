@@ -1,5 +1,4 @@
-import type { Name } from "@ndn/packet";
-import { KeyMultiMap } from "@ndn/util";
+import { type Name, NameMultiMap } from "@ndn/packet";
 import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
@@ -14,11 +13,7 @@ class Sub<Update> extends (EventEmitter as new() => TypedEmitter<Subscription.Ev
   }
 }
 
-export class SubscriptionTable<Update> extends KeyMultiMap<Name, Sub<Update>, string, string> {
-  constructor() {
-    super((nameOrHex) => typeof nameOrHex === "string" ? nameOrHex : nameOrHex.valueHex);
-  }
-
+export class SubscriptionTable<Update> extends NameMultiMap<Sub<Update>> {
   public handleRemoveTopic?: (topic: Name, objKey: object) => void;
 
   public subscribe(topic: Name): { sub: Subscription<Name, Update>; objKey?: object } {

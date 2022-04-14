@@ -1,4 +1,4 @@
-import { lpm, Name } from "@ndn/packet";
+import { type Name, lpm } from "@ndn/packet";
 import { assert } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
 

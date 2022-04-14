@@ -1,25 +1,12 @@
 import { Data, Interest, Nack, TT as l3TT } from "@ndn/packet";
-import { Decoder, Encoder, printTT, toHex } from "@ndn/tlv";
-import { assert } from "@ndn/util";
+import { Decoder, Encoder, printTT } from "@ndn/tlv";
+import { assert, flatMapOnce, toHex } from "@ndn/util";
 import itKeepAlive from "it-keepalive";
 
 import { TT } from "./an";
 import { Fragmenter } from "./fragmenter";
 import { LpPacket } from "./packet";
 import { Reassembler } from "./reassembler";
-
-/**
- * Map and flatten, but only do it once.
- * This differs from flatMap in streaming-iterables, which recursively flattens the result.
- */
-async function* flatOnceMap<T, R>(
-    f: (item: T) => Iterable<R> | AsyncIterable<R>,
-    iterable: AsyncIterable<T>,
-): AsyncIterable<R> {
-  for await (const item of iterable) {
-    yield* f(item);
-  }
-}
 
 const IDLE = Encoder.encode(new LpPacket());
 
@@ -42,7 +29,7 @@ export class LpService {
   private readonly fragmenter = new Fragmenter();
   private readonly reassembler: Reassembler;
 
-  public rx = (iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<LpService.Packet | LpService.RxError> => flatOnceMap((tlv) => this.decode(tlv), iterable);
+  public rx = (iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<LpService.Packet | LpService.RxError> => flatMapOnce((tlv) => this.decode(tlv), iterable);
 
   private *decode(dtlv: Decoder.Tlv) {
     const { type, decoder, tlv } = dtlv;
@@ -84,7 +71,7 @@ export class LpService {
     }
   }
 
-  public tx = (iterable: AsyncIterable<LpService.Packet>): AsyncIterable<Uint8Array | LpService.TxError> => flatOnceMap(
+  public tx = (iterable: AsyncIterable<LpService.Packet>): AsyncIterable<Uint8Array | LpService.TxError> => flatMapOnce(
     (pkt) => this.encode(pkt),
     this.keepAlive ?
       itKeepAlive<LpService.Packet | false>(() => false, { timeout: this.keepAlive })(iterable) :

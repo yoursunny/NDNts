@@ -1,7 +1,8 @@
 import { type NameLike, Data, Interest, Nack, Name, NameMultiSet } from "@ndn/packet";
+import { safeIter } from "@ndn/util";
+import pushable from "it-pushable";
 import { EventEmitter } from "node:events";
-import Fifo from "p-fifo";
-import { buffer, filter, pipeline, tap } from "streaming-iterables";
+import { filter, pipeline, tap } from "streaming-iterables";
 import type TypedEmitter from "typed-emitter";
 
 import type { Forwarder, ForwarderImpl } from "./forwarder";
@@ -21,7 +22,6 @@ export interface FwFace extends TypedEmitter<Events> {
   readonly fw: Forwarder;
   readonly attributes: FwFace.Attributes;
   readonly running: boolean;
-  readonly txQueueLength: number;
 
   /** Shutdown the face. */
   close(): void;
@@ -115,8 +115,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
   private readonly routes = new NameMultiSet();
   private readonly announcements = new NameMultiSet();
   public running = true;
-  private readonly txQueue = new Fifo<FwPacket | false>();
-  public txQueueLength = 0;
+  private readonly txQueue = pushable<FwPacket>();
 
   constructor(
       public readonly fw: ForwarderImpl,
@@ -136,11 +135,9 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
 
     void pipeline(
       () => this.txLoop(),
-      buffer(this.fw.opts.faceTxBuffer),
       tap((pkt) => fw.emit("pkttx", this, pkt)),
       duplexFromRxTx(rxtx),
       tap((pkt) => fw.emit("pktrx", this, pkt)),
-      buffer(this.fw.opts.faceRxBuffer),
       this.rxLoop,
     );
 
@@ -164,7 +161,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
       this.fw.readvertise.removeAnnouncement(this, name);
     }
 
-    void this.txQueue.push(false);
+    this.txQueue.end(new Error("close"));
     this.emit("close");
     this.fw.emit("facerm", this);
   }
@@ -231,12 +228,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
     if (!this.running) {
       return;
     }
-
-    void (async () => {
-      ++this.txQueueLength;
-      await this.txQueue.push(pkt);
-      --this.txQueueLength;
-    })();
+    this.txQueue.push(pkt);
   }
 
   private readonly handleLowerUp = () => {
@@ -267,18 +259,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
     this.close();
   };
 
-  private async *txLoop(): AsyncGenerator<FwPacket> {
-    while (true) {
-      const pkt = await this.txQueue.shift();
-      if (!this.running || pkt === false) {
-        break;
-      }
-      yield pkt;
-    }
-
-    while (!this.txQueue.isEmpty()) {
-      void this.txQueue.shift();
-    }
-    this.close();
+  private txLoop(): AsyncIterable<FwPacket> {
+    return safeIter(this.txQueue);
   }
 }

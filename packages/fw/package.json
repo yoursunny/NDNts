@@ -32,13 +32,9 @@
     "hirestime": "^6.1.0",
     "it-pushable": "^1.4.2",
     "mnemonist": "^0.39.0",
-    "p-fifo": "^1.0.0",
     "retry": "^0.13.1",
     "streaming-iterables": "^6.2.0",
     "tslib": "^2.3.1",
     "typed-emitter": "^2.1.0"
-  },
-  "devDependencies": {
-    "@types/p-fifo": "^1.0.0"
   }
 }

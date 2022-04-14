@@ -2,23 +2,35 @@ import { KeyMap, KeyMultiMap, KeyMultiSet } from "@ndn/util";
 
 import type { Name } from "./name";
 
-function keyOf(name: Name): string {
-  return name.valueHex;
+function keyOf(nameOrHex: Name | string): string {
+  return typeof nameOrHex === "string" ? nameOrHex : nameOrHex.valueHex;
 }
 
-export class NameMap<V> extends KeyMap<Name, V, string> {
+/**
+ * Map keyed by name.
+ * Lookups may accept either name or name.valueHex.
+ */
+export class NameMap<V> extends KeyMap<Name, V, string, string> {
   constructor() {
     super(keyOf);
   }
 }
 
-export class NameMultiMap<V> extends KeyMultiMap<Name, V, string> {
+/**
+ * MultiMap keyed by name.
+ * Lookups may accept either name or name.valueHex.
+ */
+export class NameMultiMap<V> extends KeyMultiMap<Name, V, string, string> {
   constructor() {
     super(keyOf);
   }
 }
 
-export class NameMultiSet extends KeyMultiSet<Name, string> {
+/**
+ * MultiSet keyed by name.
+ * Lookups may accept either name or name.valueHex.
+ */
+export class NameMultiSet extends KeyMultiSet<Name, string, string> {
   constructor() {
     super(keyOf);
   }
