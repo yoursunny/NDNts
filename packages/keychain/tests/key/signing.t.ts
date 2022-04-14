@@ -2,7 +2,8 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Data, Name, SigType } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
-import { Decoder, fromHex } from "@ndn/tlv";
+import { Decoder } from "@ndn/tlv";
+import { fromHex } from "@ndn/util";
 
 import { Certificate, createVerifier, EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, SigningAlgorithmListFull } from "../..";
 

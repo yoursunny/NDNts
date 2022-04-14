@@ -1,6 +1,7 @@
 import type { NamedSigner, NamedVerifier } from "@ndn/keychain";
 import { type LLDecrypt, type LLEncrypt, type SignedInterestPolicy, Component, Interest } from "@ndn/packet";
-import { Decoder, Encoder, EvDecoder, toUtf8 } from "@ndn/tlv";
+import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
+import { toUtf8 } from "@ndn/util";
 
 import * as crypto from "../crypto-common";
 import { C, TT } from "./an";

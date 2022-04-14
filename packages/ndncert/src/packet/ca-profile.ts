@@ -1,7 +1,8 @@
 import { type NamedVerifier, type SigningAlgorithm, Certificate, createVerifier, SigningAlgorithmListSlim } from "@ndn/keychain";
 import { Segment, Version } from "@ndn/naming-convention2";
 import { type Signer, Data, Name } from "@ndn/packet";
-import { type EncodableTlv, Decoder, Encoder, EvDecoder, NNI, toHex, toUtf8 } from "@ndn/tlv";
+import { type EncodableTlv, Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { toHex, toUtf8 } from "@ndn/util";
 import indentString from "indent-string";
 
 import { C, TT } from "./an";

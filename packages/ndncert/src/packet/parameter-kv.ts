@@ -1,4 +1,5 @@
-import { type Encodable, type EncodableTlv, EvDecoder, toUtf8 } from "@ndn/tlv";
+import { type Encodable, EvDecoder } from "@ndn/tlv";
+import { toUtf8 } from "@ndn/util";
 
 import { TT } from "./an";
 
@@ -36,12 +37,9 @@ export function parseEvDecoder<R extends { parameters?: ParameterKV }>(evd: EvDe
   evd.afterValueCallbacks.push((t) => finish(t.parameters!));
 }
 
-export function encode(kv?: ParameterKV): Encodable[] {
-  const list: EncodableTlv[] = [];
-  if (kv) {
-    for (const [key, value] of Object.entries(kv)) {
-      list.push([TT.ParameterKey, toUtf8(key)], [TT.ParameterValue, value]);
-    }
-  }
-  return list;
+export function encode(kv: ParameterKV = {}): Encodable[] {
+  return Object.entries(kv).flatMap(([key, value]) => [
+    [TT.ParameterKey, toUtf8(key)],
+    [TT.ParameterValue, value],
+  ]);
 }

@@ -1,5 +1,6 @@
 import { Data, Interest, Signer } from "@ndn/packet";
-import { Decoder, Encoder, EvDecoder, NNI, toUtf8 } from "@ndn/tlv";
+import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { toUtf8 } from "@ndn/util";
 
 import { ErrorCode, TT } from "./an";
 
