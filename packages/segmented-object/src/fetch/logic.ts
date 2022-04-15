@@ -54,8 +54,8 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
   private readonly ca: CongestionAvoidance;
   private readonly tl: TokenLimiter;
 
-  private pending = new Map<number, SegState>();
-  private retxQueue = new Set<number>();
+  private readonly pending = new Map<number, SegState>();
+  private readonly retxQueue = new Set<number>();
   private readonly retxLimit: number;
 
   private hiInterestSegNum: number;

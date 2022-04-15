@@ -2,9 +2,23 @@ import { CertNaming } from "@ndn/keychain";
 import type { NamingConvention } from "@ndn/packet";
 import { type NameLike, Component, Name } from "@ndn/packet";
 
-export type Vars = Map<string, Name>;
+export type Vars = ReadonlyMap<string, Name>;
+export namespace Vars {
+  /** Check if lhs and rhs are consistent, i.e. have no key with different values. */
+  export function consistent(lhs: Vars, rhs: Vars): boolean {
+    for (const [k, lv] of lhs) {
+      const rv = rhs.get(k);
+      if (rv && !lv.equals(rv)) {
+        return false;
+      }
+    }
+    return true;
+  }
+}
+
 export type VarsLike = Vars | Readonly<Record<string, NameLike>>;
 export namespace VarsLike {
+  /** Convert VarsLike to an iterable that may be passed to Map constructor to create Vars. */
   export function toIterable(vars: VarsLike): Iterable<[string, NameLike]> {
     return vars instanceof Map ? vars : Object.entries(vars);
   }
@@ -24,14 +38,11 @@ class MatchState {
       public readonly vars: Vars = new Map<string, Name>(),
   ) {}
 
-  /** Unconsumed name portion. */
-  public get tail() { return this.name.slice(this.pos); }
-
   /** Length of unconsumed name. */
   public get tailLength() { return this.name.length - this.pos; }
 
   /** Get first i components of unconsumed name. */
-  public tailPrefix(i: number) {
+  public tail(i = Infinity) {
     return this.name.slice(this.pos, i >= 0 ? this.pos + i : i);
   }
 
@@ -43,12 +54,13 @@ class MatchState {
   /**
    * Clone the state while consuming part of the name.
    * @param incrementPos how many components are consumed.
-   * @param vars updated variables.
+   * @param varsL updated variables.
    */
   public extend(incrementPos: number, ...varsL: Array<Iterable<readonly [string, Name]>>): MatchState {
-    varsL.unshift(this.vars);
+    const { vars } = this;
     return new MatchState(this.name, this.pos + incrementPos,
       new Map<string, Name>((function*() {
+        yield* vars;
         for (const vars of varsL) {
           yield* vars;
         }
@@ -109,8 +121,8 @@ export abstract class Pattern {
   public *build(...varsL: VarsLike[]): Iterable<Name> {
     const varsM = new Map<string, Name>();
     for (const vars of varsL) {
-      for (const [key, value] of VarsLike.toIterable(vars)) {
-        varsM.set(key, Name.from(value));
+      for (const [k, v] of VarsLike.toIterable(vars)) {
+        varsM.set(k, Name.from(v));
       }
     }
 
@@ -141,7 +153,7 @@ export class ConstPattern extends Pattern {
   public readonly name: Name;
 
   protected override *matchState(state: MatchState): Iterable<MatchState> {
-    if (state.tailPrefix(this.name.length).equals(this.name)) {
+    if (state.tail(this.name.length).equals(this.name)) {
       yield state.extend(this.name.length);
     }
   }
@@ -193,19 +205,7 @@ export class VariablePattern extends Pattern {
     }
 
     for (const m of this.inner.match(value)) {
-      const consistent = (() => {
-        if (!input) {
-          return true;
-        }
-        for (const [k, v] of m) {
-          const c = input.get(k);
-          if (c && !c.equals(v)) {
-            return false;
-          }
-        }
-        return true;
-      })();
-      if (consistent) {
+      if (!input || Vars.consistent(input, m)) {
         yield m;
       }
     }
@@ -217,7 +217,7 @@ export class VariablePattern extends Pattern {
 
   protected override *matchState(state: MatchState): Iterable<MatchState> {
     for (let i = this.minComps, max = Math.min(state.tailLength, this.maxComps); i <= max; ++i) {
-      const value = state.tailPrefix(i);
+      const value = state.tail(i);
       for (const innerVars of this.innerMatch(value)) {
         if (this.filtersAccept(value, innerVars)) {
           yield state.extend(i, innerVars, [[this.id, value]]);
@@ -290,7 +290,7 @@ export namespace VariablePattern {
     accept: (name: Name, vars: Vars) => boolean;
   }
 
-  /** Create a filter that accepts a name component that satisfies a convention. */
+  /** Create a filter that accepts a name component if it satisfies a convention. */
   export class ConventionFilter implements Filter {
     constructor(public readonly convention: NamingConvention<any>) {}
 
@@ -332,15 +332,13 @@ export class ConcatPattern extends Pattern {
 
   public override simplify(): Pattern {
     // flatten ConcatPattern
-    const flattened = this.flatten();
+    const flattened = flatten(this, ConcatPattern, "parts");
 
     // join adjacent ConstPattern
     const joined: Pattern[] = [];
     for (const part of flattened) {
-      if (part instanceof ConstPattern &&
-          joined.length > 0 &&
-          joined[joined.length - 1] instanceof ConstPattern) {
-        joined.push(new ConstPattern((joined.pop()! as ConstPattern).name.append(...part.name.comps)));
+      if (part instanceof ConstPattern && joined[joined.length - 1] instanceof ConstPattern) {
+        joined.push(new ConstPattern((joined.pop() as ConstPattern).name.append(...part.name.comps)));
       } else {
         joined.push(part);
       }
@@ -351,15 +349,6 @@ export class ConcatPattern extends Pattern {
       return joined[0]!;
     }
     return new ConcatPattern(joined);
-  }
-
-  private flatten(): Pattern[] {
-    return this.parts.flatMap((p) => {
-      if (p instanceof ConcatPattern) {
-        return p.flatten();
-      }
-      return p.simplify();
-    });
   }
 
   protected override *matchState(state: MatchState, partIndex = 0): Iterable<MatchState> {
@@ -399,22 +388,13 @@ export class AlternatePattern extends Pattern {
 
   public override simplify(): Pattern {
     // flatten AlternatePattern
-    const flattened = this.flatten();
+    const flattened = flatten(this, AlternatePattern, "choices");
 
     // reduce to the only choice
     if (flattened.length === 1) {
       return flattened[0]!;
     }
     return new AlternatePattern(flattened);
-  }
-
-  private flatten(): Pattern[] {
-    return this.choices.flatMap((p) => {
-      if (p instanceof AlternatePattern) {
-        return p.flatten();
-      }
-      return p.simplify();
-    });
   }
 
   protected override *matchState(state: MatchState): Iterable<MatchState> {
@@ -428,4 +408,13 @@ export class AlternatePattern extends Pattern {
       yield* Pattern.buildState(choice, state);
     }
   }
+}
+
+function flatten<T extends Pattern>(p: T, ctor: new() => T, field: keyof T): Pattern[] {
+  return (p[field] as unknown as Pattern[]).flatMap((c) => {
+    if (c instanceof ctor) {
+      return flatten(c, ctor, field);
+    }
+    return c.simplify();
+  });
 }

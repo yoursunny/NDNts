@@ -26,7 +26,7 @@ export class Fib {
     }
   }
 
-  public lookup(name: Name): Set<FaceImpl> {
+  public lookup(name: Name): ReadonlySet<FaceImpl> {
     const result = new Set<FaceImpl>();
     for (const entry of lpm(name, (prefixHex) => this.table.peek(prefixHex))) {
       let capture = false;

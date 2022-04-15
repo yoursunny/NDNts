@@ -33,7 +33,7 @@ export interface Forwarder extends TypedEmitter<Events> {
   readonly nodeNames: Name[];
 
   /** Logical faces. */
-  readonly faces: Set<FwFace>;
+  readonly faces: ReadonlySet<FwFace>;
 
   /** Add a logical face to the forwarding plane. */
   addFace(face: FwFace.RxTx | FwFace.RxTxDuplex, attributes?: FwFace.Attributes): FwFace;

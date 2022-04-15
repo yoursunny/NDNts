@@ -1,14 +1,14 @@
 import type { Name } from "@ndn/packet";
 import MultiMap from "mnemonist/multi-map.js";
 
-import type { Pattern, Vars, VarsLike } from "./pattern";
+import { type Pattern, type VarsLike, Vars } from "./pattern";
 
 /** Policy in a trust schema. */
 export class TrustSchemaPolicy {
   private readonly patterns = new Map<string, Pattern>();
   private readonly rules = new MultiMap<string, string>(Set);
 
-  public listPatterns(): Iterable<[string, Pattern]> {
+  public listPatterns(): Iterable<[id: string, pattern: Pattern]> {
     return this.patterns;
   }
 
@@ -64,20 +64,9 @@ export class TrustSchemaPolicy {
   public canSign(packet: TrustSchemaPolicy.MatchInput, signer: TrustSchemaPolicy.MatchInput): boolean {
     packet = this.match(packet);
     signer = this.match(signer);
-
     for (const { id: pId, vars: pVars } of packet) {
       for (const { id: sId, vars: sVars } of signer) {
-        if (!this.hasRule(pId, sId)) {
-          continue;
-        }
-        let ok = true;
-        for (const [k, sv] of sVars) {
-          const pv = pVars.get(k);
-          if (pv && !pv.equals(sv)) {
-            ok = false;
-          }
-        }
-        if (ok) {
+        if (this.hasRule(pId, sId) && Vars.consistent(pVars, sVars)) {
           return true;
         }
       }

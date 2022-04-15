@@ -54,9 +54,9 @@ export function simplify(filter: VariablePattern.Filter): VariablePattern.Filter
  * If allow set is specified, terms not in allow set are deleted.
  * If deny set is specified, terms in deny set are deleted.
  */
-export function simplify(filter: VariablePattern.Filter, allow: Set<string> | undefined): VariablePattern.Filter | undefined;
+export function simplify(filter: VariablePattern.Filter, allow: ReadonlySet<string> | undefined): VariablePattern.Filter | undefined;
 
-export function simplify(filter: VariablePattern.Filter, allow?: Set<string>) {
+export function simplify(filter: VariablePattern.Filter, allow?: ReadonlySet<string>) {
   if (filter instanceof ConstraintTerm && allow && !allow.has(filter.id)) {
     return undefined;
   }
