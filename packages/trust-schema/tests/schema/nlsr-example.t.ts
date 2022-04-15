@@ -4,28 +4,25 @@ import { type NamedSigner, Certificate, CertNaming, generateSigningKey, KeyChain
 import { Component, Data, Name } from "@ndn/packet";
 import { collect, take } from "streaming-iterables";
 
-import { pattern as P, printESM, TrustSchema, TrustSchemaPolicy, TrustSchemaSigner, versec2019 } from "../..";
+import { pattern as P, printESM, TrustSchema, TrustSchemaPolicy, TrustSchemaSigner, versec } from "../..";
 
 const NLSR_POLICY = `
-# adapted from https://pollere.net/Pdfdocs/BuildingBridge.pdf
+// adapted from https://pollere.net/Pdfdocs/BuildingBridge.pdf
 
-net = ndn
-site = edu/ucla
-# <opId> changed to <_opId>
-operator = Operator/<_opId>
-# <rtrName> changed to <_rtrName>
-rtr = Router/<_rtrName>
-# <_rtr> changed to <rtr>
-hello = <net>/<_nsite>/<_nrtr>/nlsr/INFO/<rtr>/<_version>
-discovery = <_seqNo>
-segment = <_seqNo>/<_version>/<_segmentNo>
-lsa = localhop/<net>/nlsr/LSA/<site>/<rtr>/<_type>/(<discovery>|<segment>)
-packet = <hello> | <lsa>
-netCert = <net>/<_KEY>
-siteCert = <net>/<site>/<_KEY>
-opCert = <net>/<site>/<operator>/<_KEY>
-rtrCert = <net>/<site>/<rtr>/<_KEY>
-nlsrCert = <net>/<site>/<rtr>/nlsr/<_KEY>
+_net: "ndn"
+_site: "edu"/"ucla"
+_operator: "_operator"/opId
+_rtr: "Router"/rtrName
+hello: _net/nsite/nrtr/"nlsr"/"INFO"/_rtr/version
+_discovery: seqNo
+_segment: seqNo/version/segmentNo
+lsa: "localhop"/_net/"nlsr"/"LSA"/_site/_rtr/type/(_discovery|_segment)
+packet: hello | lsa
+netCert: _net/"KEY"/_/_/_
+siteCert: _net/_site/"KEY"/_/_/_
+opCert: _net/_site/_operator/"KEY"/_/_/_
+rtrCert: _net/_site/_rtr/"KEY"/_/_/_
+nlsrCert: _net/_site/_rtr/"nlsr"/"KEY"/_/_/_
 packet <= nlsrCert <= rtrCert <= opCert <= siteCert <= netCert
 `;
 
@@ -48,7 +45,7 @@ let siteCert: NameVars;
 let netCert: NameVars;
 
 beforeAll(async () => {
-  policy = versec2019.load(NLSR_POLICY);
+  policy = versec.load(NLSR_POLICY);
 
   const certSuffix = [CertNaming.KEY, "key-id", "issuer-id", "cert-version"];
   function buildName(id: string, vars: P.VarsLike): NameVars {
@@ -92,7 +89,7 @@ beforeAll(async () => {
 });
 
 test("print", () => {
-  expect(versec2019.print(policy)).toMatch(/ = /);
+  expect(versec.print(policy)).toMatch(/: /);
   expect(printESM(policy)).toMatch(/policy\.addPattern/);
 });
 

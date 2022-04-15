@@ -9,7 +9,7 @@ test("safeIter ignore", async () => {
   const collector = collect(safeIter(it));
 
   it.push(1);
-  it.push(2); // eslint-disable-line unicorn/no-array-push-push
+  it.push(2);
   await delay(10);
   it.end(new Error("X"));
   it.push(3);
@@ -24,7 +24,7 @@ test("safeIter catch", async () => {
   const collector = collect(safeIter(it, onError));
 
   it.push(1);
-  it.push(2); // eslint-disable-line unicorn/no-array-push-push
+  it.push(2);
   await delay(10);
   it.end(new Error("X"));
   it.push(3);
@@ -37,9 +37,9 @@ test("safeIter catch", async () => {
 test("flatMapOnce", async () => {
   const it = pushable<number>();
   it.push(1);
-  it.push(2); // eslint-disable-line unicorn/no-array-push-push
-  it.push(3); // eslint-disable-line unicorn/no-array-push-push
-  it.push(4); // eslint-disable-line unicorn/no-array-push-push
+  it.push(2);
+  it.push(3);
+  it.push(4);
   it.end();
 
   const a = await collect(flatMapOnce((n): Array<number | number[]> => {

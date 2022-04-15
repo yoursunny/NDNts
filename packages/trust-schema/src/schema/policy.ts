@@ -30,7 +30,7 @@ export class TrustSchemaPolicy {
     this.patterns.set(id, pattern);
   }
 
-  public listRules(): Iterable<[string, string]> {
+  public listRules(): Iterable<[packetId: string, signerId: string]> {
     return this.rules;
   }
 
@@ -39,7 +39,7 @@ export class TrustSchemaPolicy {
   }
 
   public addRule(packetId: string, signerId: string): void {
-    if (this.rules.get(packetId)?.has(signerId)) {
+    if (this.hasRule(packetId, signerId)) {
       return;
     }
     this.getPattern(packetId);

@@ -14,7 +14,7 @@ This package implements trust schemas.
   * [ ] automatically request certificates from remote certificate authority
 
 ```ts
-import { TrustSchema, TrustSchemaSigner, TrustSchemaVerifier, printESM, versec2019, versec2021 } from "@ndn/trust-schema";
+import { TrustSchema, TrustSchemaSigner, TrustSchemaVerifier, printESM, versec } from "@ndn/trust-schema";
 
 // other imports for examples
 import { Certificate, KeyChain, ValidityPeriod, generateSigningKey } from "@ndn/keychain";
@@ -32,16 +32,22 @@ According to his definition:
   It can either associate an application data name with its signing key name, or associate a certificate name with its issuer key name.
 * One or more trust anchors, i.e. pre-authenticated keys, are included in the trust schema to serve as bootstrapping points of the trust model.
 
-Kathleen Nichols presented a preview of **Versatile Security Toolkit (VerSec)** in [Building a Bridge from Applications to NDN](https://pollere.net/Pdfdocs/BuildingBridge.pdf) at 2019 NDN Community Meeting.
-Page 14 shows the syntax of a language for expressing trust rules.
-It contains two parts:
+Pollere LLC released **Versatile Security Toolkit (VerSec)** as part of [Data-centric Communications Toolkit (DCT)](https://github.com/pollere/DCT).
+It has a [schema description language](https://github.com/pollere/DCT/blob/a5399b6b74a185755d5fc5013b8bbef46a7f6ad6/tools/compiler/doc/language.md) that describes constraints on:
 
-* A list of patterns to match (part of) packet names.
-* A signing chain that specifies the trust rules using defined patterns.
+* Layout and components of names.
+* Structural and signing relationships between names.
+
+The language specification is fairly complex and contains certain ambiguity.
+The compiler implementation is found to have several limitations.
+
+python-ndn library authors defined **Light VerSec (LVS)**, a lightweight modification of VerSec that focuses on signing key validation.
+Its [syntax and semantics](https://python-ndn.readthedocs.io/en/latest/src/lvs/lvs.html) are similar to VerSec.
+For ease of processing, LVS introduced some restrictions on identifier names and token ordering.
 
 ## Trust Schema Representation
 
-The trust schema implementation in this package is inspired by the above documents.
+The trust schema implementation in this package is inspired by the above documents and projects.
 The overall structure is:
 
 ```text
@@ -79,73 +85,9 @@ It must be one of these sub-types:
 * `ConcatPattern` concatenates two or more other patterns.
 * `AlternatePattern` accepts any match among two or more possible patterns.
 
-## VerSec2019 Syntax
+## VerSec Syntax
 
-This package can import a trust policy written in a language similar to [Building a Bridge from Applications to NDN](https://pollere.net/Pdfdocs/BuildingBridge.pdf) page 14.
-The following syntax is accepted:
-
-```abnf
-policy = line *(LF line)
-line = *SP (comment | patterndef | chain) *SP
-
-comment = "#" *(SP | VCHAR)
-
-patterndef = id *SP "=" *SP pattern
-pattern = const | variable | patternref | concat | alternate | ("(" pattern ")")
-const = name_component *("/" name_component)
-variable = "<_" var ">"
-patternref = "<" id ">"
-concat = pattern 1*(*SP "/" *SP pattern)
-alternate = pattern 1*(*SP "|" *SP pattern)
-
-chain = id 1*(*SP "<=" *SP id)
-
-var = ident
-id = ident
-ident = ALPHA *(ALPHA | DIGIT)
-```
-
-* VariablePattern matches exactly one name component.
-* VariablePattern cannot have JavaScript function filters.
-* CertNamePattern is created by the special variable `<_KEY>` (case sensitive).
-* `<id>` references an existing pattern by its id. The referenced pattern must be defined above.
-
-`versec2019.load()` function imports a policy:
-
-```ts
-const policy = versec2019.load(`
-site = a/blog
-root = <site>/<_KEY>
-admin = <site>/admin/<_admin>/<_KEY>
-author = <site>/author/<_author>/<_KEY>
-article = <site>/article/<_category>/<_year>/<_month>
-
-article <= author <= admin <= root
-`);
-```
-
-`versec2019.print()` function prints the policy.
-You may notice that the output differs from the input, because the library has flattened the patterns for faster execution.
-
-```ts
-console.group("VerSec2019 policy");
-console.log(versec2019.print(policy));
-console.groupEnd();
-```
-
-With the policy in place, we can generate a root key and make the trust schema object.
-
-```ts
-const keyChain = KeyChain.createTemp();
-const [rootPvt, rootPub] = await generateSigningKey(keyChain, "/a/blog");
-const rootCert = await Certificate.selfSign({ publicKey: rootPub, privateKey: rootPvt });
-await keyChain.insertCert(rootCert);
-const schema = new TrustSchema(policy, [rootCert]);
-```
-
-## VerSec2021 Syntax
-
-This package has partial support of the [VerSec Domain Specific Language](https://github.com/pollere/DCT/blob/a5399b6b74a185755d5fc5013b8bbef46a7f6ad6/tools/compiler/doc/language.md) (VerSec2021) syntax, including:
+This package has partial support of the VerSec syntax, including:
 
 * component constraints
 * `timestamp` function: translates to a `VariablePattern` that matches a Timestamp name component
@@ -156,16 +98,14 @@ This package has partial support of the [VerSec Domain Specific Language](https:
 Some notes and limitations:
 
 * This implementation has very limited compile-time schema validation.
-* Binary schema format is not supported.
 * You can have multiple trust anchors, despite that the VerSec spec allows only one trust anchor.
 * `CertNamePattern` is created by `"KEY"/_/_/_`, which should be included at the end of each certificate name.
 * Identifiers starting with `_` cannot be used in signing constraints and signing chains.
 
-`versec2021.load()` function imports a policy:
+`versec.load()` function imports a policy written in VerSec syntax:
 
 ```ts
-const policy2021 = versec2021.load(`
-// This is the same policy as the previous example, written in VerSec2021 syntax.
+const policy = versec.load(`
 _site: "a"/"blog"
 root: _site/_KEY
 article: _site/"article"/category/year/month <= author
@@ -180,11 +120,13 @@ _KEY: "KEY"/_/_/_
 `);
 ```
 
-`versec2021.print()` function prints the policy:
+`versec.print()` function prints the policy in VerSec syntax.
+You may notice that the output differs from the input, because the library has flattened the patterns for faster execution.
+Occasionally, certain features may not print correctly, especially if the policy was imported from a different syntax.
 
 ```ts
-console.group("VerSec2021 policy");
-console.log(versec2021.print(policy2021));
+console.group("VerSec policy");
+console.log(versec.print(policy));
 console.groupEnd();
 ```
 
@@ -194,9 +136,19 @@ However, it cannot automatically convert certain VerSec features, and manual edi
 Writing the policy in code can reduce JavaScript bundle size in a web application, because the VerSec compiler is no longer needed at runtime.
 
 ```ts
-console.group("VerSec2021 policy in ESM");
-console.log(printESM(policy2021));
+console.group("VerSec policy in ESM");
+console.log(printESM(policy));
 console.groupEnd();
+```
+
+With the policy in place, we can generate a root key and make the trust schema object.
+
+```ts
+const keyChain = KeyChain.createTemp();
+const [rootPvt, rootPub] = await generateSigningKey(keyChain, "/a/blog");
+const rootCert = await Certificate.selfSign({ publicKey: rootPub, privateKey: rootPvt });
+await keyChain.insertCert(rootCert);
+const schema = new TrustSchema(policy, [rootCert]);
 ```
 
 ## Trust Schema Signer
@@ -245,7 +197,7 @@ It can collect intermediate certificates from a local KeyChain and from the netw
 
 ```ts
 const schemaVerifier = new TrustSchemaVerifier({
-  schema: new TrustSchema(policy2021, [rootCert]),
+  schema: new TrustSchema(policy, [rootCert]),
   offline: true,
   keyChain,
 });

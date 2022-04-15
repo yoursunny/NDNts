@@ -42,7 +42,7 @@ test.each(TABLE)("reg $#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
 
   const verbs: string[] = [];
   const remoteProcess = (interest: Interest, token: unknown) => {
-    expect(interest.name).toHaveLength(expectedPrefix.length as number + 4);
+    expect(interest.name).toHaveLength(expectedPrefix.length + 4);
     expect(interest.name.at(-1).is(ParamsDigest)).toBeTruthy();
     const verb = interest.name.at(-3).text;
     verbs.push(verb);
@@ -82,7 +82,7 @@ test.each(TABLE)("reg $#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
   });
 
   const appFace = fw.addFace(new NoopFace());
-  appFace.addAnnouncement(new Name("/R"));
+  appFace.addAnnouncement("/R");
   await delay(70);
   expect(verbs).toHaveLength(2);
   expect(verbs[0]).toBe("register"); // status 400
@@ -99,7 +99,7 @@ test.each(TABLE)("reg $#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
   expect(verbs).toHaveLength(4);
   expect(verbs[3]).toBe("register");
 
-  appFace.removeAnnouncement(new Name("/R"));
+  appFace.removeAnnouncement("/R");
   await delay(70);
   expect(verbs).toHaveLength(6);
   expect(verbs[4]).toBe("unregister"); // status 400

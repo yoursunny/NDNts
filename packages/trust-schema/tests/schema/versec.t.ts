@@ -2,9 +2,9 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Name } from "@ndn/packet";
 
-import { TrustSchemaPolicy, versec2021 } from "../..";
+import { TrustSchemaPolicy, versec } from "../..";
 
-const { ast: A, nest: N, token: T } = versec2021;
+const { ast: A, nest: N, token: T } = versec;
 
 test("parser", () => {
   const tokens = Array.from(T.scan(`
@@ -73,7 +73,7 @@ test("parser", () => {
 });
 
 test("compile", () => {
-  const policy = versec2021.load(`
+  const policy = versec.load(`
     // modified from DNMP example
     _network: "example"/"net2"
     rootCert: _network/_key
@@ -90,7 +90,7 @@ test("compile", () => {
     reply: _command/deviceName/_replyTime & { _topic: "reply" } & { _replyTime: timestamp() }
     _key: "KEY"/_/_/_
   `);
-  expect(versec2021.load(versec2021.print(policy))).toBeInstanceOf(TrustSchemaPolicy);
+  expect(versec.load(versec.print(policy))).toBeInstanceOf(TrustSchemaPolicy);
 
   const adminCert = new Name("/example/net2/admin/yoursunny/KEY/7daa8ebf");
   const userCert = new Name("/example/net2/user/sales/person/KEY/c00240ba");
@@ -129,12 +129,12 @@ test("compile", () => {
   expect(policy.canSign(userCommand, deviceCert)).toBeFalsy();
   expect(policy.canSign(reply, deviceCert)).toBeTruthy();
 
-  expect(() => versec2021.load(`
+  expect(() => versec.load(`
     s: "a"
     s: "b"
   `)).toThrow(/duplicate definition/);
-  expect(() => versec2021.load("s: s")).toThrow(/cyclic dependency/);
-  expect(() => versec2021.load("s: timestamp(\"a\")")).toThrow(/timestamp\(.*arguments/);
-  expect(() => versec2021.load("s: a/sysid(\"b\")")).toThrow(/sysid\(.*arguments/);
-  expect(() => versec2021.load("s: foo()")).toThrow(/unknown function/);
+  expect(() => versec.load("s: s")).toThrow(/cyclic dependency/);
+  expect(() => versec.load("s: timestamp(\"a\")")).toThrow(/timestamp\(.*arguments/);
+  expect(() => versec.load("s: a/sysid(\"b\")")).toThrow(/sysid\(.*arguments/);
+  expect(() => versec.load("s: foo()")).toThrow(/unknown function/);
 });

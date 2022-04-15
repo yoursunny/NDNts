@@ -12,14 +12,14 @@
     "test": "jest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@6.32.6",
+  "packageManager": "pnpm@6.32.7",
   "devDependencies": {
     "@mshipov/typedoc-plugin-monorepo": "^0.2.2",
     "@types/jest": "^27.4.1",
-    "@types/node": "^17.0.23",
+    "@types/node": "^17.0.24",
     "@types/wtfnode": "^0.7.0",
     "@typescript/lib-dom": "npm:@types/web@0.0.61",
-    "@yoursunny/xo-config": "0.48.0",
+    "@yoursunny/xo-config": "0.48.1",
     "codedown": "^2.2.0",
     "expect": "^27.5.1",
     "jest": "^27.5.1",
