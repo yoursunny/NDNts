@@ -9,12 +9,12 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
         with:
           path: ~/.pnpm-store
           key: 16-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
       - run: corepack pnpm install
@@ -26,16 +26,16 @@ jobs:
   unittest:
     strategy:
       matrix:
-        node: [16, 17]
+        node: [16, 18]
       fail-fast: false
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
         with:
           path: ~/.pnpm-store
           key: ${{ matrix.node }}-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
       - name: install dependencies
@@ -58,14 +58,14 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
         with:
           path: ~/.pnpm-store
-          key: 17-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v2
+          key: 18-${{ hashFiles('**/package.json') }}
+      - uses: actions/setup-node@v3
         with:
-          node-version: 17
+          node-version: 18
       - name: install dependencies
         run: |
           echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu focal main" \
@@ -89,12 +89,12 @@ jobs:
     if: ${{ github.repository == 'yoursunny/NDNts' && github.event_name == 'push' }}
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
         with:
           path: ~/.pnpm-store
           key: 16-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
       - run: corepack pnpm install

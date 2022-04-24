@@ -32,6 +32,6 @@
     "@ndn/l3face": "workspace:*",
     "@types/web-bluetooth": "^0.0.14",
     "event-iterator": "^2.0.0",
-    "tslib": "^2.3.1"
+    "tslib": "^2.4.0"
   }
 }

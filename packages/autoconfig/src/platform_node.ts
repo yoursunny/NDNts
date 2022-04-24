@@ -11,15 +11,19 @@ export function fetch(input: RequestInfo, init?: RequestInit): Promise<Response>
   return nodeFetch(input as any, init as any) as any;
 }
 
-function hasAddressFamily(family: os.NetworkInterfaceInfo["family"]): boolean {
+function hasAddressFamily(family: 4 | 6): boolean {
+  // https://github.com/nodejs/node/issues/42787
+  // Node 16.x: NetworkInterfaceInfo.family is either "IPv4" or "IPv6"
+  // Node 18.x: NetworkInterfaceInfo.family is either 4 or 6
+  const accepted = new Set([family, `IPv${family}`]);
   return Object.values(os.networkInterfaces()).some(
-    (addrs) => addrs?.some((addr) => addr.family === family));
+    (addrs) => addrs?.some((addr) => accepted.has(addr.family)));
 }
 
 export const FCH_DEFAULTS: PlatformFchDefaults = {
   transports() { return ["udp"]; },
-  get hasIPv4() { return hasAddressFamily("IPv4"); },
-  get hasIPv6() { return hasAddressFamily("IPv6"); },
+  get hasIPv4() { return hasAddressFamily(4); },
+  get hasIPv6() { return hasAddressFamily(6); },
 };
 
 export async function getDefaultGateway(): Promise<string> {

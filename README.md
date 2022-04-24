@@ -13,7 +13,7 @@
 
 Supported platforms include:
 
-* Node.js: 16.x and 17.x, on Windows and Linux.
+* Node.js: 16.x and 18.x, on Windows and Linux.
 * Bundlers: webpack 5.
 * Firefox: latest version on Windows and Mac.
 * Chrome: latest version on Windows, Mac, Android, and iOS 15.

@@ -34,12 +34,12 @@
     "@ndn/util": "workspace:*",
     "@yoursunny/psync-bloom": "github:yoursunny/PSyncBloom-wasm#build",
     "applymixins": "^1.1.0",
-    "mnemonist": "^0.39.0",
+    "mnemonist": "^0.39.1",
     "murmurhash3js-revisited": "^3.0.0",
-    "obliterator": "^2.0.2",
+    "obliterator": "^2.0.3",
     "p-defer": "^3.0.0",
     "pako": "^2.0.4",
-    "tslib": "^2.3.1",
+    "tslib": "^2.4.0",
     "typed-emitter": "^2.1.0"
   },
   "devDependencies": {

@@ -31,10 +31,10 @@
     "@types/retry": "^0.12.1",
     "hirestime": "^6.1.0",
     "it-pushable": "^1.4.2",
-    "mnemonist": "^0.39.0",
+    "mnemonist": "^0.39.1",
     "retry": "^0.13.1",
     "streaming-iterables": "^6.2.0",
-    "tslib": "^2.3.1",
+    "tslib": "^2.4.0",
     "typed-emitter": "^2.1.0"
   }
 }

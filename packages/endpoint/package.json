@@ -32,7 +32,7 @@
     "applymixins": "^1.1.0",
     "it-pushable": "^1.4.2",
     "streaming-iterables": "^6.2.0",
-    "tslib": "^2.3.1"
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
     "@ndn/keychain": "workspace:*",
