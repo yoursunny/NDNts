@@ -1,7 +1,7 @@
 import { L3Face, rxFromPacketIterable, Transport, txToStream } from "@ndn/l3face";
 import type { Memif } from "memif";
 import { createRequire } from "node:module";
-import pEvent from "p-event";
+import { pEvent } from "p-event";
 
 // don't name this 'require' to avoid @typescript-eslint/no-require-imports
 const requir = createRequire(import.meta.url);

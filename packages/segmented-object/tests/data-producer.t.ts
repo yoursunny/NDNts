@@ -7,6 +7,7 @@ import { DataTape } from "@ndn/repo-api";
 import { setTimeout as delay } from "node:timers/promises";
 import { DuplexMock } from "stream-mock";
 import { collect } from "streaming-iterables";
+import { expect, test } from "vitest";
 
 import { BufferChunkSource, DataProducer, IterableChunkSource, serve } from "..";
 import { makeObjectBody } from "../test-fixture/object-body";

@@ -2,6 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Data, Name, SigType } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
+import { expect, test } from "vitest";
 
 import { Certificate, CertNaming, createVerifier, generateSigningKey, SigningAlgorithmListFull, SigningAlgorithmListSlim, ValidityPeriod } from "../..";
 import * as ndn_testbed_certs from "../../test-fixture/ndn-testbed-certs";

@@ -1,4 +1,5 @@
 import { Component, Name } from "@ndn/packet";
+import { expect } from "vitest";
 
 import { Certificate, ECDSA, generateSigningKey, KeyChain, ValidityPeriod } from "..";
 

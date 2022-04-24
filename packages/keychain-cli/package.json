@@ -34,7 +34,7 @@
     "@ndn/util": "workspace:*",
     "@strattadb/environment": "^8.0.2",
     "fast-chunk-string": "^1.0.1",
-    "get-stdin": "^8.0.0",
+    "get-stdin": "^9.0.0",
     "graceful-fs": "^4.2.10",
     "hard-rejection": "^2.1.0",
     "leveldown": "^6.1.1",

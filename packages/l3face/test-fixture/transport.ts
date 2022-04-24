@@ -1,6 +1,7 @@
 import { FwPacket } from "@ndn/fw";
 import { Data, Interest } from "@ndn/packet";
-import abortable from "abortable-iterator";
+import { abortableSource } from "abortable-iterator";
+import { expect } from "vitest";
 
 import { L3Face, Transport } from "..";
 
@@ -34,7 +35,7 @@ export async function execute<T extends Transport>(
     faceB.tx({ async *[Symbol.asyncIterator]() {
       const it = faceB.rx[Symbol.asyncIterator]();
       it.return = undefined;
-      for await (const { l3 } of abortable({ [Symbol.asyncIterator]() { return it; } },
+      for await (const { l3 } of abortableSource({ [Symbol.asyncIterator]() { return it; } },
         abortFaceB.signal, { returnOnAbort: true })) {
         if (l3 instanceof Interest) {
           const name = l3.name.toString();

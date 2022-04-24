@@ -4,69 +4,76 @@ import { Data, Name, SigType } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 import { Decoder } from "@ndn/tlv";
 import { fromHex } from "@ndn/util";
+import { describe, expect, test } from "vitest";
 
 import { Certificate, createVerifier, EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, SigningAlgorithmListFull } from "../..";
 
-test.each(TestSignVerify.makeTable("curve", EcCurve.Choices))("ECDSA sign-verify %p", async ({ cls, curve }) => {
-  const [pvtA, pubA] = await generateSigningKey("/A/KEY/x", ECDSA, { curve });
-  const [pvtB, pubB] = await generateSigningKey("/B/KEY/x", ECDSA, { curve });
+describe.each(EcCurve.Choices)("ECDSA %s", (curve) => {
+  test.each(TestSignVerify.PacketTable)("sign-verify %j", async ({ Packet }) => {
+    const [pvtA, pubA] = await generateSigningKey("/A/KEY/x", ECDSA, { curve });
+    const [pvtB, pubB] = await generateSigningKey("/B/KEY/x", ECDSA, { curve });
 
-  expect(pvtA.name).toEqualName("/A/KEY/x");
-  expect(pubA.name).toEqualName("/A/KEY/x");
-  expect(pvtB.name).toEqualName("/B/KEY/x");
-  expect(pubB.name).toEqualName("/B/KEY/x");
+    expect(pvtA.name).toEqualName("/A/KEY/x");
+    expect(pubA.name).toEqualName("/A/KEY/x");
+    expect(pvtB.name).toEqualName("/B/KEY/x");
+    expect(pubB.name).toEqualName("/B/KEY/x");
 
-  const record = await TestSignVerify.execute(cls, pvtA, pubA, pvtB, pubB);
-  TestSignVerify.check(record);
-  expect(record.sA0.sigInfo.type).toBe(SigType.Sha256WithEcdsa);
-  expect(record.sA0.sigInfo.keyLocator?.name).toEqualName(pvtA.name);
+    const record = await TestSignVerify.execute(Packet, pvtA, pubA, pvtB, pubB);
+    TestSignVerify.check(record);
+    expect(record.sA0.sigInfo.type).toBe(SigType.Sha256WithEcdsa);
+    expect(record.sA0.sigInfo.keyLocator?.name).toEqualName(pvtA.name);
+  });
+
+  test("load", async () => {
+    const keyChain = KeyChain.createTemp();
+    const name = new Name("/my/KEY/x");
+    await generateSigningKey(keyChain, name, ECDSA, { curve });
+
+    const { signer, publicKey } = await keyChain.getKeyPair(name);
+    expect(signer.sigType).toBe(SigType.Sha256WithEcdsa);
+
+    const cert = await Certificate.selfSign({ privateKey: signer, publicKey });
+    const verifier = await createVerifier(cert);
+    expect(verifier.name).toEqualName(signer.name);
+    expect(verifier.sigType).toBe(SigType.Sha256WithEcdsa);
+    await verifier.verify(cert.data);
+  });
 });
 
-test.each(EcCurve.Choices)("ECDSA load %p", async (curve) => {
-  const keyChain = KeyChain.createTemp();
-  const name = new Name("/my/KEY/x");
-  await generateSigningKey(keyChain, name, ECDSA, { curve });
+describe.each(RsaModulusLength.Choices)("RSA %d", (modulusLength) => {
+  describe.each(TestSignVerify.PacketTable)("sign-verify %j", ({ Packet }) => {
+    test("", async () => {
+      const [pvtA, pubA] = await generateSigningKey("/A/KEY/x", RSA, { modulusLength });
+      const [pvtB, pubB] = await generateSigningKey("/B/KEY/x", RSA, { modulusLength });
 
-  const { signer, publicKey } = await keyChain.getKeyPair(name);
-  expect(signer.sigType).toBe(SigType.Sha256WithEcdsa);
+      const record = await TestSignVerify.execute(Packet, pvtA, pubA, pvtB, pubB);
+      TestSignVerify.check(record, { deterministic: true });
+      expect(record.sA0.sigInfo.type).toBe(SigType.Sha256WithRsa);
+      expect(record.sA0.sigInfo.keyLocator?.name).toEqualName(pvtA.name);
+    }, 10000);
+  });
 
-  const cert = await Certificate.selfSign({ privateKey: signer, publicKey });
-  const verifier = await createVerifier(cert);
-  expect(verifier.name).toEqualName(signer.name);
-  expect(verifier.sigType).toBe(SigType.Sha256WithEcdsa);
-  await verifier.verify(cert.data);
+  test("load", async () => {
+    const keyChain = KeyChain.createTemp(SigningAlgorithmListFull);
+    const name = new Name("/my/KEY/x");
+    await generateSigningKey(keyChain, name, RSA, { modulusLength });
+
+    const { signer, publicKey } = await keyChain.getKeyPair(name);
+    expect(signer.sigType).toBe(SigType.Sha256WithRsa);
+
+    const cert = await Certificate.selfSign({ privateKey: signer, publicKey });
+    const verifier = await createVerifier(cert, SigningAlgorithmListFull);
+    expect(verifier.name).toEqualName(signer.name);
+    expect(verifier.sigType).toBe(SigType.Sha256WithRsa);
+    await verifier.verify(cert.data);
+  }, 10000);
 });
 
-test.each(TestSignVerify.makeTable("modulusLength", RsaModulusLength.Choices))("RSA sign-verify %p", async ({ cls, modulusLength }) => {
-  const [pvtA, pubA] = await generateSigningKey("/A/KEY/x", RSA, { modulusLength });
-  const [pvtB, pubB] = await generateSigningKey("/B/KEY/x", RSA, { modulusLength });
-
-  const record = await TestSignVerify.execute(cls, pvtA, pubA, pvtB, pubB);
-  TestSignVerify.check(record, { deterministic: true });
-  expect(record.sA0.sigInfo.type).toBe(SigType.Sha256WithRsa);
-  expect(record.sA0.sigInfo.keyLocator?.name).toEqualName(pvtA.name);
-}, 10000);
-
-test.each(RsaModulusLength.Choices)("RSA load %p", async (modulusLength) => {
-  const keyChain = KeyChain.createTemp(SigningAlgorithmListFull);
-  const name = new Name("/my/KEY/x");
-  await generateSigningKey(keyChain, name, RSA, { modulusLength });
-
-  const { signer, publicKey } = await keyChain.getKeyPair(name);
-  expect(signer.sigType).toBe(SigType.Sha256WithRsa);
-
-  const cert = await Certificate.selfSign({ privateKey: signer, publicKey });
-  const verifier = await createVerifier(cert, SigningAlgorithmListFull);
-  expect(verifier.name).toEqualName(signer.name);
-  expect(verifier.sigType).toBe(SigType.Sha256WithRsa);
-  await verifier.verify(cert.data);
-}, 10000);
-
-test.each(TestSignVerify.makeTable())("HMAC sign-verify %p", async ({ cls }) => {
+test.each(TestSignVerify.PacketTable)("HMAC sign-verify %j", async ({ Packet }) => {
   const [pvtA, pubA] = await generateSigningKey("/A/KEY/x", HMAC);
   const [pvtB, pubB] = await generateSigningKey("/B/KEY/x", HMAC);
 
-  const record = await TestSignVerify.execute(cls, pvtA, pubA, pvtB, pubB);
+  const record = await TestSignVerify.execute(Packet, pvtA, pubA, pvtB, pubB);
   TestSignVerify.check(record, { deterministic: true });
   expect(record.sA0.sigInfo.type).toBe(SigType.HmacWithSha256);
   expect(record.sA0.sigInfo.keyLocator?.name).toEqualName(pvtA.name);

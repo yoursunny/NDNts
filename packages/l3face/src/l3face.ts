@@ -2,10 +2,10 @@ import { type FwFace, Forwarder, FwPacket } from "@ndn/fw";
 import { LpService } from "@ndn/lp";
 import { type NameLike, Interest } from "@ndn/packet";
 import { asDataView } from "@ndn/util";
-import abortable, { AbortError as IteratorAbortError } from "abortable-iterator";
-import pushable from "it-pushable";
+import { abortableSource, AbortError as IteratorAbortError } from "abortable-iterator";
+import { pushable } from "it-pushable";
 import { EventEmitter } from "node:events";
-import pEvent from "p-event";
+import { pEvent } from "p-event";
 import * as retry from "retry";
 import { consume, filter, map, pipeline } from "streaming-iterables";
 import type TypedEmitter from "typed-emitter";
@@ -161,9 +161,9 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
       void onStateChange.then(() => abort.abort());
 
       try {
-        const txSource = abortable<Uint8Array>(txSourceIterator as any, abort.signal);
+        const txSource = abortableSource<Uint8Array>(txSourceIterator as any, abort.signal);
         if (this.state === L3Face.State.UP) {
-          this.rxSources.push(abortable(this.transport.rx, abort.signal));
+          this.rxSources.push(abortableSource(this.transport.rx, abort.signal));
           await this.transport.tx(txSource);
         } else {
           await consume(txSource);

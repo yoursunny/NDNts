@@ -1,4 +1,5 @@
 import { setTimeout as delay } from "node:timers/promises";
+import { expect, test, vi } from "vitest";
 
 import { Closers } from "..";
 
@@ -7,10 +8,10 @@ test("closers", async () => {
   expect(closers).toHaveLength(0);
 
   const c0 = {
-    close: jest.fn<void, []>(),
+    close: vi.fn<[], void>(),
   };
   const c1 = {
-    close: jest.fn<number, []>().mockReturnValue(1),
+    close: vi.fn<[], number>().mockReturnValue(1),
   };
 
   closers.push(c0, c1);
@@ -27,9 +28,9 @@ test("closers", async () => {
   expect(c0.close).toHaveBeenCalledTimes(1);
   expect(c1.close).toHaveBeenCalledTimes(1);
 
-  const f2 = jest.fn<void, []>();
-  const f3 = jest.fn<void, []>();
-  const f4 = jest.fn<void, []>();
+  const f2 = vi.fn<[], void>();
+  const f3 = vi.fn<[], void>();
+  const f4 = vi.fn<[], void>();
   closers.addTimeout(setTimeout(f2, 10));
   closers.addTimeout(setTimeout(f3, 500));
   const t4 = closers.addTimeout(setTimeout(f3, 500));

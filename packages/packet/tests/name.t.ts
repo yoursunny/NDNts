@@ -1,6 +1,7 @@
 import "../test-fixture/expect";
 
 import { Decoder } from "@ndn/tlv";
+import { expect, test } from "vitest";
 
 import { AltUri, Component, Name } from "..";
 

@@ -37,7 +37,7 @@
     "mnemonist": "^0.39.1",
     "murmurhash3js-revisited": "^3.0.0",
     "obliterator": "^2.0.3",
-    "p-defer": "^3.0.0",
+    "p-defer": "^4.0.0",
     "pako": "^2.0.4",
     "tslib": "^2.4.0",
     "typed-emitter": "^2.1.0"

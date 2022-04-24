@@ -34,7 +34,7 @@
     "@ndn/ws-transport": "workspace:*",
     "default-gateway": "^6.0.3",
     "hirestime": "^6.1.0",
-    "node-fetch": "^2.6.7",
+    "node-fetch": "^3.2.3",
     "tslib": "^2.4.0"
   },
   "devDependencies": {

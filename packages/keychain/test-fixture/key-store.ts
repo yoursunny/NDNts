@@ -1,4 +1,5 @@
 import { Name, SigType } from "@ndn/packet";
+import { expect } from "vitest";
 
 import { type NamedSigner, type NamedVerifier, ECDSA, generateSigningKey, HMAC, KeyChain, RSA } from "..";
 

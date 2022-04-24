@@ -38,7 +38,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
-      - name: install dependencies
+      - name: Install dependencies
         run: |
           echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu focal main" \
             | sudo tee /etc/apt/sources.list.d/nfd-nightly.list
@@ -47,7 +47,7 @@ jobs:
       - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
-      - run: corepack pnpm cover -- --colors
+      - run: corepack pnpm cover
       - uses: coverallsapp/github-action@master
         if: ${{ matrix.node == 16 }}
         continue-on-error: true
@@ -66,7 +66,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: install dependencies
+      - name: Install dependencies
         run: |
           echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu focal main" \
             | sudo tee /etc/apt/sources.list.d/nfd-nightly.list
@@ -74,13 +74,13 @@ jobs:
           sudo apt-get install --no-install-recommends libndn-cxx-dev libpsync-dev nfd
       - run: corepack pnpm install
       - run: corepack pnpm build
-      - name: check dependencies and devDependencies
+      - name: Check dependencies and devDependencies
         run: node mk/check-dep.mjs
       - run: corepack pnpm literate lint
       - run: corepack pnpm literate
       - run: cd integ/browser-tests && corepack pnpm test
       - run: cd integ/cxx-tests && corepack pnpm test
-      - name: check C++ code style
+      - name: Check C++ code style
         run: |
           corepack pnpm clang-format
           git diff --exit-code

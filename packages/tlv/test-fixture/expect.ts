@@ -1,5 +1,5 @@
 import { toEqualUint8Array, Uint8ArrayExpect } from "@ndn/util/test-fixture/expect";
-import expect from "expect";
+import { expect } from "vitest";
 
 import { Decoder, Encodable, Encoder } from "..";
 

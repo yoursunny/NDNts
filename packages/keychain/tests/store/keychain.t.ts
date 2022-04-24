@@ -2,6 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Component, Data, digestSigning, KeyLocator, Name } from "@ndn/packet";
 import { dirSync as tmpDir } from "tmp";
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, generateSigningKey, KeyChain, SigningAlgorithmListFull, ValidityPeriod } from "../..";
 import * as TestCertStore from "../../test-fixture/cert-store";
@@ -147,7 +148,7 @@ describe("getSigner", () => {
   });
 
   test("fallback function", async () => {
-    const fallback = jest.fn().mockRejectedValue(new Error("fallback-error"));
+    const fallback = vi.fn().mockRejectedValue(new Error("fallback-error"));
     await expect(keyChain.getSigner(new Name("/N"), { fallback }))
       .rejects.toThrow(/fallback-error/);
   });

@@ -27,14 +27,30 @@ async function transformDeclaration(filename) {
   delayedWrite(filename, lines);
 }
 
-// Allowlist of packages published with ES Module entrypoint.
-const ESM_IMPORTS = new Set([
-  "graphql-request",
-  "idb-keyval",
-  "streaming-iterables",
-  "tslib",
-  "ws",
-  "yargs",
+// List of packages published with only CommonJS entrypoint.
+// All other packages are assumed to have ES Module entrypoint.
+const CJS_IMPORTS = new Set([
+  "@yoursunny/asn1",
+  "applymixins",
+  "duplexify",
+  "encoding-down",
+  "event-iterator",
+  "fast-chunk-string",
+  "graceful-fs",
+  "hirestime",
+  "it-keepalive",
+  "leveldown",
+  "levelup",
+  "minimalistic-assert",
+  "mnemonist",
+  "nodemailer",
+  "obliterator",
+  "progress",
+  "prompts",
+  "retry",
+  "@strattadb/environment",
+  "throat",
+  "wtfnode",
 ]);
 
 /** Transform a JavaScript file. */
@@ -131,15 +147,15 @@ class TransformJs {
     }
 
     const pkg = specifier.split("/").slice(0, specifier.startsWith("@") ? 2 : 1).join("/");
-    if (pkg.startsWith("@ndn/") || ESM_IMPORTS.has(pkg)) {
-      return this.emitLine(line);
-    }
     if (pkg.startsWith("node:")) {
       const browserSpecifier = specifier.slice(5); // trim "node:"
       return this.emitLine(
         `${action} ${allAs}${imports} from "${specifier}";`,
         `${action} ${allAs}${imports} from "${browserSpecifier}";`,
       );
+    }
+    if (!CJS_IMPORTS.has(pkg)) {
+      return this.emitLine(line);
     }
 
     const importVar = `_cjsDefaultImport${this.nCjsImports++}`;

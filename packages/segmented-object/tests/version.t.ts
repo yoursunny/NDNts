@@ -5,6 +5,7 @@ import { Forwarder } from "@ndn/fw";
 import { Segment2, Segment3, Version2, Version3 } from "@ndn/naming-convention2";
 import { Data, Interest, Name } from "@ndn/packet";
 import { Closers } from "@ndn/util";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { type ChunkSource, BufferChunkSource, discoverVersion, serve, serveVersioned } from "..";
 
@@ -17,7 +18,7 @@ afterEach(() => {
 
 describe("serve", () => {
   let source: ChunkSource;
-  beforeEach(() => source = new BufferChunkSource(new Uint8Array()));
+  beforeEach(() => {source = new BufferChunkSource(new Uint8Array());});
 
   test("version from number", async () => {
     const server = serveVersioned("/A", source, { version: 65 });
@@ -105,7 +106,7 @@ const wrongNames = [
   new Name("/A").append(Version3, 2).append("C"),
 ];
 
-test.each(wrongNames)("discover wrong name $#", async (dataName) => {
+test.each(wrongNames)("discover wrong name %#", async (dataName) => {
   const producer = new Endpoint().produce("/A",
     async () => new Data(dataName, Data.FreshnessPeriod(1000)));
   closers.push(producer);

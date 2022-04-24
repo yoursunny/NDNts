@@ -3,8 +3,6 @@ const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 
-const jestPuppeteerConfig = require("./jest-puppeteer.config.js");
-
 /** @type {import("webpack").Configuration} */
 const config = {
   mode: "development",
@@ -26,6 +24,9 @@ const config = {
   resolve: {
     extensions: [".ts", ".mjs", ".js"],
     symlinks: true,
+    alias: {
+      vitest: false,
+    },
     fallback: {
       events: require.resolve("events/"),
     },
@@ -41,7 +42,7 @@ const config = {
   devServer: {
     allowedHosts: "all",
     host: "::",
-    port: jestPuppeteerConfig.server.port,
+    port: 9327,
   },
 };
 

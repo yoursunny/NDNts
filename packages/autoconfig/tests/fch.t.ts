@@ -1,5 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
+import { afterAll, afterEach, beforeAll, expect, test } from "vitest";
+
 import { fchQuery } from "..";
 import { FchServer } from "../test-fixture/fch-server";
 

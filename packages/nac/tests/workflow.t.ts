@@ -6,6 +6,7 @@ import { type Verifier, Component, Data, Name } from "@ndn/packet";
 import { PrefixRegStatic } from "@ndn/repo";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
 import { crypto } from "@ndn/util";
+import { afterEach, expect, test } from "vitest";
 
 import { AccessManager, Consumer, Producer } from "..";
 

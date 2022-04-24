@@ -1,6 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { type NameLike, Name } from "@ndn/packet";
+import { expect, test, vi } from "vitest";
 
 import { pattern as P } from "../..";
 
@@ -65,7 +66,7 @@ test("const variable concat", () => {
 });
 
 test("variable.inner+filter", () => {
-  const accept = jest.fn<boolean, [name: Name, vars: P.Vars]>();
+  const accept = vi.fn<[name: Name, vars: P.Vars], boolean>();
   const p = new P.VariablePattern("outer", {
     minComps: 0,
     maxComps: Infinity,

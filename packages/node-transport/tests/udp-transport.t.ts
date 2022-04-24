@@ -2,6 +2,7 @@ import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import * as dgram from "node:dgram";
 import { setTimeout as delay } from "node:timers/promises";
 import { collect } from "streaming-iterables";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { udp_helper as udp, UdpTransport } from "..";
 import { UdpServer, UdpServerBroadcast } from "../test-fixture/udp-server";
@@ -14,7 +15,7 @@ test("SocketOption type", () => {
 describe.each([
   { family: 4, address: "127.0.0.1" },
   { family: 6, address: "::1" },
-] as Array<{ family: udp.AddressFamily; address: string }>)("unicast %p", ({ family, address }) => {
+] as Array<{ family: udp.AddressFamily; address: string }>)("unicast %j", ({ family, address }) => {
   let server: UdpServerBroadcast;
 
   beforeEach(async () => {
@@ -59,7 +60,7 @@ describe.each([
 describe("multicast", () => {
   const intfs = udp.listMulticastIntfs();
   if (intfs.length === 0) {
-    test.skip("no multicast interface", () => undefined); // eslint-disable-line jest/no-disabled-tests
+    test.skip("no multicast interface", () => undefined);
     return;
   }
 

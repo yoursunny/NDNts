@@ -1,5 +1,7 @@
 import "../test-fixture/expect";
 
+import { afterEach, beforeEach, expect, test } from "vitest";
+
 import { type Encodable, Decoder, Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI } from "..";
 
 const EXTENSIONS: ExtensionRegistry<ExtTestTarget> = new ExtensionRegistry<ExtTestTarget>();

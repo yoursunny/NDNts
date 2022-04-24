@@ -4,6 +4,7 @@ import { generateSigningKey } from "@ndn/keychain";
 import { type NameLike, Data, Interest } from "@ndn/packet";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 import { setTimeout as delay } from "node:timers/promises";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { type Options, DataStoreBuffer, Endpoint, Producer, ProducerHandler } from "..";
 
@@ -18,7 +19,7 @@ async function makeEndpointBuffered(autoBuffer?: boolean, bo?: DataStoreBuffer.O
 describe("unsatisfied", () => {
   let pAbort: AbortController;
   let pEndpoint: Endpoint;
-  const pHandler = jest.fn<ReturnType<ProducerHandler>, Parameters<ProducerHandler>>(
+  const pHandler = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>(
     async (interest) => new Data(interest.name));
   let p: Producer;
   let cEndpoint: Endpoint;
@@ -77,7 +78,7 @@ describe("unsatisfied", () => {
 
 test("fill buffer in handler", async () => {
   const [ep, dataStoreBuffer] = await makeEndpointBuffered();
-  const handler = jest.fn<ReturnType<ProducerHandler>, Parameters<ProducerHandler>>(
+  const handler = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>(
     async (interest: Interest, { dataBuffer }: Producer) => {
       expect(dataBuffer).toBe(dataStoreBuffer);
       if (!interest.name.equals("/A")) { return undefined; }
@@ -99,7 +100,7 @@ test("fill buffer in handler", async () => {
 
 test("prefill buffer", async () => {
   const [ep, dataStoreBuffer] = await makeEndpointBuffered();
-  const handler = jest.fn(async (interest: Interest) => new Data(interest.name));
+  const handler = vi.fn(async (interest: Interest) => new Data(interest.name));
   const producer = ep.produce(undefined, handler);
   producer.face.addRoute("/A");
 
@@ -112,9 +113,9 @@ test("prefill buffer", async () => {
   expect(handler).toHaveBeenCalledTimes(1);
 });
 
-test.each([false, true])("autoBuffer %p", async (autoBuffer) => {
+test.each([false, true])("autoBuffer %j", async (autoBuffer) => {
   const [ep] = await makeEndpointBuffered(autoBuffer);
-  const handler = jest.fn(async (interest: Interest, { dataBuffer }: Producer) => {
+  const handler = vi.fn(async (interest: Interest, { dataBuffer }: Producer) => {
     await dataBuffer!.insert(new Data("/A/1"));
     return new Data("/A/0");
   });
@@ -132,7 +133,7 @@ test.each([false, true])("autoBuffer %p", async (autoBuffer) => {
 
 test("buffer expire", async () => {
   const [ep] = await makeEndpointBuffered(undefined, { ttl: 150 });
-  const handler = jest.fn(async (interest: Interest) => {
+  const handler = vi.fn(async (interest: Interest) => {
     if (!interest.name.equals("/A")) { return undefined; }
     return new Data("/A/0");
   });

@@ -1,18 +1,19 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { type Verifier, Data, Interest } from "@ndn/packet";
+import { type SpyInstanceFn, afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { type ProducerHandler, type RetxPolicy, Endpoint } from "..";
 
 let ep: Endpoint;
-beforeEach(() => ep = new Endpoint());
+beforeEach(() => { ep = new Endpoint(); });
 afterEach(() => Endpoint.deleteDefaultForwarder());
 
 describe("retx limit", () => {
-  let producer: jest.Mock<ReturnType<ProducerHandler>, Parameters<ProducerHandler>>;
+  let producer: SpyInstanceFn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>;
 
   beforeEach(() => {
-    producer = jest.fn<ReturnType<ProducerHandler>, Parameters<ProducerHandler>>()
+    producer = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>()
       .mockResolvedValueOnce(undefined)
       .mockResolvedValueOnce(undefined)
       .mockResolvedValueOnce(new Data("/A"));
@@ -41,7 +42,7 @@ describe("retx limit", () => {
     [function*() { yield 400; }, 2], // retx after timeout
     [0, 1],
     [1, 2],
-  ])("reject $#", async (retx, nInterests) => {
+  ])("reject %#", async (retx, nInterests) => {
     const promise = ep.consume(
       new Interest("/A", Interest.Lifetime(200)),
       { retx },
@@ -69,11 +70,11 @@ describe("retx limit", () => {
 });
 
 test("verify", async () => {
-  const producer = jest.fn<ReturnType<ProducerHandler>, Parameters<ProducerHandler>>()
+  const producer = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>()
     .mockResolvedValueOnce(new Data("/A"));
   ep.produce("/A", producer);
 
-  const verify = jest.fn<ReturnType<Verifier["verify"]>, Parameters<Verifier["verify"]>>()
+  const verify = vi.fn<Parameters<Verifier["verify"]>, ReturnType<Verifier["verify"]>>()
     .mockRejectedValue(new Error("mock-verify-error"));
 
   const promise = ep.consume(

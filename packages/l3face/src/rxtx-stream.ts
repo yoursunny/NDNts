@@ -1,6 +1,6 @@
 import { Decoder } from "@ndn/tlv";
 import { safeIter } from "@ndn/util";
-import pEvent from "p-event";
+import { pEvent } from "p-event";
 import { fromStream, writeToStream } from "streaming-iterables";
 
 import type { Transport } from "./transport";

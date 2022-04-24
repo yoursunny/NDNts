@@ -6,12 +6,13 @@ import { BufferChunkSource, fetch, serve } from "@ndn/segmented-object";
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
 import { setTimeout as delay } from "node:timers/promises";
 import { collect, map } from "streaming-iterables";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import type { DataStore } from "..";
 import { makeDataStore } from "../test-fixture/data-store";
 
 let store: DataStore;
-beforeEach(async () => store = await makeDataStore());
+beforeEach(async () => { store = await makeDataStore(); });
 afterEach(() => store.close());
 
 test("insert get delete", async () => {
@@ -78,8 +79,8 @@ test("list find expire", async () => {
 });
 
 test("events", async () => {
-  const onInsert = jest.fn<void, [Name]>();
-  const onDelete = jest.fn<void, [Name]>();
+  const onInsert = vi.fn<[Name], void>();
+  const onDelete = vi.fn<[Name], void>();
   store.on("insert", onInsert);
   store.on("delete", onDelete);
 

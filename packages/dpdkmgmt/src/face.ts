@@ -5,7 +5,7 @@ import type { NameLike } from "@ndn/packet";
 import { gql, GraphQLClient } from "graphql-request";
 import * as net from "node:net";
 import * as path from "node:path";
-import pEvent from "p-event";
+import { pEvent } from "p-event";
 
 import { MemifTransport } from "./memif-transport";
 import { NdndpdkPrefixReg } from "./prefix-reg";

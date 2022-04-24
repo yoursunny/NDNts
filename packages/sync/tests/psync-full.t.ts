@@ -7,6 +7,7 @@ import { type NameLike, Name } from "@ndn/packet";
 import { assert, Closers, toHex } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
 import { setTimeout as delay } from "node:timers/promises";
+import { type SpyInstanceFn, afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { type IBLT, type SyncNode, type SyncUpdate, makePSyncCompatParam, PSyncFull } from "..";
 
@@ -98,7 +99,7 @@ class Fixture {
       const title = String.fromCodePoint(0x41 + i);
       debugPrinter.start(title, sync);
 
-      const handleUpdate = jest.fn<void, [SyncUpdate<Name>]>()
+      const handleUpdate = vi.fn<[SyncUpdate<Name>], void>()
         .mockImplementation(({ id, loSeqNum, hiSeqNum }) => { // eslint-disable-line @typescript-eslint/no-loop-func
           debugPrinter.log(title, `UPDATE ${id} ${loSeqNum} ${hiSeqNum}`);
         });
@@ -108,7 +109,7 @@ class Fixture {
   }
 
   private readonly syncs: PSyncFull[] = [];
-  private readonly updates: Array<jest.Mock<void, [SyncUpdate<Name>]>> = [];
+  private readonly updates: Array<SpyInstanceFn<[SyncUpdate<Name>], void>> = [];
 
   public delayTick(multiple = 1): Promise<void> {
     return delay(250 * multiple);
@@ -214,7 +215,7 @@ test("simple", async () => {
   }
 });
 
-test.each([20, 50, 100])("many updates %p", async (count) => {
+test.each([20, 50, 100])("many updates %d", async (count) => {
   const f = new Fixture(2);
   await f.delayTick();
 
@@ -231,21 +232,23 @@ test.each([20, 50, 100])("many updates %p", async (count) => {
   }
 });
 
-test.each([4, 6])("many nodes %p", async (count) => {
-  const f = new Fixture(count);
-  await f.delayTick();
+describe.each([4, 6])("many nodes %d", (count) => {
+  test("", async () => {
+    const f = new Fixture(count);
+    await f.delayTick();
 
-  for (let i = 0; i < count; ++i) {
-    f.add(i, `/${i}`).seqNum++;
-  }
-
-  await f.delayTick(count ** 2);
-  for (let i = 0; i < count; ++i) {
-    f.expectUpdateTimes(i, count - 1);
-    for (let j = 0; j < count; ++j) {
-      const node = f.get(i, `/${j}`);
-      expect(node).toBeDefined();
-      expect(node!.seqNum).toBe(1);
+    for (let i = 0; i < count; ++i) {
+      f.add(i, `/${i}`).seqNum++;
     }
-  }
-}, 20000);
+
+    await f.delayTick(count ** 2);
+    for (let i = 0; i < count; ++i) {
+      f.expectUpdateTimes(i, count - 1);
+      for (let j = 0; j < count; ++j) {
+        const node = f.get(i, `/${j}`);
+        expect(node).toBeDefined();
+        expect(node!.seqNum).toBe(1);
+      }
+    }
+  }, 20000);
+});

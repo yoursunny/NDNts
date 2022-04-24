@@ -1,29 +1,14 @@
 import { Decoder, Encoder } from "@ndn/tlv";
+import { expect } from "vitest";
 
 import { type SigInfo, Data, Interest, Signer, Verifier } from "..";
 
 type Packet = Interest | Data;
 type PacketCtor = typeof Interest | typeof Data;
-interface Row {
-  cls: PacketCtor;
-}
-
-export function makeTable(): Row[];
-export function makeTable<T>(rows: readonly T[]): Array<Row & T>;
-export function makeTable<T, K extends keyof any>(key: K, values: readonly T[]): Array<Row & Record<K, T>>;
-
-export function makeTable(arg1: any = [{}], arg2?: any) {
-  if (arg2) {
-    return arg2.flatMap((value: any) => [
-      { [arg1]: value, cls: Interest },
-      { [arg1]: value, cls: Data },
-    ]);
-  }
-  return arg1.flatMap((row: any) => [
-    { ...row, cls: Interest },
-    { ...row, cls: Data },
-  ]);
-}
+export const PacketTable: ReadonlyArray<{ PacketType: string; Packet: PacketCtor }> = [
+  { PacketType: "Interest", Packet: Interest },
+  { PacketType: "Data", Packet: Data },
+];
 
 interface SignRecord {
   wire: Uint8Array;

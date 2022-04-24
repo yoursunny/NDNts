@@ -1,7 +1,7 @@
 /** @typedef {import("xo").Options} XoOptions */
 
 /** @type {import("@yoursunny/xo-config")} */
-const { js, ts, jest, literate, web, pptr, merge } = require("@yoursunny/xo-config");
+const { js, ts, literate, web, pptr, merge } = require("@yoursunny/xo-config");
 
 /**
  * @param {string[]} pkgs
@@ -26,7 +26,11 @@ function makePackageOverrides(config, ...pkgs) {
       files: [
         pkgs.flatMap((pkg) => [`**${pkg}/test-fixture/**/*.ts`, `**${pkg}/tests/**/*.ts`]),
       ],
-      ...merge(config, jest),
+      ...merge(config, {
+        rules: {
+          "import/no-extraneous-dependencies": "off",
+        },
+      }),
     },
   ];
 }
@@ -44,7 +48,7 @@ module.exports = {
       files: [
         "**/integ/browser-tests/**/*.ts",
       ],
-      ...merge(js, ts, web, jest, pptr),
+      ...merge(js, ts, web, pptr),
     },
     {
       files: [

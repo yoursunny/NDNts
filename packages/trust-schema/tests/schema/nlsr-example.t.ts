@@ -3,6 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { type NamedSigner, Certificate, CertNaming, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, Name } from "@ndn/packet";
 import { collect, take } from "streaming-iterables";
+import { beforeAll, expect, test } from "vitest";
 
 import { pattern as P, printESM, TrustSchema, TrustSchemaPolicy, TrustSchemaSigner, versec } from "../..";
 

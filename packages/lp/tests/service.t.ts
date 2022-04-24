@@ -4,6 +4,7 @@ import { Data, digestSigning, Interest, Nack, NackReason, TT as l3TT } from "@nd
 import { Decoder, Encoder } from "@ndn/tlv";
 import { setTimeout as delay } from "node:timers/promises";
 import { collect, filter, map, pipeline, tap } from "streaming-iterables";
+import { expect, test } from "vitest";
 
 import { LpService, TT } from "..";
 

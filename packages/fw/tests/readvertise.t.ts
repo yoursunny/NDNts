@@ -2,6 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { type NameLike, Name } from "@ndn/packet";
 import { setTimeout as delay } from "node:timers/promises";
+import { type SpyInstanceFn, beforeEach, expect, test, vi } from "vitest";
 
 import { Forwarder, ReadvertiseDestination } from "..";
 import { NoopFace } from "../test-fixture/noop-face";
@@ -12,11 +13,11 @@ beforeEach(() => {
 });
 
 class SimpleDest extends ReadvertiseDestination {
-  public override doAdvertise = jest.fn<Promise<void>, [Name, {}]>().mockResolvedValue(undefined);
-  public override doWithdraw = jest.fn<Promise<void>, [Name, {}]>().mockResolvedValue(undefined);
+  public override doAdvertise = vi.fn<[Name, {}], Promise<void>>().mockResolvedValue(undefined);
+  public override doWithdraw = vi.fn<[Name, {}], Promise<void>>().mockResolvedValue(undefined);
 
-  public readonly annadd = jest.fn<void, [Name]>();
-  public readonly annrm = jest.fn<void, [Name]>();
+  public readonly annadd = vi.fn<[Name], void>();
+  public readonly annrm = vi.fn<[Name], void>();
 
   public attachEventHandlers(fw: Forwarder): void {
     fw.on("annadd", this.annadd);
@@ -32,8 +33,8 @@ class SimpleDest extends ReadvertiseDestination {
   }
 
   private static check(
-      doFn: jest.Mock<Promise<void>, [Name, {}]>,
-      onFn: jest.Mock<void, [Name]>,
+      doFn: SpyInstanceFn<[Name, {}], Promise<void>>,
+      onFn: SpyInstanceFn<[Name], void>,
       names: NameLike[],
   ) {
     expect(doFn).toHaveBeenCalledTimes(names.length);
@@ -100,16 +101,16 @@ class StatefulDest extends ReadvertiseDestination<{ S: true }> {
     });
   }
 
-  public override makeState = jest.fn().mockReturnValue({ S: true });
+  public override makeState = vi.fn().mockReturnValue({ S: true });
 
-  public doAdvertise = jest.fn().mockImplementationOnce(async () => {
+  public doAdvertise = vi.fn().mockImplementationOnce(async () => {
     await delay(90);
     throw new Error("advertise error");
   }).mockImplementation(async () => {
     await delay(90);
   });
 
-  public doWithdraw = jest.fn().mockImplementationOnce(async () => {
+  public doWithdraw = vi.fn().mockImplementationOnce(async () => {
     await delay(90);
     throw new Error("withdraw error");
   }).mockImplementation(async () => {

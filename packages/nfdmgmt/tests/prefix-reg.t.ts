@@ -10,6 +10,7 @@ import { Decoder, Encoder, NNI } from "@ndn/tlv";
 import { Closers } from "@ndn/util";
 import { EventEmitter } from "node:events";
 import { setTimeout as delay } from "node:timers/promises";
+import { afterEach, expect, test } from "vitest";
 
 import { ControlCommand, ControlParameters, ControlResponse, enableNfdPrefixReg } from "..";
 
@@ -37,7 +38,7 @@ const TABLE: Row[] = [
   },
 ];
 
-test.each(TABLE)("reg $#", async ({ faceIsLocal, commandPrefix, expectedPrefix }) => {
+test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }) => {
   const fw = Forwarder.create();
 
   const verbs: string[] = [];

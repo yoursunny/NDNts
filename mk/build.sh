@@ -51,10 +51,10 @@ if [[ $ACT == cover ]]; then
     done
     if [[ ${#SRCDIR} -gt 1 ]]; then
       set -x
-      exec jest --coverage --collectCoverageFrom=$SRCDIR'/src/**/*' "$@"
+      exec env COVERPKG=$SRCDIR vitest --coverage "$@"
     fi
   fi
-  exec jest --coverage "$@"
+  exec vitest --coverage "$@"
 fi
 
 if [[ $ACT == clean ]]; then

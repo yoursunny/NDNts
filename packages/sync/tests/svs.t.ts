@@ -6,6 +6,7 @@ import { Closers } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
 import { setTimeout as delay } from "node:timers/promises";
 import { filter } from "streaming-iterables";
+import { afterEach, expect, test } from "vitest";
 
 import { SvSync } from "..";
 

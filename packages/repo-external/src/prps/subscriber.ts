@@ -1,7 +1,7 @@
 import { type ProducerHandler, type RetxPolicy, Endpoint, Producer } from "@ndn/endpoint";
 import { type Signer, type Verifier, Component, Data, digestSigning, FwHint, Interest, Name } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
-import pushable from "it-pushable";
+import { pushable } from "it-pushable";
 
 import { MsgSuffix, NotifyParams, NotifySuffix } from "./packet";
 

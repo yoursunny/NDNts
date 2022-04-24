@@ -2,6 +2,7 @@ import { type SigningAlgorithm, Certificate, EcCurve, ECDSA, generateSigningKey,
 import { Data } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";
+import { afterEach, expect, test } from "vitest";
 
 import { execute } from "../../../test-fixture/cxxprogram";
 
@@ -17,7 +18,7 @@ const TABLE = ([] as Array<Row<any>>).concat(
   RsaModulusLength.Choices.map((modulusLength) => ({ algo: RSA, genParam: { modulusLength } })),
 );
 
-test.each(TABLE)("%p", async ({ algo, genParam }) => {
+test.each(TABLE)("%j", async ({ algo, genParam }) => {
   const [privateKey, publicKey] = await generateSigningKey("/A", algo, genParam);
   const cert = await Certificate.selfSign({ privateKey, publicKey });
 

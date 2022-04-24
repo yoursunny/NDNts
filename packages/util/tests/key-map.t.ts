@@ -1,3 +1,5 @@
+import { expect, test } from "vitest";
+
 import { KeyMap, KeyMultiMap, KeyMultiSet } from "..";
 
 type Key = [string];

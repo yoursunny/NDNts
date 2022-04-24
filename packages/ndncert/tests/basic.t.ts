@@ -3,6 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, ECDSA, generateSigningKey, RSA, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
 import { Name } from "@ndn/packet";
 import { toUtf8 } from "@ndn/util";
+import { beforeAll, expect, test, vi } from "vitest";
 
 import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, ProbeRequest, ProbeResponse, Status } from "..";
 
@@ -156,7 +157,7 @@ test("packets", async () => {
   expect(challengeInterest.name.getPrefix(3)).toEqualName("/root/CA/CHALLENGE");
   expect(challengeInterest.sigInfo).toBeDefined();
 
-  const lookupRequest = jest.fn().mockResolvedValue({
+  const lookupRequest = vi.fn().mockResolvedValue({
     sessionKey: caSessionKey,
     certRequestPub: newRequest.publicKey,
   });

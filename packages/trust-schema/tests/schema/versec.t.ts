@@ -1,6 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Name } from "@ndn/packet";
+import { expect, test } from "vitest";
 
 import { TrustSchemaPolicy, versec } from "../..";
 

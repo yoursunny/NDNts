@@ -1,40 +1,38 @@
 import * as path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
+import puppeteer, { type Browser, type Page } from "puppeteer";
+import { afterAll, beforeAll } from "vitest";
 
-import jestPuppeteerConfig from "../jest-puppeteer.config.js";
+const port = 9327;
+let browser: Browser;
+export let page: Page;
 
-jest.setTimeout(20000);
+beforeAll(async () => {
+  browser = await puppeteer.launch();
+  page = await browser.newPage();
+});
+
+afterAll(async () => {
+  await browser.close();
+});
 
 /**
  * Obtain HTML page URI for test case.
  * @param testcaseDirname __dirname
  */
 export function getPageUri(testcaseDirname: string) {
-  const port = jestPuppeteerConfig.server.port;
   const name = path.basename(testcaseDirname);
   return `http://localhost:${port}/${name}.html`;
 }
 
 /** Navigate to test case page. */
-export async function navigateToPage(testcaseDirname: string, delayDuration = 200) {
+export async function navigateToPage(testcaseDirname: string, delayDuration = 500) {
   await page.goto(getPageUri(testcaseDirname));
   await delay(delayDuration);
 }
 
-/**
- * Subset of Page type needed by pageInvoke function.
- *
- * Use a loose declaration instead of an import, because @types/expect-puppeteer and
- * @types/jest-environment-puppeteer sometimes refer to different versions of
- * @types/puppeteer , causing type checking errors.
- */
-interface Page {
-  evaluate(...args: any[]): any;
-}
-
 /** Invoke JavaScript function (in global scope) on page. */
 export function pageInvoke<F extends (...args: any[]) => any>(
-    page: Page,
     funcName: string, ...args: Parameters<F>): ReturnType<F> {
   const argJ = JSON.stringify(args);
   return page.evaluate(`${funcName}.apply(undefined,(${argJ}))`) as ReturnType<F>;

@@ -3,6 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { Name } from "@ndn/packet";
 import { setTimeout as delay } from "node:timers/promises";
+import { type SpyInstanceFn, afterEach, expect, test, vi } from "vitest";
 
 import { type Subscription, type SyncUpdate, makePSyncCompatParam, PSyncPartialPublisher, PSyncPartialSubscriber } from "..";
 
@@ -31,8 +32,8 @@ test("simple", async () => {
     syncInterestLifetime: 100,
     syncInterestInterval: [110, 150],
   });
-  const st: Array<[Subscription, jest.Mock<void, [SyncUpdate<Name>]>]> = [];
-  const subState = jest.fn<void, [readonly PSyncPartialSubscriber.TopicInfo[]]>()
+  const st: Array<[Subscription, SpyInstanceFn<[SyncUpdate<Name>], void>]> = [];
+  const subState = vi.fn<[readonly PSyncPartialSubscriber.TopicInfo[]], void>()
     .mockImplementation((topics) => {
       expect(topics).toHaveLength(4);
       for (const [i, { id }] of pt.entries()) {
@@ -40,7 +41,7 @@ test("simple", async () => {
         expect(found).toHaveLength(1);
         if (i % 2 === 0) {
           const subscription = sub.subscribe(found[0]!);
-          const update = jest.fn<void, [SyncUpdate<Name>]>();
+          const update = vi.fn<[SyncUpdate<Name>], void>();
           subscription.on("update", update);
           st.push([subscription, update]);
         }

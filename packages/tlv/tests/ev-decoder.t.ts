@@ -1,5 +1,7 @@
 import "../test-fixture/expect";
 
+import { expect, test, vi } from "vitest";
+
 import { Decoder, EvDecoder } from "..";
 
 class EvdTestTarget {
@@ -14,10 +16,10 @@ class EvdTestTarget {
     return this.a1 * 1000 + this.a4 * 100 + this.a6 * 10 + this.a9;
   }
 
-  public beforeTop = jest.fn<void, [EvdTestTarget, Decoder.Tlv]>();
-  public beforeValue = jest.fn<void, [EvdTestTarget]>();
-  public afterValue = jest.fn<void, [EvdTestTarget]>();
-  public afterTop = jest.fn<void, [EvdTestTarget, Decoder.Tlv]>();
+  public beforeTop = vi.fn<[EvdTestTarget, Decoder.Tlv], void>();
+  public beforeValue = vi.fn<[EvdTestTarget], void>();
+  public afterValue = vi.fn<[EvdTestTarget], void>();
+  public afterTop = vi.fn<[EvdTestTarget, Decoder.Tlv], void>();
 
   public setCallbacks(evd: EvDecoder<EvdTestTarget>): void {
     evd.beforeTopCallbacks.splice(0, 1, this.beforeTop);
@@ -178,7 +180,7 @@ test("add duplicate", () => {
 });
 
 test("setIsCritical", () => {
-  const cb = jest.fn((tt: number) => tt === 0xA2);
+  const cb = vi.fn((tt: number) => tt === 0xA2);
 
   const evd = new EvDecoder<EvdTestTarget>("A0", 0xA0)
     .setIsCritical(cb)
@@ -203,7 +205,7 @@ test("setIsCritical", () => {
 });
 
 test("setUnknown", () => {
-  const cb = jest.fn<boolean, [EvdTestTarget, Decoder.Tlv, number]>((t, { type }, order) => {
+  const cb = vi.fn<[EvdTestTarget, Decoder.Tlv, number], boolean>((t, { type }, order) => {
     if (type === 0xA1) {
       ++t.a1;
       return true;

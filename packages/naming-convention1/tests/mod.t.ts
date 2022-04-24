@@ -1,6 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Component, Name } from "@ndn/packet";
+import { expect, test } from "vitest";
 
 import { ByteOffset, Segment, SequenceNum, Timestamp, Version } from "..";
 
@@ -32,7 +33,7 @@ const TABLE: Row[] = [
   },
 ];
 
-test.each(TABLE)("%p", ({ marker, convention }) => {
+test.each(TABLE)("%j", ({ marker, convention }) => {
   const markerHex = marker.toString(16).padStart(2, "0");
   const name = new Name().append(convention, 0x00010203).append(convention, 0x0405n);
   expect(name.at(0)).toEqualComponent(`%${markerHex}%00%01%02%03`);

@@ -1,6 +1,7 @@
 import "../test-fixture/expect";
 
 import { asDataView } from "@ndn/util";
+import { expect, test, vi } from "vitest";
 
 import { Encoder } from "..";
 
@@ -62,7 +63,7 @@ test("prependTlv", () => {
 });
 
 test("encode Encodable[] and extract", () => {
-  const extractCb = jest.fn<void, [Uint8Array]>();
+  const extractCb = vi.fn<[Uint8Array], void>();
   expect(Encoder.encode([
     undefined,
     Uint8Array.of(0xF0),

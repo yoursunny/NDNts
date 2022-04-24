@@ -28,13 +28,13 @@
   "dependencies": {
     "@ndn/l3face": "workspace:*",
     "@types/ws": "^8.5.3",
-    "p-event": "^4.2.0",
+    "p-event": "^5.0.1",
     "streaming-iterables": "^6.2.0",
     "tslib": "^2.4.0",
     "ws": "^8.5.0"
   },
   "devDependencies": {
     "@ndn/node-transport": "workspace:*",
-    "it-pushable": "^1.4.2"
+    "it-pushable": "^2.0.1"
   }
 }

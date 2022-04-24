@@ -1,6 +1,7 @@
 import { Forwarder } from "@ndn/fw";
 import { Interest } from "@ndn/packet";
 import { setTimeout as delay } from "node:timers/promises";
+import { expect, test, vi } from "vitest";
 
 import { L3Face } from "..";
 import { MockTransport } from "../test-fixture/mock-transport";
@@ -13,7 +14,7 @@ test("l3face", async () => {
   expect(face.attributes.advertiseFrom).toBeFalsy();
   expect(face.attributes.local).toBeTruthy();
 
-  const close = jest.fn<void, []>();
+  const close = vi.fn<[], void>();
   face.on("close", close);
 
   transport.recv(new Interest("/A", Interest.Lifetime(20)));

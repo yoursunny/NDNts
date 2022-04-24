@@ -1,6 +1,7 @@
 import "@ndn/util/test-fixture/expect";
 
 import { fromHex } from "@ndn/util";
+import { expect, test } from "vitest";
 
 import { IBLT, makePSyncCompatParam } from "..";
 

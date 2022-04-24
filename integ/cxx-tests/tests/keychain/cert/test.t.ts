@@ -1,6 +1,7 @@
 import { Certificate, CertNaming, generateSigningKey, ValidityPeriod } from "@ndn/keychain";
 import { Component } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
+import { expect, test } from "vitest";
 
 import { execute } from "../../../test-fixture/cxxprogram";
 

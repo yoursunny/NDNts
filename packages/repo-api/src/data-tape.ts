@@ -1,8 +1,8 @@
 import { L3Face, StreamTransport } from "@ndn/l3face";
 import { type Interest, type Name, Data } from "@ndn/packet";
 import duplexify from "duplexify";
-import { readable as isReadable, writable as isWritable } from "is-stream";
-import pushable, { type Pushable } from "it-pushable";
+import { isReadableStream, isWritableStream } from "is-stream";
+import { type Pushable, pushable } from "it-pushable";
 import pDefer, { type DeferredPromise } from "p-defer";
 import { consume, filter, map, pipeline } from "streaming-iterables";
 import throat from "throat";
@@ -72,7 +72,7 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
       await this.closeCurrentWriter();
 
       const stream = this.makeStream("read");
-      if (!isReadable(stream)) {
+      if (!isReadableStream(stream)) {
         throw new Error("stream is not Readable");
       }
 
@@ -104,7 +104,7 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
     await this.mutex(async () => {
       if (!this.currentWriter) {
         const stream = this.makeStream("append");
-        if (!isWritable(stream)) {
+        if (!isWritableStream(stream)) {
           throw new Error("stream is not Writable");
         }
 

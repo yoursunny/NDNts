@@ -1,6 +1,6 @@
 import { type Encodable, Decoder, Encoder } from "@ndn/tlv";
-import abortable, { AbortError as IteratorAbortError } from "abortable-iterator";
-import pushable from "it-pushable";
+import { abortableSource, AbortError as IteratorAbortError } from "abortable-iterator";
+import { pushable } from "it-pushable";
 import { consume, pipeline, tap } from "streaming-iterables";
 
 import { Transport } from "..";
@@ -27,7 +27,7 @@ export class MockTransport extends Transport {
   public override readonly tx = async (iterable: AsyncIterable<Uint8Array>) => {
     try {
       await pipeline(
-        () => abortable(iterable, this.closing.signal),
+        () => abortableSource(iterable, this.closing.signal),
         tap((pkt) => this.send(pkt)),
         consume,
       );

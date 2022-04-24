@@ -6,6 +6,7 @@ import { Version } from "@ndn/naming-convention2";
 import { Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { Decoder, Extensible, Extension, ExtensionRegistry, NNI } from "@ndn/tlv";
 import { Closers, toUtf8 } from "@ndn/util";
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { Metadata, retrieveMetadata, serveMetadata } from "..";
 
@@ -70,7 +71,7 @@ describe("producer", () => {
   });
 
   test("serve with prefix", async () => {
-    const makeMetadata = jest.fn<Metadata, []>().mockReturnValue(simpleMetadata);
+    const makeMetadata = vi.fn<[], Metadata>().mockReturnValue(simpleMetadata);
     const p = serveMetadata(makeMetadata, { prefix: "/R", freshnessPeriod: 100 });
     closers.push(p);
 

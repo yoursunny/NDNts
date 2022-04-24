@@ -1,7 +1,8 @@
 import * as TestReopen from "@ndn/l3face/test-fixture/reopen";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
-import pushable from "it-pushable";
+import { pushable } from "it-pushable";
 import { setTimeout as delay } from "node:timers/promises";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import type WebSocket from "ws";
 
 import { WsTransport } from "..";
@@ -36,11 +37,11 @@ test("TX throttle", async () => {
   ]);
 
   const cws = (transport as any).sock as WebSocket;
-  const bufferedAmount = jest.spyOn(cws, "bufferedAmount", "get");
+  const bufferedAmount = vi.spyOn(cws, "bufferedAmount", "get");
 
   const sws = socks[0]!;
   sws.binaryType = "nodebuffer";
-  const serverRx = jest.fn<void, [Uint8Array]>();
+  const serverRx = vi.fn<[Uint8Array], void>();
   sws.on("message", serverRx);
 
   const clientTx = pushable<Uint8Array>();

@@ -2,6 +2,7 @@ import "../test-fixture/expect";
 
 import { Decoder, Encoder } from "@ndn/tlv";
 import { createHash } from "node:crypto";
+import { expect, test, vi } from "vitest";
 
 import { FwHint, Interest, LLSign, LLVerify, Name, ParamsDigest, SigInfo, SigType, TT } from "..";
 
@@ -213,7 +214,7 @@ test("decode parameterized", async () => {
   expect(interest.name).toHaveLength(3);
   expect(interest.appParameters).toBeDefined();
 
-  const verify = jest.fn();
+  const verify = vi.fn();
   await expect(interest[LLVerify.OP](verify)).rejects.toThrow();
   expect(verify).not.toHaveBeenCalled();
 
@@ -229,7 +230,7 @@ test("encode signed", async () => {
   // error on out of place ParamsDigest
   const interest = new Interest(new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"));
   interest.sigInfo = new SigInfo(SigType.Sha256);
-  const sign = jest.fn();
+  const sign = vi.fn();
   await expect(interest[LLSign.OP](sign)).rejects.toThrow(/out of place/);
 
   // other tests in signing.t.ts
@@ -285,7 +286,7 @@ test("decode signed", async () => {
   expect(interest.sigValue).toBeDefined();
 
   // unrecognized elements should be preserved until modified
-  const verify = jest.fn().mockResolvedValue(undefined);
+  const verify = vi.fn().mockResolvedValue(undefined);
   await interest[LLVerify.OP](verify);
   expect(verify).toHaveBeenCalledTimes(1);
   expect(verify.mock.calls[0][0]).toEqualUint8Array(Buffer.concat([name.value, signedParamsWire]));

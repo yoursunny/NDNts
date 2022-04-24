@@ -1,6 +1,7 @@
 import "@ndn/util/test-fixture/expect";
 
 import { Encoder } from "@ndn/tlv";
+import { expect, test } from "vitest";
 
 import { Fragmenter, LpPacket, Reassembler } from "..";
 

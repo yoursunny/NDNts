@@ -1,6 +1,6 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 import type { AddressInfo } from "node:net";
-import pEvent from "p-event";
+import { pEventIterator } from "p-event";
 
 import { joinHostPort } from "./hostport";
 import * as udp from "./udp-helper";
@@ -42,7 +42,7 @@ export class UdpTransport extends Transport {
     }
 
     this.rx = rxFromPacketIterable(
-      pEvent.iterator(this.rxSock, "message", {
+      pEventIterator(this.rxSock, "message", {
         resolutionEvents: ["close"],
       }),
     );

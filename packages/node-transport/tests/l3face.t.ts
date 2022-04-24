@@ -3,7 +3,9 @@ import { L3Face } from "@ndn/l3face";
 import { Interest } from "@ndn/packet";
 import * as net from "node:net";
 import { setTimeout as delay } from "node:timers/promises";
+import { pEvent } from "p-event";
 import { collect } from "streaming-iterables";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
 import { UnixTransport } from "..";
 import { BufferBreaker } from "../test-fixture/buffer-breaker";
@@ -33,7 +35,7 @@ test("RX error", async () => {
     face.tx((async function*() { // eslint-disable-line require-yield
       await delay(400);
     })()),
-    expect(new Promise((r) => face.once("rxerror", r))).resolves.toThrow(/F000/),
+    expect(pEvent(face, "rxerror")).resolves.toContain(/F000/),
   ]);
 });
 
@@ -48,7 +50,7 @@ test("createFace", async () => {
   expect(face2.hasRoute("/Q")).toBeTruthy();
   BufferBreaker.duplex(sock0!, sock1!);
 
-  const rx = jest.fn();
+  const rx = vi.fn();
   fw.on("pktrx", rx);
   await Promise.all([
     delay(100),

@@ -5,6 +5,7 @@ import { Data, Name } from "@ndn/packet";
 import { Closers } from "@ndn/util";
 import defaultGateway from "default-gateway";
 import { setTimeout as delay } from "node:timers/promises";
+import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
 
 import { connectToNetwork } from "..";
 import { FchServer } from "../test-fixture/fch-server";
@@ -78,13 +79,13 @@ test("connectToNetwork", async () => {
 
 test("defaultGateway", async () => {
   server.handle = async () => "127.0.0.1:7001,127.0.0.1:7002";
-  const spyDefaultGateway = jest.spyOn(defaultGateway, "v4").mockResolvedValue({
+  const spyDefaultGateway = vi.spyOn(defaultGateway, "v4").mockResolvedValue({
     gateway: "127.0.0.1:7003",
     interface: "eth0",
   });
 
   let calledWith7004 = false;
-  const testConnection = jest.fn<Promise<unknown>, [FwFace]>()
+  const testConnection = vi.fn<[FwFace], Promise<unknown>>()
     .mockImplementation(async (face) => {
       const faceDescribe = face.toString();
       calledWith7004 ||= faceDescribe.includes("127.0.0.1:7004");
@@ -111,7 +112,7 @@ test("defaultGateway", async () => {
 });
 
 test("connectFailure", async () => {
-  const testConnection = jest.fn<Promise<unknown>, [FwFace]>()
+  const testConnection = vi.fn<[FwFace], Promise<unknown>>()
     .mockRejectedValue(new Error("mock reject"));
 
   await expect(connectToNetwork({

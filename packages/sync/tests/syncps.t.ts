@@ -6,6 +6,7 @@ import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { type NameLike, Data, Name } from "@ndn/packet";
 import { assert, Closers } from "@ndn/util";
 import { setTimeout as delay } from "node:timers/promises";
+import { type SpyInstanceFn, afterEach, beforeEach, expect, test, vi } from "vitest";
 
 import { type Subscription, makeSyncpsCompatParam, SyncpsPubsub } from "..";
 
@@ -44,7 +45,7 @@ afterEach(() => {
   Forwarder.deleteDefault();
 });
 
-type UpdateMock = jest.Mock<void, [Data]>;
+type UpdateMock = SpyInstanceFn< [Data], void>;
 
 class Fixture {
   constructor(n: number, loss = 0) {
@@ -96,7 +97,7 @@ class Fixture {
   public subscribe(i: number, topic: NameLike): [sub: Subscription, update: UpdateMock] {
     const title = String.fromCodePoint(0x41 + i);
     topic = Name.from(topic);
-    const update = jest.fn<void, [Data]>()
+    const update = vi.fn<[Data], void>()
       .mockImplementation((pub) => debugPrinter.log(title, `UPDATE ${topic} ${pub.name}`));
 
     const sub = this.syncs[i]!.subscribe(topic);

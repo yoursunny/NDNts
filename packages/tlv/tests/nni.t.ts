@@ -1,11 +1,13 @@
 import "../test-fixture/expect";
 
+import { expect, test } from "vitest";
+
 import { Encoder, NNI } from "..";
 
 test.each([
   [Number],
   [BigInt],
-])("encode variable size %p", (ctor) => {
+])("encode variable size %#", (ctor) => {
   expect(NNI(ctor(0x00))).toEncodeAs([0x00]);
   expect(NNI(ctor(0xFF))).toEncodeAs([0xFF]);
   expect(NNI(ctor(0x0100))).toEncodeAs([0x01, 0x00]);

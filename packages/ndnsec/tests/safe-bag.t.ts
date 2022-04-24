@@ -3,13 +3,14 @@ import "@ndn/packet/test-fixture/expect";
 import { CertNaming, createVerifier, CryptoAlgorithmListFull, KeyChain, SigningAlgorithmListFull } from "@ndn/keychain";
 import { Data } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
+import { expect, test } from "vitest";
 
 import { SafeBag } from "..";
 import { SafeBagEC, SafeBagRSA } from "../test-fixture/safe-bag";
 
 test.each([
   SafeBagEC, SafeBagRSA,
-])("import $#", async ({ sigType, canRSAOAEP, certName, wire, passphrase }) => {
+])("import %#", async ({ sigType, canRSAOAEP, certName, wire, passphrase }) => {
   const safeBag = new Decoder(wire).decode(SafeBag);
   const { certificate: cert } = safeBag;
   expect(cert.name).toEqualName(certName);

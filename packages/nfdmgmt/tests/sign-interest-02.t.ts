@@ -1,6 +1,7 @@
 import "@ndn/tlv/test-fixture/expect";
 
 import { Interest, TT } from "@ndn/packet";
+import { expect, test } from "vitest";
 
 import { signInterest02 } from "..";
 

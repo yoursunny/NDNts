@@ -2,6 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Component, Name } from "@ndn/packet";
 import { crypto } from "@ndn/util";
+import { expect, test } from "vitest";
 
 import { type EncryptionAlgorithm, type NamedDecrypter, type NamedEncrypter, AesBlockSize, AESCBC, AESCTR, AESGCM, Certificate, CounterIvChecker, createEncrypter, EncryptionAlgorithmListFull, generateEncryptionKey, generateSigningKey, KeyChain, RSAOAEP, ValidityPeriod } from "../..";
 
@@ -46,7 +47,7 @@ test.each([
   [AESCTR, undefined],
   [AESCTR, { counterLength: 16, length: 192 }],
   [AESGCM, undefined],
-])("AES encrypt-decrypt $#", async (algo: EncryptionAlgorithm, genParams: any) => {
+])("AES encrypt-decrypt %#", async (algo: EncryptionAlgorithm, genParams: any) => {
   const keyChain = KeyChain.createTemp(EncryptionAlgorithmListFull);
   const name = new Name("/my/KEY/x");
   await generateEncryptionKey(keyChain, name, algo, genParams);
@@ -60,7 +61,7 @@ test.each([
   [AESCTR, 20],
   [AESCTR, 24],
   [AESGCM, 32],
-])("AES CounterIvGen $#", async (algo: EncryptionAlgorithm, counterLength: number) => {
+])("AES CounterIvGen %#", async (algo: EncryptionAlgorithm, counterLength: number) => {
   const p0 = crypto.getRandomValues(new Uint8Array(32));
   const p1 = crypto.getRandomValues(new Uint8Array(33));
   const p2 = crypto.getRandomValues(new Uint8Array(1));

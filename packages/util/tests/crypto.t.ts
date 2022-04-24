@@ -1,5 +1,7 @@
 import "../test-fixture/expect";
 
+import { expect, test } from "vitest";
+
 import { fromHex, sha256, timingSafeEqual, toUtf8 } from "..";
 
 test("timingSafeEqual", () => {

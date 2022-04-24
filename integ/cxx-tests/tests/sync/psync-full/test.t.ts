@@ -4,6 +4,7 @@ import { Name } from "@ndn/packet";
 import { type SyncUpdate, makePSyncCompatParam, PSyncFull } from "@ndn/sync";
 import { Closers } from "@ndn/util";
 import { setTimeout as delay } from "node:timers/promises";
+import { afterAll, beforeAll, expect, test, vi } from "vitest";
 
 import { execute } from "../../../test-fixture/cxxprogram";
 
@@ -36,7 +37,7 @@ test("simple", async () => {
   });
   closers.push(sync);
 
-  const update = jest.fn<void, [SyncUpdate<Name>]>();
+  const update = vi.fn<[SyncUpdate<Name>], void>();
   sync.on("update", update);
 
   p.kill("SIGUSR1");

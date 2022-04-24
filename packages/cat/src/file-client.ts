@@ -4,7 +4,7 @@ import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
 import { fromUtf8 } from "@ndn/util";
 import fs from "graceful-fs";
-import pushable from "it-pushable";
+import { pushable } from "it-pushable";
 import { posix as path } from "node:path";
 import { consume, parallelMap, writeToStream } from "streaming-iterables";
 import type { Arguments, Argv, CommandModule } from "yargs";

@@ -1,5 +1,6 @@
 import { FwPacket } from "@ndn/fw";
 import { Interest } from "@ndn/packet";
+import { expect, vi } from "vitest";
 
 import { L3Face, Transport } from "..";
 
@@ -12,13 +13,13 @@ export async function run<ServerSocket>(
 
   const face = new L3Face(transport);
 
-  const stateEvt = jest.fn<void, [L3Face.State]>();
+  const stateEvt = vi.fn<[L3Face.State], void>();
   face.on("state", stateEvt);
-  const upEvt = jest.fn();
+  const upEvt = vi.fn();
   face.on("up", upEvt);
-  const downEvt = jest.fn();
+  const downEvt = vi.fn();
   face.on("down", downEvt);
-  const closeEvt = jest.fn();
+  const closeEvt = vi.fn();
   face.on("close", closeEvt);
 
   let end = false;

@@ -3,6 +3,7 @@ import { type NamedSigner, type NamedVerifier, Certificate, ECDSA, generateSigni
 import { Component, Data, digestSigning, NameLike, Signer, Verifier } from "@ndn/packet";
 import { PrefixRegShorter } from "@ndn/repo";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
+import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
 import { HierarchicalVerifier, pattern as P, TrustSchema, TrustSchemaPolicy, TrustSchemaVerifier } from "../..";
 
@@ -106,12 +107,14 @@ hPolicy.addPattern("signer", new P.ConcatPattern([
 hPolicy.addRule("packet", "signer");
 
 interface Row {
+  summary: string;
   makeVerifier: (ctx: IContext) => Verifier;
   enableProducer?: boolean;
 }
 
 const TABLE: Row[] = [
   {
+    summary: "HierarchicalVerifier online",
     makeVerifier(ctx: IContext) {
       return new HierarchicalVerifier({
         trustAnchors: [ctx.cert0],
@@ -121,6 +124,7 @@ const TABLE: Row[] = [
     },
   },
   {
+    summary: "HierarchicalVerifier offline",
     makeVerifier(ctx: IContext) {
       return new HierarchicalVerifier({
         trustAnchors: [ctx.cert0],
@@ -132,6 +136,7 @@ const TABLE: Row[] = [
     enableProducer: false,
   },
   {
+    summary: "TrustSchemaVerifier with hierarchical policy",
     makeVerifier(ctx: IContext) {
       return new TrustSchemaVerifier({
         schema: new TrustSchema(hPolicy, [ctx.cert0]),
@@ -144,8 +149,8 @@ const TABLE: Row[] = [
 
 describe("success", () => {
   let ctx: Context;
-  beforeAll(async () => ctx = await Context.create({}));
-  test.each(TABLE)("$#", async (row) => {
+  beforeAll(async () => { ctx = await Context.create({}); });
+  test.each(TABLE)("%j", async (row) => {
     await ctx.execute(row, async (verifier, data) => {
       await verifier.verify(data);
       await verifier.verify(data); // should use cryptoVerifyCache
@@ -155,11 +160,13 @@ describe("success", () => {
 
 describe("success same name", () => {
   let ctx: Context;
-  beforeAll(async () => ctx = await Context.create({
-    name1: "/root/site/group",
-    name2: "/root/site/group",
-  }));
-  test.each(TABLE)("$#", async (row) => {
+  beforeAll(async () => {
+    ctx = await Context.create({
+      name1: "/root/site/group",
+      name2: "/root/site/group",
+    });
+  });
+  test.each(TABLE)("%j", async (row) => {
     await ctx.execute(row, async (verifier, data) => {
       await verifier.verify(data);
     });
@@ -168,10 +175,12 @@ describe("success same name", () => {
 
 describe("data non-hierarchical", () => {
   let ctx: Context;
-  beforeAll(async () => ctx = await Context.create({
-    dataName: "/data",
-  }));
-  test.each(TABLE)("$#", async (row) => {
+  beforeAll(async () => {
+    ctx = await Context.create({
+      dataName: "/data",
+    });
+  });
+  test.each(TABLE)("%j", async (row) => {
     await ctx.execute(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow();
     });
@@ -180,10 +189,12 @@ describe("data non-hierarchical", () => {
 
 describe("cert non-hierarchical", () => {
   let ctx: Context;
-  beforeAll(async () => ctx = await Context.create({
-    name1: "/root/other-site",
-  }));
-  test.each(TABLE)("$#", async (row) => {
+  beforeAll(async () => {
+    ctx = await Context.create({
+      name1: "/root/other-site",
+    });
+  });
+  test.each(TABLE)("%j", async (row) => {
     await ctx.execute(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow();
     });
@@ -202,7 +213,7 @@ describe("bad signature", () => {
       },
     });
   });
-  test.each(TABLE)("$#", async (row) => {
+  test.each(TABLE)("%j", async (row) => {
     await ctx.execute(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow(/bad/);
     });
@@ -219,7 +230,7 @@ describe("root expired", () => {
       },
     });
   });
-  test.each(TABLE)("$#", async (row) => {
+  test.each(TABLE)("%j", async (row) => {
     await ctx.execute(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow(/expired/);
     });
@@ -236,7 +247,7 @@ describe("cert expired", () => {
       },
     });
   });
-  test.each(TABLE)("$#", async (row) => {
+  test.each(TABLE)("%j", async (row) => {
     await ctx.execute(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow(/expired/);
     });
@@ -245,13 +256,15 @@ describe("cert expired", () => {
 
 describe("no KeyLocator", () => {
   let ctx: Context;
-  beforeAll(async () => ctx = await Context.create({}, class extends Context {
-    override async makeData() {
-      await super.makeData();
-      await digestSigning.sign(this.data);
-    }
-  }));
-  test.each(TABLE)("$#", async (row) => {
+  beforeAll(async () => {
+    ctx = await Context.create({}, class extends Context {
+      override async makeData() {
+        await super.makeData();
+        await digestSigning.sign(this.data);
+      }
+    });
+  });
+  test.each(TABLE)("%j", async (row) => {
     await ctx.execute(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow(/KeyLocator/);
     });

@@ -1,6 +1,6 @@
 import { type Forwarder, CancelInterest, FwPacket } from "@ndn/fw";
 import { type NameLike, type Verifier, Data, Interest } from "@ndn/packet";
-import pushable from "it-pushable";
+import { pushable } from "it-pushable";
 
 import { type RetxPolicy, makeRetxGenerator } from "./retx";
 

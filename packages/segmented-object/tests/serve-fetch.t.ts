@@ -10,6 +10,7 @@ import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";
 import { setTimeout as delay } from "node:timers/promises";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, consume } from "streaming-iterables";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, makeChunkSource, serve } from "..";
 import { makeObjectBody } from "../test-fixture/object-body";
@@ -56,7 +57,7 @@ test("stream to stream", async () => {
 
 describe("file source", () => {
   let filename: string;
-  beforeAll(() => filename = writeTmpFile(objectBody));
+  beforeAll(() => {filename = writeTmpFile(objectBody);});
   afterAll(deleteTmpFiles);
 
   test("file to buffer", async () => {
@@ -115,7 +116,7 @@ test("ranged", async () => {
 });
 
 describe("empty object", () => {
-  const handler1 = jest.fn<ReturnType<ProducerHandler>, Parameters<ProducerHandler>>(
+  const handler1 = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>(
     async (interest) => new Data(interest.name, Data.ContentType(3)));
   beforeEach(() => {
     handler1.mockReset();
@@ -140,7 +141,7 @@ describe("empty object", () => {
   });
 
   test("verify error", async () => {
-    const verify = jest.fn<ReturnType<Verifier["verify"]>, Parameters<Verifier["verify"]>>()
+    const verify = vi.fn<Parameters<Verifier["verify"]>, ReturnType<Verifier["verify"]>>()
       .mockRejectedValue(new Error("mock-verify-error"));
     await expect(fetch("/R", { verifier: { verify }, retxLimit: 0 }))
       .rejects.toThrow(/mock-verify-error/);
@@ -200,4 +201,4 @@ test("congestion avoidance", async () => {
 
   const fetched = fetch("/R");
   await expect(fetched).resolves.toEqualUint8Array(objectBody);
-}, 10000);
+}, 15000);

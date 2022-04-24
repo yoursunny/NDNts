@@ -1,6 +1,6 @@
 import type { EventEmitter } from "node:events";
 import * as net from "node:net";
-import pEvent from "p-event";
+import { pEvent, pEventIterator } from "p-event";
 import { tmpNameSync } from "tmp";
 
 export abstract class NetServerBase<Server extends EventEmitter, Client> {
@@ -19,7 +19,7 @@ export abstract class NetServerBase<Server extends EventEmitter, Client> {
   public readonly waitNClients = async (n: number): Promise<Client[]> => {
     if (this.clients.size < n) {
       // eslint-disable-next-line no-empty-pattern
-      for await (const {} of pEvent.iterator(this.server, "connection", { rejectionEvents: [] })) {
+      for await (const {} of pEventIterator(this.server, "connection", { rejectionEvents: [] })) {
         if (this.clients.size >= n) {
           break;
         }

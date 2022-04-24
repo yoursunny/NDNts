@@ -1,5 +1,7 @@
 import "../test-fixture/expect";
 
+import { expect, test } from "vitest";
+
 import { asDataView } from "..";
 
 test("asDataView", () => {

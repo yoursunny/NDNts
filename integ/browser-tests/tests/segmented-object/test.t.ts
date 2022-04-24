@@ -5,8 +5,9 @@ import { toHex } from "@ndn/util";
 import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";
 import { createHash } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
+import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 
-import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
+import { navigateToPage, page, pageInvoke } from "../../test-fixture/pptr";
 
 let objectBody: Buffer;
 let objectBodyDigest: string;
@@ -28,7 +29,7 @@ test("blob to buffer", async () => {
   await fileChooser.accept([filename]);
   await delay(500);
 
-  const { size, digest } = await pageInvoke<typeof window.testBlobChunkSource>(page, "testBlobChunkSource");
+  const { size, digest } = await pageInvoke<typeof window.testBlobChunkSource>("testBlobChunkSource");
   expect(size).toBe(objectBody.byteLength);
   expect(digest).toBe(objectBodyDigest);
 });

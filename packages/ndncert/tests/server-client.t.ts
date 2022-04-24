@@ -11,10 +11,12 @@ import { toHex, toUtf8 } from "@ndn/util";
 import { setTimeout as delay } from "node:timers/promises";
 import { type SentMessageInfo, createTransport as createMT } from "nodemailer";
 import { collect } from "streaming-iterables";
+import { afterEach, beforeAll, beforeEach, expect, test, vi } from "vitest";
 
 import { type ClientChallenge, type ClientChallengeContext, type ParameterKV, type ServerChallenge, type ServerOptions, CaProfile, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, requestCertificate, requestProbe, Server, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "..";
 
 interface Row {
+  summary: string;
   makeChallengeLists: () => Promise<[ServerChallenge[], ClientChallenge[]]>;
   clientShouldFail?: boolean;
 }
@@ -67,6 +69,7 @@ const emailTemplate: ServerEmailChallenge.Template = {
 
 const TABLE: Row[] = [
   {
+    summary: "nop",
     async makeChallengeLists() {
       return [
         [new ServerNopChallenge()],
@@ -75,19 +78,23 @@ const TABLE: Row[] = [
     },
   },
   {
+    summary: "pin, success",
     makeChallengeLists: makePinChallengeWithWrongInputs(0),
   },
   {
+    summary: "pin, success after 2 wrong inputs",
     makeChallengeLists: makePinChallengeWithWrongInputs(2),
   },
   {
+    summary: "pin, 3 wrong inputs",
     makeChallengeLists: makePinChallengeWithWrongInputs(3),
     clientShouldFail: true, // exceed retry limit
   },
   {
+    summary: "email, success",
     async makeChallengeLists() {
-      const emailsent = jest.fn<void, [Uint8Array, SentMessageInfo]>();
-      const emailerror = jest.fn<void, [Uint8Array, Error]>();
+      const emailsent = vi.fn<[Uint8Array, SentMessageInfo], void>();
+      const emailerror = vi.fn<[Uint8Array, Error], void>();
       const server = new ServerEmailChallenge({
         mail: createMT({ jsonTransport: true }),
         template: emailTemplate,
@@ -120,6 +127,7 @@ const TABLE: Row[] = [
     },
   },
   {
+    summary: "email, wrong code",
     async makeChallengeLists() {
       const server = new ServerEmailChallenge({
         mail: createMT({ jsonTransport: true }),
@@ -133,6 +141,7 @@ const TABLE: Row[] = [
     clientShouldFail: true,
   },
   {
+    summary: "email, reject in assignment policy",
     async makeChallengeLists() {
       const server = new ServerEmailChallenge({
         mail: createMT({ jsonTransport: true }),
@@ -147,6 +156,7 @@ const TABLE: Row[] = [
     clientShouldFail: true,
   },
   {
+    summary: "possession, success",
     async makeChallengeLists() {
       const { rootPub, clientCert, clientPvt } = await preparePossessionChallenge();
       return [
@@ -156,6 +166,7 @@ const TABLE: Row[] = [
     },
   },
   {
+    summary: "possession, accept in assignment policy",
     async makeChallengeLists() {
       const { rootPub, clientCert, clientPvt } = await preparePossessionChallenge();
       return [
@@ -168,6 +179,7 @@ const TABLE: Row[] = [
     },
   },
   {
+    summary: "possession, reject in assignment policy",
     async makeChallengeLists() {
       const { rootPub, clientCert, clientPvt } = await preparePossessionChallenge();
       return [
@@ -175,9 +187,10 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
-    clientShouldFail: true, // assignment policy rejects
+    clientShouldFail: true,
   },
   {
+    summary: "possession, bad signature",
     async makeChallengeLists() {
       const { rootPub, clientCert } = await preparePossessionChallenge();
       return [
@@ -185,21 +198,23 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, async () => Uint8Array.of(0xBB))],
       ];
     },
-    clientShouldFail: true, // bad signature
+    clientShouldFail: true,
   },
   {
+    summary: "possession, bad certificate encoding",
     async makeChallengeLists() {
       const { rootPub, clientCert, clientPvt } = await preparePossessionChallenge();
-      jest.spyOn(clientCert.data, "encodeTo")
+      vi.spyOn(clientCert.data, "encodeTo")
         .mockImplementation((encoder) => encoder.prependValue(Uint8Array.of(0xDD)));
       return [
         [new ServerPossessionChallenge(rootPub)],
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
-    clientShouldFail: true, // bad certificate encoding
+    clientShouldFail: true,
   },
   {
+    summary: "possession, expired certificate",
     async makeChallengeLists() {
       const now = Date.now();
       const { rootPub, clientCert, clientPvt } =
@@ -209,9 +224,10 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
-    clientShouldFail: true, // expired certificate
+    clientShouldFail: true,
   },
   {
+    summary: "possession, client certificate not trusted",
     async makeChallengeLists() {
       const { rootPub, clientPvt, clientPub } = await preparePossessionChallenge();
       const clientSelfCert = await Certificate.selfSign({ privateKey: clientPvt, publicKey: clientPub });
@@ -220,16 +236,17 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientSelfCert, clientPvt)],
       ];
     },
-    clientShouldFail: true, // client certificate not trusted
+    clientShouldFail: true,
   },
   {
+    summary: "server challenge not acceptable on client",
     async makeChallengeLists() {
       return [
         [new ServerPinChallenge()],
         [new ClientNopChallenge()],
       ];
     },
-    clientShouldFail: true, // server challenge not acceptable on client
+    clientShouldFail: true,
   },
 ];
 
@@ -340,7 +357,7 @@ test("probe simple", async () => {
   expect(redirects).toHaveLength(0);
 });
 
-test.each(TABLE)("challenge $#", async ({
+test.each(TABLE)("challenge %j", async ({
   makeChallengeLists,
   clientShouldFail = false,
 }) => {

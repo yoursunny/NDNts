@@ -2,6 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Timestamp, Version } from "@ndn/naming-convention2";
 import { Component, Name } from "@ndn/packet";
+import { expect, test } from "vitest";
 
 import { CertNaming } from "..";
 

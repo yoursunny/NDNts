@@ -3,6 +3,7 @@ import "@ndn/tlv/test-fixture/expect";
 import { Decodable, Decoder, Encodable, Encoder } from "@ndn/tlv";
 import * as crypto from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
+import { expect, test } from "vitest";
 
 import { Data, digestSigning, Interest, LLSign, LLVerify, Name, nullSigner, SigInfo, SigType, TT } from "..";
 import * as TestSignVerify from "../test-fixture/sign-verify";
@@ -44,13 +45,15 @@ const ALGO1 = new TestAlgo("1", true);
 type Pkt = LLSign.Signable & LLVerify.Verifiable & Encodable & { sigInfo: SigInfo };
 
 interface Row {
-  cls: (new(name: Name) => Pkt) & Decodable<Pkt>;
+  pkt: string;
+  Packet: (new(name: Name) => Pkt) & Decodable<Pkt>;
   checkWire: (tlv: Decoder.Tlv) => void;
 }
 
 const TABLE = [
   {
-    cls: Interest,
+    pkt: "Interest",
+    Packet: Interest,
     checkWire({ type, value }) {
       expect(type).toBe(TT.Interest);
       expect(value).toMatchTlv(
@@ -78,7 +81,8 @@ const TABLE = [
     },
   },
   {
-    cls: Data,
+    pkt: "Data",
+    Packet: Data,
     checkWire({ type, value }) {
       expect(type).toBe(TT.Data);
       expect(value).toMatchTlv(
@@ -93,8 +97,8 @@ const TABLE = [
   },
 ] as Row[];
 
-test.each(TABLE)("sign $#", async ({ cls }) => {
-  const pkt = new cls(new Name("/A"));
+test.each(TABLE)("sign %j", async ({ Packet }) => {
+  const pkt = new Packet(new Name("/A"));
   pkt.sigInfo = new SigInfo(SigType.HmacWithSha256, Uint8Array.of(0xA0, 0xA1));
   await expect(ALGO1.sign(pkt)).rejects.toThrow(/mock-signing-error/);
 
@@ -102,8 +106,8 @@ test.each(TABLE)("sign $#", async ({ cls }) => {
   expect(() => Encoder.encode(pkt)).not.toThrow();
 });
 
-test.each(TABLE)("verify $#", async ({ cls, checkWire }) => {
-  const src = new cls(new Name("/A"));
+test.each(TABLE)("verify %j", async ({ Packet, checkWire }) => {
+  const src = new Packet(new Name("/A"));
   src.sigInfo = new SigInfo(SigType.Sha256);
   await ALGO0.sign(src);
   const wire = Encoder.encode(src);
@@ -112,7 +116,7 @@ test.each(TABLE)("verify $#", async ({ cls, checkWire }) => {
   await ALGO0.verify(src);
   await expect(ALGO1.verify(src)).rejects.toThrow(/incorrect/);
 
-  const obj = new Decoder(wire).decode(cls);
+  const obj = new Decoder(wire).decode(Packet);
   await ALGO0.verify(obj);
   await expect(ALGO1.verify(obj)).rejects.toThrow(/incorrect/);
 });
@@ -131,8 +135,8 @@ test("digestSigning simple", async () => {
   await expect(digestSigning.verify(data)).rejects.toThrow();
 });
 
-test.each(TestSignVerify.makeTable())("digestSigning %p", async ({ cls }) => {
-  const record = await TestSignVerify.execute(cls, digestSigning, digestSigning, digestSigning, digestSigning);
+test.each(TestSignVerify.PacketTable)("digestSigning %j", async ({ Packet }) => {
+  const record = await TestSignVerify.execute(Packet, digestSigning, digestSigning, digestSigning, digestSigning);
   TestSignVerify.check(record, { deterministic: true, sameAB: true });
 });
 

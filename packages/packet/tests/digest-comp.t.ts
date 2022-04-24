@@ -1,5 +1,7 @@
 import "../test-fixture/expect";
 
+import { expect, test } from "vitest";
+
 import { AltUri, Component, ImplicitDigest, Name, NamingConvention, ParamsDigest, TT } from "..";
 
 interface Row {
@@ -13,7 +15,7 @@ const TABLE = [
   { CompType: ParamsDigest, tt: TT.ParametersSha256DigestComponent, altUriPrefix: "params-sha256" },
 ] as Row[];
 
-test.each(TABLE)("DigestComp $#", ({ CompType, tt, altUriPrefix }) => {
+test.each(TABLE)("DigestComp %j", ({ CompType, tt, altUriPrefix }) => {
   expect(NamingConvention.isConvention(CompType)).toBeTruthy();
 
   const digest = new Uint8Array(32);

@@ -10,6 +10,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, map, pipeline, writeToStream } from "streaming-iterables";
 import { tmpNameSync } from "tmp";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { BulkInsertInitiator, BulkInsertTarget, copy, DataTape } from "..";
 
@@ -50,7 +51,7 @@ function makeDataTapeAppendStream(): [open: DataTape.OpenStream, retrieve: () =>
 
 describe("DataTape reader", () => {
   let tape: DataTape;
-  beforeEach(() => tape = new DataTape(makeDataTapeReadStream));
+  beforeEach(() => {tape = new DataTape(makeDataTapeReadStream);});
 
   test("listNames", async () => {
     const names = await collect(tape.listNames());
@@ -103,7 +104,7 @@ async function testBulkInsertTarget(
     retrieve: () => Buffer,
 ) {
   const tape = new DataTape(stream);
-  const storeInsert = jest.spyOn(tape, "insert");
+  const storeInsert = vi.spyOn(tape, "insert");
 
   const bi = BulkInsertTarget.create<{}>(tape, {
     batch: 32,

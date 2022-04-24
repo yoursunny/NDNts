@@ -8,6 +8,7 @@ import { SafeBagEC, SafeBagRSA } from "@ndn/ndnsec/test-fixture/safe-bag";
 import { Name, SigType } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 import { Decoder } from "@ndn/tlv";
+import { beforeEach, expect, test } from "vitest";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 import * as Serialize from "../../test-fixture/serialize";
@@ -15,48 +16,48 @@ import * as Serialize from "../../test-fixture/serialize";
 beforeEach(() => navigateToPage(__dirname));
 
 test("KeyStore", async () => {
-  const result = await pageInvoke<typeof window.testKeyStore>(page, "testKeyStore");
+  const result = await pageInvoke<typeof window.testKeyStore>("testKeyStore");
   TestKeyStore.check(result);
 });
 
 test("CertStore", async () => {
-  const result = await pageInvoke<typeof window.testCertStore>(page, "testCertStore");
+  const result = await pageInvoke<typeof window.testCertStore>("testCertStore");
   TestCertStore.check(result);
 });
 
 test("SHA256", async () => {
   const [rI, rD] = Serialize.parse(
-    await pageInvoke<typeof window.testDigestSigning>(page, "testDigestSigning"));
+    await pageInvoke<typeof window.testDigestSigning>("testDigestSigning"));
   TestSignVerify.check(rI, { deterministic: true, sameAB: true });
   TestSignVerify.check(rD, { deterministic: true, sameAB: true });
 });
 
-test.each(EcCurve.Choices)("ECDSA %p", async (curve) => {
+test.each(EcCurve.Choices)("ECDSA %s", async (curve) => {
   const [rI, rD] = Serialize.parse(
-    await pageInvoke<typeof window.testECDSA>(page, "testECDSA", curve));
+    await pageInvoke<typeof window.testECDSA>("testECDSA", curve));
   TestSignVerify.check(rI);
   TestSignVerify.check(rD);
 });
 
-test.each(RsaModulusLength.Choices)("RSA %p", async (modulusLength) => {
+test.each(RsaModulusLength.Choices)("RSA %d", async (modulusLength) => {
   const [rI, rD] = Serialize.parse(
-    await pageInvoke<typeof window.testRSA>(page, "testRSA", modulusLength));
+    await pageInvoke<typeof window.testRSA>("testRSA", modulusLength));
   TestSignVerify.check(rI, { deterministic: true });
   TestSignVerify.check(rD, { deterministic: true });
 });
 
 test("HMAC", async () => {
   const [rI, rD] = Serialize.parse(
-    await pageInvoke<typeof window.testHMAC>(page, "testHMAC"));
+    await pageInvoke<typeof window.testHMAC>("testHMAC"));
   TestSignVerify.check(rI, { deterministic: true });
   TestSignVerify.check(rD, { deterministic: true });
 });
 
 test.each([
   SafeBagEC, SafeBagRSA,
-])("SafeBagDecode $#", async ({ sigType, certName, wire, passphrase }) => {
+])("SafeBagDecode %#", async ({ sigType, certName, wire, passphrase }) => {
   const [aSigType, aCertName] =
-    await pageInvoke<typeof window.testSafeBagDecode>(page, "testSafeBagDecode", Serialize.stringify(wire), passphrase);
+    await pageInvoke<typeof window.testSafeBagDecode>("testSafeBagDecode", Serialize.stringify(wire), passphrase);
   expect(aSigType).toBe(sigType);
   expect(new Name(aCertName)).toEqualName(certName);
 });
@@ -64,7 +65,7 @@ test.each([
 test("SafeBagEncode", async () => {
   const passphrase = "9c570742-82ed-41a8-a370-8e0c8806e5e4";
   const wire = Serialize.parse(
-    await pageInvoke<typeof window.testSafeBagEncode>(page, "testSafeBagEncode", passphrase));
+    await pageInvoke<typeof window.testSafeBagEncode>("testSafeBagEncode", passphrase));
 
   const safeBag = new Decoder(wire).decode(SafeBag);
   const { certificate: cert } = safeBag;

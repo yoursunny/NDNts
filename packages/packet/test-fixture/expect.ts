@@ -1,6 +1,6 @@
 import "@ndn/tlv/test-fixture/expect";
 
-import expect from "expect";
+import { expect } from "vitest";
 
 import { type ComponentLike, type NameLike, Component, Name } from "..";
 

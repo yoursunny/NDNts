@@ -1,7 +1,7 @@
 import type { Forwarder, FwFace } from "@ndn/fw";
 import type { NameLike } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
-import pushable from "it-pushable";
+import { pushable } from "it-pushable";
 import pDefer from "p-defer";
 import { filter, map, pipeline, transform } from "streaming-iterables";
 

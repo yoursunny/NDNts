@@ -1,13 +1,11 @@
-import execa from "execa";
+import { type Options as ExecaOptions, execa, ExecaChildProcess, execaSync } from "execa";
 import * as path from "node:path";
-
-jest.setTimeout(20000);
 
 const pathOfMakefile = path.resolve(__dirname, "..");
 
 function compile(dir: string) {
   const rel = path.relative(pathOfMakefile, dir);
-  execa.sync("make", [`${rel}/a.out`], { cwd: pathOfMakefile, stderr: "inherit" });
+  execaSync("make", [`${rel}/a.out`], { cwd: pathOfMakefile, stderr: "inherit" });
 }
 
 /**
@@ -17,7 +15,7 @@ function compile(dir: string) {
  * @param opts execa options.
  */
 export function execute(dir: string, args: readonly string[] = [],
-    opts: execa.Options = {}): execa.ExecaChildProcess {
+    opts: ExecaOptions = {}): ExecaChildProcess {
   compile(dir);
   return execa("./a.out", args, {
     cwd: dir,

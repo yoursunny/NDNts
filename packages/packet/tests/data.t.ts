@@ -2,6 +2,7 @@ import "../test-fixture/expect";
 
 import { Decoder, Encoder } from "@ndn/tlv";
 import { createHash } from "node:crypto";
+import { expect, test } from "vitest";
 
 import { Component, Data, ImplicitDigest, Interest, Name, TT } from "..";
 import { getDataFullName } from "../test-fixture/name";

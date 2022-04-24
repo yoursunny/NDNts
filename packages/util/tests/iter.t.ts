@@ -1,6 +1,7 @@
-import pushable from "it-pushable";
+import { pushable } from "it-pushable";
 import { setTimeout as delay } from "node:timers/promises";
 import { collect } from "streaming-iterables";
+import { expect, test, vi } from "vitest";
 
 import { flatMapOnce, safeIter } from "..";
 
@@ -20,7 +21,7 @@ test("safeIter ignore", async () => {
 
 test("safeIter catch", async () => {
   const it = pushable<number>();
-  const onError = jest.fn<undefined, [unknown]>();
+  const onError = vi.fn<[unknown], undefined>();
   const collector = collect(safeIter(it, onError));
 
   it.push(1);

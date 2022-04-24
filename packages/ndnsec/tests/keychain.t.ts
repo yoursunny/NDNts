@@ -1,13 +1,14 @@
 import * as TestCertStore from "@ndn/keychain/test-fixture/cert-store";
 import * as TestKeyStore from "@ndn/keychain/test-fixture/key-store";
-import execa from "execa";
+import { execaSync } from "execa";
 import { dirSync as tmpDir } from "tmp";
+import { afterEach, beforeEach, describe, test } from "vitest";
 
 import { NdnsecKeyChain } from "..";
 
 describe("ndn-cxx keychain", () => {
-  if (execa.sync("ndnsec", ["version"], { reject: false }).exitCode !== 0) {
-    test.skip("ndnsec is not installed", () => undefined); // eslint-disable-line jest/no-disabled-tests
+  if (execaSync("ndnsec", ["version"], { reject: false }).exitCode !== 0) {
+    test.skip("ndnsec is not installed", () => undefined);
     return;
   }
 

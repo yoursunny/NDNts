@@ -1,5 +1,5 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
-import pEvent from "p-event";
+import { pEventIterator } from "p-event";
 import { map } from "streaming-iterables";
 import type WsWebSocket from "ws";
 
@@ -16,7 +16,7 @@ export class WsTransport extends Transport {
     sock.binaryType = "arraybuffer";
     this.rx = rxFromPacketIterable(map(
       (evt) => new Uint8Array(evt instanceof ArrayBuffer ? evt : evt.data),
-      pEvent.iterator<"message", ArrayBuffer | MessageEvent<ArrayBuffer>>(
+      pEventIterator<"message", ArrayBuffer | MessageEvent<ArrayBuffer>>(
         sock, "message", { resolutionEvents: ["close"] }),
     ));
 

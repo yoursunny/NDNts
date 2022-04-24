@@ -1,4 +1,4 @@
-import { readable as isReadableStream } from "is-stream";
+import { isReadableStream } from "is-stream";
 import type { AnyIterable } from "streaming-iterables";
 
 import { BufferChunkSource } from "./buffer";

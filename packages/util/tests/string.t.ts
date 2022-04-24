@@ -1,5 +1,7 @@
 import "../test-fixture/expect";
 
+import { expect, test } from "vitest";
+
 import { fromHex, fromUtf8, toHex, toUtf8 } from "..";
 
 test("toHex", () => {

@@ -25,10 +25,10 @@
   },
   "dependencies": {
     "@ndn/l3face": "workspace:*",
-    "p-event": "^4.2.0",
+    "p-event": "^5.0.1",
     "tslib": "^2.4.0",
-    "url-format-lax": "^1.0.0",
-    "url-parse-lax": "^4.0.0"
+    "url-format-lax": "^2.0.0",
+    "url-parse-lax": "^5.0.0"
   },
   "devDependencies": {
     "@ndn/fw": "workspace:*",
