@@ -4,11 +4,13 @@ import { Data, Name, SigType } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 import { Decoder } from "@ndn/tlv";
 import { fromHex } from "@ndn/util";
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
-import { Certificate, createVerifier, EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, SigningAlgorithmListFull } from "../..";
+import { Certificate, createVerifier, EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, SigningAlgorithmListFull, ValidityPeriod } from "../..";
 
 describe.each(EcCurve.Choices)("ECDSA %s", (curve) => {
+  afterEach(() => { vi.restoreAllMocks(); });
+
   test.each(TestSignVerify.PacketTable)("sign-verify %j", async ({ Packet }) => {
     const [pvtA, pubA] = await generateSigningKey("/A/KEY/x", ECDSA, { curve });
     const [pvtB, pubB] = await generateSigningKey("/B/KEY/x", ECDSA, { curve });
@@ -32,11 +34,18 @@ describe.each(EcCurve.Choices)("ECDSA %s", (curve) => {
     const { signer, publicKey } = await keyChain.getKeyPair(name);
     expect(signer.sigType).toBe(SigType.Sha256WithEcdsa);
 
-    const cert = await Certificate.selfSign({ privateKey: signer, publicKey });
+    const now = Date.now();
+    const cert = await Certificate.selfSign({
+      privateKey: signer,
+      publicKey,
+      validity: new ValidityPeriod(now, now + 3600_000),
+    });
     const verifier = await createVerifier(cert);
     expect(verifier.name).toEqualName(signer.name);
     expect(verifier.sigType).toBe(SigType.Sha256WithEcdsa);
     await verifier.verify(cert.data);
+
+    await expect(createVerifier(cert, { now: now + 3602_000 })).rejects.toThrow();
   });
 });
 
@@ -62,7 +71,7 @@ describe.each(RsaModulusLength.Choices)("RSA %d", (modulusLength) => {
     expect(signer.sigType).toBe(SigType.Sha256WithRsa);
 
     const cert = await Certificate.selfSign({ privateKey: signer, publicKey });
-    const verifier = await createVerifier(cert, SigningAlgorithmListFull);
+    const verifier = await createVerifier(cert, { algoList: SigningAlgorithmListFull });
     expect(verifier.name).toEqualName(signer.name);
     expect(verifier.sigType).toBe(SigType.Sha256WithRsa);
     await verifier.verify(cert.data);

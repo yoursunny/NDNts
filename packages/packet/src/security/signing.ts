@@ -53,22 +53,17 @@ export namespace Signer {
    * Put SigInfo on packet if it does not exist.
    * @param pkt target packet.
    * @param sigType optionally set sigType.
-   * @param keyLocator optionally set keyLocator; false to unset KeyLocator.
+   * @param keyLocator optionally set keyLocator; false to delete KeyLocator.
    */
   export function putSigInfo(pkt: PacketWithSignature, sigType?: number, keyLocator?: KeyLocator.CtorArg | false): SigInfo {
     pkt.sigInfo ??= new SigInfo();
     if (sigType !== undefined) {
       pkt.sigInfo.type = sigType;
     }
-    switch (typeof keyLocator) {
-      case "undefined":
-        break;
-      case "boolean":
-        pkt.sigInfo.keyLocator = undefined;
-        break;
-      default:
-        pkt.sigInfo.keyLocator = new KeyLocator(keyLocator);
-        break;
+    if (keyLocator === false) {
+      pkt.sigInfo.keyLocator = undefined;
+    } else if (keyLocator !== undefined) {
+      pkt.sigInfo.keyLocator = new KeyLocator(keyLocator);
     }
     return pkt.sigInfo;
   }

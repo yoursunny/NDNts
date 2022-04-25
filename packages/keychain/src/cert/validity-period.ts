@@ -4,13 +4,6 @@ import { toUtf8 } from "@ndn/util";
 
 import { TT } from "./an";
 
-function toTimestamp(input: ValidityPeriod.TimestampInput): number {
-  if (typeof input === "object") {
-    return input.getTime();
-  }
-  return input;
-}
-
 const timestampRe = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/;
 
 function decodeTimestamp(str: string): number {
@@ -27,13 +20,9 @@ function padDateNum(n: number, size = 2): string {
   return n.toString().padStart(size, "0");
 }
 
-function encodeTimestampString(timestamp: number): string {
+function encodeTimestamp(timestamp: number): string {
   const d = new Date(timestamp);
   return `${padDateNum(d.getUTCFullYear(), 4)}${padDateNum(1 + d.getUTCMonth())}${padDateNum(d.getUTCDate())}T${padDateNum(d.getUTCHours())}${padDateNum(d.getUTCMinutes())}${padDateNum(d.getUTCSeconds())}`;
-}
-
-function encodeTimestamp(timestamp: number): Uint8Array {
-  return toUtf8(encodeTimestampString(timestamp));
 }
 
 const EVD = new EvDecoder<ValidityPeriod>("ValidityPeriod", TT.ValidityPeriod)
@@ -52,8 +41,8 @@ export class ValidityPeriod {
       notBefore: ValidityPeriod.TimestampInput = 0,
       notAfter: ValidityPeriod.TimestampInput = 0,
   ) {
-    this.notBefore = toTimestamp(notBefore);
-    this.notAfter = toTimestamp(notAfter);
+    this.notBefore = Number(notBefore);
+    this.notAfter = Number(notAfter);
   }
 
   public notBefore: number;
@@ -61,21 +50,20 @@ export class ValidityPeriod {
 
   public encodeTo(encoder: Encoder) {
     return encoder.prependTlv(TT.ValidityPeriod,
-      [TT.NotBefore, encodeTimestamp(this.notBefore)],
-      [TT.NotAfter, encodeTimestamp(this.notAfter)],
+      [TT.NotBefore, toUtf8(encodeTimestamp(this.notBefore))],
+      [TT.NotAfter, toUtf8(encodeTimestamp(this.notAfter))],
     );
   }
 
   /** Determine whether the specified timestamp is within validity period. */
   public includes(t: ValidityPeriod.TimestampInput): boolean {
-    t = toTimestamp(t);
+    t = Number(t);
     return this.notBefore <= t && t <= this.notAfter;
   }
 
   /** Determine whether this validity period equals another. */
   public equals({ notBefore, notAfter }: ValidityPeriod): boolean {
-    return this.notBefore === notBefore &&
-           this.notAfter === notAfter;
+    return this.notBefore === notBefore && this.notAfter === notAfter;
   }
 
   /** Compute the intersection of this and other validity periods. */
@@ -87,7 +75,7 @@ export class ValidityPeriod {
   }
 
   public toString(): string {
-    return `${encodeTimestampString(this.notBefore)}-${encodeTimestampString(this.notAfter)}`;
+    return `${encodeTimestamp(this.notBefore)}-${encodeTimestamp(this.notAfter)}`;
   }
 }
 

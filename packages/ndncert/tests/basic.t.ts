@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, ECDSA, generateSigningKey, RSA, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
 import { Name } from "@ndn/packet";
 import { toUtf8 } from "@ndn/util";
-import { beforeAll, expect, test, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, ProbeRequest, ProbeResponse, Status } from "..";
 
@@ -187,28 +187,55 @@ test("packets", async () => {
   expect(challengeResponse.issuedCertName).toEqualName("/issued-cert");
 });
 
-test("expired CA certificate", async () => {
-  const [caPvt, caPub] = await generateSigningKey("/root/authority");
-  const now = Date.now();
-  const caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub, validity: new ValidityPeriod(now - 3600000, now - 1800000) });
-  const profile = await CaProfile.build({
-    prefix: new Name("/root/authority"),
-    info: "authority CA",
-    probeKeys: [],
-    maxValidityPeriod: 86400000,
-    cert: caCert,
-    signer: caPvt,
-    version: 7,
+describe("ValidityPeriod", () => {
+  const caValidityDuration = 60000;
+  let profile: CaProfile;
+
+  afterEach(() => { vi.restoreAllMocks(); });
+
+  beforeEach(async () => {
+    const [caPvt, caPub] = await generateSigningKey("/root/authority");
+    const now = Date.now();
+    const cert = await Certificate.selfSign({
+      privateKey: caPvt,
+      publicKey: caPub,
+      validity: new ValidityPeriod(now, now + caValidityDuration),
+    });
+    profile = await CaProfile.build({
+      prefix: new Name("/root/authority"),
+      info: "authority CA",
+      probeKeys: [],
+      maxValidityPeriod: 86400000,
+      cert,
+      signer: caPvt,
+      version: 7,
+    });
   });
 
-  const reqSIP = crypto.makeSignedInterestPolicy();
-  const [reqPvt, reqPub] = await generateSigningKey("/requester");
-  const [, reqEcdhPub] = await crypto.generateEcdhKey();
-  await expect(NewRequest.build({
-    profile,
-    signedInterestPolicy: reqSIP,
-    ecdhPub: reqEcdhPub,
-    publicKey: reqPub,
-    privateKey: reqPvt,
-  })).rejects.toThrow(/ValidityPeriod/);
+  async function buildNewRequest(validity?: ValidityPeriod): Promise<NewRequest> {
+    const reqSIP = crypto.makeSignedInterestPolicy();
+    const [reqPvt, reqPub] = await generateSigningKey("/requester");
+    const [, reqEcdhPub] = await crypto.generateEcdhKey();
+    return NewRequest.build({
+      profile,
+      signedInterestPolicy: reqSIP,
+      ecdhPub: reqEcdhPub,
+      publicKey: reqPub,
+      privateKey: reqPvt,
+      validity,
+    });
+  }
+
+  test("expired CA certificate", async () => {
+    vi.useFakeTimers();
+    vi.advanceTimersByTime(2 * caValidityDuration);
+    await expect(buildNewRequest()).rejects.toThrow(/ValidityPeriod/);
+  });
+
+  test("expired requester certificate", async () => {
+    const now = Date.now();
+    await expect(buildNewRequest(
+      new ValidityPeriod(now - 3600_000, now - 1800_000),
+    )).rejects.toThrow(/ValidityPeriod/);
+  });
 });

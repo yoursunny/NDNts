@@ -48,7 +48,7 @@ export class IssueCertCommand implements CommandModule<{}, Args> {
     const issuerPrivateKey = await keyChain.getSigner(new Name(issuer), { useKeyNameKeyLocator });
 
     const certReq = await inputCertBase64();
-    const publicKey = await createVerifier(certReq, SigningAlgorithmListFull);
+    const publicKey = await createVerifier(certReq, { algoList: SigningAlgorithmListFull });
 
     const issuerId = Component.from(issuerIdInput);
 

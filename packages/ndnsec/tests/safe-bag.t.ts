@@ -29,7 +29,7 @@ test.each([
     const data = new Data("/D");
     await pvt.sign(data);
     expect(data.sigInfo.type).toBe(sigType);
-    const verifier = await createVerifier(cert, SigningAlgorithmListFull);
+    const verifier = await createVerifier(cert, { algoList: SigningAlgorithmListFull });
     await verifier.verify(data);
   }
 

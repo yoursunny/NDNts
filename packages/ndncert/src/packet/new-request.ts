@@ -23,7 +23,7 @@ export class NewRequest {
   ): Promise<NewRequest> {
     if (!(interest.name.getPrefix(-3).equals(profile.prefix) &&
           interest.name.at(-3).equals(C.CA) &&
-          interest.name.at(-2).equals(C.NEW))) {
+          interest.name.get(-2)!.equals(C.NEW))) {
       throw new Error("bad Name");
     }
 
@@ -34,7 +34,7 @@ export class NewRequest {
     }
 
     request.ecdhPub_ = await crypto.importEcdhPub(request.ecdhPubRaw);
-    request.publicKey_ = await createVerifier(request.certRequest, algoList);
+    request.publicKey_ = await createVerifier(request.certRequest, { algoList });
     await signedInterestPolicy.makeVerifier(request.publicKey).verify(interest);
     return request;
   }

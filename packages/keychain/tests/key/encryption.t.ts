@@ -136,6 +136,6 @@ test("RSA-OAEP encrypt-decrypt", async () => {
     issuerPrivateKey: signer,
     publicKey,
   });
-  const encrypter = await createEncrypter(cert, EncryptionAlgorithmListFull);
+  const encrypter = await createEncrypter(cert, { algoList: EncryptionAlgorithmListFull });
   await testEncryptDecrypt(encrypter, decrypter, true);
 }, 10000);

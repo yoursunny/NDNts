@@ -40,6 +40,13 @@ export class Certificate {
     return this.issuer?.isPrefixOf(this.name) ?? false;
   }
 
+  /** Ensure certificate is within validity period. */
+  public checkValidity(now: ValidityPeriod.TimestampInput = Date.now()): void {
+    if (!this.validity.includes(now)) {
+      throw new Error(`certificate ${this.name} has expired`);
+    }
+  }
+
   /** Public key in SubjectPublicKeyInfo (SPKI) binary format. */
   public get publicKeySpki(): Uint8Array {
     return this.data.content;

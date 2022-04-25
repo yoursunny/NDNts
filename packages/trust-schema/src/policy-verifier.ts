@@ -25,7 +25,7 @@ export abstract class PolicyVerifier<Context = unknown> implements Verifier {
       const certErrors: string[] = [];
       for await (const cert of this.certSources.findCerts(klName)) {
         try {
-          this.checkValidity(cert, now);
+          cert.checkValidity(now);
           this.checkCertPolicy(lastPkt, cert, ctx);
         } catch (err: unknown) {
           certErrors.push(`${cert.name}:${"\n\t"}${err}`);
@@ -71,14 +71,8 @@ export abstract class PolicyVerifier<Context = unknown> implements Verifier {
    */
   protected abstract checkCertPolicy(pkt: Verifier.Verifiable, cert: Certificate, ctx: Context): void;
 
-  private checkValidity({ name, validity }: Certificate, now: number): void {
-    if (!validity.includes(now)) {
-      throw new Error(`${name} has expired`);
-    }
-  }
-
   private async cryptoVerifyUncached(cert: Certificate, packet: Verifier.Verifiable): Promise<void> {
-    const key = await createVerifier(cert, this.algoList);
+    const key = await createVerifier(cert, { algoList: this.algoList, checkValidity: false });
     return key.verify(packet);
   }
 

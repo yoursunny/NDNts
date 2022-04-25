@@ -87,7 +87,7 @@ export class AccessManager {
       member = Certificate.fromData(data);
     }
     if (member instanceof Certificate) {
-      member = await createEncrypter(member, [RSAOAEP]);
+      member = await createEncrypter(member, { algoList: [RSAOAEP] });
     }
     return member;
   }

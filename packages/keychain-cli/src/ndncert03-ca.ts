@@ -143,7 +143,7 @@ Otherwise, please disregard this message.`,
           let verifier: Verifier;
           if (issuerFile) {
             const issuerCert = await inputCertBase64(issuerFile);
-            verifier = await createVerifier(issuerCert, SigningAlgorithmListFull);
+            verifier = await createVerifier(issuerCert, { algoList: SigningAlgorithmListFull });
           } else {
             verifier = profile.publicKey;
           }

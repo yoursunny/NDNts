@@ -70,7 +70,7 @@ export function toKeyName(name: Name): Name {
  * @param name subject name, key name, or certificate name.
  * @param opts.keyId keyId component, used only if input name is subject name.
  */
-export function makeKeyName(name: Name, opts: Partial<Omit<KeyNameFields, "subjectName">> = {}): Name {
+export function makeKeyName(name: Name, opts: Partial<Pick<KeyNameFields, "keyId">> = {}): Name {
   const keyName = getKeyNameImpl(name);
   if (keyName) {
     return keyName;
@@ -105,22 +105,16 @@ export function parseCertName(name: Name): CertNameFields {
  * @param opts.issuerId keyId, used only if input name is subject name or key name.
  * @param opts.version keyId, used only if input name is subject name or key name.
  */
-export function makeCertName(name: Name, opts: Partial<Omit<CertNameFields, "subjectName">> = {}): Name {
+export function makeCertName(name: Name, opts: Partial<Pick<CertNameFields, "keyId" | "issuerId" | "version">> = {}): Name {
   if (isCertName(name)) {
     return name;
   }
 
-  const now = new Date();
-  const {
-    issuerId = ISSUER_DEFAULT,
-    version = Version.create(now.getTime()),
-  } = opts;
-  if (isKeyName(name)) {
-    return name.append(issuerId, version);
-  }
-
+  const now = Date.now();
   const {
     keyId = Timestamp.create(now),
+    issuerId = ISSUER_DEFAULT,
+    version = Version.create(now),
   } = opts;
-  return name.append(KEY, keyId, issuerId, version);
+  return isKeyName(name) ? name.append(issuerId, version) : name.append(KEY, keyId, issuerId, version);
 }

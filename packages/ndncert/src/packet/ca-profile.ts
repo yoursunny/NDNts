@@ -24,12 +24,12 @@ export class CaProfile {
     const profile = new CaProfile(data);
     if (!(data.name.getPrefix(-4).equals(profile.prefix) &&
           data.name.at(-4).equals(C.CA) &&
-          data.name.at(-3).equals(C.INFO) &&
-          data.name.at(-2).is(Version) &&
-          data.name.at(-1).is(Segment))) {
+          data.name.get(-3)!.equals(C.INFO) &&
+          data.name.get(-2)!.is(Version) &&
+          data.name.get(-1)!.is(Segment))) {
       throw new Error("bad Name");
     }
-    profile.publicKey_ = await createVerifier(profile.cert, algoList);
+    profile.publicKey_ = await createVerifier(profile.cert, { algoList });
     await profile.publicKey_.verify(data);
     profile.certDigest_ = await profile.cert.data.computeImplicitDigest();
     return profile;

@@ -17,6 +17,10 @@ test("encode decode", async () => {
   });
   expect(cert.issuer).toEqualName(pvt.name);
   expect(cert.isSelfSigned).toBeTruthy();
+  expect(() => cert.checkValidity(1542099529000)).not.toThrow();
+  expect(() => cert.checkValidity(1602434283000)).not.toThrow();
+  expect(() => cert.checkValidity(1542099528000)).toThrow(/expired/);
+  expect(() => cert.checkValidity(1602434284000)).toThrow(/expired/);
 
   let data = cert.data;
   expect(data.name).toEqualName("/operator/KEY/key-1/self/%FD%01");
@@ -50,7 +54,7 @@ test("decode testbed certs", async () => {
   expect(cert0.validity.notAfter).toBe(1609459199000);
   expect(cert0.publicKeySpki).toEqualUint8Array(ndn_testbed_certs.ROOT_V2_SPKI);
   expect(cert0.isSelfSigned).toBeTruthy();
-  const pub0 = await createVerifier(cert0);
+  const pub0 = await createVerifier(cert0, { checkValidity: false });
   expect(pub0.sigType).toBe(SigType.Sha256WithEcdsa);
 
   const data1 = new Decoder(ndn_testbed_certs.ARIZONA_20190312).decode(Data);
@@ -59,7 +63,8 @@ test("decode testbed certs", async () => {
   const cert1 = Certificate.fromData(data1);
   expect(cert1.isSelfSigned).toBeFalsy();
   expect(cert1.issuer).toEqualName(certName0.keyName);
-  await expect(createVerifier(cert1, SigningAlgorithmListSlim)).rejects.toThrow();
-  const pub1 = await createVerifier(cert1, SigningAlgorithmListFull);
+  await expect(createVerifier(cert1, { algoList: SigningAlgorithmListSlim, checkValidity: false }))
+    .rejects.toThrow();
+  const pub1 = await createVerifier(cert1, { algoList: SigningAlgorithmListFull, checkValidity: false });
   expect(pub1.sigType).toBe(SigType.Sha256WithRsa);
 });
