@@ -20,10 +20,7 @@ describe.each([
 
   beforeEach(async () => {
     server = await UdpServer.create(UdpServerBroadcast, family, address);
-  });
-
-  afterEach(() => {
-    server.close();
+    return async () => { server.close(); };
   });
 
   test("pair", async () => {

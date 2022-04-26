@@ -10,7 +10,7 @@ import { afterEach, expect, test } from "vitest";
 
 import { AccessManager, Consumer, Producer } from "..";
 
-afterEach(() => Endpoint.deleteDefaultForwarder());
+afterEach(Endpoint.deleteDefaultForwarder);
 
 test("simple", async () => {
   const [rootSigner, rootVerifier] = await generateSigningKey("/root");

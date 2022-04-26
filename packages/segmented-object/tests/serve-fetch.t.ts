@@ -10,7 +10,7 @@ import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";
 import { setTimeout as delay } from "node:timers/promises";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, consume } from "streaming-iterables";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, makeChunkSource, serve } from "..";
 import { makeObjectBody } from "../test-fixture/object-body";
@@ -57,8 +57,10 @@ test("stream to stream", async () => {
 
 describe("file source", () => {
   let filename: string;
-  beforeAll(() => {filename = writeTmpFile(objectBody);});
-  afterAll(deleteTmpFiles);
+  beforeAll(() => {
+    filename = writeTmpFile(objectBody);
+    return deleteTmpFiles;
+  });
 
   test("file to buffer", async () => {
     const server = serve("/R", new FileChunkSource(filename));

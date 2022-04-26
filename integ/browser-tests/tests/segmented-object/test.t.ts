@@ -1,23 +1,22 @@
 import "./api";
 
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
-import { toHex } from "@ndn/util";
+import { sha256, toHex } from "@ndn/util";
 import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";
-import { createHash } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
-import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
+import { beforeAll, beforeEach, expect, test } from "vitest";
 
 import { navigateToPage, page, pageInvoke } from "../../test-fixture/pptr";
 
 let objectBody: Buffer;
 let objectBodyDigest: string;
 let filename: string;
-beforeAll(() => {
+beforeAll(async () => {
   objectBody = makeObjectBody(128 * 1024);
-  objectBodyDigest = toHex(createHash("sha256").update(objectBody).digest());
+  objectBodyDigest = toHex(await sha256(objectBody));
   filename = writeTmpFile(objectBody);
+  return deleteTmpFiles;
 });
-afterAll(deleteTmpFiles);
 
 beforeEach(() => navigateToPage(__dirname));
 

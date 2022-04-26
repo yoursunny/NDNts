@@ -1,19 +1,17 @@
 import * as path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import puppeteer, { type Browser, type Page } from "puppeteer";
-import { afterAll, beforeAll } from "vitest";
+import puppeteer, { type Page } from "puppeteer";
+import { beforeAll } from "vitest";
 
 const port = 9327;
-let browser: Browser;
 export let page: Page;
 
 beforeAll(async () => {
-  browser = await puppeteer.launch();
+  const browser = await puppeteer.launch();
   page = await browser.newPage();
-});
-
-afterAll(async () => {
-  await browser.close();
+  return async () => {
+    await browser.close();
+  };
 });
 
 /**

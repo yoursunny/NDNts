@@ -7,7 +7,7 @@ import { type ProducerHandler, type RetxPolicy, Endpoint } from "..";
 
 let ep: Endpoint;
 beforeEach(() => { ep = new Endpoint(); });
-afterEach(() => Endpoint.deleteDefaultForwarder());
+afterEach(Endpoint.deleteDefaultForwarder);
 
 describe("retx limit", () => {
   let producer: SpyInstanceFn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>;

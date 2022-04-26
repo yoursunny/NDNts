@@ -12,8 +12,10 @@ import type { DataStore } from "..";
 import { makeDataStore } from "../test-fixture/data-store";
 
 let store: DataStore;
-beforeEach(async () => { store = await makeDataStore(); });
-afterEach(() => store.close());
+beforeEach(async () => {
+  store = await makeDataStore();
+  return async () => { await store.close(); };
+});
 
 test("insert get delete", async () => {
   await store.insert(new Data("/A/1"), new Data("/A/2"));
@@ -31,7 +33,7 @@ test("insert get delete", async () => {
 });
 
 describe("segmented object", () => {
-  afterEach(() => Endpoint.deleteDefaultForwarder());
+  afterEach(Endpoint.deleteDefaultForwarder);
 
   test("insert", async () => {
     const body = makeObjectBody(500 * 25);

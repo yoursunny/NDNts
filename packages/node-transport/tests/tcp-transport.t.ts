@@ -1,6 +1,6 @@
 import * as TestReopen from "@ndn/l3face/test-fixture/reopen";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { beforeEach, expect, test } from "vitest";
 
 import { TcpTransport } from "..";
 import { BufferBreaker } from "../test-fixture/buffer-breaker";
@@ -11,9 +11,8 @@ let server: TcpServer;
 beforeEach(async () => {
   server = new TcpServer();
   await server.open();
+  return async () => { await server.close(); };
 });
-
-afterEach(() => server.close());
 
 test("pair", async () => {
   const [tA, tB, [sockA, sockB]] = await Promise.all([

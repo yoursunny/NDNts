@@ -2,7 +2,7 @@ import "./api";
 
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import { bridgeWebSockets, WsServer } from "@ndn/ws-transport/test-fixture/ws-server";
-import { afterEach, beforeEach, test } from "vitest";
+import { beforeEach, test } from "vitest";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 
@@ -12,9 +12,10 @@ beforeEach(async () => {
   server = new WsServer();
   await server.open();
   await navigateToPage(__dirname);
+  return async () => {
+    await server.close();
+  };
 });
-
-afterEach(() => server.close());
 
 test("pair", async () => {
   await pageInvoke<typeof window.connectWsTransportPair>("connectWsTransportPair", server.uri);

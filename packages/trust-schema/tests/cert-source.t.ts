@@ -6,7 +6,7 @@ import { type NameLike, Name } from "@ndn/packet";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
 import { setTimeout as delay } from "node:timers/promises";
 import { collect } from "streaming-iterables";
-import { type SpyInstance, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import { type SpyInstance, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { type CertSource, CertFetcher, KeyChainCertSource, TrustAnchorContainer } from "..";
 
@@ -84,13 +84,12 @@ test("KeyChainCertSource", async () => {
 describe("CertFetcher", () => {
   let endpoint: Endpoint;
   let consumeFn: SpyInstance< Parameters<Endpoint["consume"]>, ReturnType<Endpoint["consume"]>>;
-  let producer: makeRepoProducer.Result;
   let fetcher0: CertFetcher;
   let fetcher1: CertFetcher;
   beforeEach(async () => {
     endpoint = new Endpoint();
     consumeFn = vi.spyOn(endpoint, "consume");
-    producer = await makeRepoProducer([certB.data]);
+    const producer = await makeRepoProducer([certB.data]);
     fetcher0 = new CertFetcher({
       interestLifetime: 50,
       endpoint,
@@ -101,10 +100,10 @@ describe("CertFetcher", () => {
       interestLifetime: 50,
       endpoint, // same Endpoint, sharing cache
     });
-  });
-  afterEach(() => {
-    producer.close();
-    Endpoint.deleteDefaultForwarder();
+    return () => {
+      producer.close();
+      Endpoint.deleteDefaultForwarder();
+    };
   });
 
   test("positive", async () => {

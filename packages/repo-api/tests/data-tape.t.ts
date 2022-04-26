@@ -5,12 +5,11 @@ import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
 import { BufferBreaker } from "@ndn/node-transport/test-fixture/buffer-breaker";
 import { Data, Interest, Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
-import fs from "graceful-fs";
 import { setTimeout as delay } from "node:timers/promises";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, map, pipeline, writeToStream } from "streaming-iterables";
-import { tmpNameSync } from "tmp";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { dirSync as tmpDir } from "tmp";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { BulkInsertInitiator, BulkInsertTarget, copy, DataTape } from "..";
 
@@ -77,23 +76,19 @@ describe("DataTape reader", () => {
 });
 
 describe("DataTape file", () => {
-  let filenameA: string;
-  let filenameB: string;
-  beforeEach(() => {
-    filenameA = tmpNameSync();
-    filenameB = tmpNameSync();
-  });
-  afterEach(() => {
-    try { fs.unlinkSync(filenameA); } catch {}
-    try { fs.unlinkSync(filenameB); } catch {}
+  let dir: string;
+  beforeEach(async () => {
+    const d = tmpDir({ unsafeCleanup: true });
+    dir = d.name;
+    return d.removeCallback;
   });
 
   test("copy", async () => {
-    const tapeA = new DataTape(filenameA);
+    const tapeA = new DataTape(`${dir}/A.dtar`);
     await copy(new DataTape(makeDataTapeReadStream), tapeA);
     await expect(collect(tapeA.listNames())).resolves.toHaveLength(500);
 
-    const tapeB = new DataTape(filenameB);
+    const tapeB = new DataTape(`${dir}/B.dtar`);
     await copy(tapeA, new Name("/A/2"), tapeB);
     await expect(collect(tapeB.listNames())).resolves.toHaveLength(100);
   });

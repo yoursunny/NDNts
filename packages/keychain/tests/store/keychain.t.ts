@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Component, Data, digestSigning, KeyLocator, Name } from "@ndn/packet";
 import { dirSync as tmpDir } from "tmp";
-import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, generateSigningKey, KeyChain, SigningAlgorithmListFull, ValidityPeriod } from "../..";
 import * as TestCertStore from "../../test-fixture/cert-store";
@@ -22,14 +22,10 @@ test("temp CertStore", async () => {
 
 describe("persistent", () => {
   let locator: string;
-  let deleteTmpDir: () => void;
-
   beforeEach(async () => {
-    ({ name: locator, removeCallback: deleteTmpDir } = tmpDir({ unsafeCleanup: true }));
-  });
-
-  afterEach(() => {
-    deleteTmpDir();
+    const d = tmpDir({ unsafeCleanup: true });
+    locator = d.name;
+    return d.removeCallback;
   });
 
   test("persistent KeyStore", async () => {

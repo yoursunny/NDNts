@@ -5,7 +5,7 @@ import * as net from "node:net";
 import { setTimeout as delay } from "node:timers/promises";
 import { pEvent } from "p-event";
 import { collect } from "streaming-iterables";
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { beforeEach, expect, test, vi } from "vitest";
 
 import { UnixTransport } from "..";
 import { BufferBreaker } from "../test-fixture/buffer-breaker";
@@ -24,9 +24,8 @@ beforeEach(async () => {
   ]);
   face = new L3Face(transport);
   sock = socks[0]!;
+  return async () => { await server.close(); };
 });
-
-afterEach(() => server.close());
 
 test("RX error", async () => {
   setTimeout(() => sock.write(Uint8Array.of(0xF0, 0x00)), 200);

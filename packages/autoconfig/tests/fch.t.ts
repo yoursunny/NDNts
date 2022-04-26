@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { afterAll, afterEach, beforeAll, expect, test } from "vitest";
+import { afterEach, beforeAll, expect, test } from "vitest";
 
 import { fchQuery } from "..";
 import { FchServer } from "../test-fixture/fch-server";
@@ -8,9 +8,9 @@ import { FchServer } from "../test-fixture/fch-server";
 let server: FchServer;
 beforeAll(async () => {
   server = await FchServer.create();
+  return () => { server.close(); };
 });
 afterEach(() => server.handle = undefined);
-afterAll(() => server.close());
 
 test("json", async () => {
   const updated = Date.now() - 300000;

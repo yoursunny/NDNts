@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { type Options, DataStoreBuffer, Endpoint, Producer, ProducerHandler } from "..";
 
-afterEach(() => Endpoint.deleteDefaultForwarder());
+afterEach(Endpoint.deleteDefaultForwarder);
 
 async function makeEndpointBuffered(autoBuffer?: boolean, bo?: DataStoreBuffer.Options, eo?: Options): Promise<[Endpoint, DataStoreBuffer]> {
   const dataStoreBuffer = new DataStoreBuffer(await makeDataStore(), bo);

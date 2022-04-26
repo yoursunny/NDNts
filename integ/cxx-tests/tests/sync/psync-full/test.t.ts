@@ -4,7 +4,7 @@ import { Name } from "@ndn/packet";
 import { type SyncUpdate, makePSyncCompatParam, PSyncFull } from "@ndn/sync";
 import { Closers } from "@ndn/util";
 import { setTimeout as delay } from "node:timers/promises";
-import { afterAll, beforeAll, expect, test, vi } from "vitest";
+import { beforeAll, expect, test, vi } from "vitest";
 
 import { execute } from "../../../test-fixture/cxxprogram";
 
@@ -19,8 +19,8 @@ beforeAll(async () => {
   nfd = new FakeNfd();
   closers.push(nfd);
   await nfd.open();
+  return closers.close;
 });
-afterAll(closers.close);
 
 test("simple", async () => {
   const p = execute(__dirname, [`${nfd.port}`, `${syncPrefix}`, `${userA}`]);

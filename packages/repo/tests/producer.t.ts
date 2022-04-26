@@ -18,11 +18,11 @@ beforeEach(async () => {
   const fw = Forwarder.getDefault();
   fw.on("annadd", (name) => announced.add(name.toString()));
   fw.on("annrm", (name) => announced.delete(name.toString()));
-});
-afterEach(async () => {
-  await store.close();
-  Forwarder.deleteDefault();
-  announced.clear();
+  return async () => {
+    await store.close();
+    Forwarder.deleteDefault();
+    announced.clear();
+  };
 });
 
 function insertData(...names: [NameLike, ...NameLike[]]) {

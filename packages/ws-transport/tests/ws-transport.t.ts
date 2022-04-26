@@ -2,20 +2,18 @@ import * as TestReopen from "@ndn/l3face/test-fixture/reopen";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import { pushable } from "it-pushable";
 import { setTimeout as delay } from "node:timers/promises";
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { beforeEach, expect, test, vi } from "vitest";
 import type WebSocket from "ws";
 
 import { WsTransport } from "..";
 import { bridgeWebSockets, WsServer } from "../test-fixture/ws-server";
 
 let server: WsServer;
-
 beforeEach(async () => {
   server = new WsServer();
   await server.open();
+  return async () => { await server.close(); };
 });
-
-afterEach(() => server.close());
 
 test("pair", async () => {
   const [tA, tB, sockets] = await Promise.all([

@@ -22,7 +22,7 @@ function initForwarder(dataNoTokenMatch = false): void {
 }
 
 beforeEach(() => initForwarder());
-afterEach(() => Forwarder.deleteDefault());
+afterEach(Forwarder.deleteDefault);
 
 test("simple", async () => {
   const dataDigest = new Data("/P/digest", Uint8Array.of(0xE0, 0xE1));

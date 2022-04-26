@@ -1,6 +1,6 @@
 import "../test-fixture/expect";
 
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { beforeEach, expect, test } from "vitest";
 
 import { type Encodable, Decoder, Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI } from "..";
 
@@ -46,11 +46,10 @@ class A2Extension implements Extension<ExtTestTarget, boolean> {
 beforeEach(() => {
   EXTENSIONS.registerExtension(new A1Extension());
   EXTENSIONS.registerExtension(new A2Extension());
-});
-
-afterEach(() => {
-  EXTENSIONS.unregisterExtension(0xA1);
-  EXTENSIONS.unregisterExtension(0xA2);
+  return () => {
+    EXTENSIONS.unregisterExtension(0xA1);
+    EXTENSIONS.unregisterExtension(0xA2);
+  };
 });
 
 test("encode", () => {

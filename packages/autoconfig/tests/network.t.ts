@@ -5,7 +5,7 @@ import { Data, Name } from "@ndn/packet";
 import { Closers } from "@ndn/util";
 import defaultGateway from "default-gateway";
 import { setTimeout as delay } from "node:timers/promises";
-import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
+import { afterEach, beforeAll, expect, test, vi } from "vitest";
 
 import { connectToNetwork } from "..";
 import { FchServer } from "../test-fixture/fch-server";
@@ -14,13 +14,13 @@ const closers = new Closers();
 let server: FchServer;
 beforeAll(async () => {
   server = await FchServer.create();
+  return () => { server.close(); };
 });
 afterEach(() => {
   closers.close();
   server.handle = undefined;
   Forwarder.deleteDefault();
 });
-afterAll(() => server.close());
 
 async function addServerWithDelayProducer(delayDuration: number): Promise<string> {
   const server = await UdpServer.create(UdpServerForwarder);

@@ -7,7 +7,7 @@ import { makePSyncCompatParam, PSyncPartialPublisher } from "@ndn/sync";
 import { WsTransport } from "@ndn/ws-transport";
 import { WsServer } from "@ndn/ws-transport/test-fixture/ws-server";
 import { setTimeout as delay } from "node:timers/promises";
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { beforeEach, expect, test } from "vitest";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 
@@ -19,12 +19,12 @@ beforeEach(async () => {
   server = new WsServer();
   await server.open();
   await navigateToPage(__dirname);
-});
 
-afterEach(async () => {
-  face?.close();
-  pub?.close();
-  await server.close();
+  return async () => {
+    face?.close();
+    pub?.close();
+    await server.close();
+  };
 });
 
 test("PSyncPartial", async () => {
