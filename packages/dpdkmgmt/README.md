@@ -59,7 +59,7 @@ const uplinkP = await openFace({
   localHost,
   scheme,
 });
-console.log(`uplinkC=${uplinkC}`, `uplinkP=${uplinkP}, transport=${scheme}`);
+console.log(`uplinkC=${uplinkC}`, `uplinkP=${uplinkP}`, `transport=${scheme}`);
 
 // Start a producer.
 let t0 = 0;

@@ -4,7 +4,7 @@ import { createRequire } from "node:module";
 import { pEvent } from "p-event";
 
 // don't name this 'require' to avoid @typescript-eslint/no-require-imports
-const requir = createRequire(import.meta.url);
+const cjsRequire = createRequire(import.meta.url);
 
 /** Shared Memory Packet Interface (memif) transport. */
 export class MemifTransport extends Transport {
@@ -49,7 +49,7 @@ export namespace MemifTransport {
       waitUp = true,
     } = opts;
 
-    const MemifConstructor: typeof Memif = requir("memif").Memif;
+    const MemifConstructor: typeof Memif = cjsRequire("memif").Memif;
     const transport = new MemifTransport(opts, new MemifConstructor(opts));
 
     if (waitUp) {
