@@ -27,9 +27,12 @@ async function transformDeclaration(filename) {
   delayedWrite(filename, lines);
 }
 
-// List of packages published with only CommonJS entrypoint.
-// All other packages are assumed to have ES Module entrypoint.
+/**
+ * List of packages published with only CommonJS entrypoint.
+ * All other packages are assumed to have ES Module entrypoint.
+ */
 const CJS_IMPORTS = new Set([
+  "@strattadb/environment",
   "@yoursunny/asn1",
   "applymixins",
   "duplexify",
@@ -49,7 +52,6 @@ const CJS_IMPORTS = new Set([
   "progress",
   "prompts",
   "retry",
-  "@strattadb/environment",
   "throat",
   "wtfnode",
 ]);

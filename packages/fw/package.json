@@ -28,12 +28,12 @@
   "dependencies": {
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@types/retry": "^0.12.1",
+    "@types/retry": "^0.12.2",
     "hirestime": "^6.1.0",
     "it-pushable": "^2.0.1",
     "mnemonist": "^0.39.1",
     "retry": "^0.13.1",
-    "streaming-iterables": "^6.2.0",
+    "streaming-iterables": "^7.0.1",
     "tslib": "^2.4.0",
     "typed-emitter": "^2.1.0"
   }
