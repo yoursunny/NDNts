@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"/..
 
 GTAG=
-if [[ -n $GTAGID ]]; then
+if [[ -n ${GTAGID:-} ]]; then
   GTAG="--gaID $GTAGID"
 fi
 

@@ -35,6 +35,7 @@ const CJS_IMPORTS = new Set([
   "@strattadb/environment",
   "@yoursunny/asn1",
   "applymixins",
+  "buffer-compare",
   "duplexify",
   "encoding-down",
   "event-iterator",

@@ -152,7 +152,9 @@ export class Component {
 
   /** Compare this component with other. */
   public compare(other: ComponentLike): Component.CompareResult {
-    return Component.compare(this, other);
+    const rhs = Component.from(other);
+    return 2 * Math.sign(this.type - rhs.type || this.length - rhs.length ||
+      bufferCompare<Uint8Array>(this.value, rhs.value));
   }
 
   /** Determine if this component equals other. */
@@ -170,19 +172,5 @@ export namespace Component {
     EQUAL = 0,
     /** lhs is greater than rhs */
     GT = 2,
-  }
-
-  function toCompareResult(diff: number): CompareResult {
-    return diff === 0 ? CompareResult.EQUAL :
-      diff < 0 ? CompareResult.LT : CompareResult.GT;
-  }
-
-  /** Compare two components. */
-  export function compare(lhs: ComponentLike, rhs: ComponentLike): CompareResult {
-    const l = Component.from(lhs);
-    const r = Component.from(rhs);
-    return toCompareResult(l.type - r.type) ||
-           toCompareResult(l.length - r.length) ||
-           toCompareResult(bufferCompare<Uint8Array>(l.value, r.value));
   }
 }

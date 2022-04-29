@@ -49,13 +49,9 @@ export abstract class DataProducer {
       if (this.segmentNumConvention.match(lastComp)) {
         return this.segmentNumConvention.parse(name.at(-1));
       }
-      throw new Error("invalid Interest name");
-    }
-
-    if (canBePrefix && name.isPrefixOf(this.prefix)) {
+    } else if (canBePrefix && name.isPrefixOf(this.prefix)) {
       return 0;
     }
-
     throw new Error("invalid Interest name");
   }
 

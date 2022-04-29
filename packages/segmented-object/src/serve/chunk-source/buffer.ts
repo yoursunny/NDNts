@@ -7,6 +7,7 @@ export class BufferChunkSource extends KnownSizeChunkSource implements ChunkSour
   }
 
   protected async getPayload(i: number, offset: number, chunkSize: number): Promise<Uint8Array> {
+    void i;
     return this.input.subarray(offset, offset + chunkSize);
   }
 }

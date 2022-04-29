@@ -26,25 +26,38 @@ export type ServeOptions = DataProducer.Options & {
   announcement?: Endpoint.RouteAnnouncement;
 };
 
+/** Producer that serves a segmented object. */
 export interface Server {
+  /** Data prefix excluding segment number. */
   readonly prefix: Name;
+
+  /**
+   * Process an Interest.
+   *
+   * The producer handler is already attached to the Endpoint and will react to incoming Interests.
+   * It's usually unnecessary to call this function manually.
+   */
   processInterest: (interest: Interest) => Promise<Data | undefined>;
+
+  /** Stop the producer. */
   close: () => void;
 }
 
 /**
- * Start serving an segmented object.
+ * Start serving a segmented object.
  * @param prefixInput Data prefix excluding segment number.
  * @param source where to read segment payload chunks.
  * @param opts other options.
+ *
+ * This function does not automatically add a version component to the name prefix.
+ * If a version component is desired, use serveVersions() function instead.
  */
 export function serve(prefixInput: NameLike, source: ChunkSource, opts: ServeOptions = {}): Server {
   const prefix = Name.from(prefixInput);
   const { endpoint = new Endpoint() } = opts;
-  const producer = DataProducer.create(source, prefix, opts);
-
-  const prod = endpoint.produce(opts.producerPrefix ?? prefix,
-    producer.processInterest,
+  const dp = DataProducer.create(source, prefix, opts);
+  const ep = endpoint.produce(opts.producerPrefix ?? prefix,
+    dp.processInterest,
     {
       concurrency: 16,
       describe: opts.describe ?? `serve(${prefix})`,
@@ -52,12 +65,10 @@ export function serve(prefixInput: NameLike, source: ChunkSource, opts: ServeOpt
     });
   return {
     prefix,
-    processInterest(interest) {
-      return prod.processInterest(interest);
-    },
+    processInterest: ep.processInterest,
     close() {
-      producer.close();
-      prod.close();
+      dp.close();
+      ep.close();
     },
   };
 }

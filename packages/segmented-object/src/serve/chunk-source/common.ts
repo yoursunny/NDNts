@@ -90,6 +90,7 @@ interface ChunkSizeExact {
   chunkSize?: number;
 }
 
+/** Chunk sizing options. */
 export type ChunkOptions = ChunkSizeRange | ChunkSizeExact;
 
 export function getMinChunkSize(opts: ChunkOptions): number {
