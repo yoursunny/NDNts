@@ -16,16 +16,12 @@ class EvdTestTarget {
     return this.a1 * 1000 + this.a4 * 100 + this.a6 * 10 + this.a9;
   }
 
-  public beforeTop = vi.fn<[EvdTestTarget, Decoder.Tlv], void>();
-  public beforeValue = vi.fn<[EvdTestTarget], void>();
-  public afterValue = vi.fn<[EvdTestTarget], void>();
-  public afterTop = vi.fn<[EvdTestTarget, Decoder.Tlv], void>();
+  public observeBefore = vi.fn<[EvdTestTarget, Decoder.Tlv | undefined], void>();
+  public observeAfter = vi.fn<[EvdTestTarget, Decoder.Tlv | undefined], void>();
 
   public setCallbacks(evd: EvDecoder<EvdTestTarget>): void {
-    evd.beforeTopCallbacks.splice(0, 1, this.beforeTop);
-    evd.beforeValueCallbacks.splice(0, 1, this.beforeValue);
-    evd.afterValueCallbacks.splice(0, 1, this.afterValue);
-    evd.afterTopCallbacks.splice(0, 1, this.afterTop);
+    evd.beforeObservers.splice(0, 1, this.observeBefore);
+    evd.afterObservers.splice(0, 1, this.observeAfter);
   }
 }
 
@@ -63,10 +59,10 @@ test("decode normal", () => {
   const target = new EvdTestTarget();
   target.setCallbacks(EVD);
   EVD.decode(target, new Decoder(input));
-  expect(target.beforeTop).toHaveBeenCalledWith(target, expect.objectContaining({ type: 0xA0 }));
-  expect(target.beforeValue).toHaveBeenCalledWith(target);
-  expect(target.afterValue).toHaveBeenCalledWith(target);
-  expect(target.afterTop).toHaveBeenCalledWith(target, expect.objectContaining({ type: 0xA0 }));
+  expect(target.observeBefore).toHaveBeenCalledOnce();
+  expect(target.observeBefore).toHaveBeenCalledWith(target, expect.objectContaining({ type: 0xA0 }));
+  expect(target.observeAfter).toHaveBeenCalledOnce();
+  expect(target.observeAfter).toHaveBeenCalledWith(target, expect.objectContaining({ type: 0xA0 }));
   expect(target.sum()).toBe(1121);
   expect(target.c1).toBe(0x0104);
 
@@ -74,8 +70,10 @@ test("decode normal", () => {
   target2.setCallbacks(EVD);
   const target3 = EVD.decodeValue(target2, new Decoder(input.subarray(2)));
   expect(target3).toBe(target2);
-  expect(target3.beforeTop).not.toHaveBeenCalled();
-  expect(target3.afterTop).not.toHaveBeenCalled();
+  expect(target2.observeBefore).toHaveBeenCalledOnce();
+  expect(target2.observeBefore).toHaveBeenCalledWith(target2, undefined);
+  expect(target2.observeAfter).toHaveBeenCalledOnce();
+  expect(target2.observeAfter).toHaveBeenCalledWith(target2, undefined);
   expect(target2.sum()).toBe(1121);
 });
 
@@ -144,7 +142,8 @@ test("decode bad TLV-TYPE", () => {
   const target = new EvdTestTarget();
   target.setCallbacks(EVD);
   expect(() => EVD.decode(target, decoder)).toThrow();
-  expect(target.beforeTop).not.toHaveBeenCalled();
+  expect(target.observeBefore).not.toHaveBeenCalled();
+  expect(target.observeAfter).not.toHaveBeenCalled();
 });
 
 test("decode required", () => {
@@ -169,10 +168,10 @@ test("decode required", () => {
   const target = evd.decode(new EvdTestTarget(), decoder);
   expect(target.sum()).toBe(1101);
 
-  expect(() => evd.decode(new EvdTestTarget(), decoder)).toThrow(/TLV-TYPE 0xA1 is missing/);
+  expect(() => evd.decode(new EvdTestTarget(), decoder)).toThrow(/TLV-TYPE 0xA1 missing/);
 
   // TLV-TYPE numbers are shown in .add() order
-  expect(() => evd.decode(new EvdTestTarget(), decoder)).toThrow(/TLV-TYPE 0xA9,0xA1 are missing/);
+  expect(() => evd.decode(new EvdTestTarget(), decoder)).toThrow(/TLV-TYPE 0xA9,0xA1 missing/);
 });
 
 test("add duplicate", () => {

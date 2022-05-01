@@ -33,8 +33,8 @@ export function parseEvDecoder<R extends { parameters?: ParameterKV }>(evd: EvDe
   evd
     .add(TT.ParameterKey, (t, { text }) => parseKey(t.parameters!, text), { order, repeat: true })
     .add(TT.ParameterValue, (t, { value }) => parseValue(t.parameters!, value), { order, repeat: true });
-  evd.beforeValueCallbacks.push((t) => t.parameters ??= {});
-  evd.afterValueCallbacks.push((t) => finish(t.parameters!));
+  evd.beforeObservers.push((t) => t.parameters ??= {});
+  evd.afterObservers.push((t) => finish(t.parameters!));
 }
 
 export function encode(kv: ParameterKV = {}): Encodable[] {

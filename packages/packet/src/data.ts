@@ -82,7 +82,7 @@ const EVD = new EvDecoder<Fields>("Data", TT.Data)
     t.sigValue = value;
     t.signedPortion = before;
   }, { required: true });
-EVD.beforeTopCallbacks.push((t, { tlv }) => t.topTlv = tlv);
+EVD.beforeObservers.push((t, tlv) => t.topTlv = tlv!.tlv);
 
 /** Data packet. */
 export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signable, Verifier.Verifiable {
