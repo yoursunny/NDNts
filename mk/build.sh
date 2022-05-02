@@ -24,7 +24,7 @@ if [[ $ACT == lint ]]; then
     if [[ $1 == all ]]; then
       shift
     fi
-    exec env NODE_OPTIONS='--max-old-space-size=3072' xo $XOFLAG "$@"
+    exec env NODE_OPTIONS='--max-old-space-size=3072' xo-yoursunny $XOFLAG "$@"
   fi
 
   ROOTDIR=$(pwd)

@@ -24,7 +24,7 @@ if [[ ${1:-} == lint ]]; then
   for F in $(grep -l '```ts' packages/*/README.md); do
     codedown ts <$F >$F.ts
   done
-  xo packages/*/README.md.ts
+  xo-yoursunny packages/*/README.md.ts
   exit
 fi
 

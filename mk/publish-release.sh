@@ -18,7 +18,7 @@ if [[ ${NDNTS_SKIP_BUILD:-0} -ne 1 ]]; then
   corepack pnpm test
 fi
 
-RECURSE='corepack pnpm -r --filter ./packages exec'
+RECURSE='corepack pnpm -r --filter=./packages/** exec'
 $RECURSE -- bash -c 'node '$ROOTDIR'/mk/edit-packagejson.js V '$VERSION
 git commit -a -m 'v'$VERSION
 
