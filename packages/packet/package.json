@@ -1,6 +1,6 @@
 {
   "name": "@ndn/packet",
-  "version": "0.0.20210930",
+  "version": "0.0.20220501",
   "description": "NDNts: Network Layer Packets",
   "keywords": [
     "NDN",
