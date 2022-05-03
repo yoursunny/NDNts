@@ -20,7 +20,7 @@ const RedirectEVD = new EvDecoder<ProbeResponse.Redirect>("ProbeResponse.Redirec
     },
     { required: true });
 
-const EVD = new EvDecoder<ProbeResponse.Fields>("ProbeResponse", undefined)
+const EVD = new EvDecoder<ProbeResponse.Fields>("ProbeResponse")
   .add(TT.ProbeResponse,
     (t, { decoder }) => t.entries.push(EntryEVD.decode({} as ProbeResponse.Entry, decoder)),
     { repeat: true })

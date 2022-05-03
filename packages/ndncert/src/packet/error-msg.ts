@@ -9,7 +9,7 @@ export interface ErrorMsg {
   errorInfo: string;
 }
 
-const EVD = new EvDecoder<ErrorMsg>("ErrorMsg", undefined)
+const EVD = new EvDecoder<ErrorMsg>("ErrorMsg")
   .add(TT.ErrorCode, (t, { nni }) => t.errorCode = nni, { required: true })
   .add(TT.ErrorInfo, (t, { text }) => t.errorInfo = text, { required: true });
 

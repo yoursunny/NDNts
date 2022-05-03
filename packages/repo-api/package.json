@@ -35,7 +35,7 @@
     "is-stream": "^3.0.0",
     "it-pushable": "^2.0.1",
     "p-defer": "^4.0.0",
-    "streaming-iterables": "^7.0.2",
+    "streaming-iterables": "^7.0.4",
     "throat": "^6.0.1",
     "tslib": "^2.4.0"
   },

@@ -6,7 +6,7 @@ import * as crypto from "../crypto-common";
 import { C, TT } from "./an";
 import type { CaProfile } from "./ca-profile";
 
-const EVD = new EvDecoder<NewRequest.Fields>("NewRequest", undefined)
+const EVD = new EvDecoder<NewRequest.Fields>("NewRequest")
   .add(TT.EcdhPub, (t, { value }) => t.ecdhPubRaw = value, { required: true })
   .add(TT.CertRequest, (t, { vd }) => t.certRequest = Certificate.fromData(vd.decode(Data)), { required: true });
 

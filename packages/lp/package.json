@@ -33,6 +33,6 @@
     "tslib": "^2.4.0"
   },
   "devDependencies": {
-    "streaming-iterables": "^7.0.2"
+    "streaming-iterables": "^7.0.4"
   }
 }

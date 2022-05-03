@@ -3,7 +3,7 @@ import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 
 import { TT } from "./an";
 
-const EVD = new EvDecoder<LLDecrypt.Params>("EncryptedPayload", undefined)
+const EVD = new EvDecoder<LLDecrypt.Params>("EncryptedPayload")
   .add(TT.InitializationVector, (t, { value }) => t.iv = value, { required: true })
   .add(TT.AuthenticationTag, (t, { value }) => t.authenticationTag = value, { required: true })
   .add(TT.EncryptedPayload, (t, { value }) => t.ciphertext = value, { required: true });

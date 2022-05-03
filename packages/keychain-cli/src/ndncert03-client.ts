@@ -1,9 +1,9 @@
 import { closeUplinks, openUplinks } from "@ndn/cli-common";
-import { CertNaming } from "@ndn/keychain";
-import { type ClientChallenge, type ClientChallengeContext, type ClientPinLikeChallenge, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, requestCertificate } from "@ndn/ndncert";
+import { type NamedSigner, type NamedVerifier, CertNaming, generateSigningKey } from "@ndn/keychain";
+import { type ClientChallenge, type ClientChallengeContext, type ClientPinLikeChallenge, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ParameterKV, requestCertificate, requestProbe } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
-import { toHex } from "@ndn/util";
+import { toHex, toUtf8 } from "@ndn/util";
 import { promises as fs } from "graceful-fs";
 import prompts from "prompts";
 import stdout from "stdout-stream";
@@ -11,11 +11,34 @@ import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { inputCaProfile, keyChain as defaultKeyChain } from "./util";
 
+async function promptProbe(probeKeys: string[], email?: string): Promise<ParameterKV> {
+  const questions: prompts.PromptObject[] = [];
+  for (const probeKey of probeKeys) {
+    questions.push({
+      type: "text",
+      name: probeKey,
+      message: probeKey,
+    });
+  }
+
+  if (email) {
+    prompts.override({ email });
+  }
+  const response = await prompts(questions);
+  prompts.override({});
+
+  const parameters: ParameterKV = {};
+  for (const probeKey of probeKeys) {
+    parameters[probeKey] = toUtf8(response[probeKey]);
+  }
+  return parameters;
+}
+
 function promptPin(namedPipe?: string): ClientPinLikeChallenge.Prompt {
   return async ({ requestId }: ClientChallengeContext) => {
     if (namedPipe) {
       const code = await fs.readFile(namedPipe, { encoding: "utf-8" });
-      prompts.inject([code]);
+      prompts.override({ code });
       namedPipe = undefined;
     }
     const response = await prompts({
@@ -23,6 +46,7 @@ function promptPin(namedPipe?: string): ClientPinLikeChallenge.Prompt {
       name: "code",
       message: `PIN for request ${toHex(requestId)}:`,
     });
+    prompts.override({});
     return response.code;
   };
 }
@@ -30,7 +54,7 @@ function promptPin(namedPipe?: string): ClientPinLikeChallenge.Prompt {
 interface Args {
   profile: string;
   ndnsec: boolean;
-  key: string;
+  key?: string;
   challenge: string[];
   "pin-named-pipe"?: string;
   email?: string;
@@ -49,13 +73,13 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
         type: "string",
       })
       .option("ndnsec", {
-        default: false,
         desc: "use ndn-cxx KeyChain",
+        default: false,
         type: "boolean",
       })
       .option("key", {
-        demandOption: true,
         desc: "key name or certificate name",
+        defaultDescription: "run PROBE command and create new key",
         type: "string",
       })
       .option("challenge", {
@@ -76,11 +100,13 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
       })
       .option("possession-cert", {
         desc: "possession challenge - existing certificate name",
-        default: "",
         defaultDescription: "same as --key flag when it is specified with a certificate name",
         type: "string",
       })
       .check(({ key }) => {
+        if (!key) {
+          return true;
+        }
         const name = new Name(key);
         if (!CertNaming.isKeyName(name) && !CertNaming.isCertName(name)) {
           throw new Error("--key is not a key name or certificate name");
@@ -97,7 +123,7 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
         // possessionCert defaults to "" so that defaultDescription is displayed, but we want to
         // use key if possessionCert is unset i.e. "", hence || operator instead of ?? operator
         if (challenge.includes("possession") &&
-            !CertNaming.isCertName(new Name(possessionCert || key))) {
+            !CertNaming.isCertName(new Name(possessionCert ?? key))) {
           throw new Error("possession challenge enabled but neither --key nor --possession-cert is a certificate name");
         }
         return true;
@@ -108,8 +134,22 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
     await openUplinks();
     const keyChain = args.ndnsec ? new NdnsecKeyChain() : defaultKeyChain;
     const profile = await inputCaProfile(args.profile);
-    const { signer: privateKey, verifier: publicKey } =
-      await keyChain.getKeyPair(CertNaming.toKeyName(new Name(args.key)));
+    let privateKey: NamedSigner;
+    let publicKey: NamedVerifier;
+    if (args.key) {
+      const keyPair = await keyChain.getKeyPair(CertNaming.toKeyName(new Name(args.key)));
+      ({ signer: privateKey, verifier: publicKey } = keyPair);
+    } else {
+      const probeResponse = await requestProbe({
+        profile,
+        parameters: await promptProbe(profile.probeKeys, args.email),
+      });
+      if (probeResponse.entries.length === 0) {
+        throw new Error(`ProbeResponse has no entries${probeResponse.redirects.length > 0 ? "; redirects exist but they are not supported" : ""}`);
+      }
+      [privateKey, publicKey] = await generateSigningKey(keyChain, probeResponse.entries[0]!.prefix);
+      stdout.write(`${privateKey.name}\n`);
+    }
 
     const challenges: ClientChallenge[] = [];
     for (const challengeId of args.challenge) {
@@ -126,8 +166,7 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
           break;
         }
         case "possession": {
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-          const certName = new Name(args["possession-cert"] || args.key);
+          const certName = new Name(args["possession-cert"] ?? args.key);
           const cert = await keyChain.getCert(certName);
           const pvt = await keyChain.getKey(CertNaming.toKeyName(certName), "signer");
           challenges.push(new ClientPossessionChallenge(cert, pvt));

@@ -166,6 +166,10 @@ See `@ndn/ndnsec` package for more information.
 * `--key` specifies the key name to obtain certificate for.
   The key pair must exist in the keychain given in `NDNTS_KEYCHAIN` environment variable, or ndn-cxx keychain if `--ndnsec` is specified.
   This also accepts a certificate name, whose key will be used.
+* If `--key` is omitted, the client sends a PROBE request to the CA.
+  Probe parameters are prompted interactively, except that `--email` may be used as `email` parameter.
+  Then, it creates a new key whose subject name is the first available name in the PROBE response.
+  PROBE response that contains only redirects is not supported and will result in an error.
 * `--challenge nop` enables "nop" challenge.
 * `--challenge pin` enables "pin" challenge.
 * `--challenge email` enables "email" challenge.

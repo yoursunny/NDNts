@@ -14,7 +14,7 @@ interface RequestInfo {
   certRequestPub: NamedVerifier.PublicKey;
 }
 
-const EVD = new EvDecoder<ChallengeRequest.Fields>("ChallengeRequest", undefined)
+const EVD = new EvDecoder<ChallengeRequest.Fields>("ChallengeRequest")
   .add(TT.SelectedChallenge, (t, { text }) => t.selectedChallenge = text, { order: 1, required: true });
 parameter_kv.parseEvDecoder(EVD, 2);
 

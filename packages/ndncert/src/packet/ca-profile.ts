@@ -7,7 +7,7 @@ import indentString from "indent-string";
 
 import { C, TT } from "./an";
 
-const EVD = new EvDecoder<CaProfile.Fields>("CaProfile", undefined)
+const EVD = new EvDecoder<CaProfile.Fields>("CaProfile")
   .add(TT.CaPrefix, (t, { vd }) => t.prefix = vd.decode(Name), { required: true })
   .add(TT.CaInfo, (t, { text }) => t.info = text, { required: true })
   .add(TT.ParameterKey, (t, { text }) => t.probeKeys.push(text), { repeat: true })

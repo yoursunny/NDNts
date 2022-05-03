@@ -43,6 +43,6 @@
   "devDependencies": {
     "@ndn/repo": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
-    "streaming-iterables": "^7.0.2"
+    "streaming-iterables": "^7.0.4"
   }
 }

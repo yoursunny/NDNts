@@ -7,7 +7,7 @@ import { TT } from "./an";
 import type { CaProfile } from "./ca-profile";
 import type { NewRequest } from "./new-request";
 
-const EVD = new EvDecoder<NewResponse.Fields>("NewResponse", undefined)
+const EVD = new EvDecoder<NewResponse.Fields>("NewResponse")
   .add(TT.EcdhPub, (t, { value }) => t.ecdhPubRaw = value, { required: true })
   .add(TT.Salt, (t, { value }) => t.salt = value, { required: true })
   .add(TT.RequestId, (t, { value }) => t.requestId = value, { required: true })

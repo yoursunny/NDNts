@@ -46,6 +46,6 @@
     "@ndn/fw": "workspace:*",
     "@ndn/l3face": "workspace:*",
     "@types/pako": "^1.0.3",
-    "streaming-iterables": "^7.0.2"
+    "streaming-iterables": "^7.0.4"
   }
 }

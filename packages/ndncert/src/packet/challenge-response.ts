@@ -8,7 +8,7 @@ import type { ChallengeRequest } from "./challenge-request";
 import * as encrypted_payload from "./encrypted";
 import * as parameter_kv from "./parameter-kv";
 
-const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse", undefined)
+const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse")
   .add(TT.Status, (t, { nni }) => t.status = NNI.constrain(nni, "Status", Status.MIN, Status.MAX),
     { order: 1, required: true })
   .add(TT.ChallengeStatus, (t, { text }) => t.challengeStatus = text, { order: 2 })

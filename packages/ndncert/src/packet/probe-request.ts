@@ -5,7 +5,7 @@ import { C } from "./an";
 import type { CaProfile } from "./ca-profile";
 import * as parameter_kv from "./parameter-kv";
 
-const EVD = new EvDecoder<ProbeRequest.Fields>("ProbeRequest", undefined);
+const EVD = new EvDecoder<ProbeRequest.Fields>("ProbeRequest");
 parameter_kv.parseEvDecoder(EVD, 1);
 
 /** PROBE request packet. */

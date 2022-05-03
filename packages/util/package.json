@@ -34,7 +34,7 @@
     "@types/tmp": "^0.2.3",
     "@types/write": "^2.0.1",
     "it-pushable": "^2.0.1",
-    "streaming-iterables": "^7.0.2",
+    "streaming-iterables": "^7.0.4",
     "tmp": "^0.2.1",
     "write": "^2.0.0"
   },
