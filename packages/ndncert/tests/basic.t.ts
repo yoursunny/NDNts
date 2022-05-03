@@ -5,7 +5,7 @@ import { Name } from "@ndn/packet";
 import { toUtf8 } from "@ndn/util";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, ProbeRequest, ProbeResponse, Status } from "..";
+import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, NewRequest, NewResponse, probeMatch, ProbeRequest, ProbeResponse, Status } from "..";
 
 let rootPvt: NamedSigner.PrivateKey;
 let rootPub: NamedVerifier.PublicKey;
@@ -97,13 +97,19 @@ test("packets", async () => {
     profile,
     request: probeRequest,
     signer: rootPvt,
-    entries: [{ prefix: new Name("/allocated") }, { prefix: new Name("/also-allocated") }],
+    entries: [{ prefix: new Name("/allocated"), maxSuffixLength: 1 }, { prefix: new Name("/also-allocated") }],
     redirects: [{ caCertFullName }],
   });
   const { data: probeData } = probeResponse;
   await expect(probeData.canSatisfy(probeInterest)).resolves.toBeTruthy();
   expect(probeResponse.entries).toHaveLength(2);
   expect(probeResponse.redirects).toHaveLength(1);
+
+  expect(probeMatch(probeResponse, new Name("/allocated"))).toBeTruthy();
+  expect(probeMatch(probeResponse, new Name("/allocated/1"))).toBeTruthy();
+  expect(probeMatch(probeResponse, new Name("/allocated/1/2"))).toBeFalsy();
+  expect(probeMatch(probeResponse, new Name("/also-allocated/1/2/3"))).toBeTruthy();
+  expect(probeMatch(probeResponse, new Name("/not-allocated"))).toBeFalsy();
 
   const reqSIP = crypto.makeSignedInterestPolicy();
   const [reqPvt, reqPub] = await generateSigningKey("/requester", ECDSA);

@@ -1,3 +1,5 @@
+import type { Name } from "@ndn/packet";
+
 import type { ParameterKV } from "../packet/mod";
 
 /** Client side of a challenge. */
@@ -14,10 +16,12 @@ export interface ClientChallenge {
 
 export interface ClientChallengeStartContext {
   requestId: Uint8Array;
+  certRequestName: Name;
 }
 
 export interface ClientChallengeContext {
   requestId: Uint8Array;
+  certRequestName: Name;
   challengeStatus: string;
   remainingTries: number;
   remainingTime: number;

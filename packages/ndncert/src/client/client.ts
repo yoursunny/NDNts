@@ -9,5 +9,6 @@ export interface ClientOptionsCommon {
   /** Interest retransmission policy, default is 4 retransmissions. */
   retx?: RetxPolicy;
 
+  /** CA profile. */
   profile: CaProfile;
 }

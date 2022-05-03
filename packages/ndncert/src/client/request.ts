@@ -8,7 +8,9 @@ import type { ClientChallenge } from "./challenge";
 import type { ClientOptionsCommon } from "./client";
 
 export interface ClientOptions extends ClientOptionsCommon {
+  /** Private key corresponding to the public key. */
   privateKey: NamedSigner.PrivateKey;
+  /** Public key to request certificate for. */
   publicKey: NamedVerifier.PublicKey;
 
   /** ValidityPeriod, will be truncated to the maximum allowed by CA profile. */
@@ -44,6 +46,7 @@ export async function requestCertificate({
     privateKey,
     validity,
   });
+  const certRequestName = newRequest.certRequest.name;
   const newData = await endpoint.consume(newRequest.interest, consumerOptions);
   ErrorMsg.throwOnError(newData);
   const newResponse = await NewResponse.fromData(newData, profile);
@@ -61,7 +64,7 @@ export async function requestCertificate({
     throw new Error(`no acceptable challenge in [${serverChallenges.join(",")}]`);
   }
 
-  let challengeParameters = await challenge.start({ requestId });
+  let challengeParameters = await challenge.start({ requestId, certRequestName });
   let issuedCertName: Name;
   let issuedCertFwHint: FwHint | undefined;
   while (true) {
@@ -85,6 +88,7 @@ export async function requestCertificate({
     }
     challengeParameters = await challenge.next({
       requestId,
+      certRequestName,
       challengeStatus: challengeResponse.challengeStatus!,
       remainingTries: challengeResponse.remainingTries!,
       remainingTime: challengeResponse.remainingTime!,

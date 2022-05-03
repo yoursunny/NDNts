@@ -26,6 +26,7 @@
   "dependencies": {
     "@ndn/cli-common": "workspace:*",
     "@ndn/keychain": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
     "@ndn/ndncert": "workspace:*",
     "@ndn/ndnsec": "workspace:*",
     "@ndn/packet": "workspace:*",

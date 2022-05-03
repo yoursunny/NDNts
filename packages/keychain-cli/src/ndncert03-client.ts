@@ -1,55 +1,16 @@
 import { closeUplinks, openUplinks } from "@ndn/cli-common";
-import { type NamedSigner, type NamedVerifier, CertNaming, generateSigningKey } from "@ndn/keychain";
-import { type ClientChallenge, type ClientChallengeContext, type ClientPinLikeChallenge, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ParameterKV, requestCertificate, requestProbe } from "@ndn/ndncert";
+import { type KeyChain, type NamedSigner, type NamedVerifier, CertNaming, generateSigningKey } from "@ndn/keychain";
+import { AltUri } from "@ndn/naming-convention2";
+import { type CaProfile, type ClientChallenge, type ClientChallengeContext, type ClientPinLikeChallenge, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ParameterKV, probeMatch, requestCertificate, requestProbe } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
-import { toHex, toUtf8 } from "@ndn/util";
+import { console, toHex, toUtf8 } from "@ndn/util";
 import { promises as fs } from "graceful-fs";
 import prompts from "prompts";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { inputCaProfile, keyChain as defaultKeyChain } from "./util";
-
-async function promptProbe(probeKeys: string[], email?: string): Promise<ParameterKV> {
-  const questions: prompts.PromptObject[] = [];
-  for (const probeKey of probeKeys) {
-    questions.push({
-      type: "text",
-      name: probeKey,
-      message: probeKey,
-    });
-  }
-
-  if (email) {
-    prompts.override({ email });
-  }
-  const response = await prompts(questions);
-  prompts.override({});
-
-  const parameters: ParameterKV = {};
-  for (const probeKey of probeKeys) {
-    parameters[probeKey] = toUtf8(response[probeKey]);
-  }
-  return parameters;
-}
-
-function promptPin(namedPipe?: string): ClientPinLikeChallenge.Prompt {
-  return async ({ requestId }: ClientChallengeContext) => {
-    if (namedPipe) {
-      const code = await fs.readFile(namedPipe, { encoding: "utf-8" });
-      prompts.override({ code });
-      namedPipe = undefined;
-    }
-    const response = await prompts({
-      type: "text",
-      name: "code",
-      message: `PIN for request ${toHex(requestId)}:`,
-    });
-    prompts.override({});
-    return response.code;
-  };
-}
 
 interface Args {
   profile: string;
@@ -132,58 +93,141 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
 
   public async handler(args: Arguments<Args>) {
     await openUplinks();
-    const keyChain = args.ndnsec ? new NdnsecKeyChain() : defaultKeyChain;
-    const profile = await inputCaProfile(args.profile);
-    let privateKey: NamedSigner;
-    let publicKey: NamedVerifier;
-    if (args.key) {
-      const keyPair = await keyChain.getKeyPair(CertNaming.toKeyName(new Name(args.key)));
-      ({ signer: privateKey, verifier: publicKey } = keyPair);
-    } else {
-      const probeResponse = await requestProbe({
-        profile,
-        parameters: await promptProbe(profile.probeKeys, args.email),
-      });
-      if (probeResponse.entries.length === 0) {
-        throw new Error(`ProbeResponse has no entries${probeResponse.redirects.length > 0 ? "; redirects exist but they are not supported" : ""}`);
-      }
-      [privateKey, publicKey] = await generateSigningKey(keyChain, probeResponse.entries[0]!.prefix);
-      stdout.write(`${privateKey.name}\n`);
+    try {
+      await new InteractiveClient(args).run();
+    } finally {
+      closeUplinks();
+    }
+  }
+}
+
+class InteractiveClient {
+  constructor(private readonly args: Args) {}
+
+  private keyChain!: KeyChain;
+  private profile!: CaProfile;
+  private privateKey!: NamedSigner.PrivateKey;
+  private publicKey!: NamedVerifier.PublicKey;
+
+  public async run(): Promise<void> {
+    this.keyChain = this.args.ndnsec ? new NdnsecKeyChain() : defaultKeyChain;
+    this.profile = await inputCaProfile(this.args.profile);
+
+    await this.prepareKeyPair();
+    const challenges = await this.prepareChallenges();
+
+    const cert = await requestCertificate({
+      profile: this.profile,
+      privateKey: this.privateKey,
+      publicKey: this.publicKey,
+      challenges,
+    });
+    stdout.write(`${cert.data.name}\n`);
+
+    await this.keyChain.insertCert(cert);
+  }
+
+  private async prepareKeyPair() {
+    if (this.args.key) {
+      return this.retrieveKeyPairFromKeyChain(CertNaming.toKeyName(new Name(this.args.key)));
     }
 
+    const probeResponse = await requestProbe({
+      profile: this.profile,
+      parameters: await this.promptProbe(),
+    });
+
+    for (const keyName of await this.keyChain.listKeys()) {
+      if (probeMatch(probeResponse, keyName)) {
+        console.log(`Using existing key ${keyName}`);
+        return this.retrieveKeyPairFromKeyChain(keyName);
+      }
+    }
+
+    if (probeResponse.entries.length === 0) {
+      throw new Error(`ProbeResponse has no entries${probeResponse.redirects.length > 0 ? "; redirects exist but they are not supported" : ""}`);
+    }
+
+    const { prefix } = probeResponse.entries[0]!;
+    console.log(`Generating new key ${prefix}`);
+    [this.privateKey, this.publicKey] = await generateSigningKey(this.keyChain, prefix);
+  }
+
+  private async retrieveKeyPairFromKeyChain(keyName: Name) {
+    const keyPair = await this.keyChain.getKeyPair(keyName);
+    this.privateKey = keyPair.signer;
+    this.publicKey = keyPair.verifier;
+  }
+
+  private async promptProbe(): Promise<ParameterKV> {
+    const questions: prompts.PromptObject[] = [];
+    for (const probeKey of this.profile.probeKeys) {
+      questions.push({
+        type: "text",
+        name: probeKey,
+        message: `Probe parameter ${probeKey}`,
+      });
+    }
+
+    if (this.args.email) {
+      prompts.override({ email: this.args.email });
+    }
+    const response = await prompts(questions);
+    prompts.override({});
+
+    const parameters: ParameterKV = {};
+    for (const probeKey of this.profile.probeKeys) {
+      parameters[probeKey] = toUtf8(response[probeKey]);
+    }
+    return parameters;
+  }
+
+  private async prepareChallenges(): Promise<ClientChallenge[]> {
     const challenges: ClientChallenge[] = [];
-    for (const challengeId of args.challenge) {
+    for (const challengeId of this.args.challenge) {
       switch (challengeId) {
         case "nop":
           challenges.push(new ClientNopChallenge());
           break;
         case "pin": {
-          challenges.push(new ClientPinChallenge(promptPin(args["pin-named-pipe"])));
+          challenges.push(new ClientPinChallenge(this.promptPin()));
           break;
         }
         case "email": {
-          challenges.push(new ClientEmailChallenge(args.email!, promptPin(args["pin-named-pipe"])));
+          challenges.push(new ClientEmailChallenge(this.args.email!, this.promptPin()));
           break;
         }
         case "possession": {
-          const certName = new Name(args["possession-cert"] ?? args.key);
-          const cert = await keyChain.getCert(certName);
-          const pvt = await keyChain.getKey(CertNaming.toKeyName(certName), "signer");
+          const certName = new Name(this.args["possession-cert"] ?? this.args.key);
+          const cert = await this.keyChain.getCert(certName);
+          const pvt = await this.keyChain.getKey(CertNaming.toKeyName(certName), "signer");
           challenges.push(new ClientPossessionChallenge(cert, pvt));
           break;
         }
       }
     }
+    return challenges;
+  }
 
-    const cert = await requestCertificate({
-      profile,
-      privateKey,
-      publicKey,
-      challenges,
-    });
-    stdout.write(`${cert.data.name}\n`);
-
-    await keyChain.insertCert(cert);
-    closeUplinks();
+  private promptPin(): ClientPinLikeChallenge.Prompt {
+    const namedPipe = this.args["pin-named-pipe"];
+    return async ({ requestId, certRequestName }: ClientChallengeContext) => {
+      if (namedPipe) {
+        const code = await fs.readFile(namedPipe, { encoding: "utf-8" });
+        prompts.override({ code });
+      } else {
+        console.log(`\nPIN entry for certificate request\n${
+          certRequestName}\n${AltUri.ofName(certRequestName)}`);
+      }
+      const response = await prompts({
+        type: "text",
+        name: "code",
+        message: `PIN for request ${toHex(requestId)}:`,
+      }, {
+        onCancel: () => { throw new Error("PIN not entered"); },
+      });
+      prompts.override({});
+      return String(response.code).trim();
+    };
   }
 }
