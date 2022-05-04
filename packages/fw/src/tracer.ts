@@ -24,22 +24,18 @@ export class Tracer {
   }: Tracer.Options) {
     this.output = output;
     this.fw = fw;
-    /* istanbul ignore else */
     if (face) {
       this.fw.on("faceadd", this.faceadd);
       this.fw.on("facerm", this.facerm);
     }
-    /* istanbul ignore else */
     if (prefix) {
       this.fw.on("prefixadd", this.prefixadd);
       this.fw.on("prefixrm", this.prefixrm);
     }
-    /* istanbul ignore else */
     if (ann) {
       this.fw.on("annadd", this.annadd);
       this.fw.on("annrm", this.annrm);
     }
-    /* istanbul ignore else */
     if (pkt) {
       this.fw.on("pktrx", this.pktrx);
       this.fw.on("pkttx", this.pkttx);

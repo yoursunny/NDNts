@@ -78,7 +78,7 @@ export class ServerEmailChallenge extends (EventEmitter as new() => TypedEmitter
       const info = await this.mail.sendMail(msg);
       this.emit("emailsent", requestId, info);
     } catch (err: unknown) {
-      /* istanbul ignore next */
+      /* c8 ignore next */
       this.emit("emailerror", requestId, err as Error);
     }
     return state;

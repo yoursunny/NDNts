@@ -33,8 +33,8 @@ function determineEcCurve(der: asn1.ElementBuffer): EcCurve | false {
   if (params && params.type === 0x06 && params.value) {
     const namedCurveOid = toHex(params.value);
     const curve = NamedCurveOids[namedCurveOid];
-    /* istanbul ignore if */
     if (!curve) {
+      /* c8 ignore next */
       throw new Error(`unknown namedCurve OID ${namedCurveOid}`);
     }
     return curve;

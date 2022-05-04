@@ -87,8 +87,8 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
   private cCurrentInterestName?: Name;
 
   private debug(action: string, recvIblt?: IBLT, state?: PSyncCore.State): void {
-    /* istanbul ignore if */
     if (this.listenerCount("debug") > 0) {
+      /* c8 ignore next */
       this.emit("debug", {
         action,
         ownIblt: this.c.iblt.clone(),

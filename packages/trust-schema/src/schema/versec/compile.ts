@@ -43,7 +43,7 @@ function isPatternConst(pattern: Pattern): boolean {
   if (pattern instanceof AlternatePattern) {
     return pattern.choices.every(isPatternConst);
   }
-  /* istanbul ignore next */
+  /* c8 ignore next */
   assert(false, `unexpected pattern type ${pattern.constructor.name}`);
 }
 
@@ -163,7 +163,7 @@ class Compiler {
     if (expr instanceof A.Constrained) {
       return this.makePatternConstrained(expr, ctx);
     }
-    /* istanbul ignore next */
+    /* c8 ignore next */
     assert(false, `unexpected expression type ${expr.constructor.name}`);
   }
 
@@ -276,7 +276,7 @@ class Compiler {
         op = F.Or;
       }
     } else {
-      /* istanbul ignore next */
+      /* c8 ignore next */
       assert(false, `unexpected component constraint type ${cc.constructor.name}`);
     }
     return new op(filters);

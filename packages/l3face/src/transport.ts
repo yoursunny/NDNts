@@ -28,7 +28,7 @@ export abstract class Transport {
   }
 
   public toString() {
-    /* istanbul ignore next */
+    /* c8 ignore next */
     return this.attributes.describe ?? this.constructor.name;
   }
 }

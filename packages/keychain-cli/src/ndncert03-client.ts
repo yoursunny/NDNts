@@ -61,7 +61,7 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
       })
       .option("possession-cert", {
         desc: "possession challenge - existing certificate name",
-        defaultDescription: "same as --key flag when it is specified with a certificate name",
+        defaultDescription: "same as --key when it is a certificate name",
         type: "string",
       })
       .check(({ key }) => {
@@ -81,8 +81,6 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
         return true;
       })
       .check(({ challenge, key, "possession-cert": possessionCert }) => {
-        // possessionCert defaults to "" so that defaultDescription is displayed, but we want to
-        // use key if possessionCert is unset i.e. "", hence || operator instead of ?? operator
         if (challenge.includes("possession") &&
             !CertNaming.isCertName(new Name(possessionCert ?? key))) {
           throw new Error("possession challenge enabled but neither --key nor --possession-cert is a certificate name");

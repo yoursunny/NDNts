@@ -72,11 +72,10 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
     try {
       record = await this.db.get(name);
     } catch (err: unknown) {
-      /* istanbul ignore else */
       if ((err as NotFoundError).notFound) {
         return undefined;
       }
-      /* istanbul ignore next */
+      /* c8 ignore next */
       throw err;
     }
 

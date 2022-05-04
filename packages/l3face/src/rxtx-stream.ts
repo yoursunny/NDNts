@@ -36,7 +36,6 @@ export function txToStream(conn: NodeJS.WritableStream): Transport.Tx {
       try { await pEvent(conn, "finish", { timeout: 100 }); } catch {}
 
       const destroyable = conn as unknown as { destroy?: () => void };
-      /* istanbul ignore else */
       if (typeof destroyable.destroy === "function") {
         destroyable.destroy();
       }

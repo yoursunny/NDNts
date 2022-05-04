@@ -58,8 +58,8 @@ export function openDb(db: AbstractLevelDOWN): Db {
           },
           name: {
             configurable: true,
-            /* istanbul ignore next */
             get() {
+              /* c8 ignore next */
               return record.data.name;
             },
           },

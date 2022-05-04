@@ -89,7 +89,7 @@ export namespace GenKeyCommand {
         return { pvt, pub, canSelfSign: false };
       }
       default:
-        /* istanbul ignore next */
+        /* c8 ignore next */
         throw new Error(`unknown type ${type}`);
     }
   }
