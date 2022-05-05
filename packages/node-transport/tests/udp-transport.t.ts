@@ -2,7 +2,7 @@ import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import * as dgram from "node:dgram";
 import { setTimeout as delay } from "node:timers/promises";
 import { collect } from "streaming-iterables";
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 
 import { udp_helper as udp, UdpTransport } from "..";
 import { UdpServer, UdpServerBroadcast } from "../test-fixture/udp-server";

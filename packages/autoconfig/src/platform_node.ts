@@ -1,5 +1,5 @@
 import type { FwFace } from "@ndn/fw";
-import { splitHostPort, TcpTransport, UdpTransport } from "@ndn/node-transport";
+import { splitHostPort, TcpTransport, udp_helper, UdpTransport } from "@ndn/node-transport";
 import defaultGateway from "default-gateway";
 import * as os from "node:os";
 import nodeFetch from "node-fetch";
@@ -11,13 +11,9 @@ export function fetch(input: RequestInfo, init?: RequestInit): Promise<Response>
   return nodeFetch(input as any, init as any) as any;
 }
 
-function hasAddressFamily(family: 4 | 6): boolean {
-  // https://github.com/nodejs/node/issues/42787
-  // Node 16.x: NetworkInterfaceInfo.family is either "IPv4" or "IPv6"
-  // Node 18.x: NetworkInterfaceInfo.family is either 4 or 6
-  const accepted = new Set([family, `IPv${family}`]);
+function hasAddressFamily(want: udp_helper.AddressFamily): boolean {
   return Object.values(os.networkInterfaces()).some(
-    (addrs) => addrs?.some((addr) => accepted.has(addr.family)));
+    (addrs) => addrs?.some((addr) => udp_helper.intfHasAddressFamily(want, addr)));
 }
 
 export const FCH_DEFAULTS: PlatformFchDefaults = {

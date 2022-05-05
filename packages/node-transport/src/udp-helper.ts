@@ -16,6 +16,13 @@ export interface SocketBufferOption {
 
 export type AddressFamily = 4 | 6;
 
+export function intfHasAddressFamily(want: AddressFamily, { family }: os.NetworkInterfaceInfo): boolean {
+  // https://github.com/nodejs/node/issues/42787
+  // Node 16.x: NetworkInterfaceInfo.family is either "IPv4" or "IPv6"
+  // Node 18.x: NetworkInterfaceInfo.family is either 4 or 6
+  return (family as any) === want || (family as any) === `IPv${want}`;
+}
+
 export interface AddressFamilyOption {
   /**
    * IPv4 or IPv6.
@@ -83,15 +90,14 @@ export async function openUnicast(opts: UnicastOptions): Promise<Socket> {
   return connect(sock, opts);
 }
 
+/**
+ * List network interfaces capable of IPv4 multicast.
+ * @returns IPv4 address of each network interface.
+ */
 export function listMulticastIntfs(): string[] {
   return Object.values(os.networkInterfaces())
-    .flatMap((addrs) => {
-      if (!addrs) {
-        return [];
-      }
-      return addrs.filter(({ family, internal }) => family === "IPv4" && !internal)
-        .map(({ address }) => address).slice(0, 1);
-    });
+    .flatMap((addrs = []) => addrs.filter((a) => intfHasAddressFamily(4, a) && !a.internal)
+      .map(({ address }) => address).slice(0, 1));
 }
 
 export interface MulticastOptions extends SocketBufferOption {
