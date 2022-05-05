@@ -32,7 +32,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "obliterator": "^2.0.3",
+    "obliterator": "^2.0.4",
     "tslib": "^2.4.0"
   },
   "devDependencies": {

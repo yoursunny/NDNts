@@ -2,12 +2,11 @@ import { type Decoder, type Encodable, type EncodableTlv, Encoder, EvDecoder, NN
 import { sha256 } from "@ndn/util";
 
 import { TT } from "./an";
+import { definePublicFields, FIELDS } from "./impl-public-fields";
 import type { Interest } from "./interest";
 import { type NameLike, Component, ImplicitDigest, Name } from "./name/mod";
 import { type Signer, type Verifier, LLSign, LLVerify } from "./security/signing";
 import { SigInfo } from "./sig-info";
-
-const FIELDS = Symbol("Data.FIELDS");
 
 class Fields {
   constructor(...args: Array<Data | Data.CtorArg>) {
@@ -30,12 +29,30 @@ class Fields {
     this.isFinalBlock = isFinalBlock;
   }
 
+  public name = new Name();
+
+  public get contentType() { return this.contentType_; }
+  public set contentType(v) { this.contentType_ = NNI.constrain(v, "ContentType"); }
+  private contentType_ = 0;
+
+  public get freshnessPeriod() { return this.freshnessPeriod_; }
+  public set freshnessPeriod(v) { this.freshnessPeriod_ = NNI.constrain(v, "FreshnessPeriod"); }
+  private freshnessPeriod_ = 0;
+
+  public finalBlockId?: Component;
+
+  /** Determine whether FinalBlockId equals the last name component. */
   public get isFinalBlock(): boolean {
-    return !!this.finalBlockId &&
-           this.name.length > 0 &&
-           this.finalBlockId.equals(this.name.at(-1));
+    return !!this.finalBlockId && this.name.length > 0 &&
+           this.finalBlockId.equals(this.name.get(-1)!);
   }
 
+  /**
+   * Setting to false deletes FinalBlockId.
+   *
+   * Setting to true assigns FinalBlockId to be the last name component.
+   * It is not allowed if the name is empty.
+   */
   public set isFinalBlock(v: boolean) {
     if (!v) {
       this.finalBlockId = undefined;
@@ -44,27 +61,18 @@ class Fields {
     if (this.name.length === 0) {
       throw new Error("cannot set FinalBlockId when Name is empty");
     }
-    this.finalBlockId = this.name.at(-1);
+    this.finalBlockId = this.name.get(-1)!;
   }
 
-  public name = new Name();
-  public get contentType() { return this.contentType_; }
-  public set contentType(v) { this.contentType_ = NNI.constrain(v, "ContentType"); }
-  public get freshnessPeriod() { return this.freshnessPeriod_; }
-  public set freshnessPeriod(v) { this.freshnessPeriod_ = NNI.constrain(v, "FreshnessPeriod"); }
-  public finalBlockId?: Component;
   public content = new Uint8Array();
   public sigInfo = new SigInfo();
   public sigValue = new Uint8Array();
-
-  private contentType_ = 0;
-  private freshnessPeriod_ = 0;
 
   public signedPortion?: Uint8Array;
   public topTlv?: Uint8Array;
   public topTlvDigest?: Uint8Array;
 }
-const FIELD_LIST: Array<keyof Fields> = ["name", "contentType", "freshnessPeriod", "finalBlockId", "isFinalBlock", "content", "sigInfo", "sigValue"];
+interface PublicFields extends Omit<Fields, "signedPortion" | "topTlv" | "topTlvDigest"> {}
 
 const EVD = new EvDecoder<Fields>("Data", TT.Data)
   .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
@@ -75,9 +83,7 @@ const EVD = new EvDecoder<Fields>("Data", TT.Data)
       .add(TT.FinalBlock, (t, { vd }) => t.finalBlockId = vd.decode(Component)),
   )
   .add(TT.Content, (t, { value }) => t.content = value)
-  .add(TT.DSigInfo, (t, { decoder }) => {
-    t.sigInfo = decoder.decode(SigInfo);
-  }, { required: true })
+  .add(TT.DSigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(SigInfo), { required: true })
   .add(TT.DSigValue, (t, { value, before }) => {
     t.sigValue = value;
     t.signedPortion = before;
@@ -89,7 +95,7 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
   /**
    * Construct from flexible arguments.
    *
-   * Arguments can include:
+   * Arguments can include, in any order unless otherwise specified:
    * - Data to copy from
    * - Name or name URI
    * - Data.ContentType(v)
@@ -129,17 +135,17 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
   }
 
   private encodeSignedPortion(): Encodable[] {
-    const f = this[FIELDS];
+    const { name, contentType, freshnessPeriod, finalBlockId, content, sigInfo } = this[FIELDS];
     return [
-      f.name,
+      name,
       [
         TT.MetaInfo, Encoder.OmitEmpty,
-        f.contentType > 0 ? [TT.ContentType, NNI(f.contentType)] : undefined,
-        f.freshnessPeriod > 0 ? [TT.FreshnessPeriod, NNI(f.freshnessPeriod)] : undefined,
-        f.finalBlockId ? [TT.FinalBlock, f.finalBlockId] : undefined,
+        contentType > 0 ? [TT.ContentType, NNI(contentType)] : undefined,
+        freshnessPeriod > 0 ? [TT.FreshnessPeriod, NNI(freshnessPeriod)] : undefined,
+        finalBlockId && [TT.FinalBlock, finalBlockId],
       ],
-      f.content.byteLength > 0 ? [TT.Content, f.content] : undefined,
-      f.sigInfo.encodeAs(TT.DSigInfo),
+      content.byteLength > 0 ? [TT.Content, content] : undefined,
+      sigInfo.encodeAs(TT.DSigInfo),
     ];
   }
 
@@ -204,32 +210,28 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
   }
 
   public async [LLVerify.OP](verify: LLVerify) {
-    const f = this[FIELDS];
-    if (!f.sigValue) {
+    const { signedPortion, sigValue } = this[FIELDS];
+    if (!sigValue) {
       throw new Error("SigValue is missing");
     }
-    if (!f.signedPortion) {
+    if (!signedPortion) {
       throw new Error("SignedPortion is missing");
     }
-    await verify(f.signedPortion, f.sigValue);
+    await verify(signedPortion, sigValue);
   }
 }
-export interface Data extends Fields {}
-for (const field of FIELD_LIST) {
-  Object.defineProperty(Data.prototype, field, {
-    enumerable: true,
-    get(this: Data) { return this[FIELDS][field]; },
-    set(this: Data, v: any) {
-      const f = this[FIELDS];
-      (f[field] as any) = v;
-      f.topTlv = undefined;
-      f.topTlvDigest = undefined;
-      if (field !== "sigValue") {
-        f.signedPortion = undefined;
-      }
-    },
-  });
-}
+export interface Data extends PublicFields {}
+const clearingFields = ["topTlv", "topTlvDigest", "signedPortion"] as const;
+definePublicFields<Data, Fields, PublicFields>(Data, {
+  name: clearingFields,
+  contentType: clearingFields,
+  freshnessPeriod: clearingFields,
+  finalBlockId: clearingFields,
+  isFinalBlock: clearingFields,
+  content: clearingFields,
+  sigInfo: clearingFields,
+  sigValue: clearingFields.slice(0, 2),
+});
 
 const ctorAssign = Symbol("Data.ctorAssign");
 interface CtorTag {

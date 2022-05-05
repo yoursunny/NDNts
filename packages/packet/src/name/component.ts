@@ -20,8 +20,8 @@ for (let b = 0x00; b <= 0xFF; ++b) {
   const s = String.fromCodePoint(b);
   CHAR_ENCODE[b] = /[\w.~-]/i.test(s) ? s : `%${toHex.TABLE[b]}`;
 }
-const CODEPOINT_PERCENT = "%".codePointAt(0);
-const CODEPOINT_PERIOD = ".".codePointAt(0);
+const CODEPOINT_PERCENT = "%".codePointAt(0)!;
+const CODEPOINT_PERIOD = ".".codePointAt(0)!;
 
 /** Name component or component URI. */
 export type ComponentLike = Component | string;
@@ -31,16 +31,6 @@ export type ComponentLike = Component | string;
  * This type is immutable.
  */
 export class Component {
-  /** TLV-LENGTH. */
-  public get length(): number {
-    return this.value.length;
-  }
-
-  /** TLV-VALUE interpreted as UTF-8 string. */
-  public get text(): string {
-    return fromUtf8(this.value);
-  }
-
   public static decodeFrom(decoder: Decoder): Component {
     const { tlv } = decoder.read();
     return new Component(tlv);
@@ -90,6 +80,16 @@ export class Component {
   /** TLV-VALUE. */
   public readonly value: Uint8Array;
 
+  /** TLV-LENGTH. */
+  public get length(): number {
+    return this.value.length;
+  }
+
+  /** TLV-VALUE interpreted as UTF-8 string. */
+  public get text(): string {
+    return fromUtf8(this.value);
+  }
+
   /**
    * Construct from TLV-TYPE and TLV-VALUE.
    * @param type TLV-TYPE, default is GenericNameComponent.
@@ -109,14 +109,15 @@ export class Component {
       this.tlv = arg1;
       const decoder = new Decoder(arg1);
       ({ type: this.type, value: this.value } = decoder.read());
-      assertType(this.type);
-      return;
+    } else {
+      this.type = arg1;
+      if (typeof value === "string") {
+        value = toUtf8(value);
+      }
+      this.tlv = Encoder.encode([this.type, value], 10 + value.length);
+      this.value = this.tlv.subarray(this.tlv.length - value.length);
     }
-
-    this.type = arg1;
     assertType(this.type);
-    this.value = typeof value === "string" ? toUtf8(value) : value;
-    this.tlv = Encoder.encode([this.type, this.value], 10 + this.value.length);
   }
 
   /** Get URI string. */

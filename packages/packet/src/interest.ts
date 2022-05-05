@@ -3,12 +3,12 @@ import { assert, sha256 } from "@ndn/util";
 
 import { TT } from "./an";
 import { FwHint } from "./fwhint";
+import { definePublicFields, FIELDS } from "./impl-public-fields";
 import { type NameLike, Name, ParamsDigest } from "./name/mod";
 import { LLSign, LLVerify, Signer, Verifier } from "./security/signing";
 import { SigInfo } from "./sig-info";
 
 const HOPLIMIT_MAX = 255;
-const FIELDS = Symbol("Interest.FIELDS");
 
 class Fields {
   constructor(...args: Array<Interest | Interest.CtorArg>) {
@@ -33,35 +33,27 @@ class Fields {
   public canBePrefix = false;
   public mustBeFresh = false;
   public fwHint?: FwHint;
+
   public get nonce() { return this.nonce_; }
   public set nonce(v) { this.nonce_ = v && NNI.constrain(v, "Nonce", 0xFFFFFFFF); }
+  private nonce_: number | undefined;
+
   public get lifetime() { return this.lifetime_; }
   public set lifetime(v) { this.lifetime_ = NNI.constrain(v, "InterestLifetime"); }
+  private lifetime_: number = Interest.DefaultLifetime;
+
   public get hopLimit() { return this.hopLimit_; }
   public set hopLimit(v) { this.hopLimit_ = NNI.constrain(v, "HopLimit", HOPLIMIT_MAX); }
+  private hopLimit_: number = HOPLIMIT_MAX;
+
   public appParameters?: Uint8Array;
   public sigInfo?: SigInfo;
   public sigValue = new Uint8Array();
 
-  private nonce_: number | undefined;
-  private lifetime_: number = Interest.DefaultLifetime;
-  private hopLimit_: number = HOPLIMIT_MAX;
-
-  public signedPortion?: Uint8Array;
   public paramsPortion?: Uint8Array;
+  public signedPortion?: Uint8Array;
 }
-const FIELD_LIST: Partial<Record<keyof Fields, Array<keyof Fields>>> = {
-  name: ["signedPortion"],
-  canBePrefix: [],
-  mustBeFresh: [],
-  fwHint: [],
-  nonce: [],
-  lifetime: [],
-  hopLimit: [],
-  appParameters: ["signedPortion", "paramsPortion"],
-  sigInfo: ["signedPortion", "paramsPortion"],
-  sigValue: ["paramsPortion"],
-};
+interface PublicFields extends Omit<Fields, "paramsPortion" | "signedPortion"> {}
 
 const EVD = new EvDecoder<Fields>("Interest", TT.Interest)
   .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
@@ -76,25 +68,27 @@ const EVD = new EvDecoder<Fields>("Interest", TT.Interest)
       throw new Error("ParamsDigest missing in parameterized Interest");
     }
     t.appParameters = value;
-    t.paramsPortion = new Uint8Array(tlv.buffer, tlv.byteOffset,
-      tlv.byteLength + after.byteLength);
+    assert(tlv.buffer === after.buffer);
+    t.paramsPortion = new Uint8Array(tlv.buffer, tlv.byteOffset, tlv.byteLength + after.byteLength);
   })
   .add(TT.ISigInfo, (t, { decoder }) => t.sigInfo = decoder.decode(SigInfo))
   .add(TT.ISigValue, (t, { value, tlv }) => {
-    if (!t.name.at(-1).is(ParamsDigest)) {
+    if (!t.name.get(-1)?.is(ParamsDigest)) {
       throw new Error("ParamsDigest missing or out of place in signed Interest");
     }
     if (!t.paramsPortion) {
       throw new Error("AppParameters missing in signed Interest");
     }
-    if (t.sigInfo === undefined) {
+    if (!t.sigInfo) {
       throw new Error("ISigInfo missing in signed Interest");
     }
 
     assert(tlv.buffer === t.paramsPortion.buffer);
     t.sigValue = value;
 
-    const signedPart0 = t.name.getPrefix(-1).value;
+    // t.name.value should be readily available during decoding;
+    // t.name.getPrefix(-1).value would require re-encoding from components
+    const signedPart0 = t.name.value.subarray(0, -t.name.get(-1)!.tlv.byteLength);
     const signedPart1 = new Uint8Array(tlv.buffer, t.paramsPortion.byteOffset,
       tlv.byteOffset - t.paramsPortion.byteOffset);
     t.signedPortion = new Uint8Array(signedPart0.byteLength + signedPart1.byteLength);
@@ -131,37 +125,36 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
   }
 
   public encodeTo(encoder: Encoder) {
-    const f = this[FIELDS];
-    if (f.name.length === 0) {
+    const { name, canBePrefix, mustBeFresh, fwHint, nonce, lifetime, hopLimit, appParameters } = this[FIELDS];
+    if (name.length === 0) {
       throw new Error("invalid empty Interest name");
     }
-    if (f.appParameters && ParamsDigest.findIn(f.name, false) < 0) {
+    if (appParameters && ParamsDigest.findIn(name, false) < 0) {
       throw new Error("ParamsDigest missing");
     }
 
     encoder.prependTlv(TT.Interest,
-      f.name,
-      f.canBePrefix ? [TT.CanBePrefix] : undefined,
-      f.mustBeFresh ? [TT.MustBeFresh] : undefined,
-      f.fwHint,
-      [TT.Nonce, NNI(f.nonce ?? Interest.generateNonce(), { len: 4 })],
-      f.lifetime === Interest.DefaultLifetime ?
-        undefined : [TT.InterestLifetime, NNI(f.lifetime)],
-      f.hopLimit === HOPLIMIT_MAX ?
-        undefined : [TT.HopLimit, NNI(f.hopLimit, { len: 1 })],
+      name,
+      canBePrefix ? [TT.CanBePrefix] : undefined,
+      mustBeFresh ? [TT.MustBeFresh] : undefined,
+      fwHint,
+      [TT.Nonce, NNI(nonce ?? Interest.generateNonce(), { len: 4 })],
+      lifetime === Interest.DefaultLifetime ? undefined : [TT.InterestLifetime, NNI(lifetime)],
+      hopLimit === HOPLIMIT_MAX ? undefined : [TT.HopLimit, NNI(hopLimit, { len: 1 })],
       ...this.encodeParamsPortion(),
     );
   }
 
   private encodeParamsPortion(): Encodable[] {
-    if (!this.appParameters) {
+    const { appParameters, sigInfo, sigValue } = this[FIELDS];
+    if (!appParameters) {
       return [];
     }
-    const w: Encodable[] = [[TT.AppParameters, this.appParameters]];
-    if (this.sigInfo) {
+    const w: Encodable[] = [[TT.AppParameters, appParameters]];
+    if (sigInfo) {
       w.push(
-        this.sigInfo.encodeAs(TT.ISigInfo),
-        [TT.ISigValue, this.sigValue],
+        sigInfo.encodeAs(TT.ISigInfo),
+        [TT.ISigValue, sigValue],
       );
     }
     return w;
@@ -179,9 +172,7 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
     if (pdIndex < 0) {
       pdIndex = this.appendParamsDigestPlaceholder();
     }
-    if (!f.appParameters) {
-      f.appParameters = new Uint8Array();
-    }
+    f.appParameters ??= new Uint8Array();
 
     f.paramsPortion = Encoder.encode(this.encodeParamsPortion());
     const d = await sha256(f.paramsPortion);
@@ -189,18 +180,17 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
   }
 
   public async validateParamsDigest(): Promise<void> {
-    const f = this[FIELDS];
-    if (f.appParameters === undefined) {
+    const { appParameters, paramsPortion, name } = this[FIELDS];
+    if (!appParameters) {
       return;
     }
 
-    const params = f.paramsPortion;
-    if (params === undefined) {
+    if (!paramsPortion) {
       throw new Error("parameters portion is empty");
     }
 
-    const pdComp = f.name.at(ParamsDigest.findIn(f.name, false));
-    const d = await sha256(params);
+    const pdComp = name.at(ParamsDigest.findIn(name, false));
+    const d = await sha256(paramsPortion);
     // This is not a constant-time comparison. It's for integrity purpose only.
     if (!pdComp.equals(ParamsDigest.create(d))) {
       throw new Error("incorrect ParamsDigest");
@@ -217,38 +207,36 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
     }
 
     f.signedPortion = Encoder.encode([
-      f.name.getPrefix(-1).value,
+      ...f.name.getPrefix(-1).comps,
       [TT.AppParameters, f.appParameters],
-      f.sigInfo ? f.sigInfo.encodeAs(TT.ISigInfo) : undefined,
+      f.sigInfo?.encodeAs(TT.ISigInfo),
     ]);
     this.sigValue = await sign(f.signedPortion);
     return this.updateParamsDigest();
   }
 
   public async [LLVerify.OP](verify: LLVerify) {
-    const f = this[FIELDS];
+    const { signedPortion, sigValue } = this[FIELDS];
     await this.validateParamsDigest();
-    const signedPortion = f.signedPortion;
     if (!signedPortion) {
       throw new Error("SignedPortion is missing");
     }
-    await verify(signedPortion, f.sigValue);
+    await verify(signedPortion, sigValue);
   }
 }
-export interface Interest extends Fields {}
-for (const [field, clearing] of Object.entries(FIELD_LIST) as Iterable<[keyof Fields, Array<keyof Fields>]>) {
-  Object.defineProperty(Interest.prototype, field, {
-    enumerable: true,
-    get(this: Interest) { return this[FIELDS][field]; },
-    set(this: Interest, v: any) {
-      const f = this[FIELDS];
-      (f[field] as any) = v;
-      for (const c of clearing) {
-        (f[c] as any) = undefined;
-      }
-    },
-  });
-}
+export interface Interest extends PublicFields {}
+definePublicFields<Interest, Fields, PublicFields>(Interest, {
+  name: ["signedPortion"],
+  canBePrefix: [],
+  mustBeFresh: [],
+  fwHint: [],
+  nonce: [],
+  lifetime: [],
+  hopLimit: [],
+  appParameters: ["paramsPortion", "signedPortion"],
+  sigInfo: ["paramsPortion", "signedPortion"],
+  sigValue: ["paramsPortion"],
+});
 
 const ctorAssign = Symbol("Interest.ctorAssign");
 interface CtorTag {
@@ -316,10 +304,10 @@ export namespace Interest {
       return input;
     }
 
-    const patch: any = {};
-    for (const key of ["canBePrefix", "mustBeFresh", "fwHint", "lifetime", "hopLimit"] as Array<keyof ModifyFields>) {
+    const patch: ModifyFields = {};
+    for (const key of ["canBePrefix", "mustBeFresh", "fwHint", "lifetime", "hopLimit"] as ReadonlyArray<keyof ModifyFields>) {
       if (input[key] !== undefined) {
-        patch[key] = input[key];
+        patch[key] = input[key] as any;
       }
     }
     return (interest) => {

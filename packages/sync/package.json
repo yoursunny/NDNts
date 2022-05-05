@@ -36,7 +36,7 @@
     "applymixins": "^1.1.0",
     "mnemonist": "^0.39.1",
     "murmurhash3js-revisited": "^3.0.0",
-    "obliterator": "^2.0.3",
+    "obliterator": "^2.0.4",
     "p-defer": "^4.0.0",
     "pako": "^2.0.4",
     "tslib": "^2.4.0",

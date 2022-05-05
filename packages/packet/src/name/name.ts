@@ -107,7 +107,7 @@ export class Name {
    */
   public at(i: number): Component {
     const comp = this.get(i);
-    if (comp === undefined) {
+    if (!comp) {
       throw new Error(`component ${i} out of range`);
     }
     return comp;
@@ -182,7 +182,7 @@ export class Name {
   }
 
   public encodeTo(encoder: Encoder) {
-    encoder.prependTlv(TT.Name, this.value);
+    encoder.prependTlv(TT.Name, ...this.comps);
   }
 }
 
