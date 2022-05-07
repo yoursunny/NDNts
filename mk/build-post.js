@@ -175,7 +175,6 @@ class TransformJs {
   }
 }
 
-(async () => {
 const lines = split2();
 pipeline(process.stdin, lines,
   (err) => { if (err) { console.error(err); } });
@@ -198,4 +197,3 @@ lines.on("data", async (/** @type string */line) => {
     console.warn(filename, err);
   }
 });
-})();

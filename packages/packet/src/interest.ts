@@ -179,9 +179,12 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
     f.name = f.name.replaceAt(pdIndex, ParamsDigest.create(d));
   }
 
-  public async validateParamsDigest(): Promise<void> {
+  public async validateParamsDigest(requireAppParameters = false): Promise<void> {
     const { appParameters, paramsPortion, name } = this[FIELDS];
     if (!appParameters) {
+      if (requireAppParameters) {
+        throw new Error("AppParameters is missing");
+      }
       return;
     }
 

@@ -6,6 +6,7 @@ import { toUtf8 } from "@ndn/util";
 import * as crypto from "../crypto-common";
 import { C, TT } from "./an";
 import type { CaProfile } from "./ca-profile";
+import * as decode_common from "./decode-common";
 import * as encrypted_payload from "./encrypted";
 import * as parameter_kv from "./parameter-kv";
 
@@ -25,16 +26,10 @@ export class ChallengeRequest {
     signedInterestPolicy,
     lookupRequest,
   }: ChallengeRequest.Context): Promise<ChallengeRequest> {
-    if (!(interest.name.getPrefix(-4).equals(profile.prefix) &&
-          interest.name.at(-4).equals(C.CA) &&
-          interest.name.get(-3)!.equals(C.CHALLENGE))) {
-      throw new Error("bad Name");
-    }
-    if (!interest.appParameters) {
-      throw new Error("ApplicationParameter is missing");
-    }
+    decode_common.checkName(interest, profile, C.CHALLENGE, undefined, undefined);
+    await interest.validateParamsDigest(true);
 
-    const requestId = interest.name.at(-2).value;
+    const requestId = interest.name.get(-2)!.value;
     crypto.checkRequestId(requestId);
     const context = await lookupRequest(requestId);
     if (!context) {
@@ -44,7 +39,7 @@ export class ChallengeRequest {
     await signedInterestPolicy.makeVerifier(certRequestPub).verify(interest);
 
     const { plaintext } = await sessionDecrypter.llDecrypt({
-      ...encrypted_payload.decode(interest.appParameters),
+      ...encrypted_payload.decode(interest.appParameters!),
       additionalData: requestId,
     });
     return new ChallengeRequest(interest, plaintext);

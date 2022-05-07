@@ -28,8 +28,7 @@ export class ChallengeResponse {
       ...encrypted_payload.decode(data.content),
       additionalData: requestId,
     });
-    const request = new ChallengeResponse(data, plaintext);
-    return request;
+    return new ChallengeResponse(data, plaintext);
   }
 
   private constructor(public readonly data: Data, plaintext: Uint8Array) {

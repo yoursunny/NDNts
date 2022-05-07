@@ -1,10 +1,11 @@
 import { type Signer, Data } from "@ndn/packet";
-import { type EncodableTlv, Decoder, Encoder, EvDecoder } from "@ndn/tlv";
+import { type EncodableTlv, Encoder, EvDecoder } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
 
 import * as crypto from "../crypto-common";
 import { TT } from "./an";
 import type { CaProfile } from "./ca-profile";
+import * as decode_common from "./decode-common";
 import type { NewRequest } from "./new-request";
 
 const EVD = new EvDecoder<NewResponse.Fields>("NewResponse")
@@ -12,27 +13,24 @@ const EVD = new EvDecoder<NewResponse.Fields>("NewResponse")
   .add(TT.Salt, (t, { value }) => t.salt = value, { required: true })
   .add(TT.RequestId, (t, { value }) => t.requestId = value, { required: true })
   .add(TT.Challenge, (t, { text }) => t.challenges.push(text), { required: true, repeat: true });
+EVD.beforeObservers.push((t) => t.challenges = []);
 
 /** NEW response packet. */
 export class NewResponse {
   public static async fromData(data: Data, profile: CaProfile): Promise<NewResponse> {
     await profile.publicKey.verify(data);
-
-    const response = new NewResponse(data);
-    crypto.checkSalt(response.salt);
-    crypto.checkRequestId(response.requestId);
-    response.ecdhPub_ = await crypto.importEcdhPub(response.ecdhPubRaw);
-    return response;
+    return decode_common.fromData(data, EVD, async (f) => {
+      crypto.checkSalt(f.salt);
+      crypto.checkRequestId(f.requestId);
+      const ecdhPub = await crypto.importEcdhPub(f.ecdhPubRaw);
+      return new NewResponse(data, ecdhPub);
+    });
   }
 
-  private constructor(public readonly data: Data) {
-    const self = this as NewResponse.Fields;
-    self.challenges = [];
-    EVD.decodeValue(self, new Decoder(data.content));
-  }
-
-  private ecdhPub_!: CryptoKey;
-  public get ecdhPub() { return this.ecdhPub_; }
+  private constructor(
+      public readonly data: Data,
+      public readonly ecdhPub: CryptoKey,
+  ) {}
 }
 export interface NewResponse extends Readonly<NewResponse.Fields> {}
 

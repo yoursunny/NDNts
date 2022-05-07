@@ -1,10 +1,11 @@
 import { type NamedSigner, type NamedVerifier, type SigningAlgorithm, Certificate, createVerifier, SigningAlgorithmListSlim, ValidityPeriod } from "@ndn/keychain";
 import { type SignedInterestPolicy, Data, Interest } from "@ndn/packet";
-import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
+import { Encoder, EvDecoder } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";
 import { C, TT } from "./an";
 import type { CaProfile } from "./ca-profile";
+import * as decode_common from "./decode-common";
 
 const EVD = new EvDecoder<NewRequest.Fields>("NewRequest")
   .add(TT.EcdhPub, (t, { value }) => t.ecdhPubRaw = value, { required: true })
@@ -16,41 +17,30 @@ export class NewRequest {
    * Decode NEW request from Interest packet.
    * @param algoList list of recognized algorithms for certificate request.
    */
-  public static async fromInterest(
+  public static fromInterest(
       interest: Interest,
       { profile, signedInterestPolicy }: NewRequest.Context,
       algoList = SigningAlgorithmListSlim,
   ): Promise<NewRequest> {
-    if (!(interest.name.getPrefix(-3).equals(profile.prefix) &&
-          interest.name.at(-3).equals(C.CA) &&
-          interest.name.get(-2)!.equals(C.NEW))) {
-      throw new Error("bad Name");
-    }
+    decode_common.checkName(interest, profile, C.NEW, undefined);
+    return decode_common.fromInterest(interest, EVD, async (f) => {
+      const { validity } = f.certRequest;
+      if (!validity.equals(truncateValidity(validity, profile, true))) {
+        throw new Error("bad ValidityPeriod");
+      }
 
-    const request = new NewRequest(interest);
-    const { validity } = request.certRequest;
-    if (!validity.equals(truncateValidity(validity, profile, true))) {
-      throw new Error("bad ValidityPeriod");
-    }
-
-    request.ecdhPub_ = await crypto.importEcdhPub(request.ecdhPubRaw);
-    request.publicKey_ = await createVerifier(request.certRequest, { algoList });
-    await signedInterestPolicy.makeVerifier(request.publicKey).verify(interest);
-    return request;
+      const ecdhPub = await crypto.importEcdhPub(f.ecdhPubRaw);
+      const publicKey = await createVerifier(f.certRequest, { algoList });
+      await signedInterestPolicy.makeVerifier(publicKey).verify(interest);
+      return new NewRequest(interest, ecdhPub, publicKey);
+    });
   }
 
-  private constructor(public readonly interest: Interest) {
-    if (!interest.appParameters) {
-      throw new Error("ApplicationParameter is missing");
-    }
-    EVD.decodeValue(this, new Decoder(interest.appParameters));
-  }
-
-  private ecdhPub_!: CryptoKey;
-  public get ecdhPub() { return this.ecdhPub_; }
-
-  private publicKey_!: NamedVerifier.PublicKey;
-  public get publicKey() { return this.publicKey_; }
+  private constructor(
+      public readonly interest: Interest,
+      public readonly ecdhPub: CryptoKey,
+      public readonly publicKey: NamedVerifier.PublicKey,
+  ) {}
 }
 export interface NewRequest extends Readonly<NewRequest.Fields> {}
 

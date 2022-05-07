@@ -118,6 +118,8 @@ test("decode", async () => {
 
   // noop for non parameterized Interest
   await interest.validateParamsDigest();
+
+  await expect(interest.validateParamsDigest(true)).rejects.toThrow(/missing/);
 });
 
 test("modify", () => {

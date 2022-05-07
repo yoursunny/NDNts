@@ -1,11 +1,12 @@
 import { type NamedVerifier, type SigningAlgorithm, Certificate, createVerifier, SigningAlgorithmListSlim } from "@ndn/keychain";
 import { Segment, Version } from "@ndn/naming-convention2";
 import { type Signer, Data, Name } from "@ndn/packet";
-import { type EncodableTlv, Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { type EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { toHex, toUtf8 } from "@ndn/util";
 import indentString from "indent-string";
 
 import { C, TT } from "./an";
+import * as decode_common from "./decode-common";
 
 const EVD = new EvDecoder<CaProfile.Fields>("CaProfile")
   .add(TT.CaPrefix, (t, { vd }) => t.prefix = vd.decode(Name), { required: true })
@@ -13,6 +14,7 @@ const EVD = new EvDecoder<CaProfile.Fields>("CaProfile")
   .add(TT.ParameterKey, (t, { text }) => t.probeKeys.push(text), { repeat: true })
   .add(TT.MaxValidityPeriod, (t, { nni }) => t.maxValidityPeriod = nni * 1000, { required: true })
   .add(TT.CaCertificate, (t, { vd }) => t.cert = Certificate.fromData(vd.decode(Data)), { required: true });
+EVD.beforeObservers.push((t) => t.probeKeys = []);
 
 /** CA profile packet. */
 export class CaProfile {
@@ -20,31 +22,21 @@ export class CaProfile {
    * Decode CA profile from Data packet.
    * @param algoList list of recognized algorithms for CA certificate.
    */
-  public static async fromData(data: Data, algoList = SigningAlgorithmListSlim): Promise<CaProfile> {
-    const profile = new CaProfile(data);
-    if (!(data.name.getPrefix(-4).equals(profile.prefix) &&
-          data.name.at(-4).equals(C.CA) &&
-          data.name.get(-3)!.equals(C.INFO) &&
-          data.name.get(-2)!.is(Version) &&
-          data.name.get(-1)!.is(Segment))) {
-      throw new Error("bad Name");
-    }
-    profile.publicKey_ = await createVerifier(profile.cert, { algoList });
-    await profile.publicKey_.verify(data);
-    profile.certDigest_ = await profile.cert.data.computeImplicitDigest();
-    return profile;
+  public static fromData(data: Data, algoList = SigningAlgorithmListSlim): Promise<CaProfile> {
+    return decode_common.fromData(data, EVD, async (f) => {
+      decode_common.checkName(data, f, C.INFO, Version, Segment);
+      const publicKey = await createVerifier(f.cert, { algoList });
+      await publicKey.verify(data);
+      const certDigest = await f.cert.data.computeImplicitDigest();
+      return new CaProfile(data, publicKey, certDigest);
+    });
   }
 
-  private constructor(public readonly data: Data) {
-    (this as CaProfile.Fields).probeKeys = [];
-    EVD.decodeValue(this, new Decoder(data.content));
-  }
-
-  private publicKey_!: NamedVerifier.PublicKey;
-  public get publicKey() { return this.publicKey_; }
-
-  private certDigest_!: Uint8Array;
-  public get certDigest() { return this.certDigest_; }
+  private constructor(
+      public readonly data: Data,
+      public readonly publicKey: NamedVerifier.PublicKey,
+      public readonly certDigest: Uint8Array,
+  ) {}
 
   public toString() {
     return `NDNCERT 0.3 CA profile

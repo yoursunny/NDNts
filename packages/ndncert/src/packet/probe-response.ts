@@ -1,9 +1,10 @@
 import { CertNaming } from "@ndn/keychain";
 import { type Signer, Data, ImplicitDigest, Name, TT as l3TT } from "@ndn/packet";
-import { type EncodableTlv, Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { type EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
 import { TT } from "./an";
 import type { CaProfile } from "./ca-profile";
+import * as decode_common from "./decode-common";
 import type { ProbeRequest } from "./probe-request";
 
 const EntryEVD = new EvDecoder<ProbeResponse.Entry>("ProbeResponse.Entry", TT.ProbeResponse)
@@ -27,23 +28,24 @@ const EVD = new EvDecoder<ProbeResponse.Fields>("ProbeResponse")
   .add(TT.ProbeRedirect,
     (t, { decoder }) => t.redirects.push(RedirectEVD.decode({} as ProbeResponse.Redirect, decoder)),
     { repeat: true });
+EVD.beforeObservers.push((t) => {
+  t.entries = [];
+  t.redirects = [];
+});
+EVD.afterObservers.push(({ entries, redirects }) => {
+  if (entries.length + redirects.length === 0) {
+    throw new Error("at least one entry or redirect is required");
+  }
+});
 
 /** PROBE response packet. */
 export class ProbeResponse {
   public static async fromData(data: Data, profile: CaProfile): Promise<ProbeResponse> {
     await profile.publicKey.verify(data);
-    return new ProbeResponse(data);
+    return decode_common.fromData(data, EVD, (f) => new ProbeResponse(data));
   }
 
-  private constructor(public readonly data: Data) {
-    const self = this as ProbeResponse.Fields;
-    self.entries = [];
-    self.redirects = [];
-    EVD.decodeValue(self, new Decoder(data.content));
-    if (self.entries.length + self.redirects.length === 0) {
-      throw new Error("at least one entry or redirect is required");
-    }
-  }
+  private constructor(public readonly data: Data) {}
 }
 export interface ProbeResponse extends Readonly<ProbeResponse.Fields> {}
 
