@@ -22,7 +22,7 @@ export class ClientPossessionChallenge implements ClientChallenge {
       this.llSign = pvt;
     } else {
       this.llSign = async (input: Uint8Array) => {
-        const pkt = {
+        const pkt: Signer.Signable = {
           name: new Name(),
           sigValue: new Uint8Array(),
           [LLSign.OP]: async (llSign: LLSign) => {

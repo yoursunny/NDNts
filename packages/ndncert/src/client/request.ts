@@ -3,11 +3,19 @@ import { type NamedSigner, type NamedVerifier, Certificate, ValidityPeriod } fro
 import { FwHint, Interest, Name } from "@ndn/packet";
 
 import * as crypto from "../crypto-common";
-import { ChallengeRequest, ChallengeResponse, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
+import { type CaProfile, ChallengeRequest, ChallengeResponse, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
 import type { ClientChallenge } from "./challenge";
-import type { ClientOptionsCommon } from "./client";
 
-export interface ClientOptions extends ClientOptionsCommon {
+export interface ClientOptions {
+  /**
+   * Endpoint for communication.
+   * Default is an Endpoint on default Forwarder with up to 4 retransmissions.
+   */
+  endpoint?: Endpoint;
+
+  /** CA profile. */
+  profile: CaProfile;
+
   /** Private key corresponding to the public key. */
   privateKey: NamedSigner.PrivateKey;
   /** Public key to request certificate for. */
@@ -22,8 +30,7 @@ export interface ClientOptions extends ClientOptionsCommon {
 
 /** Request a certificate for the given key. */
 export async function requestCertificate({
-  endpoint = new Endpoint(),
-  retx = 4,
+  endpoint = new Endpoint({ retx: 4 }),
   profile,
   privateKey,
   publicKey,
@@ -32,7 +39,6 @@ export async function requestCertificate({
 }: ClientOptions): Promise<Certificate> {
   const consumerOptions: ConsumerOptions = {
     describe: `NDNCERT-CLIENT(${privateKey.name})`,
-    retx,
     verifier: profile.publicKey,
   };
   const signedInterestPolicy = crypto.makeSignedInterestPolicy();

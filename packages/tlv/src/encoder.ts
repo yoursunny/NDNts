@@ -1,4 +1,4 @@
-import { asDataView } from "@ndn/util";
+import { asDataView, assert } from "@ndn/util";
 
 /** An object that knows how to prepend itself to an Encoder. */
 export interface EncodableObj {
@@ -131,8 +131,8 @@ export class Encoder {
       } else {
         this.prependValue(...(obj as readonly Encodable[]));
       }
-    } else if (obj !== undefined) {
-      throw new Error("Encoder.encode: obj is not Encodable");
+    } else {
+      assert(obj === undefined, "obj is not Encodable");
     }
   }
 

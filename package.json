@@ -12,7 +12,7 @@
     "test": "vitest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@7.0.0",
+  "packageManager": "pnpm@7.0.1",
   "devDependencies": {
     "@mshipov/typedoc-plugin-monorepo": "^0.2.2",
     "@types/node": "^17.0.31",

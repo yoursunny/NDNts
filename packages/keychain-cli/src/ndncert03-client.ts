@@ -1,7 +1,7 @@
 import { closeUplinks, openUplinks } from "@ndn/cli-common";
 import { type KeyChain, type NamedSigner, type NamedVerifier, CertNaming, generateSigningKey } from "@ndn/keychain";
 import { AltUri } from "@ndn/naming-convention2";
-import { type CaProfile, type ClientChallenge, type ClientChallengeContext, type ClientPinLikeChallenge, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ParameterKV, probeMatch, requestCertificate, requestProbe } from "@ndn/ndncert";
+import { type CaProfile, type ClientChallenge, type ClientChallengeContext, type ClientPinLikeChallenge, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, matchProbe, ParameterKV, requestCertificate, requestProbe } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
 import { console, toHex, toUtf8 } from "@ndn/util";
@@ -136,7 +136,7 @@ class InteractiveClient {
     });
 
     for (const keyName of await this.keyChain.listKeys()) {
-      if (probeMatch(probeResponse, keyName)) {
+      if (matchProbe(probeResponse, keyName)) {
         console.log(`Using existing key ${keyName}`);
         return this.retrieveKeyPairFromKeyChain(keyName);
       }

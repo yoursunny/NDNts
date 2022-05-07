@@ -15,9 +15,7 @@ const RedirectEVD = new EvDecoder<ProbeResponse.Redirect>("ProbeResponse.Redirec
   .add(l3TT.Name,
     (t, { decoder }) => {
       t.caCertFullName = decoder.decode(Name);
-      if (!t.caCertFullName.at(-1).is(ImplicitDigest) || !CertNaming.isCertName(t.caCertFullName.slice(0, -1))) {
-        throw new Error("CA cert full name is invalid");
-      }
+      ProbeResponse.checkCaCertFullName(t.caCertFullName);
     },
     { required: true });
 
@@ -95,5 +93,11 @@ export namespace ProbeResponse {
     data.content = payload;
     await signer.sign(data);
     return ProbeResponse.fromData(data, profile);
+  }
+
+  export function checkCaCertFullName(name: Name): void {
+    if (!(name.at(-1).is(ImplicitDigest) && CertNaming.isCertName(name.getPrefix(-1)))) {
+      throw new Error("CA cert full name is invalid");
+    }
   }
 }

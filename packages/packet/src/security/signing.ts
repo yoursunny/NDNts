@@ -40,7 +40,7 @@ interface PacketWithSignature {
   sigValue: Uint8Array;
 }
 
-/** High level signer, such as a private key. */
+/** High level signer, such as a named private key. */
 export interface Signer {
   /** Sign a packet. */
   sign: (pkt: Signer.Signable) => Promise<void>;
@@ -69,7 +69,7 @@ export namespace Signer {
   }
 }
 
-/** High level verifier, such as a public key. */
+/** High level verifier, such as a named public key. */
 export interface Verifier {
   /**
    * Verify a packet.

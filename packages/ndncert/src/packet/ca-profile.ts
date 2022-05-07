@@ -3,7 +3,6 @@ import { Segment, Version } from "@ndn/naming-convention2";
 import { type Signer, Data, Name } from "@ndn/packet";
 import { type EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { toHex, toUtf8 } from "@ndn/util";
-import indentString from "indent-string";
 
 import { C, TT } from "./an";
 import * as decode_common from "./decode-common";
@@ -42,7 +41,7 @@ export class CaProfile {
     return `NDNCERT 0.3 CA profile
 CA prefix: ${this.prefix}
 CA information:
-${indentString(this.info, 2)}
+${this.info.trim().replace(/^/gm, "  ")}
 PROBE keys:
 ${this.probeKeys.length === 0 ? "  (none)" : this.probeKeys.map((key) => `  ${key}`).join("\n")}
 Maximum validity period: ${this.maxValidityPeriod / 86400000} days

@@ -3,17 +3,14 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, generateSigningKey, ValidityPeriod } from "@ndn/keychain";
 import { Component, FwHint, Name } from "@ndn/packet";
-import { retrieveMetadata } from "@ndn/rdr";
 import { DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
-import { fetch } from "@ndn/segmented-object";
 import { toHex, toUtf8 } from "@ndn/util";
 import { setTimeout as delay } from "node:timers/promises";
 import { type SentMessageInfo, createTransport as createMT } from "nodemailer";
-import { collect } from "streaming-iterables";
 import { afterEach, beforeAll, beforeEach, expect, test, vi } from "vitest";
 
-import { type ClientChallenge, type ClientChallengeContext, type ParameterKV, type ServerChallenge, type ServerOptions, CaProfile, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, requestCertificate, requestProbe, Server, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "..";
+import { type ClientChallenge, type ClientChallengeContext, type ParameterKV, type ServerChallenge, type ServerOptions, CaProfile, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, requestCertificate, requestProbe, retrieveCaProfile, Server, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "..";
 
 interface Row {
   summary: string;
@@ -86,9 +83,9 @@ const TABLE: Row[] = [
     makeChallengeLists: makePinChallengeWithWrongInputs(2),
   },
   {
-    summary: "pin, 3 wrong inputs",
+    summary: "pin, exceed retry limit after 3 wrong inputs",
     makeChallengeLists: makePinChallengeWithWrongInputs(3),
-    clientShouldFail: true, // exceed retry limit
+    clientShouldFail: true,
   },
   {
     summary: "email, success",
@@ -156,11 +153,11 @@ const TABLE: Row[] = [
     clientShouldFail: true,
   },
   {
-    summary: "possession, success",
+    summary: "possession, success without assignment policy",
     async makeChallengeLists() {
       const { rootPub, clientCert, clientPvt } = await preparePossessionChallenge();
       return [
-        [new ServerPossessionChallenge(rootPub)], // assignment policy not specified
+        [new ServerPossessionChallenge(rootPub)],
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
@@ -205,7 +202,7 @@ const TABLE: Row[] = [
     async makeChallengeLists() {
       const { rootPub, clientCert, clientPvt } = await preparePossessionChallenge();
       vi.spyOn(clientCert.data, "encodeTo")
-        .mockImplementation((encoder) => encoder.prependValue(Uint8Array.of(0xDD)));
+        .mockImplementation((encoder) => encoder.encode(Uint8Array.of(0xDD)));
       return [
         [new ServerPossessionChallenge(rootPub)],
         [new ClientPossessionChallenge(clientCert, clientPvt)],
@@ -261,7 +258,7 @@ beforeAll(async () => {
   caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
   profile = await CaProfile.build({
     prefix: new Name("/authority"),
-    info: "authority CA",
+    info: "authority\nCA",
     probeKeys: ["uid"],
     maxValidityPeriod: 86400000,
     cert: caCert,
@@ -303,13 +300,14 @@ function startServer(opts: Partial<ServerOptions> = {}): Server {
 test("INFO command", async () => {
   startServer();
 
-  const metadata = await retrieveMetadata("/authority/CA/INFO", { verifier: caPub });
-  const dataPkts = await collect(fetch(metadata.name, { verifier: caPub }));
-  expect(dataPkts).toHaveLength(1);
-  expect(dataPkts[0]).toHaveName(profile.data.name);
+  const retrieved = await retrieveCaProfile({
+    caPrefix: new Name("/authority"),
+    caCertFullName: await caCert.data.computeFullName(),
+  });
+  expect(retrieved.data).toHaveName(profile.data.name);
+  expect(retrieved.certDigest).toEqual(profile.certDigest);
 
-  const parsed = await CaProfile.fromData(dataPkts[0]!);
-  expect(parsed.certDigest).toEqual(profile.certDigest);
+  expect(retrieved.toString()).toContain("\n  authority\n  CA\n");
 });
 
 test("unsupported or malformed commands", async () => {
