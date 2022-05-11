@@ -148,7 +148,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
   }
 
   private scheduleRefresh(name: Name, state: State, after: number): void {
-    clearTimeout(state.refreshTimer!);
+    clearTimeout(state.refreshTimer);
     state.refreshTimer = setTimeout(() => {
       const record = this.table.get(name);
       if (record?.status === ReadvertiseDestination.Status.ADVERTISED) {
@@ -159,7 +159,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
   }
 
   protected override async doWithdraw(name: Name, state: State) {
-    clearTimeout(state.refreshTimer!);
+    clearTimeout(state.refreshTimer);
     state.refreshTimer = undefined;
 
     if (this.closed) {

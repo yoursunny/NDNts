@@ -92,7 +92,7 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
     this.running = false;
     this.emit(UNBLOCK);
     for (const [, { rtoExpiry }] of this.pending) {
-      clearTimeout(rtoExpiry!);
+      clearTimeout(rtoExpiry);
     }
     this.tl.put(this.pending.size - this.retxQueue.size);
   }
@@ -129,7 +129,7 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
           this.pending.delete(segNum);
 
           if (!this.retxQueue.delete(segNum)) {
-            clearTimeout(req.rtoExpiry!);
+            clearTimeout(req.rtoExpiry);
             this.tl.put();
             yield cancelInterest(req);
           }
@@ -188,7 +188,7 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
     if (!req) { return; }
     this.pending.delete(segNum);
     if (!this.retxQueue.delete(segNum)) {
-      clearTimeout(req.rtoExpiry!);
+      clearTimeout(req.rtoExpiry);
       this.tl.put();
     }
 

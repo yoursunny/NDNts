@@ -10,7 +10,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { type SentMessageInfo, createTransport as createMT } from "nodemailer";
 import { afterEach, beforeAll, beforeEach, expect, test, vi } from "vitest";
 
-import { type ClientChallenge, type ClientChallengeContext, type ParameterKV, type ServerChallenge, type ServerOptions, CaProfile, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, requestCertificate, requestProbe, retrieveCaProfile, Server, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "..";
+import { type ClientChallenge, type ClientChallengeContext, type ParameterKV, type ServerChallenge, type ServerOptions, CaProfile, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, exportClientConf, importClientConf, requestCertificate, requestProbe, retrieveCaProfile, Server, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "..";
 
 interface Row {
   summary: string;
@@ -297,6 +297,12 @@ function startServer(opts: Partial<ServerOptions> = {}): Server {
   return server;
 }
 
+function checkCaProfile(retrieved: CaProfile) {
+  expect(retrieved.data).toHaveName(profile.data.name);
+  expect(retrieved.certDigest).toEqual(profile.certDigest);
+  expect(retrieved.toString()).toContain("\n  authority\n  CA\n");
+}
+
 test("INFO command", async () => {
   startServer();
 
@@ -304,10 +310,14 @@ test("INFO command", async () => {
     caPrefix: new Name("/authority"),
     caCertFullName: await caCert.data.computeFullName(),
   });
-  expect(retrieved.data).toHaveName(profile.data.name);
-  expect(retrieved.certDigest).toEqual(profile.certDigest);
+  checkCaProfile(retrieved);
 
-  expect(retrieved.toString()).toContain("\n  authority\n  CA\n");
+  const conf = exportClientConf(profile);
+  const imported = await importClientConf(conf);
+  checkCaProfile(imported);
+
+  delete (conf["ca-list"][0] as any).certificate;
+  await expect(importClientConf(conf)).rejects.toThrow();
 });
 
 test("unsupported or malformed commands", async () => {

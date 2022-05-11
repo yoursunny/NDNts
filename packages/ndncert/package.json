@@ -34,6 +34,7 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "@types/nodemailer": "^6.4.4",
+    "ajv": "^8.11.0",
     "applymixins": "^1.1.0",
     "base64-js": "^1.5.1",
     "nodemailer": "^6.7.5",

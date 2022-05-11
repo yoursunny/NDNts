@@ -1,4 +1,5 @@
 export * from "./challenge";
+export * from "./clientconf";
 export * from "./email-challenge";
 export * from "./nop-challenge";
 export * from "./pin-challenge";

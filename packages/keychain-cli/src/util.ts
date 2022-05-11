@@ -1,8 +1,9 @@
-import { openKeyChain } from "@ndn/cli-common";
+import { openKeyChain, openUplinks } from "@ndn/cli-common";
 import { Certificate, KeyChain } from "@ndn/keychain";
-import { CaProfile } from "@ndn/ndncert";
+import { CaProfile, ClientConf, importClientConf } from "@ndn/ndncert";
 import { Data } from "@ndn/packet";
 import { Decodable, Decoder, Encoder } from "@ndn/tlv";
+import { fromUtf8 } from "@ndn/util";
 import fastChunkString from "fast-chunk-string";
 import getStdin from "get-stdin";
 import { promises as fs } from "graceful-fs";
@@ -21,8 +22,27 @@ export async function inputCertBase64(filename?: string): Promise<Certificate> {
   return Certificate.fromData(data);
 }
 
-export async function inputCaProfile(filename: string): Promise<CaProfile> {
-  return CaProfile.fromData(new Decoder(await fs.readFile(filename)).decode(Data));
+export async function inputCaProfile(filename: string, allowClientConf = true): Promise<CaProfile> {
+  const content = await fs.readFile(filename);
+  try {
+    return await CaProfile.fromData(new Decoder(content).decode(Data));
+  } catch (err: unknown) {
+    if (allowClientConf) {
+      try {
+        return await inputCaProfileFromClientConf(content);
+      } catch (errC: unknown) {
+        throw new AggregateError([err, errC],
+          `cannot parse as Data (${err}); cannot import from client.conf (${errC})`);
+      }
+    }
+    throw err;
+  }
+}
+
+async function inputCaProfileFromClientConf(content: Uint8Array): Promise<CaProfile> {
+  await openUplinks();
+  const conf: ClientConf = JSON.parse(fromUtf8(content));
+  return importClientConf(conf);
 }
 
 export function printCertBase64(cert: Certificate) {

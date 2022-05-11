@@ -145,10 +145,14 @@ See `@ndn/ndnsec` package for more information.
 `ndnts-keychain ndncert03-show-profile` command displays information in a CA profile.
 
 * `--profile` specifies filename of CA profile.
+  This may be either the CA profile Data packet in binary format or *client.conf* format compatible with NDNCERT C++ implementation.
+* `--clientconf` changes the output to *client.conf* format.
+  This option is useful for converting a binary CA profile to use with NDNCERT C++ implementation.
 
 `ndnts-keychain ndncert03-ca` command runs a certificate authority.
 
 * `--profile` specifies filename of CA profile.
+  This should be the CA profile Data packet in binary format.
 * `--store` specifies directory path of a repository that stores issued certificates.
 * `--challenge nop` enables "nop" challenge that approves all certificate requests.
 * `--challenge pin` enables "pin" challenge that requires the requester to enter a 6-digit PIN code.
@@ -162,6 +166,7 @@ See `@ndn/ndnsec` package for more information.
 `ndnts-keychain ndncert03-client` command requests a certificate.
 
 * `--profile` specifies filename of CA profile.
+  This may be either the CA profile Data packet in binary format or *client.conf* format compatible with NDNCERT C++ implementation.
 * `--ndnsec` uses ndn-cxx keychain instead of NDNts keychain.
 * `--key` specifies the key name to obtain certificate for.
   The key pair must exist in the keychain given in `NDNTS_KEYCHAIN` environment variable, or ndn-cxx keychain if `--ndnsec` is specified.

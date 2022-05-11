@@ -52,7 +52,7 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
   public async handler(args: Arguments<Args>) {
     await openUplinks();
 
-    const profile = await inputCaProfile(args.profile);
+    const profile = await inputCaProfile(args.profile, false);
     const signer = await keyChain.getSigner(profile.cert.name);
 
     const repo = new DataStore(leveldown(args.store));
