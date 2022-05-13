@@ -11,20 +11,6 @@ export interface CopyOptions {
   parallel?: number;
 }
 
-function splitOptions(opts: any): [CopyOptions, any] {
-  if (!opts) {
-    return [{}, {}];
-  }
-  const {
-    batch,
-    parallel,
-  } = opts;
-  const insertOpts = opts;
-  delete insertOpts.batch;
-  delete insertOpts.parallel;
-  return [{ batch, parallel }, insertOpts];
-}
-
 /**
  * Copy Data packets from source DataStore to destination DataStore.
  * @param src source DataStore.
@@ -38,13 +24,15 @@ export async function copy<InsertOptions extends {} = never>(src: S.ListData,
   dst: S.Insert<InsertOptions>, opts?: CopyOptions & InsertOptions): Promise<void>;
 
 export async function copy(src: S.ListData, arg2: any, arg3?: any, arg4?: any): Promise<void> {
-  const [prefix, dst, opts]: [Name | undefined, S.Insert<any>, any] =
+  const [prefix, dst, opts = {}]: [Name | undefined, S.Insert<any>, any] =
     arg2 instanceof Name ? [arg2, arg3, arg4] : [undefined, arg2, arg3];
-
-  const [{
+  const {
     batch: batchSize = 64,
     parallel = 1,
-  }, insertOpts] = splitOptions(opts);
+  } = opts;
+  const insertOpts = { ...opts };
+  delete insertOpts.batch;
+  delete insertOpts.parallel;
 
   return pipeline(
     () => src.listData(prefix),

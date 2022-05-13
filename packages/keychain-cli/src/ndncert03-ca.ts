@@ -159,5 +159,6 @@ Otherwise, please disregard this message.`,
       signer,
       challenges,
     });
+    await new Promise(() => undefined);
   }
 }

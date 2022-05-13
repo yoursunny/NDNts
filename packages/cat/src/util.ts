@@ -1,4 +1,4 @@
-import { closeUplinks, getSigner, openUplinks } from "@ndn/cli-common";
+import { getSigner, openUplinks } from "@ndn/cli-common";
 import { Segment as Segment1, Version as Version1 } from "@ndn/naming-convention1";
 import { Segment2, Segment3, Version2, Version3 } from "@ndn/naming-convention2";
 import type { NamingConvention, Signer } from "@ndn/packet";
@@ -7,8 +7,8 @@ export interface CommonArgs {
   convention: number;
 }
 
-export let versionConvention: NamingConvention<number>;
-export let segmentNumConvention: NamingConvention<number>;
+export let Version: NamingConvention<number>;
+export let Segment: NamingConvention<number>;
 export let signer: Signer;
 
 export async function applyCommonArgs(args: CommonArgs) {
@@ -17,19 +17,15 @@ export async function applyCommonArgs(args: CommonArgs) {
 
   switch (args.convention) {
     case 1:
-      [versionConvention, segmentNumConvention] = [Version1, Segment1];
+      [Version, Segment] = [Version1, Segment1];
       break;
     case 2:
-      [versionConvention, segmentNumConvention] = [Version2, Segment2];
+      [Version, Segment] = [Version2, Segment2];
       break;
     case 3:
-      [versionConvention, segmentNumConvention] = [Version3, Segment3];
+      [Version, Segment] = [Version3, Segment3];
       break;
   }
-}
-
-export function cleanupCommon() {
-  closeUplinks();
 }
 
 export function checkVersionArg(keywords: readonly string[]): (args: { ver: string }) => boolean {

@@ -1,4 +1,4 @@
-import { copy, CopyOptions } from "./copy";
+import { type CopyOptions, copy } from "./copy";
 import type * as S from "./data-store";
 import { DataTape } from "./data-tape";
 

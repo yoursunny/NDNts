@@ -2,7 +2,7 @@ import { Metadata, serveMetadata } from "@ndn/rdr";
 import { FileChunkSource, serve, serveVersioned, StreamChunkSource } from "@ndn/segmented-object";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { checkVersionArg, CommonArgs, segmentNumConvention, signer, versionConvention } from "./common";
+import { checkVersionArg, CommonArgs, Segment, signer, Version } from "./util";
 
 interface Args extends CommonArgs {
   name: string;
@@ -18,10 +18,10 @@ function main({ name, rdr, ver, file, "chunk-size": chunkSize }: Args) {
     new FileChunkSource(file, { chunkSize }) :
     new StreamChunkSource(process.stdin, { chunkSize });
   const server = serveFunc(name, source, {
-    segmentNumConvention,
+    segmentNumConvention: Segment,
     signer,
     version: ver === "now" ? undefined : Number.parseInt(ver, 10),
-    versionConvention,
+    versionConvention: Version,
   });
   if (ver !== "none" && rdr) {
     serveMetadata(new Metadata(server.prefix), { signer, announcement: false });
@@ -36,10 +36,10 @@ export class PutSegmentedCommand implements CommandModule<CommonArgs, Args> {
   public builder(argv: Argv<CommonArgs>): Argv<Args> {
     return argv
       .positional("name", {
+        demandOption: true,
         desc: "name prefix",
         type: "string",
       })
-      .demandOption("name")
       .option("rdr", {
         default: true,
         desc: "publish RDR metadata packet",

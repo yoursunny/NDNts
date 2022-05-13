@@ -15,10 +15,10 @@ export class DeleteCommand implements CommandModule<{}, Args> {
   public builder(argv: Argv): Argv<Args> {
     return argv
       .positional("name", {
+        demandOption: true,
         desc: "name prefix",
         type: "string",
-      })
-      .demandOption("name");
+      });
   }
 
   public async handler({ name }: Arguments<Args>) {

@@ -60,7 +60,7 @@ The default is `/run/ndn`.
 
 ## API
 
-`exitClosers` array allows schedule objects to be closed at exit.
+`exitClosers` array allows scheduling objects to be closed at exit.
 `exitHandler` function is registered as SIGINT handle that is triggered upon pressing CTRL+C, which closes the objects in `exitClosers`.
 You may disable this handler with `process.off("SIGINT", exitHandler)`.
 

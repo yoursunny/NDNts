@@ -1,3 +1,4 @@
+import { exitHandler } from "@ndn/cli-common";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
@@ -17,20 +18,24 @@ import { ShowCertCommand } from "./show-cert";
 
 export const COMMAND = "ndnts-keychain";
 
-void yargs(hideBin(process.argv))
-  .scriptName(COMMAND)
-  .command(new GenKeyCommand())
-  .command(new ShowCertCommand())
-  .command(new DeleteCommand())
-  .command(new IssueCertCommand())
-  .command(new ListKeysCommand())
-  .command(new ListCertsCommand())
-  .command(new AddCertCommand())
-  .command(new ImportSafeBagCommand())
-  .command(new ImportNdnsecCommand())
-  .command(new Ndncert03MakeProfileCommand())
-  .command(new Ndncert03ShowProfileCommand())
-  .command(new Ndncert03CaCommand())
-  .command(new Ndncert03ClientCommand())
-  .demandCommand()
-  .parse();
+try {
+  await yargs(hideBin(process.argv))
+    .scriptName(COMMAND)
+    .command(new GenKeyCommand())
+    .command(new ShowCertCommand())
+    .command(new DeleteCommand())
+    .command(new IssueCertCommand())
+    .command(new ListKeysCommand())
+    .command(new ListCertsCommand())
+    .command(new AddCertCommand())
+    .command(new ImportSafeBagCommand())
+    .command(new ImportNdnsecCommand())
+    .command(new Ndncert03MakeProfileCommand())
+    .command(new Ndncert03ShowProfileCommand())
+    .command(new Ndncert03CaCommand())
+    .command(new Ndncert03ClientCommand())
+    .demandCommand()
+    .parseAsync();
+} finally {
+  exitHandler();
+}

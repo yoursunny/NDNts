@@ -1,3 +1,4 @@
+import { exitClosers } from "@ndn/cli-common";
 import { DataStore } from "@ndn/repo";
 import leveldown from "leveldown";
 import type { Argv } from "yargs";
@@ -15,8 +16,8 @@ export function declareStoreArgs<T>(argv: Argv<T>): Argv<T & StoreArgs> {
     });
 }
 
-export let store: DataStore;
-
-export function openStore(argv: StoreArgs) {
-  store = new DataStore(leveldown(argv.store));
+export function openStore(argv: StoreArgs): DataStore {
+  const store = new DataStore(leveldown(argv.store));
+  exitClosers.push(store);
+  return store;
 }

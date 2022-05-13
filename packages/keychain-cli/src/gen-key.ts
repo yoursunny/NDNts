@@ -5,8 +5,8 @@ import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { keyChain } from "./util";
 
-const typeChoices = { ec: true, rsa: true, hmac: true };
-type TypeChoice = keyof typeof typeChoices;
+const typeChoices = ["ec", "rsa", "hmac"] as const;
+type TypeChoice = typeof typeChoices[number];
 
 interface Args extends GenKeyCommand.KeyParamArgs {
   name: string;
@@ -20,10 +20,10 @@ export class GenKeyCommand implements CommandModule<{}, Args> {
   public builder(argv: Argv): Argv<Args> {
     return GenKeyCommand.declareKeyParamArgs(argv)
       .positional("name", {
+        demandOption: true,
         desc: "subject name or key name",
         type: "string",
-      })
-      .demandOption("name");
+      });
   }
 
   public async handler(args: Arguments<Args>) {
@@ -52,8 +52,8 @@ export namespace GenKeyCommand {
   export function declareKeyParamArgs<T>(argv: Argv<T>): Argv<T & KeyParamArgs> {
     return argv
       .option("type", {
-        choices: Object.keys(typeChoices),
-        default: "ec" as TypeChoice,
+        choices: typeChoices,
+        default: typeChoices[0],
         desc: "key type",
       })
       .option("curve", {
@@ -89,7 +89,6 @@ export namespace GenKeyCommand {
         return { pvt, pub, canSelfSign: false };
       }
       default:
-        /* c8 ignore next */
         throw new Error(`unknown type ${type}`);
     }
   }

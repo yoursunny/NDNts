@@ -1,5 +1,5 @@
 import { Keyword } from "@ndn/naming-convention2";
-import { Component, ComponentLike, Name } from "@ndn/packet";
+import { type ComponentLike, Component, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
 import { fromUtf8 } from "@ndn/util";
@@ -9,8 +9,8 @@ import { posix as path } from "node:path";
 import { consume, parallelMap, writeToStream } from "streaming-iterables";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { CommonArgs, segmentNumConvention } from "./common";
 import { FileMetadata } from "./file-metadata";
+import { CommonArgs, Segment } from "./util";
 
 interface Args extends CommonArgs {
   remote: string;
@@ -26,15 +26,15 @@ export class FileClientCommand implements CommandModule<CommonArgs, Args> {
   public builder(argv: Argv<CommonArgs>): Argv<Args> {
     return argv
       .positional("remote", {
+        demandOption: true,
         desc: "remote name prefix",
         type: "string",
       })
-      .demandOption("remote")
       .positional("local", {
+        demandOption: true,
         desc: "local directory path",
         type: "string",
       })
-      .demandOption("local")
       .option("jobs", {
         default: 4,
         desc: "maximum number of parallel tasks",
@@ -123,7 +123,7 @@ class Downloader {
     return {
       metadata,
       fetching: fetch(metadata.name, {
-        segmentNumConvention,
+        segmentNumConvention: Segment,
         segmentRange: lastSeg === undefined ? undefined : [0, 1 + lastSeg],
         estimatedFinalSegNum: lastSeg,
         retxLimit: this.retx,

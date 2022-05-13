@@ -45,7 +45,7 @@
   "devDependencies": {
     "@ndn/fw": "workspace:*",
     "@ndn/l3face": "workspace:*",
-    "@types/pako": "^1.0.3",
+    "@types/pako": "^2.0.0",
     "streaming-iterables": "^7.0.4"
   }
 }

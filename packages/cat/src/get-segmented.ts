@@ -4,7 +4,7 @@ import { discoverVersion, fetch } from "@ndn/segmented-object";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { checkVersionArg, CommonArgs, segmentNumConvention, versionConvention } from "./common";
+import { checkVersionArg, CommonArgs, Segment, Version } from "./util";
 
 interface Args extends CommonArgs {
   name: string;
@@ -18,19 +18,19 @@ async function main(args: Args) {
       break;
     case "cbp":
       name = await discoverVersion(name, {
-        segmentNumConvention,
-        versionConvention,
+        segmentNumConvention: Segment,
+        versionConvention: Version,
       });
       break;
     case "rdr":
       name = (await retrieveMetadata(name)).name;
       break;
     default:
-      name = name.append(versionConvention, Number.parseInt(args.ver, 10));
+      name = name.append(Version, Number.parseInt(args.ver, 10));
       break;
   }
 
-  await fetch(name, { segmentNumConvention }).pipe(stdout);
+  await fetch(name, { segmentNumConvention: Segment }).pipe(stdout);
 }
 
 export class GetSegmentedCommand implements CommandModule<CommonArgs, Args> {
@@ -41,10 +41,10 @@ export class GetSegmentedCommand implements CommandModule<CommonArgs, Args> {
   public builder(argv: Argv<CommonArgs>): Argv<Args> {
     return argv
       .positional("name", {
+        demandOption: true,
         desc: "name prefix",
         type: "string",
       })
-      .demandOption("name")
       .option("ver", {
         default: "rdr",
         desc: ["version number or discovery method",

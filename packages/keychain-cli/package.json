@@ -9,13 +9,12 @@
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
   "files": [
-    "lib",
-    "cli.cjs"
+    "lib"
   ],
   "type": "module",
   "typedocMain": "src/main.ts",
   "bin": {
-    "ndnts-keychain": "cli.cjs"
+    "ndnts-keychain": "lib/main_node.js"
   },
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
@@ -37,13 +36,12 @@
     "fast-chunk-string": "^1.0.1",
     "get-stdin": "^9.0.0",
     "graceful-fs": "^4.2.10",
-    "hard-rejection": "^2.1.0",
     "leveldown": "^6.1.1",
     "nodemailer": "^6.7.5",
     "prompts": "^2.4.2",
     "stdout-stream": "^1.4.1",
     "tslib": "^2.4.0",
-    "yargs": "^17.4.1"
+    "yargs": "^17.5.0"
   },
   "devDependencies": {
     "@types/fast-chunk-string": "^1.0.1",

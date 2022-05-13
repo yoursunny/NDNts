@@ -45,7 +45,7 @@ for (const tt of [TtAtime, TtBtime, TtCtime, TtMtime]) {
     },
     encode(obj, value) {
       void obj;
-      return [tt, NNI(BigInt(value.getTime()) * 100000n)];
+      return [tt, NNI(BigInt(value.getTime()) * 1000000n)];
     },
   });
 }

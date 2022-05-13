@@ -1,4 +1,4 @@
-import { closeUplinks, openUplinks } from "@ndn/cli-common";
+import { openUplinks } from "@ndn/cli-common";
 import { type KeyChain, type NamedSigner, type NamedVerifier, CertNaming, generateSigningKey } from "@ndn/keychain";
 import { AltUri } from "@ndn/naming-convention2";
 import { type CaProfile, type ClientChallenge, type ClientChallengeContext, type ClientPinLikeChallenge, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, matchProbe, ParameterKV, requestCertificate, requestProbe } from "@ndn/ndncert";
@@ -91,11 +91,7 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
 
   public async handler(args: Arguments<Args>) {
     await openUplinks();
-    try {
-      await new InteractiveClient(args).run();
-    } finally {
-      closeUplinks();
-    }
+    await new InteractiveClient(args).run();
   }
 }
 

@@ -1,4 +1,3 @@
-import { closeUplinks } from "@ndn/cli-common";
 import { exportClientConf } from "@ndn/ndncert";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
@@ -29,15 +28,11 @@ export class Ndncert03ShowProfileCommand implements CommandModule<{}, Args> {
   }
 
   public async handler(args: Arguments<Args>) {
-    try {
-      const profile = await inputCaProfile(args.profile);
-      if (args.clientconf) {
-        stdout.write(JSON.stringify(exportClientConf(profile), undefined, 2));
-      } else {
-        stdout.write(`${profile}\n`);
-      }
-    } finally {
-      closeUplinks();
+    const profile = await inputCaProfile(args.profile);
+    if (args.clientconf) {
+      stdout.write(JSON.stringify(exportClientConf(profile), undefined, 2));
+    } else {
+      stdout.write(`${profile}\n`);
     }
   }
 }

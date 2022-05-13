@@ -1,9 +1,10 @@
-import { getSigner, openUplinks } from "@ndn/cli-common";
+import { exitClosers, getSigner, openUplinks } from "@ndn/cli-common";
+import type { DataStore } from "@ndn/repo";
 import { BulkInsertTarget, RepoProducer, respondRdr } from "@ndn/repo";
 import { createServer } from "node:net";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { type StoreArgs, declareStoreArgs, openStore, store } from "./util";
+import { type StoreArgs, declareStoreArgs, openStore } from "./util";
 
 interface Args extends StoreArgs {
   rdr: boolean;
@@ -14,16 +15,17 @@ interface Args extends StoreArgs {
   "bi-parallel": number;
 }
 
-function enableBulkInsertion({
+function enableBulkInsertion(store: DataStore, {
   "bi-host": host,
   "bi-port": port,
   "bi-batch": batch,
   "bi-parallel": parallel,
 }: Args) {
   const bi = BulkInsertTarget.create(store, { batch, parallel });
-  createServer((sock) => {
+  const server = createServer((sock) => {
     void bi.accept(sock);
   }).listen(port, host);
+  exitClosers.push(server);
 }
 
 export class ServerCommand implements CommandModule<{}, Args> {
@@ -66,14 +68,15 @@ export class ServerCommand implements CommandModule<{}, Args> {
 
   public async handler(args: Arguments<Args>) {
     await openUplinks();
-    openStore(args);
-    const opts: RepoProducer.Options = {};
-    if (args.rdr) {
-      opts.fallback = respondRdr({ signer: await getSigner() });
-    }
-    RepoProducer.create(store, opts);
+    const store = openStore(args);
+    const producer = RepoProducer.create(store, {
+      fallback: args.rdr ? respondRdr({ signer: await getSigner() }) : undefined,
+    });
+    exitClosers.push(producer);
+
     if (args.bi) {
-      enableBulkInsertion(args);
+      enableBulkInsertion(store, args);
     }
+    await new Promise(() => undefined);
   }
 }

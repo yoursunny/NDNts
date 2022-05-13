@@ -41,13 +41,17 @@ export namespace Metadata {
   export function extend<M extends Metadata & Extensible>(ctor: new() => M): void {
     const registry = new ctor()[Extensible.TAG];
     const evd = makeEvd<M>(ctor.name).setUnknown(registry.decodeUnknown);
-    Object.defineProperty(ctor, "decodeFrom", { value(decoder: Decoder): M {
-      const metadata = new ctor();
-      evd.decodeValue(metadata, decoder);
-      return metadata;
-    } });
-    Object.defineProperty(ctor.prototype, "encodeTo", { value(this: M, encoder: Encoder): void {
-      encoder.prependValue(this.name, ...registry.encode(this));
-    } });
+    Object.defineProperty(ctor, "decodeFrom", {
+      value(decoder: Decoder): M {
+        const metadata = new ctor();
+        evd.decodeValue(metadata, decoder);
+        return metadata;
+      },
+    });
+    Object.defineProperty(ctor.prototype, "encodeTo", {
+      value(this: M, encoder: Encoder): void {
+        encoder.prependValue(this.name, ...registry.encode(this));
+      },
+    });
   }
 }

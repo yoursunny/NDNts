@@ -9,13 +9,12 @@
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
   "files": [
-    "lib",
-    "cli.cjs"
+    "lib"
   ],
   "type": "module",
   "typedocMain": "src/main.ts",
   "bin": {
-    "ndnts-repo": "cli.cjs"
+    "ndnts-repo": "lib/main_node.js"
   },
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
@@ -31,12 +30,11 @@
     "@ndn/packet": "workspace:*",
     "@ndn/repo": "workspace:*",
     "@ndn/repo-api": "workspace:*",
-    "hard-rejection": "^2.1.0",
     "leveldown": "^6.1.1",
     "progress": "^2.0.3",
     "streaming-iterables": "^7.0.4",
     "tslib": "^2.4.0",
-    "yargs": "^17.4.1"
+    "yargs": "^17.5.0"
   },
   "devDependencies": {
     "@types/leveldown": "^4.0.3",
