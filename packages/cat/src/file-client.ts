@@ -2,7 +2,7 @@ import { Keyword } from "@ndn/naming-convention2";
 import { type ComponentLike, Component, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
-import { fromUtf8 } from "@ndn/util";
+import { console, fromUtf8 } from "@ndn/util";
 import fs from "graceful-fs";
 import { pushable } from "it-pushable";
 import { posix as path } from "node:path";
@@ -119,10 +119,10 @@ class Downloader {
       retx: this.retx,
       signal: this.signal,
     });
-    const { lastSeg } = metadata;
+    const { name, lastSeg } = metadata;
     return {
       metadata,
-      fetching: fetch(metadata.name, {
+      fetching: fetch(name, {
         segmentNumConvention: Segment,
         segmentRange: lastSeg === undefined ? undefined : [0, 1 + lastSeg],
         estimatedFinalSegNum: lastSeg,
@@ -133,8 +133,6 @@ class Downloader {
   }
 
   private async downloadFolder(local: string) {
-    await fs.promises.mkdir(local, { recursive: true });
-
     const remote = this.deriveName(local, lsKeyword);
     const { metadata: { isDir }, fetching } = await this.mFetch(remote);
     if (!isDir) {
@@ -142,18 +140,24 @@ class Downloader {
     }
     const ls = await fetching;
 
+    await fs.promises.mkdir(local, { recursive: true });
+    let nFolders = 0; let
+      nFiles = 0;
     for (const item of parseDirectoryListing(ls)) {
       if (item.endsWith("/")) {
         this.enqueue("folder", path.resolve(local, item));
+        ++nFolders;
       } else {
         this.enqueue("file", path.resolve(local, item));
+        ++nFiles;
       }
     }
+    console.log(`FOLDER ${local} folders=${nFolders} files=${nFiles}`);
   }
 
   private async downloadFile(local: string) {
     const remote = this.deriveName(local);
-    const { metadata: { isFile, atime = new Date(), mtime }, fetching } = await this.mFetch(remote);
+    const { metadata: { isFile, atime = new Date(), mtime, size }, fetching } = await this.mFetch(remote);
     if (!isFile) {
       throw new Error("not a file");
     }
@@ -172,6 +176,7 @@ class Downloader {
     }
 
     await fs.promises.utimes(local, atime, mtime);
+    console.log(`FILE ${local} size=${size}`);
   }
 }
 

@@ -71,6 +71,10 @@ It accepts the following arguments:
 * `--jobs=4` sets number of parallel downloads.
 * `--retx=10` sets Interest retransmission limit.
 
+The remote name prefix must refer to a folder.
+This command recursively downloads files and folders contained within.
+If you want to download an individual file, use `ndncat get-segmented` command instead.
+
 ### Example
 
 ```bash
