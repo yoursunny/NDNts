@@ -7,5 +7,5 @@ SafeBag encodes the private key as `EncryptedPrivateKeyInfo` ASN.1 structure, wh
 The implementation for browsers only supports *PBES2(PBKDF2(HMAC-SHA256),AES-256-CBC)* encryption algorithm, which appears to be the default in OpenSSL 1.1.1.
 
 `NdnsecKeyChain` type can access keys and certificates in ndn-cxx KeyChain.
-It works by invoking the `ndnsec` executable.
+It works by invoking the `ndnsec` command.
 This feature only works in Node.js.

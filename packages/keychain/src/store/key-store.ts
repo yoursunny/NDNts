@@ -32,6 +32,7 @@ export class KeyStore extends StoreBase<KeyStore.StoredKey> {
 }
 
 export namespace KeyStore {
+  /** Loaded key pair. */
   export class KeyPair<Asym extends boolean = any, I = any> {
     constructor(
         public readonly name: Name,
@@ -41,37 +42,27 @@ export namespace KeyStore {
     ) {}
 
     public get signer(): NamedSigner<Asym> {
-      if (!CryptoAlgorithm.isSigning(this.algo)) {
-        throw new Error("not a signing key");
-      }
+      assert(CryptoAlgorithm.isSigning(this.algo), "signer is only available with a signing algorithm");
       return createSigner(this.name, this.algo, this.pvt);
     }
 
     public get verifier(): NamedVerifier<Asym> {
-      if (!CryptoAlgorithm.isSigning(this.algo)) {
-        throw new Error("not a signing key");
-      }
+      assert(CryptoAlgorithm.isSigning(this.algo), "verifier is only available with a signing algorithm");
       return createVerifier(this.name, this.algo, this.pub);
     }
 
     public get encrypter(): NamedEncrypter<Asym> {
-      if (!CryptoAlgorithm.isEncryption(this.algo)) {
-        throw new Error("not an encryption key");
-      }
+      assert(CryptoAlgorithm.isEncryption(this.algo), "encrypter is only available with an encryption algorithm");
       return createEncrypter(this.name, this.algo, this.pub);
     }
 
     public get decrypter(): NamedDecrypter<Asym> {
-      if (!CryptoAlgorithm.isEncryption(this.algo)) {
-        throw new Error("not an encryption key");
-      }
+      assert(CryptoAlgorithm.isEncryption(this.algo), "decrypter is only available with an encryption algorithm");
       return createDecrypter(this.name, this.algo, this.pvt);
     }
 
     public get publicKey(): PublicKey {
-      if (!CryptoAlgorithm.isAsym(this.algo)) {
-        throw new Error("not an asymmetric key pair");
-      }
+      assert(CryptoAlgorithm.isAsym(this.algo), "publicKey is only available with an asymmetric algorithm");
       return {
         name: this.name,
         [KeyKind]: "public",
@@ -80,6 +71,7 @@ export namespace KeyStore {
     }
   }
 
+  /** Stored key pair in JSON or structure clone format. */
   export interface StoredKey {
     algo: string;
     info: any;
@@ -90,6 +82,7 @@ export namespace KeyStore {
     secretKey?: CryptoKey | JsonWebKey;
   }
 
+  /** Helper to load key pair from stored format. */
   export class Loader {
     constructor(
         private readonly extractable: boolean,

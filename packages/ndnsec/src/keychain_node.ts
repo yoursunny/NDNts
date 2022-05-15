@@ -14,13 +14,13 @@ const ALGO_LIST = [ECDSA, RSA, RSAOAEP];
 /** Access ndn-cxx KeyChain. */
 export class NdnsecKeyChain extends KeyChain {
   constructor({
-    home,
     pibLocator,
     tpmLocator,
+    home,
     importOptions,
   }: NdnsecKeyChain.Options = {}) {
     super();
-    if (pibLocator || tpmLocator) {
+    if (pibLocator && tpmLocator) {
       this.env.NDN_CLIENT_PIB = pibLocator;
       this.env.NDN_CLIENT_TPM = tpmLocator;
     } else if (home) {
@@ -37,11 +37,11 @@ export class NdnsecKeyChain extends KeyChain {
   private readonly insertKeyLoader = new KeyStore.Loader(true, ALGO_LIST);
 
   private async invokeNdnsec(argv: string[], input?: Uint8Array): Promise<{
-    lines: string[];
+    readonly lines: string[];
     decode: <R>(d: Decodable<R>) => R;
   }> {
     const { stdout } = await execa("ndnsec", argv, {
-      input: input ? Buffer.from(input).toString("base64") : undefined,
+      input: input && Buffer.from(input).toString("base64"),
       stderr: "inherit",
       env: this.env,
     });
@@ -81,9 +81,8 @@ export class NdnsecKeyChain extends KeyChain {
 
     for (const certList of keyCerts.values()) {
       for (const certName of certList) {
-        const certdump = await this.invokeNdnsec(["cert-dump", "-n", certName]);
-        const data = certdump.decode(Data);
-        await dest.insertCert(Certificate.fromData(data));
+        const certDump = await this.invokeNdnsec(["cert-dump", "-n", certName]);
+        await dest.insertCert(Certificate.fromData(certDump.decode(Data)));
       }
     }
 
@@ -126,14 +125,14 @@ export class NdnsecKeyChain extends KeyChain {
 
       const safeBag = await SafeBag.create(selfSigned, pkcs8, PASSPHRASE);
       await this.invokeNdnsec(["import", "-P", PASSPHRASE, "-i-"], Encoder.encode(safeBag));
-      this.cached = undefined;
+      delete this.cached;
     });
   }
 
   public override async deleteKey(name: Name): Promise<void> {
     return this.mutex(async () => {
       await this.invokeNdnsec(["delete", "-k", name.toString()]);
-      this.cached = undefined;
+      delete this.cached;
     });
   }
 
@@ -154,23 +153,42 @@ export class NdnsecKeyChain extends KeyChain {
   public override async insertCert(cert: Certificate): Promise<void> {
     return this.mutex(async () => {
       await this.invokeNdnsec(["cert-install", "-K", "-f-"], Encoder.encode(cert.data));
-      this.cached = undefined;
+      delete this.cached;
     });
   }
 
   public override async deleteCert(name: Name): Promise<void> {
     return this.mutex(async () => {
       await this.invokeNdnsec(["delete", "-c", name.toString()]);
-      this.cached = undefined;
+      delete this.cached;
     });
   }
 }
 
 export namespace NdnsecKeyChain {
   export interface Options {
-    home?: string;
+    /**
+     * ndn-cxx PIB locator.
+     * This must be specified together with tpmLocator.
+     * @see https://named-data.net/doc/ndn-cxx/0.8.0/manpages/ndn-client.conf.html#key-management
+     */
     pibLocator?: string;
+
+    /**
+     * ndn-cxx TPM locator.
+     * This must be specified together with pibLocator.
+     * @see https://named-data.net/doc/ndn-cxx/0.8.0/manpages/ndn-client.conf.html#key-management
+     */
     tpmLocator?: string;
+
+    /**
+     * HOME environment variable to pass to ndnsec command.
+     * ndn-cxx will derive PIB locator and TPM locator from HOME environment variable.
+     * This is ignored when both pibLocator and tpmLocator are specified.
+     */
+    home?: string;
+
+    /** SafeBag import options. */
     importOptions?: SafeBag.ImportOptions;
   }
 }

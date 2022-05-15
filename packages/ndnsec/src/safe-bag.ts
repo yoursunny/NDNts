@@ -6,14 +6,14 @@ import { assert } from "@ndn/util";
 import { TT } from "./an";
 import * as EncryptedPrivateKeyInfo from "./epki_node";
 
-interface SafeBagFields {
-  certificate?: Certificate;
-  encryptedKey?: Uint8Array;
+interface Fields {
+  certificate: Certificate;
+  encryptedKey: Uint8Array;
 }
 
-const EVD = new EvDecoder<SafeBagFields>("SafeBag", TT.SafeBag)
-  .add(l3TT.Data, (t, { decoder }) => t.certificate = Certificate.fromData(decoder.decode(Data)))
-  .add(TT.EncryptedKey, (t, { value }) => t.encryptedKey = value);
+const EVD = new EvDecoder<Fields>("SafeBag", TT.SafeBag)
+  .add(l3TT.Data, (t, { decoder }) => t.certificate = Certificate.fromData(decoder.decode(Data)), { required: true })
+  .add(TT.EncryptedKey, (t, { value }) => t.encryptedKey = value, { required: true });
 
 /**
  * ndn-cxx exported credentials.
@@ -22,18 +22,17 @@ const EVD = new EvDecoder<SafeBagFields>("SafeBag", TT.SafeBag)
 export class SafeBag {
   public static async create(certificate: Certificate, privateKey: Uint8Array, passphrase: string | Uint8Array): Promise<SafeBag> {
     const encryptedKey = await EncryptedPrivateKeyInfo.create(privateKey, passphrase);
-    return new SafeBag(certificate, encryptedKey);
+    return new SafeBag({ certificate, encryptedKey });
   }
 
   public static decodeFrom(decoder: Decoder): SafeBag {
-    const { certificate, encryptedKey } = EVD.decode({} as SafeBagFields, decoder);
-    if (!certificate || !encryptedKey) {
-      throw new Error("invalid SafeBag");
-    }
-    return new SafeBag(certificate, encryptedKey);
+    const fields = EVD.decode({} as Fields, decoder);
+    return new SafeBag(fields);
   }
 
-  constructor(public readonly certificate: Certificate, public readonly encryptedKey: Uint8Array) {}
+  private constructor(fields: Fields) {
+    Object.assign(this, fields);
+  }
 
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(TT.SafeBag,
@@ -71,6 +70,7 @@ export class SafeBag {
     }
   }
 }
+export interface SafeBag extends Readonly<Fields> {}
 
 export namespace SafeBag {
   export interface ImportOptions {
