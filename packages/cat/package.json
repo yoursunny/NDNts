@@ -9,12 +9,13 @@
   "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
   "license": "ISC",
   "files": [
-    "lib"
+    "lib",
+    "cli.cjs"
   ],
   "type": "module",
   "typedocMain": "src/main.ts",
   "bin": {
-    "ndncat": "lib/main_node.js"
+    "ndncat": "cli.cjs"
   },
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
@@ -36,7 +37,7 @@
     "stdout-stream": "^1.4.1",
     "streaming-iterables": "^7.0.4",
     "tslib": "^2.4.0",
-    "yargs": "^17.5.0"
+    "yargs": "^17.5.1"
   },
   "devDependencies": {
     "@types/graceful-fs": "^4.1.5",

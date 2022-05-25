@@ -9,6 +9,5 @@ export default defineConfig({
     threads: false,
     testTimeout: 30000,
     globalSetup: "./setup-webpack.ts",
-    // isolate: false,
   },
 });

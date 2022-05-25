@@ -78,10 +78,7 @@ export class SignedInterestPolicy {
     })();
 
     const state = this.records.get(key) ?? {};
-    const saves = [] as Array<() => void>;
-    for (const rule of this.rules) {
-      saves.push(rule.check(sigInfo, state));
-    }
+    const saves = this.rules.map((rule) => rule.check(sigInfo, state));
 
     return () => {
       for (const save of saves) {

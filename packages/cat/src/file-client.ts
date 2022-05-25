@@ -105,7 +105,7 @@ class Downloader {
 
   private deriveName(local: string, ...suffix: ComponentLike[]): Name {
     const relPath = path.relative(this.local, local);
-    const relComps = relPath.split("/").map((s) => {
+    const relComps = relPath === "" ? [] : relPath.split("/").map((s) => {
       if (s === "..") {
         throw new Error(`${local} is outside ${this.local}`);
       }
