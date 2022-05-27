@@ -94,11 +94,13 @@ SigInfo.registerExtension({
 export namespace ValidityPeriod {
   export type TimestampInput = number | Date;
 
+  /** A very long ValidityPeriod. */
   export const MAX = new ValidityPeriod(
     540109800000,
     253402300799000,
   );
 
+  /** Construct ValidityPeriod for n days from now. */
   export function daysFromNow(n: number): ValidityPeriod {
     const notBefore = Date.now();
     const notAfter = new Date(notBefore);
@@ -106,10 +108,12 @@ export namespace ValidityPeriod {
     return new ValidityPeriod(notBefore, notAfter);
   }
 
+  /** Retrieve ValidityPeriod from SigInfo. */
   export function get(si: SigInfo): ValidityPeriod | undefined {
     return Extension.get(si, TT.ValidityPeriod) as ValidityPeriod | undefined;
   }
 
+  /** Assign ValidityPeriod onto SigInfo. */
   export function set(si: SigInfo, v?: ValidityPeriod) {
     Extension.set(si, TT.ValidityPeriod, v);
   }

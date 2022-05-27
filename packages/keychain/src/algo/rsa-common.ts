@@ -59,7 +59,7 @@ export class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenParams> {
   public async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
     // SubjectPublicKeyInfo.algorithm.algorithm == 1.2.840.113549.1.1.1
     const algo = der.children?.[0]?.children?.[0];
-    if (!(algo && algo.type === 0x06 && algo.value && toHex(algo.value) === "2A864886F70D010101")) {
+    if (!(algo?.type === 0x06 && algo.value && toHex(algo.value) === "2A864886F70D010101")) {
       throw new Error("not RSA key");
     }
     const key = await crypto.subtle.importKey(

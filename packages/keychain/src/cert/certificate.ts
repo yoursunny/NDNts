@@ -76,13 +76,19 @@ const DEFAULT_FRESHNESS = 3600000;
 
 export namespace Certificate {
   export interface BuildOptions {
+    /** Certificate name. */
     name: Name;
+    /** Certificate packet FreshnessPeriod, default is 1 hour. */
     freshness?: number;
+    /** ValidityPeriod. */
     validity: ValidityPeriod;
+    /** Public key in SubjectPublicKeyInfo (SPKI) binary format. */
     publicKeySpki: Uint8Array;
+    /** Issuer signing key. */
     signer: Signer;
   }
 
+  /** Build a certificate from fields. */
   export async function build({
     name,
     freshness = DEFAULT_FRESHNESS,
@@ -100,13 +106,19 @@ export namespace Certificate {
   }
 
   export interface IssueOptions {
+    /** Certificate packet FreshnessPeriod, default is 1 hour. */
     freshness?: number;
+    /** ValidityPeriod. */
     validity: ValidityPeriod;
+    /** IssuerId in certificate name. */
     issuerId: Component;
+    /** Issuer signing key. */
     issuerPrivateKey: Signer;
+    /** Public key to appear in certificate. */
     publicKey: PublicKey;
   }
 
+  /** Create a certificated signed by issuer. */
   export async function issue(opts: IssueOptions): Promise<Certificate> {
     let { issuerPrivateKey: pvt, issuerId, publicKey: { name, spki } } = opts;
     name = CertNaming.makeCertName(name, { issuerId });
@@ -117,12 +129,17 @@ export namespace Certificate {
   }
 
   export interface SelfSignOptions {
+    /** Certificate packet FreshnessPeriod, default is 1 hour. */
     freshness?: number;
+    /** ValidityPeriod, default is maximum validity. */
     validity?: ValidityPeriod;
+    /** Private key corresponding to public key. */
     privateKey: NamedSigner;
+    /** Public key to appear in certificate. */
     publicKey: PublicKey;
   }
 
+  /** Create a self-signed certificate. */
   export async function selfSign(opts: SelfSignOptions): Promise<Certificate> {
     const { privateKey: { name: pvtName }, publicKey: { name: pubName } } = opts;
     if (!pvtName.equals(pubName)) {

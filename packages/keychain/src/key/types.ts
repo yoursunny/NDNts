@@ -83,8 +83,7 @@ export interface CryptoAlgorithm<I = any, Asym extends boolean = any, G = any> {
 
   /** Generate key pair or secret key. */
   cryptoGenerate: (params: G, extractable: boolean)
-  => Promise<Asym extends true ? CryptoAlgorithm.GeneratedKeyPair<I> :
-  Asym extends false ? CryptoAlgorithm.GeneratedSecretKey<I> : never>;
+  => Promise<If<Asym, CryptoAlgorithm.GeneratedKeyPair<I>, CryptoAlgorithm.GeneratedSecretKey<I>, never>>;
 
   /**
    * Import public key from SPKI.

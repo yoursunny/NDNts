@@ -30,7 +30,7 @@ export namespace EcCurve {
 
 function determineEcCurve(der: asn1.ElementBuffer): EcCurve | false {
   const params = der.children?.[0]?.children?.[1];
-  if (params && params.type === 0x06 && params.value) {
+  if (params?.type === 0x06 && params.value) {
     const namedCurveOid = toHex(params.value);
     const curve = NamedCurveOids[namedCurveOid];
     if (!curve) {
@@ -50,7 +50,7 @@ async function importNamedCurve(curve: EcCurve, spki: Uint8Array): Promise<Crypt
 
 async function importSpecificCurve(curve: EcCurve, der: asn1.ElementBuffer): Promise<CryptoKey> {
   const subjectPublicKey = der.children?.[1];
-  if (!subjectPublicKey || subjectPublicKey.type !== 0x03) {
+  if (subjectPublicKey?.type !== 0x03) {
     throw new Error("subjectPublicKey not found");
   }
   return crypto.subtle.importKey("raw", subjectPublicKey.value!,
@@ -104,7 +104,7 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
   async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
     // SubjectPublicKeyInfo.algorithm.algorithm == 1.2.840.10045.2.1
     const algo = der.children?.[0]?.children?.[0];
-    if (!(algo && algo.type === 0x06 && algo.value && toHex(algo.value) === "2A8648CE3D0201")) {
+    if (!(algo?.type === 0x06 && algo.value && toHex(algo.value) === "2A8648CE3D0201")) {
       throw new Error("not ECDSA key");
     }
 
@@ -164,7 +164,7 @@ export namespace ECDSA {
      * Import PKCS#8 private key and SPKI public key instead of generating.
      * This cannot handle specificCurve in SPKI.
      */
-    importPkcs8?: [Uint8Array, Uint8Array];
+    importPkcs8?: [pkcs8: Uint8Array, spki: Uint8Array];
   }
 
   export interface Info {

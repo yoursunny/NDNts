@@ -33,6 +33,6 @@ export namespace RSA {
     modulusLength?: RsaModulusLength;
 
     /** Import PKCS#8 private key and SPKI public key instead of generating. */
-    importPkcs8?: [Uint8Array, Uint8Array];
+    importPkcs8?: [pkcs8: Uint8Array, spki: Uint8Array];
   }
 }

@@ -13,7 +13,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ~/.local/share/pnpm/store
-          key: 16-${{ hashFiles('**/package.json') }}
+          key: build-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -34,7 +34,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ~/.local/share/pnpm/store
-          key: ${{ matrix.node }}-${{ hashFiles('**/package.json') }}
+          key: unittest-${{ matrix.node }}-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
@@ -62,7 +62,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ~/.local/share/pnpm/store
-          key: 18-${{ hashFiles('**/package.json') }}
+          key: integ-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -93,7 +93,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ~/.local/share/pnpm/store
-          key: 16-${{ hashFiles('**/package.json') }}
+          key: publish-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -107,7 +107,7 @@ jobs:
       - run: corepack pnpm typedoc
         env:
           GTAGID: UA-935676-11
-      - uses: crazy-max/ghaction-github-pages@v2
+      - uses: crazy-max/ghaction-github-pages@v3
         with:
           repo: yoursunny/NDNts-nightly
           build_dir: ./mk/nightly-output/
