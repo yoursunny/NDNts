@@ -22,7 +22,7 @@ function delayedWrite(filename, lines) {
  * @param {string} filename
  */
 async function transformDeclaration(filename) {
-  let lines = (await fs.readFile(filename, "utf-8")).split("\n");
+  let lines = (await fs.readFile(filename, "utf8")).split("\n");
   lines = lines.filter((l) => !l.startsWith("//# sourceMappingURL="));
   delayedWrite(filename, lines);
 }
@@ -82,7 +82,7 @@ class TransformJs {
   }
 
   async execute() {
-    const input = (await fs.readFile(this.filename, { encoding: "utf-8" })).split(/\r?\n/);
+    const input = (await fs.readFile(this.filename, "utf8")).split(/\r?\n/);
     for (const line of input) {
       switch (true) {
         case line.startsWith("import ") || line.startsWith("export "):

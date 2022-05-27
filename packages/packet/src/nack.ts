@@ -34,10 +34,11 @@ export class Nack {
   public set reason(v) { this.header.reason = v; }
 
   public header: NackHeader;
-  public interest: Interest;
 
-  constructor(interest: Interest, header: NackHeader | number = NackReason.NoRoute) {
-    this.interest = interest;
+  constructor(
+      public interest: Interest,
+      header: NackHeader | number = NackReason.NoRoute,
+  ) {
     if (typeof header === "number") {
       this.header = new NackHeader(header);
     } else {

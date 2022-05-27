@@ -9,7 +9,7 @@ import path from "node:path";
 const builtins = new Set(Builtins());
 
 function* listImports(filename) {
-  const lines = fs.readFileSync(filename, { encoding: "utf8" }).split("\n");
+  const lines = fs.readFileSync(filename, "utf8").split("\n");
   for (const line of lines) {
     const m = /^import(?: .* from)? "([^.@][^":/]*|@[^":/]*\/[^":/]*)[^":]*";/.exec(line);
     if (!m) {

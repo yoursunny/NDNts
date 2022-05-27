@@ -22,7 +22,7 @@ class FileStoreProvider<T> extends MemoryStoreProvider<T> implements StoreProvid
       return;
     }
     try {
-      this.record = JSON.parse(fs.readFileSync(this.path, { encoding: "utf8" }));
+      this.record = JSON.parse(fs.readFileSync(this.path, "utf8"));
     } catch (err: unknown) {
       if ((err as { code?: string }).code === "ENOENT" || (err as SyntaxError).name === "SyntaxError") {
         this.record = {};

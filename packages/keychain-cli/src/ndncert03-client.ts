@@ -207,7 +207,7 @@ class InteractiveClient {
     const namedPipe = this.args["pin-named-pipe"];
     return async ({ requestId, certRequestName }: ClientChallengeContext) => {
       if (namedPipe) {
-        const code = await fs.readFile(namedPipe, { encoding: "utf-8" });
+        const code = await fs.readFile(namedPipe, "utf8");
         prompts.override({ code });
       } else {
         console.log(`\nPIN entry for certificate request\n${

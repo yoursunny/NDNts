@@ -58,9 +58,9 @@ function decode32(dv: DataView): number {
 
 type Len = 1 | 2 | 4 | 8;
 
-interface Options<LenT = Len> {
+interface Options {
   /** If set, use/enforce specific TLV-LENGTH. */
-  len?: LenT;
+  len?: Len;
 
   /** If true, allow approximate integers. */
   unsafe?: boolean;
@@ -77,7 +77,7 @@ const EncodeNniClass = {
 export function NNI(n: number | bigint, {
   len,
   unsafe = false,
-}: Options<Extract<Len, keyof typeof EncodeNniClass>> = {}): Encodable {
+}: Options = {}): Encodable {
   if (len) {
     if (len === 8 && typeof n === "bigint") {
       return new Nni8Big(n);
@@ -87,8 +87,6 @@ export function NNI(n: number | bigint, {
 
   if (typeof n === "bigint") {
     switch (true) {
-      case n < 0n:
-        throw new RangeError("NNI cannot be negative");
       case n < 0x100000000n:
         n = Number(n);
         break;
@@ -108,8 +106,7 @@ export function NNI(n: number | bigint, {
       return new Nni2(n);
     case n < 0x100000000:
       return new Nni4(n);
-    case unsafe && n <= 0xFFFFFFFFFFFFFFFF: // eslint-disable-line @typescript-eslint/no-loss-of-precision
-    case Number.isSafeInteger(n):
+    case n <= (unsafe ? 0xFFFFFFFFFFFFFFFF : Number.MAX_SAFE_INTEGER): // eslint-disable-line @typescript-eslint/no-loss-of-precision
       return new Nni8Number(n);
     default:
       throw new RangeError("NNI is too large");
@@ -157,7 +154,7 @@ export namespace NNI {
   /** Error if n exceeds [0,max] range. */
   export function constrain(n: number, typeName: string, max: number): number;
   /** Error if n exceeds [min,max] range. */
-  export function constrain(n: number, typeName: string, min: number, max?: number): number;
+  export function constrain(n: number, typeName: string, min: number, max: number): number;
 
   export function constrain(n: number, typeName: string, limit0?: number, limit1?: number): number {
     const [min = 0, max = Number.MAX_SAFE_INTEGER] =

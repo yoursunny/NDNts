@@ -12,7 +12,7 @@ import stdout from "stdout-stream";
 export const keyChain: KeyChain = openKeyChain();
 
 export async function inputBase64<R>(d: Decodable<R>, filename?: string): Promise<R> {
-  const read = filename ? fs.readFile(filename, { encoding: "utf-8" }) : getStdin();
+  const read = filename ? fs.readFile(filename, "utf8") : getStdin();
   const wire = Buffer.from(await read, "base64");
   return new Decoder(wire).decode(d);
 }

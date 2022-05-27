@@ -54,7 +54,7 @@ export async function load(url, context, defaultLoad) {
   if (isLiterate) {
     pathname = pathname.replace(/\.md\.ts$/, ".md");
   }
-  let content = await fs.promises.readFile(pathname, { encoding: "utf-8" });
+  let content = await fs.promises.readFile(pathname, "utf8");
   if (isLiterate) {
     content = codedown(content, "ts");
   }
