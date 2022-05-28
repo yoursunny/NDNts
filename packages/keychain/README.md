@@ -27,6 +27,10 @@ This package implements signature types defined in [NDN Packet Format 0.3](https
 * [X] SignatureHmacWithSha256
   * [X] signing and verification
   * [ ] KeyLocator matching
+* [X] SignatureEd25519 (Node.js only)
+  * [X] signing and verification
+  * [X] KeyLocator .Name
+  * [ ] KeyLocator .KeyDigest
 
 Both Interest and Data are signable.
 
@@ -60,7 +64,7 @@ These *slim* lists include only ECDSA algorithm, which is the most commonly used
 If you need to use other algorithms or communicate with applications that use other algorithms, you should pass `SigningAlgorithmListFull`, `EncryptionAlgorithmListFull`, or `CryptoAlgorithmListFull` to these functions.
 These *full* lists include all algorithms implemented in NDNts.
 
-If you know which algorithms are needed, you can import individual algorithms and an array of desired algorithms.
+If you know which algorithms are needed, you can import individual algorithms and pass an array of desired algorithms.
 
 This design is a trade-off for reducing browser bundle size.
 
@@ -70,7 +74,7 @@ This design is a trade-off for reducing browser bundle size.
 
 * [X] generate self-signed certificate
 * [X] issue certificate to another public key
-* [X] import certificate as `PublicKey` for RSASSA-PKCS1-v1\_5 and ECDSA
+* [X] import certificate as `PublicKey` for RSASSA-PKCS1-v1\_5, ECDSA, Ed25519
 
 `KeyChain` class provides storage of `PrivateKey` and `Certificate`.
 It could be ephemeral or persistent.
@@ -79,7 +83,7 @@ It could be ephemeral or persistent.
 
 Persistent keychain in Node.js uses JSON files as underlying storage.
 The *locator* argument should be a filesystem directory where these files are stored.
-Private keys are saved as [JSON Web Key (JWK)](https://tools.ietf.org/html/rfc7517) format, so that it's important to protect the storage directory.
+Private keys are saved as [JSON Web Key (JWK)](https://datatracker.ietf.org/doc/html/rfc7517) format, so that it's important to protect the storage directory.
 It is unsafe to simultaneously construct multiple `KeyChain` instances on the same storage directory or access the same keychain from multiple Node.js processes.
 
 Persistent keychain in browser uses [IndexedDB API](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API).
@@ -91,4 +95,4 @@ Private keys are saved as non-extractable `CryptoKey` objects.
 * In Firefox, persistent keychain stores JWK instead of `CryptoKey`, due to [Mozilla Bug 1545813](https://bugzilla.mozilla.org/show_bug.cgi?id=1545813).
 * In Firefox, persistent keychain is unusable in a Private Browsing window, due to [Mozilla Bug 781982](https://bugzilla.mozilla.org/show_bug.cgi?id=1639542).
 * In Chrome, AES 192-bit key is not supported.
-* In iOS and macOS Safari, ECDSA P-521 curve is not supported.
+* Ed25519 only works in Node.js, not browsers.

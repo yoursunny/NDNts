@@ -72,8 +72,6 @@ export class Certificate {
   }
 }
 
-const DEFAULT_FRESHNESS = 3600000;
-
 export namespace Certificate {
   export interface BuildOptions {
     /** Certificate name. */
@@ -91,7 +89,7 @@ export namespace Certificate {
   /** Build a certificate from fields. */
   export async function build({
     name,
-    freshness = DEFAULT_FRESHNESS,
+    freshness = 3600000,
     validity,
     publicKeySpki,
     signer,
@@ -120,12 +118,12 @@ export namespace Certificate {
 
   /** Create a certificated signed by issuer. */
   export async function issue(opts: IssueOptions): Promise<Certificate> {
-    let { issuerPrivateKey: pvt, issuerId, publicKey: { name, spki } } = opts;
+    let { issuerPrivateKey: signer, issuerId, publicKey: { name, spki } } = opts;
     name = CertNaming.makeCertName(name, { issuerId });
     if (!spki) {
       throw new Error("options.publicKey.spki unavailable");
     }
-    return build({ ...opts, name, publicKeySpki: spki, signer: pvt });
+    return build({ ...opts, name, publicKeySpki: spki, signer });
   }
 
   export interface SelfSignOptions {
@@ -141,15 +139,15 @@ export namespace Certificate {
 
   /** Create a self-signed certificate. */
   export async function selfSign(opts: SelfSignOptions): Promise<Certificate> {
-    const { privateKey: { name: pvtName }, publicKey: { name: pubName } } = opts;
-    if (!pvtName.equals(pubName)) {
+    const { privateKey, publicKey: { name: pubName } } = opts;
+    if (!privateKey.name.equals(pubName)) {
       throw new Error("key pair mismatch");
     }
     return issue({
       validity: ValidityPeriod.MAX,
       ...opts,
       issuerId: CertNaming.ISSUER_SELF,
-      issuerPrivateKey: opts.privateKey,
+      issuerPrivateKey: privateKey,
     });
   }
 }

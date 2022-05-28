@@ -79,7 +79,10 @@ export interface CryptoAlgorithm<I = any, Asym extends boolean = any, G = any> {
    */
   readonly uuid: string;
 
-  readonly keyUsages: If<Asym, Record<"private" | "public", KeyUsage[]>, Record<"secret", KeyUsage[]>, {}>;
+  readonly keyUsages: If<Asym,
+  Record<"private" | "public", readonly KeyUsage[]>,
+  Record<"secret", readonly KeyUsage[]>,
+  {}>;
 
   /** Generate key pair or secret key. */
   cryptoGenerate: (params: G, extractable: boolean)

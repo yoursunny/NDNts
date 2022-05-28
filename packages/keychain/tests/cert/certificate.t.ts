@@ -5,7 +5,7 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import { expect, test } from "vitest";
 
 import { Certificate, CertNaming, createVerifier, generateSigningKey, SigningAlgorithmListFull, SigningAlgorithmListSlim, ValidityPeriod } from "../..";
-import * as ndn_testbed_certs from "../../test-fixture/ndn-testbed-certs";
+import * as sample_certs from "../../test-fixture/certs";
 
 test("encode decode", async () => {
   const [pvt] = await generateSigningKey("/operator/KEY/key-1");
@@ -42,7 +42,7 @@ test("encode decode", async () => {
 });
 
 test("decode testbed certs", async () => {
-  const data0 = new Decoder(ndn_testbed_certs.ROOT_V2_NDNCERT).decode(Data);
+  const data0 = new Decoder(sample_certs.ROOT_V2_NDNCERT).decode(Data);
   const cert0 = Certificate.fromData(data0);
   expect(cert0.name).toEqualName("/ndn/KEY/e%9D%7F%A5%C5%81%10%7D/ndn/%FD%00%00%01%60qJQ%9B");
   const certName0 = CertNaming.parseCertName(cert0.name);
@@ -52,12 +52,12 @@ test("decode testbed certs", async () => {
   expect(certName0.version).toEqualComponent("%FD%00%00%01%60qJQ%9B");
   expect(cert0.validity.notBefore).toBe(1513729179000);
   expect(cert0.validity.notAfter).toBe(1609459199000);
-  expect(cert0.publicKeySpki).toEqualUint8Array(ndn_testbed_certs.ROOT_V2_SPKI);
+  expect(cert0.publicKeySpki).toEqualUint8Array(sample_certs.ROOT_V2_SPKI);
   expect(cert0.isSelfSigned).toBeTruthy();
   const pub0 = await createVerifier(cert0, { checkValidity: false });
   expect(pub0.sigType).toBe(SigType.Sha256WithEcdsa);
 
-  const data1 = new Decoder(ndn_testbed_certs.ARIZONA_20190312).decode(Data);
+  const data1 = new Decoder(sample_certs.ARIZONA_20190312).decode(Data);
   await pub0.verify(data1);
 
   const cert1 = Certificate.fromData(data1);
@@ -67,4 +67,15 @@ test("decode testbed certs", async () => {
     .rejects.toThrow();
   const pub1 = await createVerifier(cert1, { algoList: SigningAlgorithmListFull, checkValidity: false });
   expect(pub1.sigType).toBe(SigType.Sha256WithRsa);
+});
+
+test("decode Ed25519 cert", async () => {
+  const data = new Decoder(sample_certs.Ed25519Demo).decode(Data);
+  const cert = Certificate.fromData(data);
+
+  const pub = await createVerifier(cert, {
+    algoList: SigningAlgorithmListFull,
+    checkValidity: false,
+  });
+  await pub.verify(data);
 });

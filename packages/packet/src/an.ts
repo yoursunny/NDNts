@@ -42,6 +42,7 @@ export const SigType = {
   Sha256WithRsa: 0x01,
   Sha256WithEcdsa: 0x03,
   HmacWithSha256: 0x04,
+  Ed25519: 0x05,
   Null: 0xC8,
 };
 

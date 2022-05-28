@@ -91,7 +91,7 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
         [...this.keyUsages.private, ...this.keyUsages.public]));
     }
 
-    const spki = new Uint8Array(await crypto.subtle.exportKey("spki", publicKey!));
+    const spki = new Uint8Array(await crypto.subtle.exportKey("spki", publicKey));
     return {
       privateKey,
       publicKey,

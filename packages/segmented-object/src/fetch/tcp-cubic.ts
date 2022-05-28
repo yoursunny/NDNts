@@ -2,7 +2,7 @@ import { CongestionAvoidance } from "./congestion-avoidance";
 
 /**
  * TCP CUBIC algorithm.
- * @see https://tools.ietf.org/html/rfc8312
+ * @see https://datatracker.ietf.org/doc/html/rfc8312
  */
 export class TcpCubic extends CongestionAvoidance {
   private readonly c: number;

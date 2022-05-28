@@ -1,5 +1,5 @@
 import { type NamedDecrypter, type NamedEncrypter, type NamedSigner, type NamedVerifier, AESCBC, AESGCM, AesKeyLength, Certificate, createVerifier, EcCurve, ECDSA, generateEncryptionKey, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, RSAOAEP } from "@ndn/keychain";
-import * as ndn_testbed_certs from "@ndn/keychain/test-fixture/ndn-testbed-certs";
+import * as sample_certs from "@ndn/keychain/test-fixture/certs";
 import { type Signer, type Verifier, Data, digestSigning } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { timingSafeEqual } from "@ndn/util";
@@ -142,11 +142,11 @@ async function checkWebCrypto() {
 
   let testbedRootKey: NamedVerifier.PublicKey | undefined;
   await run({ title: "import testbed root certificate" }, async () => {
-    const cert = Certificate.fromData(new Decoder(ndn_testbed_certs.ROOT_V2_NDNCERT).decode(Data));
+    const cert = Certificate.fromData(new Decoder(sample_certs.ROOT_V2_NDNCERT).decode(Data));
     testbedRootKey = await createVerifier(cert);
   });
   await run({ title: "import and verify testbed site certificate" }, async () => {
-    const cert = Certificate.fromData(new Decoder(ndn_testbed_certs.ARIZONA_20190312).decode(Data));
+    const cert = Certificate.fromData(new Decoder(sample_certs.ARIZONA_20190312).decode(Data));
     await createVerifier(cert);
     await testbedRootKey?.verify(cert.data);
   });

@@ -16,8 +16,9 @@ import * as Serialize from "../../test-fixture/serialize";
 beforeEach(() => navigateToPage(__dirname));
 
 test("KeyStore", async () => {
-  const result = await pageInvoke<typeof window.testKeyStore>("testKeyStore");
-  TestKeyStore.check(result);
+  const enabled: TestKeyStore.Enable = { Ed25519: false };
+  const result = await pageInvoke<typeof window.testKeyStore>("testKeyStore", enabled);
+  TestKeyStore.check(result, enabled);
 });
 
 test("CertStore", async () => {

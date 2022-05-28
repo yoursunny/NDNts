@@ -1,6 +1,6 @@
 import type { EcCurve, RsaModulusLength } from "@ndn/keychain";
 import type { TestRecord as CertStoreRecord } from "@ndn/keychain/test-fixture/cert-store";
-import type { TestRecord as KeyStoreRecord } from "@ndn/keychain/test-fixture/key-store";
+import type { Enable as KeyStoreEnable, TestRecord as KeyStoreRecord } from "@ndn/keychain/test-fixture/key-store";
 import type { TestRecord as SignVerifyRecord } from "@ndn/packet/test-fixture/sign-verify";
 
 import type * as Serialize from "../../test-fixture/serialize";
@@ -12,7 +12,7 @@ export type SignVerifyTestResult = [
 
 declare global {
   interface Window {
-    testKeyStore: () => Promise<KeyStoreRecord>;
+    testKeyStore: (enabled: KeyStoreEnable) => Promise<KeyStoreRecord>;
     testCertStore: () => Promise<CertStoreRecord>;
     testDigestSigning: () => Promise<Serialize.Value<SignVerifyTestResult>>;
     testECDSA: (curve: EcCurve) => Promise<Serialize.Value<SignVerifyTestResult>>;

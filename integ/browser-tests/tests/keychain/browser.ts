@@ -2,7 +2,7 @@ import "./webcrypto";
 
 import { Certificate, CryptoAlgorithmListFull, EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength } from "@ndn/keychain";
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";
-import { execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
+import { type Enable as KeyStoreEnable, execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
 import { SafeBag } from "@ndn/ndnsec";
 import { type Signer, type Verifier, Data, digestSigning, Interest } from "@ndn/packet";
 import { execute as testSignVerify } from "@ndn/packet/test-fixture/sign-verify";
@@ -11,9 +11,15 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import * as Serialize from "../../test-fixture/serialize";
 import type { SignVerifyTestResult } from "./api";
 
-window.testKeyStore = () => testKeyStore(KeyChain.open("296616c2-7abb-4d9e-94b3-a97e4fd327b5", CryptoAlgorithmListFull));
+window.testKeyStore = (enable: KeyStoreEnable) => {
+  const keyChain = KeyChain.open("296616c2-7abb-4d9e-94b3-a97e4fd327b5", CryptoAlgorithmListFull);
+  return testKeyStore(keyChain, enable);
+};
 
-window.testCertStore = () => testCertStore(KeyChain.open("005a04be-9752-4f1f-adaf-b52f31742b37"));
+window.testCertStore = () => {
+  const keyChain = KeyChain.open("005a04be-9752-4f1f-adaf-b52f31742b37");
+  return testCertStore(keyChain);
+};
 
 async function testSigningKey(pvtA: Signer, pubA: Verifier,
     pvtB: Signer, pubB: Verifier): Promise<Serialize.Value<SignVerifyTestResult>> {

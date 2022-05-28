@@ -14,7 +14,7 @@ export class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenParams> {
   constructor(
       protected readonly name: string,
       public readonly uuid: string,
-      public readonly keyUsages: Record<"private" | "public", KeyUsage[]>,
+      public readonly keyUsages: Record<"private" | "public", readonly KeyUsage[]>,
       hash: AlgorithmIdentifier = "SHA-256",
   ) {
     this.importParams = { name, hash };
