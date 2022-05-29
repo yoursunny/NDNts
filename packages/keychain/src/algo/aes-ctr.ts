@@ -23,21 +23,26 @@ const ivgens = new DefaultWeakMap<CryptoAlgorithm.SecretKey<AESCTR.Info>, IvGen>
  * Since the security of AES-CTR depends on having unique IVs, the application is recommended to
  * check IVs using CounterIvChecker type.
  */
-export const AESCTR: AesEncryption<AESCTR.Info, AESCTR.GenParams> = new AesCommon<AESCTR.Info, AESCTR.GenParams>("AES-CTR", "0ec985f2-88c0-4dd9-8b69-2c41bd639809", {
-  secretKeyUsages: ["encrypt", "decrypt"],
-  ivLength: 16,
-  getIvGen: (key) => ivgens.get(key),
-  allowAdditionalData: false,
-  tagSize: 0,
-  defaultInfo: {
+export const AESCTR: AesEncryption<AESCTR.Info, AESCTR.GenParams> = new (class extends AesCommon<AESCTR.Info, AESCTR.GenParams> {
+  protected override readonly name = "AES-CTR";
+  public override readonly uuid = "0ec985f2-88c0-4dd9-8b69-2c41bd639809";
+  public override readonly ivLength = 16;
+  protected override getIvGen(key: CryptoAlgorithm.SecretKey<AESCTR.Info>) {
+    return ivgens.get(key);
+  }
+
+  protected override allowAdditionalData = false;
+  protected override tagSize = 0;
+  protected override defaultInfo = {
     counterLength: 64,
-  },
-  modifyParams: (params: Partial<AesCtrParams & AesCbcParams>, { counterLength }: AESCTR.Info) => {
+  };
+
+  protected override modifyParams(params: Partial<AesCtrParams & AesCbcParams>, { counterLength }: AESCTR.Info) {
     params.counter = params.iv;
     delete params.iv;
     params.length = counterLength;
-  },
-});
+  }
+})();
 
 export namespace AESCTR {
   export interface Info {

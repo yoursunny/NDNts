@@ -7,10 +7,11 @@ import { RsaCommon, RsaModulusLength } from "./rsa-common";
 /** Sha256WithRsa signing algorithm. */
 export const RSA: SigningAlgorithm<{}, true, RSA.GenParams> = new (class extends RsaCommon implements SigningAlgorithm<{}, true, RSA.GenParams> {
   constructor() {
-    super("RSASSA-PKCS1-v1_5", "771b4ccd-3e8d-4ad5-9422-248f18c6fcb5",
-      { private: ["sign"], public: ["verify"] });
+    super("RSASSA-PKCS1-v1_5");
   }
 
+  public override readonly uuid = "771b4ccd-3e8d-4ad5-9422-248f18c6fcb5";
+  public override readonly keyUsages = { private: ["sign"], public: ["verify"] } as const;
   public readonly sigType = SigType.Sha256WithRsa;
 
   public makeLLSign({ privateKey }: CryptoAlgorithm.PrivateKey<{}>): LLSign {

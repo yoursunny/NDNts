@@ -1,162 +1,98 @@
-import { type NamedDecrypter, type NamedEncrypter, type NamedSigner, type NamedVerifier, AESCBC, AESGCM, AesKeyLength, Certificate, createVerifier, CryptoAlgorithmListFull, EcCurve, ECDSA, Ed25519, generateEncryptionKey, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, RSAOAEP, SigningAlgorithmListFull } from "@ndn/keychain";
+import { type NamedEncrypter, type NamedSigner, type NamedVerifier, AESCBC, AESCTR, AESGCM, AesKeyLength, Certificate, createVerifier, CryptoAlgorithmListFull, EcCurve, ECDSA, Ed25519, generateEncryptionKey, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, RSAOAEP, SigningAlgorithmListFull } from "@ndn/keychain";
 import * as sample_certs from "@ndn/keychain/test-fixture/certs";
-import { type Signer, type Verifier, Data, digestSigning } from "@ndn/packet";
+import { type Signer, type Verifier, Data, digestSigning, LLDecrypt, LLEncrypt, Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { timingSafeEqual } from "@ndn/util";
 
 import { addManualTest } from "../../test-fixture/manual";
 
-interface GenBase {
-  title: string;
-  err?: Error;
-}
+let keyChain: KeyChain;
 
-interface GenSigningKey extends GenBase {
-  pvt?: Signer;
-  pub?: Verifier;
-  canMakeCert?: boolean;
-}
-
-async function* listSigningKeys(keyChain: KeyChain): AsyncGenerator<GenSigningKey> {
-  yield {
-    title: "digest",
-    pvt: digestSigning,
-    pub: digestSigning,
-    canMakeCert: false,
-  };
-  for (const curve of EcCurve.Choices) {
-    const gen: GenSigningKey = { title: `ECDSA ${curve}` };
-    try {
-      const [pvt, pub] = await generateSigningKey(keyChain, "/S", ECDSA, { curve });
-      await keyChain.deleteKey(pvt.name);
-      [gen.pvt, gen.pub] = [pvt, pub];
-    } catch (err: unknown) {
-      gen.err = err as Error;
-    }
-    yield gen;
-  }
-  for (const modulusLength of RsaModulusLength.Choices) {
-    const gen: GenSigningKey = { title: `RSA ${modulusLength}` };
-    try {
-      const [pvt, pub] = await generateSigningKey(keyChain, "/S", RSA, { modulusLength });
-      await keyChain.deleteKey(pvt.name);
-      [gen.pvt, gen.pub] = [pvt, pub];
-    } catch (err: unknown) {
-      gen.err = err as Error;
-    }
-    yield gen;
-  }
-  {
-    const gen: GenSigningKey = { title: "HMAC", canMakeCert: false };
-    try {
-      const [pvt, pub] = await generateSigningKey(keyChain, "/S", HMAC);
-      await keyChain.deleteKey(pvt.name);
-      [gen.pvt, gen.pub] = [pvt, pub];
-    } catch (err: unknown) {
-      gen.err = err as Error;
-    }
-    yield gen;
-  }
-  {
-    const gen: GenSigningKey = { title: "Ed25519" };
-    try {
-      const [pvt, pub] = await generateSigningKey(keyChain, "/S", Ed25519);
-      await keyChain.deleteKey(pvt.name);
-      [gen.pvt, gen.pub] = [pvt, pub];
-    } catch (err: unknown) {
-      gen.err = err as Error;
-    }
-    yield gen;
+async function deleteFromKeyChain(key: { name?: Name }) {
+  if (key.name instanceof Name) {
+    await keyChain.deleteKey(key.name);
   }
 }
 
-interface GenEncryptionKey extends GenBase {
-  enc?: NamedEncrypter;
-  dec?: NamedDecrypter;
-  aead?: boolean;
+async function testSigningKey(keyPair: Promise<[Signer, Verifier]>, canMakeCert = true) {
+  const [pvt, pub] = await keyPair;
+  await deleteFromKeyChain(pvt as NamedSigner);
+  let verifier = pub;
+
+  if (canMakeCert) {
+    const cert = await Certificate.selfSign({
+      publicKey: pub as NamedVerifier.PublicKey,
+      privateKey: pvt as NamedSigner.PrivateKey,
+    });
+    verifier = await createVerifier(cert, { algoList: SigningAlgorithmListFull });
+  }
+
+  let pkt = new Data("/D");
+  await pvt.sign(pkt);
+  pkt = new Decoder(Encoder.encode(pkt)).decode(Data);
+  await verifier.verify(pkt);
 }
 
-async function* listEncryptionKeys(keyChain: KeyChain): AsyncGenerator<GenEncryptionKey> {
-  for (const length of AesKeyLength.Choices) {
-    const gen: GenEncryptionKey = { title: `AES-CBC ${length}` };
-    try {
-      const [enc, dec] = await generateEncryptionKey(keyChain, "/E", AESCBC, { length });
-      await keyChain.deleteKey(enc.name);
-      [gen.enc, gen.dec] = [enc, dec];
-    } catch (err: unknown) {
-      gen.err = err as Error;
-    }
-    yield gen;
-  }
-  for (const length of AesKeyLength.Choices) {
-    const gen: GenEncryptionKey = { title: `AES-GCM ${length}`, aead: true };
-    try {
-      const [enc, dec] = await generateEncryptionKey(keyChain, "/E", AESGCM, { length });
-      await keyChain.deleteKey(enc.name);
-      [gen.enc, gen.dec] = [enc, dec];
-    } catch (err: unknown) {
-      gen.err = err as Error;
-    }
-    yield gen;
-  }
-  for (const modulusLength of RsaModulusLength.Choices) {
-    const gen: GenEncryptionKey = { title: `RSA-OAEP ${modulusLength}`, aead: true };
-    try {
-      const [enc, dec] = await generateEncryptionKey(keyChain, "/E", RSAOAEP, { modulusLength });
-      await keyChain.deleteKey(enc.name);
-      [gen.enc, gen.dec] = [enc, dec];
-    } catch (err: unknown) {
-      gen.err = err as Error;
-    }
-    yield gen;
+async function testEncryptionKey(keyPair: Promise<[LLEncrypt.Key, LLDecrypt.Key]>, aead = false) {
+  const [enc, dec] = await keyPair;
+  await deleteFromKeyChain(enc as NamedEncrypter);
+
+  const plaintext = crypto.getRandomValues(new Uint8Array(125));
+  const additionalData = aead ? crypto.getRandomValues(new Uint8Array(17)) : undefined;
+  const encrypted = await enc.llEncrypt({ plaintext, additionalData });
+  const decrypted = await dec.llDecrypt({ additionalData, ...encrypted });
+  if (!timingSafeEqual(plaintext, decrypted.plaintext)) {
+    throw new Error("decryption result differs");
   }
 }
 
 async function checkWebCrypto() {
-  const lines = [] as string[];
-  const run = async ({ title, err }: GenBase, f: () => Promise<void>) => {
-    if (!err) {
-      try { await f(); } catch (err_: unknown) { err = err_ as Error; }
+  const lines: string[] = [];
+  const run = async (title: string, promise: Promise<void> | (() => Promise<void>)) => {
+    if (typeof promise === "function") {
+      promise = promise();
     }
-    lines.push(`${title}: ${err ? err.toString() : "OK"}`);
+    let result: string;
+    try {
+      await promise;
+      result = "OK";
+    } catch (err: unknown) {
+      result = err instanceof Error ? err.toString() : `${err}`;
+    }
+    lines.push(`${title}: ${result}`);
   };
-  const keyChain = KeyChain.open("ae688cfd-fab7-4987-93f6-3b7a2507047b", CryptoAlgorithmListFull);
 
-  for await (const gen of listSigningKeys(keyChain)) {
-    await run(gen, async () => {
-      const { pvt, pub, canMakeCert = true } = gen;
-      if (canMakeCert) {
-        const cert = await Certificate.selfSign({
-          publicKey: pub as NamedVerifier.PublicKey,
-          privateKey: pvt as NamedSigner.PrivateKey,
-        });
-        await createVerifier(cert, { algoList: SigningAlgorithmListFull });
-      }
-      let pkt = new Data("/D");
-      await pvt!.sign(pkt);
-      pkt = new Decoder(Encoder.encode(pkt)).decode(Data);
-    });
+  keyChain = KeyChain.open("d32a0124-acfa-4073-a939-2c0e9bb70388", CryptoAlgorithmListFull);
+
+  await run("digest", testSigningKey(Promise.resolve([digestSigning, digestSigning]), false));
+  for (const curve of EcCurve.Choices) {
+    await run(`ECDSA ${curve}`, testSigningKey(generateSigningKey(keyChain, "/S", ECDSA, { curve })));
   }
+  for (const modulusLength of RsaModulusLength.Choices) {
+    await run(`RSA ${modulusLength}`, testSigningKey(generateSigningKey(keyChain, "/S", RSA, { modulusLength })));
+  }
+  await run("HMAC", testSigningKey(generateSigningKey(keyChain, "/S", HMAC), false));
+  await run("Ed25519", testSigningKey(generateSigningKey(keyChain, "/S", Ed25519)));
 
-  for await (const gen of listEncryptionKeys(keyChain)) {
-    await run(gen, async () => {
-      const { enc, dec, aead = false } = gen;
-      const plaintext = crypto.getRandomValues(new Uint8Array(125));
-      const additionalData = aead ? crypto.getRandomValues(new Uint8Array(17)) : undefined;
-      const encrypted = await enc!.llEncrypt({ plaintext, additionalData });
-      const decrypted = await dec!.llDecrypt({ additionalData, ...encrypted });
-      if (!timingSafeEqual(plaintext, decrypted.plaintext)) {
-        throw new Error("decryption result differs");
-      }
-    });
+  for (const length of AesKeyLength.Choices) {
+    await run(`AES-CBC ${length}`, testEncryptionKey(generateEncryptionKey(keyChain, "/E", AESCBC, { length })));
+  }
+  for (const length of AesKeyLength.Choices) {
+    await run(`AES-CTR ${length}`, testEncryptionKey(generateEncryptionKey(keyChain, "/E", AESCTR, { length })));
+  }
+  for (const length of AesKeyLength.Choices) {
+    await run(`AES-GCM ${length}`, testEncryptionKey(generateEncryptionKey(keyChain, "/E", AESGCM, { length }), true));
+  }
+  for (const modulusLength of RsaModulusLength.Choices) {
+    await run(`RSA-OAEP ${modulusLength}`, testEncryptionKey(generateEncryptionKey(keyChain, "/E", RSAOAEP, { modulusLength }), true));
   }
 
   let testbedRootKey: NamedVerifier.PublicKey | undefined;
-  await run({ title: "import testbed root certificate" }, async () => {
+  await run("import testbed root certificate", async () => {
     const cert = Certificate.fromData(sample_certs.TestbedRootX3());
     testbedRootKey = await createVerifier(cert, { checkValidity: false });
   });
-  await run({ title: "import and verify testbed site certificate" }, async () => {
+  await run("import and verify testbed site certificate", async () => {
     const cert = Certificate.fromData(sample_certs.TestbedNeu20201217());
     await createVerifier(cert, { checkValidity: false });
     await testbedRootKey?.verify(cert.data);

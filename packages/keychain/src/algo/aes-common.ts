@@ -26,18 +26,22 @@ export interface AesGenParams {
 /** AES block size in octets. */
 export const AesBlockSize = 16;
 
-export class AesCommon<I, G extends AesGenParams> implements AesEncryption<I, G> {
-  constructor(
-      private readonly name: string,
-      public readonly uuid: string,
-      private readonly detail: AesCommon.AlgoDetail<I>,
-  ) {
-    this.keyUsages = { secret: detail.secretKeyUsages };
-    this.ivLength = detail.ivLength;
-  }
+export abstract class AesCommon<I, G extends AesGenParams> implements AesEncryption<I, G> {
+  protected abstract readonly name: string;
+  public abstract readonly uuid: string;
+  public readonly keyUsages = { secret: ["encrypt", "decrypt"] } as const;
 
-  public readonly keyUsages: { secret: KeyUsage[] };
-  public readonly ivLength: number;
+  public abstract readonly ivLength: number;
+  protected abstract getIvGen(key: CryptoAlgorithm.SecretKey<I>): IvGen;
+
+  protected abstract allowAdditionalData: boolean;
+  protected abstract tagSize: number;
+  protected abstract defaultInfo: I;
+
+  protected modifyParams(params: any, info: I): void {
+    void params;
+    void info;
+  }
 
   public makeAesKeyGenParams({ length = AesKeyLength.Default }: G): AesKeyGenParams {
     return {
@@ -57,7 +61,7 @@ export class AesCommon<I, G extends AesGenParams> implements AesEncryption<I, G>
     }
 
     const info: any = Object.fromEntries(
-      Object.entries(this.detail.defaultInfo)
+      Object.entries(this.defaultInfo)
         .map(([key, dflt]) => [key, (genParams as any)[key] ?? dflt]));
 
     return {
@@ -68,18 +72,18 @@ export class AesCommon<I, G extends AesGenParams> implements AesEncryption<I, G>
   }
 
   private check(iv: Uint8Array | undefined, additionalData: Uint8Array | undefined) {
-    if (iv?.byteLength !== this.detail.ivLength) {
+    if (iv?.byteLength !== this.ivLength) {
       throw new Error("bad IV");
     }
 
-    if (additionalData && !this.detail.allowAdditionalData) {
+    if (additionalData && !this.allowAdditionalData) {
       throw new Error("cannot use additionalData");
     }
   }
 
   public makeLLEncrypt(key: CryptoAlgorithm.SecretKey<I>): LLEncrypt {
     const { secretKey, info } = key;
-    return this.detail.getIvGen(key).wrap(async ({
+    return this.getIvGen(key).wrap(async ({
       plaintext,
       iv,
       additionalData,
@@ -90,13 +94,13 @@ export class AesCommon<I, G extends AesGenParams> implements AesEncryption<I, G>
         iv,
         additionalData,
       };
-      this.detail.modifyParams?.(params, info);
+      this.modifyParams(params, info);
 
       const encrypted = await crypto.subtle.encrypt(params, secretKey, plaintext);
       return {
-        ciphertext: new Uint8Array(encrypted, 0, encrypted.byteLength - this.detail.tagSize),
+        ciphertext: new Uint8Array(encrypted, 0, encrypted.byteLength - this.tagSize),
         iv,
-        authenticationTag: this.detail.tagSize > 0 ? new Uint8Array(encrypted, encrypted.byteLength - this.detail.tagSize) : undefined,
+        authenticationTag: this.tagSize > 0 ? new Uint8Array(encrypted, encrypted.byteLength - this.tagSize) : undefined,
       };
     });
   }
@@ -109,13 +113,13 @@ export class AesCommon<I, G extends AesGenParams> implements AesEncryption<I, G>
       additionalData,
     }) => {
       this.check(iv, additionalData);
-      if ((authenticationTag?.length ?? 0) !== this.detail.tagSize) {
+      if ((authenticationTag?.length ?? 0) !== this.tagSize) {
         throw new Error("bad authenticationTag");
       }
 
       let encrypted = ciphertext;
-      if (this.detail.tagSize > 0) {
-        encrypted = new Uint8Array(ciphertext.length + this.detail.tagSize);
+      if (this.tagSize > 0) {
+        encrypted = new Uint8Array(ciphertext.length + this.tagSize);
         encrypted.set(ciphertext, 0);
         encrypted.set(authenticationTag!, ciphertext.length);
       }
@@ -125,21 +129,9 @@ export class AesCommon<I, G extends AesGenParams> implements AesEncryption<I, G>
         iv,
         additionalData,
       };
-      this.detail.modifyParams?.(params, info);
+      this.modifyParams(params, info);
       const plaintext = new Uint8Array(await crypto.subtle.decrypt(params, secretKey, encrypted));
       return { plaintext };
     };
-  }
-}
-
-export namespace AesCommon {
-  export interface AlgoDetail<I> {
-    secretKeyUsages: KeyUsage[];
-    ivLength: number;
-    getIvGen: (key: CryptoAlgorithm.SecretKey<I>) => IvGen;
-    allowAdditionalData: boolean;
-    tagSize: number;
-    defaultInfo: I;
-    modifyParams?: (params: any, info: I) => void;
   }
 }

@@ -8,9 +8,11 @@ import { RsaCommon } from "./rsa-common";
 /** RSA-OAEP encryption algorithm. */
 export const RSAOAEP: EncryptionAlgorithm<{}, true, RSA.GenParams> = new (class extends RsaCommon implements EncryptionAlgorithm<{}, true, RSA.GenParams> {
   constructor() {
-    super("RSA-OAEP", "f9c1c143-a7a5-459c-8cdf-69c5f7191cfe",
-      { private: ["decrypt"], public: ["encrypt"] }, "SHA-1");
+    super("RSA-OAEP", "SHA-1");
   }
+
+  public override readonly uuid = "f9c1c143-a7a5-459c-8cdf-69c5f7191cfe";
+  public override readonly keyUsages = { private: ["decrypt"], public: ["encrypt"] } as const;
 
   public makeLLEncrypt({ publicKey }: CryptoAlgorithm.PublicKey<{}>): LLEncrypt {
     return async ({

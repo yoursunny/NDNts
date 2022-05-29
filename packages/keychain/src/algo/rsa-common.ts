@@ -11,13 +11,8 @@ export namespace RsaModulusLength {
   export const Choices: readonly RsaModulusLength[] = [2048, 4096];
 }
 
-export class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenParams> {
-  constructor(
-      protected readonly name: string,
-      public readonly uuid: string,
-      public readonly keyUsages: Record<"private" | "public", readonly KeyUsage[]>,
-      hash: AlgorithmIdentifier = "SHA-256",
-  ) {
+export abstract class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenParams> {
+  constructor(protected readonly name: string, hash: AlgorithmIdentifier = "SHA-256") {
     this.importParams = { name, hash };
     this.genParams = {
       ...this.importParams,
@@ -26,6 +21,8 @@ export class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenParams> {
     };
   }
 
+  public abstract readonly uuid: string;
+  public abstract readonly keyUsages: Record<"private" | "public", readonly KeyUsage[]>;
   protected readonly importParams: RsaHashedImportParams;
   protected readonly genParams: RsaHashedKeyGenParams;
 

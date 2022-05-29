@@ -23,14 +23,18 @@ const ivgens = new DefaultWeakMap<CryptoAlgorithm.SecretKey<{}>, IvGen>(
  * Since the security of AES-GCM depends on having unique IVs, the application is recommended to
  * check IVs using CounterIvChecker type.
  */
-export const AESGCM: AesEncryption<{}, AESGCM.GenParams> = new AesCommon("AES-GCM", "a7e27aee-2f10-4150-bd6b-5e667c006274", {
-  secretKeyUsages: ["encrypt", "decrypt"],
-  ivLength: 12,
-  getIvGen: (key) => ivgens.get(key),
-  allowAdditionalData: true,
-  tagSize: 128 / 8,
-  defaultInfo: {},
-});
+export const AESGCM: AesEncryption<{}, AESGCM.GenParams> = new (class extends AesCommon<{}, AESGCM.GenParams> {
+  protected override readonly name = "AES-GCM";
+  public override readonly uuid = "a7e27aee-2f10-4150-bd6b-5e667c006274";
+  public override readonly ivLength = 12;
+  protected override getIvGen(key: CryptoAlgorithm.SecretKey<{}>) {
+    return ivgens.get(key);
+  }
+
+  protected override allowAdditionalData = true;
+  protected override tagSize = 128 / 8;
+  protected override defaultInfo = {};
+})();
 
 export namespace AESGCM {
   export interface GenParams extends AesGenParams {}
