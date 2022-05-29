@@ -1,4 +1,4 @@
-import { type NamedDecrypter, type NamedEncrypter, type NamedSigner, type NamedVerifier, AESCBC, AESGCM, AesKeyLength, Certificate, createVerifier, EcCurve, ECDSA, generateEncryptionKey, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, RSAOAEP } from "@ndn/keychain";
+import { type NamedDecrypter, type NamedEncrypter, type NamedSigner, type NamedVerifier, AESCBC, AESGCM, AesKeyLength, Certificate, createVerifier, CryptoAlgorithmListFull, EcCurve, ECDSA, Ed25519, generateEncryptionKey, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, RSAOAEP, SigningAlgorithmListFull } from "@ndn/keychain";
 import * as sample_certs from "@ndn/keychain/test-fixture/certs";
 import { type Signer, type Verifier, Data, digestSigning } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
@@ -50,6 +50,17 @@ async function* listSigningKeys(keyChain: KeyChain): AsyncGenerator<GenSigningKe
     const gen: GenSigningKey = { title: "HMAC", canMakeCert: false };
     try {
       const [pvt, pub] = await generateSigningKey(keyChain, "/S", HMAC);
+      await keyChain.deleteKey(pvt.name);
+      [gen.pvt, gen.pub] = [pvt, pub];
+    } catch (err: unknown) {
+      gen.err = err as Error;
+    }
+    yield gen;
+  }
+  {
+    const gen: GenSigningKey = { title: "Ed25519" };
+    try {
+      const [pvt, pub] = await generateSigningKey(keyChain, "/S", Ed25519);
       await keyChain.deleteKey(pvt.name);
       [gen.pvt, gen.pub] = [pvt, pub];
     } catch (err: unknown) {
@@ -109,7 +120,7 @@ async function checkWebCrypto() {
     }
     lines.push(`${title}: ${err ? err.toString() : "OK"}`);
   };
-  const keyChain = KeyChain.open("ae688cfd-fab7-4987-93f6-3b7a2507047b");
+  const keyChain = KeyChain.open("ae688cfd-fab7-4987-93f6-3b7a2507047b", CryptoAlgorithmListFull);
 
   for await (const gen of listSigningKeys(keyChain)) {
     await run(gen, async () => {
@@ -119,7 +130,7 @@ async function checkWebCrypto() {
           publicKey: pub as NamedVerifier.PublicKey,
           privateKey: pvt as NamedSigner.PrivateKey,
         });
-        await createVerifier(cert);
+        await createVerifier(cert, { algoList: SigningAlgorithmListFull });
       }
       let pkt = new Data("/D");
       await pvt!.sign(pkt);
@@ -142,12 +153,12 @@ async function checkWebCrypto() {
 
   let testbedRootKey: NamedVerifier.PublicKey | undefined;
   await run({ title: "import testbed root certificate" }, async () => {
-    const cert = Certificate.fromData(new Decoder(sample_certs.ROOT_V2_NDNCERT).decode(Data));
-    testbedRootKey = await createVerifier(cert);
+    const cert = Certificate.fromData(sample_certs.TestbedRootX3());
+    testbedRootKey = await createVerifier(cert, { checkValidity: false });
   });
   await run({ title: "import and verify testbed site certificate" }, async () => {
-    const cert = Certificate.fromData(new Decoder(sample_certs.ARIZONA_20190312).decode(Data));
-    await createVerifier(cert);
+    const cert = Certificate.fromData(sample_certs.TestbedNeu20201217());
+    await createVerifier(cert, { checkValidity: false });
     await testbedRootKey?.verify(cert.data);
   });
 

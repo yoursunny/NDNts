@@ -1,8 +1,9 @@
 import { LLSign, LLVerify, SigType, Verifier } from "@ndn/packet";
-import { crypto, toHex } from "@ndn/util";
+import { crypto } from "@ndn/util";
 import * as asn1 from "@yoursunny/asn1";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
+import { extractSpkiAlgorithm } from "./impl-spki";
 
 interface NodeEdKeyGenParams {
   name: string;
@@ -53,10 +54,8 @@ class NodeEd implements SigningAlgorithm<{}, true, {}> {
   }
 
   public async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
-    // SubjectPublicKeyInfo.algorithm.algorithm == oid
-    const algo = der.children?.[0]?.children?.[0];
-    if (!(algo?.type === 0x06 && algo.value && toHex(algo.value) === this.oid)) {
-      throw new Error("not Ed25519 key");
+    if (extractSpkiAlgorithm(der) !== this.oid) {
+      throw new Error(`not ${this.params.name} key`);
     }
     const key = await crypto.subtle.importKey(
       "spki", spki, this.params, true, this.keyUsages.public);
@@ -102,7 +101,3 @@ export const Ed25519: SigningAlgorithm<{}, true, {}> = new NodeEd(
 export namespace Ed25519 {
   export type GenParams = EdGenParams;
 }
-
-export const EdAlgoList: readonly SigningAlgorithm[] = [
-  Ed25519,
-];

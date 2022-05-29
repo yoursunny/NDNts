@@ -41,36 +41,37 @@ test("encode decode", async () => {
   expect(() => Certificate.fromData(data)).toThrow(/ValidityPeriod/);
 });
 
-test("decode testbed certs", async () => {
-  const data0 = new Decoder(sample_certs.ROOT_V2_NDNCERT).decode(Data);
-  const cert0 = Certificate.fromData(data0);
-  expect(cert0.name).toEqualName("/ndn/KEY/e%9D%7F%A5%C5%81%10%7D/ndn/%FD%00%00%01%60qJQ%9B");
-  const certName0 = CertNaming.parseCertName(cert0.name);
-  expect(certName0.subjectName).toEqualName("/ndn");
-  expect(certName0.keyId).toEqualComponent("e%9D%7F%A5%C5%81%10%7D");
-  expect(certName0.issuerId).toEqualComponent("ndn");
-  expect(certName0.version).toEqualComponent("%FD%00%00%01%60qJQ%9B");
-  expect(cert0.validity.notBefore).toBe(1513729179000);
-  expect(cert0.validity.notAfter).toBe(1609459199000);
-  expect(cert0.publicKeySpki).toEqualUint8Array(sample_certs.ROOT_V2_SPKI);
-  expect(cert0.isSelfSigned).toBeTruthy();
-  const pub0 = await createVerifier(cert0, { checkValidity: false });
-  expect(pub0.sigType).toBe(SigType.Sha256WithEcdsa);
+test("verify ECDSA cert", async () => {
+  const cert = Certificate.fromData(sample_certs.TestbedRootX3());
+  expect(cert).toHaveName("/ndn/KEY/%EC%F1L%8EQ%23%15%E0/ndn/%FD%00%00%01u%E6%7F2%10");
+  const certName = CertNaming.parseCertName(cert.name);
+  expect(certName.subjectName).toEqualName("/ndn");
+  expect(certName.keyId).toEqualComponent("%EC%F1L%8EQ%23%15%E0");
+  expect(certName.issuerId).toEqualComponent("ndn");
+  expect(certName.version).toEqualComponent("%FD%00%00%01u%E6%7F2%10");
+  expect(cert.validity.notBefore).toBe(Date.UTC(2020, 11 - 1, 20, 16, 31, 37));
+  expect(cert.validity.notAfter).toBe(Date.UTC(2024, 12 - 1, 31, 23, 59, 59));
+  expect(cert.publicKeySpki).toEqualUint8Array(sample_certs.TestbedRootX3Spki);
+  expect(cert.isSelfSigned).toBeTruthy();
 
-  const data1 = new Decoder(sample_certs.ARIZONA_20190312).decode(Data);
-  await pub0.verify(data1);
+  const pub = await createVerifier(cert, { checkValidity: false });
+  expect(pub.sigType).toBe(SigType.Sha256WithEcdsa);
+  await pub.verify(sample_certs.TestbedNeu20201217());
+});
 
-  const cert1 = Certificate.fromData(data1);
-  expect(cert1.isSelfSigned).toBeFalsy();
-  expect(cert1.issuer).toEqualName(certName0.keyName);
-  await expect(createVerifier(cert1, { algoList: SigningAlgorithmListSlim, checkValidity: false }))
+test("verify RSA cert", async () => {
+  const cert = Certificate.fromData(sample_certs.TestbedArizona20200301());
+  expect(cert.isSelfSigned).toBeFalsy();
+  await expect(createVerifier(cert, { algoList: SigningAlgorithmListSlim, checkValidity: false }))
     .rejects.toThrow();
-  const pub1 = await createVerifier(cert1, { algoList: SigningAlgorithmListFull, checkValidity: false });
-  expect(pub1.sigType).toBe(SigType.Sha256WithRsa);
+
+  const pub = await createVerifier(cert, { algoList: SigningAlgorithmListFull, checkValidity: false });
+  expect(pub.sigType).toBe(SigType.Sha256WithRsa);
+  await pub.verify(sample_certs.TestbedShijunxiao20200301());
 });
 
 test("decode Ed25519 cert", async () => {
-  const data = new Decoder(sample_certs.Ed25519Demo).decode(Data);
+  const data = sample_certs.Ed25519Demo();
   const cert = Certificate.fromData(data);
 
   const pub = await createVerifier(cert, {
