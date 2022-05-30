@@ -54,6 +54,13 @@ test("HMAC", async () => {
   TestSignVerify.check(rD, { deterministic: true });
 });
 
+test("Ed25519", async () => {
+  const [rI, rD] = Serialize.parse(
+    await pageInvoke<typeof window.testEd25519>("testEd25519"));
+  TestSignVerify.check(rI, { deterministic: true });
+  TestSignVerify.check(rD, { deterministic: true });
+});
+
 test.each([
   SafeBagEC, SafeBagRSA,
 ])("SafeBagDecode %#", async ({ sigType, certName, wire, passphrase }) => {

@@ -1,6 +1,6 @@
 import "./webcrypto";
 
-import { Certificate, CryptoAlgorithmListFull, EcCurve, ECDSA, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength } from "@ndn/keychain";
+import { Certificate, CryptoAlgorithmListFull, EcCurve, ECDSA, Ed25519, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength } from "@ndn/keychain";
 import { execute as testCertStore } from "@ndn/keychain/test-fixture/cert-store";
 import { type Enable as KeyStoreEnable, execute as testKeyStore } from "@ndn/keychain/test-fixture/key-store";
 import { SafeBag } from "@ndn/ndnsec";
@@ -46,6 +46,12 @@ window.testRSA = async (modulusLength: RsaModulusLength) => {
 window.testHMAC = async () => {
   const [pvtA, pubA] = await generateSigningKey("/HMAC-A", HMAC);
   const [pvtB, pubB] = await generateSigningKey("/HMAC-B", HMAC);
+  return testSigningKey(pvtA, pubA, pvtB, pubB);
+};
+
+window.testEd25519 = async () => {
+  const [pvtA, pubA] = await generateSigningKey("/Ed25519-A", Ed25519);
+  const [pvtB, pubB] = await generateSigningKey("/Ed25519-B", Ed25519);
   return testSigningKey(pvtA, pubA, pvtB, pubB);
 };
 

@@ -29,7 +29,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@yoursunny/asn1": "^0.0.20200718",
+    "@yoursunny/asn1": "0.0.20200718",
     "execa": "^6.1.0",
     "throat": "^6.0.1",
     "tslib": "^2.4.0"

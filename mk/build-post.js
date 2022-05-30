@@ -134,19 +134,19 @@ class TransformJs {
    * @param {string} line
    */
   transformImportExport(line) {
-    const m = /^(import|export) (\* as )?(.*) from ["'](.*)["'];$/.exec(line);
+    const m = /^(import|export) (\* as )?(.*?)( from )?["'](.*)["'];$/.exec(line);
     if (!m) {
       return this.emitLine(line);
     }
 
-    let [, action, allAs = "", imports, specifier] = m;
+    let [, action, allAs = "", imports, from = "", specifier] = m;
     if (/^\.(?:[^/]*\/)*[^/.]+$/.test(specifier)) {
       if (specifier.endsWith("_node")) {
         specifier = specifier.slice(0, -5); // trim "_node"
       }
       return this.emitLine(
-        `${action} ${allAs}${imports} from "${specifier}_node.js";`,
-        `${action} ${allAs}${imports} from "${specifier}_browser.js";`,
+        `${action} ${allAs}${imports}${from}"${specifier}_node.js";`,
+        `${action} ${allAs}${imports}${from}"${specifier}_browser.js";`,
       );
     }
 
@@ -154,11 +154,11 @@ class TransformJs {
     if (pkg.startsWith("node:")) {
       const browserSpecifier = specifier.slice(5); // trim "node:"
       return this.emitLine(
-        `${action} ${allAs}${imports} from "${specifier}";`,
-        `${action} ${allAs}${imports} from "${browserSpecifier}";`,
+        `${action} ${allAs}${imports}${from}"${specifier}";`,
+        `${action} ${allAs}${imports}${from}"${browserSpecifier}";`,
       );
     }
-    if (!CJS_IMPORTS.has(pkg)) {
+    if (!CJS_IMPORTS.has(pkg) || !from) {
       return this.emitLine(line);
     }
 

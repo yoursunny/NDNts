@@ -18,6 +18,7 @@ declare global {
     testECDSA: (curve: EcCurve) => Promise<Serialize.Value<SignVerifyTestResult>>;
     testRSA: (modulusLength: RsaModulusLength) => Promise<Serialize.Value<SignVerifyTestResult>>;
     testHMAC: () => Promise<Serialize.Value<SignVerifyTestResult>>;
+    testEd25519: () => Promise<Serialize.Value<SignVerifyTestResult>>;
     testSafeBagDecode: (wire: Serialize.Value<Uint8Array>, passphrase: string) => Promise<[sigType: number, certName: string]>;
     testSafeBagEncode: (passphrase: string) => Promise<Serialize.Value<Uint8Array>>;
   }

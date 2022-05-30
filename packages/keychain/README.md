@@ -27,7 +27,7 @@ This package implements signature types defined in [NDN Packet Format 0.3](https
 * [X] SignatureHmacWithSha256
   * [X] signing and verification
   * [ ] KeyLocator matching
-* [X] SignatureEd25519 (Node.js only)
+* [X] SignatureEd25519
   * [X] signing and verification
   * [X] KeyLocator .Name
   * [ ] KeyLocator .KeyDigest
@@ -95,4 +95,4 @@ Private keys are saved as non-extractable `CryptoKey` objects.
 * In Firefox, persistent keychain stores JWK instead of `CryptoKey`, due to [Mozilla Bug 1545813](https://bugzilla.mozilla.org/show_bug.cgi?id=1545813).
 * In Firefox, persistent keychain is unusable in a Private Browsing window, due to [Mozilla Bug 781982](https://bugzilla.mozilla.org/show_bug.cgi?id=1639542).
 * In Chrome, AES 192-bit key is not supported.
-* Ed25519 only works in Node.js, not browsers.
+* Ed25519 in browser is implemented in JavaScript, which is less secure than native Web Crypto implementation.

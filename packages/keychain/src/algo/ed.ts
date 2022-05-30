@@ -1,9 +1,12 @@
 import { LLSign, LLVerify, SigType, Verifier } from "@ndn/packet";
 import { crypto } from "@ndn/util";
 import * as asn1 from "@yoursunny/asn1";
+import { polyfillEd25519 } from "@yoursunny/webcrypto-ed25519";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
 import { extractSpkiAlgorithm } from "./impl-spki";
+
+polyfillEd25519();
 
 interface NodeEdKeyGenParams {
   name: string;
