@@ -159,7 +159,7 @@ export class IBLT {
    * - count: int32
    * - keySum: uint32
    * - keyCheck: uint32
-   * These numbers are big endian.
+   * IBLT.Parameters.serializeLittleEndian determines endianness.
    *
    * Return value shares the underlying memory. It must be copied when not using compression.
    */
@@ -175,9 +175,7 @@ export class IBLT {
     this.ht.deserialize(v);
   }
 
-  /**
-   * Clone to another IBLT.
-   */
+  /** Clone to another IBLT. */
   public clone(): IBLT {
     const copy = new IBLT(this.p);
     copy.ht.deserialize(this.ht.serialize());
@@ -239,13 +237,14 @@ export namespace IBLT {
       assert(Number.isSafeInteger(nEntries));
       assert(nEntries % nHash === 0);
 
-      const self = this as Parameters;
-      self.keyToBufferLittleEndian = keyToBufferLittleEndian;
-      self.serializeLittleEndian = serializeLittleEndian;
-      self.hash = hash;
-      self.nHash = nHash;
-      self.checkSeed = checkSeed;
-      self.nEntries = nEntries;
+      Object.assign(this, {
+        keyToBufferLittleEndian,
+        serializeLittleEndian,
+        hash,
+        nHash,
+        checkSeed,
+        nEntries,
+      });
       this.nBuckets = nEntries / nHash;
     }
 

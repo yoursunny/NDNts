@@ -2,6 +2,7 @@
 /// <reference types="web-bluetooth"/>
 
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
+import { asUint8Array } from "@ndn/util";
 import EventIterator from "event-iterator";
 
 const UUID_SVC = "099577e3-0788-412a-8824-395084d97391";
@@ -28,7 +29,7 @@ export class WebBluetoothTransport extends Transport {
           if (!value) {
             return;
           }
-          push(new Uint8Array(value.buffer, value.byteOffset, value.byteLength));
+          push(asUint8Array(value));
         };
 
         sc.addEventListener("characteristicvaluechanged", pushHandler);

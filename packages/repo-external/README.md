@@ -7,7 +7,8 @@ This package allows inserting and deleting Data in [ndn-python-repo](https://git
 `PyRepoStore` type implements a subset of `DataStore` interfaces defined in `@ndn/repo-api` package.
 
 This implementation is compatible with ndn-python-repo version 0.2a5.
-To install this version, run:
+Newer versions of ndn-python-repo are not supported due to [ndn-python-repo issue #60](https://github.com/UCLA-IRL/ndn-python-repo/issues/60).
+To install the specified version, run:
 
 ```bash
 pip install ndn-python-repo==0.2a5 python-ndn==0.2b2.post1

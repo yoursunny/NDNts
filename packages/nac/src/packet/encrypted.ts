@@ -17,9 +17,7 @@ const EVD = new EvDecoder<EncryptedContent>("EncryptedContent", TT.EncryptedCont
  */
 export class EncryptedContent implements LLDecrypt.Params {
   public static decodeFrom(decoder: Decoder): EncryptedContent {
-    const enc = new EncryptedContent();
-    EVD.decode(enc, decoder);
-    return enc;
+    return EVD.decode(new EncryptedContent(), decoder);
   }
 
   public static create({ ciphertext, iv }: LLEncrypt.Result, name: Name): EncryptedContent {
@@ -43,6 +41,7 @@ export class EncryptedContent implements LLDecrypt.Params {
     encoder.prependTlv(TT.EncryptedContent,
       [TT.EncryptedPayload, this.ciphertext],
       [TT.InitializationVector, this.iv],
-      this.name);
+      this.name,
+    );
   }
 }
