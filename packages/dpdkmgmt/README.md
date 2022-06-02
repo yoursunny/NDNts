@@ -17,9 +17,8 @@ import { openFace } from "@ndn/dpdkmgmt";
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Name, Interest, Data } from "@ndn/packet";
-import { fromUtf8, toUtf8 } from "@ndn/util";
+import { delay, fromUtf8, toUtf8 } from "@ndn/util";
 import { strict as assert } from "node:assert";
-import { setTimeout as delay } from "node:timers/promises";
 
 const gqlServer = process.env.DEMO_DPDKMGMT_GQLSERVER;
 const localHost = process.env.DEMO_DPDKMGMT_LOCAL;

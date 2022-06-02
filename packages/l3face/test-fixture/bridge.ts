@@ -1,6 +1,7 @@
 import type { Forwarder, FwFace } from "@ndn/fw";
 import type { NameLike } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
+import { delay } from "@ndn/util";
 import { pushable } from "it-pushable";
 import pDefer from "p-defer";
 import { filter, map, pipeline, transform } from "streaming-iterables";
@@ -57,7 +58,7 @@ function makeRelayFunc(relay: Bridge.Relay): Bridge.RelayFunc {
     () => it,
     filter(() => Math.random() >= loss),
     transform(64, async (pkt) => {
-      await new Promise((r) => setTimeout(r, minDelay + delayRange * Math.random()));
+      await delay(minDelay + delayRange * Math.random());
       return pkt;
     }),
   );

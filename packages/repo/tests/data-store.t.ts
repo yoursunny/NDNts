@@ -4,7 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Data, Interest, Name } from "@ndn/packet";
 import { BufferChunkSource, fetch, serve } from "@ndn/segmented-object";
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
-import { setTimeout as delay } from "node:timers/promises";
+import { delay } from "@ndn/util";
 import { collect, map } from "streaming-iterables";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 

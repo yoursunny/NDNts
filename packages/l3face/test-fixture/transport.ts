@@ -1,5 +1,6 @@
 import { FwPacket } from "@ndn/fw";
 import { Data, Interest } from "@ndn/packet";
+import { delay } from "@ndn/util";
 import { abortableSource } from "abortable-iterator";
 import { expect } from "vitest";
 
@@ -26,10 +27,10 @@ export async function execute<T extends Transport>(
   await Promise.all([
     faceA.tx({ async *[Symbol.asyncIterator]() {
       for (let i = 0; i < COUNT; ++i) {
-        await new Promise((r) => setTimeout(r, 1));
+        await delay(1);
         yield FwPacket.create(new Interest(`/A/${i}`));
       }
-      await new Promise((r) => setTimeout(r, 200));
+      await delay(200);
       abortFaceB.abort();
     } }),
     faceB.tx({ async *[Symbol.asyncIterator]() {

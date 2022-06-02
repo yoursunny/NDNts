@@ -5,7 +5,7 @@ import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
 import { BufferBreaker } from "@ndn/node-transport/test-fixture/buffer-breaker";
 import { Data, Interest, Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
-import { setTimeout as delay } from "node:timers/promises";
+import { delay } from "@ndn/util";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, map, pipeline, writeToStream } from "streaming-iterables";
 import { dirSync as tmpDir } from "tmp";

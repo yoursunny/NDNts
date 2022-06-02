@@ -5,8 +5,8 @@ import { Forwarder } from "@ndn/fw";
 import { Segment, SequenceNum, Version } from "@ndn/naming-convention2";
 import { type NameLike, Component, Data, Interest, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
-import { setTimeout as delay } from "node:timers/promises";
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { delay } from "@ndn/util";
+import { beforeEach, expect, test } from "vitest";
 
 import { DataStore, PrefixRegShorter, PrefixRegStatic, PrefixRegStrip, RepoProducer, respondRdr } from "..";
 import { makeDataStore } from "../test-fixture/data-store";

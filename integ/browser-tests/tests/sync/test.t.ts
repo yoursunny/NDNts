@@ -4,9 +4,9 @@ import "@ndn/packet/test-fixture/expect";
 import { FwFace } from "@ndn/fw";
 import { Name } from "@ndn/packet";
 import { makePSyncCompatParam, PSyncPartialPublisher } from "@ndn/sync";
+import { delay } from "@ndn/util";
 import { WsTransport } from "@ndn/ws-transport";
 import { WsServer } from "@ndn/ws-transport/test-fixture/ws-server";
-import { setTimeout as delay } from "node:timers/promises";
 import { beforeEach, expect, test } from "vitest";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";

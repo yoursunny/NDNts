@@ -1,7 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { type NameLike, Name } from "@ndn/packet";
-import { setTimeout as delay } from "node:timers/promises";
+import { delay } from "@ndn/util";
 import { type SpyInstanceFn, beforeEach, expect, test, vi } from "vitest";
 
 import { Forwarder, ReadvertiseDestination } from "..";

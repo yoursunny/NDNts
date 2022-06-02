@@ -1,8 +1,8 @@
 import "@ndn/tlv/test-fixture/expect";
 
 import { Decodable, Decoder, Encodable, Encoder } from "@ndn/tlv";
+import { delay } from "@ndn/util";
 import * as crypto from "node:crypto";
-import { setTimeout as delay } from "node:timers/promises";
 import { expect, test } from "vitest";
 
 import { Data, digestSigning, Interest, LLSign, LLVerify, Name, nullSigner, SigInfo, SigType, TT } from "..";

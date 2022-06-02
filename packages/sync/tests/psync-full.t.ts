@@ -4,9 +4,8 @@ import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { type NameLike, Name } from "@ndn/packet";
-import { assert, Closers, toHex } from "@ndn/util";
+import { assert, Closers, delay, toHex } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
-import { setTimeout as delay } from "node:timers/promises";
 import { type SpyInstanceFn, afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { type IBLT, type SyncNode, type SyncUpdate, makePSyncCompatParam, PSyncFull } from "..";

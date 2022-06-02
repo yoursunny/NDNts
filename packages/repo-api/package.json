@@ -42,6 +42,7 @@
   "devDependencies": {
     "@ndn/node-transport": "workspace:*",
     "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "@types/duplexify": "^3.6.1",
     "@types/graceful-fs": "^4.1.5",
     "@types/tmp": "^0.2.3",

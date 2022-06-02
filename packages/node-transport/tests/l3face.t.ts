@@ -1,8 +1,8 @@
 import { Forwarder, FwPacket } from "@ndn/fw";
 import { L3Face } from "@ndn/l3face";
 import { Interest } from "@ndn/packet";
+import { delay } from "@ndn/util";
 import * as net from "node:net";
-import { setTimeout as delay } from "node:timers/promises";
 import { pEvent } from "p-event";
 import { collect } from "streaming-iterables";
 import { beforeEach, expect, test, vi } from "vitest";

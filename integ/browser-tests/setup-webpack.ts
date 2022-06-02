@@ -1,4 +1,4 @@
-import { setTimeout as delay } from "node:timers/promises";
+import { delay } from "@ndn/util";
 import Webpack, { type Configuration } from "webpack";
 import WebpackDevServer from "webpack-dev-server";
 

@@ -1,6 +1,7 @@
 import { Endpoint } from "@ndn/endpoint";
 import { FwTracer } from "@ndn/fw";
 import { H3Transport } from "@ndn/quic-transport";
+import { delay } from "@ndn/util";
 import { WebBluetoothTransport } from "@ndn/web-bluetooth-transport";
 
 import { addManualTest } from "../../test-fixture/manual";
@@ -17,7 +18,7 @@ async function facePing(pingPrefix: string) {
     const t1 = Date.now();
     rtts.push(t1 - t0);
     names.push(data.name.toString());
-    await new Promise((r) => setTimeout(r, 10));
+    await delay(10);
   }
 
   const lines = names.map((name, i) => `${rtts[i]} ${name}`);

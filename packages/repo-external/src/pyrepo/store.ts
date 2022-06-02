@@ -1,6 +1,7 @@
 import { Endpoint } from "@ndn/endpoint";
 import type { Name } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
+import { delay } from "@ndn/util";
 import pDefer from "p-defer";
 import { consume, pipeline, transform } from "streaming-iterables";
 import throat from "throat";
@@ -59,7 +60,7 @@ export class PyRepoStore implements S.Close, S.Insert, S.Delete {
           describe: `pyrepo-insert(${data.name})`,
           announcement: false,
         });
-        await new Promise((r) => setTimeout(r, 100));
+        await delay(100);
 
         try {
           await this.client.insert(data.name);

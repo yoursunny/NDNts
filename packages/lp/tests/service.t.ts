@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Data, digestSigning, Interest, Nack, NackReason, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
-import { setTimeout as delay } from "node:timers/promises";
+import { delay } from "@ndn/util";
 import { collect, filter, map, pipeline, tap } from "streaming-iterables";
 import { expect, test } from "vitest";
 

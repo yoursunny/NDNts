@@ -1,6 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { type Verifier, Data, Interest } from "@ndn/packet";
+import { timeoutAbortSignal } from "@ndn/util";
 import { type SpyInstanceFn, afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { type ProducerHandler, type RetxPolicy, Endpoint } from "..";
@@ -53,16 +54,14 @@ describe("retx limit", () => {
   });
 
   test("abort", async () => {
-    const abort = new AbortController();
     const promise = ep.consume(
       new Interest("/A", Interest.Lifetime(2000)),
       {
-        signal: abort.signal,
+        signal: timeoutAbortSignal(100),
         retx: {
           limit: 2,
         },
       });
-    setTimeout(() => abort.abort(), 100);
     await expect(promise).rejects.toThrow();
     expect(producer).toHaveBeenCalledTimes(1);
     expect(promise.nRetx).toBe(0);

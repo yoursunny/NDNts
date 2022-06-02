@@ -1,9 +1,8 @@
 import { pushable } from "it-pushable";
-import { setTimeout as delay } from "node:timers/promises";
 import { collect } from "streaming-iterables";
 import { expect, test, vi } from "vitest";
 
-import { flatMapOnce, safeIter } from "..";
+import { delay, flatMapOnce, safeIter } from "..";
 
 test("safeIter ignore", async () => {
   const it = pushable<number>();

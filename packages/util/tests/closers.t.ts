@@ -1,7 +1,6 @@
-import { setTimeout as delay } from "node:timers/promises";
 import { expect, test, vi } from "vitest";
 
-import { Closers } from "..";
+import { Closers, delay } from "..";
 
 test("closers", async () => {
   const closers = new Closers();

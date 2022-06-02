@@ -1,5 +1,6 @@
 import { FwPacket } from "@ndn/fw";
 import { Interest } from "@ndn/packet";
+import { delay } from "@ndn/util";
 import { expect, vi } from "vitest";
 
 import { L3Face, Transport } from "..";
@@ -27,20 +28,20 @@ export async function run<ServerSocket>(
     // eslint-disable-next-line no-unmodified-loop-condition
     for (let i = 0; !end; ++i) {
       yield FwPacket.create(new Interest(`/A/${i}`));
-      await new Promise((r) => setTimeout(r, 10));
+      await delay(10);
     }
   })());
 
-  await new Promise((r) => setTimeout(r, 100));
+  await delay(100);
   closeClient(sock);
-  await new Promise((r) => setTimeout(r, 300));
+  await delay(300);
 
   const newSocks = await waitNClients(1);
   expect(newSocks).toHaveLength(1);
   expect(newSocks[0] === sock).toBeFalsy();
 
   end = true;
-  await new Promise((r) => setTimeout(r, 500));
+  await delay(500);
 
   expect(downEvt).toHaveBeenCalledTimes(1);
   expect(upEvt).toHaveBeenCalledTimes(1);

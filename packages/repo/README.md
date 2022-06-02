@@ -12,9 +12,9 @@ import { DataStore, RepoProducer, PrefixRegShorter } from "@ndn/repo";
 
 // other imports for examples
 import { Name, Interest, Data } from "@ndn/packet";
+import { delay } from "@ndn/util";
 import memdown from "memdown";
 import { strict as assert } from "node:assert";
-import { setTimeout as delay } from "node:timers/promises";
 ```
 
 ## DataStore

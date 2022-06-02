@@ -1,5 +1,5 @@
+import { delay } from "@ndn/util";
 import * as path from "node:path";
-import { setTimeout as delay } from "node:timers/promises";
 import puppeteer, { type Page } from "puppeteer";
 import { beforeAll } from "vitest";
 

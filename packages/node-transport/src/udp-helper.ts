@@ -18,8 +18,8 @@ export type AddressFamily = 4 | 6;
 
 export function intfHasAddressFamily(want: AddressFamily, { family }: os.NetworkInterfaceInfo): boolean {
   // https://github.com/nodejs/node/issues/42787
-  // Node 16.x: NetworkInterfaceInfo.family is either "IPv4" or "IPv6"
-  // Node 18.x: NetworkInterfaceInfo.family is either 4 or 6
+  // Node.js 16.x: NetworkInterfaceInfo.family is either "IPv4" or "IPv6"
+  // Node.js 18.x: NetworkInterfaceInfo.family is either 4 or 6
   return (family as any) === want || (family as any) === `IPv${want}`;
 }
 

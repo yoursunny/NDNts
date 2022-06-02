@@ -1,7 +1,7 @@
 import * as TestReopen from "@ndn/l3face/test-fixture/reopen";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
+import { delay } from "@ndn/util";
 import { pushable } from "it-pushable";
-import { setTimeout as delay } from "node:timers/promises";
 import { beforeEach, expect, test, vi } from "vitest";
 import type WebSocket from "ws";
 

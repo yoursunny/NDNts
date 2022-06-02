@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { generateSigningKey } from "@ndn/keychain";
 import { type NameLike, Data, Interest } from "@ndn/packet";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
-import { setTimeout as delay } from "node:timers/promises";
+import { delay } from "@ndn/util";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { type Options, DataStoreBuffer, Endpoint, Producer, ProducerHandler } from "..";

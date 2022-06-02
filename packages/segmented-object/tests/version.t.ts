@@ -4,7 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment2, Segment3, Version2, Version3 } from "@ndn/naming-convention2";
 import { Data, Interest, Name } from "@ndn/packet";
-import { Closers } from "@ndn/util";
+import { Closers, timeoutAbortSignal } from "@ndn/util";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { type ChunkSource, BufferChunkSource, discoverVersion, serve, serveVersioned } from "..";
@@ -115,8 +115,6 @@ test.each(wrongNames)("discover wrong name %#", async (dataName) => {
 });
 
 test("discover cancel", async () => {
-  const abort = new AbortController();
-  const p = discoverVersion(new Name("/A"), { signal: abort.signal });
-  setTimeout(() => abort.abort(), 100);
+  const p = discoverVersion(new Name("/A"), { signal: timeoutAbortSignal(100) });
   await expect(p).rejects.toThrow();
 });

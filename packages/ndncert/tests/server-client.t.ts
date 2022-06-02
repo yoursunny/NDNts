@@ -5,8 +5,7 @@ import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, generate
 import { Component, FwHint, Name } from "@ndn/packet";
 import { DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
-import { toHex, toUtf8 } from "@ndn/util";
-import { setTimeout as delay } from "node:timers/promises";
+import { delay, toHex, toUtf8 } from "@ndn/util";
 import { type SentMessageInfo, createTransport as createMT } from "nodemailer";
 import { afterEach, beforeAll, beforeEach, expect, test, vi } from "vitest";
 

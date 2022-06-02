@@ -2,8 +2,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { FakeNfd } from "@ndn/nfdmgmt/test-fixture/prefix-reg";
 import { Name } from "@ndn/packet";
 import { type SyncUpdate, makePSyncCompatParam, PSyncFull } from "@ndn/sync";
-import { Closers } from "@ndn/util";
-import { setTimeout as delay } from "node:timers/promises";
+import { Closers, delay } from "@ndn/util";
 import { beforeAll, expect, test, vi } from "vitest";
 
 import { execute } from "../../../test-fixture/cxxprogram";

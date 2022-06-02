@@ -5,7 +5,7 @@ import { generateSigningKey } from "@ndn/keychain";
 import { Version } from "@ndn/naming-convention2";
 import { Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { Decoder, Extensible, Extension, ExtensionRegistry, NNI } from "@ndn/tlv";
-import { Closers, toUtf8 } from "@ndn/util";
+import { Closers, timeoutAbortSignal, toUtf8 } from "@ndn/util";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { Metadata, retrieveMetadata, serveMetadata } from "..";
@@ -40,9 +40,7 @@ describe("consumer", () => {
   });
 
   test("retrieve cancel", async () => {
-    const abort = new AbortController();
-    const promise = retrieveMetadata("/Z/32=metadata", { signal: abort.signal });
-    setTimeout(() => abort.abort(), 10);
+    const promise = retrieveMetadata("/Z/32=metadata", { signal: timeoutAbortSignal(10) });
     await expect(promise).rejects.toThrow();
   });
 });

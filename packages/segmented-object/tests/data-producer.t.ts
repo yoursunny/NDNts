@@ -4,7 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
 import { Data, Interest, Name } from "@ndn/packet";
 import { DataTape } from "@ndn/repo-api";
-import { setTimeout as delay } from "node:timers/promises";
+import { delay } from "@ndn/util";
 import { DuplexMock } from "stream-mock";
 import { collect } from "streaming-iterables";
 import { expect, test } from "vitest";

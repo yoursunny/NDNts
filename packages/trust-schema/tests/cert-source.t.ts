@@ -4,7 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { type NamedSigner, type NamedVerifier, Certificate, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
 import { type NameLike, Name } from "@ndn/packet";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
-import { setTimeout as delay } from "node:timers/promises";
+import { delay } from "@ndn/util";
 import { collect } from "streaming-iterables";
 import { type SpyInstance, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 

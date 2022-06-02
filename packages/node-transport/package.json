@@ -33,6 +33,7 @@
   "devDependencies": {
     "@ndn/fw": "workspace:*",
     "@ndn/packet": "workspace:*",
+    "@ndn/util": "workspace:*",
     "@types/tmp": "^0.2.3",
     "@types/url-format-lax": "^2.0.0",
     "@types/url-parse-lax": "^5.0.0",

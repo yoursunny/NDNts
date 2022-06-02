@@ -4,8 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { type NameLike, Data, Name } from "@ndn/packet";
-import { assert, Closers } from "@ndn/util";
-import { setTimeout as delay } from "node:timers/promises";
+import { assert, Closers, delay } from "@ndn/util";
 import { type SpyInstanceFn, afterEach, beforeEach, expect, test, vi } from "vitest";
 
 import { type Subscription, makeSyncpsCompatParam, SyncpsPubsub } from "..";

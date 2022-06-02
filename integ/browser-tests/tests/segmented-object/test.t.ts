@@ -1,9 +1,8 @@
 import "./api";
 
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
-import { sha256, toHex } from "@ndn/util";
+import { delay, sha256, toHex } from "@ndn/util";
 import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";
-import { setTimeout as delay } from "node:timers/promises";
 import { beforeAll, beforeEach, expect, test } from "vitest";
 
 import { navigateToPage, page, pageInvoke } from "../../test-fixture/pptr";

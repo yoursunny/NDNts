@@ -7,9 +7,8 @@ import { Certificate, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Component, Data, Interest, Name, ParamsDigest } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
-import { Closers } from "@ndn/util";
+import { Closers, delay } from "@ndn/util";
 import { EventEmitter } from "node:events";
-import { setTimeout as delay } from "node:timers/promises";
 import { afterEach, expect, test } from "vitest";
 
 import { ControlCommand, ControlParameters, ControlResponse, enableNfdPrefixReg } from "..";

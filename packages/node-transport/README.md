@@ -11,7 +11,7 @@ import { TcpTransport, UdpTransport, UnixTransport } from "@ndn/node-transport";
 import { FwPacket } from "@ndn/fw";
 import { L3Face, Transport } from "@ndn/l3face";
 import { Data, Interest } from "@ndn/packet";
-import { setTimeout as delay } from "node:timers/promises";
+import { delay } from "@ndn/util";
 
 if (process.env.CI) { process.exit(0); }
 ```
