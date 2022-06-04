@@ -11,9 +11,7 @@ export class KeyMap<K, V, I, L = K> {
    * Constructor.
    * @param keyOf function to transform input key to indexable key.
    */
-  constructor(
-      private readonly keyOf: (key: K | L) => I,
-  ) {}
+  constructor(private readonly keyOf: (key: K | L) => I) {}
 
   private readonly m = new Map<I, [key: K, value: V]>();
 

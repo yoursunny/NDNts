@@ -153,18 +153,17 @@ export class Name {
 
   /** Compare with other name. */
   public compare(other: NameLike): Name.CompareResult {
-    const rhs = Name.from(other);
-    const commonSize = Math.min(this.length, rhs.length);
-    for (let i = 0; i < commonSize; ++i) {
-      const cmp = this.comps[i]!.compare(rhs.comps[i]!);
-      if (cmp !== Component.CompareResult.EQUAL) {
-        return cmp as unknown as Name.CompareResult;
-      }
+    other = Name.from(other);
+    const commonSize = Math.min(this.length, other.length);
+    const cmp = this.comparePrefix(other, commonSize);
+    if (cmp !== Name.CompareResult.EQUAL) {
+      return cmp;
     }
+
     if (this.length > commonSize) {
       return Name.CompareResult.RPREFIX;
     }
-    if (rhs.length > commonSize) {
+    if (other.length > commonSize) {
       return Name.CompareResult.LPREFIX;
     }
     return Name.CompareResult.EQUAL;
@@ -172,17 +171,35 @@ export class Name {
 
   /** Determine if this name equals other. */
   public equals(other: NameLike): boolean {
-    return this.compare(other) === Name.CompareResult.EQUAL;
+    other = Name.from(other);
+    if (this.hex_ !== undefined && other.hex_ !== undefined) {
+      return this.hex_ === other.hex_;
+    }
+    return this.length === other.length && this.comparePrefix(other, this.length) === Name.CompareResult.EQUAL;
   }
 
   /** Determine if this name is a prefix of other. */
   public isPrefixOf(other: NameLike): boolean {
-    const cmp = this.compare(other);
-    return cmp === Name.CompareResult.EQUAL || cmp === Name.CompareResult.LPREFIX;
+    other = Name.from(other);
+    return this.length <= other.length && this.comparePrefix(other, this.length) === Name.CompareResult.EQUAL;
+  }
+
+  private comparePrefix(other: Name, n: number): Name.CompareResult {
+    for (let i = 0; i < n; ++i) {
+      const cmp = this.comps[i]!.compare(other.comps[i]!);
+      if (cmp !== Component.CompareResult.EQUAL) {
+        return cmp as unknown as Name.CompareResult;
+      }
+    }
+    return Name.CompareResult.EQUAL;
   }
 
   public encodeTo(encoder: Encoder) {
-    encoder.prependTlv(TT.Name, ...this.comps);
+    if (this.value_) {
+      encoder.prependTlv(TT.Name, this.value_);
+    } else {
+      encoder.prependTlv(TT.Name, ...this.comps);
+    }
   }
 }
 

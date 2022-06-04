@@ -15,7 +15,7 @@
   "packageManager": "pnpm@7.1.7",
   "devDependencies": {
     "@mshipov/typedoc-plugin-monorepo": "^0.2.2",
-    "@types/node": "^17.0.38",
+    "@types/node": "^17.0.39",
     "@types/wtfnode": "^0.7.0",
     "@typescript/lib-dom": "npm:@types/web@0.0.67",
     "@yoursunny/xo-config": "0.49.0",
@@ -23,7 +23,7 @@
     "codedown": "^2.2.0",
     "tslib": "^2.4.0",
     "typedoc": "^0.22.17",
-    "typescript": "~4.7.2",
+    "typescript": "~4.7.3",
     "vitest": "^0.13.1",
     "wtfnode": "^0.9.1"
   },

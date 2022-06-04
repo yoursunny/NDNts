@@ -34,7 +34,7 @@
     "event-iterator": "^2.0.0",
     "graceful-fs": "^4.2.10",
     "hirestime": "^6.1.0",
-    "mnemonist": "^0.39.1",
+    "mnemonist": "^0.39.2",
     "p-defer": "^4.0.0",
     "p-lazy": "^4.0.0",
     "streaming-iterables": "^7.0.4",
