@@ -115,7 +115,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
   private readonly routes = new NameMultiSet();
   private readonly announcements = new NameMultiSet();
   public running = true;
-  private readonly txQueue = pushable<FwPacket>();
+  private readonly txQueue = pushable<FwPacket>({ objectMode: true });
 
   constructor(
       public readonly fw: ForwarderImpl,

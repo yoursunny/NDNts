@@ -42,7 +42,7 @@ test("TX throttle", async () => {
   const serverRx = vi.fn<[Uint8Array], void>();
   sws.on("message", serverRx);
 
-  const clientTx = pushable<Uint8Array>();
+  const clientTx = pushable<Uint8Array>({ objectMode: true });
   await Promise.all([
     transport.tx(clientTx),
     (async () => {

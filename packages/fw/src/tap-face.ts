@@ -75,7 +75,7 @@ export class TapFace implements FwFace.RxTx {
     };
   }
 
-  public readonly rx = pushable<FwPacket>();
+  public readonly rx = pushable<FwPacket>({ objectMode: true });
   private readonly ctrl: TapRxController;
 
   constructor(public readonly face: FwFace) {

@@ -61,7 +61,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
 
   private state_: L3Face.State = L3Face.State.UP;
   private lastError?: unknown;
-  private readonly rxSources = pushable<Transport["rx"]>();
+  private readonly rxSources = pushable<Transport["rx"]>({ objectMode: true });
   private reopenRetry?: retry.RetryOperation;
 
   constructor(

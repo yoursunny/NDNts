@@ -112,7 +112,7 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
         const face = new L3Face(new StreamTransport(duplex));
         consume(face.rx).catch(() => undefined);
 
-        const tx = pushable<WriteItem>();
+        const tx = pushable<WriteItem>({ objectMode: true });
         face.tx((async function*() {
           for await (const item of tx) {
             try {
@@ -145,7 +145,7 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
   }
 
   public listData(prefix?: Name): AsyncIterable<Data> {
-    const output = pushable<Data>();
+    const output = pushable<Data>({ objectMode: true });
     void (async () => {
       try {
         await this.useReader(async (reader) => {

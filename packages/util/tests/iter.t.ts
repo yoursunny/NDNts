@@ -5,7 +5,7 @@ import { expect, test, vi } from "vitest";
 import { delay, flatMapOnce, safeIter } from "..";
 
 test("safeIter ignore", async () => {
-  const it = pushable<number>();
+  const it = pushable<number>({ objectMode: true });
   const collector = collect(safeIter(it));
 
   it.push(1);
@@ -19,7 +19,7 @@ test("safeIter ignore", async () => {
 });
 
 test("safeIter catch", async () => {
-  const it = pushable<number>();
+  const it = pushable<number>({ objectMode: true });
   const onError = vi.fn<[unknown], undefined>();
   const collector = collect(safeIter(it, onError));
 
@@ -35,7 +35,7 @@ test("safeIter catch", async () => {
 });
 
 test("flatMapOnce", async () => {
-  const it = pushable<number>();
+  const it = pushable<number>({ objectMode: true });
   it.push(1);
   it.push(2);
   it.push(3);

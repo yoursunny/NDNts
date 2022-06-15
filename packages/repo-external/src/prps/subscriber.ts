@@ -66,7 +66,7 @@ class Subscription implements PrpsSubscriber.Subscription {
 
   private notifyPrefix: Name;
   private notifyProducer: Producer;
-  private messages = pushable<Data>();
+  private messages = pushable<Data>({ objectMode: true });
 
   private handleNotifyInterest: ProducerHandler = async (interest) => {
     if (interest.name.length !== this.notifyPrefix.length + 1 || !interest.appParameters) {

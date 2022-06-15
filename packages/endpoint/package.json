@@ -30,7 +30,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
     "applymixins": "^1.1.0",
-    "it-pushable": "^2.0.1",
+    "it-pushable": "^3.0.0",
     "streaming-iterables": "^7.0.4",
     "tslib": "^2.4.0"
   },

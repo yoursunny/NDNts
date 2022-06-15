@@ -13,7 +13,7 @@ interface InsertJob {
 
 /** Send packets to a bulk insertion target. */
 export class BulkInsertInitiator implements S.Close, S.Insert {
-  private readonly jobs = pushable<InsertJob>();
+  private readonly jobs = pushable<InsertJob>({ objectMode: true });
   private readonly faceTx: Promise<void>;
 
   constructor(face: L3Face) {

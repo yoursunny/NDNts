@@ -62,7 +62,7 @@ export class EndpointConsumer {
     const retxGen = makeRetxGenerator(retx)(interest.lifetime)[Symbol.iterator]();
 
     const promise = new Promise<Data>((resolve, reject) => {
-      const rx = pushable<FwPacket>();
+      const rx = pushable<FwPacket>({ objectMode: true });
 
       let timer: NodeJS.Timeout | number | undefined;
       const cancelRetx = () => {

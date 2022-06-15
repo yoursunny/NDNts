@@ -33,7 +33,7 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "graceful-fs": "^4.2.10",
-    "it-pushable": "^2.0.1",
+    "it-pushable": "^3.0.0",
     "stdout-stream": "^1.4.1",
     "streaming-iterables": "^7.0.4",
     "tslib": "^2.4.0",

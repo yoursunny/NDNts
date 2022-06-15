@@ -6,7 +6,7 @@ import { consume, pipeline, tap } from "streaming-iterables";
 import { Transport } from "..";
 
 export class MockTransport extends Transport {
-  public override readonly rx = pushable<Decoder.Tlv>();
+  public override readonly rx = pushable<Decoder.Tlv>({ objectMode: true });
   public sent: Uint8Array[] = [];
   private readonly closing = new AbortController();
 

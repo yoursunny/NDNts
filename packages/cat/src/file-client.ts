@@ -65,7 +65,7 @@ class Downloader {
   }
 
   private readonly local: string;
-  private readonly queue = pushable<Job>();
+  private readonly queue = pushable<Job>({ objectMode: true });
   private signal!: AbortSignal;
   private nProcessing = 0;
   private nQueued = 0;

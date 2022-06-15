@@ -60,7 +60,7 @@ export class Readvertise {
 export abstract class ReadvertiseDestination<State extends {} = {}> {
   private readvertise?: Readvertise;
   protected readonly table = new NameMap<ReadvertiseDestination.Record<State>>();
-  protected readonly queue = pushable<Name>();
+  protected readonly queue = pushable<Name>({ objectMode: true });
   protected closed = false;
 
   constructor(private readonly retryOptions: ReadvertiseDestination.RetryOptions = {

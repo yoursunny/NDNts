@@ -132,7 +132,7 @@ async function openFaceMemif(opts: openFace.Options) {
       scheme: "memif",
       role: "server",
       socketName,
-      socketOwner: [process.getuid(), process.getgid()],
+      socketOwner: [process.getuid!(), process.getgid!()],
       id: 0,
       dataroom,
       ringCapacity,
