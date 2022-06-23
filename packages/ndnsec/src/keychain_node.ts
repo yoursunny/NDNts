@@ -1,5 +1,5 @@
 import { type CryptoAlgorithm, Certificate, CertNaming, ECDSA, KeyChain, KeyStore, RSA, RSAOAEP, ValidityPeriod } from "@ndn/keychain";
-import { Component, Data, Name } from "@ndn/packet";
+import { Component, Data, Name, NameMap } from "@ndn/packet";
 import { type Decodable, Decoder, Encoder } from "@ndn/tlv";
 import { crypto } from "@ndn/util";
 import { execa } from "execa";
@@ -57,31 +57,30 @@ export class NdnsecKeyChain extends KeyChain {
   /** Copy keys and certificates to another keychain. */
   public async copyTo(dest: KeyChain): Promise<KeyChain> {
     const { lines } = await this.invokeNdnsec(["list", "-c"]);
-    const keyCerts = new Map<string, string[]>();
+    const keyCerts = new NameMap<Name[]>();
     for (const line of lines) {
-      if (line.startsWith("  +->*")) {
-        const keyName = line.split(" ").pop()!;
-        keyCerts.set(keyName, []);
-      } else if (line.startsWith("       +->")) {
-        const certName = new Name(line.split(" ").pop());
-        const { issuerId, keyName } = CertNaming.parseCertName(certName);
-        const certList = keyCerts.get(keyName.toString());
+      const match = /\/\S*/.exec(line);
+      if (!match) {
+        continue;
+      }
+      const name = new Name(match[0]);
+      if (CertNaming.isKeyName(name)) {
+        keyCerts.set(name, []);
+      } else if (CertNaming.isCertName(name)) {
+        const { issuerId, keyName } = CertNaming.parseCertName(name);
+        const certList = keyCerts.get(keyName);
         if (certList !== undefined && !issuerId.equals(IMPORTING_ISSUER)) {
-          certList.push(certName.toString());
+          certList.push(name);
         }
       }
     }
 
-    for (const keyName of keyCerts.keys()) {
-      const { subjectName } = CertNaming.parseKeyName(new Name(keyName));
-      const exported = await this.invokeNdnsec(["export", "-P", PASSPHRASE, "-i", `${subjectName}`]);
+    for (const [keyName, certList] of keyCerts) {
+      const exported = await this.invokeNdnsec(["export", "-P", PASSPHRASE, "-k", `${keyName}`]);
       const safeBag = exported.decode(SafeBag);
       await safeBag.saveKeyPair(PASSPHRASE, dest, this.importOptions);
-    }
-
-    for (const certList of keyCerts.values()) {
       for (const certName of certList) {
-        const certDump = await this.invokeNdnsec(["cert-dump", "-n", certName]);
+        const certDump = await this.invokeNdnsec(["cert-dump", "-n", `${certName}`]);
         await dest.insertCert(Certificate.fromData(certDump.decode(Data)));
       }
     }
@@ -90,9 +89,7 @@ export class NdnsecKeyChain extends KeyChain {
   }
 
   private async load() {
-    if (!this.cached) {
-      this.cached = await this.copyTo(KeyChain.createTemp(ALGO_LIST));
-    }
+    this.cached ??= await this.copyTo(KeyChain.createTemp(ALGO_LIST));
     return this.cached;
   }
 

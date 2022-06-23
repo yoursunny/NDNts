@@ -35,7 +35,7 @@
     "@yoursunny/asn1": "0.0.20200718",
     "@yoursunny/webcrypto-ed25519": "0.0.20220530",
     "graceful-fs": "^4.2.10",
-    "idb-keyval": "^6.1.0",
+    "idb-keyval": "^6.2.0",
     "mnemonist": "^0.39.2",
     "throat": "^6.0.1",
     "tslib": "^2.4.0"

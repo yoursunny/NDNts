@@ -2,7 +2,7 @@ import * as TestCertStore from "@ndn/keychain/test-fixture/cert-store";
 import * as TestKeyStore from "@ndn/keychain/test-fixture/key-store";
 import { execaSync } from "execa";
 import { dirSync as tmpDir } from "tmp";
-import { afterEach, beforeEach, describe, test } from "vitest";
+import { beforeEach, describe, test } from "vitest";
 
 import { NdnsecKeyChain } from "..";
 
@@ -13,14 +13,11 @@ describe("ndn-cxx keychain", () => {
   }
 
   let home: string;
-  let deleteTmpDir: () => void;
 
-  beforeEach(async () => {
-    ({ name: home, removeCallback: deleteTmpDir } = tmpDir({ unsafeCleanup: true }));
-  });
-
-  afterEach(() => {
-    deleteTmpDir();
+  beforeEach(() => {
+    const { name, removeCallback } = tmpDir({ unsafeCleanup: true });
+    home = name;
+    return removeCallback;
   });
 
   test("KeyStore", async () => {

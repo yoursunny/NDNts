@@ -92,7 +92,7 @@ export function check(record: TestRecord, enabled: Enable = {},
   expect(record.keys4).toHaveLength((nEnabled + nDisabled) * 8);
 
   expect(record.keys4.filter((v) => v === "ECDSA")).toHaveLength(enabled.ECDSA === false ? 0 : 6);
-  expect(record.keys4.filter((v) => v === "RSA")).toHaveLength(enabled.ECDSA === false ? 0 : 6);
+  expect(record.keys4.filter((v) => v === "RSA")).toHaveLength(enabled.RSA === false ? 0 : 6);
   expect(record.keys4.filter((v) => v === "HMAC")).toHaveLength(enabled.HMAC === false ? 0 : 6);
   expect(record.keys4.filter((v) => v === "Ed25519")).toHaveLength(enabled.Ed25519 === false ? 0 : 6);
   expect(record.keys4.filter((v) => v === "")).toHaveLength(nEnabled * 2 + nDisabled * 8);
