@@ -33,7 +33,7 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "@yoursunny/asn1": "0.0.20200718",
-    "@yoursunny/webcrypto-ed25519": "0.0.20220530",
+    "@yoursunny/webcrypto-ed25519": "0.0.20220623",
     "graceful-fs": "^4.2.10",
     "idb-keyval": "^6.2.0",
     "mnemonist": "^0.39.2",
