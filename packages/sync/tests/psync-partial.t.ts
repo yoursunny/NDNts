@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { Name } from "@ndn/packet";
 import { delay } from "@ndn/util";
-import { type SpyInstanceFn, afterEach, expect, test, vi } from "vitest";
+import { type Mock, afterEach, expect, test, vi } from "vitest";
 
 import { type Subscription, type SyncUpdate, makePSyncCompatParam, PSyncPartialPublisher, PSyncPartialSubscriber } from "..";
 
@@ -32,7 +32,7 @@ test("simple", async () => {
     syncInterestLifetime: 100,
     syncInterestInterval: [110, 150],
   });
-  const st: Array<[Subscription, SpyInstanceFn<[SyncUpdate<Name>], void>]> = [];
+  const st: Array<[Subscription, Mock<[SyncUpdate<Name>], void>]> = [];
   const subState = vi.fn<[readonly PSyncPartialSubscriber.TopicInfo[]], void>()
     .mockImplementation((topics) => {
       expect(topics).toHaveLength(4);

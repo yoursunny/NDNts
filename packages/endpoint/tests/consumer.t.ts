@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { type Verifier, Data, Interest } from "@ndn/packet";
 import { timeoutAbortSignal } from "@ndn/util";
-import { type SpyInstanceFn, afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { type Mock, afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { type ProducerHandler, type RetxPolicy, Endpoint } from "..";
 
@@ -11,7 +11,7 @@ beforeEach(() => { ep = new Endpoint(); });
 afterEach(Endpoint.deleteDefaultForwarder);
 
 describe("retx limit", () => {
-  let producer: SpyInstanceFn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>;
+  let producer: Mock<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>;
 
   beforeEach(() => {
     producer = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>()

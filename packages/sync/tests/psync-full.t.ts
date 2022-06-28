@@ -6,7 +6,7 @@ import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { type NameLike, Name } from "@ndn/packet";
 import { assert, Closers, delay, toHex } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
-import { type SpyInstanceFn, afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { type Mock, afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { type IBLT, type SyncNode, type SyncUpdate, makePSyncCompatParam, PSyncFull } from "..";
 
@@ -108,7 +108,7 @@ class Fixture {
   }
 
   private readonly syncs: PSyncFull[] = [];
-  private readonly updates: Array<SpyInstanceFn<[SyncUpdate<Name>], void>> = [];
+  private readonly updates: Array<Mock<[SyncUpdate<Name>], void>> = [];
 
   public delayTick(multiple = 1): Promise<void> {
     return delay(250 * multiple);

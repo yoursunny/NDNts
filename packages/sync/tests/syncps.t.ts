@@ -5,7 +5,7 @@ import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { type NameLike, Data, Name } from "@ndn/packet";
 import { assert, Closers, delay } from "@ndn/util";
-import { type SpyInstanceFn, afterEach, beforeEach, expect, test, vi } from "vitest";
+import { type Mock, afterEach, beforeEach, expect, test, vi } from "vitest";
 
 import { type Subscription, makeSyncpsCompatParam, SyncpsPubsub } from "..";
 
@@ -44,7 +44,7 @@ afterEach(() => {
   Forwarder.deleteDefault();
 });
 
-type UpdateMock = SpyInstanceFn< [Data], void>;
+type UpdateMock = Mock< [Data], void>;
 
 class Fixture {
   constructor(n: number, loss = 0) {

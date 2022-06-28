@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { type NameLike, Name } from "@ndn/packet";
 import { delay } from "@ndn/util";
-import { type SpyInstanceFn, beforeEach, expect, test, vi } from "vitest";
+import { type Mock, beforeEach, expect, test, vi } from "vitest";
 
 import { Forwarder, ReadvertiseDestination } from "..";
 import { NoopFace } from "../test-fixture/noop-face";
@@ -33,8 +33,8 @@ class SimpleDest extends ReadvertiseDestination {
   }
 
   private static check(
-      doFn: SpyInstanceFn<[Name, {}], Promise<void>>,
-      onFn: SpyInstanceFn<[Name], void>,
+      doFn: Mock<[Name, {}], Promise<void>>,
+      onFn: Mock<[Name], void>,
       names: NameLike[],
   ) {
     expect(doFn).toHaveBeenCalledTimes(names.length);
