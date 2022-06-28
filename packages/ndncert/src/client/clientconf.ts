@@ -2,7 +2,7 @@ import { AltUri } from "@ndn/naming-convention2";
 import { Data } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 import Ajv, { type JSONSchemaType } from "ajv";
-import { fromByteArray as encodeBase64, toByteArray as decodeBase64 } from "base64-js";
+import { toBase64, toBuffer as b64ToBuffer } from "b64-lite";
 
 import { CaProfile } from "../packet/ca-profile";
 import { retrieveCaProfile, RetrieveCaProfileOptions } from "./retrieve-profile";
@@ -51,7 +51,7 @@ export function exportClientConf(profile: CaProfile): ClientConf {
   return {
     "ca-list": [{
       "ca-prefix": AltUri.ofName(profile.prefix),
-      certificate: encodeBase64(Encoder.encode(profile.cert.data)),
+      certificate: toBase64(Encoder.encode(profile.cert.data)),
     }],
   };
 }
@@ -66,7 +66,7 @@ export async function importClientConf(
   }
   const confProfile = conf["ca-list"][0]!;
 
-  const caCertData = new Decoder(decodeBase64(confProfile.certificate)).decode(Data);
+  const caCertData = new Decoder(b64ToBuffer(confProfile.certificate)).decode(Data);
   return retrieveCaProfile({
     ...opts,
     caPrefix: AltUri.parseName(confProfile["ca-prefix"]),

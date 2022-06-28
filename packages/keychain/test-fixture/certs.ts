@@ -1,9 +1,9 @@
 import { Data } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
-import { toByteArray as decodeBase64 } from "base64-js";
+import { toBuffer as b64ToBuffer } from "b64-lite";
 
 function b64decode(input: string): Uint8Array {
-  return decodeBase64(input.replace(/\s/g, ""));
+  return b64ToBuffer(input.replace(/\s/g, ""));
 }
 
 function makeDataFromBase64(input: string): () => Data {
