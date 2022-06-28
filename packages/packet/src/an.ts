@@ -8,8 +8,6 @@ export const TT = {
   CanBePrefix: 0x21,
   MustBeFresh: 0x12,
   ForwardingHint: 0x1E,
-  Delegation: 0x1F,
-  Preference: 0x1E,
   Nonce: 0x0A,
   InterestLifetime: 0x0C,
   HopLimit: 0x22,
