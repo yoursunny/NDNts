@@ -32,8 +32,8 @@ export class CommandParameter {
     encoder.prependValue(
       this.name,
       [TT.ForwardingHint, Encoder.OmitEmpty, this.fwHint],
-      this.startBlockId === undefined ? undefined : [TT.StartBlockId, NNI(this.startBlockId)],
-      this.endBlockId === undefined ? undefined : [TT.EndBlockId, NNI(this.endBlockId)],
+      this.startBlockId !== undefined && [TT.StartBlockId, NNI(this.startBlockId)],
+      this.endBlockId !== undefined && [TT.EndBlockId, NNI(this.endBlockId)],
       [TT.ProcessId, this.processId],
       // [TT.RegisterPrefix],
       [TT.CheckPrefix, this.checkPrefix],

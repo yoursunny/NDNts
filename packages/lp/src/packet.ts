@@ -32,9 +32,9 @@ export class LpPacket {
 
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(TT.LpPacket,
-      this.fragSeqNum === undefined ? undefined : [TT.LpSeqNum, NNI(this.fragSeqNum, { len: 8 })],
-      this.fragIndex > 0 ? [TT.FragIndex, NNI(this.fragIndex)] : undefined,
-      this.fragCount > 1 ? [TT.FragCount, NNI(this.fragCount)] : undefined,
+      this.fragSeqNum !== undefined && [TT.LpSeqNum, NNI(this.fragSeqNum, { len: 8 })],
+      this.fragIndex > 0 && [TT.FragIndex, NNI(this.fragIndex)],
+      this.fragCount > 1 && [TT.FragCount, NNI(this.fragCount)],
       ...this.encodeL3Headers(),
       [TT.LpPayload, Encoder.OmitEmpty, this.payload],
     );

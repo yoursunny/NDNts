@@ -22,9 +22,7 @@ export class NackHeader {
   }
 
   public encodeTo(encoder: Encoder) {
-    encoder.prependTlv(TT.Nack,
-      this.reason_ > 0 ? [TT.NackReason, NNI(this.reason_)] : undefined,
-    );
+    encoder.prependTlv(TT.Nack, this.reason_ > 0 && [TT.NackReason, NNI(this.reason_)]);
   }
 }
 

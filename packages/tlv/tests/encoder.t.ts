@@ -67,6 +67,7 @@ test("encode Encodable[] and extract", () => {
   expect(Encoder.encode([
     undefined,
     Uint8Array.of(0xF0),
+    false,
     Encoder.extract(
       [0x02, Uint8Array.of(0x20, 0x21, 0x22)],
       extractCb,

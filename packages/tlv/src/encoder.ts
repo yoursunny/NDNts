@@ -15,7 +15,7 @@ export interface EncodableObj {
 export type EncodableTlv = [number, ...Encodable[]] | [number, typeof Encoder.OmitEmpty, ...Encodable[]];
 
 /** An object acceptable to Encoder.encode(). */
-export type Encodable = Uint8Array | undefined | EncodableObj | EncodableTlv;
+export type Encodable = Uint8Array | undefined | false | EncodableObj | EncodableTlv;
 
 function sizeofVarNum(n: number): number {
   if (n < 0xFD) {
@@ -132,7 +132,7 @@ export class Encoder {
         this.prependValue(...(obj as readonly Encodable[]));
       }
     } else {
-      assert(obj === undefined, "obj is not Encodable");
+      assert(obj === undefined || obj === false, "obj is not Encodable");
     }
   }
 

@@ -135,12 +135,12 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
 
     encoder.prependTlv(TT.Interest,
       name,
-      canBePrefix ? [TT.CanBePrefix] : undefined,
-      mustBeFresh ? [TT.MustBeFresh] : undefined,
+      canBePrefix && [TT.CanBePrefix],
+      mustBeFresh && [TT.MustBeFresh],
       fwHint,
       [TT.Nonce, NNI(nonce ?? Interest.generateNonce(), { len: 4 })],
-      lifetime === Interest.DefaultLifetime ? undefined : [TT.InterestLifetime, NNI(lifetime)],
-      hopLimit === HOPLIMIT_MAX ? undefined : [TT.HopLimit, NNI(hopLimit, { len: 1 })],
+      lifetime !== Interest.DefaultLifetime && [TT.InterestLifetime, NNI(lifetime)],
+      hopLimit !== HOPLIMIT_MAX && [TT.HopLimit, NNI(hopLimit, { len: 1 })],
       ...this.encodeParamsPortion(),
     );
   }

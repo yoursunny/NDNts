@@ -61,10 +61,7 @@ export class ControlParameters {
       TtControlParameters,
       ...fieldDefs.map(([tt, key, encodeValue]): Encodable => {
         const v = (this as any)[key];
-        if (v === undefined) {
-          return undefined;
-        }
-        return [tt, encodeValue(v)];
+        return v !== undefined && [tt, encodeValue(v)];
       }),
     );
   }
