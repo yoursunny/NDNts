@@ -16,7 +16,7 @@ import { PSyncStateProducerBuffer } from "./state-producer-buffer";
 interface PendingInterest {
   interest: Interest;
   recvIblt: IBLT;
-  expire: NodeJS.Timeout;
+  expire: NodeJS.Timeout | number;
   defer: DeferredPromise<Data | undefined>;
 }
 
@@ -82,7 +82,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
 
   private readonly cFetcher: PSyncStateFetcher;
   private readonly cInterval: IntervalFunc;
-  private cTimer!: NodeJS.Timeout;
+  private cTimer!: NodeJS.Timeout | number;
   private cAbort?: AbortController;
   private cCurrentInterestName?: Name;
 

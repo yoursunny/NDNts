@@ -16,7 +16,7 @@ interface PendingInterest {
   interest: Interest;
   recvIblt: IBLT;
   bloom: BloomFilter;
-  expire: NodeJS.Timeout;
+  expire: NodeJS.Timeout | number;
   defer: DeferredPromise<Data | undefined>;
 }
 

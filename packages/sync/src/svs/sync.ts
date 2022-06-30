@@ -70,7 +70,7 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
   private aggregated?: SvStateVector;
 
   /** Sync Interest timer. */
-  private timer!: NodeJS.Timeout;
+  private timer!: NodeJS.Timeout | number;
 
   private debug(action: string, entry: Partial<DebugEntry> = {}, recv?: SvStateVector): void {
     if (this.listenerCount("debug") > 0) {

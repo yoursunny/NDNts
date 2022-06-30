@@ -14,7 +14,7 @@ export class Closers extends Array {
 
   /** Schedule a timeout or interval to be canceled via .close(). */
   public addTimeout<T extends NodeJS.Timeout | number>(t: T): T {
-    this.push({ close: () => clearTimeout(t as number) });
+    this.push({ close: () => clearTimeout(t) });
     return t;
   }
 }

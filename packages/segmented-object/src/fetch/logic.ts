@@ -25,7 +25,7 @@ class SegState {
   public nRetx = 0;
   public txTime = 0;
   public rto = 0;
-  public rtoExpiry?: NodeJS.Timeout;
+  public rtoExpiry?: NodeJS.Timeout | number;
   public interest: any;
 }
 

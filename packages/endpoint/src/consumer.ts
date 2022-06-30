@@ -66,7 +66,7 @@ export class EndpointConsumer {
 
       let timer: NodeJS.Timeout | number | undefined;
       const cancelRetx = () => {
-        if (timer) { clearTimeout(timer as any); }
+        clearTimeout(timer);
         timer = undefined;
       };
 

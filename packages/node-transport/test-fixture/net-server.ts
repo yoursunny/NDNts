@@ -65,7 +65,7 @@ export abstract class NetServer extends NetServerBase<net.Server, net.Socket> {
   private readonly handleNewClient = (sock: net.Socket) => {
     this.clients.add(sock);
 
-    let interval: NodeJS.Timeout | undefined;
+    let interval: NodeJS.Timeout | number | undefined;
     if (this.sendToClients) {
       interval = setInterval(() => {
         try {

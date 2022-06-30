@@ -11,8 +11,6 @@ export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
   return result === 0;
 }
 
-export function delay<T = void>(time: number, value?: T): Promise<T> {
-  return new Promise<T>((resolve) => {
-    setTimeout(() => resolve(value!), time);
-  });
+export function delay<T = void>(after: number, value?: T): Promise<T> {
+  return new Promise<T>((resolve) => setTimeout(resolve, after, value));
 }

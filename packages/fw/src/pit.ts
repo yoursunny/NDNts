@@ -76,7 +76,7 @@ export class PitEntry {
 
   /** Determine which downstream faces should receive Data from upstream. */
   public *returnData(up: FaceImpl): Iterable<{ dn: FaceImpl; token: unknown }> {
-    clearTimeout(this.expireTimer as number);
+    clearTimeout(this.expireTimer);
     this.pit.eraseEntry(this);
     const now = getNow();
     for (const [dn, { expire, token }] of this.dnRecords) {
@@ -100,7 +100,7 @@ export class PitEntry {
     }
     this.lastExpire = lastExpire;
 
-    clearTimeout(this.expireTimer as number);
+    clearTimeout(this.expireTimer);
     if (this.lastExpire === 0) {
       this.expire();
     } else {
@@ -152,7 +152,7 @@ export class Pit {
    */
   public close(): void {
     for (const entry of this.byName.values()) {
-      clearTimeout(entry.expireTimer as number);
+      clearTimeout(entry.expireTimer);
     }
   }
 

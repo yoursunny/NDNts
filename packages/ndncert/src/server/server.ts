@@ -59,7 +59,7 @@ export class Server {
   }
 
   private readonly state = new Map<string, Context>();
-  private cleanupTimer: NodeJS.Timeout;
+  private cleanupTimer: NodeJS.Timeout | number;
   private readonly producers: Producer[];
   private readonly signedInterestPolicy = crypto.makeSignedInterestPolicy();
 

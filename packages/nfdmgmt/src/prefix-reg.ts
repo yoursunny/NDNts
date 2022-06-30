@@ -27,7 +27,7 @@ type Options = CommandOptions & RouteOptions & {
 };
 
 interface State {
-  refreshTimer?: NodeJS.Timeout;
+  refreshTimer?: NodeJS.Timeout | number;
 }
 
 class NfdPrefixReg extends ReadvertiseDestination<State> {

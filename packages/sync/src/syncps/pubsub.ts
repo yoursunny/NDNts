@@ -22,7 +22,7 @@ interface PublicationEntry {
   own: boolean;
   expired: boolean;
 
-  timers: NodeJS.Timeout[];
+  timers: Array<NodeJS.Timeout | number>;
 }
 
 interface SyncInterestInfo {
@@ -31,7 +31,7 @@ interface SyncInterestInfo {
 }
 
 interface PendingInterest extends SyncInterestInfo {
-  expire: NodeJS.Timeout;
+  expire: NodeJS.Timeout | number;
   defer: DeferredPromise<Data | undefined>;
 }
 
@@ -157,7 +157,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
   private readonly cVerifier?: Verifier;
   private readonly cLifetime: number;
   private cAbort?: AbortController;
-  private cTimer!: NodeJS.Timeout;
+  private cTimer!: NodeJS.Timeout | number;
   private cCurrentInterestNonce?: number;
   private cDelivering = false;
 

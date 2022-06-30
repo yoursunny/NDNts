@@ -68,7 +68,7 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
 
   private readonly cFetcher: PSyncStateFetcher;
   private readonly cInterval: IntervalFunc;
-  private cTimer!: NodeJS.Timeout;
+  private cTimer!: NodeJS.Timeout | number;
   private cAbort?: AbortController;
 
   private debug(action: string): void {
