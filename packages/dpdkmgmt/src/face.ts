@@ -3,9 +3,9 @@ import { L3Face, Transport } from "@ndn/l3face";
 import { joinHostPort, splitHostPort, udp_helper, UdpTransport } from "@ndn/node-transport";
 import type { NameLike } from "@ndn/packet";
 import { gql, GraphQLClient } from "graphql-request";
+import { once } from "node:events";
 import * as net from "node:net";
 import * as path from "node:path";
-import { pEvent } from "p-event";
 
 import { MemifTransport } from "./memif-transport";
 import { NdndpdkPrefixReg } from "./prefix-reg";
@@ -19,7 +19,7 @@ async function detectLocalAddress(gqlServer: string): Promise<string> {
   }
 
   const tcpConn = net.connect(port, host);
-  await pEvent(tcpConn, "connect");
+  await once(tcpConn, "connect");
   const { localAddress } = tcpConn;
   tcpConn.destroy();
   return localAddress!;

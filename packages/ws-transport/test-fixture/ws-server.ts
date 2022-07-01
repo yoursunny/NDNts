@@ -1,7 +1,7 @@
 import { NetServerBase } from "@ndn/node-transport/test-fixture/net-server";
+import { once } from "node:events";
 import * as http from "node:http";
 import * as net from "node:net";
-import { pEvent } from "p-event";
 import { WebSocket, WebSocketServer } from "ws";
 
 /** WebSocket test server. */
@@ -20,7 +20,7 @@ export class WsServer extends NetServerBase<WebSocketServer, WebSocket> {
 
   public override async open(): Promise<void> {
     this.http.listen(0, "127.0.0.1");
-    await pEvent(this.http, "listening");
+    await once(this.http, "listening");
     const { port } = this.http.address() as net.AddressInfo;
     this.uri = `ws://127.0.0.1:${port}`;
   }
@@ -31,7 +31,7 @@ export class WsServer extends NetServerBase<WebSocketServer, WebSocket> {
     }
     this.server.close();
     this.http.close();
-    await pEvent(this.http, "close");
+    await once(this.http, "close");
   }
 }
 

@@ -2,8 +2,8 @@ import { Forwarder, FwPacket } from "@ndn/fw";
 import { L3Face } from "@ndn/l3face";
 import { Interest } from "@ndn/packet";
 import { delay } from "@ndn/util";
+import { once } from "node:events";
 import * as net from "node:net";
-import { pEvent } from "p-event";
 import { collect } from "streaming-iterables";
 import { beforeEach, expect, test, vi } from "vitest";
 
@@ -28,14 +28,19 @@ beforeEach(async () => {
 });
 
 test("RX error", async () => {
+  const handleRxError = vi.fn<[Error], void>();
+  face.once("rxerror", handleRxError);
+
   setTimeout(() => sock.write(Uint8Array.of(0xF0, 0x00)), 200);
   await Promise.all([
     expect(collect(face.rx)).resolves.toHaveLength(0),
     face.tx((async function*() { // eslint-disable-line require-yield
       await delay(400);
     })()),
-    expect(pEvent(face, "rxerror")).resolves.toContain(/F000/),
   ]);
+
+  expect(handleRxError).toHaveBeenCalledOnce();
+  expect(handleRxError.mock.calls[0]![0]!.message).toContain("F000");
 });
 
 test("createFace", async () => {

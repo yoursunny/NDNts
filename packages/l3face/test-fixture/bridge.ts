@@ -11,7 +11,7 @@ import { L3Face, Transport } from "..";
 class BridgeTransport extends Transport {
   public override readonly rx: Transport.Rx;
   public bridgePeer?: BridgeTransport;
-  private readonly bridgeRx = pushable<Uint8Array>();
+  private readonly bridgeRx = pushable<Uint8Array>({ objectMode: true });
 
   constructor(bridgeName: string, relay: Bridge.RelayFunc, private readonly closePromise: Promise<undefined>) {
     super({ describe: `BRIDGE(${bridgeName})` });

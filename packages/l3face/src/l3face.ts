@@ -5,7 +5,6 @@ import { asDataView } from "@ndn/util";
 import { abortableSource, AbortError as IteratorAbortError } from "abortable-iterator";
 import { pushable } from "it-pushable";
 import { EventEmitter } from "node:events";
-import { pEvent } from "p-event";
 import * as retry from "retry";
 import { consume, filter, map, pipeline } from "streaming-iterables";
 import type TypedEmitter from "typed-emitter";
@@ -157,8 +156,8 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
       }
 
       const abort = new AbortController();
-      const onStateChange = pEvent(this, "state");
-      void onStateChange.then(() => abort.abort());
+      const handleStateChange = () => abort.abort();
+      this.once("state", handleStateChange);
 
       try {
         const txSource = abortableSource<Uint8Array>(txSourceIterator as any, abort.signal);
@@ -176,7 +175,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
         }
       } finally {
         abort.abort();
-        onStateChange.cancel();
+        this.off("state", handleStateChange);
       }
     }
     this.reopenRetry?.stop();

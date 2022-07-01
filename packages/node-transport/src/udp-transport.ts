@@ -1,6 +1,6 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
+import EventIterator from "event-iterator";
 import type { AddressInfo } from "node:net";
-import { pEventIterator } from "p-event";
 
 import { joinHostPort } from "./hostport";
 import * as udp from "./udp-helper";
@@ -18,11 +18,9 @@ export class UdpTransport extends Transport {
   constructor(unicast: udp.Socket);
   constructor(multicastTx: udp.Socket, multicastRx: udp.Socket);
   constructor(txSock: udp.Socket, rxSock?: udp.Socket) {
+    const [scheme, { address, port }] = rxSock ? ["UDPm", txSock.address()] : ["UDP", txSock.remoteAddress()];
     super({
-      describe: (() => {
-        const [scheme, { address, port }] = rxSock ? ["UDPm", txSock.address()] : ["UDP", txSock.remoteAddress()];
-        return `${scheme}(${joinHostPort(address, port)})`;
-      })(),
+      describe: `${scheme}(${joinHostPort(address, port)})`,
       multicast: !!rxSock,
     });
 
@@ -42,8 +40,16 @@ export class UdpTransport extends Transport {
     }
 
     this.rx = rxFromPacketIterable(
-      pEventIterator(this.rxSock, "message", {
-        resolutionEvents: ["close"],
+      new EventIterator<Uint8Array>(({ push, stop, fail }) => {
+        const handleMessage = (msg: Uint8Array) => push(msg);
+        this.rxSock.on("message", handleMessage);
+        this.rxSock.on("close", stop);
+        this.rxSock.on("error", fail);
+        return () => {
+          this.rxSock.off("message", handleMessage);
+          this.rxSock.off("close", stop);
+          this.rxSock.off("error", fail);
+        };
       }),
     );
   }

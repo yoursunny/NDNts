@@ -1,6 +1,6 @@
 import type { EventEmitter } from "node:events";
+import { once } from "node:events";
 import * as net from "node:net";
-import { pEvent, pEventIterator } from "p-event";
 import { tmpNameSync } from "tmp";
 
 export abstract class NetServerBase<Server extends EventEmitter, Client> {
@@ -17,13 +17,8 @@ export abstract class NetServerBase<Server extends EventEmitter, Client> {
 
   /** Wait until at least n clients are connected. */
   public readonly waitNClients = async (n: number): Promise<Client[]> => {
-    if (this.clients.size < n) {
-      // eslint-disable-next-line no-empty-pattern
-      for await (const {} of pEventIterator(this.server, "connection", { rejectionEvents: [] })) {
-        if (this.clients.size >= n) {
-          break;
-        }
-      }
+    while (this.clients.size < n) {
+      await once(this.server, "connection");
     }
     return Array.from(this.clients).slice(0, n);
   };
@@ -42,7 +37,7 @@ export abstract class NetServer extends NetServerBase<net.Server, net.Socket> {
 
   public override async open(): Promise<void> {
     this.listenBegin();
-    await pEvent(this.server, "listening");
+    await once(this.server, "listening");
     this.listenEnd();
   }
 
@@ -54,7 +49,7 @@ export abstract class NetServer extends NetServerBase<net.Server, net.Socket> {
   public override async close(): Promise<void> {
     this.server.off("connection", this.handleNewClient);
     this.server.close();
-    await pEvent(this.server, "close");
+    await once(this.server, "close");
 
     for (const client of this.clients) {
       client.end();

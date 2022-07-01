@@ -1,6 +1,6 @@
 import * as dgram from "node:dgram";
+import { once } from "node:events";
 import * as os from "node:os";
-import { pEvent } from "p-event";
 
 export const DEFAULT_MTU = 65000;
 const DEFAULT_UNICAST_PORT = 6363;
@@ -51,7 +51,7 @@ export async function openSocket({
   });
   try {
     sock.bind(bind);
-    await pEvent(sock, "listening");
+    await once(sock, "listening");
   } catch (err: unknown) {
     sock.close();
     throw err;
@@ -72,7 +72,7 @@ export async function connect(sock: Socket, {
 }: ConnectOptions): Promise<Socket> {
   try {
     sock.connect(port, host);
-    await pEvent(sock, "connect");
+    await once(sock, "connect");
   } catch (err: unknown) {
     sock.close();
     throw err;
@@ -150,7 +150,7 @@ export async function openMulticastTx(opts: MulticastOptions): Promise<Socket> {
     sock.setMulticastTTL(multicastTtl);
     sock.setMulticastInterface(intf);
     sock.connect(port, group);
-    await pEvent(sock, "connect");
+    await once(sock, "connect");
   } catch (err: unknown) {
     sock.close();
     throw err;

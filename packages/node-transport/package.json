@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@ndn/l3face": "workspace:*",
-    "p-event": "^5.0.1",
+    "event-iterator": "^2.0.0",
     "tslib": "^2.4.0",
     "url-format-lax": "^2.0.0",
     "url-parse-lax": "^5.0.0"

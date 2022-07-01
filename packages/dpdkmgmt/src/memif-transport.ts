@@ -1,7 +1,7 @@
 import { L3Face, rxFromPacketIterable, Transport, txToStream } from "@ndn/l3face";
 import type { Memif } from "memif";
+import { once } from "node:events";
 import { createRequire } from "node:module";
-import { pEvent } from "p-event";
 
 // don't name this 'require' to avoid @typescript-eslint/no-require-imports
 const cjsRequire = createRequire(import.meta.url);
@@ -53,7 +53,7 @@ export namespace MemifTransport {
     const transport = new MemifTransport(opts, new MemifConstructor(opts));
 
     if (waitUp) {
-      await pEvent(transport.memif, "memif:up");
+      await once(transport.memif, "memif:up");
     }
     return transport;
   }

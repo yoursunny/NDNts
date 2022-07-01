@@ -1,6 +1,5 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
-import { pEventIterator } from "p-event";
-import { map } from "streaming-iterables";
+import EventIterator from "event-iterator";
 import type WsWebSocket from "ws";
 
 import { makeWebSocket } from "./ws_node";
@@ -14,11 +13,17 @@ export class WsTransport extends Transport {
   constructor(private readonly sock: WebSocket, private readonly opts: WsTransport.Options) {
     super({ describe: `WebSocket(${sock.url})` });
     sock.binaryType = "arraybuffer";
-    this.rx = rxFromPacketIterable(map(
-      (evt) => new Uint8Array(evt instanceof ArrayBuffer ? evt : evt.data),
-      pEventIterator<"message", ArrayBuffer | MessageEvent<ArrayBuffer>>(
-        sock, "message", { resolutionEvents: ["close"] }),
-    ));
+    this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(({ push, stop }) => {
+      const handleMessage = (evt: ArrayBuffer | MessageEvent<ArrayBuffer>) => {
+        push(new Uint8Array(evt instanceof ArrayBuffer ? evt : evt.data));
+      };
+      sock.addEventListener("message", handleMessage);
+      sock.addEventListener("close", stop);
+      return () => {
+        sock.removeEventListener("message", handleMessage);
+        sock.removeEventListener("close", stop);
+      };
+    }));
 
     this.highWaterMark = opts.highWaterMark ?? 1024 * 1024;
     this.lowWaterMark = opts.lowWaterMark ?? 16 * 1024;

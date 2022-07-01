@@ -30,7 +30,6 @@
     "@ndn/packet": "workspace:*",
     "graphql": "^16.5.0",
     "graphql-request": "^4.3.0",
-    "p-event": "^5.0.1",
     "tslib": "^2.4.0"
   },
   "optionalDependencies": {
