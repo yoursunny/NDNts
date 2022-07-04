@@ -3,17 +3,15 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package implements a Bluetooth Low Energy (BLE) client transport using [Web Bluetooth API](https://web.dev/bluetooth/).
-As of 2022-02-19, Web Bluetooth API is only available in Chrome-based browsers.
+As of 2022-07-04, Web Bluetooth API is only available in Chrome-based browsers.
 The protocol is compatible with [esp8266ndn](https://github.com/yoursunny/esp8266ndn) `BleServerTransport` class, summarized in the next section.
 
 Tested combinations:
 
-* Chrome 98 on Windows 10, nRF52832: works.
-* Chrome 98 on Windows 10, ESP32 with NimBLE stack: works.
-* Chrome 98 on Windows 10, ESP32 with Bluedroid stack: does not work, "GATT Error: Not supported".
-* Chrome 98 on Android 11, nRF52832: works.
-* Chrome 98 on Android 11, ESP32 with NimBLE stack: works.
-* Chrome 98 on Android 11, ESP32 with Bluedroid stack: does not work, "GATT Error: Not supported".
+* Chrome 103 on Windows 10, nRF52832: works.
+* Chrome 103 on Windows 10, ESP32 with NimBLE stack: works.
+* Chrome 103 on Android 11, nRF52832: works.
+* Chrome 103 on Android 11, ESP32 with NimBLE stack: works.
 
 ## NDN-BLE protocol
 

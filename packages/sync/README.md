@@ -12,7 +12,7 @@ This package contains dataset synchronization protocols, including:
 * [syncps - Pubsub](https://github.com/pollere/DNMP-v2/tree/main/syncps)
   * simple unit test
   * note: current implementation is compatible with DNMP-v2 syncps, not DCT syncps
-* [StateVectorSync](https://named-data.github.io/StateVectorSync/Specification.html), revision 2021-12-09
+* [StateVectorSync](https://named-data.github.io/StateVectorSync/Specification.html), revision 2021-12-15
   * complete unit test
   * compare to [@pulsejet's library](https://github.com/pulsejet/ndnts-svs), this implementation only contains core synchronization logic, but does not deal with Data fetching
 

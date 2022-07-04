@@ -149,7 +149,12 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
 
   public tx = async (iterable: AsyncIterable<FwPacket>) => {
     const txSourceIterator = this.txTransform(iterable)[Symbol.asyncIterator]();
-    txSourceIterator.return = undefined;
+    const txSourceIterable: AsyncIterable<Uint8Array> = {
+      [Symbol.asyncIterator]: () => ({
+        next: () => txSourceIterator.next(),
+      }),
+    };
+
     while (this.state !== L3Face.State.CLOSED) {
       if (this.state === L3Face.State.DOWN) {
         this.reopenTransport();
@@ -160,7 +165,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
       this.once("state", handleStateChange);
 
       try {
-        const txSource = abortableSource<Uint8Array>(txSourceIterator as any, abort.signal);
+        const txSource = abortableSource<Uint8Array>(txSourceIterable, abort.signal);
         if (this.state === L3Face.State.UP) {
           this.rxSources.push(abortableSource(this.transport.rx, abort.signal));
           await this.transport.tx(txSource);
