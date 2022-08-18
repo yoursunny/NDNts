@@ -7,23 +7,39 @@ import readlink from "readlink";
 const readlinkPromise = promisify(readlink);
 
 /**
+ * @typedef {{
+ *  conditions: string[];
+ *  importAssertions: object;
+ *  parentURL?: string;
+ * }} ResolveContext
+ *
+ * @typedef {{
+ *  format?: string;
+ *  shortCircuit?: boolean;
+ *  url: string;
+ * }} ResolveResult
+ */
+
+/**
  * Node.js loader resolve hook.
  * @param {string} specifier
- * @param {{ conditions: string[], parentURL: string | undefined }} context
- * @param {typeof resolve} defaultResolve
- * @returns {Promise<{ url: string }>}
+ * @param {ResolveContext} context
+ * @param {(specifier: string, context: ResolveContext) => Promise<ResolveResult>} nextResolve
+ * @returns {Promise<ResolveResult>}
  */
-export async function resolve(specifier, context, defaultResolve) {
+export async function resolve(specifier, context, nextResolve) {
   try {
     const { protocol, pathname } = new URL(specifier);
     if (protocol === "file:" && pathname.endsWith(".md")) {
       return {
         format: "module",
+        shortCircuit: true,
         url: `${specifier}.ts`,
       };
     }
   } catch {}
-  const r = await K.resolve(specifier, context, defaultResolve);
+
+  const r = await K.resolve(specifier, context, nextResolve);
   try {
     const u = new URL(r.url);
     if (u.protocol === "file:") {
@@ -34,20 +50,36 @@ export async function resolve(specifier, context, defaultResolve) {
     }
     r.url = u.toString();
   } catch {}
-  return r;
+  return {
+    shortCircuit: true,
+    ...r,
+  };
 }
+/**
+ * @typedef {{
+ *  conditions: string[];
+ *  format?: string;
+ *  importAssertions: object;
+ * }} LoadContext
+ *
+ * @typedef {{
+ *  format?: string;
+ *  shortCircuit?: boolean;
+ *  source: string | ArrayBuffer | Uint8Array;
+ * }} LoadResult
+ */
 
 /**
  * Node.js loader load hook.
  * @param {string} url
- * @param {{ format: string }} context
- * @param {typeof load} defaultLoad
- * @returns {Promise<{ format: string, source: string | ArrayBuffer | SharedArrayBuffer | Uint8Array }>}
+ * @param {LoadContext} context
+ * @param {(url: string, context: LoadContext) => Promise<LoadResult>} nextLoad
+ * @returns {Promise<LoadResult>}
  */
-export async function load(url, context, defaultLoad) {
+export async function load(url, context, nextLoad) {
   let { protocol, pathname } = new URL(url);
   if (!(protocol === "file:" && pathname.endsWith(".ts"))) {
-    return defaultLoad(url, context, defaultLoad);
+    return nextLoad(url, context);
   }
 
   const isLiterate = pathname.endsWith(".md.ts");
@@ -61,11 +93,13 @@ export async function load(url, context, defaultLoad) {
 
   const { source } = await K.transformSource(content, {
     format: "module",
+    shortCircuit: true,
     url,
   }, () => { throw new Error("unexpected call to defaultTransformSource"); });
 
   return {
     format: "module",
+    shortCircuit: true,
     source,
   };
 }

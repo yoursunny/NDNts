@@ -29,9 +29,9 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/l3face": "workspace:*",
-    "@ndn/util": "workspace:*",
-    "@types/web-bluetooth": "^0.0.14",
+    "@ndn/l3face": "workspace:0.0.20220501",
+    "@ndn/util": "workspace:0.0.20220501",
+    "@types/web-bluetooth": "^0.0.15",
     "event-iterator": "^2.0.0",
     "tslib": "^2.4.0"
   }

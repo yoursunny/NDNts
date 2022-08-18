@@ -25,10 +25,10 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/keychain": "workspace:*",
-    "@ndn/packet": "workspace:*",
-    "@ndn/tlv": "workspace:*",
-    "@ndn/util": "workspace:*",
+    "@ndn/keychain": "workspace:0.0.20220501",
+    "@ndn/packet": "workspace:0.0.20220501",
+    "@ndn/tlv": "workspace:0.0.20220501",
+    "@ndn/util": "workspace:0.0.20220501",
     "@yoursunny/asn1": "0.0.20200718",
     "execa": "^6.1.0",
     "throat": "^6.0.1",

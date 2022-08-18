@@ -13,10 +13,11 @@ if (process.env.COVERPKG) {
 
 export default defineConfig({
   test: {
+    coverage,
     include: [
       "packages/**/tests/**/*.t.ts",
     ],
+    teardownTimeout: 5000,
     watch: false,
-    coverage,
   },
 });

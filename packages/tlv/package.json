@@ -26,7 +26,7 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/util": "workspace:*",
+    "@ndn/util": "workspace:0.0.20220501",
     "mnemonist": "^0.39.2",
     "tslib": "^2.4.0"
   }

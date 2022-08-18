@@ -26,16 +26,16 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/endpoint": "workspace:*",
-    "@ndn/keychain": "workspace:*",
-    "@ndn/naming-convention2": "workspace:*",
-    "@ndn/packet": "workspace:*",
-    "@ndn/util": "workspace:*",
+    "@ndn/endpoint": "workspace:0.0.20220501",
+    "@ndn/keychain": "workspace:0.0.20220501",
+    "@ndn/naming-convention2": "workspace:0.0.20220501",
+    "@ndn/packet": "workspace:0.0.20220501",
+    "@ndn/util": "workspace:0.0.20220501",
     "mnemonist": "^0.39.2",
     "tslib": "^2.4.0"
   },
   "devDependencies": {
-    "@ndn/repo": "workspace:*",
+    "@ndn/repo": "workspace:0.0.20220501",
     "streaming-iterables": "^7.0.4"
   }
 }

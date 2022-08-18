@@ -26,15 +26,15 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/endpoint": "workspace:*",
-    "@ndn/fw": "workspace:*",
-    "@ndn/packet": "workspace:*",
-    "@ndn/repo-api": "workspace:*",
-    "@ndn/tlv": "workspace:*",
-    "@ndn/util": "workspace:*",
+    "@ndn/endpoint": "workspace:0.0.20220501",
+    "@ndn/fw": "workspace:0.0.20220501",
+    "@ndn/packet": "workspace:0.0.20220501",
+    "@ndn/repo-api": "workspace:0.0.20220501",
+    "@ndn/tlv": "workspace:0.0.20220501",
+    "@ndn/util": "workspace:0.0.20220501",
     "@types/abstract-leveldown": "^7.2.0",
     "@types/encoding-down": "^5.0.0",
-    "@types/levelup": "^5.1.1",
+    "@types/levelup": "^5.1.2",
     "abstract-leveldown": "^7.2.0",
     "encoding-down": "^7.1.0",
     "levelup": "^5.1.1",
@@ -44,9 +44,9 @@
     "typed-emitter": "^2.1.0"
   },
   "devDependencies": {
-    "@ndn/naming-convention2": "workspace:*",
-    "@ndn/rdr": "workspace:*",
-    "@ndn/segmented-object": "workspace:*",
+    "@ndn/naming-convention2": "workspace:0.0.20220501",
+    "@ndn/rdr": "workspace:0.0.20220501",
+    "@ndn/segmented-object": "workspace:0.0.20220501",
     "@types/level-errors": "^3.0.0",
     "@types/memdown": "^3.0.0",
     "memdown": "^6.1.1"

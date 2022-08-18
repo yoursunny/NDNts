@@ -26,11 +26,11 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/packet": "workspace:*",
-    "@ndn/util": "workspace:*",
+    "@ndn/packet": "workspace:0.0.20220501",
+    "@ndn/util": "workspace:0.0.20220501",
     "@types/retry": "^0.12.2",
     "hirestime": "^6.1.0",
-    "it-pushable": "^3.0.0",
+    "it-pushable": "^3.1.0",
     "mnemonist": "^0.39.2",
     "retry": "^0.13.1",
     "streaming-iterables": "^7.0.4",

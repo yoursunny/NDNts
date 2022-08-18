@@ -24,13 +24,13 @@
     "directory": "packages/repo-cli"
   },
   "dependencies": {
-    "@ndn/cli-common": "workspace:*",
-    "@ndn/l3face": "workspace:*",
-    "@ndn/naming-convention2": "workspace:*",
-    "@ndn/node-transport": "workspace:*",
-    "@ndn/packet": "workspace:*",
-    "@ndn/repo": "workspace:*",
-    "@ndn/repo-api": "workspace:*",
+    "@ndn/cli-common": "workspace:0.0.20220501",
+    "@ndn/l3face": "workspace:0.0.20220501",
+    "@ndn/naming-convention2": "workspace:0.0.20220501",
+    "@ndn/node-transport": "workspace:0.0.20220501",
+    "@ndn/packet": "workspace:0.0.20220501",
+    "@ndn/repo": "workspace:0.0.20220501",
+    "@ndn/repo-api": "workspace:0.0.20220501",
     "leveldown": "^6.1.1",
     "progress": "^2.0.3",
     "streaming-iterables": "^7.0.4",
@@ -40,6 +40,6 @@
   "devDependencies": {
     "@types/leveldown": "^4.0.3",
     "@types/progress": "^2.0.5",
-    "@types/yargs": "^17.0.10"
+    "@types/yargs": "^17.0.11"
   }
 }

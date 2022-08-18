@@ -26,8 +26,8 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/packet": "workspace:*",
-    "@ndn/tlv": "workspace:*",
+    "@ndn/packet": "workspace:0.0.20220501",
+    "@ndn/tlv": "workspace:0.0.20220501",
     "tslib": "^2.4.0"
   }
 }

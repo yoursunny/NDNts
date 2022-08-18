@@ -24,21 +24,21 @@
     "directory": "packages/keychain-cli"
   },
   "dependencies": {
-    "@ndn/cli-common": "workspace:*",
-    "@ndn/keychain": "workspace:*",
-    "@ndn/naming-convention2": "workspace:*",
-    "@ndn/ndncert": "workspace:*",
-    "@ndn/ndnsec": "workspace:*",
-    "@ndn/packet": "workspace:*",
-    "@ndn/repo": "workspace:*",
-    "@ndn/tlv": "workspace:*",
-    "@ndn/util": "workspace:*",
+    "@ndn/cli-common": "workspace:0.0.20220501",
+    "@ndn/keychain": "workspace:0.0.20220501",
+    "@ndn/naming-convention2": "workspace:0.0.20220501",
+    "@ndn/ndncert": "workspace:0.0.20220501",
+    "@ndn/ndnsec": "workspace:0.0.20220501",
+    "@ndn/packet": "workspace:0.0.20220501",
+    "@ndn/repo": "workspace:0.0.20220501",
+    "@ndn/tlv": "workspace:0.0.20220501",
+    "@ndn/util": "workspace:0.0.20220501",
     "@strattadb/environment": "^8.0.2",
     "fast-chunk-string": "^1.0.1",
     "get-stdin": "^9.0.0",
     "graceful-fs": "^4.2.10",
     "leveldown": "^6.1.1",
-    "nodemailer": "^6.7.6",
+    "nodemailer": "^6.7.8",
     "prompts": "^2.4.2",
     "stdout-stream": "^1.4.1",
     "tslib": "^2.4.0",
@@ -48,9 +48,9 @@
     "@types/fast-chunk-string": "^1.0.1",
     "@types/graceful-fs": "^4.1.5",
     "@types/leveldown": "^4.0.3",
-    "@types/nodemailer": "^6.4.4",
+    "@types/nodemailer": "^6.4.5",
     "@types/prompts": "^2.0.14",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^17.0.10"
+    "@types/yargs": "^17.0.11"
   }
 }

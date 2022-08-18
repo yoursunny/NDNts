@@ -39,6 +39,7 @@ const TABLE: Row[] = [
 
 test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }) => {
   const fw = Forwarder.create();
+  closers.push(fw);
 
   const verbs: string[] = [];
   const remoteProcess = (interest: Interest, token: unknown) => {

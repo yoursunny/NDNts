@@ -24,11 +24,11 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/fw": "workspace:*",
-    "@ndn/l3face": "workspace:*",
-    "@ndn/node-transport": "workspace:*",
-    "@ndn/packet": "workspace:*",
-    "graphql": "^16.5.0",
+    "@ndn/fw": "workspace:0.0.20220501",
+    "@ndn/l3face": "workspace:0.0.20220501",
+    "@ndn/node-transport": "workspace:0.0.20220501",
+    "@ndn/packet": "workspace:0.0.20220501",
+    "graphql": "^16.6.0",
     "graphql-request": "^4.3.0",
     "tslib": "^2.4.0"
   },

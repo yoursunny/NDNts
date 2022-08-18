@@ -24,16 +24,16 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/l3face": "workspace:*",
+    "@ndn/l3face": "workspace:0.0.20220501",
     "event-iterator": "^2.0.0",
     "tslib": "^2.4.0",
     "url-format-lax": "^2.0.0",
     "url-parse-lax": "^5.0.0"
   },
   "devDependencies": {
-    "@ndn/fw": "workspace:*",
-    "@ndn/packet": "workspace:*",
-    "@ndn/util": "workspace:*",
+    "@ndn/fw": "workspace:0.0.20220501",
+    "@ndn/packet": "workspace:0.0.20220501",
+    "@ndn/util": "workspace:0.0.20220501",
     "@types/tmp": "^0.2.3",
     "@types/url-format-lax": "^2.0.0",
     "@types/url-parse-lax": "^5.0.0",

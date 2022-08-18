@@ -33,12 +33,12 @@
   "devDependencies": {
     "@types/tmp": "^0.2.3",
     "@types/write": "^2.0.1",
-    "it-pushable": "^3.0.0",
+    "it-pushable": "^3.1.0",
     "streaming-iterables": "^7.0.4",
     "tmp": "^0.2.1",
     "write": "^2.0.0"
   },
   "engines": {
-    "node": "^16.15.0 || ^18.2.0"
+    "node": "^16.16.0 || ^18.7.0"
   }
 }

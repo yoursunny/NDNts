@@ -33,20 +33,19 @@ test("simple", async () => {
     syncInterestInterval: [110, 150],
   });
   const st: Array<[Subscription, Mock<[SyncUpdate<Name>], void>]> = [];
-  const subState = vi.fn<[readonly PSyncPartialSubscriber.TopicInfo[]], void>()
-    .mockImplementation((topics) => {
-      expect(topics).toHaveLength(4);
-      for (const [i, { id }] of pt.entries()) {
-        const found = topics.filter(({ prefix }) => prefix.equals(id));
-        expect(found).toHaveLength(1);
-        if (i % 2 === 0) {
-          const subscription = sub.subscribe(found[0]!);
-          const update = vi.fn<[SyncUpdate<Name>], void>();
-          subscription.on("update", update);
-          st.push([subscription, update]);
-        }
+  const subState = vi.fn((topics: readonly PSyncPartialSubscriber.TopicInfo[]) => {
+    expect(topics).toHaveLength(4);
+    for (const [i, { id }] of pt.entries()) {
+      const found = topics.filter(({ prefix }) => prefix.equals(id));
+      expect(found).toHaveLength(1);
+      if (i % 2 === 0) {
+        const subscription = sub.subscribe(found[0]!);
+        const update = vi.fn<[SyncUpdate<Name>], void>();
+        subscription.on("update", update);
+        st.push([subscription, update]);
       }
-    });
+    }
+  });
   sub.on("state", subState);
   await delayTick();
   expect(subState).toHaveBeenCalledTimes(1);
