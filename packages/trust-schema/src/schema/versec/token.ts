@@ -124,7 +124,7 @@ export function* scan(doc: string): Iterable<Token> {
       continue;
     }
 
-    const lastToken = tokens[tokens.length - 1]!;
+    const lastToken = tokens.at(-1)!;
     if (!(lastToken instanceof Operator) || lastToken.autoCommaAfter) {
       const comma = new Comma();
       comma.position = new Position(lineNum, line.length);

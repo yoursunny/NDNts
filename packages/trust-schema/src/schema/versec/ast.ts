@@ -372,7 +372,7 @@ function parseComponentConstraintEq(units: readonly N.Unit[]): ComponentConstrai
     return parseComponentConstraint(units[0]);
   }
   if (units.length > 2) {
-    const op = units[units.length - 2]!;
+    const op = units.at(-2)!;
     if (op instanceof T.And || op instanceof T.Or) {
       return new ComponentConstraintRel(
         parseComponentConstraintEq(units.slice(0, -2)),

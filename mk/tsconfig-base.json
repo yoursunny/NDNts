@@ -15,7 +15,7 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "strict": true,
-    "target": "ES2021",
+    "target": "ES2022",
     "types": [
       "node"
     ]

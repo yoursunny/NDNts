@@ -337,7 +337,7 @@ export class ConcatPattern extends Pattern {
     // join adjacent ConstPattern
     const joined: Pattern[] = [];
     for (const part of flattened) {
-      if (part instanceof ConstPattern && joined[joined.length - 1] instanceof ConstPattern) {
+      if (part instanceof ConstPattern && joined.at(-1) instanceof ConstPattern) {
         joined.push(new ConstPattern((joined.pop() as ConstPattern).name.append(...part.name.comps)));
       } else {
         joined.push(part);

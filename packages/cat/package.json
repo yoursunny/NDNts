@@ -34,7 +34,7 @@
     "@ndn/util": "workspace:0.0.20220501",
     "graceful-fs": "^4.2.10",
     "it-pushable": "^3.1.0",
-    "stdout-stream": "^1.4.1",
+    "stdout-stream": "^2.0.0",
     "streaming-iterables": "^7.0.4",
     "tslib": "^2.4.0",
     "yargs": "^17.5.1"

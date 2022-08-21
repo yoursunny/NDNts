@@ -41,7 +41,7 @@ export function scan(tokens: Iterable<T.Token>): Unit[] {
       throw new Error(`unbalanced ${op}`);
     }
     n.right = op;
-    currentSequence = nests.length > 0 ? nests[nests.length - 1]!.mid : topSequence;
+    currentSequence = nests.length > 0 ? nests.at(-1)!.mid : topSequence;
   };
 
   for (const token of tokens) {
@@ -66,7 +66,7 @@ export function scan(tokens: Iterable<T.Token>): Unit[] {
   }
 
   if (nests.length > 0) {
-    throw new Error(`unbalanced ${nests[nests.length - 1]!.left}`);
+    throw new Error(`unbalanced ${nests.at(-1)!.left}`);
   }
   return topSequence;
 }

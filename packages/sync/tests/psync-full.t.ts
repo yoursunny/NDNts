@@ -149,7 +149,7 @@ class Fixture {
       expect(Array.from(update.seqNums())).toEqual(seqNums);
       expect(update.count).toBe(seqNums.length);
       expect(update.loSeqNum).toBe(seqNums[0]);
-      expect(update.hiSeqNum).toBe(seqNums[seqNums.length - 1]);
+      expect(update.hiSeqNum).toBe(seqNums.at(-1));
     }
   }
 }

@@ -130,7 +130,7 @@ class EncryptedPrivateKeyInfoParser {
     this.pbkdf2.iterations = Number.parseInt(toHex(iterationCount!.value!), 16);
 
     if (children.length > 2) {
-      this.parsePseudoRandomFunction(children[children.length - 1]!);
+      this.parsePseudoRandomFunction(children.at(-1)!);
     }
   }
 
