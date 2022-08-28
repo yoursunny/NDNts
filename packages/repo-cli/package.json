@@ -33,7 +33,7 @@
     "@ndn/repo-api": "workspace:0.0.20220501",
     "leveldown": "^6.1.1",
     "progress": "^2.0.3",
-    "streaming-iterables": "^7.0.4",
+    "streaming-iterables": "^7.1.0",
     "tslib": "^2.4.0",
     "yargs": "^17.5.1"
   },

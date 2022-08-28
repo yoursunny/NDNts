@@ -26,7 +26,7 @@ export interface AesGenParams {
 /** AES block size in octets. */
 export const AesBlockSize = 16;
 
-export abstract class AesCommon<I, G extends AesGenParams> implements AesEncryption<I, G> {
+export abstract class AesCommon<I extends {}, G extends AesGenParams> implements AesEncryption<I, G> {
   protected abstract readonly name: string;
   public abstract readonly uuid: string;
   public readonly keyUsages = { secret: ["encrypt", "decrypt"] } as const;

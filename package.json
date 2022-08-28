@@ -12,10 +12,10 @@
     "test": "vitest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@7.9.3",
+  "packageManager": "pnpm@7.9.5",
   "devDependencies": {
     "@mshipov/typedoc-plugin-monorepo": "^0.2.2",
-    "@types/node": "18.6.4",
+    "@types/node": "18.7.13",
     "@types/wtfnode": "^0.7.0",
     "@typescript/lib-dom": "npm:@types/web@0.0.69",
     "@vitest/coverage-c8": "^0.22.1",
@@ -24,11 +24,11 @@
     "codedown": "^2.2.0",
     "tslib": "^2.4.0",
     "typedoc": "~0.22.18",
-    "typescript": "~4.7.4",
+    "typescript": "~4.8.2",
     "vitest": "^0.22.1",
     "wtfnode": "^0.9.1"
   },
   "engines": {
-    "node": "^16.16.0 || ^18.7.0"
+    "node": "^16.16.0 || ^18.8.0"
   }
 }

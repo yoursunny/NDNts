@@ -46,7 +46,7 @@ export namespace Insert {
     readonly batches: Array<AnyIterable<Data>>;
   }
 
-  export function parseArgs<O>(args: Args<O>): ParsedArgs<O> {
+  export function parseArgs<O extends {}>(args: Args<O>): ParsedArgs<O> {
     let opts: O | undefined;
     if (args.length > 0 && !(args[0] instanceof Data) && !isDataIterable(args[0])) {
       opts = args.shift() as O;

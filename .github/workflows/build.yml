@@ -47,9 +47,12 @@ jobs:
       - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+      - run: corepack pnpm test
+        if: ${{ matrix.node != 18 }}
       - run: corepack pnpm cover
+        if: ${{ matrix.node == 18 }}
       - uses: coverallsapp/github-action@master
-        if: ${{ matrix.node == 16 }}
+        if: ${{ matrix.node == 18 }}
         continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

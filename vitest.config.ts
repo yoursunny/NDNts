@@ -17,7 +17,7 @@ export default defineConfig({
     include: [
       "packages/**/tests/**/*.t.ts",
     ],
-    teardownTimeout: 5000,
+    teardownTimeout: 30000,
     watch: false,
   },
 });
