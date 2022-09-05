@@ -1,4 +1,4 @@
 https://ndnts.netlify.app/* https://ndnts-docs.ndn.today/:splat 301!
 https://ndnts-docs.ndn.today/ https://yoursunny.com/p/NDNts/ 301!
 
-/typedoc/:type/_ndn_* /typedoc/:type/:splat 301!
+/typedoc/:type/* /typedoc/:type/_ndn_:splat 301

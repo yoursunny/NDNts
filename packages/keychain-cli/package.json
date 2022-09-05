@@ -13,7 +13,6 @@
     "cli.cjs"
   ],
   "type": "module",
-  "typedocMain": "src/main.ts",
   "bin": {
     "ndnts-keychain": "cli.cjs"
   },
@@ -52,5 +51,8 @@
     "@types/prompts": "^2.0.14",
     "@types/stdout-stream": "^1.4.0",
     "@types/yargs": "^17.0.12"
+  },
+  "typedoc": {
+    "entryPoint": "src/main.ts"
   }
 }

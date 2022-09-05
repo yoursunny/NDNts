@@ -16,10 +16,9 @@
     "exclude": ["**/node_modules", "**/lib", "**/test-fixture", "**/tests"],
     "excludeExternals": true,
     "excludePrivate": true,
-    "externalModuleMap": "packages/([^/]+)/.*",
     "name": "NDNts",
     "out": "../docs/typedoc",
-    "plugin": ["@mshipov/typedoc-plugin-monorepo"],
+    "plugin": ["@knodes/typedoc-plugin-monorepo-readmes"],
     "readme": "./typedoc-README.md"
   }
 }

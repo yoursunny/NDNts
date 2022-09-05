@@ -13,7 +13,6 @@
     "cli.cjs"
   ],
   "type": "module",
-  "typedocMain": "src/main.ts",
   "bin": {
     "ndncat": "cli.cjs"
   },
@@ -43,5 +42,8 @@
     "@types/graceful-fs": "^4.1.5",
     "@types/stdout-stream": "^1.4.0",
     "@types/yargs": "^17.0.12"
+  },
+  "typedoc": {
+    "entryPoint": "src/main.ts"
   }
 }

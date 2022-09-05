@@ -13,7 +13,6 @@
     "cli.cjs"
   ],
   "type": "module",
-  "typedocMain": "src/main.ts",
   "bin": {
     "ndnts-repo": "cli.cjs"
   },
@@ -41,5 +40,8 @@
     "@types/leveldown": "^4.0.3",
     "@types/progress": "^2.0.5",
     "@types/yargs": "^17.0.12"
+  },
+  "typedoc": {
+    "entryPoint": "src/main.ts"
   }
 }
