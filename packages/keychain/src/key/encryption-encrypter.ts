@@ -5,7 +5,7 @@ import { EncryptionAlgorithmListSlim } from "../algolist/mod";
 import type { Certificate, ValidityPeriod } from "../cert/mod";
 import * as CertNaming from "../naming";
 import { ImportCertCached, isPublicSecretKey } from "./impl-import-cert";
-import { type EncryptionAlgorithm, type NamedEncrypter, CryptoAlgorithm, KeyKind } from "./types";
+import { type CryptoAlgorithm, type EncryptionAlgorithm, type NamedEncrypter, KeyKind } from "./types";
 
 class PlainCryptoEncrypter<I> {
   constructor(

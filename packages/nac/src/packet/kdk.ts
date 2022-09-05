@@ -5,7 +5,7 @@ import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 import { crypto, toHex, toUtf8 } from "@ndn/util";
 
 import { DefaultFreshness, Keyword, TT } from "./an";
-import { KeyEncryptionKey, makeNameInternal as makeKekName, parseNameInternal as parseKekName } from "./kek";
+import { type KeyEncryptionKey, makeNameInternal as makeKekName, parseNameInternal as parseKekName } from "./kek";
 
 const EVD = new EvDecoder<KeyDecryptionKey.Fields>("KeyDecryptionKey", TT.EncryptedContent)
   .add(TT.EncryptedPayload, (t, { vd }) => t.safeBag = vd.decode(SafeBag), { required: true })

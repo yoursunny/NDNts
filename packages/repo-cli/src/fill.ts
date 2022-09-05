@@ -3,7 +3,7 @@ import { L3Face } from "@ndn/l3face";
 import { SequenceNum } from "@ndn/naming-convention2";
 import { TcpTransport } from "@ndn/node-transport";
 import { Data, Name } from "@ndn/packet";
-import { BulkInsertInitiator, DataStore } from "@ndn/repo-api";
+import { type DataStore, BulkInsertInitiator } from "@ndn/repo-api";
 import ProgressBar from "progress";
 import { batch, consume, pipeline, tap, transform } from "streaming-iterables";
 import type { Arguments, Argv, CommandModule } from "yargs";

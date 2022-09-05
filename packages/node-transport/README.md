@@ -9,7 +9,7 @@ import { TcpTransport, UdpTransport, UnixTransport } from "@ndn/node-transport";
 
 // other imports for examples
 import { FwPacket } from "@ndn/fw";
-import { L3Face, Transport } from "@ndn/l3face";
+import { type Transport, L3Face } from "@ndn/l3face";
 import { Data, Interest } from "@ndn/packet";
 import { delay } from "@ndn/util";
 

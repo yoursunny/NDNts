@@ -1,4 +1,4 @@
-import { Endpoint } from "@ndn/endpoint";
+import type { Endpoint } from "@ndn/endpoint";
 import type { Name } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
 import { delay } from "@ndn/util";

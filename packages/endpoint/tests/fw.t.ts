@@ -1,11 +1,12 @@
 import "@ndn/packet/test-fixture/expect";
 
+import { Console } from "node:console";
+
 import { CancelInterest, Forwarder, FwPacket, FwTracer } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, FwHint, Interest, Name } from "@ndn/packet";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
 import { delay, fromUtf8, timeoutAbortSignal } from "@ndn/util";
-import { Console } from "node:console";
 import { BufferWritableMock } from "stream-mock";
 import { consume } from "streaming-iterables";
 import { afterEach, beforeEach, expect, test } from "vitest";

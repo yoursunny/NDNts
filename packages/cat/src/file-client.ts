@@ -1,3 +1,5 @@
+import { posix as path } from "node:path";
+
 import { Keyword } from "@ndn/naming-convention2";
 import { type ComponentLike, Component, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
@@ -5,12 +7,11 @@ import { fetch } from "@ndn/segmented-object";
 import { console, fromUtf8 } from "@ndn/util";
 import fs from "graceful-fs";
 import { pushable } from "it-pushable";
-import { posix as path } from "node:path";
 import { consume, parallelMap, writeToStream } from "streaming-iterables";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { FileMetadata } from "./file-metadata";
-import { CommonArgs, Segment } from "./util";
+import { type CommonArgs, Segment } from "./util";
 
 interface Args extends CommonArgs {
   remote: string;

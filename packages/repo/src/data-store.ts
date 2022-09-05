@@ -1,9 +1,10 @@
+import { EventEmitter } from "node:events";
+
 import { type Data, type Interest, type Name, ImplicitDigest, NameMap } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
 import { assert } from "@ndn/util";
 import type { AbstractLevelDOWN } from "abstract-leveldown";
 import type { NotFoundError } from "level-errors";
-import { EventEmitter } from "node:events";
 import { filter, map, pipeline } from "streaming-iterables";
 import throat from "throat";
 import type TypedEmitter from "typed-emitter";

@@ -5,7 +5,7 @@ import { SigningAlgorithmListSlim } from "../algolist/mod";
 import type { Certificate, ValidityPeriod } from "../cert/mod";
 import * as CertNaming from "../naming";
 import { ImportCertCached, isPublicSecretKey } from "./impl-import-cert";
-import { type NamedVerifier, type SigningAlgorithm, CryptoAlgorithm, KeyKind } from "./types";
+import { type CryptoAlgorithm, type NamedVerifier, type SigningAlgorithm, KeyKind } from "./types";
 
 class PlainCryptoVerifier<I> implements Verifier {
   constructor(

@@ -1,5 +1,5 @@
-import { Endpoint, Producer } from "@ndn/endpoint";
-import { FwFace, ReadvertiseDestination, TapFace } from "@ndn/fw";
+import { type Producer, Endpoint } from "@ndn/endpoint";
+import { type FwFace, ReadvertiseDestination, TapFace } from "@ndn/fw";
 import { type KeyChain, Certificate } from "@ndn/keychain";
 import { type Name, Interest, NameMap } from "@ndn/packet";
 import { Closers } from "@ndn/util";

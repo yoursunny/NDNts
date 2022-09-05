@@ -1,5 +1,6 @@
-import applyMixins from "applymixins";
 import { EventEmitter } from "node:events";
+
+import applyMixins from "applymixins";
 import type TypedEmitter from "typed-emitter";
 
 import type { ChallengeRequest } from "../packet/mod";

@@ -1,4 +1,4 @@
-import { LLDecrypt, LLEncrypt } from "@ndn/packet";
+import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
 import { crypto } from "@ndn/util";
 
 import type { CryptoAlgorithm, EncryptionAlgorithm } from "../key/mod";

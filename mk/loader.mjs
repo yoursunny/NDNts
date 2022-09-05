@@ -1,7 +1,8 @@
+import { promisify } from "node:util";
+
 import * as K from "@k-foss/ts-esnode";
 import codedown from "codedown";
 import fs from "graceful-fs";
-import { promisify } from "node:util";
 import readlink from "readlink";
 
 const readlinkPromise = promisify(readlink);

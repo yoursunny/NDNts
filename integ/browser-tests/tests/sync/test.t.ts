@@ -1,7 +1,7 @@
 import "./api";
 import "@ndn/packet/test-fixture/expect";
 
-import { FwFace } from "@ndn/fw";
+import type { FwFace } from "@ndn/fw";
 import { Name } from "@ndn/packet";
 import { makePSyncCompatParam, PSyncPartialPublisher } from "@ndn/sync";
 import { delay } from "@ndn/util";

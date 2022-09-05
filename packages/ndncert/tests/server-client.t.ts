@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, generateSigningKey, ValidityPeriod } from "@ndn/keychain";
 import { Component, FwHint, Name } from "@ndn/packet";
-import { DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
+import { type DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 import { delay, toHex, toUtf8 } from "@ndn/util";
 import { type SentMessageInfo, createTransport as createMT } from "nodemailer";

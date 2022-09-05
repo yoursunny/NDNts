@@ -1,4 +1,4 @@
-import { type Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { type Decoder, type Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
 import { NackReason, TT } from "./an";
 import type { Interest } from "./interest";

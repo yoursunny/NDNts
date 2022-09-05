@@ -3,7 +3,7 @@ import type { Name, Verifier } from "@ndn/packet";
 import { discoverVersion, fetch } from "@ndn/segmented-object";
 
 import type { PSyncCodec } from "./codec";
-import { PSyncCore } from "./core";
+import type { PSyncCore } from "./core";
 
 interface Result {
   versioned: Name;

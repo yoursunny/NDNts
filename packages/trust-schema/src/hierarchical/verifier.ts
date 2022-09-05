@@ -1,4 +1,4 @@
-import { Certificate, CertNaming } from "@ndn/keychain";
+import { type Certificate, CertNaming } from "@ndn/keychain";
 import type { Name, Verifier } from "@ndn/packet";
 
 import { PolicyVerifier } from "../policy-verifier";

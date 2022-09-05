@@ -1,6 +1,7 @@
+import { EventEmitter } from "node:events";
+
 import { type Producer, type ProducerHandler, Endpoint } from "@ndn/endpoint";
 import { type NameLike, type Signer, type Verifier, Interest, Name, nullSigner } from "@ndn/packet";
-import { EventEmitter } from "node:events";
 import type TypedEmitter from "typed-emitter";
 
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "../types";

@@ -1,4 +1,4 @@
-import { ConsumerOptions, Endpoint } from "@ndn/endpoint";
+import { type ConsumerOptions, Endpoint } from "@ndn/endpoint";
 import { CertNaming } from "@ndn/keychain";
 import type { Name } from "@ndn/packet";
 

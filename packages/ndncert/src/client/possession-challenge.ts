@@ -1,5 +1,5 @@
-import { Certificate } from "@ndn/keychain";
-import { LLSign, Name, Signer } from "@ndn/packet";
+import type { Certificate } from "@ndn/keychain";
+import { type Signer, LLSign, Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 
 import type { ParameterKV } from "../packet/mod";

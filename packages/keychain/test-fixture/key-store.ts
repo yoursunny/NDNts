@@ -1,7 +1,7 @@
 import { Name, SigType } from "@ndn/packet";
 import { expect } from "vitest";
 
-import { type NamedSigner, type NamedVerifier, type SigningAlgorithm, ECDSA, Ed25519, generateSigningKey, HMAC, KeyChain, RSA } from "..";
+import { type KeyChain, type NamedSigner, type NamedVerifier, type SigningAlgorithm, ECDSA, Ed25519, generateSigningKey, HMAC, RSA } from "..";
 
 const algoRecord = {
   ECDSA,

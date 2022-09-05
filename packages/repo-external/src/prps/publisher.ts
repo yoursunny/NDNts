@@ -1,4 +1,4 @@
-import { Endpoint, Producer, ProducerHandler, RetxPolicy } from "@ndn/endpoint";
+import { type Producer, type ProducerHandler, type RetxPolicy, Endpoint } from "@ndn/endpoint";
 import { SequenceNum } from "@ndn/naming-convention2";
 import { type Signer, Component, Data, digestSigning, Interest, Name, NameMap } from "@ndn/packet";
 import { type Encodable, Encoder } from "@ndn/tlv";

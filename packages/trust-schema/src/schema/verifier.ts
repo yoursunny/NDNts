@@ -1,5 +1,5 @@
 import type { Certificate } from "@ndn/keychain";
-import { type Verifier, Name } from "@ndn/packet";
+import type { Name, Verifier } from "@ndn/packet";
 
 import { PolicyVerifier } from "../policy-verifier";
 import type { TrustSchemaPolicy } from "./policy";

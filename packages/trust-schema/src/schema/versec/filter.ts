@@ -1,7 +1,7 @@
 import { SequenceNum, Timestamp } from "@ndn/naming-convention2";
 import type { Name } from "@ndn/packet";
 
-import { AlternatePattern, Pattern, VariablePattern, Vars } from "../pattern";
+import { type Vars, AlternatePattern, Pattern, VariablePattern } from "../pattern";
 
 /** A filter that matches Timestamp convention. */
 export const timestamp = new VariablePattern.ConventionFilter(Timestamp);

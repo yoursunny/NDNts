@@ -1,5 +1,5 @@
 import { type Certificate, type SigningAlgorithm, createVerifier, SigningAlgorithmListSlim } from "@ndn/keychain";
-import { type Verifier, KeyLocator, Name } from "@ndn/packet";
+import { type Name, type Verifier, KeyLocator } from "@ndn/packet";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
 import { CertSources } from "./cert-source/mod";

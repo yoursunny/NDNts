@@ -1,4 +1,4 @@
-import { type RetxPolicy, ConsumerOptions, Endpoint } from "@ndn/endpoint";
+import { type ConsumerOptions, type RetxPolicy, Endpoint } from "@ndn/endpoint";
 import { Certificate, CertNaming } from "@ndn/keychain";
 import { type Name, Interest, NameMap } from "@ndn/packet";
 

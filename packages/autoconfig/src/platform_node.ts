@@ -1,7 +1,8 @@
+import * as os from "node:os";
+
 import type { FwFace } from "@ndn/fw";
 import { splitHostPort, TcpTransport, udp_helper, UdpTransport } from "@ndn/node-transport";
 import defaultGateway from "default-gateway";
-import * as os from "node:os";
 import nodeFetch from "node-fetch";
 
 import type { PlatformFchDefaults } from "./fch";

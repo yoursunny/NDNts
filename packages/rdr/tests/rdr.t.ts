@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { generateSigningKey } from "@ndn/keychain";
 import { Version } from "@ndn/naming-convention2";
-import { Interest, Name, Signer, Verifier } from "@ndn/packet";
+import { type Signer, type Verifier, Interest, Name } from "@ndn/packet";
 import { Decoder, Extensible, Extension, ExtensionRegistry, NNI } from "@ndn/tlv";
 import { Closers, timeoutAbortSignal, toUtf8 } from "@ndn/util";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";

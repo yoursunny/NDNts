@@ -4,7 +4,7 @@ import { delay } from "@ndn/util";
 import { abortableSource } from "abortable-iterator";
 import { expect } from "vitest";
 
-import { L3Face, Transport } from "..";
+import { type Transport, L3Face } from "..";
 
 const COUNT = 50;
 

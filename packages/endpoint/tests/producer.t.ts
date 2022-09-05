@@ -6,7 +6,7 @@ import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 import { delay } from "@ndn/util";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { type Options, DataStoreBuffer, Endpoint, Producer, ProducerHandler } from "..";
+import { type Options, type Producer, type ProducerHandler, DataStoreBuffer, Endpoint } from "..";
 
 afterEach(Endpoint.deleteDefaultForwarder);
 

@@ -1,4 +1,4 @@
-import { Name, NameMap } from "@ndn/packet";
+import { type Name, NameMap } from "@ndn/packet";
 import { assert } from "@ndn/util";
 
 import { IBLT } from "../iblt";

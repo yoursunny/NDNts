@@ -1,8 +1,9 @@
+import { EventEmitter } from "node:events";
+
 import { AltUri } from "@ndn/naming-convention2";
 import type { Name } from "@ndn/packet";
 import { fromUtf8, toHex } from "@ndn/util";
 import applyMixins from "applymixins";
-import { EventEmitter } from "node:events";
 import type { SendMailOptions, SentMessageInfo, Transporter } from "nodemailer";
 import type TypedEmitter from "typed-emitter";
 

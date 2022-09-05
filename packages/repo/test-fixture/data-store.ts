@@ -1,4 +1,4 @@
-import { Data } from "@ndn/packet";
+import type { Data } from "@ndn/packet";
 import memdown from "memdown";
 
 import { DataStore, PrefixRegShorter, RepoProducer } from "..";

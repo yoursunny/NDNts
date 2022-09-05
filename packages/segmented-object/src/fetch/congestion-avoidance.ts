@@ -1,5 +1,6 @@
-import { assert } from "@ndn/util";
 import { EventEmitter } from "node:events";
+
+import { assert } from "@ndn/util";
 import type TypedEmitter from "typed-emitter";
 
 type Events = {

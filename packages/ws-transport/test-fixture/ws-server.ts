@@ -1,7 +1,8 @@
-import { NetServerBase } from "@ndn/node-transport/test-fixture/net-server";
 import { once } from "node:events";
 import * as http from "node:http";
-import * as net from "node:net";
+import type * as net from "node:net";
+
+import { NetServerBase } from "@ndn/node-transport/test-fixture/net-server";
 import { WebSocket, WebSocketServer } from "ws";
 
 /** WebSocket test server. */

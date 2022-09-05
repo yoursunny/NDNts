@@ -1,10 +1,11 @@
+import type * as net from "node:net";
+
 import { type Producer, Endpoint } from "@ndn/endpoint";
 import { type FwFace, Forwarder, TapFace } from "@ndn/fw";
 import { L3Face, StreamTransport } from "@ndn/l3face";
 import { TcpServer } from "@ndn/node-transport/test-fixture/net-server";
-import { Data, Interest } from "@ndn/packet";
+import { type Interest, Data } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
-import type * as net from "node:net";
 
 import { ControlParameters, ControlResponse } from "..";
 

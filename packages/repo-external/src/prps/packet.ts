@@ -1,5 +1,5 @@
 import { Component, Name, TT as l3TT } from "@ndn/packet";
-import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
+import { type Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 
 export const MsgSuffix = Component.from("msg");
 export const NotifySuffix = Component.from("notify");

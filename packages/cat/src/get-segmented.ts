@@ -4,7 +4,7 @@ import { discoverVersion, fetch } from "@ndn/segmented-object";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { checkVersionArg, CommonArgs, Segment, Version } from "./util";
+import { type CommonArgs, checkVersionArg, Segment, Version } from "./util";
 
 interface Args extends CommonArgs {
   name: string;

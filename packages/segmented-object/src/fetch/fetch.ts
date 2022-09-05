@@ -1,4 +1,4 @@
-import { type NameLike, Data, Name } from "@ndn/packet";
+import { type Data, type NameLike, Name } from "@ndn/packet";
 import { assert } from "@ndn/util";
 import EventIterator from "event-iterator";
 import { collect, map, writeToStream } from "streaming-iterables";

@@ -1,5 +1,6 @@
-import { delay } from "@ndn/util";
 import * as path from "node:path";
+
+import { delay } from "@ndn/util";
 import puppeteer, { type Page } from "puppeteer";
 import { beforeAll } from "vitest";
 

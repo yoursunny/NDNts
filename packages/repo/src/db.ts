@@ -3,7 +3,7 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import { assert, fromUtf8 } from "@ndn/util";
 import type { AbstractIterator, AbstractLevelDOWN } from "abstract-leveldown";
 import EncodingDown from "encoding-down";
-import levelup, { LevelUp, LevelUpChain } from "levelup";
+import levelup, { type LevelUp, type LevelUpChain } from "levelup";
 
 export interface Record {
   readonly data: Data;

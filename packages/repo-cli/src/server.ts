@@ -1,7 +1,8 @@
+import { createServer } from "node:net";
+
 import { exitClosers, getSigner, openUplinks } from "@ndn/cli-common";
 import type { DataStore } from "@ndn/repo";
 import { BulkInsertTarget, RepoProducer, respondRdr } from "@ndn/repo";
-import { createServer } from "node:net";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { type StoreArgs, declareStoreArgs, openStore } from "./util";

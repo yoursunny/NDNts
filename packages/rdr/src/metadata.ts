@@ -1,6 +1,6 @@
 import { Keyword } from "@ndn/naming-convention2";
-import { Component, Name, TT } from "@ndn/packet";
-import { type Decodable, type EncodableObj, Decoder, Encoder, EvDecoder, Extensible } from "@ndn/tlv";
+import { type Component, Name, TT } from "@ndn/packet";
+import { type Decodable, type Decoder, type EncodableObj, type Encoder, EvDecoder, Extensible } from "@ndn/tlv";
 
 /** 32=metadata component. */
 export const MetadataKeyword: Component = Keyword.create("metadata");

@@ -1,10 +1,11 @@
+import * as dgram from "node:dgram";
+
 import { Forwarder } from "@ndn/fw";
 import { type Transport, L3Face } from "@ndn/l3face";
 import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
-import * as dgram from "node:dgram";
 
 import { joinHostPort } from "../src/hostport";
-import * as udp from "../src/udp-helper";
+import type * as udp from "../src/udp-helper";
 
 class UdpServerTransport extends MockTransport {
   constructor(

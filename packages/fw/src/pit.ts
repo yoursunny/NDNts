@@ -1,4 +1,4 @@
-import { Data, Interest } from "@ndn/packet";
+import { type Data, Interest } from "@ndn/packet";
 import hirestime from "hirestime";
 import DefaultMap from "mnemonist/default-map.js";
 import { filter, flatMap, pipeline, reduce, tap } from "streaming-iterables";

@@ -1,5 +1,6 @@
-import { type Name, NameMultiMap } from "@ndn/packet";
 import { EventEmitter } from "node:events";
+
+import { type Name, NameMultiMap } from "@ndn/packet";
 import type TypedEmitter from "typed-emitter";
 
 import type { Subscription } from "../types";
@@ -17,7 +18,7 @@ export class SubscriptionTable<Update> extends NameMultiMap<Sub<Update>> {
   public handleRemoveTopic?: (topic: Name, objKey: object) => void;
 
   public subscribe(topic: Name): { sub: Subscription<Name, Update>; objKey?: object } {
-    const sub: Sub<Update> = new Sub(topic, () => this.unsubscribe(topic, sub));
+    const sub: Sub<Update> = new Sub<Update>(topic, () => this.unsubscribe(topic, sub));
     let objKey: object | undefined;
     if (this.add(topic, sub) === 1) {
       objKey = this.list(topic);

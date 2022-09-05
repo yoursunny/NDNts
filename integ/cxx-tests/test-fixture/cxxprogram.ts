@@ -1,5 +1,6 @@
-import { type Options as ExecaOptions, execa, ExecaChildProcess, execaSync } from "execa";
 import * as path from "node:path";
+
+import { type ExecaChildProcess, type Options as ExecaOptions, execa, execaSync } from "execa";
 
 const pathOfMakefile = path.resolve(__dirname, "..");
 

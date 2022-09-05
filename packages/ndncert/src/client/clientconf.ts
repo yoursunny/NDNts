@@ -4,8 +4,8 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import Ajv, { type JSONSchemaType } from "ajv";
 import { toBase64, toBuffer as b64ToBuffer } from "b64-lite";
 
-import { CaProfile } from "../packet/ca-profile";
-import { retrieveCaProfile, RetrieveCaProfileOptions } from "./retrieve-profile";
+import type { CaProfile } from "../packet/ca-profile";
+import { type RetrieveCaProfileOptions, retrieveCaProfile } from "./retrieve-profile";
 
 /**
  * client.conf format of NDNCERT C++ implementation.

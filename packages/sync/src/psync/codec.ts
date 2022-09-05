@@ -1,8 +1,8 @@
-import { Component, Name } from "@ndn/packet";
+import { type Name, Component } from "@ndn/packet";
 import type { BloomFilter } from "@yoursunny/psync-bloom";
 import applyMixins from "applymixins";
 
-import { Compression as Compression_, IbltCodec } from "../detail/iblt-codec";
+import { type Compression as Compression_, IbltCodec } from "../detail/iblt-codec";
 import type { IBLT } from "../iblt";
 import type { PSyncCore } from "./core";
 

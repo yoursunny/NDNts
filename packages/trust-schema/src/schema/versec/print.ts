@@ -1,6 +1,6 @@
 import { CertNaming } from "@ndn/keychain";
 
-import { AlternatePattern, CertNamePattern, ConcatPattern, ConstPattern, Pattern, VariablePattern } from "../pattern";
+import { type Pattern, AlternatePattern, CertNamePattern, ConcatPattern, ConstPattern, VariablePattern } from "../pattern";
 import type { TrustSchemaPolicy } from "../policy";
 import * as A from "./ast";
 import * as F from "./filter";

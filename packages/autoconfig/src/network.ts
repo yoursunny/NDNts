@@ -1,4 +1,4 @@
-import { FwFace } from "@ndn/fw";
+import type { FwFace } from "@ndn/fw";
 
 import { type FchRequest, fchQuery } from "./fch";
 import { FCH_DEFAULTS, getDefaultGateway } from "./platform_node";

@@ -1,8 +1,8 @@
 import { openKeyChain, openUplinks } from "@ndn/cli-common";
-import { Certificate, KeyChain } from "@ndn/keychain";
-import { CaProfile, ClientConf, importClientConf } from "@ndn/ndncert";
+import { type KeyChain, Certificate } from "@ndn/keychain";
+import { type ClientConf, CaProfile, importClientConf } from "@ndn/ndncert";
 import { Data } from "@ndn/packet";
-import { Decodable, Decoder, Encoder } from "@ndn/tlv";
+import { type Decodable, Decoder, Encoder } from "@ndn/tlv";
 import { fromUtf8 } from "@ndn/util";
 import fastChunkString from "fast-chunk-string";
 import getStdin from "get-stdin";

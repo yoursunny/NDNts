@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
+import path from "node:path";
+
 import fsWalk from "@nodelib/fs.walk";
 import Builtins from "builtins";
 import fs from "graceful-fs";
 import yaml from "js-yaml";
-import path from "node:path";
 
 const builtins = new Set(Builtins());
 

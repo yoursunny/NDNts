@@ -8,7 +8,7 @@ import { retrieveMetadata } from "@ndn/rdr";
 import { delay } from "@ndn/util";
 import { beforeEach, expect, test } from "vitest";
 
-import { DataStore, PrefixRegShorter, PrefixRegStatic, PrefixRegStrip, RepoProducer, respondRdr } from "..";
+import { type DataStore, PrefixRegShorter, PrefixRegStatic, PrefixRegStrip, RepoProducer, respondRdr } from "..";
 import { makeDataStore } from "../test-fixture/data-store";
 
 let store: DataStore;

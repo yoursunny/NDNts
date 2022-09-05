@@ -4,7 +4,7 @@ import { type ProducerHandler, Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Segment2, Segment3 } from "@ndn/naming-convention2";
-import { Data, Name, Verifier } from "@ndn/packet";
+import { type Verifier, Data, Name } from "@ndn/packet";
 import { Closers, delay } from "@ndn/util";
 import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";

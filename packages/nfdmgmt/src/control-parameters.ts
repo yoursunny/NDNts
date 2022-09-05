@@ -1,5 +1,5 @@
 import { Name, TT } from "@ndn/packet";
-import { type Decoder, type Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { type Decoder, type Encodable, type Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
 
 const TtControlParameters = 0x68;

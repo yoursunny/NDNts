@@ -1,5 +1,5 @@
-import { LLDecrypt, LLEncrypt, Name, TT as l3TT } from "@ndn/packet";
-import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
+import { type LLDecrypt, type LLEncrypt, Name, TT as l3TT } from "@ndn/packet";
+import { type Decoder, type Encoder, EvDecoder } from "@ndn/tlv";
 import { assert } from "@ndn/util";
 
 import { TT } from "./an";

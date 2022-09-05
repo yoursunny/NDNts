@@ -1,11 +1,12 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { type NamedSigner, Certificate, CertNaming, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
-import { Component, Data, Name } from "@ndn/packet";
+import { type Name, Component, Data } from "@ndn/packet";
 import { collect, take } from "streaming-iterables";
 import { beforeAll, expect, test } from "vitest";
 
-import { pattern as P, printESM, TrustSchema, TrustSchemaPolicy, TrustSchemaSigner, versec } from "../..";
+import type { TrustSchemaPolicy } from "../..";
+import { pattern as P, printESM, TrustSchema, TrustSchemaSigner, versec } from "../..";
 
 const NLSR_POLICY = `
 // adapted from https://pollere.net/Pdfdocs/BuildingBridge.pdf

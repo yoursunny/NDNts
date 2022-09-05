@@ -1,4 +1,4 @@
-import { Name } from "@ndn/packet";
+import type { Name } from "@ndn/packet";
 
 import type { Certificate, ValidityPeriod } from "../cert/mod";
 import { CertNaming } from "../mod";

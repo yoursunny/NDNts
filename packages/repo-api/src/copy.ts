@@ -1,7 +1,7 @@
 import { Name } from "@ndn/packet";
 import { batch, consume, pipeline, transform } from "streaming-iterables";
 
-import * as S from "./data-store";
+import type * as S from "./data-store";
 
 export interface CopyOptions {
   /** Number of packets per transaction. Default is 64. */

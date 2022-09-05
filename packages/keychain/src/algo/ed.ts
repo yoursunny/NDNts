@@ -1,6 +1,6 @@
-import { LLSign, LLVerify, SigType, Verifier } from "@ndn/packet";
+import { type LLSign, type LLVerify, SigType, Verifier } from "@ndn/packet";
 import { crypto } from "@ndn/util";
-import * as asn1 from "@yoursunny/asn1";
+import type * as asn1 from "@yoursunny/asn1";
 import { Ed25519Algorithm, polyfillEd25519 } from "@yoursunny/webcrypto-ed25519";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";

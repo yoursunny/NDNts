@@ -1,9 +1,10 @@
+import { once } from "node:events";
+import type * as net from "node:net";
+
 import { Forwarder, FwPacket } from "@ndn/fw";
 import { L3Face } from "@ndn/l3face";
 import { Interest } from "@ndn/packet";
 import { delay } from "@ndn/util";
-import { once } from "node:events";
-import * as net from "node:net";
 import { collect } from "streaming-iterables";
 import { beforeEach, expect, test, vi } from "vitest";
 

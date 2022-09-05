@@ -4,7 +4,7 @@ import { type Server, BufferChunkSource, serveVersioned } from "@ndn/segmented-o
 import { assert } from "@ndn/util";
 
 import type { PSyncCodec } from "./codec";
-import { PSyncCore } from "./core";
+import type { PSyncCore } from "./core";
 
 export class PSyncStateProducerBuffer {
   constructor(

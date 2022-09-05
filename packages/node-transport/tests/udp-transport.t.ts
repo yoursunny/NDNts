@@ -1,6 +1,7 @@
+import type * as dgram from "node:dgram";
+
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import { delay } from "@ndn/util";
-import * as dgram from "node:dgram";
 import { collect } from "streaming-iterables";
 import { beforeEach, describe, expect, test } from "vitest";
 

@@ -1,7 +1,7 @@
 import type { Data } from "@ndn/packet";
 import applyMixins from "applymixins";
 
-import { Compression as Compression_, IbltCodec } from "../detail/iblt-codec";
+import { type Compression as Compression_, IbltCodec } from "../detail/iblt-codec";
 import type { IBLT } from "../iblt";
 
 export class SyncpsCodec {

@@ -1,6 +1,6 @@
 import { asDataView, toHex } from "@ndn/util";
 
-import { type Encodable, Encoder } from "./encoder";
+import type { Encodable, Encoder } from "./encoder";
 
 class Nni1 {
   constructor(private readonly n: number) {}

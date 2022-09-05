@@ -2,7 +2,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { type Name, Interest } from "@ndn/packet";
 
 import { type SegmentConvention, type VersionConvention, defaultSegmentConvention, defaultVersionConvention } from "./convention";
-import { fetch } from "./fetch/mod";
+import type { fetch } from "./fetch/mod";
 
 /** Discover version with CanBePrefix. */
 export async function discoverVersion(name: Name, {

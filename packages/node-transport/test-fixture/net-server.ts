@@ -1,6 +1,7 @@
 import type { EventEmitter } from "node:events";
 import { once } from "node:events";
 import * as net from "node:net";
+
 import { tmpNameSync } from "tmp";
 
 export abstract class NetServerBase<Server extends EventEmitter, Client> {

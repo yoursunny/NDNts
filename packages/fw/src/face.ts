@@ -1,7 +1,8 @@
+import { EventEmitter } from "node:events";
+
 import { type NameLike, Data, Interest, Nack, Name, NameMultiSet } from "@ndn/packet";
 import { safeIter } from "@ndn/util";
 import { pushable } from "it-pushable";
-import { EventEmitter } from "node:events";
 import { filter, pipeline, tap } from "streaming-iterables";
 import type TypedEmitter from "typed-emitter";
 

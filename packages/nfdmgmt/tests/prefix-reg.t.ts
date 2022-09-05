@@ -1,5 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
+import { EventEmitter } from "node:events";
+
 import { Endpoint } from "@ndn/endpoint";
 import { type FwFace, Forwarder, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
@@ -8,7 +10,6 @@ import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Component, Data, Interest, Name, ParamsDigest } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
 import { Closers, delay } from "@ndn/util";
-import { EventEmitter } from "node:events";
 import { afterEach, expect, test } from "vitest";
 
 import { ControlCommand, ControlParameters, ControlResponse, enableNfdPrefixReg } from "..";

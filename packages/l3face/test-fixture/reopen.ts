@@ -3,7 +3,7 @@ import { Interest } from "@ndn/packet";
 import { delay } from "@ndn/util";
 import { expect, vi } from "vitest";
 
-import { L3Face, Transport } from "..";
+import { type Transport, L3Face } from "..";
 
 export async function run<ServerSocket>(
     transport: Transport,

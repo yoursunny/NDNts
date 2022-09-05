@@ -1,5 +1,5 @@
 import { Component, Name } from "@ndn/packet";
-import { Decoder, Encoder, NNI } from "@ndn/tlv";
+import { type Decoder, Encoder, NNI } from "@ndn/tlv";
 
 export const InsertVerb = Component.from("insert");
 export const DeleteVerb = Component.from("delete");

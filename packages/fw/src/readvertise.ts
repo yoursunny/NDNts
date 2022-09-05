@@ -1,4 +1,4 @@
-import { Name, NameMap, NameMultiMap } from "@ndn/packet";
+import { type Name, NameMap, NameMultiMap } from "@ndn/packet";
 import { pushable } from "it-pushable";
 import * as retry from "retry";
 

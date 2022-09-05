@@ -1,6 +1,6 @@
 import { type KeyChain, Certificate, CertNaming, CryptoAlgorithm, ECDSA, generateEncryptionKey, generateSigningKey, RSA, RSAOAEP } from "@ndn/keychain";
 import { Data, TT as l3TT } from "@ndn/packet";
-import { type Decoder, Encoder, EvDecoder } from "@ndn/tlv";
+import { type Decoder, type Encoder, EvDecoder } from "@ndn/tlv";
 import { assert } from "@ndn/util";
 
 import { TT } from "./an";

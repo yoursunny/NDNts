@@ -3,7 +3,7 @@ import { Segment, Version } from "@ndn/naming-convention2";
 import { type Interest, type NameLike, type Signer, Data, digestSigning, Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 
-import { Metadata, MetadataKeyword } from "./metadata";
+import { type Metadata, MetadataKeyword } from "./metadata";
 
 function makeName(payload: Metadata, prefix?: NameLike): Name {
   const name = prefix ? Name.from(prefix) : payload.name.getPrefix(-1);

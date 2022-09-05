@@ -1,7 +1,7 @@
 # NDNts C++ Compatibility Tests
 
 These integration tests confirm NDNts is compatible with C++ reference implementations.
-They only work on Linux, and require `build-essential libndn-cxx-dev libpsync-dev` packages.
+They only work on Linux, and require `build-essential libndn-cxx-dev libpsync-dev pkg-config` packages.
 
 `corepack pnpm test` runs the tests.
 C++ compilation is handled automatically.
@@ -13,10 +13,10 @@ This requires `clang-format-11` package.
 
 ```bash
 docker build -t ndnts-cxx - <<EOT
-  FROM node:16-bullseye
+  FROM node:18-bullseye
   RUN echo "deb [trusted=yes] https://nfd-nightly-apt.ndn.today/debian bullseye main" > /etc/apt/sources.list.d/nfd-nightly.list \
    && apt-get update \
-   && apt-get -y -qq install --no-install-recommends clang-format-11 libndn-cxx-dev libpsync-dev ndnsec \
+   && apt-get -y -qq install --no-install-recommends clang-format-11 libndn-cxx-dev libpsync-dev ndnsec pkg-config \
    && rm -rf /var/lib/apt/lists/*
 EOT
 

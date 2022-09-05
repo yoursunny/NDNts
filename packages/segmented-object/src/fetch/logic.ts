@@ -1,7 +1,8 @@
+import { EventEmitter } from "node:events";
+
 import { assert } from "@ndn/util";
 import hirestime from "hirestime";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
-import { EventEmitter } from "node:events";
 import pDefer from "p-defer";
 import type TypedEmitter from "typed-emitter";
 

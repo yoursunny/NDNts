@@ -1,7 +1,8 @@
-import { Endpoint } from "@ndn/endpoint";
-import { CancelInterest, Forwarder, FwFace, FwPacket } from "@ndn/fw";
-import { type Name, type Verifier, Data, Interest } from "@ndn/packet";
 import { EventEmitter } from "node:events";
+
+import type { Endpoint } from "@ndn/endpoint";
+import { type FwFace, CancelInterest, Forwarder, FwPacket } from "@ndn/fw";
+import { type Name, type Verifier, Data, Interest } from "@ndn/packet";
 import type TypedEmitter from "typed-emitter";
 
 import { type SegmentConvention, defaultSegmentConvention } from "../convention";

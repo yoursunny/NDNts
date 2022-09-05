@@ -1,7 +1,7 @@
 import { Endpoint } from "@ndn/endpoint";
 import { CertNaming } from "@ndn/keychain";
 import { Segment } from "@ndn/naming-convention2";
-import { Interest, Name } from "@ndn/packet";
+import { type Name, Interest } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 
 import { C, CaProfile, ProbeResponse } from "../packet/mod";

@@ -1,5 +1,5 @@
-import { Certificate, KeyChain } from "@ndn/keychain";
-import { Name } from "@ndn/packet";
+import type { Certificate, KeyChain } from "@ndn/keychain";
+import type { Name } from "@ndn/packet";
 
 import { CertFetcher } from "./fetcher";
 import { KeyChainCertSource } from "./keychain";

@@ -1,5 +1,5 @@
-import { Certificate, CertNaming } from "@ndn/keychain";
-import { Name, NameMap, NameMultiMap } from "@ndn/packet";
+import { type Certificate, CertNaming } from "@ndn/keychain";
+import { type Name, NameMap, NameMultiMap } from "@ndn/packet";
 
 import type { CertSource } from "./types";
 

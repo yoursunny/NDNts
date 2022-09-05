@@ -1,7 +1,7 @@
-import { toEqualUint8Array, Uint8ArrayExpect } from "@ndn/util/test-fixture/expect";
+import { type Uint8ArrayExpect, toEqualUint8Array } from "@ndn/util/test-fixture/expect";
 import { expect } from "vitest";
 
-import { Decoder, Encodable, Encoder } from "..";
+import { type Encodable, Decoder, Encoder } from "..";
 
 type TlvMatcher = (tlv: Decoder.Tlv) => void;
 

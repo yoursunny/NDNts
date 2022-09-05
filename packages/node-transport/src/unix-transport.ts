@@ -1,5 +1,6 @@
-import { L3Face, StreamTransport } from "@ndn/l3face";
 import * as net from "node:net";
+
+import { L3Face, StreamTransport } from "@ndn/l3face";
 
 /** Unix socket transport. */
 export class UnixTransport extends StreamTransport {

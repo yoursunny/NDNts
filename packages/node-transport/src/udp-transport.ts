@@ -1,6 +1,7 @@
+import type { AddressInfo } from "node:net";
+
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 import EventIterator from "event-iterator";
-import type { AddressInfo } from "node:net";
 
 import { joinHostPort } from "./hostport";
 import * as udp from "./udp-helper";
