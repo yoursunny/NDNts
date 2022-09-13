@@ -33,7 +33,7 @@
     "@ndn/rdr": "workspace:0.0.20220501",
     "@ndn/tlv": "workspace:0.0.20220501",
     "@ndn/util": "workspace:0.0.20220501",
-    "@types/nodemailer": "^6.4.5",
+    "@types/nodemailer": "^6.4.6",
     "ajv": "^8.11.0",
     "applymixins": "^1.1.0",
     "b64-lite": "^1.4.0",

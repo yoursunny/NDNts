@@ -2,9 +2,9 @@
 
 Test environment:
 
-* Node.js 16.13.0
-* ndn-cxx 0.7.1 (install from PPA)
-* [name-based-access-control C++ library](https://github.com/named-data/name-based-access-control) commit `d4689c8f805c2c0ba38fab3e44519c55316c1ac9` (2021-10-07)
+* Node.js 18.9.0
+* ndn-cxx 0.8.0-40-g87208f96
+* [name-based-access-control C++ library](https://github.com/named-data/name-based-access-control) commit `2f0a401c247078319d648973fefadb89f6b9e6e6` (2022-09-12)
   * `./waf configure --with-examples`
 
 ## NDNts Producer and C++ Consumer
