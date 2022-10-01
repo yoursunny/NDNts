@@ -37,11 +37,11 @@
     "get-stdin": "^9.0.0",
     "graceful-fs": "^4.2.10",
     "leveldown": "^6.1.1",
-    "nodemailer": "^6.7.8",
+    "nodemailer": "^6.8.0",
     "prompts": "^2.4.2",
     "stdout-stream": "^2.0.0",
     "tslib": "^2.4.0",
-    "yargs": "^17.5.1"
+    "yargs": "^17.6.0"
   },
   "devDependencies": {
     "@types/fast-chunk-string": "^1.0.1",
@@ -50,7 +50,7 @@
     "@types/nodemailer": "^6.4.6",
     "@types/prompts": "^2.0.14",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^17.0.12"
+    "@types/yargs": "^17.0.13"
   },
   "typedoc": {
     "entryPoint": "src/main.ts"

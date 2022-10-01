@@ -1,6 +1,5 @@
 import { type NamingConvention, Component, Name, TT } from "@ndn/packet";
 import { type EncodableTlv, Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
-// @ts-expect-error typing unavailable
 import murmurHash3 from "murmurhash3js-revisited";
 
 import type { IBLT } from "../iblt";

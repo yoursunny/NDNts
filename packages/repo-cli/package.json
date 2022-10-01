@@ -34,12 +34,12 @@
     "progress": "^2.0.3",
     "streaming-iterables": "^7.1.0",
     "tslib": "^2.4.0",
-    "yargs": "^17.5.1"
+    "yargs": "^17.6.0"
   },
   "devDependencies": {
     "@types/leveldown": "^4.0.3",
     "@types/progress": "^2.0.5",
-    "@types/yargs": "^17.0.12"
+    "@types/yargs": "^17.0.13"
   },
   "typedoc": {
     "entryPoint": "src/main.ts"

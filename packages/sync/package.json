@@ -45,6 +45,7 @@
   "devDependencies": {
     "@ndn/fw": "workspace:0.0.20220501",
     "@ndn/l3face": "workspace:0.0.20220501",
+    "@types/murmurhash3js-revisited": "^3.0.1",
     "@types/pako": "^2.0.0",
     "streaming-iterables": "^7.1.0"
   }
