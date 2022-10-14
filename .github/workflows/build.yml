@@ -64,7 +64,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
         with:
-          path: ~/.local/share/pnpm/store
+          path: |
+            ~/.local/share/pnpm/store
+            ~/.cache/puppeteer
           key: integ-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v3
         with:
