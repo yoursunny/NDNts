@@ -14,7 +14,7 @@ literate_run() {
     FILE=README.md
   fi
   export TS_CONFIG_PATH=$ROOTDIR/mk/tsconfig-literate.json
-  node --loader $ROOTDIR/mk/loader.mjs --experimental-specifier-resolution=node $FILE
+  node --loader $ROOTDIR/mk/loader.mjs $FILE
   popd >/dev/null
 }
 
