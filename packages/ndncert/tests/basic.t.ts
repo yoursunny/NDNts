@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, ECDSA, generateSigningKey, RSA, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
 import { Name } from "@ndn/packet";
-import { toUtf8 } from "@ndn/util";
+import { fromHex, toUtf8 } from "@ndn/util";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, matchProbe, NewRequest, NewResponse, ProbeRequest, ProbeResponse, Status } from "..";
@@ -56,6 +56,14 @@ test("packets", async () => {
   expect(profile.probeKeys).toEqual(["uid"]);
   expect(profile.maxValidityPeriod).toBe(86400000);
   expect(profile.cert.name).toEqualName(rootCert.name);
+
+  const profileJSON: CaProfile.ToJSON = JSON.parse(JSON.stringify(profile));
+  expect(Name.from(profileJSON.prefix)).toEqualName("/root");
+  expect(profileJSON.info).toBe("root CA");
+  expect(profileJSON.probeKeys).toEqual(["uid"]);
+  expect(profileJSON.maxValidityPeriod).toBe(86400000);
+  expect(Name.from(profileJSON.certName)).toEqualName(rootCert.name);
+  expect(fromHex(profileJSON.certDigest)).toEqualUint8Array(profile.certDigest);
 
   await expect(ProbeRequest.build({
     profile,

@@ -146,6 +146,7 @@ See `@ndn/ndnsec` package for more information.
 
 * `--profile` specifies filename of CA profile.
   This may be either the CA profile Data packet in binary format or *client.conf* format compatible with NDNCERT C++ implementation.
+* `--json` changes the output to machine-readable JSON format.
 * `--clientconf` changes the output to *client.conf* format.
   This option is useful for converting a binary CA profile to use with NDNCERT C++ implementation.
 

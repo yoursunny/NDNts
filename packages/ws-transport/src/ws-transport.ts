@@ -101,11 +101,13 @@ export namespace WsTransport {
         return;
       }
 
+      let timeout: NodeJS.Timeout | undefined; // eslint-disable-line prefer-const
       const fail = (err?: Error) => {
+        clearTimeout(timeout);
         sock.close();
         reject(err);
       };
-      const timeout = setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
+      timeout = setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
 
       const onabort = () => fail(new Error("abort"));
       signal?.addEventListener("abort", onabort);

@@ -48,10 +48,30 @@ Maximum validity period: ${this.maxValidityPeriod / 86400000} days
 Certificate name: ${this.cert.data.name}
 Certificate digest: ${toHex(this.certDigest)}`;
   }
+
+  public toJSON(): CaProfile.ToJSON {
+    return {
+      prefix: this.prefix.toString(),
+      info: this.info,
+      probeKeys: this.probeKeys,
+      maxValidityPeriod: this.maxValidityPeriod,
+      certName: this.cert.data.name.toString(),
+      certDigest: toHex(this.certDigest),
+    };
+  }
 }
 export interface CaProfile extends Readonly<CaProfile.Fields> {}
 
 export namespace CaProfile {
+  export interface ToJSON {
+    prefix: string;
+    info: string;
+    probeKeys: string[];
+    maxValidityPeriod: number;
+    certName: string;
+    certDigest: string;
+  }
+
   export interface Fields {
     prefix: Name;
     info: string;

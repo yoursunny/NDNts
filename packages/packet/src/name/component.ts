@@ -145,7 +145,7 @@ export class Component {
 
   /** Convert with naming convention. */
   public as<R>(convention: NamingConvention<any, R>): R {
-    if (!this.is(convention)) {
+    if (!convention.match(this)) {
       throw new Error("component does not follow convention");
     }
     return convention.parse(this);
@@ -153,9 +153,9 @@ export class Component {
 
   /** Compare this component with other. */
   public compare(other: ComponentLike): Component.CompareResult {
-    const rhs = Component.from(other);
-    return 2 * Math.sign(this.type - rhs.type || this.length - rhs.length ||
-      bufferCompare<Uint8Array>(this.value, rhs.value));
+    other = Component.from(other);
+    return 2 * Math.sign(this.type - other.type || this.length - other.length ||
+      bufferCompare<Uint8Array>(this.value, other.value));
   }
 
   /** Determine if this component equals other. */

@@ -15,7 +15,7 @@
   "packageManager": "pnpm@7.13.6",
   "devDependencies": {
     "@knodes/typedoc-plugin-monorepo-readmes": "^0.23.1",
-    "@types/node": "^18.11.3",
+    "@types/node": "^18.11.4",
     "@types/wtfnode": "^0.7.0",
     "@typescript/lib-dom": "npm:@types/web@0.0.69",
     "@vitest/coverage-c8": "^0.24.3",

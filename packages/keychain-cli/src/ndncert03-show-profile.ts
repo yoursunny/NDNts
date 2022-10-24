@@ -6,7 +6,8 @@ import { inputCaProfile } from "./util";
 
 interface Args {
   profile: string;
-  clientconf: boolean;
+  json?: boolean;
+  clientconf?: boolean;
 }
 
 export class Ndncert03ShowProfileCommand implements CommandModule<{}, Args> {
@@ -20,19 +21,30 @@ export class Ndncert03ShowProfileCommand implements CommandModule<{}, Args> {
         desc: "CA profile file",
         type: "string",
       })
+      .option("json", {
+        desc: "export as JSON",
+        type: "boolean",
+      })
       .option("clientconf", {
-        default: false,
         desc: "export as client.conf compatible with NDNCERT C++ implementation",
         type: "boolean",
+        conflicts: "json",
       });
   }
 
   public async handler(args: Arguments<Args>) {
     const profile = await inputCaProfile(args.profile);
-    if (args.clientconf) {
-      stdout.write(JSON.stringify(exportClientConf(profile), undefined, 2));
-    } else {
-      stdout.write(`${profile}\n`);
+    let output: unknown = profile;
+    switch (true) {
+      case args.clientconf:
+        output = exportClientConf(profile);
+        // fallthrough
+      case args.json:
+        output = JSON.stringify(output, undefined, 2);
+        // fallthrough
+      default:
+        stdout.write(`${output}\n`);
+        break;
     }
   }
 }
