@@ -5,13 +5,13 @@
 Test environment:
 
 * Ubuntu 20.04
-* Node.js 17.3.0
+* Node.js 19.0.0
 
 Reference implementation:
 
-* ndn-cxx 0.8.0
-* NFD 22.02
-* libpsync 0.3.0-9-g32ccfc4
+* ndn-cxx 0.8.0-49-g8fbffe45
+* NFD 0.8.0-49-g8fbffe45
+* libpsync 0.3.0-20-g03426ef
 
 Build reference program:
 
@@ -23,7 +23,7 @@ Build reference program:
 # in PSync directory, build examples only
 mkdir -p build/examples
 for F in examples/*.cpp; do
-  g++ -o build/examples/psync-$(basename -s .cpp $F) $F $(pkg-config --cflags --libs libndn-cxx PSync)
+  g++ --std=c++17 -o build/examples/psync-$(basename -s .cpp $F) $F $(pkg-config --cflags --libs libndn-cxx PSync)
 done
 ```
 

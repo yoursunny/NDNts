@@ -18,9 +18,10 @@ int
 main(int argc, char* argv[])
 {
   ndn::Face face("127.0.0.1", argv[1]);
+  ndn::KeyChain keyChain;
 
   ndn::Name userNode(argv[3]);
-  psync::FullProducer sync(30, face, argv[2], userNode, handleUpdate, 100_ms, 500_ms,
+  psync::FullProducer sync(face, keyChain, 30, argv[2], userNode, handleUpdate, 100_ms, 500_ms,
                            psync::CompressionScheme::NONE, psync::CompressionScheme::NONE);
 
   boost::asio::signal_set signalSet(face.getIoService(), SIGINT, SIGUSR1);
