@@ -69,18 +69,18 @@ export interface ConnectRouterResult {
   testConnectionResult: unknown;
 }
 
-const getNow = hirestime();
+const now = hirestime();
 
 /** Connect to a router and test the connection. */
 export async function connectToRouter(router: string, opts: ConnectRouterOptions = {}): Promise<ConnectRouterResult> {
   const face = await createFace(router, opts);
 
-  const testConnectionStart = getNow();
+  const testConnectionStart = now();
   let testConnectionDuration: number;
   let testConnectionResult: unknown;
   try {
     testConnectionResult = await testConnection(face, opts);
-    testConnectionDuration = getNow() - testConnectionStart;
+    testConnectionDuration = now() - testConnectionStart;
   } catch (err: unknown) {
     face.close();
     throw err;

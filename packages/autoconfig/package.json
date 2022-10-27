@@ -33,7 +33,7 @@
     "@ndn/quic-transport": "workspace:0.0.20220501",
     "@ndn/ws-transport": "workspace:0.0.20220501",
     "default-gateway": "^6.0.3",
-    "hirestime": "^6.1.0",
+    "hirestime": "^7.0.3",
     "node-fetch": "^3.2.10",
     "tslib": "^2.4.0"
   },

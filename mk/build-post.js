@@ -41,7 +41,6 @@ const CJS_IMPORTS = new Set([
   "event-iterator",
   "fast-chunk-string",
   "graceful-fs",
-  "hirestime",
   "it-keepalive",
   "leveldown",
   "levelup",
