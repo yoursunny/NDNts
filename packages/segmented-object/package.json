@@ -34,11 +34,11 @@
     "event-iterator": "^2.0.0",
     "graceful-fs": "^4.2.10",
     "hirestime": "^7.0.3",
-    "mnemonist": "^0.39.4",
+    "mnemonist": "^0.39.5",
     "p-defer": "^4.0.0",
     "p-lazy": "^4.0.0",
     "streaming-iterables": "^7.1.0",
-    "tslib": "^2.4.0",
+    "tslib": "^2.4.1",
     "typed-emitter": "^2.1.0"
   },
   "devDependencies": {

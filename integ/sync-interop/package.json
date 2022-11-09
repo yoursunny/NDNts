@@ -9,6 +9,6 @@
     "@ndn/sync": "workspace:0.0.20220501",
     "@ndn/tlv": "workspace:0.0.20220501",
     "@ndn/util": "workspace:0.0.20220501",
-    "tslib": "^2.4.0"
+    "tslib": "^2.4.1"
   }
 }

@@ -35,8 +35,8 @@
     "@ndn/tlv": "workspace:0.0.20220501",
     "@ndn/util": "workspace:0.0.20220501",
     "@yoursunny/asn1": "0.0.20200718",
-    "mnemonist": "^0.39.4",
-    "tslib": "^2.4.0"
+    "mnemonist": "^0.39.5",
+    "tslib": "^2.4.1"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:0.0.20220501"
