@@ -2,7 +2,8 @@ name: build
 on:
   push:
   pull_request:
-
+permissions:
+  contents: read
 jobs:
   build:
     strategy:
@@ -23,6 +24,7 @@ jobs:
       - run: corepack pnpm build
       - run: corepack pnpm literate
       - run: corepack pnpm lint
+    timeout-minutes: 30
   unittest:
     strategy:
       matrix:
@@ -56,6 +58,7 @@ jobs:
         continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+    timeout-minutes: 30
   integ:
     strategy:
       fail-fast: false
@@ -89,6 +92,7 @@ jobs:
         run: |
           corepack pnpm clang-format
           git diff --exit-code
+    timeout-minutes: 30
   publish:
     needs: [build, unittest, integ]
     if: ${{ github.repository == 'yoursunny/NDNts' && github.event_name == 'push' }}
@@ -128,3 +132,4 @@ jobs:
           netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           netlify-site-id: 8987d2bb-7638-4d6b-adff-806fe3b7309a
           build-dir: ./docs/
+    timeout-minutes: 30

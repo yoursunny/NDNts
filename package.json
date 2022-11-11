@@ -12,7 +12,7 @@
     "test": "vitest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@7.14.2",
+  "packageManager": "pnpm@7.15.0",
   "devDependencies": {
     "@knodes/typedoc-plugin-monorepo-readmes": "^0.23.1",
     "@types/node": "^18.11.9",
