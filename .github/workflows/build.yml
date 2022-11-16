@@ -126,10 +126,15 @@ jobs:
           fqdn: ndnts-nightly.ndn.today
         env:
           GH_PAT: ${{ secrets.NIGHTLY_ACCESS_TOKEN }}
-      - uses: South-Paw/action-netlify-deploy@v1.2.1
+      - uses: nwtgck/actions-netlify@v1.2
         with:
+          publish-dir: ./docs/
+          production-deploy: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          netlify-site-id: 8987d2bb-7638-4d6b-adff-806fe3b7309a
-          build-dir: ./docs/
+          deploy-message: ${{ github.sha }} ${{ github.run_id }}
+          enable-pull-request-comment: false
+          enable-commit-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: 8987d2bb-7638-4d6b-adff-806fe3b7309a
     timeout-minutes: 30
