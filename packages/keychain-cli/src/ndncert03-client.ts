@@ -183,14 +183,12 @@ class InteractiveClient {
         case "nop":
           challenges.push(new ClientNopChallenge());
           break;
-        case "pin": {
+        case "pin":
           challenges.push(new ClientPinChallenge(this.promptPin()));
           break;
-        }
-        case "email": {
+        case "email":
           challenges.push(new ClientEmailChallenge(this.args.email!, this.promptPin()));
           break;
-        }
         case "possession": {
           const certName = new Name(this.args["possession-cert"] ?? this.args.key);
           const cert = await this.keyChain.getCert(certName);

@@ -50,7 +50,7 @@
     "@types/nodemailer": "^6.4.6",
     "@types/prompts": "^2.4.1",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^17.0.13"
+    "@types/yargs": "17.0.13"
   },
   "typedoc": {
     "entryPoint": "src/main.ts"
