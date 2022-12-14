@@ -27,15 +27,16 @@ export async function inputCaProfile(filename: string, allowClientConf = true): 
   try {
     return await CaProfile.fromData(new Decoder(content).decode(Data));
   } catch (err: unknown) {
-    if (allowClientConf) {
-      try {
-        return await inputCaProfileFromClientConf(content);
-      } catch (errC: unknown) {
-        throw new AggregateError([err, errC],
-          `cannot parse as Data (${err}); cannot import from client.conf (${errC})`);
-      }
+    if (!allowClientConf) {
+      throw err;
     }
-    throw err;
+
+    try {
+      return await inputCaProfileFromClientConf(content);
+    } catch (errC: unknown) {
+      throw new AggregateError([err, errC],
+        `cannot parse as Data (${err}); cannot import from client.conf (${errC})`);
+    }
   }
 }
 

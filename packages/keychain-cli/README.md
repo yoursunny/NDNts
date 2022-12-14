@@ -164,6 +164,12 @@ See `@ndn/ndnsec` package for more information.
 * `--possession-issuer` specifies filename of issuer certificate to fulfill possession challenge.
   The default is the CA certificate in the CA profile.
 
+`ndnts-keychain ndncert03-probe` command runs the probe procedure against a CA.
+
+* `--profile` specifies filename of CA profile.
+  This may be either the CA profile Data packet in binary format or *client.conf* format compatible with NDNCERT C++ implementation.
+* Probe parameters shall be supplied as a JSON object passed to standard input.
+
 `ndnts-keychain ndncert03-client` command requests a certificate.
 
 * `--profile` specifies filename of CA profile.

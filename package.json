@@ -12,20 +12,20 @@
     "test": "vitest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@7.17.1",
+  "packageManager": "pnpm@7.18.2",
   "devDependencies": {
     "@knodes/typedoc-plugin-monorepo-readmes": "^0.23.1",
-    "@types/node": "^18.11.9",
+    "@types/node": "^18.11.15",
     "@types/wtfnode": "^0.7.0",
-    "@typescript/lib-dom": "npm:@types/web@0.0.81",
-    "@vitest/coverage-c8": "^0.25.3",
+    "@typescript/lib-dom": "npm:@types/web@0.0.84",
+    "@vitest/coverage-c8": "^0.25.8",
     "@yoursunny/xo-config": "0.52.1",
     "c8": "^7.12.0",
     "codedown": "^2.2.0",
     "tslib": "^2.4.1",
     "typedoc": "0.23.16",
-    "typescript": "~4.9.3",
-    "vitest": "^0.25.3",
+    "typescript": "~4.9.4",
+    "vitest": "^0.25.8",
     "wtfnode": "^0.9.1"
   },
   "engines": {

@@ -70,7 +70,7 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
         }
         const name = new Name(key);
         if (!CertNaming.isKeyName(name) && !CertNaming.isCertName(name)) {
-          throw new Error("--key is not a key name or certificate name");
+          throw new Error("--key is neither a key name nor a certificate name");
         }
         return true;
       })

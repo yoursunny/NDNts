@@ -42,6 +42,6 @@
     "@types/default-gateway": "^3.0.1",
     "@types/koa": "^2.13.5",
     "@types/node-fetch": "^2.6.2",
-    "koa": "^2.13.4"
+    "koa": "^2.14.1"
   }
 }

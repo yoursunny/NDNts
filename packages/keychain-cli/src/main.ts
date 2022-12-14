@@ -13,6 +13,7 @@ import { ListKeysCommand } from "./list-keys";
 import { Ndncert03CaCommand } from "./ndncert03-ca";
 import { Ndncert03ClientCommand } from "./ndncert03-client";
 import { Ndncert03MakeProfileCommand } from "./ndncert03-make-profile";
+import { Ndncert03ProbeCommand } from "./ndncert03-probe";
 import { Ndncert03ShowProfileCommand } from "./ndncert03-show-profile";
 import { ShowCertCommand } from "./show-cert";
 
@@ -33,6 +34,7 @@ try {
     .command(new Ndncert03MakeProfileCommand())
     .command(new Ndncert03ShowProfileCommand())
     .command(new Ndncert03CaCommand())
+    .command(new Ndncert03ProbeCommand())
     .command(new Ndncert03ClientCommand())
     .demandCommand()
     .parseAsync();
