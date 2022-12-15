@@ -95,8 +95,12 @@ export namespace ProbeResponse {
     return ProbeResponse.fromData(data, profile);
   }
 
+  export function isCaCertFullName(name: Name): boolean {
+    return name.at(-1).is(ImplicitDigest) && CertNaming.isCertName(name.getPrefix(-1));
+  }
+
   export function checkCaCertFullName(name: Name): void {
-    if (!(name.at(-1).is(ImplicitDigest) && CertNaming.isCertName(name.getPrefix(-1)))) {
+    if (!isCaCertFullName(name)) {
       throw new Error("CA cert full name is invalid");
     }
   }

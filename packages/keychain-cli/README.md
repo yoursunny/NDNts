@@ -134,7 +134,7 @@ See `@ndn/ndnsec` package for more information.
 `ndnts-keychain ndncert03-make-profile` command generates a CA profile.
 
 * `--out` specifies output filename.
-  The file contains the CA profile Data packet in binary format.
+  CA profile Data packet in binary format would be written to this file.
 * `--prefix` specifies the name prefix for the CA.
   Conventionally, it should end with `CA` component.
 * `--cert` specifies the certificate name for the CA.
@@ -145,7 +145,9 @@ See `@ndn/ndnsec` package for more information.
 `ndnts-keychain ndncert03-show-profile` command displays information in a CA profile.
 
 * `--profile` specifies filename of CA profile.
-  This may be either the CA profile Data packet in binary format or *client.conf* format compatible with NDNCERT C++ implementation.
+  This may be either (1) the CA profile Data packet in binary format (2) *client.conf* format compatible with NDNCERT C++ implementation (3) CA certificate name with implicit digest.
+* `--out` writes the CA profile Data packet in binary format to a file.
+  This option is useful for retrieving and verifying the binary CA profile, from another input format.
 * `--json` changes the output to machine-readable JSON format.
 * `--clientconf` changes the output to *client.conf* format.
   This option is useful for converting a binary CA profile to use with NDNCERT C++ implementation.
@@ -167,13 +169,13 @@ See `@ndn/ndnsec` package for more information.
 `ndnts-keychain ndncert03-probe` command runs the probe procedure against a CA.
 
 * `--profile` specifies filename of CA profile.
-  This may be either the CA profile Data packet in binary format or *client.conf* format compatible with NDNCERT C++ implementation.
+  This accepts the same formats as `ndncert03-show-profile` subcommand.
 * Probe parameters shall be supplied as a JSON object passed to standard input.
 
 `ndnts-keychain ndncert03-client` command requests a certificate.
 
 * `--profile` specifies filename of CA profile.
-  This may be either the CA profile Data packet in binary format or *client.conf* format compatible with NDNCERT C++ implementation.
+  This accepts the same formats as `ndncert03-show-profile` subcommand.
 * `--ndnsec` uses ndn-cxx keychain instead of NDNts keychain.
 * `--key` specifies the key name to obtain certificate for.
   The key pair must exist in the keychain given in `NDNTS_KEYCHAIN` environment variable, or ndn-cxx keychain if `--ndnsec` is specified.

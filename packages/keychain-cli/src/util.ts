@@ -1,7 +1,7 @@
 import { openKeyChain, openUplinks } from "@ndn/cli-common";
 import { type KeyChain, Certificate } from "@ndn/keychain";
-import { type ClientConf, CaProfile, importClientConf } from "@ndn/ndncert";
-import { Data } from "@ndn/packet";
+import { type ClientConf, CaProfile, importClientConf, ProbeResponse, retrieveCaProfile } from "@ndn/ndncert";
+import { Data, Name } from "@ndn/packet";
 import { type Decodable, Decoder, Encoder } from "@ndn/tlv";
 import { fromUtf8 } from "@ndn/util";
 import fastChunkString from "fast-chunk-string";
@@ -22,12 +22,20 @@ export async function inputCertBase64(filename?: string): Promise<Certificate> {
   return Certificate.fromData(data);
 }
 
-export async function inputCaProfile(filename: string, allowClientConf = true): Promise<CaProfile> {
+export async function inputCaProfile(filename: string, strict = false): Promise<CaProfile> {
+  if (!strict) {
+    const name = new Name(filename);
+    if (ProbeResponse.isCaCertFullName(name)) {
+      await openUplinks();
+      return retrieveCaProfile({ caCertFullName: name });
+    }
+  }
+
   const content = await fs.readFile(filename);
   try {
     return await CaProfile.fromData(new Decoder(content).decode(Data));
   } catch (err: unknown) {
-    if (!allowClientConf) {
+    if (strict) {
       throw err;
     }
 
