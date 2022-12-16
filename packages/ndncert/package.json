@@ -33,16 +33,19 @@
     "@ndn/rdr": "workspace:0.0.20220501",
     "@ndn/tlv": "workspace:0.0.20220501",
     "@ndn/util": "workspace:0.0.20220501",
+    "@types/imap": "^0.8.35",
     "@types/nodemailer": "^6.4.6",
     "ajv": "^8.11.2",
     "applymixins": "^1.1.0",
     "b64-lite": "^1.4.0",
+    "imap-emails": "^1.0.4",
     "nodemailer": "^6.8.0",
     "tslib": "^2.4.1",
     "typed-emitter": "^2.1.0"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:0.0.20220501",
-    "@types/b64-lite": "^1.4.0"
+    "@types/b64-lite": "^1.4.0",
+    "@types/mailparser": "^3.4.0"
   }
 }

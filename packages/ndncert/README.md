@@ -9,7 +9,7 @@ Features:
 
 * [X] CA profile (segmentation not supported)
 * [X] PROBE command
-* [ ] PROBE extension for redirection
+* [X] PROBE extension for redirection
 * [ ] PROBE extension for privacy
 * [X] certificate issuance: NEW and CHALLENGE commands
 * [ ] certificate renewal
@@ -23,4 +23,4 @@ Challenges:
 * [X] proof of possession, with name assignment policy
 * [X] "nop" (not in NDNCERT spec)
 
-`@ndn/keychain-cli` package offers `ndnts-keychain ndncert03-make-profile`, `ndnts-keychain ndncert03-show-profile`, `ndnts-keychain ndncert03-ca`, and `ndnts-keychain ndncert03-client` commands that use this implementation.
+`@ndn/keychain-cli` package offers `ndnts-keychain ndncert03-make-profile`, `ndnts-keychain ndncert03-show-profile`, `ndnts-keychain ndncert03-ca`, `ndnts-keychain ndncert03-probe`, and `ndnts-keychain ndncert03-client` commands that use this implementation.

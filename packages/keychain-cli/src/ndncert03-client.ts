@@ -1,7 +1,7 @@
 import { openUplinks } from "@ndn/cli-common";
 import { type KeyChain, type NamedSigner, type NamedVerifier, CertNaming, generateSigningKey } from "@ndn/keychain";
 import { AltUri } from "@ndn/naming-convention2";
-import { type CaProfile, type ClientChallenge, type ClientChallengeContext, type ClientPinLikeChallenge, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, matchProbe, requestCertificate, requestProbe } from "@ndn/ndncert";
+import { type CaProfile, type ClientChallenge, type ClientChallengeContext, type ClientPinLikeChallenge, ClientEmailChallenge, ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, matchProbe, requestCertificate, requestProbe } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
 import { console, toHex } from "@ndn/util";
@@ -77,7 +77,7 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
         return true;
       })
       .check(({ challenge, email }) => {
-        if (challenge.includes("email") && !email?.includes("@")) {
+        if (challenge.includes("email") && !(email === "ethereal" || email?.includes("@"))) {
           throw new Error("email challenge enabled but --email is not an email address");
         }
         return true;
@@ -104,6 +104,7 @@ class InteractiveClient {
   private profile!: CaProfile;
   private privateKey!: NamedSigner.PrivateKey;
   private publicKey!: NamedVerifier.PublicKey;
+  private inbox?: ClientEmailInboxImap;
 
   public async run(): Promise<void> {
     this.keyChain = this.args.ndnsec ? new NdnsecKeyChain() : defaultKeyChain;
@@ -119,6 +120,7 @@ class InteractiveClient {
       challenges,
     });
     stdout.write(`${cert.data.name}\n`);
+    await this.inbox?.close();
 
     await this.keyChain.insertCert(cert);
   }
@@ -129,7 +131,10 @@ class InteractiveClient {
     }
 
     const { pp, email } = this.args;
-    const known = [...(email ? ["email", email] : []), ...(pp as string[])];
+    const known = [...(pp as string[])];
+    if (email?.includes("@")) {
+      known.unshift("email", email);
+    }
     const parameters = await promptProbeParameters(this.profile, known);
     const probeResponse = await requestProbe({
       profile: this.profile,
@@ -169,7 +174,13 @@ class InteractiveClient {
           challenges.push(new ClientPinChallenge(this.promptPin()));
           break;
         case "email":
-          challenges.push(new ClientEmailChallenge(this.args.email!, this.promptPin()));
+          if (this.args.email === "ethereal") {
+            this.inbox = await ClientEmailInboxImap.createEthereal();
+            console.log(`Using Ethereal Email inbox ${this.inbox.address}`);
+            challenges.push(new ClientEmailChallenge(this.inbox.address, this.inbox.promptCallback));
+          } else {
+            challenges.push(new ClientEmailChallenge(this.args.email!, this.promptPin()));
+          }
           break;
         case "possession": {
           const certName = new Name(this.args["possession-cert"] ?? this.args.key);
