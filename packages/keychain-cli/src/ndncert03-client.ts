@@ -1,21 +1,22 @@
 import { openUplinks } from "@ndn/cli-common";
 import { type KeyChain, type NamedSigner, type NamedVerifier, CertNaming, generateSigningKey } from "@ndn/keychain";
 import { AltUri } from "@ndn/naming-convention2";
-import { type CaProfile, type ClientChallenge, type ClientChallengeContext, type ClientPinLikeChallenge, type ParameterKV, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, matchProbe, requestCertificate, requestProbe } from "@ndn/ndncert";
+import { type CaProfile, type ClientChallenge, type ClientChallengeContext, type ClientPinLikeChallenge, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, matchProbe, requestCertificate, requestProbe } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
-import { console, toHex, toUtf8 } from "@ndn/util";
+import { console, toHex } from "@ndn/util";
 import { promises as fs } from "graceful-fs";
 import prompts from "prompts";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { inputCaProfile, keyChain as defaultKeyChain } from "./util";
+import { inputCaProfile, keyChain as defaultKeyChain, ppOption, promptProbeParameters } from "./util";
 
 interface Args {
   profile: string;
   ndnsec: boolean;
   key?: string;
+  pp: unknown;
   challenge: string[];
   "pin-named-pipe"?: string;
   email?: string;
@@ -43,6 +44,7 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
         defaultDescription: "run PROBE command and create new key",
         type: "string",
       })
+      .option("pp", ppOption)
       .option("challenge", {
         demandOption: true,
         array: true,
@@ -126,9 +128,12 @@ class InteractiveClient {
       return this.retrieveKeyPairFromKeyChain(CertNaming.toKeyName(new Name(this.args.key)));
     }
 
+    const { pp, email } = this.args;
+    const known = [...(email ? ["email", email] : []), ...(pp as string[])];
+    const parameters = await promptProbeParameters(this.profile, known);
     const probeResponse = await requestProbe({
       profile: this.profile,
-      parameters: await this.promptProbe(),
+      parameters,
     });
 
     for (const keyName of await this.keyChain.listKeys()) {
@@ -151,29 +156,6 @@ class InteractiveClient {
     const keyPair = await this.keyChain.getKeyPair(keyName);
     this.privateKey = keyPair.signer;
     this.publicKey = keyPair.verifier;
-  }
-
-  private async promptProbe(): Promise<ParameterKV> {
-    const questions: prompts.PromptObject[] = [];
-    for (const probeKey of this.profile.probeKeys) {
-      questions.push({
-        type: "text",
-        name: probeKey,
-        message: `Probe parameter ${probeKey}`,
-      });
-    }
-
-    if (this.args.email) {
-      prompts.override({ email: this.args.email });
-    }
-    const response = await prompts(questions);
-    prompts.override({});
-
-    const parameters: ParameterKV = {};
-    for (const probeKey of this.profile.probeKeys) {
-      parameters[probeKey] = toUtf8(response[probeKey]);
-    }
-    return parameters;
   }
 
   private async prepareChallenges(): Promise<ClientChallenge[]> {

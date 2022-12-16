@@ -166,11 +166,12 @@ See `@ndn/ndnsec` package for more information.
 * `--possession-issuer` specifies filename of issuer certificate to fulfill possession challenge.
   The default is the CA certificate in the CA profile.
 
-`ndnts-keychain ndncert03-probe` command runs the probe procedure against a CA.
+`ndnts-keychain ndncert03-probe` command runs the PROBE procedure against a CA.
 
 * `--profile` specifies filename of CA profile.
   This accepts the same formats as `ndncert03-show-profile` subcommand.
-* Probe parameters shall be supplied as a JSON object passed to standard input.
+* `--pp KEY VALUE` sets a key-value pair of PROBE parameters.
+  Unspecified keys will be prompted interactively.
 
 `ndnts-keychain ndncert03-client` command requests a certificate.
 
@@ -181,9 +182,10 @@ See `@ndn/ndnsec` package for more information.
   The key pair must exist in the keychain given in `NDNTS_KEYCHAIN` environment variable, or ndn-cxx keychain if `--ndnsec` is specified.
   This also accepts a certificate name, whose key will be used.
 * If `--key` is omitted, the client sends a PROBE request to the CA.
-  Probe parameters are prompted interactively, except that `--email` may be used as `email` parameter.
-  Then, it creates a new key whose subject name is the first available name in the PROBE response.
+  It then creates a new key whose subject name is the first available name in the PROBE response.
   PROBE response that contains only redirects is not supported and will result in an error.
+* `--pp KEY VALUE` sets a key-value pair of PROBE parameters.
+  Unspecified keys will be prompted interactively, except that `--email` may be used as `email` parameter.
 * `--challenge nop` enables "nop" challenge.
 * `--challenge pin` enables "pin" challenge.
 * `--challenge email` enables "email" challenge.

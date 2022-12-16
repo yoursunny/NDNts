@@ -1,15 +1,14 @@
 import { openUplinks } from "@ndn/cli-common";
-import { type ParameterKV, requestProbe } from "@ndn/ndncert";
+import { requestProbe } from "@ndn/ndncert";
 import { Name } from "@ndn/packet";
-import { toUtf8 } from "@ndn/util";
-import getStdin from "get-stdin";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { inputCaProfile } from "./util";
+import { inputCaProfile, ppOption, promptProbeParameters } from "./util";
 
 interface Args {
   profile: string;
+  pp: unknown;
 }
 
 export class Ndncert03ProbeCommand implements CommandModule<{}, Args> {
@@ -22,18 +21,15 @@ export class Ndncert03ProbeCommand implements CommandModule<{}, Args> {
         demandOption: true,
         desc: "CA profile file",
         type: "string",
-      });
+      })
+      .option("pp", ppOption);
   }
 
   public async handler(args: Arguments<Args>) {
     await openUplinks();
 
-    const inputParameters = JSON.parse(await getStdin());
     const profile = await inputCaProfile(args.profile);
-    const parameters: ParameterKV = {};
-    for (const key of profile.probeKeys) {
-      parameters[key] = toUtf8(String(inputParameters[key]));
-    }
+    const parameters = await promptProbeParameters(profile, args.pp as string[]);
 
     const { entries, redirects } = await requestProbe({
       profile,
