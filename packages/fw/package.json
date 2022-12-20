@@ -30,7 +30,7 @@
     "@ndn/util": "workspace:0.0.20220501",
     "@types/retry": "^0.12.2",
     "hirestime": "^7.0.3",
-    "it-pushable": "^3.1.0",
+    "it-pushable": "^3.1.2",
     "mnemonist": "^0.39.5",
     "retry": "^0.13.1",
     "streaming-iterables": "^7.1.0",

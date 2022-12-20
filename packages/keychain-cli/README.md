@@ -170,7 +170,7 @@ See `@ndn/ndnsec` package for more information.
 
 * `--profile` specifies filename of CA profile.
   This accepts the same formats as `ndncert03-show-profile` subcommand.
-* `--pp KEY VALUE` sets a key-value pair of PROBE parameters.
+* `--pp KEY VALUE` sets a key-value pair in PROBE parameters.
   Unspecified keys will be prompted interactively.
 
 `ndnts-keychain ndncert03-client` command requests a certificate.
@@ -183,13 +183,14 @@ See `@ndn/ndnsec` package for more information.
   This also accepts a certificate name, whose key will be used.
 * If `--key` is omitted, the client sends a PROBE request to the CA.
   It then creates a new key whose subject name is the first available name in the PROBE response.
-  PROBE response that contains only redirects is not supported and will result in an error.
-* `--pp KEY VALUE` sets a key-value pair of PROBE parameters.
+  PROBE response that contains only redirects is not supported and will result in an error, but such CA can be supported through `ndnts-keychain ndncert03-probe` command.
+* `--pp KEY VALUE` sets a key-value pair in PROBE parameters.
   Unspecified keys will be prompted interactively, except that `--email` may be used as `email` parameter.
 * `--challenge nop` enables "nop" challenge.
 * `--challenge pin` enables "pin" challenge.
 * `--challenge email` enables "email" challenge.
 * `--email` specifies email address to use in the email challenge.
+  The special value `ethereal` generates a test account on [Ethereal Email](https://ethereal.email/) and automatically solves the email challenge.
 * `--challenge possession` enables "possession" challenge.
 * `--possession-cert` specifies existing certificate name to fulfill possession challenge.
   If `--key` is a certificate name, this may be omitted if using the same certificate.
@@ -298,4 +299,28 @@ ndnts-keychain ndncert03-client --profile /tmp/ca.data --ndnsec --key $REQKEY --
 # view certificates
 ndnsec list -c
 ndnsec cert-dump -p -i /E
+```
+
+Email challenge with Ethereal Email, for global NDN testbed:
+
+```bash
+export NDNTS_UPLINK=autoconfig:
+export NDNTS_KEYCHAIN=/tmp/req-keychain
+
+# download root CA profile
+http --json --follow --output /tmp/ndn-root-ca.client.conf \
+  GET https://github.com/named-data/ndncert/raw/master/client.conf.sample
+
+# generate a random institutional email address for running PROBE command
+PROBE_EMAIL=$(openssl rand -hex 8)@ucla.edu
+
+# run PROBE command to obtain a redirect to a sub CA
+PROBE_CACERT=$( \
+  ndnts-keychain ndncert03-probe --profile /tmp/ndn-root-ca.client.conf --pp email $PROBE_EMAIL |\
+  tee /dev/stderr | jq -r ".redirects[0].caCertFullName")
+
+# request certificate from the sub CA, solving email challenge automatically
+# CA profile is retrieved and verified according to provided CA certificate full name
+ndnts-keychain ndncert03-client --profile $PROBE_CACERT --pp email $PROBE_EMAIL \
+  --challenge email --email ethereal
 ```

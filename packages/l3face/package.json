@@ -32,7 +32,7 @@
     "@ndn/tlv": "workspace:0.0.20220501",
     "@ndn/util": "workspace:0.0.20220501",
     "abortable-iterator": "^4.0.2",
-    "it-pushable": "^3.1.0",
+    "it-pushable": "^3.1.2",
     "p-event": "^5.0.1",
     "retry": "^0.13.1",
     "streaming-iterables": "^7.1.0",

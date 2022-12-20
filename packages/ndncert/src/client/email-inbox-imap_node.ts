@@ -1,12 +1,15 @@
+import { crypto, toHex } from "@ndn/util";
 import type { Config as ImapConfig } from "imap";
 import { type ImapEmailsProps, ImapEmails } from "imap-emails";
-import type { ParsedMail } from "mailparser";
+import type { AddressObject, ParsedMail } from "mailparser";
 import { createTestAccount } from "nodemailer";
 
 import type { ClientChallengeContext } from "./challenge";
 import type { ClientPinLikeChallenge } from "./pin-like-challenge";
 
-/** Receive email via IMAP for responding to email challenge. */
+const emailAddressComparer = new Intl.Collator("en", { sensitivity: "base" });
+
+/** Receive email via IMAP for automatically solving email challenge. */
 export class ClientEmailInboxImap {
   constructor(public readonly address: string, imap: ImapConfig, private readonly extract: ClientEmailInboxImap.ExtractOptions = {}) {
     const { user, password } = imap;
@@ -62,13 +65,19 @@ export class ClientEmailInboxImap {
     return undefined;
   }
 
-  private extractFrom({ subject, text, html }: ParsedMail): string | undefined {
+  private extractFrom({ to, subject, text, html }: ParsedMail): string | undefined {
     const {
+      checkTo = true,
       useSubject = true,
       useText = true,
       useHtml = false,
       regex = /\b(\d{6})\b/,
     } = this.extract;
+
+    if (checkTo && ![to].flat().some((a) => this.checkToAddress(a))) {
+      return undefined;
+    }
+
     const matches = regex.exec([
       useSubject ? subject : "",
       useText ? text : "",
@@ -76,10 +85,23 @@ export class ClientEmailInboxImap {
     ].join("\n\n"));
     return matches?.[1];
   }
+
+  private checkToAddress(a: AddressObject | undefined): boolean {
+    if (!a) {
+      return false;
+    }
+    return a.value.some((e) => e.address && emailAddressComparer.compare(this.address, e.address) === 0);
+  }
 }
 export namespace ClientEmailInboxImap {
   /** Options for extracting PIN from email message. */
   export interface ExtractOptions {
+    /**
+     * Whether to check To header contains requesting email address.
+     * @default true
+     */
+    checkTo?: boolean;
+
     /**
      * Whether to extract PIN from email subject.
      * @default true
@@ -108,7 +130,9 @@ export namespace ClientEmailInboxImap {
   /** Create IMAP inbox hosted by Ethereal. */
   export async function createEthereal(extract: ExtractOptions = {}): Promise<ClientEmailInboxImap> {
     const a = await createTestAccount();
-    return new ClientEmailInboxImap(a.user, {
+    const addressParts = a.user.split("@");
+    addressParts[0] += `+${toHex(crypto.getRandomValues(new Uint8Array(8)))}`;
+    return new ClientEmailInboxImap(addressParts.join("@"), {
       user: a.user,
       password: a.pass,
       host: a.imap.host,
