@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { KeyMap, KeyMultiMap, KeyMultiSet } from "..";
+import { KeyMap, KeyMultiMap, KeyMultiSet, MultiMap } from "..";
 
 type Key = [string];
 
@@ -57,13 +57,20 @@ test("KeyMultiMap", () => {
   expect(m.count(["B"])).toBe(1);
   expect(m.count(["C"])).toBe(0);
 
-  const list = Array.from(m.associations());
-  expect(list).toHaveLength(2);
-  list.sort(([, a], [, b]) => a.size - b.size);
-  expect(list[1]![0]).toEqual(["A"]);
-  expect(list[1]![1]).toEqual(new Set([11, 12]));
-  expect(list[0]![0]).toEqual(["B"]);
-  expect(list[0]![1]).toEqual(new Set([21]));
+  const listP = Array.from(m);
+  expect(listP).toHaveLength(3);
+  listP.sort((a, b) => a[1] - b[1]);
+  expect(listP[0]).toEqual([["A"], 11]);
+  expect(listP[1]).toEqual([["A"], 12]);
+  expect(listP[2]).toEqual([["B"], 21]);
+
+  const listA = Array.from(m.associations());
+  expect(listA).toHaveLength(2);
+  listA.sort(([, a], [, b]) => a.size - b.size);
+  expect(listA[1]![0]).toEqual(["A"]);
+  expect(listA[1]![1]).toEqual(new Set([11, 12]));
+  expect(listA[0]![0]).toEqual(["B"]);
+  expect(listA[0]![1]).toEqual(new Set([21]));
 
   expect(m.remove(["A"], 10)).toBe(2);
   expect(m.dimension).toBe(2);
@@ -80,6 +87,24 @@ test("KeyMultiMap", () => {
   expect(m.remove(["B"], 21)).toBe(0);
   expect(m.dimension).toBe(0);
   expect(m.size).toBe(0);
+});
+
+test("MultiMap", () => {
+  const m = new MultiMap<string, number>();
+  expect(m.dimension).toBe(0);
+  expect(m.size).toBe(0);
+
+  m.add("A", 10);
+  m.add("B", 20);
+  m.add("B", 21);
+  m.add("B", 21);
+  expect(m.dimension).toBe(2);
+  expect(m.size).toBe(3);
+
+  m.remove("A", 11);
+  m.remove("A", 10);
+  expect(m.dimension).toBe(1);
+  expect(m.size).toBe(2);
 });
 
 test("KeyMultiSet", () => {

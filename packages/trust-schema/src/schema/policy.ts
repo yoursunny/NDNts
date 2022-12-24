@@ -1,12 +1,12 @@
 import type { Name } from "@ndn/packet";
-import MultiMap from "mnemonist/multi-map.js";
+import { MultiMap } from "@ndn/util";
 
 import { type Pattern, type VarsLike, Vars } from "./pattern";
 
 /** Policy in a trust schema. */
 export class TrustSchemaPolicy {
   private readonly patterns = new Map<string, Pattern>();
-  private readonly rules = new MultiMap<string, string>(Set);
+  private readonly rules = new MultiMap<string, string>();
 
   public listPatterns(): Iterable<[id: string, pattern: Pattern]> {
     return this.patterns;
@@ -35,7 +35,7 @@ export class TrustSchemaPolicy {
   }
 
   public hasRule(packetId: string, signerId: string): boolean {
-    return this.rules.get(packetId)?.has(signerId) ?? false;
+    return this.rules.list(packetId).has(signerId) ?? false;
   }
 
   public addRule(packetId: string, signerId: string): void {
@@ -44,7 +44,7 @@ export class TrustSchemaPolicy {
     }
     this.getPattern(packetId);
     this.getPattern(signerId);
-    this.rules.set(packetId, signerId);
+    this.rules.add(packetId, signerId);
   }
 
   public match(name: TrustSchemaPolicy.MatchInput): TrustSchemaPolicy.Match[] {
@@ -78,10 +78,7 @@ export class TrustSchemaPolicy {
   public *buildSignerNames(packet: TrustSchemaPolicy.MatchInput, vars: VarsLike = {}): Iterable<Name> {
     packet = this.match(packet);
     for (const { id: pId, vars: pVars } of packet) {
-      const signers = this.rules.get(pId);
-      if (!signers) {
-        continue;
-      }
+      const signers = this.rules.list(pId);
       for (const signerId of signers) {
         yield* this.getPattern(signerId).build(vars, pVars);
       }

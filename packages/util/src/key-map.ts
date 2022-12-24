@@ -117,6 +117,22 @@ export class KeyMultiMap<K, V, I, L = K> {
   public associations(): IterableIterator<[key: K, values: ReadonlySet<V>]> {
     return this.m[Symbol.iterator]();
   }
+
+  /** Iterate over key-value pairs. */
+  public *[Symbol.iterator](): IterableIterator<[key: K, value: V]> {
+    for (const [key, values] of this.associations()) {
+      for (const value of values) {
+        yield [key, value];
+      }
+    }
+  }
+}
+
+/** Container that associates a key with multiple distinct values. */
+export class MultiMap<K, V> extends KeyMultiMap<K, V, K> {
+  constructor() {
+    super((k) => k);
+  }
 }
 
 /**

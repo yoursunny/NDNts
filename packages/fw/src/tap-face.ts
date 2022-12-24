@@ -1,7 +1,6 @@
-import { assert } from "@ndn/util";
+import { assert, MultiMap } from "@ndn/util";
 import { pushable } from "it-pushable";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
-import MultiMap from "mnemonist/multi-map.js";
 
 import type { FaceImpl, FwFace } from "./face";
 import { Forwarder } from "./forwarder";
@@ -14,7 +13,7 @@ class TapRxController {
     return TapRxController.instances.get(fw);
   }
 
-  private readonly taps = new MultiMap<FwFace, TapFace>(Set);
+  private readonly taps = new MultiMap<FwFace, TapFace>();
 
   private constructor(private readonly fw: Forwarder) {
     this.fw.on("pktrx", this.pktrx);
@@ -23,7 +22,7 @@ class TapRxController {
 
   public add(src: FwFace, dst: TapFace) {
     assert.equal(src.fw, this.fw);
-    this.taps.set(src, dst);
+    this.taps.add(src, dst);
   }
 
   public remove(src: FwFace, dst: TapFace) {
@@ -32,11 +31,9 @@ class TapRxController {
   }
 
   private facerm = (src: FwFace) => {
-    const dst = this.taps.get(src);
-    if (dst) {
-      for (const { rx } of dst) {
-        rx.end();
-      }
+    const dst = this.taps.list(src);
+    for (const { rx } of dst) {
+      rx.end();
     }
     this.detachIfIdle();
   };
@@ -50,11 +47,9 @@ class TapRxController {
   }
 
   private pktrx = (src: FwFace, pkt: FwPacket) => {
-    const dst = this.taps.get(src);
-    if (dst) {
-      for (const { rx } of dst) {
-        rx.push(pkt);
-      }
+    const dst = this.taps.list(src);
+    for (const { rx } of dst) {
+      rx.push(pkt);
     }
   };
 }
