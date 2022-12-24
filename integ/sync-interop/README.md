@@ -110,12 +110,13 @@ corepack pnpm literate integ/sync-interop/syncps.ts
 Test environment:
 
 * Ubuntu 20.04
-* Node.js 16.13.1
+* Node.js 19.3.0
 
 Reference implementation:
 
-* ndn-cxx and NFD 0.7.1
-* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `cc6ab06b9e0bdad63eed8f4d666a8ec04ff9bc3e` (2021-12-09)
+* ndn-cxx 0.8.0-59-g15fa994b
+* NFD 0.8.0-59-g15fa994b
+* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `e39538ed1ddd789de9a34c242af47c3ba4f3583d` (2022-12-08)
 
 Build reference program:
 

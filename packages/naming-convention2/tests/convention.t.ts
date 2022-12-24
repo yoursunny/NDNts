@@ -3,7 +3,15 @@ import "@ndn/packet/test-fixture/expect";
 import { Name } from "@ndn/packet";
 import { expect, test } from "vitest";
 
-import { AltUri, ByteOffset, Keyword, Segment, SequenceNum, Timestamp, Version } from "..";
+import { AltUri, ByteOffset, GenericNumber, Keyword, Segment, SequenceNum, Timestamp, Version } from "..";
+
+test("GenericNumber", () => {
+  const name = new Name().append(GenericNumber, 0x38);
+  expect(name.at(0)).toEqualComponent("8");
+  expect(name.at(0).is(GenericNumber)).toBeTruthy();
+  expect(name.at(0).as(GenericNumber)).toBe(0x38);
+  expect(AltUri.ofName(name)).toBe("/8");
+});
 
 test("Keyword", () => {
   const name = new Name().append(Keyword, "hello");

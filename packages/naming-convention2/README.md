@@ -9,7 +9,8 @@ It is supported in most other libraries and recommended for new applications.
 
 ```ts
 import { Keyword, Version, Segment, AltUri } from "@ndn/naming-convention2";
-// We also have ByteOffset, Timestamp, SequenceNum.
+// We also have ByteOffset, Timestamp, SequenceNum conventions,
+// as well as GenericNumber that puts NonNegativeInteger into GenericNameComponent.
 
 // other imports for examples
 import { Name } from "@ndn/packet";

@@ -1,5 +1,6 @@
-import { type NamingConvention, Component, Name, TT } from "@ndn/packet";
-import { type EncodableTlv, Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { GenericNumber } from "@ndn/naming-convention2";
+import { Component, Name, TT } from "@ndn/packet";
+import { type EncodableTlv, Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 import murmurHash3 from "murmurhash3js-revisited";
 
 import type { IBLT } from "../iblt";
@@ -8,18 +9,6 @@ import type { PSyncCore } from "./core";
 import type { PSyncFull } from "./full";
 import type { PSyncPartialPublisher } from "./partial-publisher";
 import type { PSyncPartialSubscriber } from "./partial-subscriber";
-
-const GenericNumber: NamingConvention<number, number> = {
-  match(comp: Component): boolean {
-    return comp.type === TT.GenericNameComponent && NNI.isValidLength(comp.length);
-  },
-  create(v: number): Component {
-    return new Component(undefined, Encoder.encode(NNI(v), 4));
-  },
-  parse(comp: Component): number {
-    return NNI.decode(comp.value);
-  },
-};
 
 export function hash(seed: number, input: Uint8Array): number {
   return murmurHash3.x86.hash32(input, seed);

@@ -1,4 +1,4 @@
-import { type NamingConvention, Component } from "@ndn/packet";
+import { type NamingConvention, Component, TT } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
 
 abstract class Typed {
@@ -27,7 +27,7 @@ abstract class TypedNumberBase extends Typed {
       private readonly altUriPrefix: string,
   ) {
     super(tt);
-    this.altUriRegex = new RegExp(`^${altUriPrefix}=(\\d+)$`);
+    this.altUriRegex = new RegExp(`^${altUriPrefix}(\\d+)$`);
   }
 
   public create(v: number | bigint): Component {
@@ -43,7 +43,7 @@ abstract class TypedNumberBase extends Typed {
   }
 
   public toAltUri(comp: Component): string {
-    return `${this.altUriPrefix}=${this.parseRaw(comp)}`;
+    return `${this.altUriPrefix}${this.parseRaw(comp)}`;
   }
 
   public fromAltUri(input: string): Component | undefined {
@@ -88,7 +88,7 @@ class TypedTimestamp extends TypedNumber implements NumberConvention<Date> {
       private readonly unit: number,
       private readonly max = Number.MAX_SAFE_INTEGER,
   ) {
-    super(tt, "t");
+    super(tt, "t=");
   }
 
   public override create(v: number | bigint | Date): Component {
@@ -127,27 +127,34 @@ function makeTimestampConvention(tt: number): TimestampConvention {
   return Object.assign(ms, { ms, us });
 }
 
+/**
+ * GenericNameComponent enclosing a number.
+ *
+ * This is not really a naming convention, but it's used in several protocols.
+ */
+export const GenericNumber: NumberBigConvention = new TypedNumberBig(TT.GenericNameComponent, "");
+
 /** KeywordNameComponent (rev2 & rev3), interpreted as string. */
 export const Keyword: NamingConvention<string> = new TypedString(0x20);
 
 /** SegmentNameComponent (rev2), interpreted as number. */
-export const Segment2: NumberBigConvention = new TypedNumberBig(0x21, "seg");
+export const Segment2: NumberBigConvention = new TypedNumberBig(0x21, "seg=");
 /** SegmentNameComponent (rev3), interpreted as number. */
-export const Segment3: NumberBigConvention = new TypedNumberBig(0x32, "seg");
+export const Segment3: NumberBigConvention = new TypedNumberBig(0x32, "seg=");
 /** SegmentNameComponent (default format, currently rev3). */
 export const Segment = Segment3;
 
 /** ByteOffsetNameComponent (rev2), interpreted as number. */
-export const ByteOffset2: NumberBigConvention = new TypedNumberBig(0x22, "off");
+export const ByteOffset2: NumberBigConvention = new TypedNumberBig(0x22, "off=");
 /** ByteOffsetNameComponent (rev3), interpreted as number. */
-export const ByteOffset3: NumberBigConvention = new TypedNumberBig(0x34, "off");
+export const ByteOffset3: NumberBigConvention = new TypedNumberBig(0x34, "off=");
 /** ByteOffsetNameComponent (default format, currently rev3). */
 export const ByteOffset = ByteOffset3;
 
 /** VersionNameComponent (rev2), interpreted as number. */
-export const Version2: NumberBigConvention = new TypedNumberBig(0x23, "v");
+export const Version2: NumberBigConvention = new TypedNumberBig(0x23, "v=");
 /** VersionNameComponent (rev3), interpreted as number. */
-export const Version3: NumberBigConvention = new TypedNumberBig(0x36, "v");
+export const Version3: NumberBigConvention = new TypedNumberBig(0x36, "v=");
 /** VersionNameComponent (default format, currently rev3). */
 export const Version = Version3;
 
@@ -159,8 +166,8 @@ export const Timestamp3 = makeTimestampConvention(0x38);
 export const Timestamp = Timestamp3;
 
 /** SequenceNumNameComponent (rev2), interpreted as number. */
-export const SequenceNum2: NumberBigConvention = new TypedNumberBig(0x25, "seq");
+export const SequenceNum2: NumberBigConvention = new TypedNumberBig(0x25, "seq=");
 /** SequenceNumNameComponent (rev3), interpreted as number. */
-export const SequenceNum3: NumberBigConvention = new TypedNumberBig(0x3A, "seq");
+export const SequenceNum3: NumberBigConvention = new TypedNumberBig(0x3A, "seq=");
 /** SequenceNumNameComponent (default format, currently rev3). */
 export const SequenceNum = SequenceNum3;
