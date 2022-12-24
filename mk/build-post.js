@@ -22,8 +22,23 @@ function delayedWrite(filename, lines) {
  * @param {string} filename
  */
 async function transformDeclaration(filename) {
-  let lines = (await fs.readFile(filename, "utf8")).split("\n");
-  lines = lines.filter((l) => !l.startsWith("//# sourceMappingURL="));
+  const lines = (await fs.readFile(filename, "utf8")).split("\n").map((line) => {
+    if (line.startsWith("//# sourceMappingURL=")) {
+      return "";
+    }
+
+    const m = /^(import|export) (\* as )?(.*?)( from )?["'](.*)["'];$/.exec(line);
+    if (!m) {
+      return line;
+    }
+
+    const [, action, allAs = "", imports, from = "", specifier] = m;
+    if (/^\.(?:[^/]*\/)*[^/.]+$/.test(specifier)) {
+      return `${action} ${allAs}${imports}${from}"${specifier}.js";`;
+    }
+
+    return line;
+  });
   delayedWrite(filename, lines);
 }
 
