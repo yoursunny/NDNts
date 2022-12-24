@@ -126,7 +126,7 @@ jobs:
           fqdn: ndnts-nightly.ndn.today
         env:
           GH_PAT: ${{ secrets.NIGHTLY_ACCESS_TOKEN }}
-      - uses: nwtgck/actions-netlify@v1.2
+      - uses: nwtgck/actions-netlify@v2
         with:
           publish-dir: ./docs/
           production-deploy: true

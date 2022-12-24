@@ -1,7 +1,7 @@
-import type { C8Options } from "vitest";
+import type { CoverageC8Options } from "vitest";
 import { defineConfig } from "vitest/config";
 
-const coverage: C8Options = {
+const coverage: CoverageC8Options = {
   reporter: process.env.CI ? "lcovonly" : ["html", "text-summary"],
   include: ["packages/**/src/**/*.ts"],
 };
@@ -14,6 +14,9 @@ if (process.env.COVERPKG) {
 export default defineConfig({
   test: {
     coverage,
+    deps: {
+      interopDefault: true,
+    },
     include: [
       "packages/**/tests/**/*.t.ts",
     ],

@@ -120,13 +120,12 @@ async function openFaceUdp(opts: openFace.Options) {
 
 async function openFaceMemif(opts: openFace.Options) {
   const {
-    memif: memifOptionsInput = {},
+    memif: {
+      socketPath = "/run/ndn",
+      dataroom = 2048,
+      ringCapacity = 1024,
+    } = {},
   } = opts;
-  const {
-    socketPath = "/run/ndn",
-    dataroom = 2048,
-    ringCapacity = 1024,
-  } = memifOptionsInput;
   const socketName = path.join(socketPath, `NDNts-memif-${process.pid}-${Date.now()}.sock`);
   return openFaceImpl(opts,
     {

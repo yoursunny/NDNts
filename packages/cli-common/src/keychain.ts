@@ -17,7 +17,7 @@ export function openKeyChain(): KeyChain {
   return theKeyChain;
 }
 
-export async function getSignerImpl(prefix = new Name()): Promise<[name: Signer, klName?: Name]> {
+export async function getSignerImpl(prefix = new Name()): Promise<[signer: Signer, klName?: Name]> {
   const keyChain = openKeyChain();
   const signer = await keyChain.getSigner(prefix, {
     prefixMatch: true,
