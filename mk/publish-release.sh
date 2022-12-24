@@ -18,10 +18,10 @@ if [[ ${NDNTS_SKIP_BUILD:-0} -ne 1 ]]; then
   corepack pnpm test
 fi
 
-RECURSE='corepack pnpm -r --filter=./packages/** exec'
-$RECURSE -- bash -c 'node '$ROOTDIR'/mk/edit-packagejson.js V '$VERSION
+RECURSE='corepack pnpm m --filter='./packages/**' --workspace-concurrency=1 exec'
+$RECURSE bash -c 'node '$ROOTDIR'/mk/edit-packagejson.mjs V '$VERSION
 git commit -a -m 'v'$VERSION
 
-$RECURSE -- bash -c 'node '$ROOTDIR'/mk/edit-packagejson.js CDR '$VERSION
-$RECURSE -- bash -c 'corepack pnpm publish --access public --no-git-checks'
+$RECURSE bash -c 'node '$ROOTDIR'/mk/edit-packagejson.mjs CDR '$VERSION
+$RECURSE bash -c 'corepack pnpm publish --access public --no-git-checks'
 git checkout -- .

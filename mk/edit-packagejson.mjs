@@ -1,8 +1,9 @@
-const fs = require("graceful-fs");
-const path = require("path");
+import * as path from "node:path";
+
+import fs from "graceful-fs";
 
 const act = process.argv[2];
-const publishUri = process.env.NDNTS_PUBLISH_URI || "https://ndnts-nightly.ndn.today";
+const publishUri = process.env.NDNTS_PUBLISH_URI ?? "https://ndnts-nightly.ndn.today";
 
 const j = JSON.parse(fs.readFileSync("package.json"));
 

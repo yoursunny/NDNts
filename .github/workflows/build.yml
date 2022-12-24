@@ -112,12 +112,12 @@ jobs:
       - run: corepack pnpm build
       - run: bash mk/publish-nightly.sh
         env:
-          GTAGID: UA-935676-11
+          GTAGID: G-YSW3MP43Z4
       - run: |
           corepack pnpm typedoc
           [[ -f docs/typedoc/modules/_ndn_packet.html ]]
         env:
-          GTAGID: UA-935676-11
+          GTAGID: G-YSW3MP43Z4
       - uses: crazy-max/ghaction-github-pages@v3
         with:
           repo: yoursunny/NDNts-nightly
