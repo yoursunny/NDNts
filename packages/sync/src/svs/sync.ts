@@ -2,6 +2,7 @@ import { EventEmitter } from "node:events";
 
 import { type Producer, type ProducerHandler, Endpoint } from "@ndn/endpoint";
 import { type NameLike, type Signer, type Verifier, Interest, Name, nullSigner } from "@ndn/packet";
+import { randomJitter } from "@ndn/util";
 import type TypedEmitter from "typed-emitter";
 
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "../types";
@@ -39,8 +40,8 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
     this.describe = describe ?? `SvSync(${syncPrefix})`;
     this.syncPrefix = syncPrefix;
     this.syncInterestLifetime = syncInterestLifetime;
-    this.steadyTimer = steadyTimer;
-    this.suppressionTimer = suppressionTimer;
+    this.steadyTimer = randomJitter(steadyTimer[1], steadyTimer[0]);
+    this.suppressionTimer = randomJitter(suppressionTimer[1], suppressionTimer[0]);
     this.signer = signer;
     this.verifier = verifier;
 
@@ -54,8 +55,8 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
   public readonly describe: string;
   private readonly syncPrefix: Name;
   private readonly syncInterestLifetime: number;
-  private readonly steadyTimer: SvSync.Timer;
-  private readonly suppressionTimer: SvSync.Timer;
+  private readonly steadyTimer: () => number;
+  private readonly suppressionTimer: () => number;
   private readonly signer: Signer;
   private readonly verifier?: Verifier;
 
@@ -137,13 +138,8 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
 
   private resetTimer(immediate = false): void {
     clearTimeout(this.timer);
-    let timeout = 0;
-    if (!immediate) {
-      const [ms, jitter] = this.aggregated ? this.suppressionTimer : this.steadyTimer;
-      const maxJitter = ms * Math.max(0, Math.min(jitter, 1));
-      timeout = Math.trunc(ms - maxJitter + Math.random() * 2 * maxJitter);
-    }
-    this.timer = setTimeout(this.handleTimer, timeout);
+    const delay = immediate ? 0 : this.aggregated ? this.suppressionTimer() : this.steadyTimer();
+    this.timer = setTimeout(this.handleTimer, delay);
   }
 
   private readonly handleTimer = () => {

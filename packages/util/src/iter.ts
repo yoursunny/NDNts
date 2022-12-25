@@ -16,7 +16,7 @@ export async function* safeIter<T>(
  */
 export async function* flatMapOnce<T, R>(
     f: (item: T) => Iterable<R> | AsyncIterable<R>,
-    iterable: AsyncIterable<T>,
+    iterable: Iterable<T> | AsyncIterable<T>,
 ): AsyncIterable<R> {
   for await (const item of iterable) {
     yield* f(item);

@@ -1,3 +1,5 @@
+import { randomJitter } from "@ndn/util";
+
 /** Interest retransmission policy options. */
 export interface RetxOptions {
   /**
@@ -68,9 +70,10 @@ export function makeRetxGenerator(policy: RetxPolicy | undefined): RetxGenerator
       backoff = 1,
       max = interestLifetime * 0.9,
     } = policy;
+    const jitter = randomJitter(randomize);
     let nextInterval = interval;
     for (let i = 0; i < limit; ++i) {
-      yield nextInterval * (1 - randomize + Math.random() * 2 * randomize);
+      yield nextInterval * jitter();
       nextInterval = Math.min(nextInterval * backoff, max);
     }
   };
