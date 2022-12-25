@@ -29,16 +29,16 @@ const sync = new SvSync({
 exitClosers.push(sync);
 sync.on("update", (update) => {
   const { id, loSeqNum, hiSeqNum } = update;
-  console.log(`UPDATE ${id.text} ${loSeqNum}..${hiSeqNum}`);
+  console.log(`UPDATE ${id} ${loSeqNum}..${hiSeqNum}`);
   for (const seqNum of update.seqNums()) {
     void (async () => {
       try {
-        const name = id.name.append(...syncPrefix.comps, GenericNumber.create(seqNum));
+        const name = id.append(...syncPrefix.comps, GenericNumber.create(seqNum));
         const interest = new Interest(name, Interest.CanBePrefix, Interest.Lifetime(2000));
         const data = await endpoint.consume(interest);
-        console.log(`MSG ${id.text}:${seqNum} ${fromUtf8(data.content)}`);
+        console.log(`MSG ${id}:${seqNum} ${fromUtf8(data.content)}`);
       } catch (err: unknown) {
-        console.warn(`FETCH-ERR ${id.text}:${seqNum} ${err}`);
+        console.warn(`FETCH-ERR ${id}:${seqNum} ${err}`);
       }
     })();
   }

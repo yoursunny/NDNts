@@ -12,7 +12,7 @@ import { SvSync } from "..";
 class UpdateHandler {
   constructor(sync: SvSync) {
     sync.on("update", (update) => {
-      const id = update.id.text.slice(-1);
+      const id = update.id.toString().slice(-1);
       expect(update.loSeqNum).toBe(this.lastSeqNum.get(id) + 1);
       expect(update.loSeqNum).toBeLessThanOrEqual(update.hiSeqNum);
       this.lastSeqNum.set(id, update.hiSeqNum);
@@ -74,7 +74,7 @@ test("example", async () => {
   nA.seqNum = 10;
   const uA = new UpdateHandler(pA);
   const pB = new SvSync({ ...opts, describe: "B" });
-  const nB = pB.add(new SvSync.ID("/B"));
+  const nB = pB.add("/B");
   nB.seqNum = 15;
   const uB = new UpdateHandler(pB);
   const pC = new SvSync({ ...opts, describe: "C", endpoint: new Endpoint({ fw: fwC }) });
@@ -84,15 +84,15 @@ test("example", async () => {
   closers.push(pA, pB, pC);
 
   await delay(200);
-  expect(pA.get("A").seqNum).toBe(10);
-  expect(pB.get("A").seqNum).toBe(10);
-  expect(pC.get("A").seqNum).toBe(10);
-  expect(pA.get("B").seqNum).toBe(15);
-  expect(pB.get("B").seqNum).toBe(15);
-  expect(pC.get("B").seqNum).toBe(15);
-  expect(pA.get("C").seqNum).toBe(25);
-  expect(pB.get("C").seqNum).toBe(25);
-  expect(pC.get("C").seqNum).toBe(25);
+  expect(pA.get("/A").seqNum).toBe(10);
+  expect(pB.get("/A").seqNum).toBe(10);
+  expect(pC.get("/A").seqNum).toBe(10);
+  expect(pA.get("/B").seqNum).toBe(15);
+  expect(pB.get("/B").seqNum).toBe(15);
+  expect(pC.get("/B").seqNum).toBe(15);
+  expect(pA.get("/C").seqNum).toBe(25);
+  expect(pB.get("/C").seqNum).toBe(25);
+  expect(pC.get("/C").seqNum).toBe(25);
 
   debugHandler.start(pA);
   debugHandler.start(pB);
@@ -100,14 +100,14 @@ test("example", async () => {
 
   lossToC = true;
   ++nA.seqNum;
-  expect(pA.get("A").seqNum).toBe(11);
-  expect(pB.get("A").seqNum).toBe(10);
-  expect(pC.get("A").seqNum).toBe(10);
+  expect(pA.get("/A").seqNum).toBe(11);
+  expect(pB.get("/A").seqNum).toBe(10);
+  expect(pC.get("/A").seqNum).toBe(10);
 
   await delay(100);
-  expect(pA.get("A").seqNum).toBe(11);
-  expect(pB.get("A").seqNum).toBe(11);
-  expect(pC.get("A").seqNum).toBe(10);
+  expect(pA.get("/A").seqNum).toBe(11);
+  expect(pB.get("/A").seqNum).toBe(11);
+  expect(pC.get("/A").seqNum).toBe(10);
   expect(debugHandler.cnt.get("A:send")).toBe(1);
   expect(debugHandler.cnt.get("B:send")).toBe(0);
   expect(debugHandler.cnt.get("C:send")).toBe(0);
@@ -115,9 +115,9 @@ test("example", async () => {
 
   lossToC = false;
   await delay(1000);
-  expect(pA.get("A").seqNum).toBe(11);
-  expect(pB.get("A").seqNum).toBe(11);
-  expect(pC.get("A").seqNum).toBe(11);
+  expect(pA.get("/A").seqNum).toBe(11);
+  expect(pB.get("/A").seqNum).toBe(11);
+  expect(pC.get("/A").seqNum).toBe(11);
 
   expect(debugHandler.cnt.get("C:send")).toBe(1);
   expect(debugHandler.cnt.get("A:send") + debugHandler.cnt.get("B:send")).toBeLessThanOrEqual(2);

@@ -18,13 +18,13 @@ interface DebugEntry {
   ourNewer?: number;
 }
 
-type Events = SyncProtocol.Events<SvSync.ID> & {
+type Events = SyncProtocol.Events<Name> & {
   debug: (entry: DebugEntry) => void;
 };
 
 /** StateVectorSync participant. */
 export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
-  implements SyncProtocol<SvSync.ID> {
+  implements SyncProtocol<Name> {
   constructor({
     endpoint = new Endpoint(),
     describe,
@@ -91,16 +91,12 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
     this.producer.close();
   }
 
-  public get(id: SvSync.IDLike): SyncNode<SvSync.ID> {
-    return this.makeNode(id);
+  public get(id: NameLike): SyncNode<Name> {
+    return new SvSyncNode(Name.from(id), this.own, this.handlePublish);
   }
 
-  public add(id: SvSync.IDLike): SyncNode<SvSync.ID> {
-    return this.makeNode(id);
-  }
-
-  private makeNode(id: SvSync.IDLike): SyncNode<SvSync.ID> {
-    return new SvSyncNode(new SvSync.ID(id), this.own, this.handlePublish);
+  public add(id: NameLike): SyncNode<Name> {
+    return this.get(id);
   }
 
   private readonly handlePublish = () => {
@@ -122,7 +118,7 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
     this.own.mergeFrom(recv);
 
     for (const { id, loSeqNum, hiSeqNum } of ourOlder) {
-      this.emit("update", new SyncUpdate(this.makeNode(id), loSeqNum, hiSeqNum));
+      this.emit("update", new SyncUpdate(this.get(id), loSeqNum, hiSeqNum));
     }
 
     if (this.aggregated) { // in suppression state
@@ -229,33 +225,17 @@ export namespace SvSync {
      */
     verifier?: Verifier;
   }
-
-  export type IDLike = ID | NameLike;
-
-  export class ID {
-    constructor(input: IDLike) {
-      this.name = input instanceof ID ? input.name : Name.from(input);
-    }
-
-    public readonly name: Name;
-
-    public get text(): string {
-      return this.name.toString();
-    }
-  }
-
-  export interface Node extends SyncNode<ID> {}
 }
 
-class SvSyncNode implements SvSync.Node {
+class SvSyncNode implements SyncNode<Name> {
   constructor(
-      public readonly id: SvSync.ID,
+      public readonly id: Name,
       private readonly own: SvStateVector,
       private readonly handlePublish: () => void,
   ) {}
 
   public get seqNum(): number {
-    return this.own.get(this.id.name);
+    return this.own.get(this.id);
   }
 
   public set seqNum(n: number) {
@@ -263,7 +243,7 @@ class SvSyncNode implements SvSync.Node {
       return;
     }
 
-    this.own.set(this.id.name, n);
+    this.own.set(this.id, n);
     this.handlePublish();
   }
 
