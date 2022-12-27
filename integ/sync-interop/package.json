@@ -7,8 +7,11 @@
     "@ndn/keychain": "workspace:0.0.20220501",
     "@ndn/naming-convention2": "workspace:0.0.20220501",
     "@ndn/packet": "workspace:0.0.20220501",
+    "@ndn/repo": "workspace:0.0.20220501",
     "@ndn/sync": "workspace:0.0.20220501",
     "@ndn/util": "workspace:0.0.20220501",
+    "@types/memdown": "^3.0.0",
+    "memdown": "^6.1.1",
     "tslib": "^2.4.1"
   }
 }

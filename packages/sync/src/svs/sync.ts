@@ -53,7 +53,7 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
 
   private readonly endpoint: Endpoint;
   public readonly describe: string;
-  private readonly syncPrefix: Name;
+  public readonly syncPrefix: Name;
   private readonly syncInterestLifetime: number;
   private readonly steadyTimer: () => number;
   private readonly suppressionTimer: () => number;

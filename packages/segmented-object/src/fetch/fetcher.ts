@@ -73,8 +73,11 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
   }
 
   private readonly rx = async (iterable: AsyncIterable<FwPacket>) => {
+    const {
+      acceptContentType = [0],
+    } = this.opts;
     for await (const { l3, token } of iterable) {
-      if (l3 instanceof Data && typeof token === "number" && l3.contentType === 0) {
+      if (l3 instanceof Data && typeof token === "number" && acceptContentType.includes(l3.contentType)) {
         void this.handleData(l3, token);
       }
     }
@@ -143,6 +146,12 @@ export namespace Fetcher {
      * Ignored if `lifetime` is set.
      */
     lifetimeAfterRto?: number;
+
+    /**
+     * List of acceptable ContentType values.
+     * Default is [0].
+     */
+    acceptContentType?: readonly number[];
 
     /** If specified, verify received Data. */
     verifier?: Verifier;

@@ -1,7 +1,7 @@
 import assert from "minimalistic-assert";
 
 export { assert };
-export { console, crypto, delay } from "./platform_node";
+export { console, crypto, delay, concatBuffers } from "./platform_node";
 
 export * from "./buffer";
 export * from "./closers";

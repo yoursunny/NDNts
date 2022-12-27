@@ -1,5 +1,5 @@
 import { type Data, type NameLike, Name } from "@ndn/packet";
-import { assert } from "@ndn/util";
+import { assert, concatBuffers } from "@ndn/util";
 import EventIterator from "event-iterator";
 import { collect, map, writeToStream } from "streaming-iterables";
 
@@ -57,15 +57,7 @@ class FetchResult implements fetch.Result {
 
   private async startPromise() {
     const chunks = await collect(this.chunks());
-    const totalLength = chunks.map((chunk) => chunk.length).reduce((a, b) => a + b);
-    const output = new Uint8Array(totalLength);
-    let offset = 0;
-    for (const chunk of chunks) {
-      output.set(chunk, offset);
-      offset += chunk.length;
-    }
-    assert.equal(offset, totalLength);
-    return output;
+    return concatBuffers(chunks);
   }
 
   // eslint-disable-next-line unicorn/no-thenable

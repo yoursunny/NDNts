@@ -15,6 +15,8 @@ This package contains dataset synchronization protocols, including:
 * [StateVectorSync](https://named-data.github.io/StateVectorSync/Specification.html), revision 2021-12-15
   * complete unit test
   * core synchronization logic only, does not deal with Data fetching
+* [SVS-PS](https://named-data.github.io/StateVectorSync/PubSubSpec.html), revision 2022-11-14
+  * simple unit test
 
 Most of these protocol implementations are parameterized.
 Certain algorithm settings (e.g. hashtable size) and encoding details (e.g. endianness) are extracted from the core logic and put into `Parameters` structures.

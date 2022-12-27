@@ -1,11 +1,7 @@
 import { Component, Name, NameMap } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
 
-const TT = {
-  StateVector: 0xC9,
-  StateVectorEntry: 0xCA,
-  SeqNo: 0xCC,
-};
+import { TT } from "./an";
 
 /** SVS state vector. */
 export class SvStateVector {

@@ -1,3 +1,5 @@
+import { concatBuffers } from "@ndn/util";
+
 import { LpPacket } from "./packet";
 
 class PartialPacket {
@@ -38,15 +40,14 @@ class PartialPacket {
   private reassemble(): LpPacket {
     const full = new LpPacket();
     full.copyL3HeadersFrom(this.buffer[0]!);
-    full.payload = new Uint8Array(this.payloadLength);
-    let offset = 0;
-    for (const fragment of (this.buffer as LpPacket[])) {
-      if (!fragment.payload) {
-        continue;
+    const parts: Uint8Array[] = [];
+    for (const fragment of this.buffer) {
+      const part = fragment?.payload;
+      if (part) {
+        parts.push(part);
       }
-      full.payload.set(fragment.payload, offset);
-      offset += fragment.payload.length;
     }
+    full.payload = concatBuffers(parts, this.payloadLength);
     return full;
   }
 }

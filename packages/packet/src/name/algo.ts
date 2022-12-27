@@ -18,7 +18,7 @@ export function* lpm<Entry>(name: Name, get: (prefixHex: string) => Entry | unde
   while (prefixes.length > 0) {
     const prefix = prefixes.pop()!;
     const entry = get(prefix);
-    if (entry) {
+    if (entry !== undefined) {
       yield entry;
     }
   }

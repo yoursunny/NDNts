@@ -130,8 +130,28 @@ Test `SvSync`:
 
 ```bash
 # in ndn-svs directory
-LD_LIBRARY_PATH=build ./build/examples/chat ${RANDOM}
+LD_LIBRARY_PATH=build ./build/examples/chat /${RANDOM}
 
 # in NDNts directory
 corepack pnpm literate integ/sync-interop/svsync.ts
+```
+
+Test `SvPublisher`:
+
+```bash
+# in NDNts directory
+corepack pnpm literate integ/sync-interop/svsps-publisher.ts
+
+# in ndn-svs directory
+LD_LIBRARY_PATH=build ./build/examples/chat-pubsub /${RANDOM}
+```
+
+Test `SvSubscriber`:
+
+```bash
+# in ndn-svs directory
+LD_LIBRARY_PATH=build ./build/examples/chat-pubsub /${RANDOM}
+
+# in NDNts directory
+corepack pnpm literate integ/sync-interop/svsps-subscriber.ts
 ```

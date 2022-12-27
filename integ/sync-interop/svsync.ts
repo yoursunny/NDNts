@@ -1,16 +1,13 @@
-import { exitClosers, openUplinks } from "@ndn/cli-common";
+import { exitClosers } from "@ndn/cli-common";
 import { Endpoint } from "@ndn/endpoint";
-import { createSigner, createVerifier, HMAC } from "@ndn/keychain";
 import { GenericNumber } from "@ndn/naming-convention2";
-import { Data, Interest, Name } from "@ndn/packet";
-import { SvSync } from "@ndn/sync";
+import { Data, Interest } from "@ndn/packet";
 import { console, fromUtf8, toUtf8 } from "@ndn/util";
 
-const syncPrefix = new Name("/ndn/svs");
-const myID = new Name(`/${process.pid}-${Date.now()}`);
-const myDataPrefix = new Name().append(...myID.comps, ...syncPrefix.comps);
+import { myDataPrefix, myID, openSvSync, syncPrefix } from "./svs-common";
 
-await openUplinks();
+const sync = await openSvSync();
+
 const endpoint = new Endpoint({ retx: 2 });
 const producer = endpoint.produce(myDataPrefix, async (interest) => {
   const n = interest.name.at(myDataPrefix.length).as(GenericNumber);
@@ -18,15 +15,6 @@ const producer = endpoint.produce(myDataPrefix, async (interest) => {
 });
 exitClosers.push(producer);
 
-const key = await HMAC.cryptoGenerate({
-  importRaw: Buffer.from("dGhpcyBpcyBhIHNlY3JldCBtZXNzYWdl", "base64"),
-}, false);
-const sync = new SvSync({
-  syncPrefix,
-  signer: createSigner(HMAC, key),
-  verifier: createVerifier(HMAC, key),
-});
-exitClosers.push(sync);
 sync.on("update", (update) => {
   const { id, loSeqNum, hiSeqNum } = update;
   console.log(`UPDATE ${id} ${loSeqNum}..${hiSeqNum}`);

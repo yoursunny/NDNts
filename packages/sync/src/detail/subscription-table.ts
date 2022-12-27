@@ -14,7 +14,7 @@ class Sub<Update> extends (EventEmitter as new() => TypedEmitter<Subscription.Ev
   }
 }
 
-export class SubscriptionTable<Update> extends NameMultiMap<Sub<Update>> {
+export class SubscriptionTable<Update> extends NameMultiMap<Subscription<Name, Update>> {
   public handleRemoveTopic?: (topic: Name, objKey: object) => void;
 
   public subscribe(topic: Name): { sub: Subscription<Name, Update>; objKey?: object } {
@@ -33,7 +33,7 @@ export class SubscriptionTable<Update> extends NameMultiMap<Sub<Update>> {
     }
   }
 
-  public update(set: ReadonlySet<Subscription<Name, Update>>, update: Update): void {
+  public update(set: Iterable<Subscription<Name, Update>>, update: Update): void {
     for (const sub of set) {
       sub.emit("update", update);
     }

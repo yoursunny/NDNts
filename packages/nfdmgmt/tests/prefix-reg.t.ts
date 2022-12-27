@@ -115,7 +115,7 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
   uplinkL3.emit("up");
   await delay(100);
   expect(verbs).toHaveLength(6);
-});
+}, { retry: 3 });
 
 test("preloadCert", async () => {
   const [rootPvt, rootPub] = await generateSigningKey("/root");

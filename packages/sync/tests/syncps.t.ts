@@ -44,7 +44,7 @@ afterEach(() => {
   Forwarder.deleteDefault();
 });
 
-type UpdateMock = Mock< [Data], void>;
+type UpdateMock = Mock<[Data], void>;
 
 class Fixture {
   constructor(n: number, loss = 0) {
