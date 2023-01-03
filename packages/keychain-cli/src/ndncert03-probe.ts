@@ -4,16 +4,16 @@ import { Name } from "@ndn/packet";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { inputCaProfile, ppOption, promptProbeParameters } from "./util";
+import { inputCaProfile, PPOption, promptProbeParameters } from "./util";
 
 interface Args {
   profile: string;
-  pp: unknown;
+  pp: PPOption;
 }
 
 export class Ndncert03ProbeCommand implements CommandModule<{}, Args> {
-  public command = "ndncert03-probe";
-  public describe = "run probe procedure against NDNCERT 0.3 CA";
+  public readonly command = "ndncert03-probe";
+  public readonly describe = "run probe procedure against NDNCERT 0.3 CA";
 
   public builder(argv: Argv): Argv<Args> {
     return argv
@@ -22,7 +22,7 @@ export class Ndncert03ProbeCommand implements CommandModule<{}, Args> {
         desc: "CA profile file",
         type: "string",
       })
-      .option("pp", ppOption);
+      .option("pp", PPOption.def);
   }
 
   public async handler(args: Arguments<Args>) {

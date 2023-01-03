@@ -13,9 +13,9 @@ interface Args extends GenKeyCommand.KeyParamArgs {
 }
 
 export class GenKeyCommand implements CommandModule<{}, Args> {
-  public command = "gen-key <name>";
-  public describe = "generate key";
-  public aliases = ["keygen"];
+  public readonly command = "gen-key <name>";
+  public readonly describe = "generate key";
+  public readonly aliases = ["keygen"];
 
   public builder(argv: Argv): Argv<Args> {
     return GenKeyCommand.declareKeyParamArgs(argv)

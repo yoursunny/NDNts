@@ -41,7 +41,7 @@
   "devDependencies": {
     "@types/graceful-fs": "^4.1.5",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "17.0.13"
+    "@types/yargs": "^17.0.18"
   },
   "typedoc": {
     "entryPoint": "src/main.ts"

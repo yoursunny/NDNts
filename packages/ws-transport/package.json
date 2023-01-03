@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@ndn/l3face": "workspace:0.0.20220501",
-    "@types/ws": "^8.5.3",
+    "@types/ws": "^8.5.4",
     "event-iterator": "^2.0.0",
     "tslib": "^2.4.1",
     "ws": "^8.11.0"

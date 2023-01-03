@@ -15,13 +15,13 @@ import { inputCaProfile, inputCertBase64, keyChain } from "./util";
 interface Args {
   profile: string;
   store: string;
-  challenge: string[];
+  challenge: readonly string[];
   "possession-issuer"?: string;
 }
 
 export class Ndncert03CaCommand implements CommandModule<{}, Args> {
-  public command = "ndncert03-ca";
-  public describe = "run NDNCERT 0.3 certificate authority";
+  public readonly command = "ndncert03-ca";
+  public readonly describe = "run NDNCERT 0.3 certificate authority";
 
   public builder(argv: Argv): Argv<Args> {
     return argv

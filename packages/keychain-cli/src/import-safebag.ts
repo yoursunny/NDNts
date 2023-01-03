@@ -8,8 +8,8 @@ interface Args {
 }
 
 export class ImportSafeBagCommand implements CommandModule<{}, Args> {
-  public command = "import-safebag [filename]";
-  public describe = "import SafeBag";
+  public readonly command = "import-safebag [filename]";
+  public readonly describe = "import SafeBag";
 
   public builder(argv: Argv): Argv<Args> {
     return argv

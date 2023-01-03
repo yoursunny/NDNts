@@ -12,8 +12,8 @@ interface Args {
 }
 
 export class IssueCertCommand implements CommandModule<{}, Args> {
-  public command = "issue-cert";
-  public describe = "issue certificate";
+  public readonly command = "issue-cert";
+  public readonly describe = "issue certificate";
 
   public builder(argv: Argv): Argv<Args> {
     return argv

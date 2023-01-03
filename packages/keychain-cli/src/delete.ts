@@ -9,8 +9,8 @@ interface Args {
 }
 
 export class DeleteCommand implements CommandModule<{}, Args> {
-  public command = "delete <name>";
-  public describe = "delete keys and certificates";
+  public readonly command = "delete <name>";
+  public readonly describe = "delete keys and certificates";
 
   public builder(argv: Argv): Argv<Args> {
     return argv

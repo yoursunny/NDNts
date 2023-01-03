@@ -14,8 +14,8 @@ interface Args {
 }
 
 export class Ndncert03ShowProfileCommand implements CommandModule<{}, Args> {
-  public command = "ndncert03-show-profile";
-  public describe = "show/convert/retrieve CA profile of NDNCERT 0.3";
+  public readonly command = "ndncert03-show-profile";
+  public readonly describe = "show/convert/retrieve CA profile of NDNCERT 0.3";
 
   public builder(argv: Argv): Argv<Args> {
     return argv

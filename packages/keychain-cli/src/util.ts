@@ -62,25 +62,27 @@ async function inputCaProfileFromClientConf(content: Uint8Array): Promise<CaProf
   return importClientConf(conf);
 }
 
-/**
- * yargs .pp (probe parameter) option definition.
- *
- * This should be string[] type, but as of @types/yargs 17.0.13 it's derived as string|undefined,
- * so that the Args interface should declare it as unknown.
- */
-export const ppOption = {
-  desc: "PROBE parameter key value pair",
-  default: [],
-  nargs: 2,
-  type: "string",
-} as const;
+/** yargs .pp (probe parameter) option definition. */
+export type PPOption = string | string[];
+export namespace PPOption {
+  /**
+   * Define .pp option with `.option("pp", PPOption.def)`.
+   * It's compatible with promptProbeParameters `known` parameter.
+   */
+  export const def = {
+    desc: "PROBE parameter key value pair",
+    default: [] as string[],
+    nargs: 2,
+    type: "string",
+  } as const;
+}
 
 /**
  * Prompt for PROBE parameters.
  * @param profile CA profile.
- * @param known known key value pairs, alternated; define with probeOption.
+ * @param known alternated key value pairs, such as `["email", "someone@contoso.com"]`.
  */
-export async function promptProbeParameters(profile: CaProfile, known: readonly string[] = []): Promise<ParameterKV> {
+export async function promptProbeParameters(profile: CaProfile, known: readonly string[]): Promise<ParameterKV> {
   const questions: prompts.PromptObject[] = [];
   for (const key of profile.probeKeys) {
     questions.push({

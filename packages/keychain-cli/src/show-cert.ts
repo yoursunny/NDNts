@@ -8,8 +8,8 @@ interface Args {
 }
 
 export class ShowCertCommand implements CommandModule<{}, Args> {
-  public command = "show-cert <name>";
-  public describe = "show certificate";
+  public readonly command = "show-cert <name>";
+  public readonly describe = "show certificate";
 
   public builder(argv: Argv): Argv<Args> {
     return argv

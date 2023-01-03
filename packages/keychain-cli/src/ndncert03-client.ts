@@ -10,22 +10,22 @@ import prompts from "prompts";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { inputCaProfile, keyChain as defaultKeyChain, ppOption, promptProbeParameters } from "./util";
+import { inputCaProfile, keyChain as defaultKeyChain, PPOption, promptProbeParameters } from "./util";
 
 interface Args {
   profile: string;
   ndnsec: boolean;
   key?: string;
-  pp: unknown;
-  challenge: string[];
+  pp: PPOption;
+  challenge: readonly string[];
   "pin-named-pipe"?: string;
   email?: string;
   "possession-cert"?: string;
 }
 
 export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
-  public command = "ndncert03-client";
-  public describe = "request certificate via NDNCERT 0.3";
+  public readonly command = "ndncert03-client";
+  public readonly describe = "request certificate via NDNCERT 0.3";
 
   public builder(argv: Argv): Argv<Args> {
     return argv
@@ -44,7 +44,7 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
         defaultDescription: "run PROBE command and create new key",
         type: "string",
       })
-      .option("pp", ppOption)
+      .option("pp", PPOption.def)
       .option("challenge", {
         demandOption: true,
         array: true,
