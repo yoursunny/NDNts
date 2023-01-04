@@ -35,6 +35,13 @@ res = await fchQuery({ transports: { udp: 4, wss: 2 } });
 assert(res.routers.length > 1);
 showFchResponse("multiple transports", res);
 
+// Limit to particular network:
+//   "ndn" = global NDN testbed
+//   "yoursunny" = yoursunny ndn6 network
+res = await fchQuery({ transport: "wss", count: 3, network: "yoursunny" });
+assert(res.routers.length > 1);
+showFchResponse("yoursunny ndn6 network", res);
+
 // Ask for router at specific location:
 res = await fchQuery({ position: [121.40335, 31.00799] });
 showFchResponse("near @yoursunny's birthplace", res);
@@ -44,7 +51,7 @@ function showFchResponse(title, res) {
   console.table(res.routers.map((r) => ({
     transport: r.transport,
     connect: r.connect,
-    prefix: `${r.prefix}`,
+    prefix: r.prefix ? `${r.prefix}` : undefined,
   })));
 }
 ```

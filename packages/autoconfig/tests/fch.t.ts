@@ -31,7 +31,7 @@ test("json", async () => {
 
   const res = await fchQuery({
     server: server.uri,
-    transports: ["udp"],
+    transport: "udp",
     count: 3,
   });
   expect(res.updated).toEqual(new Date(updated));
@@ -48,6 +48,9 @@ test("text", async () => {
     expect(search.get("k")).toBe("2");
     expect(search.get("ipv4")).toBe("1");
     expect(search.get("ipv6")).toBe("0");
+    expect(Number.parseFloat(String(search.get("lon")))).toBeCloseTo(-77.2016, 2);
+    expect(Number.parseFloat(String(search.get("lat")))).toBeCloseTo(39.144, 2);
+    expect(search.get("network")).toBe("demo-network");
     return "127.0.0.1:7001,127.0.0.1:7002";
   };
 
@@ -58,6 +61,7 @@ test("text", async () => {
     ipv4: true,
     ipv6: false,
     position: [-77.2016, 39.144],
+    network: "demo-network",
   });
   expect(res.updated).toBeUndefined();
   expect(res.routers).toHaveLength(2);

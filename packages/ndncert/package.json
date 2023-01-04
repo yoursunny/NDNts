@@ -35,7 +35,7 @@
     "@ndn/util": "workspace:0.0.20220501",
     "@types/imap": "^0.8.35",
     "@types/nodemailer": "^6.4.7",
-    "ajv": "^8.11.2",
+    "ajv": "^8.12.0",
     "applymixins": "^1.1.0",
     "b64-lite": "^1.4.0",
     "imap-emails": "^1.0.4",

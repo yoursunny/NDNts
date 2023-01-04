@@ -13,16 +13,20 @@ export interface PlatformFchDefaults {
 export interface FchRequest {
   /** FCH service URI. */
   server?: string;
+  /** Transport protocol. Ignored if transports is specified. */
+  transport?: string;
   /** Number of routers. Ignored if transports is a Record. */
   count?: number;
-  /** Transport protocols. */
+  /** Transport protocols. Array or { transport: count } mapping. */
   transports?: readonly string[] | Record<string, number>;
   /** IPv4 allowed. */
   ipv4?: boolean;
   /** IPv6 allowed. */
   ipv6?: boolean;
-  /** Client position. */
+  /** Client geolocation. */
   position?: [lon: number, lat: number];
+  /** Network authority, such as 'yoursunny'. */
+  network?: string;
   /** AbortSignal. */
   signal?: AbortSignal;
 }
@@ -48,6 +52,7 @@ export async function fchQuery(req: FchRequest = {}): Promise<FchResponse> {
     ipv4 = FCH_DEFAULTS.hasIPv4,
     ipv6 = FCH_DEFAULTS.hasIPv6,
     position,
+    network,
     signal,
   } = req;
   const hQuery = async (tcs: TransportCount[], accept: string): Promise<Response> => {
@@ -67,6 +72,9 @@ export async function fchQuery(req: FchRequest = {}): Promise<FchResponse> {
       const [lon, lat] = position;
       search.set("lon", `${lon.toFixed(5)}`);
       search.set("lat", `${lat.toFixed(5)}`);
+    }
+    if (network) {
+      search.set("network", network);
     }
 
     const hRes = await fetch(uri.toString(), { headers: { accept }, signal });
@@ -104,9 +112,16 @@ export async function fchQuery(req: FchRequest = {}): Promise<FchResponse> {
 type TransportCount = [transport: string, count: number];
 
 function parseTransportCounts({
+  transport,
   count = 1,
-  transports = FCH_DEFAULTS.transports(),
+  transports,
 }: FchRequest): TransportCount[] {
+  if (transports === undefined) {
+    if (transport) {
+      return [[transport, count]];
+    }
+    transports = FCH_DEFAULTS.transports();
+  }
   if (Array.isArray(transports)) {
     return (transports as readonly string[])
       .map((transport) => [transport, count]);
@@ -121,9 +136,9 @@ class FchResp implements FchResponse {
   public async setJsonResponse(hRes: Response): Promise<void> {
     const body = await hRes.json();
     this.updated = new Date(body.updated);
-    this.routers = (body.routers as Array<Record<string, string>>).map((r) => ({
-      transport: r.transport!,
-      connect: r.connect!,
+    this.routers = Array.from<Record<string, string>, FchResponse.Router>(body.routers, (r) => ({
+      transport: String(r.transport),
+      connect: String(r.connect),
       prefix: r.prefix ? new Name(r.prefix) : undefined,
     }));
   }

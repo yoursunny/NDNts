@@ -31,7 +31,7 @@
     "@ndn/util": "workspace:0.0.20220501",
     "@yoursunny/asn1": "0.0.20200718",
     "execa": "^6.1.0",
-    "throat": "^6.0.1",
+    "throat": "^6.0.2",
     "tslib": "^2.4.1"
   },
   "devDependencies": {
