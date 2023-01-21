@@ -11,3 +11,4 @@ export const TT = {
 
 export const MappingKeyword = Component.from("MAPPING");
 export const Version0 = Version.create(0);
+export const ContentTypeEncap = 6;

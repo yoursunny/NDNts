@@ -12,7 +12,7 @@ import type TypedEmitter from "typed-emitter";
 
 import { SubscriptionTable } from "../detail/subscription-table";
 import type { Subscriber, Subscription, SyncUpdate } from "../types";
-import { MappingKeyword, TT, Version0 } from "./an";
+import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
 import type { SvSync } from "./sync";
 
 type Events = {
@@ -42,7 +42,7 @@ export class SvSubscriber extends (EventEmitter as new() => TypedEmitter<Events>
       describe: `SVS-PS(${sync.syncPrefix})[retrieve]`,
       signal: this.abort.signal,
       retxLimit,
-      acceptContentType: [0, l3TT.Data],
+      acceptContentType: [0, ContentTypeEncap],
       verifier: outerVerifier,
     };
     this.outerConsumerOpts = {
@@ -263,16 +263,17 @@ export namespace SvSubscriber {
 }
 
 type Mapping = Map<number, Name>;
+type MappingEntry = [seqNum: number, name: Name];
 
-const mappingEntryEVD = new EvDecoder<[number | undefined, Name | undefined]>("MappingEntry", TT.MappingEntry)
+const mappingEntryEVD = new EvDecoder<MappingEntry>("MappingEntry", TT.MappingEntry)
   .add(TT.SeqNo, (t, { nni }) => t[0] = nni, { required: true })
   .add(l3TT.Name, (t, { decoder }) => t[1] = decoder.decode(Name), { required: true });
 
 const mappingDataEVD = new EvDecoder<Mapping>("MappingData", TT.MappingData)
   .add(l3TT.Name, () => undefined)
   .add(TT.MappingEntry, (m, { vd }) => {
-    const [seqNum, name] = mappingEntryEVD.decodeValue([undefined, undefined], vd);
-    m.set(seqNum!, name!);
+    const [seqNum, name] = mappingEntryEVD.decodeValue([] as unknown as MappingEntry, vd);
+    m.set(seqNum, name);
   }, { repeat: true });
 
 type Sub = Subscription<Name, SvSubscriber.Update>;

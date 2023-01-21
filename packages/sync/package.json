@@ -1,7 +1,7 @@
 {
   "name": "@ndn/sync",
   "version": "0.0.20220501",
-  "description": "NDNts: Synchronization Protocols",
+  "description": "NDNts: Dataset Synchronization and PubSub Protocols",
   "keywords": [
     "NDN",
     "Named Data Networking"

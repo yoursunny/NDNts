@@ -1,6 +1,6 @@
 import { type Producer, type ProducerHandler, Endpoint } from "@ndn/endpoint";
 import { GenericNumber } from "@ndn/naming-convention2";
-import { type NameLike, type Signer, Data, Name, nullSigner, TT as l3TT } from "@ndn/packet";
+import { type NameLike, type Signer, Data, Name, nullSigner } from "@ndn/packet";
 import type { DataStore as S } from "@ndn/repo-api";
 import type { ChunkOptions } from "@ndn/segmented-object";
 import { BufferChunkSource, DataProducer } from "@ndn/segmented-object";
@@ -8,7 +8,7 @@ import { Encoder } from "@ndn/tlv";
 import { collect, map } from "streaming-iterables";
 
 import { type SyncNode } from "../types";
-import { MappingKeyword, TT, Version0 } from "./an";
+import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
 import type { SvSync } from "./sync";
 
 /** SVS-PS publisher. */
@@ -99,7 +99,7 @@ export class SvPublisher {
     const outer = map(async (data) => {
       const encap = new Data(
         this.nodeSyncPrefix.append(seqNumComp, Version0, data.name.get(-1)!),
-        Data.ContentType(l3TT.Data),
+        Data.ContentType(ContentTypeEncap),
         Data.FreshnessPeriod(60000),
         Encoder.encode(data),
       );
@@ -158,9 +158,8 @@ export namespace SvPublisher {
     /**
      * SvSync instance.
      *
-     * It is allowed to reuse the same SvSync instance among multiple SvSubscriber and SvPublisher
-     * instances. However, publications on a SvPublisher may not be received by SvSubscribers
-     * on the same SvSync instance.
+     * Multiple SvSubscribers and SvPublishers may reuse the same SvSync instance. However,
+     * publications from a SvPublisher cannot reach SvSubscribers on the same SvSync instance.
      */
     sync: SvSync;
 
