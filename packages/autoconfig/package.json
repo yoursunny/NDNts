@@ -1,6 +1,6 @@
 {
   "name": "@ndn/autoconfig",
-  "version": "0.0.20220501",
+  "version": "0.0.20230121",
   "description": "NDNts: automatic connection establishment",
   "keywords": [
     "NDN",
