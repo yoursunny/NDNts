@@ -1,4 +1,4 @@
-const { FileMatcher } = require("file-matcher");
+const fsWalk = require("@nodelib/fs.walk");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
@@ -47,14 +47,10 @@ const config = {
 };
 
 module.exports = async () => {
-  const list = await new FileMatcher().find({
-    path: path.resolve(__dirname, "tests"),
-    fileFilter: {
-      fileNamePattern: "**/browser.ts",
-    },
-    recursiveSearch: true,
+  const list = fsWalk.walkSync(path.resolve(__dirname, "tests"), {
+    entryFilter: ({ name }) => name === "browser.ts",
   });
-  for (const filename of list) {
+  for (const { path: filename } of list) {
     const name = path.basename(path.dirname(filename));
     config.entry[name] = filename;
     config.plugins.push(new HtmlWebpackPlugin({

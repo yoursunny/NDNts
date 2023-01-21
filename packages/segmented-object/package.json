@@ -44,7 +44,7 @@
   "devDependencies": {
     "@ndn/l3face": "workspace:0.0.20220501",
     "@ndn/repo-api": "workspace:0.0.20220501",
-    "@types/graceful-fs": "^4.1.5",
+    "@types/graceful-fs": "^4.1.6",
     "stream-mock": "^2.0.5"
   }
 }

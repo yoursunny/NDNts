@@ -1,7 +1,6 @@
 import { type Producer, type ProducerHandler, Endpoint } from "@ndn/endpoint";
 import { GenericNumber } from "@ndn/naming-convention2";
-import type { Signer } from "@ndn/packet";
-import { type NameLike, Data, Name, nullSigner, TT as l3TT } from "@ndn/packet";
+import { type NameLike, type Signer, Data, Name, nullSigner, TT as l3TT } from "@ndn/packet";
 import type { DataStore as S } from "@ndn/repo-api";
 import type { ChunkOptions } from "@ndn/segmented-object";
 import { BufferChunkSource, DataProducer } from "@ndn/segmented-object";
