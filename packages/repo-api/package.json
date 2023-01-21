@@ -26,10 +26,10 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/l3face": "workspace:0.0.20220501",
-    "@ndn/naming-convention2": "workspace:0.0.20220501",
-    "@ndn/packet": "workspace:0.0.20220501",
-    "@ndn/rdr": "workspace:0.0.20220501",
+    "@ndn/l3face": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "@ndn/rdr": "workspace:*",
     "duplexify": "^4.1.2",
     "graceful-fs": "^4.2.10",
     "is-stream": "^3.0.0",
@@ -40,9 +40,9 @@
     "tslib": "^2.4.1"
   },
   "devDependencies": {
-    "@ndn/node-transport": "workspace:0.0.20220501",
-    "@ndn/tlv": "workspace:0.0.20220501",
-    "@ndn/util": "workspace:0.0.20220501",
+    "@ndn/node-transport": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "@types/duplexify": "^3.6.1",
     "@types/graceful-fs": "^4.1.6",
     "@types/tmp": "^0.2.3",

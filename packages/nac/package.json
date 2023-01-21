@@ -26,19 +26,19 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/endpoint": "workspace:0.0.20220501",
-    "@ndn/keychain": "workspace:0.0.20220501",
-    "@ndn/naming-convention2": "workspace:0.0.20220501",
-    "@ndn/ndnsec": "workspace:0.0.20220501",
-    "@ndn/packet": "workspace:0.0.20220501",
-    "@ndn/repo-api": "workspace:0.0.20220501",
-    "@ndn/tlv": "workspace:0.0.20220501",
-    "@ndn/util": "workspace:0.0.20220501",
+    "@ndn/endpoint": "workspace:*",
+    "@ndn/keychain": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
+    "@ndn/ndnsec": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "@ndn/repo-api": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "@yoursunny/asn1": "0.0.20200718",
     "mnemonist": "^0.39.5",
     "tslib": "^2.4.1"
   },
   "devDependencies": {
-    "@ndn/repo": "workspace:0.0.20220501"
+    "@ndn/repo": "workspace:*"
   }
 }

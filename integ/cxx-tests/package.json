@@ -5,13 +5,13 @@
     "test": "../../node_modules/.bin/vitest"
   },
   "dependencies": {
-    "@ndn/endpoint": "workspace:0.0.20220501",
-    "@ndn/keychain": "workspace:0.0.20220501",
-    "@ndn/nfdmgmt": "workspace:0.0.20220501",
-    "@ndn/packet": "workspace:0.0.20220501",
-    "@ndn/sync": "workspace:0.0.20220501",
-    "@ndn/tlv": "workspace:0.0.20220501",
-    "@ndn/util": "workspace:0.0.20220501",
+    "@ndn/endpoint": "workspace:*",
+    "@ndn/keychain": "workspace:*",
+    "@ndn/nfdmgmt": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "@ndn/sync": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "tslib": "^2.4.1"
   },
   "devDependencies": {

@@ -26,17 +26,17 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/fw": "workspace:0.0.20220501",
-    "@ndn/packet": "workspace:0.0.20220501",
-    "@ndn/util": "workspace:0.0.20220501",
+    "@ndn/fw": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "@ndn/util": "workspace:*",
     "applymixins": "^1.1.0",
     "it-pushable": "^3.1.2",
     "streaming-iterables": "^7.1.0",
     "tslib": "^2.4.1"
   },
   "devDependencies": {
-    "@ndn/keychain": "workspace:0.0.20220501",
-    "@ndn/repo": "workspace:0.0.20220501",
+    "@ndn/keychain": "workspace:*",
+    "@ndn/repo": "workspace:*",
     "stream-mock": "^2.0.5"
   }
 }

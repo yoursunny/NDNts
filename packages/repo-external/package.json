@@ -26,12 +26,12 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/endpoint": "workspace:0.0.20220501",
-    "@ndn/naming-convention2": "workspace:0.0.20220501",
-    "@ndn/packet": "workspace:0.0.20220501",
-    "@ndn/repo-api": "workspace:0.0.20220501",
-    "@ndn/tlv": "workspace:0.0.20220501",
-    "@ndn/util": "workspace:0.0.20220501",
+    "@ndn/endpoint": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "@ndn/repo-api": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "it-keepalive": "^1.2.0",
     "it-pushable": "^3.1.2",
     "p-defer": "^4.0.0",

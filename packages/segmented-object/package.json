@@ -26,11 +26,11 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/endpoint": "workspace:0.0.20220501",
-    "@ndn/fw": "workspace:0.0.20220501",
-    "@ndn/naming-convention2": "workspace:0.0.20220501",
-    "@ndn/packet": "workspace:0.0.20220501",
-    "@ndn/util": "workspace:0.0.20220501",
+    "@ndn/endpoint": "workspace:*",
+    "@ndn/fw": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "@ndn/util": "workspace:*",
     "event-iterator": "^2.0.0",
     "graceful-fs": "^4.2.10",
     "hirestime": "^7.0.3",
@@ -42,8 +42,8 @@
     "typed-emitter": "^2.1.0"
   },
   "devDependencies": {
-    "@ndn/l3face": "workspace:0.0.20220501",
-    "@ndn/repo-api": "workspace:0.0.20220501",
+    "@ndn/l3face": "workspace:*",
+    "@ndn/repo-api": "workspace:*",
     "@types/graceful-fs": "^4.1.6",
     "stream-mock": "^2.0.5"
   }

@@ -26,17 +26,17 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/endpoint": "workspace:0.0.20220501",
-    "@ndn/fw": "workspace:0.0.20220501",
-    "@ndn/keychain": "workspace:0.0.20220501",
-    "@ndn/packet": "workspace:0.0.20220501",
-    "@ndn/tlv": "workspace:0.0.20220501",
-    "@ndn/util": "workspace:0.0.20220501",
+    "@ndn/endpoint": "workspace:*",
+    "@ndn/fw": "workspace:*",
+    "@ndn/keychain": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "obliterator": "^2.0.4",
     "tslib": "^2.4.1"
   },
   "devDependencies": {
-    "@ndn/l3face": "workspace:0.0.20220501",
-    "@ndn/node-transport": "workspace:0.0.20220501"
+    "@ndn/l3face": "workspace:*",
+    "@ndn/node-transport": "workspace:*"
   }
 }

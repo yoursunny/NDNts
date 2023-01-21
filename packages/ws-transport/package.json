@@ -26,15 +26,15 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/l3face": "workspace:0.0.20220501",
+    "@ndn/l3face": "workspace:*",
     "@types/ws": "^8.5.4",
     "event-iterator": "^2.0.0",
     "tslib": "^2.4.1",
     "ws": "^8.12.0"
   },
   "devDependencies": {
-    "@ndn/node-transport": "workspace:0.0.20220501",
-    "@ndn/util": "workspace:0.0.20220501",
+    "@ndn/node-transport": "workspace:*",
+    "@ndn/util": "workspace:*",
     "it-pushable": "^3.1.2"
   }
 }

@@ -26,13 +26,13 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/endpoint": "workspace:0.0.20220501",
-    "@ndn/keychain": "workspace:0.0.20220501",
-    "@ndn/naming-convention2": "workspace:0.0.20220501",
-    "@ndn/packet": "workspace:0.0.20220501",
-    "@ndn/rdr": "workspace:0.0.20220501",
-    "@ndn/tlv": "workspace:0.0.20220501",
-    "@ndn/util": "workspace:0.0.20220501",
+    "@ndn/endpoint": "workspace:*",
+    "@ndn/keychain": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "@ndn/rdr": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "@types/imap": "^0.8.35",
     "@types/nodemailer": "^6.4.7",
     "ajv": "^8.12.0",
@@ -44,7 +44,7 @@
     "typed-emitter": "^2.1.0"
   },
   "devDependencies": {
-    "@ndn/repo": "workspace:0.0.20220501",
+    "@ndn/repo": "workspace:*",
     "@types/b64-lite": "^1.4.0",
     "@types/mailparser": "^3.4.0"
   }

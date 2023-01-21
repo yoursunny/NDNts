@@ -26,8 +26,8 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/tlv": "workspace:0.0.20220501",
-    "@ndn/util": "workspace:0.0.20220501",
+    "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
     "buffer-compare": "^1.1.1",
     "mnemonist": "^0.39.5",
     "tslib": "^2.4.1"
