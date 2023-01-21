@@ -1,4 +1,4 @@
-import { assert } from "@ndn/util";
+import { asDataView, assert } from "@ndn/util";
 
 interface Entry {
   count: number;
@@ -41,15 +41,34 @@ class Hashtable {
   }
 }
 
+class KeyBuffer {
+  constructor(private readonly p: IBLT.PreparedParameters) {
+    this.dv = asDataView(this.buf);
+  }
+
+  public key = 0;
+  public readonly buf = new Uint8Array(4);
+  private readonly dv: DataView;
+  public checkHash = 0;
+
+  public save(key: number): void {
+    this.key = key;
+    this.dv.setUint32(0, key, this.p.keyToBufferLittleEndian);
+    this.checkHash = this.p.hash(this.p.checkSeed, this.buf);
+  }
+}
+
 /** Invertible Bloom Lookup Table. */
 export class IBLT {
   constructor(p: IBLT.Parameters | IBLT.PreparedParameters) {
     this.p = IBLT.PreparedParameters.prepare(p);
     this.ht = new Hashtable(this.p.nEntries, this.p.serializeLittleEndian);
+    this.key = new KeyBuffer(this.p);
   }
 
   private readonly p: IBLT.PreparedParameters;
   private readonly ht: Hashtable;
+  private readonly key: KeyBuffer;
 
   /** Insert a key. */
   public insert(key: number): void {
@@ -61,27 +80,19 @@ export class IBLT {
     this.update(-1, key);
   }
 
-  private checkHash(input: Uint8Array): number {
-    return this.p.hash(this.p.checkSeed, input);
-  }
-
-  private keyToBuffer(key: number): Uint8Array {
-    const ab = new ArrayBuffer(4);
-    new DataView(ab).setUint32(0, key, this.p.keyToBufferLittleEndian);
-    return new Uint8Array(ab);
-  }
-
   private update(change: number, key: number): void {
     assert(key >= 0);
     assert(key <= 0xFFFFFFFF);
     assert(Math.trunc(key) === key);
-    const keyB = this.keyToBuffer(key);
-    this.update2(this.ht, change, key, keyB, this.checkHash(keyB));
+    this.key.save(key);
+    this.update2(this.ht, change, key);
   }
 
-  private update2(ht: Hashtable, change: number, key: number, keyB: Uint8Array, checkHash: number): void {
+  private update2(ht: Hashtable, change: number, keyInput: number): void {
+    const { key, buf, checkHash } = this.key;
+    assert.equal(key, keyInput);
     for (let k = 0; k < this.p.nHash; ++k) {
-      const h = this.p.hash(k, keyB);
+      const h = this.p.hash(k, buf);
       const i = k * this.p.nBuckets + h % this.p.nBuckets;
       const entry = ht.get(i);
       entry.count += change;
@@ -96,7 +107,7 @@ export class IBLT {
     const hts: Hashtable[] = [
       this.ht,
       ...others.map((other) => {
-        assert(this.p.nEntries === other.p.nEntries);
+        assert.equal(this.p.nEntries, other.p.nEntries);
         return other.ht;
       }),
     ];
@@ -128,14 +139,13 @@ export class IBLT {
             continue;
         }
 
-        const keyB = this.keyToBuffer(keySum);
-        const checkHash = this.checkHash(keyB);
-        if (keyCheck !== checkHash) {
+        this.key.save(keySum);
+        if (keyCheck !== this.key.checkHash) {
           continue;
         }
 
         set.add(keySum);
-        this.update2(peel, -count, keySum, keyB, checkHash);
+        this.update2(peel, -count, keySum);
         more = true;
       }
     }
