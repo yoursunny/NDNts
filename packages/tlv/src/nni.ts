@@ -46,12 +46,15 @@ class Nni8Big {
 
 function decode32(dv: DataView): number {
   switch (dv.byteLength) {
-    case 1:
+    case 1: {
       return dv.getUint8(0);
-    case 2:
+    }
+    case 2: {
       return dv.getUint16(0);
-    case 4:
+    }
+    case 4: {
       return dv.getUint32(0);
+    }
   }
   throw new Error("incorrect TLV-LENGTH of NNI");
 }
@@ -87,29 +90,38 @@ export function NNI(n: number | bigint, {
 
   if (typeof n === "bigint") {
     switch (true) {
-      case n < 0x100000000n:
+      case n < 0x100000000n: {
         n = Number(n);
         break;
-      case n <= 0xFFFFFFFFFFFFFFFFn:
+      }
+      case n <= 0xFFFFFFFFFFFFFFFFn: {
         return new Nni8Big(n);
-      default:
+      }
+      default: {
         throw new RangeError("NNI is too large");
+      }
     }
   }
 
   switch (true) {
-    case n < 0:
+    case n < 0: {
       throw new RangeError("NNI cannot be negative");
-    case n < 0x100:
+    }
+    case n < 0x100: {
       return new Nni1(n);
-    case n < 0x10000:
+    }
+    case n < 0x10000: {
       return new Nni2(n);
-    case n < 0x100000000:
+    }
+    case n < 0x100000000: {
       return new Nni4(n);
-    case n <= (unsafe ? 0xFFFFFFFFFFFFFFFF : Number.MAX_SAFE_INTEGER): // eslint-disable-line @typescript-eslint/no-loss-of-precision
+    }
+    case n <= (unsafe ? 0xFFFFFFFFFFFFFFFF : Number.MAX_SAFE_INTEGER): { // eslint-disable-line @typescript-eslint/no-loss-of-precision
       return new Nni8Number(n);
-    default:
+    }
+    default: {
       throw new RangeError("NNI is too large");
+    }
   }
 }
 

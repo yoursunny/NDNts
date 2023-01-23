@@ -47,15 +47,18 @@ export class Ndncert03ShowProfileCommand implements CommandModule<{}, Args> {
 
     let output: unknown = profile;
     switch (true) {
-      case args.clientconf:
+      case args.clientconf: {
         output = exportClientConf(profile);
-        // fallthrough
-      case args.json:
+      }
+      // fallthrough
+      case args.json: {
         output = JSON.stringify(output, undefined, 2);
-        // fallthrough
-      default:
+      }
+      // fallthrough
+      default: {
         stdout.write(`${output}\n`);
         break;
+      }
     }
   }
 }

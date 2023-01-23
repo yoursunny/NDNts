@@ -12,6 +12,7 @@ const EVD = new EvDecoder<NewRequest.Fields>("NewRequest")
   .add(TT.CertRequest, (t, { vd }) => t.certRequest = Certificate.fromData(vd.decode(Data)), { required: true });
 
 /** NEW request packet. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class NewRequest {
   /**
    * Decode NEW request from Interest packet.
@@ -42,6 +43,7 @@ export class NewRequest {
       public readonly publicKey: NamedVerifier.PublicKey,
   ) {}
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface NewRequest extends Readonly<NewRequest.Fields> {}
 
 function truncateValidity(

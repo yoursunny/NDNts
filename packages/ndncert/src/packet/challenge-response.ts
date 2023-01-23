@@ -19,6 +19,7 @@ const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse")
 parameter_kv.parseEvDecoder(EVD, 5);
 
 /** CHALLENGE response packet. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class ChallengeResponse {
   public static async fromData(data: Data, profile: CaProfile, requestId: Uint8Array,
       sessionDecrypter: LLDecrypt.Key): Promise<ChallengeResponse> {
@@ -36,6 +37,7 @@ export class ChallengeResponse {
     checkFieldsByStatus(this);
   }
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface ChallengeResponse extends Readonly<ChallengeResponse.Fields> {}
 
 function checkFieldsByStatus({
@@ -48,9 +50,10 @@ function checkFieldsByStatus({
   fwHint,
 }: ChallengeResponse.Fields): () => Encodable[] {
   switch (status) {
-    case Status.FAILURE:
+    case Status.FAILURE: {
       return () => [];
-    case Status.SUCCESS:
+    }
+    case Status.SUCCESS: {
       if (!issuedCertName) {
         throw new Error("issuedCertName missing");
       }
@@ -58,7 +61,8 @@ function checkFieldsByStatus({
         [TT.IssuedCertName, issuedCertName],
         fwHint,
       ];
-    default:
+    }
+    default: {
       if (!challengeStatus || !remainingTries || !remainingTime) {
         throw new Error("challengeStatus, remainingTries, remainingTime missing");
       }
@@ -68,6 +72,7 @@ function checkFieldsByStatus({
         [TT.RemainingTime, NNI(remainingTime / 1000)],
         ...parameter_kv.encode(parameters),
       ];
+    }
   }
 }
 

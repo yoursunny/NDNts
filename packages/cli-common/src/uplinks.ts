@@ -17,9 +17,10 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
   let autoconfigPreferTcp = false;
   let dpdkScheme: dpdkOpenFace.Options["scheme"] = "udp";
   switch (env.uplink.protocol) {
-    case "autoconfig-tcp:":
+    case "autoconfig-tcp:": {
       autoconfigPreferTcp = true;
-      // fallthrough
+    }
+    // fallthrough
     case "autoconfig:": {
       try {
         const faces = await connectToNetwork({
@@ -31,19 +32,22 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
         throw new Error("autoconfig unavailable, set uplink in NDNTS_UPLINK");
       }
     }
-    case "tcp:":
+    case "tcp:": {
       return [(await connectToRouter(env.uplink.host,
         { preferTcp: true, testConnection: false })).face, true];
-    case "udp:":
+    }
+    case "udp:": {
       return [(await connectToRouter(env.uplink.host,
         { preferTcp: false, mtu: env.mtu, testConnection: false })).face, true];
+    }
     case "unix:": {
       const face = await UnixTransport.createFace({}, env.uplink.pathname);
       return [face, true];
     }
-    case "ndndpdk-memif:":
+    case "ndndpdk-memif:": {
       dpdkScheme = "memif";
-      // fallthrough
+    }
+    // fallthrough
     case "ndndpdk-udp:":
     case "ndndpdk:": {
       const face = await dpdkOpenFace({
@@ -57,8 +61,9 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
       });
       return [face, false];
     }
-    default:
+    default: {
       throw new Error(`unknown protocol ${env.uplink.protocol} in NDNTS_UPLINK`);
+    }
   }
 }
 

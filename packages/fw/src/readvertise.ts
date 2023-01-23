@@ -138,7 +138,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
       if (!record) { continue; }
       const { status, retry, state } = record;
       switch (status) {
-        case ReadvertiseDestination.Status.ADVERTISING:
+        case ReadvertiseDestination.Status.ADVERTISING: {
           try {
             await this.doAdvertise(name, state);
             if (record.status === ReadvertiseDestination.Status.ADVERTISING) {
@@ -149,7 +149,8 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
             retry!.retry(err as Error);
           }
           break;
-        case ReadvertiseDestination.Status.WITHDRAWING:
+        }
+        case ReadvertiseDestination.Status.WITHDRAWING: {
           try {
             await this.doWithdraw(name, state);
             if (record.status === ReadvertiseDestination.Status.WITHDRAWING) {
@@ -161,6 +162,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
             retry!.retry(err as Error);
           }
           break;
+        }
       }
     }
   }

@@ -59,12 +59,15 @@ class Printer {
     }
 
     switch (p.filter) {
-      case undefined:
+      case undefined: {
         return name;
-      case F.timestamp:
+      }
+      case F.timestamp: {
         return new A.Call("timestamp");
-      case F.seq:
+      }
+      case F.seq: {
         return new A.Call("seq");
+      }
     }
     return new A.Constrained(name, this.translateFilter(p.filter));
   }

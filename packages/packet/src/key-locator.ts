@@ -49,9 +49,10 @@ export namespace KeyLocator {
    * @throws KeyLocator is missing or does not have Name.
    */
   export function mustGetName(kl?: KeyLocator): Name {
-    if (!kl || !kl.name) {
+    const name = kl?.name;
+    if (!name) {
       throw new Error("KeyLocator does not have name");
     }
-    return kl.name;
+    return name;
   }
 }

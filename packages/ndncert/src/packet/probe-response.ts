@@ -37,6 +37,7 @@ EVD.afterObservers.push(({ entries, redirects }) => {
 });
 
 /** PROBE response packet. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class ProbeResponse {
   public static async fromData(data: Data, profile: CaProfile): Promise<ProbeResponse> {
     await profile.publicKey.verify(data);
@@ -45,6 +46,7 @@ export class ProbeResponse {
 
   private constructor(public readonly data: Data) {}
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface ProbeResponse extends Readonly<ProbeResponse.Fields> {}
 
 export namespace ProbeResponse {

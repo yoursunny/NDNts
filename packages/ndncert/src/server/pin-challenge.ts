@@ -13,6 +13,7 @@ type Events = {
 };
 
 /** The "pin" challenge where client receives a pin code through offline means. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class ServerPinChallenge extends (EventEmitter as new() => TypedEmitter<Events>) implements ServerChallenge {
   public readonly challengeId = "pin";
   public readonly timeLimit = 3600000;
@@ -24,5 +25,6 @@ export class ServerPinChallenge extends (EventEmitter as new() => TypedEmitter<E
     return state;
   }
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface ServerPinChallenge extends ServerPinLikeChallenge {}
 applyMixins(ServerPinChallenge, [ServerPinLikeChallenge]);

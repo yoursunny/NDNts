@@ -59,9 +59,10 @@ export function scan(tokens: Iterable<T.Token>): Unit[] {
         popNest(token as T.Operator);
         break;
       }
-      default:
+      default: {
         currentSequence.push(token);
         break;
+      }
     }
   }
 

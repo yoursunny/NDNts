@@ -16,15 +16,18 @@ export async function applyCommonArgs(args: CommonArgs) {
   signer = await getSigner();
 
   switch (args.convention) {
-    case 1:
+    case 1: {
       [Version, Segment] = [Version1, Segment1];
       break;
-    case 2:
+    }
+    case 2: {
       [Version, Segment] = [Version2, Segment2];
       break;
-    case 3:
+    }
+    case 3: {
       [Version, Segment] = [Version3, Segment3];
       break;
+    }
   }
 }
 

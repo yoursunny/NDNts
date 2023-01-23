@@ -37,14 +37,17 @@ export function createFace(router: string, {
 
   switch (uri.protocol) {
     case "ws:":
-    case "wss:":
+    case "wss:": {
       return WsTransport.createFace({ fw, addRoutes }, uri.toString(), { connectTimeout });
-    case "https:":
+    }
+    case "https:": {
       if (!H3Transport) {
         throw new Error("H3Transport unavailable");
       }
       return H3Transport.createFace({ fw, addRoutes, lp: { mtu } }, uri.toString());
-    default:
+    }
+    default: {
       throw new Error(`unknown protocol ${uri.protocol}`);
+    }
   }
 }

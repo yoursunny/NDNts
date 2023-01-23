@@ -61,9 +61,10 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
     const challenges: ServerChallenge[] = [];
     for (const challengeId of args.challenge) {
       switch (challengeId) {
-        case "nop":
+        case "nop": {
           challenges.push(new ServerNopChallenge());
           break;
+        }
         case "pin": {
           const challenge = new ServerPinChallenge();
           challenge.on("newpin", (requestId, pin) => {

@@ -98,17 +98,19 @@ export class SignedInterestPolicy {
     return new Proxy(interest, {
       get: (target, prop: keyof Interest, receiver) => {
         switch (prop) {
-          case LLSign.OP:
+          case LLSign.OP: {
             return (signer: LLSign) => {
               this.update(interest);
               return interest[LLSign.OP](signer);
             };
-          case LLVerify.OP:
+          }
+          case LLVerify.OP: {
             return async (verify: LLVerify) => {
               const save = this.check(interest);
               await interest[LLVerify.OP](verify);
               save();
             };
+          }
         }
         return Reflect.get(target, prop, receiver);
       },

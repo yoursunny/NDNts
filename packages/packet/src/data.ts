@@ -91,6 +91,7 @@ const EVD = new EvDecoder<Fields>("Data", TT.Data)
 EVD.beforeObservers.push((t, tlv) => t.topTlv = tlv!.tlv);
 
 /** Data packet. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signable, Verifier.Verifiable {
   /**
    * Construct from flexible arguments.
@@ -220,6 +221,7 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
     await verify(signedPortion, sigValue);
   }
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface Data extends PublicFields {}
 const clearingFields = ["topTlv", "topTlvDigest", "signedPortion"] as const;
 definePublicFields<Data, Fields, PublicFields>(Data, {

@@ -42,6 +42,7 @@ type Events = {
 };
 
 /** The "email" challenge where client receives a pin code via email. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class ServerEmailChallenge extends (EventEmitter as new() => TypedEmitter<Events>) implements ServerChallenge {
   public readonly challengeId = "email";
   public readonly timeLimit = 300000;
@@ -97,6 +98,7 @@ export class ServerEmailChallenge extends (EventEmitter as new() => TypedEmitter
     };
   }
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface ServerEmailChallenge extends ServerPinLikeChallenge {}
 applyMixins(ServerEmailChallenge, [ServerPinLikeChallenge]);
 

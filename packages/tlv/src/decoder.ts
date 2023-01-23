@@ -97,24 +97,28 @@ export class Decoder {
       return undefined;
     }
     switch (this.input[this.offset]) {
-      case 0xFD:
+      case 0xFD: {
         this.offset += 3;
         if (this.offset > this.input.length) {
           return undefined;
         }
         return this.dv.getUint16(this.offset - 2);
-      case 0xFE:
+      }
+      case 0xFE: {
         this.offset += 5;
         if (this.offset > this.input.length) {
           return undefined;
         }
         return this.dv.getUint32(this.offset - 4);
-      case 0xFF:
+      }
+      case 0xFF: {
         // JavaScript cannot reliably represent 64-bit integers
         return undefined;
-      default:
+      }
+      default: {
         this.offset += 1;
         return this.input[this.offset - 1]!;
+      }
     }
   }
 }

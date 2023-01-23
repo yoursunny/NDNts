@@ -51,9 +51,10 @@ export class Name {
         this.valueEncoderBufSize = uri.length + 4 * this.comps.length;
         break;
       }
-      case Array.isArray(arg1):
+      case Array.isArray(arg1): {
         this.comps = Array.from(arg1 as readonly ComponentLike[], Component.from);
         break;
+      }
       case arg1 instanceof Uint8Array: {
         this.value_ = arg1 as Uint8Array;
         const comps = [] as Component[];
@@ -64,10 +65,11 @@ export class Name {
         this.comps = comps;
         break;
       }
-      default: // undefined
+      default: { // undefined
         this.comps = [];
         this.valueEncoderBufSize = 0;
         break;
+      }
     }
   }
 

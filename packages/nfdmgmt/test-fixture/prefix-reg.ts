@@ -29,12 +29,14 @@ export class PrefixRegServer {
     const params = new Decoder(interest.name.at(4).value).decode(ControlParameters);
 
     switch (verb) {
-      case "register":
+      case "register": {
         this.face.addRoute(params.name!, false);
         break;
-      case "unregister":
+      }
+      case "unregister": {
         this.face.removeRoute(params.name!, false);
         break;
+      }
     }
 
     params.faceId ??= this.faceId;

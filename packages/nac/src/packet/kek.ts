@@ -5,6 +5,7 @@ import * as asn1 from "@yoursunny/asn1";
 import { ContentTypeKEY, DefaultFreshness, Keyword } from "./an";
 
 /** NAC key encryption key. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class KeyEncryptionKey {
   /** Parse key encryption key from Data packet. */
   public static async fromData(data: Data): Promise<KeyEncryptionKey> {
@@ -31,6 +32,7 @@ export class KeyEncryptionKey {
   private encrypter_!: LLEncrypt.Key;
   public get encrypter() { return this.encrypter_; }
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface KeyEncryptionKey extends Readonly<KeyEncryptionKey.NameParts> {}
 
 export function parseNameInternal(name: Name, keyword2: Component, type = "KEK"): KeyEncryptionKey.NameParts {

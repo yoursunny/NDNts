@@ -12,6 +12,7 @@ const EVD = new EvDecoder<KeyDecryptionKey.Fields>("KeyDecryptionKey", TT.Encryp
   .add(TT.EncryptedPayloadKey, (t, { value }) => t.encryptedPassphrase = value, { required: true });
 
 /** NAC key decryption key. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class KeyDecryptionKey {
   /** Parse key decryption key from Data packet. */
   public static async fromData(data: Data): Promise<KeyDecryptionKey> {
@@ -33,6 +34,7 @@ export class KeyDecryptionKey {
     return RSAOAEP.cryptoGenerate({ importPkcs8: [pkcs8, this.safeBag.certificate.publicKeySpki] }, extractable);
   }
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface KeyDecryptionKey extends Readonly<KeyDecryptionKey.NameParts>, Readonly<KeyDecryptionKey.Fields> {}
 
 const SafeBagIssuerId = Component.from("NDNts-nac");

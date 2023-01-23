@@ -167,13 +167,15 @@ class InteractiveClient {
     const challenges: ClientChallenge[] = [];
     for (const challengeId of this.args.challenge) {
       switch (challengeId) {
-        case "nop":
+        case "nop": {
           challenges.push(new ClientNopChallenge());
           break;
-        case "pin":
+        }
+        case "pin": {
           challenges.push(new ClientPinChallenge(this.promptPin()));
           break;
-        case "email":
+        }
+        case "email": {
           if (this.args.email === "ethereal") {
             this.inbox = await ClientEmailInboxImap.createEthereal();
             console.log(`Using Ethereal Email inbox ${this.inbox.address}`);
@@ -182,6 +184,7 @@ class InteractiveClient {
             challenges.push(new ClientEmailChallenge(this.args.email!, this.promptPin()));
           }
           break;
+        }
         case "possession": {
           const certName = new Name(this.args["possession-cert"] ?? this.args.key);
           const cert = await this.keyChain.getCert(certName);

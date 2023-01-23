@@ -129,14 +129,17 @@ export class IBLT {
         const { count, keySum, keyCheck } = peel.get(i);
         let set: Set<number>;
         switch (count) {
-          case 1:
+          case 1: {
             set = positive;
             break;
-          case -1:
+          }
+          case -1: {
             set = negative;
             break;
-          default:
+          }
+          default: {
             continue;
+          }
         }
 
         this.key.save(keySum);
@@ -223,6 +226,7 @@ export namespace IBLT {
     nEntries: number;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
   export class PreparedParameters implements Readonly<Parameters> {
     public static prepare(p: Parameters) {
       if (p instanceof PreparedParameters) {
@@ -260,6 +264,7 @@ export namespace IBLT {
 
     public readonly nBuckets: number;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
   export interface PreparedParameters extends Readonly<Parameters> {}
 
   /** Difference between two IBLTs. */

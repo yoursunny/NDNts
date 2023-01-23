@@ -1,5 +1,5 @@
+const { pipeline } = require("node:stream");
 const { promises: fs } = require("graceful-fs");
-const { pipeline } = require("stream");
 const split2 = require("split2");
 
 /**
@@ -99,14 +99,17 @@ class TransformJs {
     const input = (await fs.readFile(this.filename, "utf8")).split(/\r?\n/);
     for (const line of input) {
       switch (true) {
-        case line.startsWith("import ") || line.startsWith("export "):
+        case line.startsWith("import ") || line.startsWith("export "): {
           this.transformImportExport(line);
           break;
-        case line.startsWith("//# sourceMappingURL="):
+        }
+        case line.startsWith("//# sourceMappingURL="): {
           break;
-        default:
+        }
+        default: {
           this.emitLine(line);
           break;
+        }
       }
     }
 

@@ -66,14 +66,17 @@ export function parseCounterIvOptions({
   if (fixedBits > 0) {
     fixedMask = BigInt(`0b${"1".repeat(fixedBits)}${"0".repeat(randomBits + counterBits)}`);
     switch (typeof fixedInput) {
-      case "bigint":
+      case "bigint": {
         fixed = fixedInput;
         break;
-      case "object":
+      }
+      case "object": {
         fixed = BigInt(`0x${toHex(fixedInput)}`);
         break;
-      default:
+      }
+      default: {
         throw new Error("bad CounterIvOptions.fixed");
+      }
     }
     fixed <<= BigInt(randomBits + counterBits);
     fixed &= fixedMask;

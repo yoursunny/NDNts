@@ -4,12 +4,13 @@ import applyMixins from "applymixins";
 import { type Compression as Compression_, IbltCodec } from "../detail/iblt-codec";
 import type { IBLT } from "../iblt";
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class SyncpsCodec {
   constructor(p: SyncpsCodec.Parameters, protected readonly ibltParams: IBLT.PreparedParameters) {
     Object.assign(this, p);
   }
 }
-
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface SyncpsCodec extends Readonly<SyncpsCodec.Parameters>, IbltCodec {}
 applyMixins(SyncpsCodec, [IbltCodec]);
 

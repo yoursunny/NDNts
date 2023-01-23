@@ -32,12 +32,14 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
    */
   constructor(stream: NodeJS.ReadableStream | NodeJS.WritableStream | DataTape.OpenStream | string) {
     switch (typeof stream) {
-      case "function":
+      case "function": {
         this.makeStream = stream;
         break;
-      case "string":
+      }
+      case "string": {
         this.makeStream = makeOpenFileStreamFunction(stream);
         break;
+      }
       default: {
         let used = false;
         this.makeStream = () => {

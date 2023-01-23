@@ -20,6 +20,7 @@ const EVD = new EvDecoder<ChallengeRequest.Fields>("ChallengeRequest")
 parameter_kv.parseEvDecoder(EVD, 2);
 
 /** CHALLENGE request packet. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class ChallengeRequest {
   public static async fromInterest(interest: Interest, {
     profile,
@@ -51,6 +52,7 @@ export class ChallengeRequest {
 
   public get requestId() { return this.interest.name.at(-2).value; }
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface ChallengeRequest extends Readonly<ChallengeRequest.Fields> {}
 
 export namespace ChallengeRequest {

@@ -155,12 +155,15 @@ export async function openFace(opts: openFace.Options = {}): Promise<FwFace> {
     scheme = "udp",
   } = opts;
   switch (scheme) {
-    case "udp":
+    case "udp": {
       return openFaceUdp(opts);
-    case "memif":
+    }
+    case "memif": {
       return openFaceMemif(opts);
-    default:
+    }
+    default: {
       throw new Error(`unknown scheme ${scheme}`);
+    }
   }
 }
 

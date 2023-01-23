@@ -62,12 +62,15 @@ export class LpService {
 
   private decodeL3({ type, decoder }: Decoder.Tlv): LpService.Packet {
     switch (type) {
-      case l3TT.Interest:
+      case l3TT.Interest: {
         return { l3: decoder.decode(Interest) };
-      case l3TT.Data:
+      }
+      case l3TT.Data: {
         return { l3: decoder.decode(Data) };
-      default:
+      }
+      default: {
         throw new Error(`unrecognized TLV-TYPE ${printTT(type)} as L3Pkt`);
+      }
     }
   }
 

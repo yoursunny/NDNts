@@ -10,6 +10,7 @@ const EVD = new EvDecoder<ProbeRequest.Fields>("ProbeRequest");
 parameter_kv.parseEvDecoder(EVD, 1);
 
 /** PROBE request packet. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class ProbeRequest {
   public static fromInterest(
       interest: Interest,
@@ -24,6 +25,7 @@ export class ProbeRequest {
 
   private constructor(public readonly interest: Interest) {}
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface ProbeRequest extends Readonly<ProbeRequest.Fields> {}
 
 function checkKeys({ probeKeys }: CaProfile, { parameters }: ProbeRequest.Fields): void {

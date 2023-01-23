@@ -42,9 +42,10 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
     this.state_ = newState;
     this.emit("state", newState);
     switch (newState) {
-      case L3Face.State.UP:
+      case L3Face.State.UP: {
         this.emit("up");
         break;
+      }
       case L3Face.State.DOWN: {
         const err = this.lastError instanceof Error ?
           this.lastError :
@@ -53,9 +54,10 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
         this.lastError = undefined;
         break;
       }
-      case L3Face.State.CLOSED:
+      case L3Face.State.CLOSED: {
         this.emit("close");
         break;
+      }
     }
   }
 

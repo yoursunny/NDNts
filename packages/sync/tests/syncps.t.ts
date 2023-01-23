@@ -19,7 +19,7 @@ class DebugPrinter {
       return;
     }
     sync.on("debug", ({ action, name, content }) => {
-      process.stderr.write(`${Date.now() - this.t0} ${title} ${action} ${name ? name : ""
+      process.stderr.write(`${Date.now() - this.t0} ${title} ${action} ${name ?? ""
       } ${content ? `[${content.map((name) => `${name}`).join(",")}]` : ""}\n`);
     });
   }

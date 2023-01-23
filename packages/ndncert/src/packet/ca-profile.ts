@@ -16,6 +16,7 @@ const EVD = new EvDecoder<CaProfile.Fields>("CaProfile")
 EVD.beforeObservers.push((t) => t.probeKeys = []);
 
 /** CA profile packet. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class CaProfile {
   /**
    * Decode CA profile from Data packet.
@@ -60,6 +61,7 @@ Certificate digest: ${toHex(this.certDigest)}`;
     };
   }
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface CaProfile extends Readonly<CaProfile.Fields> {}
 
 export namespace CaProfile {

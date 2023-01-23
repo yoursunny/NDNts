@@ -87,12 +87,14 @@ class Downloader {
     --this.nQueued;
     try {
       switch (kind) {
-        case "folder":
+        case "folder": {
           await this.downloadFolder(local);
           break;
-        case "file":
+        }
+        case "file": {
           await this.downloadFile(local);
           break;
+        }
       }
     } catch (err: unknown) {
       this.queue.end(new Error(`download ${kind} ./${path.relative(this.local, local)} error: ${err}`));

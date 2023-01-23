@@ -6,6 +6,7 @@ import { type Compression as Compression_, IbltCodec } from "../detail/iblt-code
 import type { IBLT } from "../iblt";
 import type { PSyncCore } from "./core";
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class PSyncCodec {
   constructor(p: PSyncCodec.Parameters, protected readonly ibltParams: IBLT.PreparedParameters) {
     Object.assign(this, p);
@@ -25,7 +26,7 @@ export class PSyncCodec {
     return this.decodeState(this.contentCompression.decompress(buffer));
   }
 }
-
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface PSyncCodec extends Readonly<PSyncCodec.Parameters>, IbltCodec {}
 applyMixins(PSyncCodec, [IbltCodec]);
 

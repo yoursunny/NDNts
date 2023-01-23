@@ -103,10 +103,12 @@ function duplexFromRxTx(rxtx: FwFace.RxTx | FwFace.RxTxDuplex): FwFace.RxTxDuple
 
 function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement): Name | undefined {
   switch (typeof announcement) {
-    case "number":
+    case "number": {
       return name.getPrefix(announcement);
-    case "boolean":
+    }
+    case "boolean": {
       return announcement ? name : undefined;
+    }
   }
   return Name.from(announcement);
 }

@@ -11,6 +11,7 @@ const EVD = new EvDecoder<ContentKey.Fields>("ContentKey", TT.EncryptedContent)
   .add(TT.EncryptedPayload, (t, { value }) => t.encryptedKey = value, { required: true });
 
 /** NAC content key. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class ContentKey {
   /** Parse content key from Data packet. */
   public static async fromData(data: Data): Promise<ContentKey> {
@@ -35,6 +36,7 @@ export class ContentKey {
     return AESCBC.cryptoGenerate({ importRaw: plaintext }, false);
   }
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface ContentKey extends Readonly<ContentKey.NameParts>, Readonly<ContentKey.Fields> {}
 
 export namespace ContentKey {

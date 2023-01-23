@@ -12,6 +12,7 @@ export interface Options extends ConsumerOptions, ProducerOptions {
  * Endpoint is the main entry point for an application to interact with the forwarding plane.
  * It provides basic consumer and producer functionality.
  */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class Endpoint {
   public readonly fw: Forwarder;
 
@@ -19,6 +20,7 @@ export class Endpoint {
     this.fw = opts.fw ?? Forwarder.getDefault();
   }
 }
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface Endpoint extends EndpointConsumer, EndpointProducer {}
 applyMixins(Endpoint, [EndpointConsumer, EndpointProducer]);
 

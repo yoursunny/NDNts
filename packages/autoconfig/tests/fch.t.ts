@@ -75,18 +75,22 @@ test("text2", async () => {
     const cap = search.getAll("cap").join(",");
     const k = search.getAll("k").join(",");
     switch (cap) {
-      case "udp,wss":
+      case "udp,wss": {
         expect(k).toBe("2,1");
         return "127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003";
-      case "wss,udp":
+      }
+      case "wss,udp": {
         expect(k).toBe("1,2");
         return "127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003";
-      case "udp":
+      }
+      case "udp": {
         expect(k).toBe("2");
         return "127.0.0.1:7001,127.0.0.1:7002";
-      case "wss":
+      }
+      case "wss": {
         expect(k).toBe("1");
         return "127.0.0.1:7003";
+      }
     }
     throw new Error(`unexpected cap=${cap}`);
   };

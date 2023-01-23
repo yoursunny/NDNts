@@ -88,8 +88,9 @@ export namespace GenKeyCommand {
         const [pvt, pub] = await generateSigningKey(keyChain, name);
         return { pvt, pub, canSelfSign: false };
       }
-      default:
+      default: {
         throw new Error(`unknown type ${type}`);
+      }
     }
   }
 }

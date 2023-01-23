@@ -67,12 +67,15 @@ export abstract class KeyChain {
   ): Promise<Signer> {
     const useFallback = (err?: Error) => {
       switch (typeof fallback) {
-        case "function":
+        case "function": {
           return fallback(name, this, err);
-        case "undefined":
+        }
+        case "undefined": {
           throw new Error(`signer ${name} not found ${err}`);
-        default:
+        }
+        default: {
           return fallback;
+        }
       }
     };
     const changeKeyLocator = (signer: NamedSigner, certName?: Name) => {

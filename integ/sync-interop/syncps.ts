@@ -15,7 +15,7 @@ const sync = new SyncpsPubsub({
 exitClosers.unshift(sync);
 if (process.env.NDNTS_SYNC_DEBUG === "1") {
   sync.on("debug", ({ action, name, content }) => {
-    console.log(`DEBUG ${action} ${name ? name : ""
+    console.log(`DEBUG ${action} ${name ?? ""
     } ${content ? `[${content.map((name) => `${name}`).join(",")}]` : ""}`);
   });
 }

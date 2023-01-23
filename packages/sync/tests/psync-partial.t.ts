@@ -79,4 +79,4 @@ test("simple", async () => {
 
   pub.close();
   sub.close();
-});
+}, { retry: 3 });

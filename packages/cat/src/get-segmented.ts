@@ -14,20 +14,24 @@ interface Args extends CommonArgs {
 async function main(args: Args) {
   let name = new Name(args.name);
   switch (args.ver) {
-    case "none":
+    case "none": {
       break;
-    case "cbp":
+    }
+    case "cbp": {
       name = await discoverVersion(name, {
         segmentNumConvention: Segment,
         versionConvention: Version,
       });
       break;
-    case "rdr":
+    }
+    case "rdr": {
       name = (await retrieveMetadata(name)).name;
       break;
-    default:
+    }
+    default: {
       name = name.append(Version, Number.parseInt(args.ver, 10));
       break;
+    }
   }
 
   await fetch(name, { segmentNumConvention: Segment }).pipe(stdout);

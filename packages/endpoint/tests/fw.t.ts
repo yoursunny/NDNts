@@ -30,23 +30,25 @@ test("simple", async () => {
   const nameWrongDigest = await getDataFullName(new Data("/P/wrong-digest", Uint8Array.of(0xC0)));
 
   const producerP = ep.produce("/P",
-    async (interest) => {
+    async ({ name }) => {
       await delay(2);
-      const name = interest.name.toString();
-      switch (name) {
-        case "/8=P/8=prefix":
-        case "/8=P/8=no-prefix":
-          return new Data(interest.name.append("suffix"));
-        case "/8=P/8=fresh":
+      switch (true) {
+        case name.equals("/P/prefix"):
+        case name.equals("/P/no-prefix"): {
+          return new Data(name.append("suffix"));
+        }
+        case name.equals("/P/fresh"): {
           return new Data("/P/fresh", Data.FreshnessPeriod(1000));
-        default:
-          if (nameDigest.equals(interest.name)) {
-            return dataDigest;
-          }
-          if (nameWrongDigest.equals(interest.name)) {
-            return new Data("/P/wrong-digest", Uint8Array.of(0xC1));
-          }
-          return new Data(interest.name);
+        }
+        case name.equals(nameDigest): {
+          return dataDigest;
+        }
+        case name.equals(nameWrongDigest): {
+          return new Data("/P/wrong-digest", Uint8Array.of(0xC1));
+        }
+        default: {
+          return new Data(name);
+        }
       }
     });
 
@@ -125,15 +127,18 @@ test("aggregate & retransmit", async () => {
           rxDataTokens.add(token);
         } else if (reject) {
           switch (token) {
-            case 4:
+            case 4: {
               expect(reject).toBe("cancel");
               break;
-            case 5:
+            }
+            case 5: {
               expect(reject).toBe("expire");
               break;
-            default:
+            }
+            default: {
               expect(true).toBeFalsy();
               break;
+            }
           }
           ++nRxRejects;
         } else {
