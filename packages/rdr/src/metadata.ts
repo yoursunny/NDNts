@@ -22,9 +22,7 @@ export class Metadata implements EncodableObj {
   constructor(public name = new Name()) {}
 
   public static decodeFrom(decoder: Decoder): Metadata {
-    const metadata = new Metadata();
-    EVD.decodeValue(metadata, decoder);
-    return metadata;
+    return EVD.decodeValue(new Metadata(), decoder);
   }
 
   public encodeTo(encoder: Encoder): void {
@@ -43,9 +41,7 @@ export namespace Metadata {
     const evd = makeEvd<M>(ctor.name).setUnknown(registry.decodeUnknown);
     Object.defineProperty(ctor, "decodeFrom", {
       value(decoder: Decoder): M {
-        const metadata = new ctor();
-        evd.decodeValue(metadata, decoder);
-        return metadata;
+        return evd.decodeValue(new ctor(), decoder);
       },
     });
     Object.defineProperty(ctor.prototype, "encodeTo", {

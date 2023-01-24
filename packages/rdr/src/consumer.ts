@@ -23,11 +23,10 @@ export async function retrieveMetadata(prefix: NameLike, opts?: retrieveMetadata
 export async function retrieveMetadata<C extends typeof Metadata>(prefix: NameLike, ctor: C, opts?: retrieveMetadata.Options): Promise<InstanceType<C>>;
 
 export async function retrieveMetadata(prefix: NameLike, arg2: any = {}, opts: retrieveMetadata.Options = {}) {
-  let ctor: Decodable<Metadata>;
+  let ctor: Decodable<Metadata> = Metadata;
   if (typeof arg2 === "function") {
     ctor = arg2;
   } else {
-    ctor = Metadata;
     opts = arg2;
   }
   const {
