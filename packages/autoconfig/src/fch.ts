@@ -13,21 +13,39 @@ export interface PlatformFchDefaults {
 export interface FchRequest {
   /** FCH service URI. */
   server?: string;
-  /** Transport protocol. Ignored if transports is specified. */
+
+  /**
+   * Transport protocol, such as "udp".
+   * Ignored if `transports` is specified.
+   */
   transport?: string;
-  /** Number of routers. Ignored if transports is a Record. */
+
+  /**
+   * Number of routers.
+   * Ignored if `transports` is a Record.
+   */
   count?: number;
-  /** Transport protocols. Array or { transport: count } mapping. */
+
+  /**
+   * Transport protocols.
+   * If this is an array of transport protocols, the quantity of each is specified by `count`.
+   * If this is a Record, each key is a transport protocol and each value is the quantity.
+   */
   transports?: readonly string[] | Record<string, number>;
-  /** IPv4 allowed. */
+
+  /** IPv4 allowed? */
   ipv4?: boolean;
-  /** IPv6 allowed. */
+
+  /** IPv6 allowed? */
   ipv6?: boolean;
+
   /** Client geolocation. */
   position?: [lon: number, lat: number];
-  /** Network authority, such as 'yoursunny'. */
+
+  /** Network authority, such as "yoursunny". */
   network?: string;
-  /** AbortSignal. */
+
+  /** AbortSignal that allows canceling the request via AbortController. */
   signal?: AbortSignal;
 }
 

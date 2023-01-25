@@ -249,7 +249,7 @@ export namespace SvSubscriber {
    * Subscribe parameters.
    * If specified as Name, the subscription receives messages with specified name prefix,
    * regardless of who published it.
-   * If specified as {publisher}, the subscription receives messages from specified publisher.
+   * If specified as `{ publisher }`, the subscription receives messages from specified publisher.
    */
   export type SubscribeInfo = Name | { publisher: Name };
 
