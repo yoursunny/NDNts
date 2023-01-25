@@ -98,7 +98,7 @@ export class EvDecoder<T> {
     }
 
     let currentOrder = 0;
-    const foundTT = new Set();
+    const foundTT = new Set<number>();
     const missingTT = new Set(this.requiredTT);
     while (!vd.eof) {
       const tlv = vd.read();

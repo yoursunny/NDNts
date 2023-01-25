@@ -29,6 +29,11 @@ function finish(kv: ParameterKV) {
   }
 }
 
+/**
+ * Define fields on EvDecoder to recognize pairs of ParameterKey and ParameterValue TLVs.
+ * @param evd the EvDecoder of parent TLV.
+ * @param order field order for both ParameterKey and ParameterValue.
+ */
 export function parseEvDecoder<R extends { parameters?: ParameterKV }>(evd: EvDecoder<R>, order: number): void {
   evd
     .add(TT.ParameterKey, (t, { text }) => parseKey(t.parameters!, text), { order, repeat: true })
@@ -37,6 +42,7 @@ export function parseEvDecoder<R extends { parameters?: ParameterKV }>(evd: EvDe
   evd.afterObservers.push((t) => finish(t.parameters!));
 }
 
+/** Encode pairs of ParameterKey and ParameterValue TLVs. */
 export function encode(kv: ParameterKV = {}): Encodable[] {
   return Object.entries(kv).flatMap(([key, value]) => [
     [TT.ParameterKey, toUtf8(key)],

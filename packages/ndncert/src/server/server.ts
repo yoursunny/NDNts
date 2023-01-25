@@ -2,7 +2,7 @@ import { type Producer, type ProducerHandler, Endpoint } from "@ndn/endpoint";
 import { type NamedVerifier, type ValidityPeriod, Certificate, CertNaming } from "@ndn/keychain";
 import { type ComponentLike, type Data, type FwHint, type Signer, Component } from "@ndn/packet";
 import { Metadata, serveMetadata } from "@ndn/rdr";
-import { toHex } from "@ndn/util";
+import { KeyMap, toHex } from "@ndn/util";
 
 import * as crypto from "../crypto-common";
 import { type CaProfile, type ParameterKV, C, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, NewRequest, NewResponse, ProbeRequest, ProbeResponse, Status } from "../packet/mod";
@@ -57,7 +57,7 @@ export class Server {
       Component.from(issuerId));
   }
 
-  private readonly state = new Map<string, Context>();
+  private readonly state = new KeyMap<Uint8Array, Context, string>(toHex);
   private cleanupTimer: NodeJS.Timeout | number;
   private readonly producers: Producer[];
   private readonly signedInterestPolicy = crypto.makeSignedInterestPolicy();
@@ -69,7 +69,7 @@ export class Server {
       private readonly profile: CaProfile,
       private readonly signer: Signer,
       private readonly probe: ServerOptions.ProbeHandler | undefined,
-      private readonly challenges: Map<string, ServerChallenge>,
+      private readonly challenges: ReadonlyMap<string, ServerChallenge>,
       private readonly issuerId: Component,
   ) {
     const { prefix, data: { name: infoName } } = profile;
@@ -91,9 +91,11 @@ export class Server {
     this.cleanupTimer = setInterval(this.cleanupContext, 60000);
   }
 
-  public close() {
+  public close(): void {
     clearInterval(this.cleanupTimer);
-    this.producers.map((producer) => producer.close());
+    for (const producer of this.producers) {
+      producer.close();
+    }
   }
 
   private readonly handleInfoInterest: ProducerHandler = async () => this.profile.data;
@@ -135,17 +137,15 @@ export class Server {
     }
 
     let requestId: Uint8Array;
-    let requestIdHex: string;
     do {
       requestId = crypto.makeRequestId();
-      requestIdHex = toHex(requestId);
-    } while (this.state.has(requestIdHex));
+    } while (this.state.has(requestId));
 
     const salt = crypto.makeSalt();
     const [ecdhPvt, ecdhPub] = await crypto.generateEcdhKey();
     const sessionKey = await crypto.makeSessionKey(ecdhPvt, request.ecdhPub, salt, requestId);
 
-    this.state.set(requestIdHex, new Context(request, sessionKey, this.profile));
+    this.state.set(requestId, new Context(request, sessionKey, this.profile));
 
     const response = await NewResponse.build({
       profile: this.profile,
@@ -168,10 +168,10 @@ export class Server {
         lookupRequest: this.lookupContext,
       });
     } catch {
-      return ErrorMsg.makeData(ErrorCode.BadParameterFormat, interest, this.signer);
+      return ErrorMsg.makeData(ErrorCode.BadSignature, interest, this.signer);
     }
 
-    const context = this.state.get(toHex(request.requestId))!;
+    const context = this.state.get(request.requestId)!;
     const now = Date.now();
 
     if (context.expiry < now) {
@@ -262,13 +262,13 @@ export class Server {
     };
   }
 
-  private readonly lookupContext = async (requestId: Uint8Array) => this.state.get(toHex(requestId));
+  private readonly lookupContext = async (requestId: Uint8Array) => this.state.get(requestId);
 
   private deleteContext({ requestId }: ChallengeRequest) {
-    this.state.delete(toHex(requestId));
+    this.state.delete(requestId);
   }
 
-  private cleanupContext = () => {
+  private readonly cleanupContext = () => {
     const now = Date.now();
     for (const [requestIdHex, { expiry }] of this.state) {
       if (expiry < now) {

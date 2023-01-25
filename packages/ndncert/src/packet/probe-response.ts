@@ -41,7 +41,7 @@ EVD.afterObservers.push(({ entries, redirects }) => {
 export class ProbeResponse {
   public static async fromData(data: Data, profile: CaProfile): Promise<ProbeResponse> {
     await profile.publicKey.verify(data);
-    return decode_common.fromData(data, EVD, (f) => new ProbeResponse(data));
+    return decode_common.fromData(data, EVD, () => new ProbeResponse(data));
   }
 
   private constructor(public readonly data: Data) {}

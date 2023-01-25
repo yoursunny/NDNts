@@ -37,7 +37,7 @@ function checkKeys({ probeKeys }: CaProfile, { parameters }: ProbeRequest.Fields
   }
 
   if (keys.size > 0) {
-    throw new Error(`missing probe ${keys.size > 1 ? "keys" : "key"} ${Array.from(keys).join(", ")}`);
+    throw new Error(`missing probe ${keys.size > 1 ? "keys" : "key"} ${Array.from(keys).join(",")}`);
   }
 }
 

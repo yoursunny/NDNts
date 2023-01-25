@@ -27,7 +27,7 @@ export function makeSalt(): Uint8Array {
   return crypto.getRandomValues(new Uint8Array(SALT_LEN));
 }
 
-export function checkSalt(input: Uint8Array) {
+export function checkSalt(input: Uint8Array): void {
   if (input.byteLength !== SALT_LEN) {
     throw new Error("bad Salt");
   }
@@ -39,7 +39,7 @@ export function makeRequestId(): Uint8Array {
   return crypto.getRandomValues(new Uint8Array(REQUEST_ID_LEN));
 }
 
-export function checkRequestId(input: Uint8Array) {
+export function checkRequestId(input: Uint8Array): void {
   if (input.byteLength !== REQUEST_ID_LEN) {
     throw new Error("bad RequestId");
   }
@@ -89,6 +89,6 @@ export async function makeSessionKey(
   };
 }
 
-export function makeSignedInterestPolicy() {
+export function makeSignedInterestPolicy(): SignedInterestPolicy {
   return new SignedInterestPolicy(SignedInterestPolicy.Nonce(), SignedInterestPolicy.Time());
 }

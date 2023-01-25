@@ -3,6 +3,12 @@ import { type EvDecoder, Decoder } from "@ndn/tlv";
 
 import { C } from "./an";
 
+/**
+ * Verify packet name.
+ * First parameter is an Interest or Data packet.
+ * Second parameter is the CA profile.
+ * Rest parameters match name components after "CA" component, `undefined` matches anything.
+ */
 export function checkName(
     { name }: { name: Name },
     { prefix: caPrefix }: { prefix: Name },
@@ -12,19 +18,20 @@ export function checkName(
       !name.getPrefix(caPrefix.length).equals(caPrefix) ||
       !name.get(caPrefix.length)!.equals(C.CA) ||
       !comps.every((comp, i) => {
-        if (comp === undefined) {
-          return true;
-        }
-        const c = name.get(caPrefix.length + 1 + i);
-        if (comp instanceof Component) {
-          return c!.equals(comp);
-        }
-        return c!.is(comp);
+        const c = name.get(caPrefix.length + 1 + i)!;
+        return comp === undefined || (comp instanceof Component ? c.equals(comp) : c.is(comp));
       })) {
     throw new Error("bad Name");
   }
 }
 
+/**
+ * Decode from Interest AppParameters.
+ * @param interest source Interest.
+ * @param evd fields decoder.
+ * @param fn function to create result packet; fields will be assigned onto it.
+ * @returns result packet.
+ */
 export async function fromInterest<T extends Readonly<Fields>, Fields extends {}>(
     interest: Interest,
     evd: EvDecoder<Fields>,
@@ -35,6 +42,13 @@ export async function fromInterest<T extends Readonly<Fields>, Fields extends {}
   return Object.assign(await fn(fields), fields);
 }
 
+/**
+ * Decode from Data Content.
+ * @param data source Data.
+ * @param evd fields decoder.
+ * @param fn function to create result packet; fields will be assigned onto it.
+ * @returns result packet.
+ */
 export async function fromData<T extends Readonly<Fields>, Fields extends {}>(
     data: Data,
     evd: EvDecoder<Fields>,

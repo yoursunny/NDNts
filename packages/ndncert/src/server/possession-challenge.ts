@@ -26,6 +26,7 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
    * @param verifier a verifier to accept or reject an existing certificate presented by client.
    *                 This may be a public key of the expected issuer or a trust schema validator.
    * @param assignmentPolicy name assignment policy callback. Default permits all assignments.
+   * @param algoList list of recognized algorithms in client certificates.
    */
   constructor(
       private readonly verifier: Verifier,

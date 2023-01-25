@@ -2,12 +2,12 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
 import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, generateSigningKey, ValidityPeriod } from "@ndn/keychain";
-import { Component, FwHint, Name } from "@ndn/packet";
+import { type Signer, Component, FwHint, Name } from "@ndn/packet";
 import { type DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
-import { delay, toHex, toUtf8 } from "@ndn/util";
+import { Closers, delay, toHex, toUtf8 } from "@ndn/util";
 import { type SentMessageInfo, createTransport as createMT } from "nodemailer";
-import { afterEach, beforeAll, beforeEach, expect, test, vi } from "vitest";
+import { beforeAll, beforeEach, expect, test, vi } from "vitest";
 
 import { type ClientChallenge, type ClientChallengeContext, type ParameterKV, type ServerChallenge, type ServerOptions, CaProfile, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, exportClientConf, importClientConf, requestCertificate, requestProbe, retrieveCaProfile, Server, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "..";
 
@@ -249,57 +249,81 @@ const TABLE: Row[] = [
 let caPvt: NamedSigner.PrivateKey;
 let caPub: NamedVerifier.PublicKey;
 let caCert: Certificate;
-let profile: CaProfile;
+let caSigner: Signer;
+let caProfile: CaProfile;
+let subPvt: NamedSigner.PrivateKey;
+let subPub: NamedVerifier.PublicKey;
+let subCert: Certificate;
+let subSigner: Signer;
+let subProfile: CaProfile;
 let reqPvt: NamedSigner.PrivateKey;
 let reqPub: NamedVerifier.PublicKey;
 beforeAll(async () => {
   [caPvt, caPub] = await generateSigningKey("/authority");
   caCert = await Certificate.selfSign({ privateKey: caPvt, publicKey: caPub });
-  profile = await CaProfile.build({
+  caSigner = caPvt.withKeyLocator(caCert.name);
+  caProfile = await CaProfile.build({
     prefix: new Name("/authority"),
     info: "authority\nCA",
     probeKeys: ["uid"],
     maxValidityPeriod: 86400000,
     cert: caCert,
-    signer: caPvt,
+    signer: caSigner,
     version: 7,
   });
+
+  [subPvt, subPub] = await generateSigningKey("/sub");
+  subCert = await Certificate.issue({
+    validity: ValidityPeriod.daysFromNow(2),
+    issuerId: Component.from("hierarchy"),
+    issuerPrivateKey: caPvt,
+    publicKey: subPub,
+  });
+  subSigner = subPvt.withKeyLocator(subCert.name);
+  subProfile = await CaProfile.build({
+    prefix: new Name("/sub"),
+    info: "sub_CA",
+    probeKeys: [],
+    maxValidityPeriod: 2592000000,
+    cert: subCert,
+    signer: subSigner,
+  });
+
   [reqPvt, reqPub] = await generateSigningKey("/requester");
 });
 
+const closers = new Closers();
 let repo: DataStore;
 let repoFwHint: FwHint;
-let repoProducer: RepoProducer;
-let server: Server;
 beforeEach(async () => {
   repo = await makeDataStore();
   const fwName = new Name("/fh");
   repoFwHint = new FwHint(fwName);
-  repoProducer = RepoProducer.create(repo, { reg: PrefixRegStatic(fwName) });
-});
-afterEach(async () => {
-  server?.close();
-  repoProducer.close();
-  await repo.close();
-  Endpoint.deleteDefaultForwarder();
+  const repoProducer = RepoProducer.create(repo, { reg: PrefixRegStatic(fwName) });
+  closers.push(repo, repoProducer);
+  return () => {
+    closers.close();
+    Endpoint.deleteDefaultForwarder();
+  };
 });
 
 function startServer(opts: Partial<ServerOptions> = {}): Server {
-  server = Server.create({
-    profile,
+  const server = Server.create({
+    profile: caProfile,
     repo,
     repoFwHint,
-    signer: caPvt.withKeyLocator(caCert.name),
+    signer: caSigner,
     challenges: [new ServerNopChallenge()],
     ...opts,
   });
+  closers.push(server);
   return server;
 }
 
-function checkCaProfile(retrieved: CaProfile) {
-  expect(retrieved.data).toHaveName(profile.data.name);
-  expect(retrieved.certDigest).toEqual(profile.certDigest);
-  expect(retrieved.toString()).toContain("\n  authority\n  CA\n");
+function checkCaProfile(retrieved: CaProfile, expected: CaProfile, stringContains = "\n  authority\n  CA\n") {
+  expect(retrieved.data).toHaveName(expected.data.name);
+  expect(retrieved.certDigest).toEqual(expected.certDigest);
+  expect(retrieved.toString()).toContain(stringContains);
 }
 
 test("INFO command", async () => {
@@ -309,11 +333,11 @@ test("INFO command", async () => {
     caPrefix: new Name("/authority"),
     caCertFullName: await caCert.data.computeFullName(),
   });
-  checkCaProfile(retrieved);
+  checkCaProfile(retrieved, caProfile);
 
-  const conf = exportClientConf(profile);
+  const conf = exportClientConf(caProfile);
   const imported = await importClientConf(conf);
-  checkCaProfile(imported);
+  checkCaProfile(imported, caProfile);
 
   delete (conf["ca-list"][0] as any).certificate;
   await expect(importClientConf(conf)).rejects.toThrow();
@@ -337,31 +361,67 @@ test("probe no result", async () => {
   startServer({ async probe() { return {}; } });
 
   await expect(requestProbe({
-    profile,
+    profile: caProfile,
     parameters: { uid: toUtf8("my-uid") },
   })).rejects.toThrow();
 });
 
-test("probe simple", async () => {
+test("probe mismatch", async () => {
+  startServer({
+    async probe() { expect.fail("unexpected server probe"); },
+  });
+
+  await expect(requestProbe({
+    profile: caProfile,
+    parameters: { user: new Uint8Array(2) },
+  })).rejects.toThrow();
+});
+
+test("probe entries and redirects", async () => {
+  const subCertFullName = await subCert.data.computeFullName();
   startServer({
     async probe(parameters: ParameterKV) {
       expect(parameters.uid).toEqualUint8Array(toUtf8("my-uid"));
       return {
         entries: [
-          { prefix: new Name("/client/prefix"), maxSuffixLength: 2 },
+          { prefix: new Name("/client/prefix2"), maxSuffixLength: 2 },
+          { prefix: new Name("/client/prefix0") },
+        ],
+        redirects: [
+          { caCertFullName: subCertFullName },
         ],
       };
     },
   });
 
   const { entries, redirects } = await requestProbe({
-    profile,
+    profile: caProfile,
     parameters: { uid: toUtf8("my-uid") },
   });
-  expect(entries).toHaveLength(1);
-  expect(entries[0]!.prefix).toEqualName("/client/prefix");
+  expect(entries).toHaveLength(2);
+  expect(entries[0]!.prefix).toEqualName("/client/prefix2");
   expect(entries[0]!.maxSuffixLength).toBe(2);
-  expect(redirects).toHaveLength(0);
+  expect(entries[1]!.prefix).toEqualName("/client/prefix0");
+  expect(entries[1]!.maxSuffixLength).toBeUndefined();
+  expect(redirects).toHaveLength(1);
+  expect(redirects[0]!.caCertFullName).toEqualName(subCertFullName);
+
+  await expect(retrieveCaProfile({
+    endpoint: new Endpoint({
+      retx: 0,
+      modifyInterest: { lifetime: 100 },
+    }),
+    caCertFullName: redirects[0]!.caCertFullName,
+  })).rejects.toThrow();
+  startServer({
+    profile: subProfile,
+    signer: subSigner,
+  });
+
+  const retrieved = await retrieveCaProfile({
+    caCertFullName: redirects[0]!.caCertFullName,
+  });
+  checkCaProfile(retrieved, subProfile, "sub_CA");
 });
 
 test.each(TABLE)("challenge %j", async ({
@@ -372,7 +432,7 @@ test.each(TABLE)("challenge %j", async ({
   startServer({ challenges: serverChallenges });
 
   const reqPromise = requestCertificate({
-    profile,
+    profile: caProfile,
     privateKey: reqPvt,
     publicKey: reqPub,
     challenges: reqChallenges,
