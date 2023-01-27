@@ -1,8 +1,8 @@
 import { EventEmitter } from "node:events";
 
 import { type Producer, type ProducerHandler, Endpoint } from "@ndn/endpoint";
-import type { Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
-import { toHex } from "@ndn/util";
+import type { Component, Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
+import { KeyMap, toHex } from "@ndn/util";
 import pDefer, { type DeferredPromise } from "p-defer";
 import type TypedEmitter from "typed-emitter";
 
@@ -79,7 +79,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
   private readonly pFreshness: number;
   private readonly pBuffer: PSyncStateProducerBuffer;
   private readonly pProducer: Producer;
-  private readonly pPendings = new Map<string, PendingInterest>(); // toHex(ibltComp.value) => PI
+  private readonly pPendings = new KeyMap<Component, PendingInterest, string>((c) => toHex(c.value));
 
   private readonly cFetcher: PSyncStateFetcher;
   private readonly cInterval: IntervalFunc;
@@ -106,7 +106,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
     }
     this.closed = true;
 
-    for (const pending of this.pPendings.values()) {
+    for (const [, pending] of this.pPendings) {
       clearTimeout(pending.expire);
     }
     this.pBuffer.close();
@@ -132,8 +132,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
     }
 
     const ibltComp = interest.name.at(this.syncPrefix.length);
-    const ibltCompHex = toHex(ibltComp.value);
-    if (this.pPendings.has(ibltCompHex)) {
+    if (this.pPendings.has(ibltComp)) {
       // same as a pending Interest; if it could be answered, it would have been answered
       return undefined;
     }
@@ -161,14 +160,14 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
       interest,
       recvIblt,
       expire: setTimeout(() => {
-        if (this.pPendings.delete(ibltCompHex)) {
+        if (this.pPendings.delete(ibltComp)) {
           this.debug("p-expire", recvIblt);
           pending.defer.resolve(undefined);
         }
       }, interest.lifetime),
       defer: pDefer<Data | undefined>(),
     };
-    this.pPendings.set(ibltCompHex, pending);
+    this.pPendings.set(ibltComp, pending);
     return pending.defer.promise;
   };
 
@@ -248,9 +247,8 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
     }
     this.debug("c-processed");
 
-    const ibltCompHex = toHex(ibltComp.value);
-    const pending = this.pPendings.get(ibltCompHex);
-    if (pending && this.pPendings.delete(ibltCompHex)) {
+    const pending = this.pPendings.get(ibltComp);
+    if (pending && this.pPendings.delete(ibltComp)) {
       pending.defer.resolve(undefined);
     }
     if (hasUpdates) {

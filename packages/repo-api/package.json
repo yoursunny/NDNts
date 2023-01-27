@@ -37,7 +37,7 @@
     "p-defer": "^4.0.0",
     "streaming-iterables": "^7.1.0",
     "throat": "^6.0.2",
-    "tslib": "^2.4.1"
+    "tslib": "^2.5.0"
   },
   "devDependencies": {
     "@ndn/node-transport": "workspace:*",

@@ -2,8 +2,8 @@ import { EventEmitter } from "node:events";
 
 import { type Producer, Endpoint } from "@ndn/endpoint";
 import { Timestamp } from "@ndn/naming-convention2";
-import { type Name, type Signer, type Verifier, Data, digestSigning, Interest, lpm } from "@ndn/packet";
-import { toHex } from "@ndn/util";
+import { type Component, type Name, type Signer, type Verifier, Data, digestSigning, Interest, lpm } from "@ndn/packet";
+import { KeyMap, toHex } from "@ndn/util";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import filter from "obliterator/filter.js";
 import take from "obliterator/take.js";
@@ -153,7 +153,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
   private readonly pProducer: Producer;
   private readonly pFilter: SyncpsPubsub.FilterPubsCallback;
   private readonly pPubSize: number;
-  private readonly pPendings = new Map<string, PendingInterest>(); // toHex(ibltComp.value) => PI
+  private readonly pPendings = new KeyMap<Component, PendingInterest, string>((c) => toHex(c.value));
 
   private readonly cVerifier?: Verifier;
   private readonly cLifetime: number;
@@ -245,8 +245,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
     }
 
     const ibltComp = interest.name.at(this.syncPrefix.length);
-    const ibltCompHex = toHex(ibltComp.value);
-    if (this.pPendings.has(ibltCompHex)) {
+    if (this.pPendings.has(ibltComp)) {
       // same as a pending Interest; if it could be answered, it would have been answered
       return undefined;
     }
@@ -264,13 +263,13 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
     const pending = {
       ...si,
       expire: setTimeout(() => {
-        if (this.pPendings.delete(ibltCompHex)) {
+        if (this.pPendings.delete(ibltComp)) {
           pending.defer.resolve(undefined);
         }
       }, interest.lifetime),
       defer: pDefer<Data | undefined>(),
     };
-    this.pPendings.set(ibltCompHex, pending);
+    this.pPendings.set(ibltComp, pending);
     return pending.defer.promise;
   };
 
@@ -305,12 +304,12 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
   }
 
   private processPendingInterests(): void {
-    for (const [ibltCompHex, pending] of this.pPendings) {
+    for (const [ibltComp, pending] of this.pPendings) {
       const data = this.processSyncInterest(pending);
       if (!data) {
         continue;
       }
-      if (this.pPendings.delete(ibltCompHex)) {
+      if (this.pPendings.delete(ibltComp)) {
         clearTimeout(pending.expire);
         pending.defer.resolve(data);
       }

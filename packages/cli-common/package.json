@@ -34,7 +34,7 @@
     "@ndn/util": "workspace:*",
     "@strattadb/environment": "^8.0.2",
     "dotenv": "^16.0.3",
-    "tslib": "^2.4.1",
+    "tslib": "^2.5.0",
     "wtfnode": "^0.9.1"
   }
 }

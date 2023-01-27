@@ -28,9 +28,9 @@
     "@types/webpack": "^5.28.0",
     "fork-ts-checker-webpack-plugin": "^7.3.0",
     "html-webpack-plugin": "^5.5.0",
-    "puppeteer": "^19.6.0",
+    "puppeteer": "^19.6.1",
     "ts-loader": "^9.4.2",
-    "tslib": "^2.4.1",
+    "tslib": "^2.5.0",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.11.1"
