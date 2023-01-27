@@ -7,7 +7,7 @@ import { BufferChunkSource, DataProducer } from "@ndn/segmented-object";
 import { Encoder } from "@ndn/tlv";
 import { collect, map } from "streaming-iterables";
 
-import { type SyncNode } from "../types";
+import type { SyncNode } from "../types";
 import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
 import type { SvSync } from "./sync";
 
