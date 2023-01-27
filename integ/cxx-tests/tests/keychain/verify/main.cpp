@@ -10,8 +10,11 @@ main()
 {
   std::string certFile, packetFile;
   std::cin >> certFile >> packetFile;
-  auto cert = ndn::io::load<ndn::security::v2::Certificate>(certFile, ndn::io::NO_ENCODING);
+  auto cert = ndn::io::load<ndn::security::Certificate>(certFile, ndn::io::NO_ENCODING);
   auto packet = ndn::io::load<ndn::Data>(packetFile, ndn::io::NO_ENCODING);
+  if (cert == nullptr || packet == nullptr) {
+    return 1;
+  }
 
   bool certOk = ndn::security::verifySignature(*cert, *cert);
   bool packetOk = ndn::security::verifySignature(*packet, *cert);

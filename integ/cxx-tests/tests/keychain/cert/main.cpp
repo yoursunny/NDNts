@@ -7,7 +7,10 @@
 int
 main()
 {
-  auto cert = ndn::io::load<ndn::security::v2::Certificate>(std::cin, ndn::io::NO_ENCODING);
+  auto cert = ndn::io::load<ndn::security::Certificate>(std::cin, ndn::io::NO_ENCODING);
+  if (cert == nullptr) {
+    return 1;
+  }
   std::cout << cert->getName() << std::endl;
   std::cout << cert->getIdentity() << std::endl;
   std::cout << cert->getKeyId() << std::endl;
