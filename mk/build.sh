@@ -67,4 +67,4 @@ case $ACT in
   force) TSCFLAG=-f;;
 esac
 tsc -b mk/tsconfig-solution.json $TSCFLAG --listEmittedFiles \
-  | node mk/build-post.js
+  | node mk/build-post.mjs

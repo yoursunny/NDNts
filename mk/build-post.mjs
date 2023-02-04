@@ -1,6 +1,7 @@
-const { pipeline } = require("node:stream");
-const { promises: fs } = require("graceful-fs");
-const split2 = require("split2");
+import fs from "node:fs/promises";
+import { pipeline } from "node:stream";
+
+import split2 from "split2";
 
 /**
  * Write to a file later, to avoid conflicts with tsc.
@@ -55,7 +56,6 @@ const CJS_IMPORTS = new Set([
   "encoding-down",
   "event-iterator",
   "fast-chunk-string",
-  "graceful-fs",
   "it-keepalive",
   "leveldown",
   "levelup",

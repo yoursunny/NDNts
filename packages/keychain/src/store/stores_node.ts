@@ -1,7 +1,7 @@
+import fs from "node:fs";
 import { dirname } from "node:path";
 
 import { console } from "@ndn/util";
-import fs from "graceful-fs";
 
 import type { CryptoAlgorithm } from "../key/mod";
 import { CertStore } from "./cert-store";

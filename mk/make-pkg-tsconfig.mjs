@@ -1,7 +1,8 @@
-const path = require("node:path");
-const fs = require("graceful-fs");
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const rootdir = path.resolve(__dirname, "..");
+const rootdir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const tsconfig = {
   extends: "../../mk/tsconfig-base.json",
@@ -13,7 +14,7 @@ const tsconfig = {
   references: [],
 };
 
-const pkg = JSON.parse(fs.readFileSync("package.json"));
+const pkg = JSON.parse(await fs.readFile("package.json"));
 for (const [dep, specifier] of Object.entries(pkg.dependencies)) {
   if (specifier.startsWith("workspace:")) {
     tsconfig.references.push({
@@ -23,4 +24,4 @@ for (const [dep, specifier] of Object.entries(pkg.dependencies)) {
   }
 }
 
-fs.writeFileSync("tsconfig.json", JSON.stringify(tsconfig, undefined, 2));
+await fs.writeFile("tsconfig.json", JSON.stringify(tsconfig, undefined, 2));

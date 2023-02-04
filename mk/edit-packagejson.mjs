@@ -1,11 +1,10 @@
+import fs from "node:fs/promises";
 import * as path from "node:path";
-
-import fs from "graceful-fs";
 
 const act = process.argv[2];
 const publishUri = process.env.NDNTS_PUBLISH_URI ?? "https://ndnts-nightly.ndn.today";
 
-const j = JSON.parse(fs.readFileSync("package.json"));
+const j = JSON.parse(await fs.readFile("package.json"));
 
 if (act.includes("V")) {
   j.version = process.argv[3];
@@ -36,4 +35,4 @@ if (act.includes("R")) {
   }
 }
 
-fs.writeFileSync("package.json", JSON.stringify(j, undefined, 2));
+await fs.writeFile("package.json", JSON.stringify(j, undefined, 2));

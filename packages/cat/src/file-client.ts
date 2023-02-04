@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import fsPromises from "node:fs/promises";
 import { posix as path } from "node:path";
 
 import { Keyword } from "@ndn/naming-convention2";
@@ -5,7 +7,6 @@ import { type ComponentLike, Component, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
 import { console, fromUtf8 } from "@ndn/util";
-import fs from "graceful-fs";
 import { pushable } from "it-pushable";
 import { consume, parallelMap, writeToStream } from "streaming-iterables";
 import type { Arguments, Argv, CommandModule } from "yargs";
@@ -143,7 +144,7 @@ class Downloader {
     }
     const ls = await fetching;
 
-    await fs.promises.mkdir(local, { recursive: true });
+    await fsPromises.mkdir(local, { recursive: true });
     let nFolders = 0; let
       nFiles = 0;
     for (const item of parseDirectoryListing(ls)) {
@@ -174,11 +175,11 @@ class Downloader {
     } finally {
       file?.close();
       if (!ok) {
-        await fs.promises.unlink(local);
+        await fsPromises.unlink(local);
       }
     }
 
-    await fs.promises.utimes(local, atime, mtime);
+    await fsPromises.utimes(local, atime, mtime);
     console.log(`FILE ${local} size=${size}`);
   }
 }

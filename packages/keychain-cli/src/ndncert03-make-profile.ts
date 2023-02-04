@@ -1,8 +1,9 @@
+import fs from "node:fs/promises";
+
 import { CertNaming } from "@ndn/keychain";
 import { CaProfile } from "@ndn/ndncert";
 import { Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
-import { promises as fs } from "graceful-fs";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
 import { keyChain } from "./util";

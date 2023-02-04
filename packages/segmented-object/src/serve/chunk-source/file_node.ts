@@ -1,4 +1,5 @@
-import { promises as fs } from "graceful-fs";
+import fs from "node:fs/promises";
+
 import PLazy from "p-lazy";
 
 import { type Chunk, type ChunkOptions, type ChunkSource, getMaxChunkSize, KnownSizeChunkSource } from "./common";

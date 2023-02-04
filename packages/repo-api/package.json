@@ -31,7 +31,6 @@
     "@ndn/packet": "workspace:*",
     "@ndn/rdr": "workspace:*",
     "duplexify": "^4.1.2",
-    "graceful-fs": "^4.2.10",
     "is-stream": "^3.0.0",
     "it-pushable": "^3.1.2",
     "p-defer": "^4.0.0",
@@ -44,7 +43,6 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "@types/duplexify": "^3.6.1",
-    "@types/graceful-fs": "^4.1.6",
     "@types/tmp": "^0.2.3",
     "stream-mock": "^2.0.5",
     "tmp": "^0.2.1"

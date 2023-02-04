@@ -32,7 +32,6 @@
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
     "event-iterator": "^2.0.0",
-    "graceful-fs": "^4.2.10",
     "hirestime": "^7.0.3",
     "mnemonist": "^0.39.5",
     "p-defer": "^4.0.0",
@@ -44,7 +43,6 @@
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
     "@ndn/repo-api": "workspace:*",
-    "@types/graceful-fs": "^4.1.6",
     "stream-mock": "^2.0.5"
   }
 }

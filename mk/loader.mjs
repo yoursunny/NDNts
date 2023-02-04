@@ -1,8 +1,8 @@
+import fs from "node:fs/promises";
 import { promisify } from "node:util";
 
 import * as K from "@k-foss/ts-esnode";
 import codedown from "codedown";
-import fs from "graceful-fs";
 import readlink from "readlink";
 
 const readlinkPromise = promisify(readlink);
@@ -87,7 +87,7 @@ export async function load(url, context, nextLoad) {
   if (isLiterate) {
     pathname = pathname.replace(/\.md\.ts$/, ".md");
   }
-  let content = await fs.promises.readFile(pathname, "utf8");
+  let content = await fs.readFile(pathname, "utf8");
   if (isLiterate) {
     content = codedown(content, "ts");
   }

@@ -31,7 +31,6 @@
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "graceful-fs": "^4.2.10",
     "it-pushable": "^3.1.2",
     "stdout-stream": "^2.0.0",
     "streaming-iterables": "^7.1.0",
@@ -39,7 +38,6 @@
     "yargs": "^17.6.2"
   },
   "devDependencies": {
-    "@types/graceful-fs": "^4.1.6",
     "@types/stdout-stream": "^1.4.0",
     "@types/yargs": "17.0.19"
   },

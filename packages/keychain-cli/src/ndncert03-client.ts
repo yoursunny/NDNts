@@ -1,3 +1,5 @@
+import fs from "node:fs/promises";
+
 import { openUplinks } from "@ndn/cli-common";
 import { type KeyChain, type NamedSigner, type NamedVerifier, CertNaming, generateSigningKey } from "@ndn/keychain";
 import { AltUri } from "@ndn/naming-convention2";
@@ -5,7 +7,6 @@ import { type CaProfile, type ClientChallenge, type ClientChallengeContext, type
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
 import { console, toHex } from "@ndn/util";
-import { promises as fs } from "graceful-fs";
 import prompts from "prompts";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";

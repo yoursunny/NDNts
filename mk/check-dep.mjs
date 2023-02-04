@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
+import fs from "node:fs/promises";
 import path from "node:path";
 
 import fsWalk from "@nodelib/fs.walk";
 import Builtins from "builtins";
-import fs from "graceful-fs";
 import yaml from "js-yaml";
 
 const builtins = new Set(Builtins());
 
-function* listImports(filename) {
-  const lines = fs.readFileSync(filename, "utf8").split("\n");
+async function* listImports(filename) {
+  const lines = (await fs.readFile(filename, "utf8")).split("\n");
   for (const line of lines) {
     const m = /^import(?: .* from)? "([^.@][^":/]*|@[^":/]*\/[^":/]*)[^":]*";/.exec(line);
     if (!m) {
@@ -24,7 +24,7 @@ const ignoredUnused = new Set(["@types/web-bluetooth", "graphql", "hard-rejectio
 const ignoredTypes = new Set(["yargs"]);
 
 let nWarnings = 0;
-const doc = yaml.load(fs.readFileSync("pnpm-lock.yaml"));
+const doc = yaml.load(await fs.readFile("pnpm-lock.yaml"));
 for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entries(doc.importers)) {
   if (!folder.startsWith("packages/")) {
     continue;
@@ -36,7 +36,7 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
     entryFilter: ({ dirent, name }) => dirent.isFile() && !name.endsWith(".d.ts"),
   });
   for (const { path: filename } of jsFiles) {
-    for (const dep of listImports(filename)) {
+    for await (const dep of listImports(filename)) {
       unused.delete(dep);
       if (!dependencies[dep] && !builtins.has(dep)) {
         process.stdout.write(`P+\t${filename}\t${dep}\n`);
@@ -49,7 +49,7 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
     entryFilter: ({ dirent, name }) => dirent.isFile() && name.endsWith(".d.ts"),
   });
   for (const { path: filename } of declarations) {
-    for (const imp of listImports(filename)) {
+    for await (const imp of listImports(filename)) {
       unused.delete(imp);
       const dep = `@types/${imp}`;
       unused.delete(dep);
@@ -65,7 +65,7 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
     entryFilter: ({ dirent, name }) => dirent.isFile() && name.endsWith(".ts"),
   });
   for (const { path: filename } of tsFiles) {
-    for (const imp of listImports(filename)) {
+    for await (const imp of listImports(filename)) {
       unusedD.delete(imp);
       unusedD.delete(`@types/${imp}`);
     }
@@ -81,4 +81,4 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
   }
 }
 
-process.exitCode = nWarnings > 0 ? 1 : 0;
+process.exitCode = Number(nWarnings > 0);

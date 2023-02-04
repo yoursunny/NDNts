@@ -1,6 +1,7 @@
+import fs from "node:fs/promises";
+
 import { exportClientConf } from "@ndn/ndncert";
 import { Encoder } from "@ndn/tlv";
-import { promises as fs } from "graceful-fs";
 import stdout from "stdout-stream";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
