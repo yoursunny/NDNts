@@ -1,5 +1,7 @@
 import "@ndn/util/test-fixture/expect";
 
+import { Blob } from "node:buffer";
+
 import { type ProducerHandler, Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
@@ -11,7 +13,7 @@ import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, consume } from "streaming-iterables";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, makeChunkSource, serve } from "..";
+import { BlobChunkSource, BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, makeChunkSource, serve, StreamChunkSource } from "..";
 import { makeObjectBody } from "../test-fixture/object-body";
 
 const closers = new Closers();
@@ -23,7 +25,9 @@ afterEach(() => {
 });
 
 test("buffer to buffer", async () => {
-  const server = serve("/R", new BufferChunkSource(objectBody));
+  const chunkSource = makeChunkSource(objectBody);
+  expect(chunkSource).toBeInstanceOf(BufferChunkSource);
+  const server = serve("/R", chunkSource);
   closers.push(server);
 
   const fetched = fetch("/R");
@@ -32,8 +36,10 @@ test("buffer to buffer", async () => {
   expect(fetched.count).toBeGreaterThan(0);
 });
 
-test("buffer to chunks", async () => {
-  const server = serve("/R", makeChunkSource(objectBody));
+test("blob to chunks", async () => {
+  const chunkSource = makeChunkSource(new Blob([objectBody]));
+  expect(chunkSource).toBeInstanceOf(BlobChunkSource);
+  const server = serve("/R", chunkSource);
   closers.push(server);
 
   const fetched = fetch("/R");
@@ -44,7 +50,9 @@ test("buffer to chunks", async () => {
 
 test("stream to stream", async () => {
   const src = new BufferReadableMock([objectBody]);
-  const server = serve("/R", makeChunkSource(src));
+  const chunkSource = makeChunkSource(src);
+  expect(chunkSource).toBeInstanceOf(StreamChunkSource);
+  const server = serve("/R", chunkSource);
   closers.push(server);
 
   const dst = new BufferWritableMock();
@@ -71,7 +79,7 @@ describe("file source", () => {
 });
 
 test("iterable to unordered", async () => {
-  const server = serve("/R", makeChunkSource((async function*() {
+  const chunkSource = makeChunkSource((async function*() {
     const yieldSizes = [5000, 7000, 3000];
     let i = -1;
     for (let offset = 0; offset < objectBody.length;) {
@@ -81,7 +89,9 @@ test("iterable to unordered", async () => {
     }
   })(), {
     chunkSize: 6000,
-  }));
+  });
+  expect(chunkSource).toBeInstanceOf(IterableChunkSource);
+  const server = serve("/R", chunkSource);
   closers.push(server);
 
   let totalLength = 0;
@@ -99,7 +109,9 @@ test("iterable to unordered", async () => {
 });
 
 test("ranged", async () => {
-  const server = serve(new Name("/R"), new BufferChunkSource(objectBody, { chunkSize: 1024 })); // 1024 segments
+  const chunkSource = makeChunkSource(objectBody, { chunkSize: 1024 }); // 1024 segments
+  expect(chunkSource).toBeInstanceOf(BufferChunkSource);
+  const server = serve(new Name("/R"), chunkSource);
   closers.push(server);
 
   await Promise.all([
@@ -169,7 +181,7 @@ test("abort", async () => {
   closers.push(server);
 
   const abort = new AbortController();
-  const signal = abort.signal;
+  const { signal } = abort;
   await Promise.all([
     (async () => {
       await delay(150);
