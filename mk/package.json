@@ -4,9 +4,11 @@
   "devDependencies": {
     "@k-foss/ts-esnode": "^2.0.2",
     "@nodelib/fs.walk": "^1.2.8",
-    "builtins": "^5.0.1",
     "js-yaml": "^4.1.0",
     "readlink": "^3.0.0",
     "split2": "^4.1.0"
+  },
+  "dependencies": {
+    "compare-versions": "6.0.0-rc.1"
   }
 }

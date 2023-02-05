@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
 import fs from "node:fs/promises";
+import { isBuiltin } from "node:module";
 import path from "node:path";
 
 import fsWalk from "@nodelib/fs.walk";
-import Builtins from "builtins";
+import { satisfies } from "compare-versions";
 import yaml from "js-yaml";
-
-const builtins = new Set(Builtins());
 
 async function* listImports(filename) {
   const lines = (await fs.readFile(filename, "utf8")).split("\n");
@@ -23,8 +22,12 @@ async function* listImports(filename) {
 const ignoredUnused = new Set(["@types/web-bluetooth", "graphql", "hard-rejection", "tslib"]);
 const ignoredTypes = new Set(["yargs"]);
 
-let nWarnings = 0;
 const doc = yaml.load(await fs.readFile("pnpm-lock.yaml"));
+if (!satisfies(doc.lockfileVersion, "^6.0.0")) {
+  throw new Error("lockfileVersion not supported");
+}
+
+let nWarnings = 0;
 for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entries(doc.importers)) {
   if (!folder.startsWith("packages/")) {
     continue;
@@ -38,7 +41,7 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
   for (const { path: filename } of jsFiles) {
     for await (const dep of listImports(filename)) {
       unused.delete(dep);
-      if (!dependencies[dep] && !builtins.has(dep)) {
+      if (!dependencies[dep] && !isBuiltin(dep)) {
         process.stdout.write(`P+\t${filename}\t${dep}\n`);
         ++nWarnings;
       }
