@@ -13,7 +13,7 @@ import { beforeEach, expect, test } from "vitest";
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 import * as Serialize from "../../test-fixture/serialize";
 
-beforeEach(() => navigateToPage(__dirname));
+beforeEach(() => navigateToPage(import.meta.url));
 
 test("KeyStore", async () => {
   const enabled: TestKeyStore.Enable = { Ed25519: false };

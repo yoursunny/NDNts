@@ -22,7 +22,7 @@ beforeAll(async () => {
 });
 
 test("simple", async () => {
-  const p = execute(__dirname, [`${nfd.port}`, `${syncPrefix}`, `${userA}`]);
+  const p = execute(import.meta.url, [`${nfd.port}`, `${syncPrefix}`, `${userA}`]);
   await nfd.waitNFaces(1);
 
   const sync = new PSyncFull({

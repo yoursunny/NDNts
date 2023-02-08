@@ -6,12 +6,10 @@
 #include <iostream>
 
 int
-main()
+main(int argc, char* argv[])
 {
-  std::string certFile, packetFile;
-  std::cin >> certFile >> packetFile;
-  auto cert = ndn::io::load<ndn::security::Certificate>(certFile, ndn::io::NO_ENCODING);
-  auto packet = ndn::io::load<ndn::Data>(packetFile, ndn::io::NO_ENCODING);
+  auto cert = ndn::io::load<ndn::security::Certificate>(argv[1], ndn::io::NO_ENCODING);
+  auto packet = ndn::io::load<ndn::Data>(argv[2], ndn::io::NO_ENCODING);
   if (cert == nullptr || packet == nullptr) {
     return 1;
   }

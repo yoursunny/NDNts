@@ -2,8 +2,7 @@ name: build
 on:
   push:
   pull_request:
-permissions:
-  contents: read
+permissions: {}
 jobs:
   build:
     strategy:
@@ -105,7 +104,7 @@ jobs:
           key: publish-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true

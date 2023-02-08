@@ -17,7 +17,7 @@ beforeAll(async () => {
   return deleteTmpFiles;
 });
 
-beforeEach(() => navigateToPage(__dirname));
+beforeEach(() => navigateToPage(import.meta.url));
 
 test("blob to buffer", async () => {
   const [fileChooser] = await Promise.all([

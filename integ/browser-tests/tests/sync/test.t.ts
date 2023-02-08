@@ -18,7 +18,7 @@ let pub: PSyncPartialPublisher | undefined;
 beforeEach(async () => {
   server = new WsServer();
   await server.open();
-  await navigateToPage(__dirname);
+  await navigateToPage(import.meta.url);
 
   return async () => {
     face?.close();

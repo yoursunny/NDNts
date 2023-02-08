@@ -27,8 +27,7 @@ test.each(TABLE)("%j", async ({ algo, genParam }) => {
 
   const certFile = writeTmpFile(Encoder.encode(cert.data));
   const packetFile = writeTmpFile(Encoder.encode(packet));
-  const input = [certFile, packetFile].join("\n");
-  const { stdout } = await execute(__dirname, [], { input });
+  const { stdout } = await execute(import.meta.url, [certFile, packetFile]);
 
   const [certOk, packetOk] = stdout.split("\n");
   expect(certOk).toBe("1");

@@ -14,9 +14,9 @@
   },
   "packageManager": "pnpm@7.26.3",
   "devDependencies": {
-    "@types/node": "^18.11.19",
+    "@types/node": "^18.13.0",
     "@types/wtfnode": "^0.7.0",
-    "@typescript/lib-dom": "npm:@types/web@0.0.90",
+    "@typescript/lib-dom": "npm:@types/web@0.0.91",
     "@vitest/coverage-c8": "^0.28.4",
     "@yoursunny/xo-config": "0.53.0",
     "c8": "^7.12.0",
@@ -29,6 +29,6 @@
     "wtfnode": "^0.9.1"
   },
   "engines": {
-    "node": "^16.17.1 || ^18.10.0 || ^19.0.0"
+    "node": "^16.19.0 || ^18.13.0 || ^19.0.0"
   }
 }
