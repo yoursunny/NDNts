@@ -12,20 +12,20 @@
     "test": "vitest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@7.26.3",
+  "packageManager": "pnpm@7.27.0",
   "devDependencies": {
     "@types/node": "^18.13.0",
     "@types/wtfnode": "^0.7.0",
     "@typescript/lib-dom": "npm:@types/web@0.0.91",
-    "@vitest/coverage-c8": "^0.28.4",
+    "@vitest/coverage-c8": "^0.28.5",
     "@yoursunny/xo-config": "0.53.0",
-    "c8": "^7.12.0",
+    "c8": "^7.13.0",
     "codedown": "^2.2.0",
     "tslib": "^2.5.0",
-    "typedoc": "^0.23.24",
+    "typedoc": "^0.23.25",
     "typedoc-plugin-resolve-crossmodule-references": "^0.3.3",
     "typescript": "~4.9.5",
-    "vitest": "^0.28.4",
+    "vitest": "^0.28.5",
     "wtfnode": "^0.9.1"
   },
   "engines": {

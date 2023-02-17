@@ -30,7 +30,7 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "@yoursunny/asn1": "0.0.20200718",
-    "execa": "^6.1.0",
+    "execa": "^7.0.0",
     "throat": "^6.0.2",
     "tslib": "^2.5.0"
   },
