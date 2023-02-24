@@ -10,7 +10,7 @@ import { fchQuery, connectToNetwork } from "@ndn/autoconfig";
 // other imports for examples
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
-import { strict as assert } from "node:assert";
+import assert from "node:assert/strict";
 
 if (process.env.CI) { process.exit(0); }
 ```
@@ -22,29 +22,30 @@ if (process.env.CI) { process.exit(0); }
 ```ts
 // The simplest query:
 let res = await fchQuery();
-assert.equal(res.routers.length, 1);
 showFchResponse("closest router", res);
+assert.equal(res.routers.length, 1);
 
 // Ask for multiple routers:
 res = await fchQuery({ count: 4 });
-assert(res.routers.length > 1);
 showFchResponse("multiple routers", res);
+assert(res.routers.length > 1);
 
 // Ask for multiple transports:
 res = await fchQuery({ transports: { udp: 4, wss: 2 } });
-assert(res.routers.length > 1);
 showFchResponse("multiple transports", res);
+assert(res.routers.length > 1);
 
 // Limit to particular network:
 //   "ndn" = global NDN testbed
 //   "yoursunny" = yoursunny ndn6 network
 res = await fchQuery({ transport: "wss", count: 3, network: "yoursunny" });
-assert(res.routers.length > 1);
 showFchResponse("yoursunny ndn6 network", res);
+assert(res.routers.length > 1);
 
 // Ask for router at specific location:
 res = await fchQuery({ position: [121.40335, 31.00799] });
 showFchResponse("near @yoursunny's birthplace", res);
+assert.equal(res.routers.length, 1);
 
 function showFchResponse(title, res) {
   console.log(title, `updated ${res.updated}`);
@@ -77,7 +78,7 @@ console.log("fastest face is", `${fastestFace}`);
 try {
   const t0 = Date.now();
   const data = await new Endpoint({ fw }).consume(`/ndn/edu/ucla/ping/${Math.trunc(Math.random() * 1e8)}`);
-  console.log("Interest satisfied", `${Date.now() - t0}ms`);
+  console.log("Interest satisfied", `${data}`, `${Date.now() - t0}ms`);
 } catch (err: unknown) {
   console.warn(err);
 }

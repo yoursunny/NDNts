@@ -42,7 +42,7 @@ for (let i = 0; i < 5; ++i) {
 }
 
 // In case a socket error occurs, the transport will attempt to reconnect automatically,
-// although packets transmitted during that time would be lost. The logic of reconnecting
+// although packets transmitted during that time would be lost. The reconnecting logic
 // is implemented in L3Face class from @ndn/l3face package.
 
 // When the face is no longer needed, close it.

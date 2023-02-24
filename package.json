@@ -12,9 +12,9 @@
     "test": "vitest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@7.27.0",
+  "packageManager": "pnpm@7.27.1",
   "devDependencies": {
-    "@types/node": "^18.13.0",
+    "@types/node": "^18.14.1",
     "@types/wtfnode": "^0.7.0",
     "@typescript/lib-dom": "npm:@types/web@0.0.91",
     "@vitest/coverage-c8": "^0.28.5",

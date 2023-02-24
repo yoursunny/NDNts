@@ -61,7 +61,7 @@ try {
   console.warn("udp4", err);
 }
 
-// Select IPv6 with `type: "udp6"`. Default is IPv4 only.
+// Select IPv6 with `family: 6`. Default is IPv4 only, unless host is a literal IPv6 address.
 try {
   const udp6 = await UdpTransport.connect({ host: "ndnhub.ipv6.lip6.fr", family: 6 });
   await useInL3Face(udp6);
@@ -84,7 +84,7 @@ for (const transport of multicasts) {
 
 ## How to Use a Transport
 
-Transports are normally used to construct **L3Face** objects (from `@ndn/l3face` package), which are in turned add to the **Forwarder** (from `@ndn/fw` package).
+Transports are normally used to construct **L3Face** objects (from `@ndn/l3face` package), which are in turn added to the **Forwarder** (from `@ndn/fw` package).
 Each transport provides a `createFace` convenience function to construct a transport and add it to the forwarder.
 
 See `@ndn/ws-transport` package documentation for a complete example of `createFace` function.
@@ -95,7 +95,7 @@ See `@ndn/ws-transport` package documentation for a complete example of `createF
 // the face to a non-default Forwarder instance. This argument is required.
 // Subsequent parameters are same as the corresponding connect() function.
 // It returns a FwFace instance (from @ndn/fw package).
-const face = await UdpTransport.createFace({}, "ndnhub.ipv6.lip6.fr");
+const face = await UdpTransport.createFace({}, "hobo.cs.arizona.edu");
 face.close();
 // TcpTransport.createFace() and UnixTransport.createFace() behave similarly.
 

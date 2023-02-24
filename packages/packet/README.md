@@ -10,7 +10,7 @@ import { TT, Name, Component, ImplicitDigest, AltUri, Interest, Data, digestSign
 // other imports for examples
 import { Decoder, Encoder } from "@ndn/tlv";
 import { fromUtf8, toUtf8 } from "@ndn/util";
-import { strict as assert } from "node:assert";
+import assert from "node:assert/strict";
 ```
 
 ## Name Component

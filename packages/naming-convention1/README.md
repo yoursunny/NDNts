@@ -13,7 +13,7 @@ import { Version, Segment } from "@ndn/naming-convention1";
 
 // other imports for examples
 import { Name } from "@ndn/packet";
-import { strict as assert } from "node:assert";
+import assert from "node:assert/strict";
 
 // Append name component with marker.
 const name = new Name("/A")

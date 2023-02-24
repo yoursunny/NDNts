@@ -15,7 +15,7 @@ import { generateSigningKey } from "@ndn/keychain";
 import { UnixTransport } from "@ndn/node-transport";
 import { Data, Interest, Name } from "@ndn/packet";
 import { delay, fromUtf8, toUtf8 } from "@ndn/util";
-import { strict as assert } from "node:assert";
+import assert from "node:assert/strict";
 ```
 
 ## NFD Prefix Registration

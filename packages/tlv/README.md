@@ -10,7 +10,7 @@ import { Encoder, Decoder, EvDecoder, NNI } from "@ndn/tlv";
 
 // other imports for examples
 import { Name, TT as nameTT } from "@ndn/packet";
-import { strict as assert } from "node:assert";
+import assert from "node:assert/strict";
 ```
 
 ## Encoder

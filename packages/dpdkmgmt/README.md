@@ -18,7 +18,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Name, Interest, Data } from "@ndn/packet";
 import { delay, fromUtf8, toUtf8 } from "@ndn/util";
-import { strict as assert } from "node:assert";
+import assert from "node:assert/strict";
 
 const gqlServer = process.env.DEMO_DPDKMGMT_GQLSERVER;
 const localHost = process.env.DEMO_DPDKMGMT_LOCAL;

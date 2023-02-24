@@ -14,7 +14,7 @@ import { DataStore, RepoProducer, PrefixRegShorter } from "@ndn/repo";
 import { Name, Interest, Data } from "@ndn/packet";
 import { delay } from "@ndn/util";
 import memdown from "memdown";
-import { strict as assert } from "node:assert";
+import assert from "node:assert/strict";
 ```
 
 ## DataStore
