@@ -12,11 +12,11 @@
     "test": "vitest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@7.28.0",
+  "packageManager": "pnpm@7.29.0",
   "devDependencies": {
-    "@types/node": "^18.14.4",
+    "@types/node": "^18.14.6",
     "@types/wtfnode": "^0.7.0",
-    "@typescript/lib-dom": "npm:@types/web@0.0.93",
+    "@typescript/lib-dom": "npm:@types/web@0.0.95",
     "@vitest/coverage-c8": "^0.29.2",
     "@yoursunny/xo-config": "0.53.0",
     "c8": "^7.13.0",
@@ -33,7 +33,16 @@
   },
   "pnpm": {
     "peerDependencyRules": {
-      "ignoreMissing": ["eslint*", "typescript", "webpack"]
+      "ignoreMissing": [
+        "eslint*",
+        "typescript",
+        "webpack"
+      ]
+    },
+    "updateConfig": {
+      "ignoreDependencies": [
+        "@types/yargs"
+      ]
     }
   }
 }
