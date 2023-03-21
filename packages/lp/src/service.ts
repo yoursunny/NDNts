@@ -17,7 +17,7 @@ export class LpService {
     mtu = Infinity,
     reassemblerCapacity = 16,
   }: LpService.Options, private readonly transport: LpService.Transport) {
-    if (Number.isFinite(keepAlive) && keepAlive > 0) {
+    if (Number.isFinite(keepAlive) && keepAlive as number > 0) {
       this.keepAlive = Math.ceil(keepAlive as number);
     }
     this.mtu = mtu;

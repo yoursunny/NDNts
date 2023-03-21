@@ -2,7 +2,7 @@
   "name": "@ndn/mk",
   "private": true,
   "devDependencies": {
-    "@k-foss/ts-esnode": "^2.0.2",
+    "@k-foss/ts-esnode": "^2.0.3",
     "@nodelib/fs.walk": "^1.2.8",
     "js-yaml": "^4.1.0",
     "readlink": "^3.0.0",

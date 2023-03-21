@@ -28,11 +28,11 @@
     "@types/webpack": "^5.28.0",
     "fork-ts-checker-webpack-plugin": "^8.0.0",
     "html-webpack-plugin": "^5.5.0",
-    "puppeteer": "^19.7.2",
+    "puppeteer": "^19.7.5",
     "ts-loader": "^9.4.2",
     "tslib": "^2.5.0",
-    "webpack": "^5.75.0",
+    "webpack": "^5.76.2",
     "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^4.11.1"
+    "webpack-dev-server": "^4.13.1"
   }
 }

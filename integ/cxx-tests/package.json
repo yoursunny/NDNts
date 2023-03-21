@@ -15,6 +15,6 @@
     "tslib": "^2.5.0"
   },
   "devDependencies": {
-    "execa": "^7.0.0"
+    "execa": "^7.1.1"
   }
 }
