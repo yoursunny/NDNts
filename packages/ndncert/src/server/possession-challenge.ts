@@ -1,5 +1,5 @@
-import { type SigningAlgorithm, Certificate, SigningAlgorithmListSlim } from "@ndn/keychain";
-import { type Name, type Verifier, Data, SigInfo } from "@ndn/packet";
+import { Certificate, type SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
+import { Data, type Name, SigInfo, type Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
 import type { ChallengeRequest } from "../packet/mod";

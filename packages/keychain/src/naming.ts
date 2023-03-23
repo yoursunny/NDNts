@@ -1,5 +1,5 @@
 import { Timestamp, Version } from "@ndn/naming-convention2";
-import { type Name, Component, TT } from "@ndn/packet";
+import { Component, type Name, TT } from "@ndn/packet";
 import { assert } from "@ndn/util";
 
 /** 'KEY' component. */

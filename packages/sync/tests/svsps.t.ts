@@ -4,7 +4,7 @@ import { setMaxListeners } from "node:events";
 
 import { Endpoint } from "@ndn/endpoint";
 import { generateSigningKey } from "@ndn/keychain";
-import { type NameLike, Name } from "@ndn/packet";
+import { Name, type NameLike } from "@ndn/packet";
 import { DataStore } from "@ndn/repo";
 import { Closers, console, crypto, delay } from "@ndn/util";
 import memdown from "memdown";

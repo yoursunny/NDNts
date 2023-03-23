@@ -1,6 +1,6 @@
 import { ReadvertiseDestination } from "@ndn/fw";
 import type { Name } from "@ndn/packet";
-import { type GraphQLClient, type Variables, gql } from "graphql-request";
+import { gql, type GraphQLClient, type Variables } from "graphql-request";
 
 interface State {
   fibEntryID?: string;

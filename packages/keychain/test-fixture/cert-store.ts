@@ -1,7 +1,7 @@
 import { Component, Name } from "@ndn/packet";
 import { expect } from "vitest";
 
-import { type KeyChain, Certificate, ECDSA, generateSigningKey, ValidityPeriod } from "..";
+import { Certificate, ECDSA, generateSigningKey, type KeyChain, ValidityPeriod } from "..";
 
 export interface TestRecord {
   key: string;

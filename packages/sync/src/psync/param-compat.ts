@@ -1,6 +1,6 @@
 import { GenericNumber } from "@ndn/naming-convention2";
 import { Component, Name, TT } from "@ndn/packet";
-import { type EncodableTlv, Decoder, Encoder, EvDecoder } from "@ndn/tlv";
+import { Decoder, type EncodableTlv, Encoder, EvDecoder } from "@ndn/tlv";
 import murmurHash3 from "murmurhash3js-revisited";
 
 import type { IBLT } from "../iblt";

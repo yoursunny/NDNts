@@ -1,8 +1,8 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { type NameLike, Name } from "@ndn/packet";
+import { Name, type NameLike } from "@ndn/packet";
 import { delay } from "@ndn/util";
-import { type Mock, beforeEach, expect, test, vi } from "vitest";
+import { beforeEach, expect, type Mock, test, vi } from "vitest";
 
 import { Forwarder, ReadvertiseDestination } from "..";
 import { NoopFace } from "../test-fixture/noop-face";

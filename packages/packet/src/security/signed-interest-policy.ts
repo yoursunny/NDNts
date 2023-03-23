@@ -3,7 +3,7 @@ import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
 import { Interest } from "../interest";
 import { SigInfo } from "../sig-info";
-import { type Verifier, LLSign, LLVerify, Signer } from "./signing";
+import { LLSign, LLVerify, Signer, type Verifier } from "./signing";
 
 function evict<K>(capacity: number, container: Set<K> | Map<K, unknown>): void {
   assert(capacity >= 0);

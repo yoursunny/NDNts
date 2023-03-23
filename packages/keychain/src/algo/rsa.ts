@@ -2,7 +2,7 @@ import { type LLSign, type LLVerify, SigType, Verifier } from "@ndn/packet";
 import { crypto } from "@ndn/util";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
-import { type RsaModulusLength, RsaCommon } from "./rsa-common";
+import { RsaCommon, type RsaModulusLength } from "./rsa-common";
 
 /** Sha256WithRsa signing algorithm. */
 export const RSA: SigningAlgorithm<{}, true, RSA.GenParams> = new (class extends RsaCommon implements SigningAlgorithm<{}, true, RSA.GenParams> {

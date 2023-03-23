@@ -1,7 +1,7 @@
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { type ExecaChildProcess, type Options as ExecaOptions, execa, execaSync } from "execa";
+import { execa, type ExecaChildProcess, execaSync, type Options as ExecaOptions } from "execa";
 
 const pathOfMakefile = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 

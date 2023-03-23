@@ -3,9 +3,9 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { Name } from "@ndn/packet";
 import { delay } from "@ndn/util";
-import { type Mock, afterEach, expect, test, vi } from "vitest";
+import { afterEach, expect, type Mock, test, vi } from "vitest";
 
-import { type Subscription, type SyncUpdate, makePSyncCompatParam, PSyncPartialPublisher, PSyncPartialSubscriber } from "..";
+import { makePSyncCompatParam, PSyncPartialPublisher, PSyncPartialSubscriber, type Subscription, type SyncUpdate } from "..";
 
 afterEach(Endpoint.deleteDefaultForwarder);
 

@@ -2,7 +2,7 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import { toHex } from "@ndn/util";
 
 import { TT } from "../an";
-import { type ComponentLike, Component } from "./component";
+import { Component, type ComponentLike } from "./component";
 import type { NamingConvention } from "./convention";
 
 /** Name or Name URI. */

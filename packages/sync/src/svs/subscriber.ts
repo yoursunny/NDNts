@@ -3,7 +3,7 @@ import { EventEmitter } from "node:events";
 import type { ConsumerOptions } from "@ndn/endpoint";
 import { Endpoint } from "@ndn/endpoint";
 import { GenericNumber, Segment } from "@ndn/naming-convention2";
-import { type Verifier, Data, Interest, lpm, Name, noopSigning, TT as l3TT } from "@ndn/packet";
+import { Data, Interest, lpm, Name, noopSigning, TT as l3TT, type Verifier } from "@ndn/packet";
 import { fetch } from "@ndn/segmented-object";
 import { Decoder, EvDecoder } from "@ndn/tlv";
 import { assert, concatBuffers } from "@ndn/util";

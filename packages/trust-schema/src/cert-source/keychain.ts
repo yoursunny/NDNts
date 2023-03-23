@@ -1,4 +1,4 @@
-import { type Certificate, type KeyChain, CertNaming } from "@ndn/keychain";
+import { type Certificate, CertNaming, type KeyChain } from "@ndn/keychain";
 import type { Name } from "@ndn/packet";
 
 import type { CertSource } from "./types";

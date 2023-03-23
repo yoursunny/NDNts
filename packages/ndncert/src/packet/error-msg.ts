@@ -1,4 +1,4 @@
-import { type Interest, type Signer, Data } from "@ndn/packet";
+import { Data, type Interest, type Signer } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
 

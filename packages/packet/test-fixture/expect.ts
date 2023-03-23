@@ -2,7 +2,7 @@ import "@ndn/tlv/test-fixture/expect";
 
 import { expect } from "vitest";
 
-import { type ComponentLike, type NameLike, Component, Name } from "..";
+import { Component, type ComponentLike, Name, type NameLike } from "..";
 
 expect.extend({
   toEqualComponent(received: Component | undefined, comp: ComponentLike) {

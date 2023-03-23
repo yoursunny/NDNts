@@ -5,7 +5,7 @@ import type { DataStore } from "@ndn/repo";
 import { BulkInsertTarget, RepoProducer, respondRdr } from "@ndn/repo";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { type StoreArgs, declareStoreArgs, openStore } from "./util";
+import { declareStoreArgs, openStore, type StoreArgs } from "./util";
 
 interface Args extends StoreArgs {
   rdr: boolean;

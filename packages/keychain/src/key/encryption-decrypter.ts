@@ -2,7 +2,7 @@ import type { LLDecrypt, Name } from "@ndn/packet";
 import { assert } from "@ndn/util";
 
 import * as CertNaming from "../naming";
-import { type CryptoAlgorithm, type EncryptionAlgorithm, type NamedDecrypter, KeyKind } from "./types";
+import { type CryptoAlgorithm, type EncryptionAlgorithm, KeyKind, type NamedDecrypter } from "./types";
 
 class PlainCryptoDecrypter<I> {
   constructor(

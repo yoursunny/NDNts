@@ -1,7 +1,7 @@
 import { Decoder, Encoder } from "@ndn/tlv";
 import { expect } from "vitest";
 
-import { type SigInfo, type Signer, type Verifier, Data, Interest } from "..";
+import { Data, Interest, type SigInfo, type Signer, type Verifier } from "..";
 
 type Packet = Interest | Data;
 type PacketCtor = typeof Interest | typeof Data;

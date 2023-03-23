@@ -1,10 +1,10 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { type Verifier, Data, Interest } from "@ndn/packet";
+import { Data, Interest, type Verifier } from "@ndn/packet";
 import { timeoutAbortSignal } from "@ndn/util";
-import { type Mock, afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, type Mock, test, vi } from "vitest";
 
-import { type ProducerHandler, type RetxPolicy, Endpoint } from "..";
+import { Endpoint, type ProducerHandler, type RetxPolicy } from "..";
 
 let ep: Endpoint;
 beforeEach(() => { ep = new Endpoint(); });

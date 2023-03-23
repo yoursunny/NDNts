@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { type FwFace, Forwarder } from "@ndn/fw";
+import { Forwarder, type FwFace } from "@ndn/fw";
 import { UdpServer, UdpServerForwarder } from "@ndn/node-transport/test-fixture/udp-server";
 import { Data, Name } from "@ndn/packet";
 import { Closers, delay } from "@ndn/util";

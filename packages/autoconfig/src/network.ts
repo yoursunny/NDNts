@@ -1,6 +1,6 @@
 import type { FwFace } from "@ndn/fw";
 
-import { type FchRequest, fchQuery } from "./fch";
+import { fchQuery, type FchRequest } from "./fch";
 import { FCH_DEFAULTS, getDefaultGateway } from "./platform_node";
 import { type ConnectRouterOptions, type ConnectRouterResult, connectToRouter } from "./router";
 

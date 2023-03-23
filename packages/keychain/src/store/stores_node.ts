@@ -6,7 +6,7 @@ import { console } from "@ndn/util";
 import type { CryptoAlgorithm } from "../key/mod";
 import { CertStore } from "./cert-store";
 import { KeyStore } from "./key-store";
-import { type StoreProvider, MemoryStoreProvider } from "./store-base";
+import { MemoryStoreProvider, type StoreProvider } from "./store-base";
 
 class FileStoreProvider<T> extends MemoryStoreProvider<T> implements StoreProvider<T> {
   public override readonly canSClone: boolean = false;

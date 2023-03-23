@@ -6,7 +6,7 @@ import type { KeyChain } from "../store/mod";
 import { generateKeyInternal } from "./impl-generate";
 import { createSigner } from "./signing-signer";
 import { createVerifier } from "./signing-verifier";
-import { type NamedSigner, type NamedVerifier, type SigningAlgorithm, CryptoAlgorithm } from "./types";
+import { CryptoAlgorithm, type NamedSigner, type NamedVerifier, type SigningAlgorithm } from "./types";
 
 type SigningOptG<I, Asym extends boolean, G> =
   {} extends G ? [SigningAlgorithm<I, Asym, G>, G?] : [SigningAlgorithm<I, Asym, G>, G];

@@ -4,8 +4,8 @@ import { sha256 } from "@ndn/util";
 import { TT } from "./an";
 import { definePublicFields, FIELDS } from "./impl-public-fields";
 import type { Interest } from "./interest";
-import { type NameLike, Component, ImplicitDigest, Name } from "./name/mod";
-import { type Signer, type Verifier, LLSign, LLVerify } from "./security/signing";
+import { Component, ImplicitDigest, Name, type NameLike } from "./name/mod";
+import { LLSign, LLVerify, type Signer, type Verifier } from "./security/signing";
 import { SigInfo } from "./sig-info";
 
 class Fields {

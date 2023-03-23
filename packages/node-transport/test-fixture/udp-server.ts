@@ -1,7 +1,7 @@
 import * as dgram from "node:dgram";
 
 import { Forwarder } from "@ndn/fw";
-import { type Transport, L3Face } from "@ndn/l3face";
+import { L3Face, type Transport } from "@ndn/l3face";
 import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
 
 import { joinHostPort } from "../src/hostport";

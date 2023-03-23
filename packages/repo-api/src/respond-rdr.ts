@@ -1,5 +1,5 @@
 import { Version } from "@ndn/naming-convention2";
-import { type Data, type Interest, type Name, type NamingConvention, type Signer, digestSigning } from "@ndn/packet";
+import { type Data, digestSigning, type Interest, type Name, type NamingConvention, type Signer } from "@ndn/packet";
 import { isDiscoveryInterest, makeMetadataPacket, Metadata } from "@ndn/rdr";
 
 import type * as S from "./data-store";

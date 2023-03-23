@@ -3,7 +3,7 @@ import { EventEmitter } from "node:events";
 import type { Data, Interest, Nack, Name } from "@ndn/packet";
 import type TypedEmitter from "typed-emitter";
 
-import { type FwFace, FaceImpl } from "./face";
+import { FaceImpl, type FwFace } from "./face";
 import { Fib } from "./fib";
 import type { FwPacket } from "./packet";
 import { Pit } from "./pit";

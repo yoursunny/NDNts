@@ -4,8 +4,8 @@ import { assert, sha256 } from "@ndn/util";
 import { TT } from "./an";
 import { FwHint } from "./fwhint";
 import { definePublicFields, FIELDS } from "./impl-public-fields";
-import { type NameLike, Name, ParamsDigest } from "./name/mod";
-import { type Signer, type Verifier, LLSign, LLVerify } from "./security/signing";
+import { Name, type NameLike, ParamsDigest } from "./name/mod";
+import { LLSign, LLVerify, type Signer, type Verifier } from "./security/signing";
 import { SigInfo } from "./sig-info";
 
 const HOPLIMIT_MAX = 255;

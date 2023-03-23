@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events";
 
-import { type Data, type Interest, type Name, ImplicitDigest, NameMap } from "@ndn/packet";
+import { type Data, ImplicitDigest, type Interest, type Name, NameMap } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
 import { assert } from "@ndn/util";
 import type { AbstractLevelDOWN } from "abstract-leveldown";
@@ -9,7 +9,7 @@ import { filter, map, pipeline } from "streaming-iterables";
 import throat from "throat";
 import type TypedEmitter from "typed-emitter";
 
-import { type Db, type DbChain, type Record, filterExpired, isExpired, openDb } from "./db";
+import { type Db, type DbChain, filterExpired, isExpired, openDb, type Record } from "./db";
 
 type Events = {
   /** Emitted when a new record is inserted. */

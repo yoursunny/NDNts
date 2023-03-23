@@ -1,12 +1,12 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { generateSigningKey } from "@ndn/keychain";
-import { type NameLike, Data, Interest } from "@ndn/packet";
+import { Data, Interest, type NameLike } from "@ndn/packet";
 import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
 import { delay } from "@ndn/util";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { type Options, type Producer, type ProducerHandler, DataStoreBuffer, Endpoint } from "..";
+import { DataStoreBuffer, Endpoint, type Options, type Producer, type ProducerHandler } from "..";
 
 afterEach(Endpoint.deleteDefaultForwarder);
 

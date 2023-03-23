@@ -1,4 +1,4 @@
-import { type Name, Component } from "@ndn/packet";
+import { Component, type Name } from "@ndn/packet";
 import type { BloomFilter } from "@yoursunny/psync-bloom";
 import applyMixins from "applymixins";
 

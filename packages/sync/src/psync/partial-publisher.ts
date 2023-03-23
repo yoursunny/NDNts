@@ -1,8 +1,8 @@
 import { EventEmitter } from "node:events";
 
-import { type Producer, type ProducerHandler, Endpoint } from "@ndn/endpoint";
+import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
-import { type Interest, type Name, type Signer, Data, NameMap } from "@ndn/packet";
+import { Data, type Interest, type Name, NameMap, type Signer } from "@ndn/packet";
 import { BloomFilter } from "@yoursunny/psync-bloom";
 import pDefer, { type DeferredPromise } from "p-defer";
 import type TypedEmitter from "typed-emitter";
@@ -10,7 +10,7 @@ import type TypedEmitter from "typed-emitter";
 import type { IBLT } from "../iblt";
 import type { SyncNode, SyncProtocol } from "../types";
 import { PSyncCodec } from "./codec";
-import { type PSyncNode, PSyncCore } from "./core";
+import { PSyncCore, type PSyncNode } from "./core";
 import { PSyncStateProducerBuffer } from "./state-producer-buffer";
 
 interface PendingInterest {

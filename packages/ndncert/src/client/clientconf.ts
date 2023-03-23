@@ -5,7 +5,7 @@ import Ajv, { type JSONSchemaType } from "ajv";
 import { toBase64, toBuffer as b64ToBuffer } from "b64-lite";
 
 import type { CaProfile } from "../packet/ca-profile";
-import { type RetrieveCaProfileOptions, retrieveCaProfile } from "./retrieve-profile";
+import { retrieveCaProfile, type RetrieveCaProfileOptions } from "./retrieve-profile";
 
 /**
  * client.conf format of NDNCERT C++ implementation.

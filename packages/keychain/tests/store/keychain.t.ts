@@ -4,7 +4,7 @@ import { Component, Data, digestSigning, KeyLocator, Name } from "@ndn/packet";
 import { dirSync as tmpDir } from "tmp";
 import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { type NamedSigner, type NamedVerifier, Certificate, CertNaming, generateSigningKey, KeyChain, SigningAlgorithmListFull, ValidityPeriod } from "../..";
+import { Certificate, CertNaming, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, SigningAlgorithmListFull, ValidityPeriod } from "../..";
 import * as TestCertStore from "../../test-fixture/cert-store";
 import * as TestKeyStore from "../../test-fixture/key-store";
 

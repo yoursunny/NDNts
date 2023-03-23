@@ -1,4 +1,4 @@
-import { type Component, type Name, type Signer, Data, SigInfo } from "@ndn/packet";
+import { type Component, Data, type Name, SigInfo, type Signer } from "@ndn/packet";
 import { assert } from "@ndn/util";
 import * as asn1 from "@yoursunny/asn1";
 

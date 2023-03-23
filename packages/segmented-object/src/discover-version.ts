@@ -1,7 +1,7 @@
 import { Endpoint } from "@ndn/endpoint";
-import { type Name, Interest } from "@ndn/packet";
+import { Interest, type Name } from "@ndn/packet";
 
-import { type SegmentConvention, type VersionConvention, defaultSegmentConvention, defaultVersionConvention } from "./convention";
+import { defaultSegmentConvention, defaultVersionConvention, type SegmentConvention, type VersionConvention } from "./convention";
 import type { fetch } from "./fetch/mod";
 
 /** Discover version with CanBePrefix. */

@@ -1,7 +1,7 @@
 import type { Name } from "@ndn/packet";
 import { MultiMap } from "@ndn/util";
 
-import { type Pattern, type VarsLike, Vars } from "./pattern";
+import { type Pattern, Vars, type VarsLike } from "./pattern";
 
 /** Policy in a trust schema. */
 export class TrustSchemaPolicy {

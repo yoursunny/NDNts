@@ -1,6 +1,6 @@
-import { type NamedVerifier, type SigningAlgorithm, Certificate, createVerifier, SigningAlgorithmListSlim } from "@ndn/keychain";
+import { Certificate, createVerifier, type NamedVerifier, type SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
 import { Segment, Version } from "@ndn/naming-convention2";
-import { type Signer, Data, Name } from "@ndn/packet";
+import { Data, Name, type Signer } from "@ndn/packet";
 import { type EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { toHex, toUtf8 } from "@ndn/util";
 

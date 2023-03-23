@@ -1,11 +1,11 @@
-import { type Name, KeyLocator, LLVerify, Verifier } from "@ndn/packet";
+import { KeyLocator, LLVerify, type Name, Verifier } from "@ndn/packet";
 import { assert } from "@ndn/util";
 
 import { SigningAlgorithmListSlim } from "../algolist/mod";
 import type { Certificate, ValidityPeriod } from "../cert/mod";
 import * as CertNaming from "../naming";
 import { ImportCertCached, isPublicSecretKey } from "./impl-import-cert";
-import { type CryptoAlgorithm, type NamedVerifier, type SigningAlgorithm, KeyKind } from "./types";
+import { type CryptoAlgorithm, KeyKind, type NamedVerifier, type SigningAlgorithm } from "./types";
 
 class PlainCryptoVerifier<I> implements Verifier {
   constructor(

@@ -1,5 +1,5 @@
 import { CertNaming } from "@ndn/keychain";
-import { type Signer, Data, ImplicitDigest, Name, TT as l3TT } from "@ndn/packet";
+import { Data, ImplicitDigest, Name, type Signer, TT as l3TT } from "@ndn/packet";
 import { type EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 
 import { TT } from "./an";

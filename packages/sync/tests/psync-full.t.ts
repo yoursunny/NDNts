@@ -3,12 +3,12 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
-import { type NameLike, Name } from "@ndn/packet";
+import { Name, type NameLike } from "@ndn/packet";
 import { assert, Closers, delay, toHex } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
-import { type Mock, afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, type Mock, test, vi } from "vitest";
 
-import { type IBLT, type SyncNode, type SyncUpdate, makePSyncCompatParam, PSyncFull } from "..";
+import { type IBLT, makePSyncCompatParam, PSyncFull, type SyncNode, type SyncUpdate } from "..";
 
 class DebugPrinter {
   public static enabled = process.env.NDNTS_SYNC_DEBUG === "1";

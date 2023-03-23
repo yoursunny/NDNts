@@ -4,7 +4,7 @@ import type { DataStore as S } from "@ndn/repo-api";
 import { Encoder } from "@ndn/tlv";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
-import { type KeyEncryptionKey, ContentKey, EncryptedContent } from "./packet/mod";
+import { ContentKey, EncryptedContent, type KeyEncryptionKey } from "./packet/mod";
 
 /** NAC producer. */
 export class Producer {

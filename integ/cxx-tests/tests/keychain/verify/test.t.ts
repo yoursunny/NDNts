@@ -1,4 +1,4 @@
-import { type SigningAlgorithm, Certificate, EcCurve, ECDSA, generateSigningKey, RSA, RsaModulusLength } from "@ndn/keychain";
+import { Certificate, EcCurve, ECDSA, generateSigningKey, RSA, RsaModulusLength, type SigningAlgorithm } from "@ndn/keychain";
 import { Data } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";

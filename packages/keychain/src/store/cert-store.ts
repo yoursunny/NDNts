@@ -1,4 +1,4 @@
-import { type Name, Data } from "@ndn/packet";
+import { Data, type Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { Certificate } from "../cert/mod";

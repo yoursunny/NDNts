@@ -1,8 +1,8 @@
 import { EventEmitter } from "node:events";
 
-import { type Producer, Endpoint } from "@ndn/endpoint";
+import { Endpoint, type Producer } from "@ndn/endpoint";
 import { Timestamp } from "@ndn/naming-convention2";
-import { type Component, type Name, type Signer, type Verifier, Data, digestSigning, Interest, lpm } from "@ndn/packet";
+import { type Component, Data, digestSigning, Interest, lpm, type Name, type Signer, type Verifier } from "@ndn/packet";
 import { KeyMap, toHex } from "@ndn/util";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import filter from "obliterator/filter.js";

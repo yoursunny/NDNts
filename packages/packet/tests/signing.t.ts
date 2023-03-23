@@ -2,7 +2,7 @@ import "@ndn/tlv/test-fixture/expect";
 
 import * as crypto from "node:crypto";
 
-import { type Decodable, type Encodable, Decoder, Encoder } from "@ndn/tlv";
+import { type Decodable, Decoder, type Encodable, Encoder } from "@ndn/tlv";
 import { delay } from "@ndn/util";
 import { expect, test } from "vitest";
 

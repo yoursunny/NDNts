@@ -1,7 +1,7 @@
-import { type Producer, Endpoint } from "@ndn/endpoint";
+import { Endpoint, type Producer } from "@ndn/endpoint";
 import { type FwFace, ReadvertiseDestination, TapFace } from "@ndn/fw";
-import { type KeyChain, Certificate } from "@ndn/keychain";
-import { type Name, Interest, NameMap } from "@ndn/packet";
+import { Certificate, type KeyChain } from "@ndn/keychain";
+import { Interest, type Name, NameMap } from "@ndn/packet";
 import { Closers } from "@ndn/util";
 import map from "obliterator/map.js";
 

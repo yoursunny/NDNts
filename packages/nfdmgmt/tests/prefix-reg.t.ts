@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { EventEmitter } from "node:events";
 
 import { Endpoint } from "@ndn/endpoint";
-import { type FwFace, Forwarder, FwPacket } from "@ndn/fw";
+import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Certificate, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";

@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment, SequenceNum, Version } from "@ndn/naming-convention2";
-import { type NameLike, Component, Data, Interest, Name } from "@ndn/packet";
+import { Component, Data, Interest, Name, type NameLike } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { delay } from "@ndn/util";
 import { beforeEach, expect, test } from "vitest";

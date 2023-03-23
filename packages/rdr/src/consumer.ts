@@ -1,5 +1,5 @@
-import { type RetxPolicy, Endpoint } from "@ndn/endpoint";
-import { type NameLike, type Verifier, Interest, Name } from "@ndn/packet";
+import { Endpoint, type RetxPolicy } from "@ndn/endpoint";
+import { Interest, Name, type NameLike, type Verifier } from "@ndn/packet";
 import { type Decodable, Decoder } from "@ndn/tlv";
 
 import { Metadata, MetadataKeyword } from "./metadata";

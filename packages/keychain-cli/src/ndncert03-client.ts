@@ -1,9 +1,9 @@
 import fs from "node:fs/promises";
 
 import { openUplinks } from "@ndn/cli-common";
-import { type KeyChain, type NamedSigner, type NamedVerifier, CertNaming, generateSigningKey } from "@ndn/keychain";
+import { CertNaming, generateSigningKey, type KeyChain, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
 import { AltUri } from "@ndn/naming-convention2";
-import { type CaProfile, type ClientChallenge, type ClientChallengeContext, type ClientPinLikeChallenge, ClientEmailChallenge, ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, matchProbe, requestCertificate, requestProbe } from "@ndn/ndncert";
+import { type CaProfile, type ClientChallenge, type ClientChallengeContext, ClientEmailChallenge, ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, type ClientPinLikeChallenge, ClientPossessionChallenge, matchProbe, requestCertificate, requestProbe } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
 import { console, toHex } from "@ndn/util";

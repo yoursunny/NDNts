@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { type Data, type Name, Component } from "@ndn/packet";
+import { Component, type Data, type Name } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 import { asDataView, toHex } from "@ndn/util";
 import itKeepAlive from "it-keepalive";

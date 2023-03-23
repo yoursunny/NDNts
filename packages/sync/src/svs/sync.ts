@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 
-import { type Producer, type ProducerHandler, Endpoint } from "@ndn/endpoint";
-import { type NameLike, type Signer, type Verifier, Interest, Name, nullSigner } from "@ndn/packet";
+import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
+import { Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
 import { randomJitter } from "@ndn/util";
 import type TypedEmitter from "typed-emitter";
 

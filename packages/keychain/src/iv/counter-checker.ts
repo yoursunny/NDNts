@@ -1,7 +1,7 @@
 import { assert, toHex } from "@ndn/util";
 
 import { IvChecker } from "./checker";
-import { type CounterIvOptions, CounterIncrement, parseCounterIvOptions, throwCounterIvErrorIf } from "./counter-common";
+import { CounterIncrement, type CounterIvOptions, parseCounterIvOptions, throwCounterIvErrorIf } from "./counter-common";
 
 /** Check IVs of fixed+random+counter structure to detect duplication. */
 export class CounterIvChecker extends IvChecker {

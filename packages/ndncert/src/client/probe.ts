@@ -2,7 +2,7 @@ import { type ConsumerOptions, Endpoint } from "@ndn/endpoint";
 import { CertNaming } from "@ndn/keychain";
 import type { Name } from "@ndn/packet";
 
-import { type CaProfile, type ParameterKV, ErrorMsg, ProbeRequest, ProbeResponse } from "../packet/mod";
+import { type CaProfile, ErrorMsg, type ParameterKV, ProbeRequest, ProbeResponse } from "../packet/mod";
 
 export interface ClientProbeOptions {
   /**

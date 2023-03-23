@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 
 import { openKeyChain, openUplinks } from "@ndn/cli-common";
-import { type KeyChain, Certificate } from "@ndn/keychain";
-import { type ClientConf, type ParameterKV, CaProfile, importClientConf, ProbeResponse, retrieveCaProfile } from "@ndn/ndncert";
+import { Certificate, type KeyChain } from "@ndn/keychain";
+import { CaProfile, type ClientConf, importClientConf, type ParameterKV, ProbeResponse, retrieveCaProfile } from "@ndn/ndncert";
 import { Data, Name } from "@ndn/packet";
 import { type Decodable, Decoder, Encoder } from "@ndn/tlv";
 import { fromUtf8, toUtf8 } from "@ndn/util";

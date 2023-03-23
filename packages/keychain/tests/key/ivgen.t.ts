@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { expect, test } from "vitest";
 
-import { type CounterIvOptions, CounterIvChecker, CounterIvGen } from "../..";
+import { CounterIvChecker, CounterIvGen, type CounterIvOptions } from "../..";
 
 test.each([
   { fixedType: "uint8array", lenC: 8, lenD: 1 },

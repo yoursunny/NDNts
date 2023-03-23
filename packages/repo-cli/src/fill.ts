@@ -3,12 +3,12 @@ import { L3Face } from "@ndn/l3face";
 import { SequenceNum } from "@ndn/naming-convention2";
 import { TcpTransport } from "@ndn/node-transport";
 import { Data, Name } from "@ndn/packet";
-import { type DataStore, BulkInsertInitiator } from "@ndn/repo-api";
+import { BulkInsertInitiator, type DataStore } from "@ndn/repo-api";
 import ProgressBar from "progress";
 import { batch, consume, pipeline, tap, transform } from "streaming-iterables";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { type StoreArgs, declareStoreArgs, openStore } from "./util";
+import { declareStoreArgs, openStore, type StoreArgs } from "./util";
 
 interface GenDataArgs {
   prefix: string;

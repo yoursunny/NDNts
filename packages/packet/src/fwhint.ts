@@ -1,7 +1,7 @@
 import { type Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 
 import { TT } from "./an";
-import { type NameLike, Name } from "./name/mod";
+import { Name, type NameLike } from "./name/mod";
 
 const EVD = new EvDecoder<Name[]>("FwHint")
   .add(TT.Name, (t, { decoder }) => t.push(decoder.decode(Name)), { repeat: true });

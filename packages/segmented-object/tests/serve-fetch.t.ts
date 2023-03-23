@@ -2,11 +2,11 @@ import "@ndn/util/test-fixture/expect";
 
 import { Blob } from "node:buffer";
 
-import { type ProducerHandler, Endpoint } from "@ndn/endpoint";
+import { Endpoint, type ProducerHandler } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Segment2, Segment3 } from "@ndn/naming-convention2";
-import { type Verifier, Data, Name } from "@ndn/packet";
+import { Data, Name, type Verifier } from "@ndn/packet";
 import { Closers, delay } from "@ndn/util";
 import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";

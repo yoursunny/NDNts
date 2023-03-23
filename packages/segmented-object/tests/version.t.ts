@@ -7,7 +7,7 @@ import { Data, Interest, Name } from "@ndn/packet";
 import { Closers, timeoutAbortSignal } from "@ndn/util";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { type ChunkSource, BufferChunkSource, discoverVersion, serve, serveVersioned } from "..";
+import { BufferChunkSource, type ChunkSource, discoverVersion, serve, serveVersioned } from "..";
 
 const closers = new Closers();
 

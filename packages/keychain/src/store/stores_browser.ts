@@ -1,4 +1,4 @@
-import { type UseStore, createStore, del, get, keys, set } from "idb-keyval";
+import { createStore, del, get, keys, set, type UseStore } from "idb-keyval";
 
 import type { CryptoAlgorithm } from "../key/mod";
 import { CertStore } from "./cert-store";

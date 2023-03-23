@@ -1,4 +1,4 @@
-import { type NamingConvention, Component, TT } from "@ndn/packet";
+import { Component, type NamingConvention, TT } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
 
 abstract class Typed {

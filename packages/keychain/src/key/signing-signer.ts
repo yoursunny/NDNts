@@ -1,8 +1,8 @@
-import { type KeyLocator, type Name, LLSign, Signer } from "@ndn/packet";
+import { type KeyLocator, LLSign, type Name, Signer } from "@ndn/packet";
 import { assert } from "@ndn/util";
 
 import * as CertNaming from "../naming";
-import { type CryptoAlgorithm, type NamedSigner, type SigningAlgorithm, KeyKind } from "./types";
+import { type CryptoAlgorithm, KeyKind, type NamedSigner, type SigningAlgorithm } from "./types";
 
 class PlainCryptoSigner<I> implements Signer {
   constructor(

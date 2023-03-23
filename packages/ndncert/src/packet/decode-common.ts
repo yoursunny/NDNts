@@ -1,5 +1,5 @@
-import { type Data, type Interest, type Name, type NamingConvention, Component } from "@ndn/packet";
-import { type EvDecoder, Decoder } from "@ndn/tlv";
+import { Component, type Data, type Interest, type Name, type NamingConvention } from "@ndn/packet";
+import { Decoder, type EvDecoder } from "@ndn/tlv";
 
 import { C } from "./an";
 

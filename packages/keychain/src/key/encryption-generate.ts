@@ -5,7 +5,7 @@ import type { KeyChain } from "../store/mod";
 import { createDecrypter } from "./encryption-decrypter";
 import { createEncrypter } from "./encryption-encrypter";
 import { generateKeyInternal } from "./impl-generate";
-import { type EncryptionAlgorithm, type NamedDecrypter, type NamedEncrypter, CryptoAlgorithm } from "./types";
+import { CryptoAlgorithm, type EncryptionAlgorithm, type NamedDecrypter, type NamedEncrypter } from "./types";
 
 type EncryptionOptG<I, Asym extends boolean, G> =
   {} extends G ? [EncryptionAlgorithm<I, Asym, G>, G?] : [EncryptionAlgorithm<I, Asym, G>, G];

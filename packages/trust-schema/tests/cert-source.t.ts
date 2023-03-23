@@ -1,14 +1,14 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
-import { type NamedSigner, type NamedVerifier, Certificate, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
-import { type NameLike, Name } from "@ndn/packet";
+import { Certificate, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, ValidityPeriod } from "@ndn/keychain";
+import { Name, type NameLike } from "@ndn/packet";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
 import { delay } from "@ndn/util";
 import { collect } from "streaming-iterables";
-import { type SpyInstance, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, type SpyInstance, test, vi } from "vitest";
 
-import { type CertSource, CertFetcher, KeyChainCertSource, TrustAnchorContainer } from "..";
+import { CertFetcher, type CertSource, KeyChainCertSource, TrustAnchorContainer } from "..";
 
 let keyChain: KeyChain;
 let pvtA: NamedSigner.PrivateKey;

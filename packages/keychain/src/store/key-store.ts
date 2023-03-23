@@ -1,8 +1,8 @@
 import type { Name } from "@ndn/packet";
 import { assert, crypto } from "@ndn/util";
 
-import { type NamedDecrypter, type NamedEncrypter, type NamedSigner, type NamedVerifier, type PublicKey, createDecrypter, createEncrypter, createSigner, createVerifier, CryptoAlgorithm, KeyKind } from "../key/mod";
-import { type StoreProvider, StoreBase } from "./store-base";
+import { createDecrypter, createEncrypter, createSigner, createVerifier, CryptoAlgorithm, KeyKind, type NamedDecrypter, type NamedEncrypter, type NamedSigner, type NamedVerifier, type PublicKey } from "../key/mod";
+import { StoreBase, type StoreProvider } from "./store-base";
 
 /** KV store of named key pairs. */
 export class KeyStore extends StoreBase<KeyStore.StoredKey> {

@@ -1,5 +1,5 @@
 import { CertNaming } from "@ndn/keychain";
-import { type Component, type NameLike, type NamingConvention, Name } from "@ndn/packet";
+import { type Component, Name, type NameLike, type NamingConvention } from "@ndn/packet";
 
 export type Vars = ReadonlyMap<string, Name>;
 export namespace Vars {

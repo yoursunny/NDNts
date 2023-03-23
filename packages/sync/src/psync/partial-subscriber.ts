@@ -2,10 +2,10 @@ import { EventEmitter } from "node:events";
 
 import { Endpoint } from "@ndn/endpoint";
 import type { Component, Name, Verifier } from "@ndn/packet";
-import { type Parameters as BloomParameters, BloomFilter } from "@yoursunny/psync-bloom";
+import { BloomFilter, type Parameters as BloomParameters } from "@yoursunny/psync-bloom";
 import type TypedEmitter from "typed-emitter";
 
-import { type IntervalFunc, computeInterval } from "../detail/interval";
+import { computeInterval, type IntervalFunc } from "../detail/interval";
 import { SubscriptionTable } from "../detail/subscription-table";
 import { IBLT } from "../iblt";
 import { type Subscriber, type Subscription, SyncUpdate } from "../types";

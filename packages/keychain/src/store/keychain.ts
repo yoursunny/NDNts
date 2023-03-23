@@ -1,4 +1,4 @@
-import { type Signer, Name } from "@ndn/packet";
+import { Name, type Signer } from "@ndn/packet";
 
 import { CryptoAlgorithmListSlim } from "../algolist/mod";
 import type { Certificate } from "../cert/mod";

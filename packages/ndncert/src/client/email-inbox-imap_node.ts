@@ -1,6 +1,6 @@
 import { crypto, toHex } from "@ndn/util";
 import type { Config as ImapConfig } from "imap";
-import { type ImapEmailsProps, ImapEmails } from "imap-emails";
+import { ImapEmails, type ImapEmailsProps } from "imap-emails";
 import type { AddressObject, ParsedMail } from "mailparser";
 import { createTestAccount } from "nodemailer";
 

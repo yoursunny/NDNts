@@ -3,11 +3,11 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
-import { type NameLike, Data, Name } from "@ndn/packet";
+import { Data, Name, type NameLike } from "@ndn/packet";
 import { assert, Closers, delay } from "@ndn/util";
-import { type Mock, afterEach, beforeEach, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, type Mock, test, vi } from "vitest";
 
-import { type Subscription, makeSyncpsCompatParam, SyncpsPubsub } from "..";
+import { makeSyncpsCompatParam, type Subscription, SyncpsPubsub } from "..";
 
 class DebugPrinter {
   public static enabled = process.env.NDNTS_SYNC_DEBUG === "1";

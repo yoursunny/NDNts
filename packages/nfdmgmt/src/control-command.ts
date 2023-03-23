@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { type Signer, Component, digestSigning, Interest, Name, SignedInterestPolicy, TT } from "@ndn/packet";
+import { Component, digestSigning, Interest, Name, SignedInterestPolicy, type Signer, TT } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
 import { ControlParameters } from "./control-parameters";

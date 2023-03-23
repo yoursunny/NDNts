@@ -3,7 +3,7 @@ import fsPromises from "node:fs/promises";
 import { posix as path } from "node:path";
 
 import { Keyword } from "@ndn/naming-convention2";
-import { type ComponentLike, Component, Name } from "@ndn/packet";
+import { Component, type ComponentLike, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
 import { console, fromUtf8 } from "@ndn/util";

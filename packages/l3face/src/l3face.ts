@@ -1,8 +1,8 @@
 import { EventEmitter } from "node:events";
 
-import { type FwFace, Forwarder, FwPacket } from "@ndn/fw";
+import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { LpService } from "@ndn/lp";
-import { type NameLike, Interest } from "@ndn/packet";
+import { Interest, type NameLike } from "@ndn/packet";
 import { asDataView } from "@ndn/util";
 import { abortableSource, AbortError as IteratorAbortError } from "abortable-iterator";
 import { pushable } from "it-pushable";
