@@ -40,8 +40,8 @@
   "devDependencies": {
     "@ndn/util": "workspace:*",
     "@types/default-gateway": "^3.0.1",
-    "@types/koa": "^2.13.5",
-    "@types/node-fetch": "^2.6.2",
+    "@types/koa": "^2.13.6",
+    "@types/node-fetch": "^2.6.3",
     "koa": "^2.14.1"
   }
 }

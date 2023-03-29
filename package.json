@@ -12,12 +12,12 @@
     "test": "vitest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@7.30.1",
+  "packageManager": "pnpm@8.0.0",
   "devDependencies": {
-    "@types/node": "^18.15.5",
+    "@types/node": "^18.15.11",
     "@types/wtfnode": "^0.7.0",
     "@typescript/lib-dom": "npm:@types/web@0.0.99",
-    "@vitest/coverage-c8": "^0.29.7",
+    "@vitest/coverage-c8": "^0.29.8",
     "@yoursunny/xo-config": "0.53.1",
     "c8": "^7.13.0",
     "codedown": "^2.2.0",
@@ -25,7 +25,7 @@
     "typedoc": "^0.23.28",
     "typedoc-plugin-resolve-crossmodule-references": "^0.3.3",
     "typescript": "~5.0.2",
-    "vitest": "^0.29.7",
+    "vitest": "^0.29.8",
     "wtfnode": "^0.9.1"
   },
   "engines": {
