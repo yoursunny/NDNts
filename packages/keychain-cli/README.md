@@ -112,7 +112,7 @@ This command deletes keys and certificates under a name prefix.
 ndnsec export -i /subject -P 888888 | NDNTS_KEYCHAIN=/tmp/my-keychain ndnts-keychain import-safebag --passphrase 888888
 ```
 
-This command reads a ndn-cxx [SafeBag](https://named-data.net/doc/ndn-cxx/0.8.0/specs/safe-bag.html) object in Base64 format from standard input, and saves the enclosed private key, public key, and certificate in the KeyChain.
+This command reads a ndn-cxx [SafeBag](https://docs.named-data.net/ndn-cxx/0.8.1/specs/safe-bag.html) object in Base64 format from standard input, and saves the enclosed private key, public key, and certificate in the KeyChain.
 
 ## `ndnts-keychain import-ndnsec`: Import ndn-cxx KeyChain via ndnsec
 

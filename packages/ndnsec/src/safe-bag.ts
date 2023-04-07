@@ -17,7 +17,7 @@ const EVD = new EvDecoder<Fields>("SafeBag", TT.SafeBag)
 
 /**
  * ndn-cxx exported credentials.
- * @see https://named-data.net/doc/ndn-cxx/0.8.1/specs/safe-bag.html
+ * @see https://docs.named-data.net/ndn-cxx/0.8.1/specs/safe-bag.html
  */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class SafeBag {

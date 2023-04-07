@@ -12,7 +12,7 @@ The implementation uses [Web Crypto API](https://developer.mozilla.org/en-US/doc
 
 ## Signing Algorithms
 
-This package implements signature types defined in [NDN Packet Format 0.3](https://named-data.net/doc/NDN-packet-spec/0.3/signature.html):
+This package implements signature types defined in [NDN Packet Format 0.3](https://docs.named-data.net/NDN-packet-spec/0.3/signature.html):
 
 * [X] DigestSha256 (in `@ndn/packet` package)
   * [X] signing and verification
@@ -70,7 +70,7 @@ This design is a trade-off for reducing browser bundle size.
 
 ## Certificate Management and Storage
 
-`Certificate` class provides basic operations with [NDN Certificate Format 2.0](https://named-data.net/doc/ndn-cxx/0.8.0/specs/certificate.html).
+`Certificate` class provides basic operations with [NDN Certificate Format](https://docs.named-data.net/NDN-packet-spec/0.3/certificate.html).
 
 * [X] generate self-signed certificate
 * [X] issue certificate to another public key

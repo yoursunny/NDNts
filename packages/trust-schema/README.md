@@ -81,7 +81,7 @@ It must be one of these sub-types:
 * `VariablePattern` matches one or more name components (specified as a range), optionally overlapped with an inner pattern and filtered by a JavaScript function.
   It can save matched components to a variable.
   When the same variable appears in both packet name pattern and signer name pattern, the matched name component(s) must be the same.
-* `CertNamePattern` matches either `KEY/key-id` or `KEY/key-id/issuer-id/version` suffix in [NDN Certificate Format](https://named-data.net/doc/ndn-cxx/0.8.0/specs/certificate.html).
+* `CertNamePattern` matches either `KEY/key-id` or `KEY/key-id/issuer-id/version` suffix in [NDN Certificate Format](https://docs.named-data.net/NDN-packet-spec/0.3/certificate.html).
 * `ConcatPattern` concatenates two or more other patterns.
 * `AlternatePattern` accepts any match among two or more possible patterns.
 

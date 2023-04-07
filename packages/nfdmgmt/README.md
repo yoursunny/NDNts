@@ -67,8 +67,8 @@ producer.close();
 
 ## Signed Interest 0.2
 
-Previously, NFD Management protocol uses the deprecated [Signed Interest 0.2 format](https://named-data.net/doc/ndn-cxx/0.8.0/specs/signed-interest.html).
+Previously, NFD Management protocol uses the deprecated [Signed Interest 0.2 format](https://docs.named-data.net/ndn-cxx/0.8.0/specs/signed-interest.html).
 `signInterest02` function provides basic support for this older format.
 
-NFD is now accepting the [Signed Interest format in NDN packet spec](https://named-data.net/doc/NDN-packet-spec/0.3/signed-interest.html) and this package has switched to it.
+NFD is now accepting the [Signed Interest format in NDN packet spec](https://docs.named-data.net/NDN-packet-spec/0.3/signed-interest.html) and this package has switched to it.
 However, `signInterest02` function is temporarily kept for interoperability with other programs that follows the structure of NFD Management protocol but still requires the old format.

@@ -46,7 +46,7 @@
     "@types/fast-chunk-string": "^1.0.1",
     "@types/leveldown": "^4.0.3",
     "@types/nodemailer": "^6.4.7",
-    "@types/prompts": "^2.4.3",
+    "@types/prompts": "^2.4.4",
     "@types/stdout-stream": "^1.4.0",
     "@types/yargs": "17.0.19"
   },

@@ -167,14 +167,14 @@ export namespace NdnsecKeyChain {
     /**
      * ndn-cxx PIB locator.
      * This must be specified together with tpmLocator.
-     * @see https://named-data.net/doc/ndn-cxx/0.8.0/manpages/ndn-client.conf.html#key-management
+     * @see https://docs.named-data.net/ndn-cxx/0.8.1/manpages/ndn-client.conf.html#key-management
      */
     pibLocator?: string;
 
     /**
      * ndn-cxx TPM locator.
      * This must be specified together with pibLocator.
-     * @see https://named-data.net/doc/ndn-cxx/0.8.0/manpages/ndn-client.conf.html#key-management
+     * @see https://docs.named-data.net/ndn-cxx/0.8.1/manpages/ndn-client.conf.html#key-management
      */
     tpmLocator?: string;
 

@@ -2,7 +2,7 @@
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-This package implements Type-Length-Value structure encoder and decoder as specified in [NDN Packet Format v0.3](https://named-data.net/doc/NDN-packet-spec/0.3/tlv.html).
+This package implements Type-Length-Value structure encoder and decoder as specified in [NDN Packet Format v0.3](https://docs.named-data.net/NDN-packet-spec/0.3/tlv.html).
 It has full support for TLV evolvability guidelines.
 
 ```ts
