@@ -12,6 +12,15 @@ const tsconfig = {
   },
   include: ["src"],
   references: [],
+  typedocOptions: {
+    entryPoints: [],
+    exclude: ["**/node_modules", "**/lib", "**/test-fixture", "**/tests"],
+    excludeExternals: true,
+    excludePrivate: true,
+    validation: {
+      notExported: false,
+    },
+  },
 };
 
 const pkg = JSON.parse(await fs.readFile("package.json"));
@@ -22,6 +31,13 @@ for (const [dep, specifier] of Object.entries(pkg.dependencies)) {
         .split(path.sep).join(path.posix.sep),
     });
   }
+}
+
+for (const filename of ["src/mod.ts", "src/main.ts"]) {
+  try {
+    await fs.stat(filename);
+    tsconfig.typedocOptions.entryPoints.push(filename);
+  } catch {}
 }
 
 await fs.writeFile("tsconfig.json", JSON.stringify(tsconfig, undefined, 2));

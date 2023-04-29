@@ -13,15 +13,8 @@
   ],
   "typedocOptions": {
     "entryPointStrategy": "packages",
-    "exclude": ["**/node_modules", "**/lib", "**/test-fixture", "**/tests"],
-    "excludeExternals": true,
-    "excludePrivate": true,
     "out": "../docs/typedoc",
     "name": "NDNts",
-    "readme": "./typedoc-README.md",
-    "plugin": ["typedoc-plugin-resolve-crossmodule-references"],
-    "validation": {
-      "notExported": false
-    }
+    "readme": "./typedoc-README.md"
   }
 }
