@@ -35,13 +35,13 @@
     "default-gateway": "^6.0.3",
     "hirestime": "^7.0.3",
     "node-fetch": "^3.3.1",
-    "tslib": "^2.5.0"
+    "tslib": "^2.5.2"
   },
   "devDependencies": {
     "@ndn/util": "workspace:*",
     "@types/default-gateway": "^3.0.1",
     "@types/koa": "^2.13.6",
-    "@types/node-fetch": "^2.6.3",
+    "@types/node-fetch": "^2.6.4",
     "koa": "^2.14.2"
   }
 }

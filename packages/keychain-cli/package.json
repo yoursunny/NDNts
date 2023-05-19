@@ -39,13 +39,13 @@
     "nodemailer": "^6.9.2",
     "prompts": "^2.4.2",
     "stdout-stream": "^2.0.0",
-    "tslib": "^2.5.0",
+    "tslib": "^2.5.2",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@types/fast-chunk-string": "^1.0.1",
     "@types/leveldown": "^4.0.3",
-    "@types/nodemailer": "^6.4.7",
+    "@types/nodemailer": "^6.4.8",
     "@types/prompts": "^2.4.4",
     "@types/stdout-stream": "^1.4.0",
     "@types/yargs": "17.0.19"
