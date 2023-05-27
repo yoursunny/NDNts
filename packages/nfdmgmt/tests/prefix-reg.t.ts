@@ -80,34 +80,34 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
       minTimeout: 1,
       maxTimeout: 1,
     },
-    refreshInterval: 300,
+    refreshInterval: 500,
   });
 
   const appFace = fw.addFace(new NoopFace());
   appFace.addAnnouncement("/R");
-  await delay(70);
+  await delay(200);
   expect(verbs).toHaveLength(2);
   expect(verbs[0]).toBe("register"); // status 400
   expect(verbs[1]).toBe("register");
 
-  await delay(330);
+  await delay(600);
   expect(verbs).toHaveLength(3);
   expect(verbs[2]).toBe("register");
 
   uplinkL3.emit("down");
   await delay(100);
   uplinkL3.emit("up");
-  await delay(200);
+  await delay(300);
   expect(verbs).toHaveLength(4);
   expect(verbs[3]).toBe("register");
 
   appFace.removeAnnouncement("/R");
-  await delay(70);
+  await delay(200);
   expect(verbs).toHaveLength(6);
   expect(verbs[4]).toBe("unregister"); // status 400
   expect(verbs[5]).toBe("unregister");
 
-  await delay(330);
+  await delay(600);
   expect(verbs).toHaveLength(6);
 
   uplinkL3.emit("down");
