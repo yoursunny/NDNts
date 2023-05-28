@@ -139,3 +139,30 @@ test("compile", () => {
   expect(() => versec.load("s: a/sysid(\"b\")")).toThrow(/sysid\(.*arguments/);
   expect(() => versec.load("s: foo()")).toThrow(/unknown function/);
 });
+
+test("lvs", () => {
+  const policy = versec.load(`
+    // taken from python-ndn LVS example
+
+    // Site prefix is "/a/blog"
+    #site: "a"/"blog"
+    // The trust anchor name is of pattern /a/blog/KEY/<key-id>/<issuer>/<cert-id>
+    #root: #site/#KEY
+    // Posts are signed by some author's key
+    #article: #site/"article"/category/year/month <= #author
+    // An author's key is signed by an admin's key
+    #author: #site/role/author/#KEY & { role: "author" } <= #admin
+    // An admin's key is signed by the root key
+    #admin: #site/"admin"/admin/#KEY <= #root
+
+    #KEY: "KEY"/_/_/_
+  `);
+  expect(versec.load(versec.print(policy))).toBeInstanceOf(TrustSchemaPolicy);
+
+  console.log(policy.match(new Name("/a/blog/author/xinyu/KEY/1/admin/1")));
+  console.log(policy.match(new Name("/a/blog/admin/admin/KEY/1/root/1")));
+
+  expect(policy.canSign(new Name("/a/blog/article/math/2022/03"), new Name("/a/blog/author/xinyu/KEY/1/admin/1"))).toBeTruthy();
+  expect(policy.canSign(new Name("/a/blog/author/xinyu/KEY/1/admin/1"), new Name("/a/blog/admin/admin/KEY/1/root/1"))).toBeTruthy();
+  expect(policy.canSign(new Name("/a/blog/author/xinyu/KEY/1/admin/1"), new Name("/a/blog/KEY/1/self/1"))).toBeFalsy();
+});

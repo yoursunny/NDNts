@@ -32,8 +32,8 @@ According to his definition:
   It can either associate an application data name with its signing key name, or associate a certificate name with its issuer key name.
 * One or more trust anchors, i.e. pre-authenticated keys, are included in the trust schema to serve as bootstrapping points of the trust model.
 
-Pollere LLC released **Versatile Security Toolkit (VerSec)** as part of [Data-centric Communications Toolkit (DCT)](https://github.com/pollere/DCT).
-It has a [schema description language](https://github.com/pollere/DCT/blob/a5399b6b74a185755d5fc5013b8bbef46a7f6ad6/tools/compiler/doc/language.md) that describes constraints on:
+Pollere LLC released **Versatile Security Toolkit (VerSec)** as part of [Defined-trust Communications Toolkit (DCT)](https://github.com/pollere/DCT).
+It has a [schema description language](https://github.com/pollere/DCT/blob/c863d17db155ee0cdc05215d7d01c4411f72ee06/tools/compiler/doc/language.md) that describes constraints on:
 
 * Layout and components of names.
 * Structural and signing relationships between names.

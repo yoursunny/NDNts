@@ -174,19 +174,17 @@ class Compiler {
 
   private makePatternIdent(expr: A.Ident, ctx: CompilePatternCtx): Pattern {
     let inner: Pattern | undefined;
+    const def = this.defs.get(expr.id);
+    if (def) {
+      return this.makePattern(def, ctx.withDef(expr));
+    }
+
     if (ctx.filter) {
       const repl = F.reduceTerm(ctx.filter, expr.id);
       if (repl instanceof Pattern) {
         inner = repl;
       }
     }
-    if (!inner) {
-      const dep = this.defs.get(expr.id);
-      if (dep) {
-        inner = this.makePattern(dep, ctx.withDef(expr));
-      }
-    }
-
     if (!inner) {
       return new VariablePattern(expr.id);
     }
@@ -201,6 +199,7 @@ class Compiler {
   }
 
   private makePatternCall(expr: A.Call, ctx: CompilePatternCtx): Pattern {
+    void ctx;
     const requireNoArgument = () => {
       if (expr.args.length > 0) {
         throwCompileError(`${expr.func}() takes no arguments`, expr);
@@ -220,7 +219,7 @@ class Compiler {
       case "uid":
       case "pid": {
         requireNoArgument();
-        return new VariablePattern("SYSID");
+        return new VariablePattern(expr.func.toUpperCase());
       }
     }
     throwCompileError(`unknown function ${expr.func}`, expr);
