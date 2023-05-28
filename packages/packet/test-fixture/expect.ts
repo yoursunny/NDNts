@@ -33,14 +33,15 @@ expect.extend({
   },
   toHaveName(received: { readonly name?: Name } | undefined, name: NameLike) {
     const n = Name.from(name);
+    const desc = received?.name ? `${received} (with name ${received.name})` : `${received} (without name)`;
     if (received?.name?.equals(n)) {
       return {
-        message: () => `expected ${received} not to have name ${n}`,
+        message: () => `expected ${desc} not to have name ${n}`,
         pass: true,
       };
     }
     return {
-      message: () => `expected ${received} to have name ${n}`,
+      message: () => `expected ${desc} to have name ${n}`,
       pass: false,
     };
   },

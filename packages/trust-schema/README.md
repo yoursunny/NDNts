@@ -5,7 +5,7 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 This package implements trust schemas.
 
 * [X] hierarchical trust model verifier
-* [ ] hierarchical trust model signer
+* [X] hierarchical trust model signer
 * [X] trust schema verifier
   * [ ] override certificate issuer in KeyLocator
 * [X] trust schema signer

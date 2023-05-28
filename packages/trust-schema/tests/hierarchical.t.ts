@@ -1,3 +1,5 @@
+import "@ndn/packet/test-fixture/expect";
+
 import { Endpoint } from "@ndn/endpoint";
 import { Certificate, ECDSA, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, RSA, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, digestSigning, type NameLike, type Signer, type Verifier } from "@ndn/packet";
@@ -5,7 +7,7 @@ import { PrefixRegShorter } from "@ndn/repo";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
-import { HierarchicalVerifier, pattern as P, TrustSchema, TrustSchemaPolicy, TrustSchemaVerifier } from "../..";
+import { HierarchicalSigner, HierarchicalVerifier, pattern as P, TrustSchema, TrustSchemaPolicy, TrustSchemaSigner, TrustSchemaVerifier } from "../src/mod";
 
 afterAll(Endpoint.deleteDefaultForwarder);
 
@@ -41,7 +43,16 @@ class Context {
     return ctx;
   }
 
-  public async execute({
+  public async testSigner({
+    makeSigner,
+    signerMustLpm = true,
+  }: Row, f: (signer: Signer, data: Signer.Signable) => Promise<void>) {
+    const signer = makeSigner(this);
+    const data = new Data(this.dataName, Uint8Array.of(0xD0, 0xD1));
+    await f(signer, data);
+  }
+
+  public async testVerifier({
     makeVerifier,
     enableProducer = true,
   }: Row, f: (verifier: Verifier, data: Verifier.Verifiable) => Promise<void>) {
@@ -108,6 +119,8 @@ hPolicy.addRule("packet", "signer");
 
 interface Row {
   summary: string;
+  makeSigner: (ctx: IContext) => Signer;
+  signerMustLpm?: boolean;
   makeVerifier: (ctx: IContext) => Verifier;
   enableProducer?: boolean;
 }
@@ -115,6 +128,9 @@ interface Row {
 const TABLE: Row[] = [
   {
     summary: "HierarchicalVerifier online",
+    makeSigner(ctx: IContext) {
+      return new HierarchicalSigner(ctx.keyChain);
+    },
     makeVerifier(ctx: IContext) {
       return new HierarchicalVerifier({
         trustAnchors: [ctx.cert0],
@@ -125,6 +141,9 @@ const TABLE: Row[] = [
   },
   {
     summary: "HierarchicalVerifier offline",
+    makeSigner(ctx: IContext) {
+      return new HierarchicalSigner(ctx.keyChain);
+    },
     makeVerifier(ctx: IContext) {
       return new HierarchicalVerifier({
         trustAnchors: [ctx.cert0],
@@ -137,6 +156,13 @@ const TABLE: Row[] = [
   },
   {
     summary: "TrustSchemaVerifier with hierarchical policy",
+    makeSigner(ctx: IContext) {
+      return new TrustSchemaSigner({
+        keyChain: ctx.keyChain,
+        schema: new TrustSchema(hPolicy, [ctx.cert0]),
+      });
+    },
+    signerMustLpm: false,
     makeVerifier(ctx: IContext) {
       return new TrustSchemaVerifier({
         schema: new TrustSchema(hPolicy, [ctx.cert0]),
@@ -151,7 +177,13 @@ describe("success", () => {
   let ctx: Context;
   beforeAll(async () => { ctx = await Context.create({}); });
   test.each(TABLE)("%j", async (row) => {
-    await ctx.execute(row, async (verifier, data) => {
+    await ctx.testSigner(row, async (signer, data) => {
+      await signer.sign(data);
+      if (row.signerMustLpm ?? true) {
+        expect(data.sigInfo?.keyLocator).toHaveName(ctx.cert2.name);
+      }
+    });
+    await ctx.testVerifier(row, async (verifier, data) => {
       await verifier.verify(data);
       await verifier.verify(data); // should use cryptoVerifyCache
     });
@@ -167,7 +199,7 @@ describe("success same name", () => {
     });
   });
   test.each(TABLE)("%j", async (row) => {
-    await ctx.execute(row, async (verifier, data) => {
+    await ctx.testVerifier(row, async (verifier, data) => {
       await verifier.verify(data);
     });
   });
@@ -181,7 +213,10 @@ describe("data non-hierarchical", () => {
     });
   });
   test.each(TABLE)("%j", async (row) => {
-    await ctx.execute(row, async (verifier, data) => {
+    await ctx.testSigner(row, async (signer, data) => {
+      await expect(signer.sign(data)).rejects.toThrow();
+    });
+    await ctx.testVerifier(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow();
     });
   });
@@ -195,7 +230,7 @@ describe("cert non-hierarchical", () => {
     });
   });
   test.each(TABLE)("%j", async (row) => {
-    await ctx.execute(row, async (verifier, data) => {
+    await ctx.testVerifier(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow();
     });
   });
@@ -214,7 +249,7 @@ describe("bad signature", () => {
     });
   });
   test.each(TABLE)("%j", async (row) => {
-    await ctx.execute(row, async (verifier, data) => {
+    await ctx.testVerifier(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow(/bad/);
     });
   });
@@ -231,7 +266,7 @@ describe("root expired", () => {
     });
   });
   test.each(TABLE)("%j", async (row) => {
-    await ctx.execute(row, async (verifier, data) => {
+    await ctx.testVerifier(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow(/expired/);
     });
   });
@@ -248,7 +283,7 @@ describe("cert expired", () => {
     });
   });
   test.each(TABLE)("%j", async (row) => {
-    await ctx.execute(row, async (verifier, data) => {
+    await ctx.testVerifier(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow(/expired/);
     });
   });
@@ -265,7 +300,7 @@ describe("no KeyLocator", () => {
     });
   });
   test.each(TABLE)("%j", async (row) => {
-    await ctx.execute(row, async (verifier, data) => {
+    await ctx.testVerifier(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow(/KeyLocator/);
     });
   });
