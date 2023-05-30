@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import fsPromises from "node:fs/promises";
-import { posix as path } from "node:path";
+import path from "node:path/posix";
 
-import { Keyword } from "@ndn/naming-convention2";
+import { FileMetadata, lsKeyword } from "@ndn/fileserver";
 import { Component, type ComponentLike, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
@@ -11,7 +11,6 @@ import { pushable } from "it-pushable";
 import { consume, parallelMap, writeToStream } from "streaming-iterables";
 import type { Arguments, Argv, CommandModule } from "yargs";
 
-import { FileMetadata } from "./file-metadata";
 import { type CommonArgs, Segment } from "./util";
 
 interface Args extends CommonArgs {
@@ -193,8 +192,6 @@ interface MFetch {
   metadata: FileMetadata;
   fetching: fetch.Result;
 }
-
-const lsKeyword = Keyword.create("ls");
 
 function* parseDirectoryListing(input: Uint8Array): Iterable<string> {
   for (let start = 0; start < input.length;) {

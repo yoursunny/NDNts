@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/ndncert",
-  "version": "0.0.20230121",
-  "description": "NDNts: NDN Certificate Management Protocol",
+  "name": "@ndn/fileserver",
+  "version": "0.0.0",
+  "description": "NDNts: file server",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -19,33 +19,17 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/ndncert"
+    "directory": "packages/tlv"
   },
   "publishConfig": {
     "main": "lib/mod_node.js",
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/endpoint": "workspace:*",
-    "@ndn/keychain": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/rdr": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@ndn/util": "workspace:*",
-    "@types/imap": "^0.8.37",
-    "@types/nodemailer": "^6.4.8",
-    "ajv": "^8.12.0",
-    "applymixins": "^1.1.0",
-    "b64-lite": "^1.4.0",
-    "imap-emails": "^1.0.4",
-    "nodemailer": "^6.9.3",
-    "tslib": "^2.5.2",
-    "typed-emitter": "^2.1.0"
-  },
-  "devDependencies": {
-    "@ndn/repo": "workspace:*",
-    "@types/b64-lite": "^1.4.0",
-    "@types/mailparser": "^3.4.0"
+    "tslib": "^2.5.2"
   }
 }
