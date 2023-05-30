@@ -27,7 +27,7 @@ jobs:
   unittest:
     strategy:
       matrix:
-        node: [16, 18, 19, 20]
+        node: [16, 18, 20]
       fail-fast: false
     runs-on: ubuntu-20.04
     steps:
@@ -133,6 +133,7 @@ jobs:
           deploy-message: ${{ github.sha }} ${{ github.run_id }}
           enable-pull-request-comment: false
           enable-commit-comment: false
+          enable-github-deployment: false
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: 8987d2bb-7638-4d6b-adff-806fe3b7309a
