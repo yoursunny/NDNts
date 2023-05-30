@@ -6,7 +6,7 @@ import { CancelInterest, Forwarder, FwPacket, FwTracer } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Data, FwHint, Interest, Name } from "@ndn/packet";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
-import { delay, fromUtf8, timeoutAbortSignal } from "@ndn/util";
+import { delay, fromUtf8 } from "@ndn/util";
 import { BufferWritableMock } from "stream-mock";
 import { consume } from "streaming-iterables";
 import { afterEach, beforeEach, expect, test } from "vitest";
@@ -58,7 +58,7 @@ test("simple", async () => {
       return new Data(interest.name);
     });
 
-  const canceledInterest = ep.consume("/Q/canceled", { signal: timeoutAbortSignal(50) });
+  const canceledInterest = ep.consume("/Q/canceled", { signal: AbortSignal.timeout(50) });
   await Promise.all([
     expect(ep.consume("/O/no-route", { modifyInterest: { lifetime: 500 } }))
       .rejects.toThrow(),

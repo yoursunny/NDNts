@@ -1,7 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Data, Interest, type Verifier } from "@ndn/packet";
-import { timeoutAbortSignal } from "@ndn/util";
 import { afterEach, beforeEach, describe, expect, type Mock, test, vi } from "vitest";
 
 import { Endpoint, type ProducerHandler, type RetxPolicy } from "..";
@@ -57,7 +56,7 @@ describe("retx limit", () => {
     const promise = ep.consume(
       new Interest("/A", Interest.Lifetime(2000)),
       {
-        signal: timeoutAbortSignal(100),
+        signal: AbortSignal.timeout(100),
         retx: {
           limit: 2,
         },
