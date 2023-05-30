@@ -10,7 +10,8 @@ export const TT = {
   Mtime: 0xF50C,
 };
 
-export const ModeReg = 0x8000;
-export const ModeDir = 0x4000;
-
 export const lsKeyword = Component.from("ls");
+
+export const ModeFile = 0x8000;
+export const ModeDir = 0x4000;
+export type Mode = typeof ModeFile | typeof ModeDir;

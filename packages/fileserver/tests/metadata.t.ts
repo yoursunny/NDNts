@@ -1,14 +1,20 @@
 import "@ndn/tlv/test-fixture/expect";
 import "@ndn/packet/test-fixture/expect";
 
+import { constants as fsConstants } from "node:fs";
+
 import { Segment, Version } from "@ndn/naming-convention2";
 import { Name, TT as l3TT } from "@ndn/packet";
 import { makeMetadataPacket } from "@ndn/rdr";
 import { Decoder } from "@ndn/tlv";
-import { afterEach, expect, test } from "vitest";
+import { expect, test } from "vitest";
 
-import { FileMetadata, TT } from "..";
-import { ModeDir, ModeReg } from "../src/an";
+import { FileMetadata, ModeDir, ModeFile, TT } from "..";
+
+test("constants", () => {
+  expect(ModeFile).toBe(fsConstants.S_IFREG);
+  expect(ModeDir).toBe(fsConstants.S_IFDIR);
+});
 
 test("file", async () => {
   const m = new FileMetadata();
@@ -16,7 +22,7 @@ test("file", async () => {
   m.lastSeg = 1000;
   m.segmentSize = 6000;
   m.size = 5999966;
-  m.mode = ModeReg | 0o644;
+  m.mode = ModeFile | 0o644;
   m.atime = new Date(1683860400000);
   m.btime = new Date(1683849600000);
   m.ctime = new Date(1683853200000);

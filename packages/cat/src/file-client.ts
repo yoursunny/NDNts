@@ -2,11 +2,11 @@ import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import path from "node:path/posix";
 
-import { FileMetadata, lsKeyword } from "@ndn/fileserver";
+import { FileMetadata, lsKeyword, ModeDir, ModeFile, parseDirectoryListing } from "@ndn/fileserver";
 import { Component, type ComponentLike, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
-import { console, fromUtf8 } from "@ndn/util";
+import { console } from "@ndn/util";
 import { pushable } from "it-pushable";
 import { consume, parallelMap, writeToStream } from "streaming-iterables";
 import type { Arguments, Argv, CommandModule } from "yargs";
@@ -144,15 +144,20 @@ class Downloader {
     const ls = await fetching;
 
     await fsPromises.mkdir(local, { recursive: true });
-    let nFolders = 0; let
-      nFiles = 0;
-    for (const item of parseDirectoryListing(ls)) {
-      if (item.endsWith("/")) {
-        this.enqueue("folder", path.resolve(local, item));
-        ++nFolders;
-      } else {
-        this.enqueue("file", path.resolve(local, item));
-        ++nFiles;
+    let nFolders = 0;
+    let nFiles = 0;
+    for (const [name, kind] of parseDirectoryListing(ls)) {
+      switch (kind) {
+        case ModeDir: {
+          this.enqueue("folder", path.resolve(local, name));
+          ++nFolders;
+          break;
+        }
+        case ModeFile: {
+          this.enqueue("file", path.resolve(local, name));
+          ++nFiles;
+          break;
+        }
       }
     }
     console.log(`FOLDER ${local} folders=${nFolders} files=${nFiles}`);
@@ -191,15 +196,4 @@ interface Job {
 interface MFetch {
   metadata: FileMetadata;
   fetching: fetch.Result;
-}
-
-function* parseDirectoryListing(input: Uint8Array): Iterable<string> {
-  for (let start = 0; start < input.length;) {
-    const pos = input.indexOf(0, start);
-    if (pos < 0) {
-      throw new Error(`bad directory listing near offset ${start}`);
-    }
-    yield fromUtf8(input.subarray(start, pos));
-    start = pos + 1;
-  }
 }

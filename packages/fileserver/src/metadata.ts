@@ -3,7 +3,7 @@ import { Component, TT as l3TT } from "@ndn/packet";
 import { Metadata } from "@ndn/rdr";
 import { Extensible, Extension, ExtensionRegistry, NNI } from "@ndn/tlv";
 
-import { ModeDir, ModeReg, TT } from "./an";
+import { ModeDir, ModeFile, TT } from "./an";
 
 const EXTENSIONS = new ExtensionRegistry();
 EXTENSIONS.registerExtension<Component>({
@@ -110,7 +110,7 @@ export class FileMetadata extends Metadata implements Extensible {
   }
 
   public get isFile(): boolean {
-    return (this.mode & ModeReg) !== 0;
+    return (this.mode & ModeFile) !== 0;
   }
 
   public get isDir(): boolean {

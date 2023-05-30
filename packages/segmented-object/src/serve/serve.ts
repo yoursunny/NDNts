@@ -50,7 +50,7 @@ export interface Server {
  * @param opts other options.
  *
  * This function does not automatically add a version component to the name prefix.
- * If a version component is desired, use serveVersions() function instead.
+ * If a version component is desired, use serveVersioned() function instead.
  */
 export function serve(prefixInput: NameLike, source: ChunkSource, opts: ServeOptions = {}): Server {
   const prefix = Name.from(prefixInput);
