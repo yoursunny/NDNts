@@ -2,7 +2,7 @@ import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import path from "node:path/posix";
 
-import { FileMetadata, lsKeyword, ModeDir, ModeFile, parseDirectoryListing } from "@ndn/fileserver";
+import { FileMetadata, lsKeyword, parseDirectoryListing } from "@ndn/fileserver";
 import { Component, type ComponentLike, Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
@@ -146,18 +146,13 @@ class Downloader {
     await fsPromises.mkdir(local, { recursive: true });
     let nFolders = 0;
     let nFiles = 0;
-    for (const [name, kind] of parseDirectoryListing(ls)) {
-      switch (kind) {
-        case ModeDir: {
-          this.enqueue("folder", path.resolve(local, name));
-          ++nFolders;
-          break;
-        }
-        case ModeFile: {
-          this.enqueue("file", path.resolve(local, name));
-          ++nFiles;
-          break;
-        }
+    for (const { name, isDir } of parseDirectoryListing(ls)) {
+      if (isDir) {
+        this.enqueue("folder", path.resolve(local, name));
+        ++nFolders;
+      } else {
+        this.enqueue("file", path.resolve(local, name));
+        ++nFiles;
       }
     }
     console.log(`FOLDER ${local} folders=${nFolders} files=${nFiles}`);

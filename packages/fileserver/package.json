@@ -1,7 +1,7 @@
 {
   "name": "@ndn/fileserver",
   "version": "0.0.0",
-  "description": "NDNts: file server",
+  "description": "NDNts: ndn6-file-server protocol",
   "keywords": [
     "NDN",
     "Named Data Networking"

@@ -2,26 +2,42 @@ import "@ndn/tlv/test-fixture/expect";
 import "@ndn/packet/test-fixture/expect";
 
 import { toUtf8 } from "@ndn/util";
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 
-import { ModeDir, ModeFile, parseDirectoryListing } from "..";
+import { buildDirectoryListing, type DirEntry, parseDirectoryListing } from "..";
 
-test("parse success", () => {
-  const input = toUtf8([
+describe("full", () => {
+  const wire = toUtf8([
     "fileA\0",
     "dirD/\0",
     "fileB\0",
   ].join(""));
-  const ls = Array.from(parseDirectoryListing(input));
-  expect(ls).toHaveLength(3);
-  expect(ls[0]).toEqual(["fileA", ModeFile]);
-  expect(ls[1]).toEqual(["dirD", ModeDir]);
-  expect(ls[2]).toEqual(["fileB", ModeFile]);
+  const entries: DirEntry[] = [
+    { name: "fileA", isDir: false },
+    { name: "dirD", isDir: true },
+    { name: "fileB", isDir: false },
+  ];
+  test("parse", () => {
+    const ls = Array.from(parseDirectoryListing(wire));
+    expect(ls).toEqual(entries);
+  });
+  test("build", () => {
+    const encoded = buildDirectoryListing(entries);
+    expect(encoded).toEqualUint8Array(wire);
+  });
 });
 
-test("parse empty", () => {
-  const ls = Array.from(parseDirectoryListing(new Uint8Array()));
-  expect(ls).toHaveLength(0);
+describe("empty", () => {
+  const wire = new Uint8Array();
+  const entries: DirEntry[] = [];
+  test("parse", () => {
+    const ls = Array.from(parseDirectoryListing(wire));
+    expect(ls).toEqual(entries);
+  });
+  test("build", () => {
+    const encoded = buildDirectoryListing(entries);
+    expect(encoded).toEqualUint8Array(wire);
+  });
 });
 
 test("parse truncated", () => {

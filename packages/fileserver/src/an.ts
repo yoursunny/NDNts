@@ -1,4 +1,4 @@
-import { Component } from "@ndn/packet";
+import { Keyword } from "@ndn/naming-convention2";
 
 export const TT = {
   SegmentSize: 0xF500,
@@ -10,8 +10,8 @@ export const TT = {
   Mtime: 0xF50C,
 };
 
-export const lsKeyword = Component.from("ls");
-
 export const ModeFile = 0x8000;
 export const ModeDir = 0x4000;
-export type Mode = typeof ModeFile | typeof ModeDir;
+
+/** 32=ls component */
+export const lsKeyword = Keyword.create("ls");
