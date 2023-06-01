@@ -4,28 +4,6 @@ import { type Data, type Interest, Name, type NameLike } from "@ndn/packet";
 import type { ChunkSource } from "./chunk-source/mod";
 import { DataProducer } from "./data-producer";
 
-/** Options to serve(). */
-export type ServeOptions = DataProducer.Options & {
-  /** Use specified Endpoint instead of default. */
-  endpoint?: Endpoint;
-
-  /** FwFace description. */
-  describe?: string;
-
-  /**
-   * Producer name prefix, if differs from Data prefix.
-   * Specifying a shorter prefix enables name discovery.
-   */
-  producerPrefix?: Name;
-
-  /**
-   * Prefix announcement.
-   * Default is same as producer name prefix or Data prefix.
-   * False disables announcement.
-   */
-  announcement?: Endpoint.RouteAnnouncement;
-};
-
 /** Producer that serves a segmented object. */
 export interface Server {
   /** Data prefix excluding segment number. */
@@ -52,7 +30,7 @@ export interface Server {
  * This function does not automatically add a version component to the name prefix.
  * If a version component is desired, use serveVersioned() function instead.
  */
-export function serve(prefixInput: NameLike, source: ChunkSource, opts: ServeOptions = {}): Server {
+export function serve(prefixInput: NameLike, source: ChunkSource, opts: serve.Options = {}): Server {
   const prefix = Name.from(prefixInput);
   const { endpoint = new Endpoint() } = opts;
   const dp = DataProducer.create(source, prefix, opts);
@@ -70,5 +48,28 @@ export function serve(prefixInput: NameLike, source: ChunkSource, opts: ServeOpt
       dp.close();
       ep.close();
     },
+  };
+}
+
+export namespace serve {
+  export type Options = DataProducer.Options & {
+    /** Use specified Endpoint instead of default. */
+    endpoint?: Endpoint;
+
+    /** FwFace description. */
+    describe?: string;
+
+    /**
+     * Producer name prefix, if differs from Data prefix.
+     * Specifying a shorter prefix enables name discovery.
+     */
+    producerPrefix?: Name;
+
+    /**
+     * Prefix announcement.
+     * Default is same as producer name prefix or Data prefix.
+     * False disables announcement.
+     */
+    announcement?: Endpoint.RouteAnnouncement;
   };
 }

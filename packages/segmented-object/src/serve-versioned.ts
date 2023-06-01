@@ -1,7 +1,7 @@
 import { Component, type ComponentLike, Name, type NameLike } from "@ndn/packet";
 
 import { defaultVersionConvention, type VersionConventionFromNumber } from "./convention";
-import { type ChunkSource, serve, type ServeOptions, type Server } from "./serve/mod";
+import { type ChunkSource, serve, type Server } from "./serve/mod";
 
 type GivenVersionOptions = {
   /** Version number component. */
@@ -15,15 +15,20 @@ type MakeVersionOptions = {
    */
   versionConvention?: VersionConventionFromNumber;
 
-  /** Version number. */
+  /**
+   * Version number.
+   * Default is current Unix timestamp (milliseconds).
+   */
   version?: number;
 };
 
-/** Options to serveVersioned(). */
-export type ServeVersionedOptions = ServeOptions & (GivenVersionOptions | MakeVersionOptions);
-
-export function serveVersioned(prefixInput: NameLike, source: ChunkSource,
-    opts: ServeVersionedOptions = {}): Server {
+/**
+ * Start serving a segmented object with support of CanBePrefix version discovery.
+ * @param prefixInput Data prefix excluding version and segment components.
+ * @param source where to read segment payload chunks.
+ * @param opts other options.
+ */
+export function serveVersioned(prefixInput: NameLike, source: ChunkSource, opts: serveVersioned.Options = {}): Server {
   let versionComp: Component;
   let { version = Date.now(), producerPrefix } = opts;
   if (typeof version === "number") {
@@ -39,4 +44,8 @@ export function serveVersioned(prefixInput: NameLike, source: ChunkSource,
     ...opts,
     producerPrefix,
   });
+}
+
+export namespace serveVersioned {
+  export type Options = serve.Options & (GivenVersionOptions | MakeVersionOptions);
 }
