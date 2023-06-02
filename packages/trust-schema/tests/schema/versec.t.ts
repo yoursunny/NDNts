@@ -159,9 +159,6 @@ test("lvs", () => {
   `);
   expect(versec.load(versec.print(policy))).toBeInstanceOf(TrustSchemaPolicy);
 
-  console.log(policy.match(new Name("/a/blog/author/xinyu/KEY/1/admin/1")));
-  console.log(policy.match(new Name("/a/blog/admin/admin/KEY/1/root/1")));
-
   expect(policy.canSign(new Name("/a/blog/article/math/2022/03"), new Name("/a/blog/author/xinyu/KEY/1/admin/1"))).toBeTruthy();
   expect(policy.canSign(new Name("/a/blog/author/xinyu/KEY/1/admin/1"), new Name("/a/blog/admin/admin/KEY/1/root/1"))).toBeTruthy();
   expect(policy.canSign(new Name("/a/blog/author/xinyu/KEY/1/admin/1"), new Name("/a/blog/KEY/1/self/1"))).toBeFalsy();
