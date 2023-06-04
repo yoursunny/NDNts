@@ -32,7 +32,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
     "mnemonist": "^0.39.5",
-    "tslib": "^2.5.2"
+    "tslib": "^2.5.3"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:*",

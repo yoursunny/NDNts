@@ -12,6 +12,6 @@
     "@ndn/util": "workspace:*",
     "@types/memdown": "^3.0.1",
     "memdown": "^6.1.1",
-    "tslib": "^2.5.2"
+    "tslib": "^2.5.3"
   }
 }

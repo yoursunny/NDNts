@@ -37,7 +37,7 @@
     "p-defer": "^4.0.0",
     "p-lazy": "^4.0.0",
     "streaming-iterables": "^7.1.0",
-    "tslib": "^2.5.2",
+    "tslib": "^2.5.3",
     "typed-emitter": "^2.1.0"
   },
   "devDependencies": {

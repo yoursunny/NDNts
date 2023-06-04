@@ -19,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/tlv"
+    "directory": "packages/fileserver"
   },
   "publishConfig": {
     "main": "lib/mod_node.js",
@@ -31,6 +31,6 @@
     "@ndn/rdr": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "tslib": "^2.5.2"
+    "tslib": "^2.5.3"
   }
 }

@@ -33,6 +33,6 @@
     "@ndn/util": "workspace:*",
     "@types/web-bluetooth": "^0.0.17",
     "event-iterator": "^2.0.0",
-    "tslib": "^2.5.2"
+    "tslib": "^2.5.3"
   }
 }
