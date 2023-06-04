@@ -115,7 +115,7 @@ export class EndpointProducer {
       }
 
       await signUnsignedData(data, dataSigner);
-      if (!await data.canSatisfy(interest)) {
+      if (!await data.canSatisfy(interest)) { // isCacheLookup=false because the buffer is not considered a cache
         return undefined;
       }
       return data;

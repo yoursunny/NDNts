@@ -164,10 +164,12 @@ test("canSatisfy", async () => {
   await expect(data.canSatisfy(interest)).resolves.toBe(true);
 
   interest.mustBeFresh = true;
-  await expect(data.canSatisfy(interest)).resolves.toBe(false);
+  await expect(data.canSatisfy(interest)).resolves.toBe(true);
+  await expect(data.canSatisfy(interest, { isCacheLookup: true })).resolves.toBe(false);
 
   data.freshnessPeriod = 500;
   await expect(data.canSatisfy(interest)).resolves.toBe(true);
+  await expect(data.canSatisfy(interest, { isCacheLookup: true })).resolves.toBe(true);
 
   data.name = new Name("/A/B");
   await expect(data.canSatisfy(interest)).resolves.toBe(false);

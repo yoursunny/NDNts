@@ -71,7 +71,7 @@ test("simple", async () => {
     expect(ep.consume("/P/fresh", { modifyInterest: { mustBeFresh: true } }))
       .resolves.toBeInstanceOf(Data),
     expect(ep.consume("/P/no-fresh", { modifyInterest: { mustBeFresh: true, lifetime: 500 } }))
-      .rejects.toThrow(),
+      .resolves.toBeInstanceOf(Data), // isCacheLookup=false
     expect(ep.consume("/Q/exact"))
       .resolves.toBeInstanceOf(Data),
     expect(ep.consume("/Q/too-slow", { modifyInterest: { lifetime: 100 } }))

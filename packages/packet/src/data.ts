@@ -141,19 +141,21 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
       name,
       [
         TT.MetaInfo, Encoder.OmitEmpty,
-        contentType > 0 ? [TT.ContentType, NNI(contentType)] : undefined,
-        freshnessPeriod > 0 ? [TT.FreshnessPeriod, NNI(freshnessPeriod)] : undefined,
+        contentType > 0 && [TT.ContentType, NNI(contentType)],
+        freshnessPeriod > 0 && [TT.FreshnessPeriod, NNI(freshnessPeriod)],
         finalBlockId && [TT.FinalBlock, finalBlockId],
       ],
-      content.byteLength > 0 ? [TT.Content, content] : undefined,
+      content.length > 0 && [TT.Content, content],
       sigInfo.encodeAs(TT.DSigInfo),
     ];
   }
 
+  /** Return the implicit digest if it's already computed. */
   public getImplicitDigest(): Uint8Array | undefined {
     return this[FIELDS].topTlvDigest;
   }
 
+  /** Compute the implicit digest. */
   public async computeImplicitDigest(): Promise<Uint8Array> {
     let digest = this.getImplicitDigest();
     if (!digest) {
@@ -167,6 +169,7 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
     return digest;
   }
 
+  /** Return the full name if the implicit digest is already computed. */
   public getFullName(): Name | undefined {
     const digest = this.getImplicitDigest();
     if (!digest) {
@@ -175,6 +178,7 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
     return this[FIELDS].name.append(ImplicitDigest, digest);
   }
 
+  /** Compute the full name (name plus implicit digest). */
   public async computeFullName(): Promise<Name> {
     await this.computeImplicitDigest();
     return this.getFullName()!;
@@ -182,10 +186,12 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
 
   /**
    * Determine if a Data can satisfy an Interest.
+   * @param isCacheLookup if true, Data with zero FreshnessPeriod cannot satisfy Interest with MustBeFresh;
+   *                      if false, this check does not apply.
    * @returns a Promise that will be resolved with the result.
    */
-  public async canSatisfy(interest: Interest): Promise<boolean> {
-    if (interest.mustBeFresh && this.freshnessPeriod <= 0) {
+  public async canSatisfy(interest: Interest, { isCacheLookup = false }: Data.CanSatisfyOptions = {}): Promise<boolean> {
+    if (isCacheLookup && interest.mustBeFresh && this.freshnessPeriod <= 0) {
       return false;
     }
 
@@ -260,4 +266,15 @@ export namespace Data {
 
   /** Constructor argument. */
   export type CtorArg = NameLike | CtorTag | typeof FinalBlock | Uint8Array;
+
+  /** Data.canSatisfy options. */
+  export interface CanSatisfyOptions {
+    /**
+     * Whether the Interest-Data matching is in the context of cache lookup.
+     * If true, Data with zero FreshnessPeriod cannot satisfy Interest with MustBeFresh.
+     * If false, this check does not apply.
+     * @default false
+     */
+    isCacheLookup?: boolean;
+  }
 }
