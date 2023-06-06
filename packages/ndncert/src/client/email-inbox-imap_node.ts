@@ -3,6 +3,7 @@ import type { Config as ImapConfig } from "imap";
 import { ImapEmails, type ImapEmailsProps } from "imap-emails";
 import type { AddressObject, ParsedMail } from "mailparser";
 import { createTestAccount } from "nodemailer";
+import pTimeout from "p-timeout";
 
 import type { ClientChallengeContext } from "./challenge";
 import type { ClientPinLikeChallenge } from "./pin-like-challenge";
@@ -30,7 +31,10 @@ export class ClientEmailInboxImap {
 
   /** Close IMAP connection. */
   public close(): Promise<void> {
-    return this.client.disconnect();
+    return pTimeout(this.client.disconnect(), {
+      milliseconds: 2000,
+      message: false,
+    });
   }
 
   /** ClientEmailChallenge prompt callback. */
