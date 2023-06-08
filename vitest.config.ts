@@ -1,7 +1,8 @@
-import type { CoverageC8Options } from "vitest";
+import type { CoverageOptions } from "vitest";
 import { defineConfig } from "vitest/config";
 
-const coverage: CoverageC8Options = {
+const coverage: CoverageOptions<"v8"> = {
+  provider: "v8",
   reporter: process.env.CI ? "lcovonly" : ["html", "text-summary"],
   include: ["packages/**/src/**/*.ts"],
 };
