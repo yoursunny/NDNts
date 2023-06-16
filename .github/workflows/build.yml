@@ -19,7 +19,7 @@ jobs:
           node-version: 16
       - run: corepack pnpm install
         env:
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PUPPETEER_SKIP_DOWNLOAD: true
       - run: corepack pnpm build
       - run: corepack pnpm literate
       - run: corepack pnpm lint
@@ -47,7 +47,7 @@ jobs:
           sudo apt-get install --no-install-recommends ndnsec
       - run: corepack pnpm install
         env:
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PUPPETEER_SKIP_DOWNLOAD: true
       - run: corepack pnpm test
         if: ${{ matrix.node != 18 }}
       - run: corepack pnpm cover
@@ -107,7 +107,7 @@ jobs:
           node-version: 18
       - run: corepack pnpm install
         env:
-          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PUPPETEER_SKIP_DOWNLOAD: true
       - run: corepack pnpm build
       - run: bash mk/publish-nightly.sh
         env:

@@ -11,7 +11,7 @@ import yaml from "js-yaml";
 async function* listImports(filename) {
   const lines = (await fs.readFile(filename, "utf8")).split("\n");
   for (const line of lines) {
-    const m = /^import(?: .* from)? "([^.@][^":/]*|@[^":/]*\/[^":/]*)[^":]*";/.exec(line);
+    const m = /import(?:\(|(?: .* from)? )"([^.@][^":/]*|@[^":/]*\/[^":/]*)[^":]*"[;)]/.exec(line);
     if (!m) {
       continue;
     }
@@ -19,7 +19,7 @@ async function* listImports(filename) {
   }
 }
 
-const ignoredUnused = new Set(["@types/web-bluetooth", "graphql", "hard-rejection", "tslib"]);
+const ignoredUnused = new Set(["@types/web-bluetooth", "graphql", "tslib"]);
 const ignoredTypes = new Set(["yargs"]);
 
 const doc = yaml.load(await fs.readFile("pnpm-lock.yaml"));
@@ -32,7 +32,7 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
   if (!folder.startsWith("packages/")) {
     continue;
   }
-  const unused = new Set(Object.keys(dependencies).filter((dep) => !ignoredUnused.has(dep)));
+  const unusedP = new Set(Object.keys(dependencies).filter((dep) => !ignoredUnused.has(dep)));
   const unusedD = new Set(Object.keys(devDependencies).filter((dep) => !ignoredUnused.has(dep)));
 
   const jsFiles = fsWalk.walkSync(path.join(folder, "lib"), {
@@ -40,7 +40,7 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
   });
   for (const { path: filename } of jsFiles) {
     for await (const dep of listImports(filename)) {
-      unused.delete(dep);
+      unusedP.delete(dep);
       if (!dependencies[dep] && !isBuiltin(dep)) {
         process.stdout.write(`P+\t${filename}\t${dep}\n`);
         ++nWarnings;
@@ -53,9 +53,9 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
   });
   for (const { path: filename } of declarations) {
     for await (const imp of listImports(filename)) {
-      unused.delete(imp);
+      unusedP.delete(imp);
       const dep = `@types/${imp}`;
-      unused.delete(dep);
+      unusedP.delete(dep);
       if (!ignoredTypes.has(imp) && devDependencies[dep] && !dependencies[dep] && !filename.includes("/detail/")) {
         process.stdout.write(`+\t${filename}\t${dep}\n`);
         ++nWarnings;
@@ -74,7 +74,7 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
     }
   }
 
-  for (const dep of unused) {
+  for (const dep of unusedP) {
     process.stdout.write(`P-\t${folder}\t${dep}\n`);
     ++nWarnings;
   }
