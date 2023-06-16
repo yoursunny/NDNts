@@ -78,20 +78,27 @@ test("connectToNetwork", async () => {
 
 test("defaultGateway", async () => {
   server.handle = async () => "127.0.0.1:7001,127.0.0.1:7002";
-  const spyDefaultGateway = vi.spyOn(defaultGateway, "v4").mockResolvedValue({
-    gateway: "127.0.0.1:7003",
-    interface: "eth0",
-  });
+  const mockGatewayResult: defaultGateway.Result<4> = {
+    gateway: "127.0.0.1",
+    version: 4,
+    int: "eth0",
+  };
+  const mockGateway = vi.fn<[], Promise<defaultGateway.Result<4>>>().mockResolvedValue(mockGatewayResult);
+  vi.doMock("default-gateway", (): typeof defaultGateway => ({
+    ...defaultGateway,
+    gateway4async: mockGateway,
+  }));
 
+  let calledWith6363 = false;
   let calledWith7004 = false;
   const testConnection = vi.fn<[FwFace], Promise<unknown>>()
     .mockImplementation(async (face) => {
       const faceDescribe = face.toString();
+      calledWith6363 ||= faceDescribe.includes("127.0.0.1:6363");
       calledWith7004 ||= faceDescribe.includes("127.0.0.1:7004");
-      if (faceDescribe.includes("127.0.0.1:7001")) {
-        return;
+      if (!faceDescribe.includes("127.0.0.1:7001")) {
+        throw new Error("mock reject");
       }
-      throw new Error("mock reject");
     });
 
   const faces = await connectToNetwork({
@@ -103,10 +110,10 @@ test("defaultGateway", async () => {
   expect(faces).toHaveLength(1);
   expect(faces[0]!.toString()).toContain("127.0.0.1:7001");
 
-  expect(spyDefaultGateway).toHaveBeenCalled();
-  spyDefaultGateway.mockRestore();
+  expect(mockGateway).toHaveBeenCalled();
 
   expect(testConnection).toHaveBeenCalledTimes(3);
+  expect(calledWith6363).toBeTruthy();
   expect(calledWith7004).toBeFalsy();
 });
 

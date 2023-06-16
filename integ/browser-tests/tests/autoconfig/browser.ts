@@ -10,7 +10,7 @@ window.testConnectToNetwork = async () => {
   const faces = await connectToNetwork({
     H3Transport,
     preferH3: true,
-    fallback: ["suns.cs.ucla.edu", "ndn.qub.ac.uk"],
+    fallback: ["suns.cs.ucla.edu", "vnetlab.gcom.di.uminho.pt"],
     fastest: 2,
   });
   return {

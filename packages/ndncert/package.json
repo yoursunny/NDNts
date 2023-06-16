@@ -40,7 +40,7 @@
     "b64-lite": "^1.4.0",
     "imap-emails": "^1.0.4",
     "nodemailer": "^6.9.3",
-    "p-timeout": "^6.1.1",
+    "p-timeout": "^6.1.2",
     "tslib": "^2.5.3",
     "typed-emitter": "^2.1.0"
   },

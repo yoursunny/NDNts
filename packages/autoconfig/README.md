@@ -52,7 +52,7 @@ function showFchResponse(title, res) {
   console.table(res.routers.map((r) => ({
     transport: r.transport,
     connect: r.connect,
-    prefix: r.prefix ? `${r.prefix}` : undefined,
+    prefix: r.prefix && `${r.prefix}`,
   })));
 }
 ```
@@ -67,7 +67,7 @@ const fw = Forwarder.create();
 // Keep only the fastest face and close others.
 const faces = await connectToNetwork({
   fw,
-  fallback: ["suns.cs.ucla.edu", "ndn.qub.ac.uk"],
+  fallback: ["suns.cs.ucla.edu", "vnetlab.gcom.di.uminho.pt"],
   connectTimeout: 3000,
 });
 assert.equal(faces.length, 1);
@@ -78,7 +78,7 @@ console.log("fastest face is", `${fastestFace}`);
 try {
   const t0 = Date.now();
   const data = await new Endpoint({ fw }).consume(`/ndn/edu/ucla/ping/${Math.trunc(Math.random() * 1e8)}`);
-  console.log("Interest satisfied", `${data}`, `${Date.now() - t0}ms`);
+  console.log("Interest satisfied", `${data.name}`, `${Date.now() - t0}ms`);
 } catch (err: unknown) {
   console.warn(err);
 }

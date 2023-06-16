@@ -2,7 +2,6 @@ import * as os from "node:os";
 
 import type { FwFace } from "@ndn/fw";
 import { splitHostPort, TcpTransport, udp_helper, UdpTransport } from "@ndn/node-transport";
-import defaultGateway from "default-gateway";
 import nodeFetch from "node-fetch";
 
 import type { PlatformFchDefaults } from "./fch";
@@ -24,7 +23,8 @@ export const FCH_DEFAULTS: PlatformFchDefaults = {
 };
 
 export async function getDefaultGateway(): Promise<string> {
-  const result = await defaultGateway.v4();
+  const defaultGateway = await import("default-gateway"); // allow mocking with import() function
+  const result = await defaultGateway.gateway4async();
   return result.gateway;
 }
 
