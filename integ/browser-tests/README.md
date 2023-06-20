@@ -13,13 +13,17 @@ In each test case,
 ## Puppeteer Docker
 
 ```bash
-curl -fsLS https://github.com/Zenika/alpine-chrome/raw/master/chrome.json > ~/seccomp-chrome.json
+docker pull satantime/puppeteer-node:20-slim
 
 docker run -it --rm \
-  --network host --mount type=bind,source=$(pwd),target=/NDNts \
-  --security-opt seccomp=~/seccomp-chrome.json \
-  --user $(id -u):$(id -g) --workdir /NDNts/integ/browser-tests \
-  aliginberlin/puppeteer:latest bash
+  --network host \
+  --mount type=bind,source=$(pwd),target=/NDNts \
+  --mount type=bind,source=$HOME/.cache/puppeteer,target=/pptr-cache,readonly=true \
+  -e PUPPETEER_CACHE_DIR=/pptr-cache \
+  --cap-add SYS_ADMIN \
+  --user $(id -u):$(id -g) \
+  --workdir /NDNts/integ/browser-tests \
+  satantime/puppeteer-node:20-slim bash
 ```
 
 Type `corepack pnpm test` to run the tests.
