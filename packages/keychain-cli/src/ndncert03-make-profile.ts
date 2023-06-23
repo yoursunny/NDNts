@@ -4,7 +4,7 @@ import { CertNaming } from "@ndn/keychain";
 import { CaProfile } from "@ndn/ndncert";
 import { Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
-import type { Arguments, Argv, CommandModule } from "yargs";
+import type { CommandModule } from "yargs";
 
 import { keyChain } from "./util";
 
@@ -16,11 +16,11 @@ interface Args {
   "valid-days": number;
 }
 
-export class Ndncert03MakeProfileCommand implements CommandModule<{}, Args> {
-  public readonly command = "ndncert03-make-profile";
-  public readonly describe = "generate CA profile of NDNCERT 0.3";
+export const Ndncert03MakeProfileCommand: CommandModule<{}, Args> = {
+  command: "ndncert03-make-profile",
+  describe: "generate CA profile of NDNCERT 0.3",
 
-  public builder(argv: Argv): Argv<Args> {
+  builder(argv) {
     return argv
       .option("out", {
         demandOption: true,
@@ -48,9 +48,9 @@ export class Ndncert03MakeProfileCommand implements CommandModule<{}, Args> {
         type: "number",
       })
       .check(({ cert }) => CertNaming.isCertName(new Name(cert)));
-  }
+  },
 
-  public async handler(args: Arguments<Args>) {
+  async handler(args) {
     const cert = await keyChain.getCert(new Name(args.cert));
     const signer = await keyChain.getKey(CertNaming.toKeyName(cert.name), "signer");
 
@@ -63,5 +63,5 @@ export class Ndncert03MakeProfileCommand implements CommandModule<{}, Args> {
       signer,
     });
     await fs.writeFile(args.out, Encoder.encode(profile.data));
-  }
-}
+  },
+};

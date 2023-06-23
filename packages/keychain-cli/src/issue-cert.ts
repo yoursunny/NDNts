@@ -1,6 +1,6 @@
 import { Certificate, CertNaming, createVerifier, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
 import { Component, Name } from "@ndn/packet";
-import type { Arguments, Argv, CommandModule } from "yargs";
+import type { CommandModule } from "yargs";
 
 import { inputCertBase64, keyChain, printCertBase64 } from "./util";
 
@@ -11,11 +11,11 @@ interface Args {
   "use-key-name-locator": boolean;
 }
 
-export class IssueCertCommand implements CommandModule<{}, Args> {
-  public readonly command = "issue-cert";
-  public readonly describe = "issue certificate";
+export const IssueCertCommand: CommandModule<{}, Args> = {
+  command: "issue-cert",
+  describe: "issue certificate",
 
-  public builder(argv: Argv): Argv<Args> {
+  builder(argv) {
     return argv
       .option("issuer", {
         demandOption: true,
@@ -37,14 +37,14 @@ export class IssueCertCommand implements CommandModule<{}, Args> {
         desc: "",
         type: "boolean",
       });
-  }
+  },
 
-  public async handler({
+  async handler({
     issuer,
     "issuer-id": issuerIdInput,
     "valid-days": validDays,
     "use-key-name-locator": useKeyNameKeyLocator,
-  }: Arguments<Args>) {
+  }) {
     const issuerPrivateKey = await keyChain.getSigner(new Name(issuer), { useKeyNameKeyLocator });
 
     const certReq = await inputCertBase64();
@@ -61,5 +61,5 @@ export class IssueCertCommand implements CommandModule<{}, Args> {
       validity,
     });
     printCertBase64(cert);
-  }
-}
+  },
+};

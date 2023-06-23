@@ -3,7 +3,7 @@ import { createServer } from "node:net";
 import { exitClosers, getSigner, openUplinks } from "@ndn/cli-common";
 import type { DataStore } from "@ndn/repo";
 import { BulkInsertTarget, RepoProducer, respondRdr } from "@ndn/repo";
-import type { Arguments, Argv, CommandModule } from "yargs";
+import type { CommandModule } from "yargs";
 
 import { declareStoreArgs, openStore, type StoreArgs } from "./util";
 
@@ -29,11 +29,11 @@ function enableBulkInsertion(store: DataStore, {
   exitClosers.push(server);
 }
 
-export class ServerCommand implements CommandModule<{}, Args> {
-  public command = "server";
-  public describe = "run repo server";
+export const ServerCommand: CommandModule<{}, Args> = {
+  command: "server",
+  describe: "run repo server",
 
-  public builder(argv: Argv): Argv<Args> {
+  builder(argv) {
     return declareStoreArgs(argv)
       .option("rdr", {
         default: false,
@@ -65,9 +65,9 @@ export class ServerCommand implements CommandModule<{}, Args> {
         desc: "bulk insertion maximum parallel batches",
         type: "number",
       });
-  }
+  },
 
-  public async handler(args: Arguments<Args>) {
+  async handler(args) {
     await openUplinks();
     const store = openStore(args);
     const producer = RepoProducer.create(store, {
@@ -79,5 +79,5 @@ export class ServerCommand implements CommandModule<{}, Args> {
       enableBulkInsertion(store, args);
     }
     await new Promise(() => undefined);
-  }
-}
+  },
+};

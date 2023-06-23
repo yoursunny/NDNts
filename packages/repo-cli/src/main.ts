@@ -10,9 +10,9 @@ export const COMMAND = "ndnts-repo";
 try {
   await yargs(hideBin(process.argv))
     .scriptName(COMMAND)
-    .command(new ServerCommand())
-    .command(new FillStoreCommand())
-    .command(new FillBiCommand())
+    .command(ServerCommand)
+    .command(FillStoreCommand)
+    .command(FillBiCommand)
     .demandCommand()
     .parseAsync();
 } finally {

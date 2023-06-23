@@ -9,7 +9,7 @@ import { fetch } from "@ndn/segmented-object";
 import { console } from "@ndn/util";
 import { pushable } from "it-pushable";
 import { consume, parallelMap, writeToStream } from "streaming-iterables";
-import type { Arguments, Argv, CommandModule } from "yargs";
+import type { CommandModule } from "yargs";
 
 import { type CommonArgs, Segment } from "./util";
 
@@ -20,11 +20,11 @@ interface Args extends CommonArgs {
   retx: number;
 }
 
-export class FileClientCommand implements CommandModule<CommonArgs, Args> {
-  public command = "file-client <remote> <local>";
-  public describe = "download a folder from ndn6-file-server";
+export const FileClientCommand: CommandModule<CommonArgs, Args> = {
+  command: "file-client <remote> <local>",
+  describe: "download a folder from ndn6-file-server",
 
-  public builder(argv: Argv<CommonArgs>): Argv<Args> {
+  builder(argv) {
     return argv
       .positional("remote", {
         demandOption: true,
@@ -46,14 +46,14 @@ export class FileClientCommand implements CommandModule<CommonArgs, Args> {
         desc: "retransmission limit",
         type: "number",
       });
-  }
+  },
 
-  public async handler(args: Arguments<Args>) {
-    const dl = new Downloader(new Name(args.remote), args.local, args.jobs, args.retx);
+  handler({ remote, local, jobs, retx }) {
+    const dl = new Downloader(new Name(remote), local, jobs, retx);
     const abort = new AbortController();
-    await dl.run(abort.signal);
-  }
-}
+    return dl.run(abort.signal);
+  },
+};
 
 class Downloader {
   constructor(

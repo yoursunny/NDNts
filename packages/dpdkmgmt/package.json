@@ -28,7 +28,7 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "graphql": "^16.6.0",
+    "graphql": "^16.7.1",
     "graphql-request": "^6.1.0",
     "tslib": "^2.5.3"
   },

@@ -3,15 +3,15 @@ import type { CommandModule } from "yargs";
 
 import { keyChain } from "./util";
 
-export class ListKeysCommand implements CommandModule {
-  public readonly command = "list-keys";
-  public readonly describe = "list keys";
-  public readonly aliases = ["list-key"];
+export const ListKeysCommand: CommandModule = {
+  command: "list-keys",
+  describe: "list keys",
+  aliases: ["list-key"],
 
-  public async handler() {
+  async handler() {
     const names = await keyChain.listKeys();
     for (const name of names) {
       stdout.write(`${name}\n`);
     }
-  }
-}
+  },
+};

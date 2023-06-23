@@ -19,9 +19,9 @@ try {
       type: "number",
     })
     .middleware(applyCommonArgs)
-    .command(new GetSegmentedCommand())
-    .command(new PutSegmentedCommand())
-    .command(new FileClientCommand())
+    .command(GetSegmentedCommand)
+    .command(PutSegmentedCommand)
+    .command(FileClientCommand)
     .demandCommand()
     .parseAsync();
 } finally {

@@ -16,7 +16,7 @@
   "devDependencies": {
     "@types/node": "^20.3.1",
     "@types/wtfnode": "^0.7.0",
-    "@typescript/lib-dom": "npm:@types/web@0.0.99",
+    "@typescript/lib-dom": "npm:@types/web@0.0.101",
     "@vitest/coverage-v8": "^0.32.2",
     "@yoursunny/xo-config": "0.54.0",
     "codedown": "^2.2.0",
@@ -35,11 +35,6 @@
         "eslint*",
         "typescript",
         "webpack"
-      ]
-    },
-    "updateConfig": {
-      "ignoreDependencies": [
-        "@types/yargs"
       ]
     }
   }

@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import { exportClientConf } from "@ndn/ndncert";
 import { Encoder } from "@ndn/tlv";
 import stdout from "stdout-stream";
-import type { Arguments, Argv, CommandModule } from "yargs";
+import type { CommandModule } from "yargs";
 
 import { inputCaProfile } from "./util";
 
@@ -14,11 +14,11 @@ interface Args {
   clientconf?: boolean;
 }
 
-export class Ndncert03ShowProfileCommand implements CommandModule<{}, Args> {
-  public readonly command = "ndncert03-show-profile";
-  public readonly describe = "show/convert/retrieve CA profile of NDNCERT 0.3";
+export const Ndncert03ShowProfileCommand: CommandModule<{}, Args> = {
+  command: "ndncert03-show-profile",
+  describe: "show/convert/retrieve CA profile of NDNCERT 0.3",
 
-  public builder(argv: Argv): Argv<Args> {
+  builder(argv) {
     return argv
       .option("profile", {
         demandOption: true,
@@ -38,9 +38,9 @@ export class Ndncert03ShowProfileCommand implements CommandModule<{}, Args> {
         type: "boolean",
         conflicts: "json",
       });
-  }
+  },
 
-  public async handler(args: Arguments<Args>) {
+  async handler(args) {
     const profile = await inputCaProfile(args.profile);
     if (args.out) {
       await fs.writeFile(args.out, Encoder.encode(profile.data));
@@ -61,5 +61,5 @@ export class Ndncert03ShowProfileCommand implements CommandModule<{}, Args> {
         break;
       }
     }
-  }
-}
+  },
+};

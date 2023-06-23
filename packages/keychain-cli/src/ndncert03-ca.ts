@@ -8,7 +8,7 @@ import { makeEnv, parsers } from "@strattadb/environment";
 import leveldown from "leveldown";
 import { createTransport as createMT } from "nodemailer";
 import stdout from "stdout-stream";
-import type { Arguments, Argv, CommandModule } from "yargs";
+import type { CommandModule } from "yargs";
 
 import { inputCaProfile, inputCertBase64, keyChain } from "./util";
 
@@ -19,11 +19,11 @@ interface Args {
   "possession-issuer"?: string;
 }
 
-export class Ndncert03CaCommand implements CommandModule<{}, Args> {
-  public readonly command = "ndncert03-ca";
-  public readonly describe = "run NDNCERT 0.3 certificate authority";
+export const Ndncert03CaCommand: CommandModule<{}, Args> = {
+  command: "ndncert03-ca",
+  describe: "run NDNCERT 0.3 certificate authority",
 
-  public builder(argv: Argv): Argv<Args> {
+  builder(argv) {
     return argv
       .option("profile", {
         demandOption: true,
@@ -47,9 +47,9 @@ export class Ndncert03CaCommand implements CommandModule<{}, Args> {
         defaultDescription: "CA certificate",
         type: "string",
       });
-  }
+  },
 
-  public async handler(args: Arguments<Args>) {
+  async handler(args) {
     await openUplinks();
 
     const profile = await inputCaProfile(args.profile, true);
@@ -140,10 +140,9 @@ Otherwise, please disregard this message.`,
           break;
         }
         case "possession": {
-          const { "possession-issuer": issuerFile } = args;
           let verifier: Verifier;
-          if (issuerFile) {
-            const issuerCert = await inputCertBase64(issuerFile);
+          if (args.possessionIssuer) {
+            const issuerCert = await inputCertBase64(args.possessionIssuer);
             verifier = await createVerifier(issuerCert, { algoList: SigningAlgorithmListFull });
           } else {
             verifier = profile.publicKey;
@@ -161,5 +160,5 @@ Otherwise, please disregard this message.`,
       challenges,
     });
     await new Promise(() => undefined);
-  }
-}
+  },
+};

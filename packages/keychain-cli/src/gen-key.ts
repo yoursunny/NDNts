@@ -1,56 +1,31 @@
 import { Certificate, EcCurve, ECDSA, generateSigningKey, type NamedSigner, type NamedVerifier, type PrivateKey, type PublicKey, RSA, RsaModulusLength } from "@ndn/keychain";
-import type { NameLike } from "@ndn/packet";
 import stdout from "stdout-stream";
-import type { Arguments, Argv, CommandModule } from "yargs";
+import type { CommandModule } from "yargs";
 
 import { keyChain } from "./util";
 
 const typeChoices = ["ec", "rsa", "hmac"] as const;
 type TypeChoice = typeof typeChoices[number];
 
-interface Args extends GenKeyCommand.KeyParamArgs {
+interface Args {
   name: string;
+  type: TypeChoice;
+  curve: EcCurve;
+  "modulus-length": RsaModulusLength;
 }
 
-export class GenKeyCommand implements CommandModule<{}, Args> {
-  public readonly command = "gen-key <name>";
-  public readonly describe = "generate key";
-  public readonly aliases = ["keygen"];
+export const GenKeyCommand: CommandModule<{}, Args> = {
+  command: "gen-key <name>",
+  describe: "generate key",
+  aliases: ["keygen"],
 
-  public builder(argv: Argv): Argv<Args> {
-    return GenKeyCommand.declareKeyParamArgs(argv)
+  builder(argv) {
+    return argv
       .positional("name", {
         demandOption: true,
         desc: "subject name or key name",
         type: "string",
-      });
-  }
-
-  public async handler(args: Arguments<Args>) {
-    const { pvt, pub, canSelfSign } = await GenKeyCommand.generateKey(args.name, args);
-
-    if (canSelfSign) {
-      const cert = await Certificate.selfSign({
-        privateKey: pvt as NamedSigner.PrivateKey,
-        publicKey: pub as NamedVerifier.PublicKey,
-      });
-      await keyChain.insertCert(cert);
-      stdout.write(`${cert.name}\n`);
-    } else {
-      stdout.write(`${pvt.name}\n`);
-    }
-  }
-}
-
-export namespace GenKeyCommand {
-  export interface KeyParamArgs {
-    type: TypeChoice;
-    curve: EcCurve;
-    "modulus-length": RsaModulusLength;
-  }
-
-  export function declareKeyParamArgs<T>(argv: Argv<T>): Argv<T & KeyParamArgs> {
-    return argv
+      })
       .option("type", {
         choices: typeChoices,
         default: typeChoices[0],
@@ -66,31 +41,42 @@ export namespace GenKeyCommand {
         default: RsaModulusLength.Default,
         desc: "RSA modulus length",
       });
-  }
+  },
 
-  export async function generateKey(name: NameLike, {
-    type, curve, "modulus-length": modulusLength,
-  }: KeyParamArgs): Promise<{
-        pvt: PrivateKey;
-        pub: PublicKey;
-        canSelfSign: boolean;
-      }> {
+  async handler({ name, type, curve, modulusLength }) {
+    let pvt: PrivateKey;
+    let pub: PublicKey;
+    let canSelfSign: boolean;
     switch (type) {
       case "ec": {
-        const [pvt, pub] = await generateSigningKey(keyChain, name, ECDSA, { curve });
-        return { pvt, pub, canSelfSign: true };
+        [pvt, pub] = await generateSigningKey(keyChain, name, ECDSA, { curve });
+        canSelfSign = true;
+        break;
       }
       case "rsa": {
-        const [pvt, pub] = await generateSigningKey(keyChain, name, RSA, { modulusLength });
-        return { pvt, pub, canSelfSign: true };
+        [pvt, pub] = await generateSigningKey(keyChain, name, RSA, { modulusLength });
+        canSelfSign = true;
+        break;
       }
       case "hmac": {
-        const [pvt, pub] = await generateSigningKey(keyChain, name);
-        return { pvt, pub, canSelfSign: false };
+        [pvt, pub] = await generateSigningKey(keyChain, name);
+        canSelfSign = false;
+        break;
       }
       default: {
         throw new Error(`unknown type ${type}`);
       }
     }
-  }
-}
+
+    if (canSelfSign) {
+      const cert = await Certificate.selfSign({
+        privateKey: pvt as NamedSigner.PrivateKey,
+        publicKey: pub as NamedVerifier.PublicKey,
+      });
+      await keyChain.insertCert(cert);
+      stdout.write(`${cert.name}\n`);
+    } else {
+      stdout.write(`${pvt.name}\n`);
+    }
+  },
+};

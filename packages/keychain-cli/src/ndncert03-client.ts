@@ -9,7 +9,7 @@ import { Name } from "@ndn/packet";
 import { console, toHex } from "@ndn/util";
 import prompts from "prompts";
 import stdout from "stdout-stream";
-import type { Arguments, Argv, CommandModule } from "yargs";
+import type { CommandModule } from "yargs";
 
 import { inputCaProfile, keyChain as defaultKeyChain, PPOption, promptProbeParameters } from "./util";
 
@@ -24,11 +24,11 @@ interface Args {
   "possession-cert"?: string;
 }
 
-export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
-  public readonly command = "ndncert03-client";
-  public readonly describe = "request certificate via NDNCERT 0.3";
+export const Ndncert03ClientCommand: CommandModule<{}, Args> = {
+  command: "ndncert03-client",
+  describe: "request certificate via NDNCERT 0.3",
 
-  public builder(argv: Argv): Argv<Args> {
+  builder(argv) {
     return argv
       .option("profile", {
         demandOption: true,
@@ -90,13 +90,13 @@ export class Ndncert03ClientCommand implements CommandModule<{}, Args> {
         }
         return true;
       });
-  }
+  },
 
-  public async handler(args: Arguments<Args>) {
+  async handler(args) {
     await openUplinks();
     await new InteractiveClient(args).run();
-  }
-}
+  },
+};
 
 class InteractiveClient {
   constructor(private readonly args: Args) {}

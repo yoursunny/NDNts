@@ -6,7 +6,7 @@ import { Data, Name } from "@ndn/packet";
 import { BulkInsertInitiator, type DataStore } from "@ndn/repo-api";
 import ProgressBar from "progress";
 import { batch, consume, pipeline, tap, transform } from "streaming-iterables";
-import type { Arguments, Argv, CommandModule } from "yargs";
+import type { Argv, CommandModule } from "yargs";
 
 import { declareStoreArgs, openStore, type StoreArgs } from "./util";
 
@@ -34,81 +34,75 @@ interface BaseArgs extends GenDataArgs {
   parallel: number;
 }
 
-abstract class FillCommandBase {
-  protected buildBaseArgv(argv: Argv): Argv<BaseArgs> {
-    return argv
-      .option("prefix", {
-        default: "/repodemo",
-        desc: "demo data prefix",
-        type: "string",
-      })
-      .option("start", {
-        default: 0,
-        desc: "start sequence number",
-        type: "number",
-      })
-      .option("count", {
-        default: 1048576,
-        desc: "count of packets",
-        type: "number",
-      })
-      .option("size", {
-        default: 1000,
-        desc: "payload size",
-        type: "number",
-      })
-      .option("batch", {
-        default: 64,
-        desc: "packets per batch",
-        type: "number",
-      })
-      .option("parallel", {
-        default: 1,
-        desc: "number of parallel transactions",
-        type: "number",
-      });
-  }
-
-  protected async execute(args: BaseArgs, store: DataStore.Insert) {
-    const progress = new ProgressBar(":bar :current/:total :rateD/s :elapseds ETA:etas", { total: args.count });
-    await pipeline(
-      () => genData(args),
-      batch(args.batch),
-      tap((pkts) => progress.tick(pkts.length)),
-      transform(args.parallel, (pkts) => store.insert(...pkts)),
-      consume,
-    );
-    progress.terminate();
-  }
+function declareBaseArgv(argv: Argv): Argv<BaseArgs> {
+  return argv
+    .option("prefix", {
+      default: "/repodemo",
+      desc: "demo data prefix",
+      type: "string",
+    })
+    .option("start", {
+      default: 0,
+      desc: "start sequence number",
+      type: "number",
+    })
+    .option("count", {
+      default: 1048576,
+      desc: "count of packets",
+      type: "number",
+    })
+    .option("size", {
+      default: 1000,
+      desc: "payload size",
+      type: "number",
+    })
+    .option("batch", {
+      default: 64,
+      desc: "packets per batch",
+      type: "number",
+    })
+    .option("parallel", {
+      default: 1,
+      desc: "number of parallel transactions",
+      type: "number",
+    });
 }
 
-type FillStoreArgs = BaseArgs & StoreArgs;
+async function execute(args: BaseArgs, store: DataStore.Insert) {
+  const progress = new ProgressBar(":bar :current/:total :rateD/s :elapseds ETA:etas", { total: args.count });
+  await pipeline(
+    () => genData(args),
+    batch(args.batch),
+    tap((pkts) => progress.tick(pkts.length)),
+    transform(args.parallel, (pkts) => store.insert(...pkts)),
+    consume,
+  );
+  progress.terminate();
+}
 
-export class FillStoreCommand extends FillCommandBase implements CommandModule<{}, FillStoreArgs> {
-  public command = "fillstore";
-  public describe = "fill repo with demo data via store transaction";
+export const FillStoreCommand: CommandModule<{}, BaseArgs & StoreArgs> = {
+  command: "fillstore",
+  describe: "fill repo with demo data via store transaction",
 
-  public builder(argv: Argv): Argv<FillStoreArgs> {
-    return declareStoreArgs(this.buildBaseArgv(argv));
-  }
+  builder(argv) {
+    return declareStoreArgs(declareBaseArgv(argv));
+  },
 
-  public async handler(args: Arguments<FillStoreArgs>) {
+  async handler(args) {
     const store = openStore(args);
-    await this.execute(args, store);
-  }
-}
-
-type FillBiArgs = BaseArgs & {
-  host: string;
-  port: number;
+    await execute(args, store);
+  },
 };
 
-export class FillBiCommand extends FillCommandBase implements CommandModule<{}, FillBiArgs> {
-  public command = "fillbi";
-  public describe = "fill repo with demo data via bulk insertion";
+export const FillBiCommand: CommandModule<{}, BaseArgs & {
+  host: string;
+  port: number;
+}> = {
+  command: "fillbi",
+  describe: "fill repo with demo data via bulk insertion",
 
-  public builder(argv: Argv): Argv<FillBiArgs> {
-    return this.buildBaseArgv(argv)
+  builder(argv) {
+    return declareBaseArgv(argv)
       .option("host", {
         default: "127.0.0.1",
         desc: "destination host",
@@ -119,12 +113,12 @@ export class FillBiCommand extends FillCommandBase implements CommandModule<{}, 
         desc: "destination port",
         type: "number",
       });
-  }
+  },
 
-  public async handler(args: Arguments<FillBiArgs>) {
+  async handler(args) {
     const face = new L3Face(await TcpTransport.connect(args.host, args.port));
     const bi = new BulkInsertInitiator(face);
     exitClosers.push(bi);
-    await this.execute(args, bi);
-  }
-}
+    await execute(args, bi);
+  },
+};
