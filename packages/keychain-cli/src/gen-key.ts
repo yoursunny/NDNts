@@ -1,4 +1,5 @@
 import { Certificate, EcCurve, ECDSA, generateSigningKey, type NamedSigner, type NamedVerifier, type PrivateKey, type PublicKey, RSA, RsaModulusLength } from "@ndn/keychain";
+import { Name } from "@ndn/packet";
 import stdout from "stdout-stream";
 import type { CommandModule } from "yargs";
 
@@ -8,7 +9,7 @@ const typeChoices = ["ec", "rsa", "hmac"] as const;
 type TypeChoice = typeof typeChoices[number];
 
 interface Args {
-  name: string;
+  name: Name;
   type: TypeChoice;
   curve: EcCurve;
   "modulus-length": RsaModulusLength;
@@ -22,6 +23,7 @@ export const GenKeyCommand: CommandModule<{}, Args> = {
   builder(argv) {
     return argv
       .positional("name", {
+        coerce: Name.from,
         demandOption: true,
         desc: "subject name or key name",
         type: "string",

@@ -30,6 +30,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/repo": "workspace:*",
     "@ndn/repo-api": "workspace:*",
+    "@ndn/util": "workspace:*",
     "leveldown": "^6.1.1",
     "progress": "^2.0.3",
     "streaming-iterables": "^7.1.0",

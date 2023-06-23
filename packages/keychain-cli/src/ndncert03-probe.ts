@@ -25,11 +25,11 @@ export const Ndncert03ProbeCommand: CommandModule<{}, Args> = {
       .option("pp", PPOption.def);
   },
 
-  async handler(args) {
+  async handler({ profile: profileFile, pp }) {
     await openUplinks();
 
-    const profile = await inputCaProfile(args.profile);
-    const parameters = await promptProbeParameters(profile, args.pp as string[]);
+    const profile = await inputCaProfile(profileFile);
+    const parameters = await promptProbeParameters(profile, pp as string[]);
 
     const { entries, redirects } = await requestProbe({
       profile,

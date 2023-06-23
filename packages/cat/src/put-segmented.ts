@@ -1,3 +1,5 @@
+import { exitClosers } from "@ndn/cli-common";
+import { Name } from "@ndn/packet";
 import { Metadata, serveMetadata } from "@ndn/rdr";
 import { FileChunkSource, serve, serveVersioned, StreamChunkSource } from "@ndn/segmented-object";
 import type { CommandModule } from "yargs";
@@ -5,7 +7,7 @@ import type { CommandModule } from "yargs";
 import { checkVersionArg, type CommonArgs, Segment, signer, Version } from "./util";
 
 interface Args extends CommonArgs {
-  name: string;
+  name: Name;
   rdr: boolean;
   ver: string;
   file?: string;
@@ -20,6 +22,7 @@ export const PutSegmentedCommand: CommandModule<CommonArgs, Args> = {
   builder(argv) {
     return argv
       .positional("name", {
+        coerce: Name.from,
         demandOption: true,
         desc: "name prefix",
         type: "string",
@@ -46,7 +49,7 @@ export const PutSegmentedCommand: CommandModule<CommonArgs, Args> = {
       .check(checkVersionArg(["none", "now"]));
   },
 
-  handler({ name, rdr, ver, file, chunkSize }) {
+  async handler({ name, rdr, ver, file, chunkSize }) {
     const serveFunc = ver === "none" ? serve : serveVersioned;
     const source = file ?
       new FileChunkSource(file, { chunkSize }) :
@@ -57,9 +60,11 @@ export const PutSegmentedCommand: CommandModule<CommonArgs, Args> = {
       version: ver === "now" ? undefined : Number.parseInt(ver, 10),
       versionConvention: Version,
     });
+    exitClosers.push(server);
     if (ver !== "none" && rdr) {
-      serveMetadata(new Metadata(server.prefix), { signer, announcement: false });
+      const metadataServer = serveMetadata(new Metadata(server.prefix), { signer, announcement: false });
+      exitClosers.push(metadataServer);
     }
-    return new Promise(() => undefined);
+    await exitClosers.wait();
   },
 };

@@ -14,7 +14,7 @@ import type { CommandModule } from "yargs";
 import { type CommonArgs, Segment } from "./util";
 
 interface Args extends CommonArgs {
-  remote: string;
+  remote: Name;
   local: string;
   jobs: number;
   retx: number;
@@ -27,6 +27,7 @@ export const FileClientCommand: CommandModule<CommonArgs, Args> = {
   builder(argv) {
     return argv
       .positional("remote", {
+        coerce: Name.from,
         demandOption: true,
         desc: "remote name prefix",
         type: "string",
@@ -49,7 +50,7 @@ export const FileClientCommand: CommandModule<CommonArgs, Args> = {
   },
 
   handler({ remote, local, jobs, retx }) {
-    const dl = new Downloader(new Name(remote), local, jobs, retx);
+    const dl = new Downloader(remote, local, jobs, retx);
     const abort = new AbortController();
     return dl.run(abort.signal);
   },

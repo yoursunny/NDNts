@@ -16,12 +16,12 @@ import { inputCaProfile, keyChain as defaultKeyChain, PPOption, promptProbeParam
 interface Args {
   profile: string;
   ndnsec: boolean;
-  key?: string;
+  key?: Name;
   pp: PPOption;
   challenge: readonly string[];
   "pin-named-pipe"?: string;
   email?: string;
-  "possession-cert"?: string;
+  "possession-cert"?: Name;
 }
 
 export const Ndncert03ClientCommand: CommandModule<{}, Args> = {
@@ -41,6 +41,7 @@ export const Ndncert03ClientCommand: CommandModule<{}, Args> = {
         type: "boolean",
       })
       .option("key", {
+        coerce: Name.from,
         desc: "key name or certificate name",
         defaultDescription: "run PROBE command and create new key",
         type: "string",
@@ -63,16 +64,13 @@ export const Ndncert03ClientCommand: CommandModule<{}, Args> = {
         type: "string",
       })
       .option("possession-cert", {
+        coerce: Name.from,
         desc: "possession challenge - existing certificate name",
         defaultDescription: "same as --key when it is a certificate name",
         type: "string",
       })
       .check(({ key }) => {
-        if (!key) {
-          return true;
-        }
-        const name = new Name(key);
-        if (!CertNaming.isKeyName(name) && !CertNaming.isCertName(name)) {
+        if (!!key && !CertNaming.isKeyName(key) && !CertNaming.isCertName(key)) {
           throw new Error("--key is neither a key name nor a certificate name");
         }
         return true;
@@ -83,9 +81,11 @@ export const Ndncert03ClientCommand: CommandModule<{}, Args> = {
         }
         return true;
       })
-      .check(({ challenge, key, "possession-cert": possessionCert }) => {
-        if (challenge.includes("possession") &&
-            !CertNaming.isCertName(new Name(possessionCert ?? key))) {
+      .check(({ challenge, key, "possession-cert": cert }) => {
+        if (!challenge.includes("possession")) {
+          return true;
+        }
+        if (!(cert ??= key) || !CertNaming.isCertName(cert)) {
           throw new Error("possession challenge enabled but neither --key nor --possession-cert is a certificate name");
         }
         return true;

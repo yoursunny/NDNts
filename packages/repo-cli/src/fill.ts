@@ -4,6 +4,7 @@ import { SequenceNum } from "@ndn/naming-convention2";
 import { TcpTransport } from "@ndn/node-transport";
 import { Data, Name } from "@ndn/packet";
 import { BulkInsertInitiator, type DataStore } from "@ndn/repo-api";
+import { crypto } from "@ndn/util";
 import ProgressBar from "progress";
 import { batch, consume, pipeline, tap, transform } from "streaming-iterables";
 import type { Argv, CommandModule } from "yargs";
@@ -11,19 +12,14 @@ import type { Argv, CommandModule } from "yargs";
 import { declareStoreArgs, openStore, type StoreArgs } from "./util";
 
 interface GenDataArgs {
-  prefix: string;
+  prefix: Name;
   start: number;
   count: number;
   size: number;
 }
 
-function* genData({ prefix: prefixUri, start, count, size }: GenDataArgs) {
-  const prefix = new Name(prefixUri);
-  const content = new Uint8Array(size);
-  for (let i = 0; i < size; ++i) {
-    content[i] = Math.random() * 0x100;
-  }
-
+function* genData({ prefix, start, count, size }: GenDataArgs) {
+  const content = crypto.getRandomValues(new Uint8Array(size));
   for (let seq = start, last = start + count; seq < last; ++seq) {
     yield new Data(prefix.append(SequenceNum, seq), content);
   }
@@ -37,7 +33,8 @@ interface BaseArgs extends GenDataArgs {
 function declareBaseArgv(argv: Argv): Argv<BaseArgs> {
   return argv
     .option("prefix", {
-      default: "/repodemo",
+      coerce: Name.from,
+      default: new Name("/repodemo"),
       desc: "demo data prefix",
       type: "string",
     })

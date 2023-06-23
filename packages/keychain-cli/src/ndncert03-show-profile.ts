@@ -40,19 +40,19 @@ export const Ndncert03ShowProfileCommand: CommandModule<{}, Args> = {
       });
   },
 
-  async handler(args) {
-    const profile = await inputCaProfile(args.profile);
-    if (args.out) {
-      await fs.writeFile(args.out, Encoder.encode(profile.data));
+  async handler({ profile: profileFile, out: outFile, json = false, clientconf = false }) {
+    const profile = await inputCaProfile(profileFile);
+    if (outFile) {
+      await fs.writeFile(outFile, Encoder.encode(profile.data));
     }
 
     let output: unknown = profile;
     switch (true) {
-      case args.clientconf: {
+      case clientconf: {
         output = exportClientConf(profile);
       }
       // fallthrough
-      case args.json: {
+      case json: {
         output = JSON.stringify(output, undefined, 2);
       }
       // fallthrough

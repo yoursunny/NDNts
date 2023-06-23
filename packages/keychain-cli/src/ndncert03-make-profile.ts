@@ -10,9 +10,9 @@ import { keyChain } from "./util";
 
 interface Args {
   out: string;
-  prefix: string;
+  prefix: Name;
   info: string;
-  cert: string;
+  cert: Name;
   "valid-days": number;
 }
 
@@ -28,6 +28,7 @@ export const Ndncert03MakeProfileCommand: CommandModule<{}, Args> = {
         type: "string",
       })
       .option("prefix", {
+        coerce: Name.from,
         demandOption: true,
         desc: "CA name prefix",
         type: "string",
@@ -38,6 +39,7 @@ export const Ndncert03MakeProfileCommand: CommandModule<{}, Args> = {
         type: "string",
       })
       .option("cert", {
+        coerce: Name.from,
         demandOption: true,
         desc: "CA certificate name",
         type: "string",
@@ -50,18 +52,18 @@ export const Ndncert03MakeProfileCommand: CommandModule<{}, Args> = {
       .check(({ cert }) => CertNaming.isCertName(new Name(cert)));
   },
 
-  async handler(args) {
-    const cert = await keyChain.getCert(new Name(args.cert));
+  async handler({ out: outFile, prefix, info, cert: certName, validDays }) {
+    const cert = await keyChain.getCert(certName);
     const signer = await keyChain.getKey(CertNaming.toKeyName(cert.name), "signer");
 
     const profile = await CaProfile.build({
-      prefix: new Name(args.prefix),
-      info: args.info,
+      prefix,
+      info,
       probeKeys: [],
-      maxValidityPeriod: args["valid-days"] * 86400_000,
+      maxValidityPeriod: validDays * 86400_000,
       cert,
       signer,
     });
-    await fs.writeFile(args.out, Encoder.encode(profile.data));
+    await fs.writeFile(outFile, Encoder.encode(profile.data));
   },
 };

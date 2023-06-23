@@ -17,4 +17,11 @@ export class Closers extends Array {
     this.push({ close: () => clearTimeout(t) });
     return t;
   }
+
+  /** Wait for close. */
+  public wait(): Promise<void> {
+    return new Promise<void>((resolve) => {
+      this.push({ close: () => resolve() });
+    });
+  }
 }

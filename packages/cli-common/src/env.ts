@@ -19,7 +19,7 @@ export const env = makeEnv({
   },
   key: {
     envVarName: "NDNTS_KEY",
-    parser: (value) => new Name(value),
+    parser: Name.from,
     required: false,
     defaultValue: undefined,
   },
@@ -49,7 +49,7 @@ export const env = makeEnv({
   },
   nfdRegKey: {
     envVarName: "NDNTS_NFDREGKEY",
-    parser: (value) => new Name(value),
+    parser: Name.from,
     required: false,
     defaultValue: undefined,
   },

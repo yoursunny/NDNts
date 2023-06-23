@@ -12,20 +12,25 @@ test("closers", async () => {
   const c1 = {
     close: vi.fn<[], number>().mockReturnValue(1),
   };
-
   closers.push(c0, c1);
   expect(closers).toHaveLength(2);
 
   const { close } = closers;
   close();
   expect(closers).toHaveLength(0);
-  expect(c0.close).toHaveBeenCalledTimes(1);
-  expect(c1.close).toHaveBeenCalledTimes(1);
+  expect(c0.close).toHaveBeenCalledOnce();
+  expect(c1.close).toHaveBeenCalledOnce();
+
+  const waitFulfilled = vi.fn<[], void>();
+  void closers.wait().then(waitFulfilled);
+  expect(closers).toHaveLength(1);
 
   closers.close();
   expect(closers).toHaveLength(0);
-  expect(c0.close).toHaveBeenCalledTimes(1);
-  expect(c1.close).toHaveBeenCalledTimes(1);
+  expect(c0.close).toHaveBeenCalledOnce();
+  expect(c1.close).toHaveBeenCalledOnce();
+  await delay(10);
+  expect(waitFulfilled).toHaveBeenCalledOnce();
 
   const f2 = vi.fn<[], void>();
   const f3 = vi.fn<[], void>();
@@ -38,7 +43,7 @@ test("closers", async () => {
   closers.close();
   await delay(500);
   expect(closers).toHaveLength(0);
-  expect(f2).toHaveBeenCalledTimes(1);
-  expect(f3).toHaveBeenCalledTimes(0);
-  expect(f4).toHaveBeenCalledTimes(0);
+  expect(f2).toHaveBeenCalledOnce();
+  expect(f3).not.toHaveBeenCalled();
+  expect(f4).not.toHaveBeenCalled();
 });

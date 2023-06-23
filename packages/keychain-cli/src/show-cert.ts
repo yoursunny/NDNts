@@ -4,7 +4,7 @@ import type { CommandModule } from "yargs";
 import { keyChain, printCertBase64 } from "./util";
 
 interface Args {
-  name: string;
+  name: Name;
 }
 
 export const ShowCertCommand: CommandModule<{}, Args> = {
@@ -14,6 +14,7 @@ export const ShowCertCommand: CommandModule<{}, Args> = {
   builder(argv) {
     return argv
       .positional("name", {
+        coerce: Name.from,
         demandOption: true,
         desc: "certificate name or prefix",
         type: "string",
@@ -21,7 +22,7 @@ export const ShowCertCommand: CommandModule<{}, Args> = {
   },
 
   async handler({ name }) {
-    const certNames = await keyChain.listCerts(new Name(name));
+    const certNames = await keyChain.listCerts(name);
     for (const certName of certNames) {
       const cert = await keyChain.getCert(certName);
       printCertBase64(cert);

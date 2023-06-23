@@ -7,7 +7,7 @@ import type { CommandModule } from "yargs";
 import { checkVersionArg, type CommonArgs, Segment, Version } from "./util";
 
 interface Args extends CommonArgs {
-  name: string;
+  name: Name;
   ver: string;
 }
 
@@ -19,6 +19,7 @@ export const GetSegmentedCommand: CommandModule<CommonArgs, Args> = {
   builder(argv) {
     return argv
       .positional("name", {
+        coerce: Name.from,
         demandOption: true,
         desc: "name prefix",
         type: "string",
@@ -34,9 +35,8 @@ export const GetSegmentedCommand: CommandModule<CommonArgs, Args> = {
       .check(checkVersionArg(["none", "cbp", "rdr"]));
   },
 
-  async handler(args) {
-    let name = new Name(args.name);
-    switch (args.ver) {
+  async handler({ name, ver }) {
+    switch (ver) {
       case "none": {
         break;
       }
@@ -52,7 +52,7 @@ export const GetSegmentedCommand: CommandModule<CommonArgs, Args> = {
         break;
       }
       default: {
-        name = name.append(Version, Number.parseInt(args.ver, 10));
+        name = name.append(Version, Number.parseInt(ver, 10));
         break;
       }
     }

@@ -5,8 +5,8 @@ import type { CommandModule } from "yargs";
 import { inputCertBase64, keyChain, printCertBase64 } from "./util";
 
 interface Args {
-  issuer: string;
-  "issuer-id": string;
+  issuer: Name;
+  "issuer-id": Component;
   "valid-days": number;
   "use-key-name-locator": boolean;
 }
@@ -18,12 +18,14 @@ export const IssueCertCommand: CommandModule<{}, Args> = {
   builder(argv) {
     return argv
       .option("issuer", {
+        coerce: Name.from,
         demandOption: true,
         desc: "issuer key name or certificate name",
         type: "string",
       })
       .option("issuer-id", {
-        default: CertNaming.ISSUER_DEFAULT.toString(),
+        coerce: Component.from,
+        default: CertNaming.ISSUER_DEFAULT,
         desc: "issuer id",
         type: "string",
       })
@@ -39,26 +41,17 @@ export const IssueCertCommand: CommandModule<{}, Args> = {
       });
   },
 
-  async handler({
-    issuer,
-    "issuer-id": issuerIdInput,
-    "valid-days": validDays,
-    "use-key-name-locator": useKeyNameKeyLocator,
-  }) {
-    const issuerPrivateKey = await keyChain.getSigner(new Name(issuer), { useKeyNameKeyLocator });
+  async handler({ issuer, issuerId, validDays, useKeyNameLocator }) {
+    const issuerPrivateKey = await keyChain.getSigner(issuer, { useKeyNameKeyLocator: useKeyNameLocator });
 
     const certReq = await inputCertBase64();
     const publicKey = await createVerifier(certReq, { algoList: SigningAlgorithmListFull });
-
-    const issuerId = Component.from(issuerIdInput);
-
-    const validity = ValidityPeriod.daysFromNow(validDays);
 
     const cert = await Certificate.issue({
       issuerPrivateKey,
       publicKey,
       issuerId,
-      validity,
+      validity: ValidityPeriod.daysFromNow(validDays),
     });
     printCertBase64(cert);
   },

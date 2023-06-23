@@ -5,7 +5,7 @@ import type { CommandModule } from "yargs";
 import { keyChain } from "./util";
 
 interface Args {
-  name: string;
+  name: Name;
 }
 
 export const DeleteCommand: CommandModule<{}, Args> = {
@@ -15,6 +15,7 @@ export const DeleteCommand: CommandModule<{}, Args> = {
   builder(argv) {
     return argv
       .positional("name", {
+        coerce: Name.from,
         demandOption: true,
         desc: "name prefix",
         type: "string",
@@ -22,13 +23,12 @@ export const DeleteCommand: CommandModule<{}, Args> = {
   },
 
   async handler({ name }) {
-    const n = new Name(name);
-    const certNames = await keyChain.listCerts(n);
+    const certNames = await keyChain.listCerts(name);
     for (const certName of certNames) {
       stdout.write(`${certName}\n`);
       await keyChain.deleteCert(certName);
     }
-    const keyNames = await keyChain.listKeys(n);
+    const keyNames = await keyChain.listKeys(name);
     for (const keyName of keyNames) {
       stdout.write(`${keyName}\n`);
       await keyChain.deleteKey(keyName);

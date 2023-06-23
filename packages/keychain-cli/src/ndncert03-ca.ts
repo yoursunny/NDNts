@@ -1,4 +1,4 @@
-import { openUplinks } from "@ndn/cli-common";
+import { exitClosers, openUplinks } from "@ndn/cli-common";
 import { createVerifier, SigningAlgorithmListFull } from "@ndn/keychain";
 import { Server, type ServerChallenge, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "@ndn/ndncert";
 import type { Verifier } from "@ndn/packet";
@@ -49,17 +49,17 @@ export const Ndncert03CaCommand: CommandModule<{}, Args> = {
       });
   },
 
-  async handler(args) {
+  async handler({ profile: profileFile, store, challenge: challengeIds, possessionIssuer }) {
     await openUplinks();
 
-    const profile = await inputCaProfile(args.profile, true);
+    const profile = await inputCaProfile(profileFile, true);
     const signer = await keyChain.getSigner(profile.cert.name);
 
-    const repo = new DataStore(leveldown(args.store));
+    const repo = new DataStore(leveldown(store));
     RepoProducer.create(repo, { reg: PrefixRegShorter(2) });
 
     const challenges: ServerChallenge[] = [];
-    for (const challengeId of args.challenge) {
+    for (const challengeId of challengeIds) {
       switch (challengeId) {
         case "nop": {
           challenges.push(new ServerNopChallenge());
@@ -141,8 +141,8 @@ Otherwise, please disregard this message.`,
         }
         case "possession": {
           let verifier: Verifier;
-          if (args.possessionIssuer) {
-            const issuerCert = await inputCertBase64(args.possessionIssuer);
+          if (possessionIssuer) {
+            const issuerCert = await inputCertBase64(possessionIssuer);
             verifier = await createVerifier(issuerCert, { algoList: SigningAlgorithmListFull });
           } else {
             verifier = profile.publicKey;
@@ -153,12 +153,13 @@ Otherwise, please disregard this message.`,
       }
     }
 
-    Server.create({
+    const server = Server.create({
       repo,
       profile,
       signer,
       challenges,
     });
-    await new Promise(() => undefined);
+    exitClosers.push(server);
+    await exitClosers.wait();
   },
 };

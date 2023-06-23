@@ -78,6 +78,6 @@ export const ServerCommand: CommandModule<{}, Args> = {
     if (args.bi) {
       enableBulkInsertion(store, args);
     }
-    await new Promise(() => undefined);
+    await exitClosers.wait();
   },
 };
