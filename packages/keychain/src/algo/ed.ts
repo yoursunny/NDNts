@@ -4,11 +4,11 @@ import type * as asn1 from "@yoursunny/asn1";
 import { Ed25519Algorithm, polyfillEd25519 } from "@yoursunny/webcrypto-ed25519";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
-import { extractSpkiAlgorithm } from "./impl-spki";
+import { assertSpkiAlgorithm } from "./impl-spki";
 
 polyfillEd25519();
 
-class NodeEd implements SigningAlgorithm<{}, true, {}> {
+class EdAlgo implements SigningAlgorithm<{}, true, {}> {
   constructor(
       public readonly uuid: string,
       public readonly sigType: number,
@@ -46,9 +46,7 @@ class NodeEd implements SigningAlgorithm<{}, true, {}> {
   }
 
   public async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
-    if (extractSpkiAlgorithm(der) !== this.oid) {
-      throw new Error(`not ${this.algo.name} key`);
-    }
+    assertSpkiAlgorithm(der, this.algo.name, this.oid);
     const key = await crypto.subtle.importKey(
       "spki", spki, this.algo, true, this.keyUsages.public);
     return {
@@ -80,7 +78,7 @@ interface EdGenParams {
 }
 
 /** Ed25519 signing algorithm. */
-export const Ed25519: SigningAlgorithm<{}, true, {}> = new NodeEd(
+export const Ed25519: SigningAlgorithm<{}, true, {}> = new EdAlgo(
   "fa9e8104-39b1-4a8e-828d-8c557d973476",
   SigType.Ed25519,
   Ed25519Algorithm,

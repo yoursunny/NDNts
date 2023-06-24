@@ -2,7 +2,7 @@ import { crypto } from "@ndn/util";
 import type * as asn1 from "@yoursunny/asn1";
 
 import type { CryptoAlgorithm } from "../key/mod";
-import { extractSpkiAlgorithm } from "./impl-spki";
+import { assertSpkiAlgorithm } from "./impl-spki";
 import type { RSA } from "./rsa";
 
 export type RsaModulusLength = 2048 | 4096;
@@ -55,9 +55,7 @@ export abstract class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenPara
   }
 
   public async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
-    if (extractSpkiAlgorithm(der) !== "2A864886F70D010101") { // 1.2.840.113549.1.1.1
-      throw new Error("not RSA key");
-    }
+    assertSpkiAlgorithm(der, "RSA", "2A864886F70D010101"); // 1.2.840.113549.1.1.1
     const key = await crypto.subtle.importKey(
       "spki", spki, this.importParams, true, this.keyUsages.public);
     return {

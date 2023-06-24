@@ -3,7 +3,7 @@ import { crypto, fromHex, toHex } from "@ndn/util";
 import * as asn1 from "@yoursunny/asn1";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
-import { extractSpkiAlgorithm } from "./impl-spki";
+import { assertSpkiAlgorithm } from "./impl-spki";
 
 const SignVerifyParams: EcdsaParams = { name: "ECDSA", hash: "SHA-256" };
 
@@ -15,7 +15,7 @@ const PointSizes = {
   "P-256": 32,
   "P-384": 48,
   "P-521": 66,
-};
+} as const;
 
 const NamedCurveOids: Record<string, EcCurve> = {
   "2A8648CE3D030107": "P-256", // 1.2.840.10045.3.1.7
@@ -74,9 +74,7 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
   },
 
   async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
-    if (extractSpkiAlgorithm(der) !== "2A8648CE3D0201") { // 1.2.840.10045.2.1
-      throw new Error("not ECDSA key");
-    }
+    assertSpkiAlgorithm(der, "ECDSA", "2A8648CE3D0201"); // 1.2.840.10045.2.1
 
     // SubjectPublicKeyInfo.algorithm.parameter
     const ecp = der.children?.[0]?.children?.[1];

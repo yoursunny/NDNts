@@ -20,6 +20,7 @@ export const EncryptionAlgorithmListSlim: readonly EncryptionAlgorithm[] = [
 
 /**
  * A slim list of crypto algorithms.
+ * This list encompasses SigningAlgorithmListSlim and EncryptionAlgorithmListSlim.
  * If you need more algorithms, explicitly import them or use CryptoAlgorithmListFull.
  */
 export const CryptoAlgorithmListSlim: readonly CryptoAlgorithm[] = [

@@ -1,8 +1,16 @@
 import { toHex } from "@ndn/util";
 import type * as asn1 from "@yoursunny/asn1";
 
-/** Extract SubjectPublicKeyInfo.algorithm.algorithm field as OID. */
-export function extractSpkiAlgorithm(der: asn1.ElementBuffer): string | undefined {
+/**
+ * Require SubjectPublicKeyInfo.algorithm.algorithm to have specific OID.
+ * @param der SubjectPublicKeyInfo.
+ * @param algoName textual algorithm name.
+ * @param oid OID hex string (upper case).
+ */
+export function assertSpkiAlgorithm(der: asn1.ElementBuffer, algoName: string, oid: string): void {
   const algo = der.children?.[0]?.children?.[0];
-  return algo?.type === 0x06 && algo.value ? toHex(algo.value) : undefined;
+  if (algo?.type === 0x06 && algo.value && toHex(algo.value) === oid) {
+    return;
+  }
+  throw new Error(`not ${algoName} public key`);
 }
