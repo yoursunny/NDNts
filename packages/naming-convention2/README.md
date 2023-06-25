@@ -4,7 +4,7 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 
 This package implements NDN naming conventions based on typed components.
 
-The current format, sometimes known as **rev3 format**, is specified in [NDN-TR-0022 revision 3](https://named-data.net/publications/techreports/ndn-tr-22-3-ndn-memo-naming-conventions/) and [Name Component Type Assignment rev28](https://redmine.named-data.net/projects/ndn-tlv/wiki/NameComponentType/28), published in 2021.
+The current format, sometimes known as **rev3 format**, is specified in [NDN-TR-0022 revision 3](https://named-data.net/publications/techreports/ndn-tr-22-3-ndn-memo-naming-conventions/) and [Name Component Type Assignment rev29](https://redmine.named-data.net/projects/ndn-tlv/wiki/NameComponentType/29), published in 2021.
 It is supported in most other libraries and recommended for new applications.
 
 ```ts

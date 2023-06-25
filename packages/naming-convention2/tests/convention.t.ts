@@ -6,6 +6,7 @@ import { expect, test } from "vitest";
 import { AltUri, ByteOffset, GenericNumber, Keyword, Segment, SequenceNum, Timestamp, Version } from "..";
 
 test("GenericNumber", () => {
+  expect(GenericNumber.type).toBe(0x08);
   const name = new Name().append(GenericNumber, 0x38);
   expect(name.at(0)).toEqualComponent("8");
   expect(name.at(0).is(GenericNumber)).toBeTruthy();
@@ -14,6 +15,7 @@ test("GenericNumber", () => {
 });
 
 test("Keyword", () => {
+  expect(Keyword.type).toBe(0x20);
   const name = new Name().append(Keyword, "hello");
   expect(name.at(0)).toEqualComponent("32=hello");
   expect(name.at(0).is(Keyword)).toBeTruthy();
@@ -23,6 +25,7 @@ test("Keyword", () => {
 });
 
 test("Segment", () => {
+  expect(Segment.type).toBe(0x32);
   const name = new Name().append(Segment, 0x0101);
   expect(name.at(0)).toEqualComponent("50=%01%01");
   expect(name.at(0).is(Segment)).toBeTruthy();
@@ -32,6 +35,8 @@ test("Segment", () => {
 });
 
 test("ByteOffset", () => {
+  expect(ByteOffset.type).toBe(0x34);
+  expect(ByteOffset.big.type).toBe(0x34);
   const name = new Name().append(ByteOffset, 0x0102).append(ByteOffset, 0xFFFFFFFFFFFF0102n);
   expect(name.at(0)).toEqualComponent("52=%01%02");
   expect(name.at(0).is(ByteOffset)).toBeTruthy();
@@ -44,6 +49,7 @@ test("ByteOffset", () => {
 });
 
 test("Version", () => {
+  expect(Version.type).toBe(0x36);
   const name = new Name().append(Version, 0x0103);
   expect(name.at(0)).toEqualComponent("54=%01%03");
   expect(name.at(0).is(Version)).toBeTruthy();
@@ -53,6 +59,10 @@ test("Version", () => {
 });
 
 test("Timestamp", () => {
+  expect(Timestamp.type).toBe(0x38);
+  expect(Timestamp.ms.type).toBe(0x38);
+  expect(Timestamp.us.type).toBe(0x38);
+
   const name = new Name().append(Timestamp, new Date(540167400_000))
     .append(Timestamp.us, 1570239360_127447)
     .append(Timestamp.us, Number.MAX_SAFE_INTEGER);
@@ -79,6 +89,7 @@ test("Timestamp", () => {
 });
 
 test("SequenceNum", () => {
+  expect(SequenceNum.type).toBe(0x3A);
   const name = new Name().append(SequenceNum, 0x0105);
   expect(name.at(0)).toEqualComponent("58=%01%05");
   expect(name.at(0).is(SequenceNum)).toBeTruthy();

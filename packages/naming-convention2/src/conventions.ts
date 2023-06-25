@@ -2,7 +2,11 @@ import { Component, type NamingConvention, TT } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
 
 abstract class Typed {
-  constructor(public readonly tt: number) {}
+  constructor(protected readonly tt: number) {}
+
+  public get type(): number {
+    return this.tt;
+  }
 
   public match(comp: Component): boolean {
     return comp.type === this.tt;
@@ -55,8 +59,16 @@ abstract class TypedNumberBase extends Typed {
   }
 }
 
-interface NumberConvention<A = never, R extends number | bigint = number> extends NamingConvention<number | bigint | A, R>, NamingConvention.WithAltUri {
-  readonly tt: number;
+interface WithType {
+  /** TLV-TYPE number. */
+  readonly type: number;
+}
+
+interface StringConvention extends NamingConvention<string>, WithType {
+}
+
+interface NumberConvention<A = never, R extends number | bigint = number>
+  extends NamingConvention<number | bigint | A, R>, NamingConvention.WithAltUri, WithType {
 }
 
 class TypedNumber extends TypedNumberBase implements NumberConvention {
@@ -72,6 +84,7 @@ class TypedBig extends TypedNumberBase implements NumberConvention<never, bigint
 }
 
 interface NumberBigConvention<A = never> extends NumberConvention<A> {
+  /** Interpret as bigint instead of number. */
   big: NumberConvention<A, bigint>;
 }
 
@@ -137,7 +150,7 @@ function makeTimestampConvention(tt: number): TimestampConvention {
 export const GenericNumber: NumberBigConvention = new TypedNumberBig(TT.GenericNameComponent, "");
 
 /** KeywordNameComponent (rev2 & rev3), interpreted as string. */
-export const Keyword: NamingConvention<string> = new TypedString(0x20);
+export const Keyword: StringConvention = new TypedString(0x20);
 
 /** SegmentNameComponent (rev2), interpreted as number. */
 export const Segment2: NumberBigConvention = new TypedNumberBig(0x21, "seg=");

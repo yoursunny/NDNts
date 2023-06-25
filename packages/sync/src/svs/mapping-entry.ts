@@ -58,7 +58,7 @@ export namespace SvMappingEntry {
 
 const timedExtensions = new ExtensionRegistry();
 timedExtensions.registerExtension<Date>({
-  tt: Timestamp.tt,
+  tt: Timestamp.type,
   decode(obj, { decoder }) {
     void obj;
     return new Date(decoder.decode(Component).as(Timestamp));
@@ -80,14 +80,14 @@ export class SvTimedMappingEntry extends SvMappingEntry implements Extensible {
   public readonly [Extensible.TAG] = timedExtensions;
 
   public get timestamp(): Date | undefined {
-    return Extension.get(this, Timestamp.tt) as Date | undefined;
+    return Extension.get(this, Timestamp.type) as Date | undefined;
   }
 
   public set timestamp(v) {
     if (v === undefined) {
-      Extension.clear(this, Timestamp.tt);
+      Extension.clear(this, Timestamp.type);
     } else {
-      Extension.set(this, Timestamp.tt, v);
+      Extension.set(this, Timestamp.type, v);
     }
   }
 }

@@ -138,11 +138,13 @@ export class Name {
   public append(...suffix: readonly ComponentLike[]): Name;
 
   public append(...args: unknown[]) {
+    let suffix: readonly ComponentLike[];
     if (args.length === 2 &&
         typeof (args[0] as NamingConvention<any>).create === "function") {
-      return this.append((args[0] as NamingConvention<any>).create(args[1]));
+      suffix = [(args[0] as NamingConvention<any>).create(args[1])];
+    } else {
+      suffix = args as readonly ComponentLike[];
     }
-    const suffix = args as readonly ComponentLike[];
     return new Name([...this.comps, ...suffix]);
   }
 
