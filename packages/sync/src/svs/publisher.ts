@@ -9,6 +9,7 @@ import { collect, map } from "streaming-iterables";
 
 import type { SyncNode } from "../types";
 import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
+import { SvMappingEntry } from "./mapping-entry";
 import type { SvSync } from "./sync";
 
 /** SVS-PS publisher. */
@@ -74,9 +75,11 @@ export class SvPublisher {
    * Publish application data.
    * @param name application-specified inner name.
    * @param payload application payload.
+   * @param entry MappingEntry for subscriber-side filtering.
+   *              This is required if subscribers are expecting a certain MappingEntry subclass.
    * @returns seqNum.
    */
-  public async publish(name: NameLike, payload: Uint8Array): Promise<number> {
+  public async publish(name: NameLike, payload: Uint8Array, entry = new SvMappingEntry()): Promise<number> {
     name = Name.from(name);
     const inner = await collect(DataProducer.listData(
       new BufferChunkSource(payload, this.chunkOptions),
@@ -88,12 +91,9 @@ export class SvPublisher {
     const seqNum = this.node.seqNum + 1;
     const seqNumComp = GenericNumber.create(seqNum);
 
-    const mapping = new Data(
-      this.nodeSyncPrefix.append(MappingKeyword, seqNumComp),
-      Encoder.encode([TT.MappingEntry,
-        [TT.SeqNo, seqNumComp.value],
-        name]),
-    );
+    entry.seqNum = seqNum;
+    entry.name = name;
+    const mapping = new Data(this.nodeSyncPrefix.append(MappingKeyword, seqNumComp), Encoder.encode(entry));
     await nullSigner.sign(mapping);
 
     const outer = map(async (data) => {
