@@ -13,6 +13,7 @@ import type TypedEmitter from "typed-emitter";
 import { SubscriptionTable } from "../detail/subscription-table";
 import type { Subscriber, Subscription, SyncUpdate } from "../types";
 import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
+import { MappingEntry } from "./mapping-entry";
 import type { SvSync } from "./sync";
 
 type Events = {
@@ -20,21 +21,24 @@ type Events = {
 };
 
 /** SVS-PS subscriber. */
-export class SvSubscriber extends (EventEmitter as new() => TypedEmitter<Events>)
+export class SvSubscriber<M extends MappingEntry = MappingEntry>
+  extends (EventEmitter as new() => TypedEmitter<Events>)
   implements Subscriber<Name, SvSubscriber.Update, SvSubscriber.SubscribeInfo> {
   constructor({
     endpoint = new Endpoint(),
     sync,
     retxLimit = 2,
+    mappingEntryType,
     mappingBatch = 10,
     innerVerifier = noopSigning,
     outerVerifier = noopSigning,
     mappingVerifier = noopSigning,
-  }: SvSubscriber.Options) {
+  }: SvSubscriber.Options<M>) {
     super();
     this.on("error", () => undefined);
     this.endpoint = endpoint;
     this.syncPrefix = sync.syncPrefix;
+    this.mappingEVD = makeMappingEVD<M>(mappingEntryType ?? (MappingEntry as any));
     this.mappingBatch = mappingBatch;
     this.innerVerifier = innerVerifier;
     this.outerFetchOpts = {
@@ -65,6 +69,7 @@ export class SvSubscriber extends (EventEmitter as new() => TypedEmitter<Events>
   private readonly syncPrefix: Name;
   private readonly nameSubs = new SubscriptionTable<SvSubscriber.Update>();
   private readonly publisherSubs = new SubscriptionTable<SvSubscriber.Update>();
+  private readonly mappingEVD: EvDecoder<Mapping<M>>;
   private readonly mappingBatch: number;
   private readonly innerVerifier: Verifier;
   private readonly outerFetchOpts: fetch.Options;
@@ -89,7 +94,7 @@ export class SvSubscriber extends (EventEmitter as new() => TypedEmitter<Events>
 
   private readonly handleSyncUpdate = async (update: SyncUpdate<Name>) => {
     const publisherSubs = this.publisherSubs.list(update.id);
-    let mapping: Mapping | undefined;
+    let mapping: Mapping<M> | undefined;
     if (publisherSubs.size === 0 && this.nameSubs.dimension !== 0) {
       mapping = await this.retrieveMapping(update);
     }
@@ -106,8 +111,8 @@ export class SvSubscriber extends (EventEmitter as new() => TypedEmitter<Events>
     );
   };
 
-  private async retrieveMapping(update: SyncUpdate<Name>): Promise<Mapping> {
-    const m = new Map<number, Name>();
+  private async retrieveMapping(update: SyncUpdate<Name>): Promise<Mapping<M>> {
+    const m = new Map<number, M>();
     await pipeline(
       () => update.seqNums(),
       batch(this.mappingBatch),
@@ -120,7 +125,7 @@ export class SvSubscriber extends (EventEmitter as new() => TypedEmitter<Events>
         );
         try {
           const data = await this.endpoint.consume(interest, this.mappingConsumerOpts);
-          mappingDataEVD.decode(m, new Decoder(data.content));
+          this.mappingEVD.decode(m, new Decoder(data.content));
         } catch (err: unknown) {
           this.emit("error", new Error(`retrieveMapping(${update.id},${loSeqNum}..${hiSeqNum}): ${err}`));
         }
@@ -130,12 +135,12 @@ export class SvSubscriber extends (EventEmitter as new() => TypedEmitter<Events>
     return m;
   }
 
-  private async dispatchUpdate(publisher: Name, publisherSubs: SubSet, seqNum: number, mapping?: Mapping): Promise<void> {
+  private async dispatchUpdate(publisher: Name, publisherSubs: SubSet, seqNum: number, mapping?: Mapping<M>): Promise<void> {
     let name: Name | undefined;
     let nameSubs: Sub[] | undefined;
     if (mapping) {
-      name = mapping.get(seqNum);
-      if (!name || (nameSubs = Array.from(this.listNameSubs(name))).length === 0) {
+      const entry = mapping.get(seqNum);
+      if (!entry || (nameSubs = this.listNameSubs(entry.name)).length === 0) {
         return;
       }
     }
@@ -144,7 +149,7 @@ export class SvSubscriber extends (EventEmitter as new() => TypedEmitter<Events>
       const inner = new Decoder(content).decode(Data);
       await this.innerVerifier.verify(inner);
       name ??= inner.name.get(-2)?.equals(Version0) ? inner.name.getPrefix(-2) : inner.name;
-      if ((nameSubs ??= Array.from(this.listNameSubs(name))).length === 0 && publisherSubs.size === 0) {
+      if ((nameSubs ??= this.listNameSubs(name)).length === 0 && publisherSubs.size === 0) {
         return false;
       }
       return inner;
@@ -176,10 +181,12 @@ export class SvSubscriber extends (EventEmitter as new() => TypedEmitter<Events>
     this.nameSubs.update(nameSubs!, update);
   }
 
-  private *listNameSubs(name: Name): Iterable<Sub> {
+  private listNameSubs(name: Name): Sub[] {
+    const nameSubs: Sub[] = [];
     for (const set of lpm<SubSet>(name, (prefixHex) => this.nameSubs.list(prefixHex))) {
-      yield* set;
+      nameSubs.push(...set);
     }
+    return nameSubs;
   }
 
   private async retrieveSegmented(outerPrefix: Name, decap: (outer: Data) => Promise<Data | false>): Promise<Uint8Array> {
@@ -203,7 +210,7 @@ export class SvSubscriber extends (EventEmitter as new() => TypedEmitter<Events>
 }
 
 export namespace SvSubscriber {
-  export interface Options {
+  export interface Options<M extends MappingEntry = MappingEntry> {
     /** Endpoint for communication. */
     endpoint?: Endpoint;
 
@@ -218,6 +225,12 @@ export namespace SvSubscriber {
      * Default is 2.
      */
     retxLimit?: number;
+
+    /**
+     * MappingEntry constructor.
+     * Default is MappingEntry base type.
+     */
+    mappingEntryType: MappingEntry.Constructor<M> | (MappingEntry extends M ? undefined : never);
 
     /**
      * Maximum number of MappingEntry to retrieve in a single query.
@@ -262,19 +275,16 @@ export namespace SvSubscriber {
   }
 }
 
-type Mapping = Map<number, Name>;
-type MappingEntry = [seqNum: number, name: Name];
+type Mapping<M extends MappingEntry> = Map<number, M>;
 
-const mappingEntryEVD = new EvDecoder<MappingEntry>("MappingEntry", TT.MappingEntry)
-  .add(TT.SeqNo, (t, { nni }) => t[0] = nni, { required: true })
-  .add(l3TT.Name, (t, { decoder }) => t[1] = decoder.decode(Name), { required: true });
-
-const mappingDataEVD = new EvDecoder<Mapping>("MappingData", TT.MappingData)
-  .add(l3TT.Name, () => undefined)
-  .add(TT.MappingEntry, (m, { vd }) => {
-    const [seqNum, name] = mappingEntryEVD.decodeValue([] as unknown as MappingEntry, vd);
-    m.set(seqNum, name);
-  }, { repeat: true });
+function makeMappingEVD<M extends MappingEntry>(ctor: MappingEntry.Constructor<M>): EvDecoder<Mapping<M>> {
+  return new EvDecoder<Mapping<M>>("MappingData", TT.MappingData)
+    .add(l3TT.Name, () => undefined)
+    .add(TT.MappingEntry, (map, { vd }) => {
+      const entry = ctor.decodeFrom(vd);
+      map.set(entry.seqNum, entry);
+    }, { repeat: true });
+}
 
 type Sub = Subscription<Name, SvSubscriber.Update>;
 type SubSet = ReadonlySet<Sub>;

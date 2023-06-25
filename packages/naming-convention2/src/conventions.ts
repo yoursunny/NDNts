@@ -2,7 +2,7 @@ import { Component, type NamingConvention, TT } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
 
 abstract class Typed {
-  constructor(protected readonly tt: number) {}
+  constructor(public readonly tt: number) {}
 
   public match(comp: Component): boolean {
     return comp.type === this.tt;
@@ -55,7 +55,9 @@ abstract class TypedNumberBase extends Typed {
   }
 }
 
-interface NumberConvention<A = never, R extends number | bigint = number> extends NamingConvention<number | bigint | A, R>, NamingConvention.WithAltUri {}
+interface NumberConvention<A = never, R extends number | bigint = number> extends NamingConvention<number | bigint | A, R>, NamingConvention.WithAltUri {
+  readonly tt: number;
+}
 
 class TypedNumber extends TypedNumberBase implements NumberConvention {
   public parse(comp: Component): number {
