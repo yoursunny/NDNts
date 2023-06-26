@@ -3,6 +3,17 @@ import assert from "minimalistic-assert";
 export const console = globalThis.console;
 export const crypto = globalThis.crypto;
 
+if (!crypto.subtle && !globalThis.isSecureContext) {
+  Object.defineProperty(crypto, "subtle", {
+    configurable: true,
+    get() {
+      console.error("NDNts depends on Web Crypto but it is unavailable because this webpage is not delivered securely, " +
+                    "see https://mdn.io/SecureContext");
+      return undefined;
+    },
+  });
+}
+
 // https://codahale.com/a-lesson-in-timing-attacks/
 export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
   // length has been checked by caller
