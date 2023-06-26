@@ -1,27 +1,9 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 
-interface WebTransport {
-  readonly ready: Promise<void>;
-  readonly closed: Promise<WebTransportCloseInfo>;
-  close(closeInfo?: Partial<WebTransportCloseInfo>): void;
-  readonly datagrams: WebTransportDatagramDuplexStream;
-}
-
-interface WebTransportCloseInfo {
-  closeCode: number;
-  reason: string;
-}
-
-interface WebTransportDatagramDuplexStream {
-  readonly readable: ReadableStream<Uint8Array>;
-  readonly writable: WritableStream<Uint8Array>;
-  readonly maxDatagramSize: number;
-}
-
 /** HTTP/3 transport. */
 export class H3Transport extends Transport {
   /** Whether current browser supports WebTransport. */
-  public static readonly supported = !!(globalThis as any).WebTransport;
+  public static readonly supported: boolean = !!globalThis.WebTransport;
 
   public override readonly rx: Transport.Rx;
 
@@ -68,7 +50,7 @@ export namespace H3Transport {
    * @param uri server URI.
    */
   export async function connect(uri: string): Promise<H3Transport> {
-    const tr = new (globalThis as any).WebTransport(uri) as WebTransport;
+    const tr = new WebTransport(uri);
     void tr.closed.catch(() => undefined);
     await tr.ready;
     return new H3Transport(uri, tr);
