@@ -6,9 +6,7 @@ import { KeyStore } from "./key-store";
 import type { StoreProvider } from "./store-base";
 
 class IdbStoreProvider<T> implements StoreProvider<T> {
-  // Firefox does not support structured clone of ECDSA CryptoKey.
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=1545813
-  public readonly canSClone = !/rv:.*Gecko\//.test(navigator.userAgent);
+  public readonly canSClone: boolean = true;
   private readonly store: UseStore;
 
   constructor(dbName: string) {

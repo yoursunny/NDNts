@@ -4,11 +4,9 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 
 This package provides signing algorithms, encryption algorithms, and certificate management features.
 
-The implementation uses [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API).
-
-* Modern browsers and Node.js 16.x natively support WebCrypto.
-* Most browsers restrict WebCrypto to [secure contexts](https://www.w3.org/TR/powerful-features/) only.
-  During development, you may use `http://localhost` or [ngrok](https://ngrok.com/).
+The implementation uses [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) that is natively supported in modern browers and Node.js since 16.x.
+Most browsers restrict WebCrypto to [secure contexts](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts) only, so that this implementation will not work on a webpage that is not delivered securely.
+During development, you may use `http://localhost` or [ngrok](https://ngrok.com/) to serve the webpage from a secure context.
 
 ## Signing Algorithms
 
@@ -92,7 +90,6 @@ Private keys are saved as non-extractable `CryptoKey` objects.
 
 ## Known Issues
 
-* In Firefox, persistent keychain stores JWK instead of `CryptoKey`, due to [Mozilla Bug 1545813](https://bugzilla.mozilla.org/show_bug.cgi?id=1545813).
 * In Firefox, persistent keychain is unusable in a Private Browsing window, due to [Mozilla Bug 781982](https://bugzilla.mozilla.org/show_bug.cgi?id=1639542).
 * In Chrome, AES 192-bit key is not supported.
 * Ed25519 in browser is implemented in JavaScript, which is less secure than native Web Crypto implementation.
