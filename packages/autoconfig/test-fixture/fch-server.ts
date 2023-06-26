@@ -2,14 +2,13 @@ import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 
 import Koa from "koa";
+import { pEvent } from "p-event";
 
+/** Mock NDN-FCH server. */
 export class FchServer {
   public static async create(): Promise<FchServer> {
     const s = new FchServer();
-    await new Promise((resolve, reject) => {
-      s.server.once("listening", resolve);
-      s.server.once("error", reject);
-    });
+    await pEvent(s.server, "listening", { timeout: 1000 });
     return s;
   }
 
@@ -17,11 +16,9 @@ export class FchServer {
   private readonly server: Server;
 
   private constructor() {
-    this.app.use(async (ctx) => {
-      if (ctx.URL.pathname !== "/") {
-        ctx.status = 404;
-        return;
-      }
+    this.app.use(async (ctx: Koa.Context) => {
+      ctx.assert(ctx.URL.pathname === "/", 404);
+      ctx.assert(ctx.method === "GET", 405);
       ctx.body = await this.handle?.(ctx.URL.searchParams, ctx);
     });
     this.server = this.app.listen();
@@ -36,5 +33,6 @@ export class FchServer {
     this.server.close();
   }
 
+  /** Handler of "GET /" request. */
   public handle?: (params: URLSearchParams, ctx: Koa.Context) => Promise<unknown>;
 }
