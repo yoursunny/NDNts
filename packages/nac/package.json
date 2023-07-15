@@ -36,7 +36,7 @@
     "@ndn/util": "workspace:*",
     "@yoursunny/asn1": "0.0.20200718",
     "mnemonist": "^0.39.5",
-    "tslib": "^2.5.3"
+    "tslib": "^2.6.0"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:*"

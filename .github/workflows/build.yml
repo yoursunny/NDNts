@@ -125,7 +125,7 @@ jobs:
           fqdn: ndnts-nightly.ndn.today
         env:
           GH_PAT: ${{ secrets.NIGHTLY_ACCESS_TOKEN }}
-      - uses: nwtgck/actions-netlify@v2
+      - uses: nwtgck/actions-netlify@30aa80fe8d5eec30813fc8b17b77e0a6663f09b5
         with:
           publish-dir: ./docs/
           production-deploy: true
@@ -133,6 +133,7 @@ jobs:
           deploy-message: ${{ github.sha }} ${{ github.run_id }}
           enable-pull-request-comment: false
           enable-commit-comment: false
+          enable-commit-status: false
           enable-github-deployment: false
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

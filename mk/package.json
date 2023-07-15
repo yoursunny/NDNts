@@ -9,6 +9,6 @@
     "split2": "^4.2.0"
   },
   "dependencies": {
-    "compare-versions": "6.0.0-rc.1"
+    "compare-versions": "6.0.0"
   }
 }
