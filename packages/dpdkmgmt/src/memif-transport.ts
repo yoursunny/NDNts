@@ -1,11 +1,7 @@
 import { once } from "node:events";
-import { createRequire } from "node:module";
 
 import { L3Face, rxFromPacketIterable, Transport, txToStream } from "@ndn/l3face";
 import type { Memif } from "memif";
-
-// don't name this 'require' to avoid @typescript-eslint/no-require-imports
-const cjsRequire = createRequire(import.meta.url);
 
 /** Shared Memory Packet Interface (memif) transport. */
 export class MemifTransport extends Transport {
@@ -50,7 +46,7 @@ export namespace MemifTransport {
       waitUp = true,
     } = opts;
 
-    const MemifConstructor: typeof Memif = cjsRequire("memif").Memif;
+    const MemifConstructor: typeof Memif = (await import("memif")).Memif;
     const transport = new MemifTransport(opts, new MemifConstructor(opts));
 
     if (waitUp) {

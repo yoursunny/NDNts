@@ -1,28 +1,11 @@
 import { ReadvertiseDestination } from "@ndn/fw";
 import type { Name } from "@ndn/packet";
-import { gql, type GraphQLClient, type Variables } from "graphql-request";
+import type { GraphQLClient } from "graphql-request";
+
+import { Delete, InsertFibEntry } from "./gql";
 
 interface State {
   fibEntryID?: string;
-}
-
-interface InsertFibEntryVars extends Variables {
-  name: string;
-  nexthops: string[];
-}
-
-interface InsertFibEntryResp {
-  insertFibEntry: {
-    id: string;
-  };
-}
-
-interface DeleteVars extends Variables {
-  id: string;
-}
-
-interface DeleteResp {
-  delete: boolean;
 }
 
 /** Enable prefix registration via NDN-DPDK GraphQL management API. */
@@ -32,16 +15,13 @@ export class NdndpdkPrefixReg extends ReadvertiseDestination<State> {
   }
 
   protected override async doAdvertise(name: Name, state: State) {
-    const resp = await this.client.request<InsertFibEntryResp, InsertFibEntryVars>(gql`
-      mutation insertFibEntry($name: Name!, $nexthops: [ID!]!, $strategy: ID) {
-        insertFibEntry(name: $name, nexthops: $nexthops, strategy: $strategy) {
-          id
-        }
-      }
-    `, {
-      name: name.toString(),
-      nexthops: [this.faceID],
-    });
+    const resp = await this.client.request<InsertFibEntry.Resp, InsertFibEntry.Vars>(
+      InsertFibEntry,
+      {
+        name: name.toString(),
+        nexthops: [this.faceID],
+      },
+    );
     state.fibEntryID = resp.insertFibEntry.id;
   }
 
@@ -50,13 +30,7 @@ export class NdndpdkPrefixReg extends ReadvertiseDestination<State> {
     if (!state.fibEntryID) {
       return;
     }
-    await this.client.request<DeleteResp, DeleteVars>(gql`
-      mutation delete($id: ID!) {
-        delete(id: $id)
-      }
-    `, {
-      id: state.fibEntryID,
-    });
+    await this.client.request<Delete.Resp, Delete.Vars>(Delete, { id: state.fibEntryID });
     delete state.fibEntryID;
   }
 }

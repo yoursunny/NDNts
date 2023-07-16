@@ -19,6 +19,7 @@ async function* listImports(filename) {
   }
 }
 
+const ignoredMissing = new Set(["memif"]);
 const ignoredUnused = new Set(["@types/web-bluetooth", "graphql", "tslib"]);
 const ignoredTypes = new Set(["yargs"]);
 
@@ -41,7 +42,7 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
   for (const { path: filename } of jsFiles) {
     for await (const dep of listImports(filename)) {
       unusedP.delete(dep);
-      if (!dependencies[dep] && !isBuiltin(dep)) {
+      if (!dependencies[dep] && !isBuiltin(dep) && !ignoredMissing.has(dep)) {
         process.stdout.write(`P+\t${filename}\t${dep}\n`);
         ++nWarnings;
       }

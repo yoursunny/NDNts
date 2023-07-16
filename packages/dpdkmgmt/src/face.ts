@@ -8,6 +8,7 @@ import { joinHostPort, splitHostPort, udp_helper, UdpTransport } from "@ndn/node
 import type { NameLike } from "@ndn/packet";
 import { gql, GraphQLClient } from "graphql-request";
 
+import { Delete } from "./gql";
 import { MemifTransport } from "./memif-transport";
 import { NdndpdkPrefixReg } from "./prefix-reg";
 
@@ -28,7 +29,7 @@ async function detectLocalAddress(gqlServer: string): Promise<string> {
 
 async function openFaceImpl(
     {
-      gqlServer = "http://127.0.0.1:3030",
+      gqlServer = DefaultGqlServer,
       fw = Forwarder.getDefault(),
       addRoutes,
       attributes = {},
@@ -56,13 +57,7 @@ async function openFaceImpl(
   const prefixReg = new NdndpdkPrefixReg(client, id);
   const cleanup = async () => {
     prefixReg.disable();
-    await client.request(gql`
-      mutation delete($id: ID!) {
-        delete(id: $id)
-      }
-    `, {
-      id,
-    });
+    await client.request<Delete.Resp, Delete.Vars>(Delete, { id });
   };
 
   let transport: Transport;

@@ -33,6 +33,6 @@
     "tslib": "^2.6.0"
   },
   "optionalDependencies": {
-    "memif": "0.0.20220425"
+    "memif": "0.0.20230715"
   }
 }
