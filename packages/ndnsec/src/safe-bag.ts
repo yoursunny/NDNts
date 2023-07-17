@@ -19,7 +19,6 @@ const EVD = new EvDecoder<Fields>("SafeBag", TT.SafeBag)
  * ndn-cxx exported credentials.
  * @see https://docs.named-data.net/ndn-cxx/0.8.1/specs/safe-bag.html
  */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class SafeBag {
   public static async create(certificate: Certificate, privateKey: Uint8Array, passphrase: string | Uint8Array): Promise<SafeBag> {
     const encryptedKey = await EncryptedPrivateKeyInfo.create(privateKey, passphrase);
@@ -71,7 +70,6 @@ export class SafeBag {
     }
   }
 }
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface SafeBag extends Readonly<Fields> {}
 
 export namespace SafeBag {

@@ -64,6 +64,7 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
     const data = new Data(interest.name, Encoder.encode(new ControlResponse(status, "", params)));
     return FwPacket.create(data, token);
   };
+  // eslint-disable-next-line unicorn/prefer-event-target
   const uplinkL3 = new class extends EventEmitter implements FwFace.RxTxDuplex {
     async *duplex(iterable: AsyncIterable<FwPacket>) {
       for await (const { l3, token } of iterable) {

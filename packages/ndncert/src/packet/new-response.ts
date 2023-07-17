@@ -16,7 +16,6 @@ const EVD = new EvDecoder<NewResponse.Fields>("NewResponse")
 EVD.beforeObservers.push((t) => t.challenges = []);
 
 /** NEW response packet. */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class NewResponse {
   public static async fromData(data: Data, profile: CaProfile): Promise<NewResponse> {
     await profile.publicKey.verify(data);
@@ -33,7 +32,6 @@ export class NewResponse {
       public readonly ecdhPub: CryptoKey,
   ) {}
 }
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface NewResponse extends Readonly<NewResponse.Fields> {}
 
 export namespace NewResponse {

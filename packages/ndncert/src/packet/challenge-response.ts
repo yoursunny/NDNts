@@ -19,7 +19,6 @@ const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse")
 parameter_kv.parseEvDecoder(EVD, 5);
 
 /** CHALLENGE response packet. */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class ChallengeResponse {
   public static async fromData(data: Data, profile: CaProfile, requestId: Uint8Array,
       sessionDecrypter: LLDecrypt.Key): Promise<ChallengeResponse> {
@@ -37,7 +36,6 @@ export class ChallengeResponse {
     checkFieldsByStatus(this);
   }
 }
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface ChallengeResponse extends Readonly<ChallengeResponse.Fields> {}
 
 function checkFieldsByStatus({

@@ -97,7 +97,6 @@ const EVD = new EvDecoder<Fields>("Interest", TT.Interest)
   });
 
 /** Interest packet. */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Signable, Verifier.Verifiable {
   /**
    * Construct from flexible arguments.
@@ -228,7 +227,6 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
     await verify(signedPortion, sigValue);
   }
 }
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface Interest extends PublicFields {}
 definePublicFields<Interest, Fields, PublicFields>(Interest, {
   name: ["signedPortion"],

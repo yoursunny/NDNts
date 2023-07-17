@@ -3,7 +3,7 @@ import { Decoder } from "@ndn/tlv";
 import { toBuffer as b64ToBuffer } from "b64-lite";
 
 function b64decode(input: string): Uint8Array {
-  return b64ToBuffer(input.replace(/\s/g, ""));
+  return b64ToBuffer(input.replaceAll(/\s/g, ""));
 }
 
 function makeDataFromBase64(input: string): () => Data {

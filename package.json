@@ -12,13 +12,13 @@
     "test": "vitest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@8.6.7",
+  "packageManager": "pnpm@8.6.8",
   "devDependencies": {
     "@types/node": "^20.4.2",
     "@types/wtfnode": "^0.7.0",
     "@typescript/lib-dom": "npm:@types/web@0.0.107",
     "@vitest/coverage-v8": "^0.33.0",
-    "@yoursunny/xo-config": "0.54.0",
+    "@yoursunny/xo-config": "0.55.0",
     "codedown": "^2.2.0",
     "tslib": "^2.6.0",
     "typedoc": "^0.24.8",

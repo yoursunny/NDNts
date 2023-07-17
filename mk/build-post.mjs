@@ -185,7 +185,7 @@ class TransformJs {
       importLines.push(`const ${defaultExport} = __importDefault(${importVar}).default;`);
     }
     if (namedExports) {
-      importLines.push(`const ${namedExports.replace(/ as /g, ": ")} = __importStar(${importVar});`);
+      importLines.push(`const ${namedExports.replaceAll(" as ", ": ")} = __importStar(${importVar});`);
     }
     return this.emitLine(importLines.join(" "));
   }

@@ -47,7 +47,6 @@ for (const [tt, key,, decode] of fieldDefs) {
 }
 
 /** NFD Management ControlParameters struct. */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class ControlParameters {
   public static decodeFrom(decoder: Decoder): ControlParameters {
     return EVD.decode(new ControlParameters(), decoder);
@@ -67,7 +66,6 @@ export class ControlParameters {
     );
   }
 }
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface ControlParameters extends ControlParameters.Fields {}
 
 export namespace ControlParameters {

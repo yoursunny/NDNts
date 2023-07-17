@@ -16,7 +16,6 @@ const EVD = new EvDecoder<CaProfile.Fields>("CaProfile")
 EVD.beforeObservers.push((t) => t.probeKeys = []);
 
 /** CA profile packet. */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class CaProfile {
   /**
    * Decode CA profile from Data packet.
@@ -42,7 +41,7 @@ export class CaProfile {
     return `NDNCERT 0.3 CA profile
 CA prefix: ${this.prefix}
 CA information:
-${this.info.trim().replace(/^/gm, "  ")}
+${this.info.trim().replaceAll(/^/gm, "  ")}
 PROBE keys:
 ${this.probeKeys.length === 0 ? "  (none)" : this.probeKeys.map((key) => `  ${key}`).join("\n")}
 Maximum validity period: ${this.maxValidityPeriod / 86400000} days
@@ -61,7 +60,6 @@ Certificate digest: ${toHex(this.certDigest)}`;
     };
   }
 }
-// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface CaProfile extends Readonly<CaProfile.Fields> {}
 
 export namespace CaProfile {
