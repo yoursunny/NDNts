@@ -59,7 +59,6 @@ const CJS_IMPORTS = new Set([
   "it-keepalive",
   "leveldown",
   "levelup",
-  "memif",
   "minimalistic-assert",
   "mnemonist",
   "nodemailer",

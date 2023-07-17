@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "bash mk/build.sh",
-    "clang-format": "git ls-files '*.cpp' | xargs clang-format-11 -i -style=file",
+    "clang-format": "git ls-files '*.cpp' | xargs clang-format-15 -i -style=file",
     "cover": "bash mk/build.sh cover",
     "lint": "bash mk/build.sh lint",
     "literate": "bash mk/literate.sh",

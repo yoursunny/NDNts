@@ -7,7 +7,7 @@ jobs:
   build:
     strategy:
       fail-fast: false
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
@@ -16,7 +16,7 @@ jobs:
           key: build-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
       - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
@@ -29,7 +29,7 @@ jobs:
       matrix:
         node: [16, 18, 20]
       fail-fast: false
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
@@ -41,7 +41,7 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Install dependencies
         run: |
-          echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu focal main" \
+          echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu jammy main" \
             | sudo tee /etc/apt/sources.list.d/nfd-nightly.list
           sudo apt-get update
           sudo apt-get install --no-install-recommends ndnsec
@@ -61,7 +61,7 @@ jobs:
   integ:
     strategy:
       fail-fast: false
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
@@ -75,10 +75,10 @@ jobs:
           node-version: 18
       - name: Install dependencies
         run: |
-          echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu focal main" \
+          echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu jammy main" \
             | sudo tee /etc/apt/sources.list.d/nfd-nightly.list
           sudo apt-get update
-          sudo apt-get install --no-install-recommends libndn-cxx-dev libpsync-dev nfd
+          sudo apt-get install --no-install-recommends clang-format-15 libndn-cxx-dev libpsync-dev nfd
       - run: corepack pnpm install
       - run: corepack pnpm build
       - name: Check dependencies and devDependencies
@@ -95,7 +95,7 @@ jobs:
   publish:
     needs: [build, unittest, integ]
     if: ${{ github.repository == 'yoursunny/NDNts' && github.event_name == 'push' }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
