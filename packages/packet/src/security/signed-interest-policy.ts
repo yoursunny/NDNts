@@ -1,19 +1,9 @@
-import { assert, toHex } from "@ndn/util";
+import { assert, evict, toHex } from "@ndn/util";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
 import { Interest } from "../interest";
 import { SigInfo } from "../sig-info";
 import { LLSign, LLVerify, Signer, type Verifier } from "./signing";
-
-function evict<K>(capacity: number, container: Set<K> | Map<K, unknown>): void {
-  assert(capacity >= 0);
-  for (const key of container.keys()) {
-    if (container.size <= capacity) {
-      break;
-    }
-    container.delete(key);
-  }
-}
 
 /** Validation policy for SigInfo fields in signed Interest. */
 export class SignedInterestPolicy {
@@ -32,16 +22,14 @@ export class SignedInterestPolicy {
   constructor(...rules: Rule[]);
   constructor(arg1?: SignedInterestPolicy.Options | Rule, ...rules: Rule[]) {
     let opts: SignedInterestPolicy.Options = {};
-    if (typeof (arg1 as Rule).check === "function") {
+    if (typeof (arg1 as Rule | undefined)?.check === "function") {
       rules.unshift(arg1 as Rule);
     } else {
       opts = arg1 as SignedInterestPolicy.Options ?? {};
     }
+    assert(rules.length > 0, "no rules");
 
-    const {
-      trackedKeys = 256,
-    } = opts;
-    this.trackedKeys = trackedKeys;
+    this.trackedKeys = opts.trackedKeys ?? 256;
     this.rules = rules;
   }
 
@@ -341,7 +329,7 @@ export namespace SignedInterestPolicy {
   /**
    * Create a rule to assign or check SigNonce.
    *
-   * This rule assigns a random SigNonce of `minNonceLength` octets that does not duplicate
+   * This rule assigns a random SigNonce of `nonceLength` octets that does not duplicate
    * last `trackedNonces` values.
    *
    * This rule rejects an Interest on any of these conditions:
@@ -357,7 +345,7 @@ export namespace SignedInterestPolicy {
     /**
      * Maximum allowed clock offset in milliseconds.
      *
-     * Minimum is 0. Setting to 0 is generally a bad idea because it would require consumer and
+     * Minimum is 0. However, setting to 0 is inadvisable because it would require consumer and
      * producer to have precisely synchronized clocks.
      * @default 60000
      */

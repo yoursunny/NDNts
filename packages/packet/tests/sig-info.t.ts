@@ -147,10 +147,16 @@ describe("SignedInterestPolicy", () => {
   beforeEach(() => {
     policyNTS = new SignedInterestPolicy(
       SignedInterestPolicy.Nonce(), SignedInterestPolicy.Time(), SignedInterestPolicy.SeqNum());
-    policyN = new SignedInterestPolicy(SignedInterestPolicy.Nonce());
+    policyN = new SignedInterestPolicy({}, SignedInterestPolicy.Nonce());
     policyN16 = new SignedInterestPolicy(SignedInterestPolicy.Nonce({ minNonceLength: 16 }));
     policyT = new SignedInterestPolicy(SignedInterestPolicy.Time());
     policyS = new SignedInterestPolicy(SignedInterestPolicy.SeqNum());
+  });
+
+  test("ctor", () => {
+    expect(() => new SignedInterestPolicy()).toThrow(/no rules/);
+    expect(() => new SignedInterestPolicy({})).toThrow(/no rules/);
+    expect(() => new SignedInterestPolicy({}, SignedInterestPolicy.Nonce(), SignedInterestPolicy.Time())).not.toThrow();
   });
 
   function updateSign(policy: SignedInterestPolicy, interest: Interest) {
@@ -219,7 +225,7 @@ describe("SignedInterestPolicy", () => {
 
   test("no save on bad signature", async () => {
     const interest0 = new Interest("/A/0");
-    const interest1 = new Interest("/A/0");
+    const interest1 = new Interest("/A/1");
     const interest2 = new Interest("/A/2");
     await updateSign(policyS, interest0);
     await updateSign(policyS, interest1);

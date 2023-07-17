@@ -1,4 +1,4 @@
-import { concatBuffers } from "@ndn/util";
+import { concatBuffers, evict } from "@ndn/util";
 
 import { LpPacket } from "./packet";
 
@@ -94,13 +94,6 @@ export class Reassembler {
 
   private putPartial(partial: PartialPacket): void {
     this.partials.set(partial.seqNumBase, partial);
-
-    if (this.partials.size > this.capacity) { // exceed capacity, delete oldest
-      // eslint-disable-next-line no-unreachable-loop
-      for (const key of this.partials.keys()) {
-        this.partials.delete(key);
-        break;
-      }
-    }
+    evict(this.capacity, this.partials);
   }
 }
