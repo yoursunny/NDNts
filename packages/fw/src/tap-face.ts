@@ -16,8 +16,8 @@ class TapRxController {
   private readonly taps = new MultiMap<FwFace, TapFace>();
 
   private constructor(private readonly fw: Forwarder) {
-    this.fw.on("pktrx", this.pktrx);
-    this.fw.on("facerm", this.facerm);
+    this.fw.addEventListener("pktrx", this.pktrx);
+    this.fw.addEventListener("facerm", this.facerm);
   }
 
   public add(src: FwFace, dst: TapFace) {
@@ -30,8 +30,8 @@ class TapRxController {
     this.detachIfIdle();
   }
 
-  private facerm = (src: FwFace) => {
-    const dst = this.taps.list(src);
+  private facerm = (evt: Forwarder.FaceEvent) => {
+    const dst = this.taps.list(evt.face);
     for (const { rx } of dst) {
       rx.end();
     }
@@ -40,16 +40,16 @@ class TapRxController {
 
   private detachIfIdle() {
     if (this.taps.size === 0) {
-      this.fw.off("pktrx", this.pktrx);
-      this.fw.off("facerm", this.facerm);
+      this.fw.removeEventListener("pktrx", this.pktrx);
+      this.fw.removeEventListener("facerm", this.facerm);
       TapRxController.instances.delete(this.fw);
     }
   }
 
-  private pktrx = (src: FwFace, pkt: FwPacket) => {
-    const dst = this.taps.list(src);
+  private pktrx = (evt: Forwarder.PacketEvent) => {
+    const dst = this.taps.list(evt.face);
     for (const { rx } of dst) {
-      rx.push(pkt);
+      rx.push(evt.packet);
     }
   };
 }

@@ -1,4 +1,4 @@
-import { Data, Interest, Nack, type Name } from "@ndn/packet";
+import { Data, Interest, Nack } from "@ndn/packet";
 import { console } from "@ndn/util";
 
 import type { FwFace } from "./face";
@@ -25,64 +25,64 @@ export class Tracer {
     this.output = output;
     this.fw = fw;
     if (face) {
-      this.fw.on("faceadd", this.faceadd);
-      this.fw.on("facerm", this.facerm);
+      this.fw.addEventListener("faceadd", this.faceadd);
+      this.fw.addEventListener("facerm", this.facerm);
     }
     if (prefix) {
-      this.fw.on("prefixadd", this.prefixadd);
-      this.fw.on("prefixrm", this.prefixrm);
+      this.fw.addEventListener("prefixadd", this.prefixadd);
+      this.fw.addEventListener("prefixrm", this.prefixrm);
     }
     if (ann) {
-      this.fw.on("annadd", this.annadd);
-      this.fw.on("annrm", this.annrm);
+      this.fw.addEventListener("annadd", this.annadd);
+      this.fw.addEventListener("annrm", this.annrm);
     }
     if (pkt) {
-      this.fw.on("pktrx", this.pktrx);
-      this.fw.on("pkttx", this.pkttx);
+      this.fw.addEventListener("pktrx", this.pktrx);
+      this.fw.addEventListener("pkttx", this.pkttx);
     }
   }
 
   public disable() {
-    this.fw.off("faceadd", this.faceadd);
-    this.fw.off("facerm", this.facerm);
-    this.fw.off("prefixadd", this.prefixadd);
-    this.fw.off("prefixrm", this.prefixrm);
-    this.fw.off("annadd", this.annadd);
-    this.fw.off("annrm", this.annrm);
-    this.fw.off("pktrx", this.pktrx);
-    this.fw.off("pkttx", this.pkttx);
+    this.fw.removeEventListener("faceadd", this.faceadd);
+    this.fw.removeEventListener("facerm", this.facerm);
+    this.fw.removeEventListener("prefixadd", this.prefixadd);
+    this.fw.removeEventListener("prefixrm", this.prefixrm);
+    this.fw.removeEventListener("annadd", this.annadd);
+    this.fw.removeEventListener("annrm", this.annrm);
+    this.fw.removeEventListener("pktrx", this.pktrx);
+    this.fw.removeEventListener("pkttx", this.pkttx);
   }
 
-  private faceadd = (face: FwFace) => {
+  private faceadd = ({ face }: Forwarder.FaceEvent) => {
     this.output.log(`+Face ${face}`);
   };
 
-  private facerm = (face: FwFace) => {
+  private facerm = ({ face }: Forwarder.FaceEvent) => {
     this.output.log(`-Face ${face}`);
   };
 
-  private prefixadd = (face: FwFace, prefix: Name) => {
+  private prefixadd = ({ face, prefix }: Forwarder.PrefixEvent) => {
     this.output.log(`${face} +Prefix ${prefix}`);
   };
 
-  private prefixrm = (face: FwFace, prefix: Name) => {
+  private prefixrm = ({ face, prefix }: Forwarder.PrefixEvent) => {
     this.output.log(`${face} -Prefix ${prefix}`);
   };
 
-  private annadd = (name: Name) => {
+  private annadd = ({ name }: Forwarder.AnnouncementEvent) => {
     this.output.log(`+Announcement ${name}`);
   };
 
-  private annrm = (name: Name) => {
+  private annrm = ({ name }: Forwarder.AnnouncementEvent) => {
     this.output.log(`-Announcement ${name}`);
   };
 
-  private pktrx = (face: FwFace, pkt: FwPacket) => {
-    this.pkt(face, pkt, ">");
+  private pktrx = ({ face, packet }: Forwarder.PacketEvent) => {
+    this.pkt(face, packet, ">");
   };
 
-  private pkttx = (face: FwFace, pkt: FwPacket) => {
-    this.pkt(face, pkt, "<");
+  private pkttx = ({ face, packet }: Forwarder.PacketEvent) => {
+    this.pkt(face, packet, "<");
   };
 
   private pkt(face: FwFace, pkt: FwPacket, dir: string) {

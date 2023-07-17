@@ -56,7 +56,7 @@ test("createFace", async () => {
   BufferBreaker.duplex(sock0!, sock1!);
 
   const rx = vi.fn();
-  fw.on("pktrx", rx);
+  fw.addEventListener("pktrx", rx);
   await Promise.all([
     delay(100),
     face.tx((async function*() {

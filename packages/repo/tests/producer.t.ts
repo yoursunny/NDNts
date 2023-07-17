@@ -16,8 +16,8 @@ const announced = new Set<string>();
 beforeEach(async () => {
   store = await makeDataStore();
   const fw = Forwarder.getDefault();
-  fw.on("annadd", (name) => announced.add(name.toString()));
-  fw.on("annrm", (name) => announced.delete(name.toString()));
+  fw.addEventListener("annadd", ({ name }) => {announced.add(name.toString());});
+  fw.addEventListener("annrm", ({ name }) => {announced.delete(name.toString());});
   return async () => {
     await store.close();
     Forwarder.deleteDefault();

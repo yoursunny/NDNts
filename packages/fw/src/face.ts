@@ -6,7 +6,7 @@ import { pushable } from "it-pushable";
 import { filter, pipeline, tap } from "streaming-iterables";
 import type TypedEmitter from "typed-emitter";
 
-import type { Forwarder, ForwarderImpl } from "./forwarder";
+import { Forwarder, type ForwarderImpl } from "./forwarder";
 import type { FwPacket } from "./packet";
 
 type Events = {
@@ -133,14 +133,14 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
       ...rxtx.attributes,
       ...attributes,
     };
-    fw.emit("faceadd", this);
+    fw.dispatchTypedEvent("faceadd", new Forwarder.FaceEvent("faceadd", this));
     fw.faces.add(this);
 
     void pipeline(
       () => this.txLoop(),
-      tap((pkt) => fw.emit("pkttx", this, pkt)),
+      tap((pkt) => fw.dispatchTypedEvent("pkttx", new Forwarder.PacketEvent("pkttx", this, pkt))),
       duplexFromRxTx(rxtx),
-      tap((pkt) => fw.emit("pktrx", this, pkt)),
+      tap((pkt) => fw.dispatchTypedEvent("pktrx", new Forwarder.PacketEvent("pktrx", this, pkt))),
       this.rxLoop,
     );
 
@@ -166,7 +166,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
 
     this.txQueue.end(new Error("close"));
     this.emit("close");
-    this.fw.emit("facerm", this);
+    this.fw.dispatchTypedEvent("facerm", new Forwarder.FaceEvent("facerm", this));
   }
 
   public override toString() {
@@ -181,7 +181,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
   public addRoute(nameInput: NameLike, announcement: FwFace.RouteAnnouncement = true): void {
     const name = Name.from(nameInput);
 
-    this.fw.emit("prefixadd", this, name);
+    this.fw.dispatchTypedEvent("prefixadd", new Forwarder.PrefixEvent("prefixadd", this, name));
     if (this.routes.add(name) === 1) {
       this.fw.fib.insert(this, name.valueHex, this.attributes.routeCapture!);
     }
@@ -203,7 +203,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
     if (this.routes.remove(name) === 0) {
       this.fw.fib.delete(this, name.valueHex);
     }
-    this.fw.emit("prefixrm", this, name);
+    this.fw.dispatchTypedEvent("prefixrm", new Forwarder.PrefixEvent("prefixrm", this, name));
   }
 
   public addAnnouncement(nameInput: NameLike): void {

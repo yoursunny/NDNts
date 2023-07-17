@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Name, type NameLike } from "@ndn/packet";
+import { type Name, type NameLike } from "@ndn/packet";
 import { delay } from "@ndn/util";
 import { beforeEach, expect, type Mock, test, vi } from "vitest";
 
@@ -16,12 +16,12 @@ class SimpleDest extends ReadvertiseDestination {
   public override doAdvertise = vi.fn<[Name, {}], Promise<void>>().mockResolvedValue(undefined);
   public override doWithdraw = vi.fn<[Name, {}], Promise<void>>().mockResolvedValue(undefined);
 
-  public readonly annadd = vi.fn<[Name], void>();
-  public readonly annrm = vi.fn<[Name], void>();
+  public readonly annadd = vi.fn<[Forwarder.AnnouncementEvent], void>();
+  public readonly annrm = vi.fn<[Forwarder.AnnouncementEvent], void>();
 
   public attachEventHandlers(fw: Forwarder): void {
-    fw.on("annadd", this.annadd);
-    fw.on("annrm", this.annrm);
+    fw.addEventListener("annadd", this.annadd);
+    fw.addEventListener("annrm", this.annrm);
   }
 
   public expectAdvertise(names: NameLike[]): void {
@@ -34,15 +34,14 @@ class SimpleDest extends ReadvertiseDestination {
 
   private static check(
       doFn: Mock<[Name, {}], Promise<void>>,
-      onFn: Mock<[Name], void>,
+      onFn: Mock<[Forwarder.AnnouncementEvent], void>,
       names: NameLike[],
   ) {
     expect(doFn).toHaveBeenCalledTimes(names.length);
     expect(onFn).toHaveBeenCalledTimes(names.length);
     for (const [i, nameLike] of names.entries()) {
-      const name = Name.from(nameLike);
-      expect(doFn.mock.calls[i]![0]).toEqualName(name);
-      expect(onFn.mock.calls[i]![0]).toEqualName(name);
+      expect(doFn.mock.calls[i]![0]).toEqualName(nameLike);
+      expect(onFn.mock.calls[i]![0].name).toEqualName(nameLike);
     }
     doFn.mockClear();
     onFn.mockClear();

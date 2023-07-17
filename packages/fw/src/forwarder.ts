@@ -1,7 +1,5 @@
-import { EventEmitter } from "node:events";
-
 import type { Data, Interest, Nack, Name } from "@ndn/packet";
-import type TypedEmitter from "typed-emitter";
+import { TypedEventTarget } from "typescript-event-target";
 
 import { FaceImpl, type FwFace } from "./face";
 import { Fib } from "./fib";
@@ -11,25 +9,25 @@ import { Readvertise } from "./readvertise";
 
 type Events = {
   /** Emitted before adding face. */
-  faceadd: (face: FwFace) => void;
+  faceadd: Forwarder.FaceEvent;
   /** Emitted after removing face. */
-  facerm: (face: FwFace) => void;
+  facerm: Forwarder.FaceEvent;
   /** Emitted before adding prefix to face. */
-  prefixadd: (face: FwFace, prefix: Name) => void;
+  prefixadd: Forwarder.PrefixEvent;
   /** Emitted after removing prefix from face. */
-  prefixrm: (face: FwFace, prefix: Name) => void;
+  prefixrm: Forwarder.PrefixEvent;
   /** Emitted before advertising prefix. */
-  annadd: (announcement: Name) => void;
+  annadd: Forwarder.AnnouncementEvent;
   /** Emitted before withdrawing prefix. */
-  annrm: (announcement: Name) => void;
+  annrm: Forwarder.AnnouncementEvent;
   /** Emitted after packet arrival. */
-  pktrx: (face: FwFace, pkt: FwPacket) => void;
+  pktrx: Forwarder.PacketEvent;
   /** Emitted before packet transmission. */
-  pkttx: (face: FwFace, pkt: FwPacket) => void;
+  pkttx: Forwarder.PacketEvent;
 };
 
 /** Forwarding plane. */
-export interface Forwarder extends TypedEmitter<Events> {
+export interface Forwarder extends TypedEventTarget<Events> {
   /** Node names, used in forwarding hint processing. */
   readonly nodeNames: Name[];
 
@@ -83,9 +81,37 @@ export namespace Forwarder {
     defaultInstance.close();
     defaultInstance = undefined;
   }
+
+  /** Face event. */
+  export class FaceEvent extends Event {
+    constructor(type: string, public readonly face: FwFace) {
+      super(type);
+    }
+  }
+
+  /** Prefix registration event. */
+  export class PrefixEvent extends Event {
+    constructor(type: string, public readonly face: FwFace, public readonly prefix: Name) {
+      super(type);
+    }
+  }
+
+  /** Prefix announcement event. */
+  export class AnnouncementEvent extends Event {
+    constructor(type: string, public readonly name: Name) {
+      super(type);
+    }
+  }
+
+  /** Packet event. */
+  export class PacketEvent extends Event {
+    constructor(type: string, public readonly face: FwFace, public readonly packet: FwPacket) {
+      super(type);
+    }
+  }
 }
 
-export class ForwarderImpl extends (EventEmitter as new() => TypedEmitter<Events>) implements Forwarder {
+export class ForwarderImpl extends TypedEventTarget<Events> implements Forwarder {
   public readonly nodeNames: Name[] = [];
   public readonly faces = new Set<FaceImpl>();
   public readonly fib = new Fib();

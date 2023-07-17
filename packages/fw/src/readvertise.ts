@@ -3,7 +3,7 @@ import { pushable } from "it-pushable";
 import * as retry from "retry";
 
 import type { FaceImpl } from "./face";
-import type { Forwarder, ForwarderImpl } from "./forwarder";
+import { Forwarder, type ForwarderImpl } from "./forwarder";
 
 /**
  * Manage advertised prefix of the forwarder.
@@ -23,7 +23,7 @@ export class Readvertise {
       return;
     }
 
-    this.fw.emit("annadd", name);
+    this.fw.dispatchTypedEvent("annadd", new Forwarder.AnnouncementEvent("annadd", name));
     for (const dest of this.destinations) {
       dest.advertise(name);
     }
@@ -34,7 +34,7 @@ export class Readvertise {
       return;
     }
 
-    this.fw.emit("annrm", name);
+    this.fw.dispatchTypedEvent("annrm", new Forwarder.AnnouncementEvent("annrm", name));
     for (const dest of this.destinations) {
       dest.withdraw(name);
     }
