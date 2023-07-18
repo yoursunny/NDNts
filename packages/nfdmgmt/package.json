@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
-    "@ndn/node-transport": "workspace:*"
+    "@ndn/node-transport": "workspace:*",
+    "typescript-event-target": "^1.0.5"
   }
 }

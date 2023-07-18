@@ -7,7 +7,7 @@ import type { FwPacket } from "./packet";
 import { Pit } from "./pit";
 import { Readvertise } from "./readvertise";
 
-type Events = {
+type EventMap = {
   /** Emitted before adding face. */
   faceadd: Forwarder.FaceEvent;
   /** Emitted after removing face. */
@@ -27,7 +27,7 @@ type Events = {
 };
 
 /** Forwarding plane. */
-export interface Forwarder extends TypedEventTarget<Events> {
+export interface Forwarder extends TypedEventTarget<EventMap> {
   /** Node names, used in forwarding hint processing. */
   readonly nodeNames: Name[];
 
@@ -111,7 +111,7 @@ export namespace Forwarder {
   }
 }
 
-export class ForwarderImpl extends TypedEventTarget<Events> implements Forwarder {
+export class ForwarderImpl extends TypedEventTarget<EventMap> implements Forwarder {
   public readonly nodeNames: Name[] = [];
   public readonly faces = new Set<FaceImpl>();
   public readonly fib = new Fib();

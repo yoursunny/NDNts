@@ -78,7 +78,7 @@ async function openFaceImpl(
     mtu,
   }));
   L3Face.processAddRoutes(face, addRoutes);
-  face.on("close", cleanup);
+  face.addEventListener("close", cleanup, { once: true });
   return face;
 }
 

@@ -37,7 +37,7 @@
     "retry": "^0.13.1",
     "streaming-iterables": "^7.1.0",
     "tslib": "^2.6.0",
-    "typed-emitter": "^2.1.0"
+    "typescript-event-target": "^1.0.5"
   },
   "devDependencies": {
     "p-defer": "^4.0.0"

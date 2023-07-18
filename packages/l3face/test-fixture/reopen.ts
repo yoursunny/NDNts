@@ -15,13 +15,13 @@ export async function run<ServerSocket>(
   const face = new L3Face(transport);
 
   const stateEvt = vi.fn<[L3Face.State], void>();
-  face.on("state", stateEvt);
+  face.addEventListener("state", ({ state }) => stateEvt(state));
   const upEvt = vi.fn();
-  face.on("up", upEvt);
+  face.addEventListener("up", upEvt);
   const downEvt = vi.fn();
-  face.on("down", downEvt);
+  face.addEventListener("down", downEvt);
   const closeEvt = vi.fn();
-  face.on("close", closeEvt);
+  face.addEventListener("close", closeEvt);
 
   let end = false;
   void face.tx((async function*() {
@@ -43,9 +43,9 @@ export async function run<ServerSocket>(
   end = true;
   await delay(500);
 
-  expect(downEvt).toHaveBeenCalledTimes(1);
-  expect(upEvt).toHaveBeenCalledTimes(1);
-  expect(closeEvt).toHaveBeenCalledTimes(1);
+  expect(downEvt).toHaveBeenCalledOnce();
+  expect(upEvt).toHaveBeenCalledOnce();
+  expect(closeEvt).toHaveBeenCalledOnce();
   expect(stateEvt).toHaveBeenCalledTimes(3);
   expect(stateEvt).toHaveBeenNthCalledWith(1, L3Face.State.DOWN);
   expect(stateEvt).toHaveBeenNthCalledWith(2, L3Face.State.UP);

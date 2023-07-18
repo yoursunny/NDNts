@@ -1,7 +1,5 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { EventEmitter } from "node:events";
-
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
@@ -10,6 +8,7 @@ import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Component, Data, Interest, Name, ParamsDigest } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
 import { Closers, delay } from "@ndn/util";
+import { TypedEventTarget } from "typescript-event-target";
 import { afterEach, expect, test } from "vitest";
 
 import { ControlCommand, ControlParameters, ControlResponse, enableNfdPrefixReg } from "..";
@@ -64,8 +63,7 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
     const data = new Data(interest.name, Encoder.encode(new ControlResponse(status, "", params)));
     return FwPacket.create(data, token);
   };
-  // eslint-disable-next-line unicorn/prefer-event-target
-  const uplinkL3 = new class extends EventEmitter implements FwFace.RxTxDuplex {
+  const uplinkL3 = new class extends TypedEventTarget<FwFace.RxTxEventMap> implements FwFace.RxTxDuplex {
     async *duplex(iterable: AsyncIterable<FwPacket>) {
       for await (const { l3, token } of iterable) {
         expect(l3).toBeInstanceOf(Interest);
@@ -81,7 +79,7 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
       minTimeout: 1,
       maxTimeout: 1,
     },
-    refreshInterval: 500,
+    refreshInterval: 1000,
   });
 
   const appFace = fw.addFace(new NoopFace());
@@ -91,14 +89,14 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
   expect(verbs[0]).toBe("register"); // status 400
   expect(verbs[1]).toBe("register");
 
-  await delay(600);
+  await delay(1000); // refresh
   expect(verbs).toHaveLength(3);
   expect(verbs[2]).toBe("register");
 
-  uplinkL3.emit("down");
-  await delay(100);
-  uplinkL3.emit("up");
-  await delay(300);
+  uplinkL3.dispatchTypedEvent("down", new Event("down"));
+  await delay(200);
+  uplinkL3.dispatchTypedEvent("up", new Event("up"));
+  await delay(200);
   expect(verbs).toHaveLength(4);
   expect(verbs[3]).toBe("register");
 
@@ -108,15 +106,15 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
   expect(verbs[4]).toBe("unregister"); // status 400
   expect(verbs[5]).toBe("unregister");
 
-  await delay(600);
+  await delay(1200); // refresh should not happen
   expect(verbs).toHaveLength(6);
 
-  uplinkL3.emit("down");
-  await delay(100);
-  uplinkL3.emit("up");
-  await delay(100);
+  uplinkL3.dispatchTypedEvent("down", new Event("down"));
+  await delay(200);
+  uplinkL3.dispatchTypedEvent("up", new Event("up"));
+  await delay(200);
   expect(verbs).toHaveLength(6);
-}, { retry: 3 });
+}, { timeout: 10000, retry: 3 });
 
 test("preloadCert", async () => {
   const [rootPvt, rootPub] = await generateSigningKey("/root");

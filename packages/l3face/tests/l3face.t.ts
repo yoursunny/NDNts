@@ -15,7 +15,7 @@ test("l3face", async () => {
   expect(face.attributes.local).toBeTruthy();
 
   const close = vi.fn<[], void>();
-  face.on("close", close);
+  face.addEventListener("close", close);
 
   transport.recv(new Interest("/A", Interest.Lifetime(20)));
   await delay(50);
@@ -23,7 +23,7 @@ test("l3face", async () => {
 
   transport.close();
   await delay(50);
-  expect(close).toHaveBeenCalledTimes(1);
+  expect(close).toHaveBeenCalledOnce();
 
   // other tests in node-transport/tests/l3face.t.ts
 });

@@ -1,5 +1,3 @@
-import { EventEmitter } from "node:events";
-
 import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { LpService } from "@ndn/lp";
 import { Interest, type NameLike } from "@ndn/packet";
@@ -8,27 +6,27 @@ import { abortableSource, AbortError as IteratorAbortError } from "abortable-ite
 import { pushable } from "it-pushable";
 import * as retry from "retry";
 import { consume, filter, map, pipeline } from "streaming-iterables";
-import type TypedEmitter from "typed-emitter";
+import { TypedEventTarget } from "typescript-event-target";
 
 import { Transport } from "./transport";
 
 type Events = {
   /** Emitted upon face state change. */
-  state: (state: L3Face.State) => void;
+  state: L3Face.StateEvent;
   /** Emitted upon state becomes UP. */
-  up: () => void;
+  up: Event;
   /** Emitted upon state becomes DOWN. */
-  down: (err: Error) => void;
+  down: CustomEvent<Error>;
   /** Emitted upon state becomes CLOSED. */
-  close: () => void;
+  close: Event;
   /** Emitted upon RX decoding error. */
-  rxerror: (err: L3Face.RxError) => void;
+  rxerror: CustomEvent<L3Face.RxError>;
   /** Emitted upon TX preparation error. */
-  txerror: (err: L3Face.TxError) => void;
+  txerror: CustomEvent<L3Face.TxError>;
 };
 
 /** Network layer face for sending and receiving L3 packets. */
-export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) implements FwFace.RxTx {
+export class L3Face extends TypedEventTarget<Events> implements FwFace.RxTx {
   public readonly attributes: L3Face.Attributes;
   public readonly lp: LpService;
   public readonly rx: AsyncIterable<FwPacket>;
@@ -39,23 +37,24 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
     if (newState === this.state_) {
       return;
     }
+    const evt = new L3Face.StateEvent("state", newState, this.state_);
     this.state_ = newState;
-    this.emit("state", newState);
+    this.dispatchTypedEvent("state", evt);
     switch (newState) {
       case L3Face.State.UP: {
-        this.emit("up");
+        this.dispatchTypedEvent("up", new Event("up"));
         break;
       }
       case L3Face.State.DOWN: {
         const err = this.lastError instanceof Error ?
           this.lastError :
           new Error(`${this.lastError ?? "unknown error"}`);
-        this.emit("down", err);
+        this.dispatchTypedEvent("down", new CustomEvent("down", { detail: err }));
         this.lastError = undefined;
         break;
       }
       case L3Face.State.CLOSED: {
-        this.emit("close");
+        this.dispatchTypedEvent("close", new Event("close"));
         break;
       }
     }
@@ -103,7 +102,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
       this.lp.rx,
       filter((pkt): pkt is LpService.Packet => {
         if (pkt instanceof LpService.RxError) {
-          this.emit("rxerror", pkt);
+          this.dispatchTypedEvent("rxerror", new CustomEvent("rxerror", { detail: pkt }));
           return false;
         }
         return true;
@@ -142,7 +141,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
       this.lp.tx,
       filter((value: Uint8Array | LpService.TxError): value is Uint8Array => {
         if (value instanceof LpService.TxError) {
-          this.emit("txerror", value);
+          this.dispatchTypedEvent("txerror", new CustomEvent("txerror", { detail: value }));
           return false;
         }
         return true;
@@ -165,7 +164,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
 
       const abort = new AbortController();
       const handleStateChange = () => abort.abort();
-      this.once("state", handleStateChange);
+      this.addEventListener("state", handleStateChange, { once: true });
 
       try {
         const txSource = abortableSource<Uint8Array>(txSourceIterable, abort.signal);
@@ -183,7 +182,7 @@ export class L3Face extends (EventEmitter as new() => TypedEmitter<Events>) impl
         }
       } finally {
         abort.abort();
-        this.off("state", handleStateChange);
+        this.removeEventListener("state", handleStateChange);
       }
     }
     this.reopenRetry?.stop();
@@ -225,6 +224,16 @@ export namespace L3Face {
     UP,
     DOWN,
     CLOSED,
+  }
+
+  export class StateEvent extends Event {
+    constructor(
+        type: string,
+        public readonly state: State,
+        public readonly prev: State,
+    ) {
+      super(type);
+    }
   }
 
   export interface Attributes extends Transport.Attributes {

@@ -1,4 +1,3 @@
-import { once } from "node:events";
 import type * as net from "node:net";
 
 import { Forwarder, FwPacket } from "@ndn/fw";
@@ -29,8 +28,8 @@ beforeEach(async () => {
 });
 
 test("RX error", async () => {
-  const handleRxError = vi.fn<[Error], void>();
-  face.once("rxerror", handleRxError);
+  const handleRxError = vi.fn<[CustomEvent<L3Face.RxError>], void>();
+  face.addEventListener("rxerror", handleRxError, { once: true });
 
   setTimeout(() => sock.write(Uint8Array.of(0xF0, 0x00)), 200);
   await Promise.all([
@@ -41,7 +40,7 @@ test("RX error", async () => {
   ]);
 
   expect(handleRxError).toHaveBeenCalledOnce();
-  expect(handleRxError.mock.calls[0]![0]!.message).toContain("F000");
+  expect(handleRxError.mock.calls[0]![0]!.detail.message).toContain("F000");
 });
 
 test("createFace", async () => {

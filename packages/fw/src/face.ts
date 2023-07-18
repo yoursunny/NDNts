@@ -1,25 +1,23 @@
-import { EventEmitter } from "node:events";
-
 import { Data, Interest, Nack, Name, type NameLike, NameMultiSet } from "@ndn/packet";
 import { safeIter } from "@ndn/util";
 import { pushable } from "it-pushable";
 import { filter, pipeline, tap } from "streaming-iterables";
-import type TypedEmitter from "typed-emitter";
+import { TypedEventTarget } from "typescript-event-target";
 
 import { Forwarder, type ForwarderImpl } from "./forwarder";
 import type { FwPacket } from "./packet";
 
-type Events = {
+type EventMap = {
   /** Emitted upon face is up as reported by lower layer. */
-  up: () => void;
+  up: Event;
   /** Emitted upon face is down as reported by lower layer. */
-  down: () => void;
+  down: Event;
   /** Emitted upon face is closed. */
-  close: () => void;
+  close: Event;
 };
 
 /** A socket or network interface associated with forwarding plane. */
-export interface FwFace extends TypedEmitter<Events> {
+export interface FwFace extends TypedEventTarget<EventMap> {
   readonly fw: Forwarder;
   readonly attributes: FwFace.Attributes;
   readonly running: boolean;
@@ -63,16 +61,13 @@ export namespace FwFace {
 
   export type RouteAnnouncement = boolean | number | NameLike;
 
-  export type RxTxEvents = {
-    up: () => void;
-    down: () => void;
-  };
+  export type RxTxEventMap = Pick<EventMap, "up" | "down">;
 
   export interface RxTxBase {
     readonly attributes?: Attributes;
 
-    on?: (...args: Parameters<TypedEmitter<RxTxEvents>["on"]>) => void;
-    off?: (...args: Parameters<TypedEmitter<RxTxEvents>["off"]>) => void;
+    addEventListener?: <K extends keyof RxTxEventMap>(type: K, listener: (ev: RxTxEventMap[K]) => any, options?: AddEventListenerOptions) => void;
+    removeEventListener?: <K extends keyof RxTxEventMap>(type: K, listener: (ev: RxTxEventMap[K]) => any, options?: EventListenerOptions) => void;
   }
 
   export interface RxTx extends RxTxBase {
@@ -113,7 +108,7 @@ function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement)
   return Name.from(announcement);
 }
 
-export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) implements FwFace {
+export class FaceImpl extends TypedEventTarget<EventMap> implements FwFace {
   public readonly attributes: FwFace.Attributes;
   private readonly routes = new NameMultiSet();
   private readonly announcements = new NameMultiSet();
@@ -144,8 +139,8 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
       this.rxLoop,
     );
 
-    rxtx.on?.("up", this.handleLowerUp);
-    rxtx.on?.("down", this.handleLowerDown);
+    rxtx.addEventListener?.("up", this.handleLowerUp);
+    rxtx.addEventListener?.("down", this.handleLowerDown);
   }
 
   public close(): void {
@@ -153,8 +148,8 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
       return;
     }
     this.running = false;
-    this.rxtx.off?.("up", this.handleLowerUp);
-    this.rxtx.off?.("down", this.handleLowerDown);
+    this.rxtx.removeEventListener?.("up", this.handleLowerUp);
+    this.rxtx.removeEventListener?.("down", this.handleLowerDown);
 
     this.fw.faces.delete(this);
     for (const [name] of this.routes.multiplicities()) {
@@ -165,7 +160,7 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
     }
 
     this.txQueue.end(new Error("close"));
-    this.emit("close");
+    this.dispatchTypedEvent("close", new Event("close"));
     this.fw.dispatchTypedEvent("facerm", new Forwarder.FaceEvent("facerm", this));
   }
 
@@ -235,11 +230,11 @@ export class FaceImpl extends (EventEmitter as new() => TypedEmitter<Events>) im
   }
 
   private readonly handleLowerUp = () => {
-    this.emit("up");
+    this.dispatchTypedEvent("up", new Event("up"));
   };
 
   private readonly handleLowerDown = () => {
-    this.emit("down");
+    this.dispatchTypedEvent("down", new Event("down"));
   };
 
   private readonly rxLoop = async (input: AsyncIterable<FwPacket>) => {

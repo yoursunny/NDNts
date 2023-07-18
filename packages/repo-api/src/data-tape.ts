@@ -4,6 +4,7 @@ import duplexify from "duplexify";
 import { isReadableStream, isWritableStream } from "is-stream";
 import { type Pushable, pushable } from "it-pushable";
 import pDefer, { type DeferredPromise } from "p-defer";
+import { pEvent } from "p-event";
 import { consume, filter, map, pipeline } from "streaming-iterables";
 import throat from "throat";
 
@@ -64,7 +65,7 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
     }
     const [face, tx] = this.currentWriter;
     tx.end();
-    await new Promise<void>((r) => face.once("close", r));
+    await pEvent(face, "close");
     this.currentWriter = undefined;
   }
 

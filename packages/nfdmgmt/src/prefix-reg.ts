@@ -59,12 +59,12 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     this.preloadFromKeyChain = opts.preloadFromKeyChain;
     this.preloadInterestLifetime = Interest.Lifetime(opts.preloadInterestLifetime ?? 500);
 
-    face.on("up", this.handleFaceUp);
-    face.once("close", () => this.disable());
+    face.addEventListener("up", this.handleFaceUp);
+    face.addEventListener("close", () => this.disable(), { once: true });
   }
 
   public override disable(): void {
-    this.face.off("up", this.handleFaceUp);
+    this.face.removeEventListener("up", this.handleFaceUp);
     super.disable();
   }
 
