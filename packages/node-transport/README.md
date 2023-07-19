@@ -122,8 +122,8 @@ async function useInL3Face(transport: Transport) {
   const face = new L3Face(transport);
 
   // We want to know if something goes wrong.
-  face.on("rxerror", (err) => console.warn(err));
-  face.on("txerror", (err) => console.warn(err));
+  face.addEventListener("rxerror", (evt) => console.warn(evt.detail));
+  face.addEventListener("txerror", (evt) => console.warn(evt.detail));
 
   await Promise.all([
     face.tx({ async *[Symbol.asyncIterator]() {

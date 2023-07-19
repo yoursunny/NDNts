@@ -3,7 +3,7 @@ import type * as net from "node:net";
 import { Forwarder, FwPacket } from "@ndn/fw";
 import { L3Face } from "@ndn/l3face";
 import { Interest } from "@ndn/packet";
-import { delay } from "@ndn/util";
+import { type CustomEvent, delay } from "@ndn/util";
 import { collect } from "streaming-iterables";
 import { beforeEach, expect, test, vi } from "vitest";
 

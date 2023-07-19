@@ -1,7 +1,7 @@
 import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { LpService } from "@ndn/lp";
 import { Interest, type NameLike } from "@ndn/packet";
-import { asDataView } from "@ndn/util";
+import { asDataView, CustomEvent } from "@ndn/util";
 import { abortableSource, AbortError as IteratorAbortError } from "abortable-iterator";
 import { pushable } from "it-pushable";
 import * as retry from "retry";
@@ -10,7 +10,7 @@ import { TypedEventTarget } from "typescript-event-target";
 
 import { Transport } from "./transport";
 
-type Events = {
+type EventMap = {
   /** Emitted upon face state change. */
   state: L3Face.StateEvent;
   /** Emitted upon state becomes UP. */
@@ -26,7 +26,7 @@ type Events = {
 };
 
 /** Network layer face for sending and receiving L3 packets. */
-export class L3Face extends TypedEventTarget<Events> implements FwFace.RxTx {
+export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
   public readonly attributes: L3Face.Attributes;
   public readonly lp: LpService;
   public readonly rx: AsyncIterable<FwPacket>;
