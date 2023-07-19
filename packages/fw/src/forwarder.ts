@@ -1,4 +1,5 @@
 import type { Data, Interest, Nack, Name } from "@ndn/packet";
+import { trackEventListener } from "@ndn/util";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { FaceImpl, type FwFace } from "./face";
@@ -117,6 +118,7 @@ export class ForwarderImpl extends TypedEventTarget<EventMap> implements Forward
   public readonly fib = new Fib();
   public readonly pit: Pit;
   public readonly readvertise = new Readvertise(this);
+  private readonly maybeHaveEventListener = trackEventListener(this);
 
   constructor(public readonly opts: Required<Forwarder.Options>) {
     super();
@@ -171,6 +173,12 @@ export class ForwarderImpl extends TypedEventTarget<EventMap> implements Forward
     this.readvertise.close();
     for (const face of this.faces) {
       face.close();
+    }
+  }
+
+  public dispatchPacketEvent(type: "pktrx" | "pkttx", face: FaceImpl, pkt: FwPacket): void {
+    if (this.maybeHaveEventListener[type]) {
+      this.dispatchTypedEvent(type, new Forwarder.PacketEvent(type, face, pkt));
     }
   }
 }

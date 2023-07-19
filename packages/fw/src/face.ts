@@ -133,9 +133,9 @@ export class FaceImpl extends TypedEventTarget<EventMap> implements FwFace {
 
     void pipeline(
       () => this.txLoop(),
-      tap((pkt) => fw.dispatchTypedEvent("pkttx", new Forwarder.PacketEvent("pkttx", this, pkt))),
+      tap((pkt) => fw.dispatchPacketEvent("pkttx", this, pkt)),
       duplexFromRxTx(rxtx),
-      tap((pkt) => fw.dispatchTypedEvent("pktrx", new Forwarder.PacketEvent("pktrx", this, pkt))),
+      tap((pkt) => fw.dispatchPacketEvent("pktrx", this, pkt)),
       this.rxLoop,
     );
 
