@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 import { Name } from "@ndn/packet";
-import { makeEnv, parsers } from "@strattadb/environment";
+import { makeEnv, parsers } from "@sadams/environment";
 
 const {
   [process.platform]: defaultUplink = "unix:///var/run/nfd.sock",

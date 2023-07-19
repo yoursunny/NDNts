@@ -32,7 +32,7 @@
     "@ndn/repo": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@strattadb/environment": "^8.0.2",
+    "@sadams/environment": "^9.0.0",
     "fast-chunk-string": "^1.0.1",
     "get-stdin": "^9.0.0",
     "leveldown": "^6.1.1",

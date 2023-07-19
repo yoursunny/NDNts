@@ -4,7 +4,7 @@ import { Server, type ServerChallenge, ServerEmailChallenge, ServerNopChallenge,
 import type { Verifier } from "@ndn/packet";
 import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
 import { toHex } from "@ndn/util";
-import { makeEnv, parsers } from "@strattadb/environment";
+import { makeEnv, parsers } from "@sadams/environment";
 import leveldown from "leveldown";
 import { createTransport as createMT } from "nodemailer";
 import stdout from "stdout-stream";
@@ -16,7 +16,7 @@ interface Args {
   profile: string;
   store: string;
   challenge: readonly string[];
-  "possession-issuer"?: string;
+  possessionIssuer?: string;
 }
 
 export const Ndncert03CaCommand: CommandModule<{}, Args> = {

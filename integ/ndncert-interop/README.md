@@ -2,9 +2,9 @@
 
 Test environment:
 
-* Node.js 19.0.0
-* ndn-cxx 0.8.0-59-g15fa994b
-* [ndncert C++](https://github.com/named-data/ndncert) commit `baa5a9af116c` (2022-12-03)
+* Node.js 20.4.0
+* ndn-cxx 0.8.1-24-g67bc114a
+* [ndncert C++](https://github.com/named-data/ndncert) commit `f1c32c3ef0c1` (2023-04-26)
 
 ## NDNts Client and C++ CA, PIN Challenge
 

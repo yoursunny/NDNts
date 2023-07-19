@@ -48,7 +48,7 @@ async function transformDeclaration(filename) {
  * All other packages are assumed to have ES Module entrypoint.
  */
 const CJS_IMPORTS = new Set([
-  "@strattadb/environment",
+  "@sadams/environment",
   "@yoursunny/asn1",
   "applymixins",
   "buffer-compare",
