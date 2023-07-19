@@ -1,6 +1,7 @@
 import type { Name } from "@ndn/packet";
 import { assert } from "@ndn/util";
 
+import type { DataStore } from "../data-store";
 import type { PrefixRegController } from "./types";
 
 /**
@@ -12,26 +13,29 @@ import type { PrefixRegController } from "./types";
  */
 export function PrefixRegDynamic(transform: (name: Name) => Name): PrefixRegController {
   return (store, face) => {
-    const handleInsert = (name: Name) => {
+    const handleInsertName = (name: Name) => {
       const prefix = transform(name);
       face.addRoute(prefix);
     };
-    const handleDelete = (name: Name) => {
+    const handleInsert = ({ name }: DataStore.RecordEvent) => {
+      handleInsertName(name);
+    };
+    const handleDelete = ({ name }: DataStore.RecordEvent) => {
       const prefix = transform(name);
       face.removeRoute(prefix);
     };
 
     void store.mutex(async () => {
       for await (const name of store.listNames()) {
-        handleInsert(name);
+        handleInsertName(name);
       }
     });
-    store.on("insert", handleInsert);
-    store.on("delete", handleDelete);
+    store.addEventListener("insert", handleInsert);
+    store.addEventListener("delete", handleDelete);
     return {
       close() {
-        store.off("insert", handleInsert);
-        store.off("delete", handleDelete);
+        store.removeEventListener("insert", handleInsert);
+        store.removeEventListener("delete", handleDelete);
       },
     };
   };

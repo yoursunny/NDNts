@@ -4,8 +4,8 @@ export { CustomEvent } from "./platform_node";
 
 /**
  * Keep records on whether an event listener has been added.
- * This may allow EventTarget subclass to bypass event generation code.
- * The tracking isn't precise: removeEventListener won't update records.
+ * This may allow EventTarget subclass to skip certain event generation code paths.
+ * Tracking is imprecise: it does not consider 'once' and 'removeEventListener'.
  * @param target EventTarget to override.
  * @returns map from event type to whether listeners may exist.
  */

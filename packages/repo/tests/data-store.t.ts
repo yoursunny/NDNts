@@ -81,10 +81,10 @@ test("list find expire", async () => {
 });
 
 test("events", async () => {
-  const onInsert = vi.fn<[Name], void>();
-  const onDelete = vi.fn<[Name], void>();
-  store.on("insert", onInsert);
-  store.on("delete", onDelete);
+  const onInsert = vi.fn<[DataStore.RecordEvent], void>();
+  const onDelete = vi.fn<[DataStore.RecordEvent], void>();
+  store.addEventListener("insert", onInsert);
+  store.addEventListener("delete", onDelete);
 
   await store.insert();
   expect(onInsert).not.toHaveBeenCalled();
@@ -97,7 +97,7 @@ test("events", async () => {
     store.delete(new Name("/B/1"), new Name("/B/2")),
   ]);
   expect(onInsert).toHaveBeenCalledTimes(3);
-  let names = onInsert.mock.calls.map(([name]) => name.toString());
+  let names = onInsert.mock.calls.map(([{ name }]) => name.toString());
   names.sort((a, b) => a.localeCompare(b));
   expect(names).toEqual(["/8=A/8=1", "/8=A/8=2", "/8=A/8=3"]);
   expect(onDelete).not.toHaveBeenCalled();
@@ -109,7 +109,7 @@ test("events", async () => {
   ]);
   expect(onInsert).not.toHaveBeenCalled();
   expect(onDelete).toHaveBeenCalledTimes(2);
-  names = onDelete.mock.calls.map(([name]) => name.toString());
+  names = onDelete.mock.calls.map(([{ name }]) => name.toString());
   names.sort((a, b) => a.localeCompare(b));
   expect(names).toEqual(["/8=A/8=1", "/8=A/8=3"]);
 });

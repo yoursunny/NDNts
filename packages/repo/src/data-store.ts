@@ -1,28 +1,29 @@
-import { EventEmitter } from "node:events";
-
 import { type Data, ImplicitDigest, type Interest, type Name, NameMap } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
-import { assert } from "@ndn/util";
+import { assert, trackEventListener } from "@ndn/util";
 import type { AbstractLevelDOWN } from "abstract-leveldown";
 import type { NotFoundError } from "level-errors";
 import { filter, map, pipeline } from "streaming-iterables";
 import throat from "throat";
-import type TypedEmitter from "typed-emitter";
+import { TypedEventTarget } from "typescript-event-target";
 
-import { type Db, type DbChain, filterExpired, isExpired, openDb, type Record } from "./db";
+import { type Db, type DbChain, filterExpired, isExpired, openDb, type Record as DbRecord } from "./db";
 
-type Events = {
+type EventMap = {
   /** Emitted when a new record is inserted. */
-  insert: (name: Name) => void;
+  insert: DataStore.RecordEvent;
   /** Emitted when an existing record is deleted. */
-  delete: (name: Name) => void;
+  delete: DataStore.RecordEvent;
 };
 
+const kMaybeHaveEventListener = Symbol("DataStore.maybeHaveEventListener");
+
 /** Data packet storage based on LevelDB or other abstract-leveldown store. */
-export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
+export class DataStore extends TypedEventTarget<EventMap>
   implements S.Close, S.ListNames, S.ListData, S.Get, S.Find, S.Insert<InsertOptions>, S.Delete {
   private readonly db: Db;
   public readonly mutex = throat(1);
+  public readonly [kMaybeHaveEventListener] = trackEventListener(this);
 
   /**
    * Constructor.
@@ -38,9 +39,9 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
     return this.db.close();
   }
 
-  private async *iterRecords(prefix?: Name): AsyncGenerator<Record> {
+  private async *iterRecords(prefix?: Name): AsyncGenerator<DbRecord> {
     const it = this.db.iterator(prefix ? { gte: prefix } : undefined);
-    for await (const [name, record] of it as unknown as AsyncIterable<[Name, Record]>) {
+    for await (const [name, record] of it as unknown as AsyncIterable<[Name, DbRecord]>) {
       if (prefix?.isPrefixOf(name) === false) {
         break;
       }
@@ -69,7 +70,7 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
 
   /** Retrieve Data by exact name. */
   public async get(name: Name): Promise<Data | undefined> {
-    let record: Record;
+    let record: DbRecord;
     try {
       record = await this.db.get(name);
     } catch (err: unknown) {
@@ -130,19 +131,28 @@ export class DataStore extends (EventEmitter as new() => TypedEmitter<Events>)
     return tx.commit();
   }
 }
+export namespace DataStore {
+  /** Packet record event. */
+  export class RecordEvent extends Event {
+    constructor(type: string, public readonly name: Name) {
+      super(type);
+    }
+  }
+}
 
-type InsertOptions = Pick<Record, "expireTime">;
+type InsertOptions = Pick<DbRecord, "expireTime">;
 
 /** DataStore update transaction. */
 export class Transaction {
   private readonly timestamp = Date.now();
   private readonly chain: DbChain;
-  private readonly diffs?: NameMap<keyof Events>;
+  private readonly diffs?: NameMap<keyof EventMap>;
 
   constructor(private readonly db: Db, private readonly store: DataStore) {
     this.chain = this.db.batch();
-    if (this.store.listenerCount("insert") + this.store.listenerCount("delete") > 0) {
-      this.diffs = new NameMap<keyof Events>();
+    const maybeHaveEventListener = this.store[kMaybeHaveEventListener] as Record<keyof EventMap, boolean>;
+    if (maybeHaveEventListener.insert || maybeHaveEventListener.delete) {
+      this.diffs = new NameMap();
     }
   }
 
@@ -184,7 +194,7 @@ export class Transaction {
 
     for (const [i, [name, act]] of requests.entries()) {
       if (act === (oldRecords[i] === undefined ? "insert" : "delete")) {
-        this.store.emit(act, name);
+        this.store.dispatchTypedEvent(act, new DataStore.RecordEvent(act, name));
       }
     }
   }

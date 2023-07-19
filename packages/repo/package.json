@@ -41,7 +41,7 @@
     "streaming-iterables": "^7.1.0",
     "throat": "^6.0.2",
     "tslib": "^2.6.0",
-    "typed-emitter": "^2.1.0"
+    "typescript-event-target": "^1.0.5"
   },
   "devDependencies": {
     "@ndn/naming-convention2": "workspace:*",
