@@ -44,6 +44,12 @@ await fs.writeFile("tsconfig.json", JSON.stringify(tsconfig, undefined, 2));
 
 const tsconfigTestFixture = {
   extends: "../../../mk/tsconfig-base.json",
+  compilerOptions: {
+    rootDir: "..",
+  },
+  include: [
+    "..",
+  ],
 };
 
 let hasTestFixture = false;

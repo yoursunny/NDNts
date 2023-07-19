@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment, SequenceNum, Version } from "@ndn/naming-convention2";
-import { Component, Data, Interest, Name, type NameLike } from "@ndn/packet";
+import { Component, Data, Interest, Name, type NameLike, NameMultiSet } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { delay } from "@ndn/util";
 import { beforeEach, expect, test } from "vitest";
@@ -12,16 +12,16 @@ import { type DataStore, PrefixRegShorter, PrefixRegStatic, PrefixRegStrip, Repo
 import { makeDataStore } from "../test-fixture/data-store";
 
 let store: DataStore;
-const announced = new Set<string>();
+let announced: NameMultiSet; // could be NameSet
 beforeEach(async () => {
   store = await makeDataStore();
+  announced = new NameMultiSet();
   const fw = Forwarder.getDefault();
-  fw.addEventListener("annadd", ({ name }) => {announced.add(name.toString());});
-  fw.addEventListener("annrm", ({ name }) => {announced.delete(name.toString());});
+  fw.addEventListener("annadd", ({ name }) => { announced.add(name); });
+  fw.addEventListener("annrm", ({ name }) => { announced.remove(name); });
   return async () => {
     await store.close();
     Forwarder.deleteDefault();
-    announced.clear();
   };
 });
 
@@ -29,10 +29,10 @@ function insertData(...names: [NameLike, ...NameLike[]]) {
   return store.insert(...names.map((name) => new Data(name)));
 }
 
-function listAnnounced(): string[] {
-  const names = Array.from(announced);
-  names.sort((a, b) => a.localeCompare(b));
-  return names;
+function* listAnnounced(): Iterable<Name> {
+  for (const [name] of announced.multiplicities()) {
+    yield name;
+  }
 }
 
 test("simple", async () => {
@@ -41,7 +41,7 @@ test("simple", async () => {
     reg: PrefixRegStatic(new Name("/A"), new Name("/B")),
   });
   await delay(50);
-  expect(listAnnounced()).toEqual(["/8=A", "/8=B"]);
+  expect(listAnnounced()).toEqualNames(["/A", "/B"]);
 
   const endpoint = new Endpoint();
   await Promise.all([
@@ -52,7 +52,7 @@ test("simple", async () => {
 
   producer.close();
   await delay(50);
-  expect(listAnnounced()).toHaveLength(0);
+  expect(listAnnounced()).toEqualNames([]);
 });
 
 test("prefixreg shorter", async () => {
@@ -61,19 +61,19 @@ test("prefixreg shorter", async () => {
     reg: PrefixRegShorter(1),
   });
   await delay(50);
-  expect(listAnnounced()).toEqual(["/8=A/8=B", "/8=C/8=D"]);
+  expect(listAnnounced()).toEqualNames(["/A/B", "/C/D"]);
 
   await insertData("/C/D/4", "/E/F/1");
   await delay(50);
-  expect(listAnnounced()).toEqual(["/8=A/8=B", "/8=C/8=D", "/8=E/8=F"]);
+  expect(listAnnounced()).toEqualNames(["/A/B", "/C/D", "/E/F"]);
 
   await store.delete(new Name("/C/D/3"), new Name("/C/D/4"));
   await delay(50);
-  expect(listAnnounced()).toEqual(["/8=A/8=B", "/8=E/8=F"]);
+  expect(listAnnounced()).toEqualNames(["/A/B", "/E/F"]);
 
   producer.close();
   await delay(50);
-  expect(listAnnounced()).toHaveLength(0);
+  expect(listAnnounced()).toEqualNames([]);
 });
 
 test("prefixreg strip non-generic", async () => {
@@ -84,11 +84,11 @@ test("prefixreg strip non-generic", async () => {
   );
   const producer = RepoProducer.create(store);
   await delay(50);
-  expect(listAnnounced()).toEqual(["/8=A", "/8=B", "/8=J/8=K"]);
+  expect(listAnnounced()).toEqualNames(["/A", "/B", "/J/K"]);
 
   producer.close();
   await delay(50);
-  expect(listAnnounced()).toHaveLength(0);
+  expect(listAnnounced()).toEqualNames([]);
 });
 
 test("prefixreg strip custom", async () => {
@@ -101,15 +101,15 @@ test("prefixreg strip custom", async () => {
     reg: PrefixRegStrip(Segment, "K", Component.from("L")),
   });
   await delay(50);
-  expect(listAnnounced()).toEqual([
-    `${new Name("/A").append(Version, 1)}`,
-    `${new Name("/B").append(Version, 1).append(SequenceNum, 4)}`,
-    "/8=J",
+  expect(listAnnounced()).toEqualNames([
+    new Name("/A").append(Version, 1),
+    new Name("/B").append(Version, 1).append(SequenceNum, 4),
+    "/J",
   ]);
 
   producer.close();
   await delay(50);
-  expect(listAnnounced()).toHaveLength(0);
+  expect(listAnnounced()).toEqualNames([]);
 });
 
 test("respondRdr", async () => {
