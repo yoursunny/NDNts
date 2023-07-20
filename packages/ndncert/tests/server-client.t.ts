@@ -21,7 +21,7 @@ function makePinChallengeWithWrongInputs(nWrongInputs = 0): Row["makeChallengeLi
   return async () => {
     let lastPin = "";
     const server = new ServerPinChallenge();
-    server.on("newpin", (requestId, pin) => lastPin = pin);
+    server.addEventListener("newpin", ({ pin }) => { lastPin = pin; });
 
     let nPrompts = 0;
     const client = new ClientPinChallenge(async () => {
@@ -89,8 +89,8 @@ const TABLE: Row[] = [
   {
     summary: "email, success",
     async makeChallengeLists() {
-      const emailsent = vi.fn<[Uint8Array, SentMessageInfo], void>();
-      const emailerror = vi.fn<[Uint8Array, Error], void>();
+      const emailsent = vi.fn<[ServerEmailChallenge.SentEvent], void>();
+      const emailerror = vi.fn<[ServerEmailChallenge.ErrorEvent], void>();
       const server = new ServerEmailChallenge({
         mail: createMT({ jsonTransport: true }),
         template: emailTemplate,
@@ -99,15 +99,15 @@ const TABLE: Row[] = [
           expect(email).toBe("user@example.com");
         },
       });
-      server.on("emailsent", emailsent);
-      server.on("emailerror", emailerror);
+      server.addEventListener("emailsent", emailsent);
+      server.addEventListener("emailerror", emailerror);
       return [
         [server],
         [new ClientEmailChallenge("user@example.com", async (context: ClientChallengeContext) => {
           expect(emailerror).not.toHaveBeenCalled();
           expect(emailsent).toHaveBeenCalledTimes(1);
-          const [sentRequestId, { envelope, message }] = emailsent.mock.calls[0]!;
-          expect(sentRequestId).toEqualUint8Array(context.requestId);
+          const { requestId, sent: { envelope, message } } = emailsent.mock.calls[0]![0];
+          expect(requestId).toEqualUint8Array(context.requestId);
           expect(envelope.from).toBe("ca@example.com");
           expect(envelope.to).toStrictEqual(["user@example.com"]);
           const msg = JSON.parse(message);

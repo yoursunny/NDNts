@@ -67,7 +67,7 @@ export const Ndncert03CaCommand: CommandModule<{}, Args> = {
         }
         case "pin": {
           const challenge = new ServerPinChallenge();
-          challenge.on("newpin", (requestId, pin) => {
+          challenge.addEventListener("newpin", ({ requestId, pin }) => {
             stdout.write(`PinChallenge requestId=${toHex(requestId)} pin=${pin}\n`);
           });
           challenges.push(challenge);
@@ -130,11 +130,11 @@ If this is you, please validate the above information, and enter the following P
 Otherwise, please disregard this message.`,
             },
           });
-          challenge.on("emailsent", (requestId, sent) => {
+          challenge.addEventListener("emailsent", ({ requestId, sent }) => {
             stdout.write(`EmailChallenge requestId=${toHex(requestId)} sent=${JSON.stringify(sent)}\n`);
           });
-          challenge.on("emailerror", (requestId, err) => {
-            stdout.write(`EmailChallenge requestId=${toHex(requestId)} err=${err}\n`);
+          challenge.addEventListener("emailerror", ({ requestId, error }) => {
+            stdout.write(`EmailChallenge requestId=${toHex(requestId)} err=${error}\n`);
           });
           challenges.push(challenge);
           break;

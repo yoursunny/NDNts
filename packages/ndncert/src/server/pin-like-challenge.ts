@@ -1,4 +1,5 @@
 import { crypto, fromUtf8, timingSafeEqual } from "@ndn/util";
+import { TypedEventTarget } from "typescript-event-target";
 
 import type { ChallengeRequest } from "../packet/mod";
 import type { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";
@@ -9,7 +10,11 @@ function generatePin(): Uint8Array {
 }
 
 /** Base of a challenge where client submits a server-generated pin code. */
-export abstract class ServerPinLikeChallenge<State extends ServerPinLikeChallenge.State = ServerPinLikeChallenge.State> implements ServerChallenge<State> {
+export abstract class ServerPinLikeChallenge<
+  State extends ServerPinLikeChallenge.State = ServerPinLikeChallenge.State,
+  EventMap extends {} = {},
+>
+  extends TypedEventTarget<EventMap> implements ServerChallenge<State> {
   public abstract readonly challengeId: string;
   public abstract readonly timeLimit: number;
   public abstract readonly retryLimit: number;

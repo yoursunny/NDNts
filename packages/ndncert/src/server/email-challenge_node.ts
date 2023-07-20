@@ -1,14 +1,10 @@
-import { EventEmitter } from "node:events";
-
 import { AltUri } from "@ndn/naming-convention2";
 import type { Name } from "@ndn/packet";
 import { fromUtf8, toHex } from "@ndn/util";
-import applyMixins from "applymixins";
 import type { SendMailOptions, SentMessageInfo, Transporter } from "nodemailer";
-import type TypedEmitter from "typed-emitter";
 
 import type { ChallengeRequest } from "../packet/mod";
-import type { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";
+import type { ServerChallengeContext, ServerChallengeResponse } from "./challenge";
 import { ServerPinLikeChallenge } from "./pin-like-challenge";
 
 type State = ServerPinLikeChallenge.State;
@@ -33,16 +29,16 @@ function templateSub(input: string, sub: MailSub): string {
   return input;
 }
 
-type Events = {
+type EventMap = {
   /** Emitted after sending an email. */
-  emailsent: (requestId: Uint8Array, sent: SentMessageInfo) => void;
+  emailsent: ServerEmailChallenge.SentEvent;
 
   /** Emitted after failure to send an email. */
-  emailerror: (requestId: Uint8Array, err: Error) => void;
+  emailerror: ServerEmailChallenge.ErrorEvent;
 };
 
 /** The "email" challenge where client receives a pin code via email. */
-export class ServerEmailChallenge extends (EventEmitter as new() => TypedEmitter<Events>) implements ServerChallenge {
+export class ServerEmailChallenge extends ServerPinLikeChallenge<ServerPinLikeChallenge.State, EventMap> {
   public readonly challengeId = "email";
   public readonly timeLimit = 300000;
   public readonly retryLimit = 3;
@@ -77,10 +73,10 @@ export class ServerEmailChallenge extends (EventEmitter as new() => TypedEmitter
 
     try {
       const info = await this.mail.sendMail(msg);
-      this.emit("emailsent", requestId, info);
+      this.dispatchTypedEvent("emailsent", new ServerEmailChallenge.SentEvent("emailsent", requestId, info));
     } catch (err: unknown) {
       /* c8 ignore next */
-      this.emit("emailerror", requestId, err as Error);
+      this.dispatchTypedEvent("emailerror", new ServerEmailChallenge.ErrorEvent("emailerror", requestId, err as Error));
     }
     return state;
   }
@@ -97,8 +93,6 @@ export class ServerEmailChallenge extends (EventEmitter as new() => TypedEmitter
     };
   }
 }
-export interface ServerEmailChallenge extends ServerPinLikeChallenge {}
-applyMixins(ServerEmailChallenge, [ServerPinLikeChallenge]);
 
 export namespace ServerEmailChallenge {
   /**
@@ -131,5 +125,17 @@ export namespace ServerEmailChallenge {
     assignmentPolicy?: AssignmentPolicy;
     mail: Transporter;
     template: Template;
+  }
+
+  export class SentEvent extends Event {
+    constructor(type: string, public readonly requestId: Uint8Array, public readonly sent: SentMessageInfo) {
+      super(type);
+    }
+  }
+
+  export class ErrorEvent extends Event {
+    constructor(type: string, public readonly requestId: Uint8Array, public readonly error: Error) {
+      super(type);
+    }
   }
 }
