@@ -1,10 +1,9 @@
-import { EventEmitter } from "node:events";
-
 import { assert } from "@ndn/util";
 import hirestime from "hirestime";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import pDefer from "p-defer";
-import type TypedEmitter from "typed-emitter";
+import { pEvent } from "p-event";
+import { TypedEventTarget } from "typescript-event-target";
 
 import type { CongestionAvoidance } from "./congestion-avoidance";
 import { RttEstimator } from "./rtt-estimator";
@@ -14,7 +13,7 @@ import { TokenLimiter } from "./token-limiter";
 const tokenLimiters = new DefaultWeakMap<CongestionAvoidance, TokenLimiter>((ca) => {
   const tl = new TokenLimiter();
   tl.capacity = ca.cwnd;
-  ca.on("cwndupdate", (cwnd) => tl.capacity = cwnd);
+  ca.addEventListener("cwndupdate", () => { tl.capacity = ca.cwnd; });
   return tl;
 });
 
@@ -34,20 +33,20 @@ type SegRequest<T> = Pick<Readonly<SegState>, "segNum" | "isRetx" | "rto"> & {
   interest: T;
 };
 
-const UNBLOCK = Symbol("UNBLOCK");
+const UNBLOCK = "FetchLogic.unblock";
 
-type Events = {
-  [UNBLOCK]: () => void;
+type EventMap = {
+  [UNBLOCK]: Event;
 
   /** Fetching finished. */
-  end: () => void;
+  end: Event;
 
   /** A segment request has exceeded maximum retx limit and will not be retried. */
-  exceedRetxLimit: (segNum: number) => void;
+  exceedRetxLimit: FetchLogic.SegNumEvent;
 };
 
 /** Congestion control logic. */
-export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) {
+export class FetchLogic extends TypedEventTarget<EventMap> {
   /** Internal clock. */
   public readonly now = hirestime();
 
@@ -91,7 +90,7 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
   /** Abort. */
   public close() {
     this.running = false;
-    this.emit(UNBLOCK);
+    this.dispatchTypedEvent(UNBLOCK, new Event(UNBLOCK));
     for (const [, { rtoExpiry }] of this.pending) {
       clearTimeout(rtoExpiry);
     }
@@ -165,10 +164,10 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
 
       this.tl.put();
       if (this.pending.size === 0 && this.estimatedFinalSegNum >= this.finalSegNum) {
-        this.emit("end");
+        this.dispatchTypedEvent("end", new Event("end"));
         break;
       }
-      await new Promise<void>((r) => this.once(UNBLOCK, r));
+      await pEvent(this, UNBLOCK);
     }
   }
 
@@ -203,7 +202,7 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
     if (this.hiDataSegNum === this.estimatedFinalSegNum && this.estimatedFinalSegNum < this.finalSegNum) {
       ++this.estimatedFinalSegNum;
     }
-    this.emit(UNBLOCK);
+    this.dispatchTypedEvent(UNBLOCK, new Event(UNBLOCK));
   }
 
   private rtoTimeout(segNum: number) {
@@ -221,11 +220,11 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
 
     if (req.nRetx >= this.retxLimit) {
       this.pending.delete(segNum);
-      this.emit("exceedRetxLimit", segNum);
+      this.dispatchTypedEvent("exceedRetxLimit", new FetchLogic.SegNumEvent("exceedRetxLimit", segNum));
     } else {
       this.retxQueue.add(segNum);
     }
-    this.emit(UNBLOCK);
+    this.dispatchTypedEvent(UNBLOCK, new Event(UNBLOCK));
   }
 
   /**
@@ -242,7 +241,7 @@ export class FetchLogic extends (EventEmitter as new() => TypedEmitter<Events>) 
       this.finalSegNum = finalSegNum;
       this.processCancels = true;
     }
-    this.emit(UNBLOCK);
+    this.dispatchTypedEvent(UNBLOCK, new Event(UNBLOCK));
   }
 }
 
@@ -276,5 +275,11 @@ export namespace FetchLogic {
      * Default is 15.
      */
     retxLimit?: number;
+  }
+
+  export class SegNumEvent extends Event {
+    constructor(type: string, public readonly segNum: number) {
+      super(type);
+    }
   }
 }

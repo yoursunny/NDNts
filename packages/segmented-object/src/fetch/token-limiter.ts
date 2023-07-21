@@ -2,7 +2,7 @@ import { assert } from "@ndn/util";
 
 /** A token-based throttle limiter. */
 export class TokenLimiter {
-  private queue = new Set<() => void>();
+  private readonly queue = new Set<() => void>();
   private nTaken_ = 0;
 
   constructor(private capacity_: number = 0) {}

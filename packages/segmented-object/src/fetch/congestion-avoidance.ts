@@ -1,16 +1,14 @@
-import { EventEmitter } from "node:events";
-
 import { assert } from "@ndn/util";
-import type TypedEmitter from "typed-emitter";
+import { TypedEventTarget } from "typescript-event-target";
 
-type Events = {
-  cwndupdate: (cwnd: number) => void;
+type EventMap = {
+  cwndupdate: Event;
 };
 
 const CWND = Symbol("CongestionAvoidance.CWND");
 
 /** Congestion avoidance algorithm. */
-export abstract class CongestionAvoidance extends (EventEmitter as new() => TypedEmitter<Events>) {
+export abstract class CongestionAvoidance extends TypedEventTarget<EventMap> {
   private [CWND]: number;
 
   constructor(initialCwnd: number) {
@@ -23,7 +21,7 @@ export abstract class CongestionAvoidance extends (EventEmitter as new() => Type
   protected updateCwnd(v: number) {
     assert(v >= 0);
     this[CWND] = v;
-    this.emit("cwndupdate", v);
+    this.dispatchTypedEvent("cwndupdate", new Event("cwndupdate"));
   }
 
   public abstract increase(now: number, rtt: number): void;

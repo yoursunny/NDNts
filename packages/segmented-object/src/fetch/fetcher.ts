@@ -1,24 +1,23 @@
-import { EventEmitter } from "node:events";
-
 import type { Endpoint } from "@ndn/endpoint";
 import { CancelInterest, Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { Data, Interest, type Name, type Verifier } from "@ndn/packet";
-import type TypedEmitter from "typed-emitter";
+import { CustomEvent } from "@ndn/util";
+import { TypedEventTarget } from "typescript-event-target";
 
 import { defaultSegmentConvention, type SegmentConvention } from "../convention";
 import { FetchLogic } from "./logic";
 
-type Events = {
+type EventMap = {
   /** Emitted when a Data segment arrives. */
-  segment: (seg: Fetcher.SegmentData) => void;
+  segment: Fetcher.SegmentDataEvent;
   /** Emitted after all data chunks arrive. */
-  end: () => void;
+  end: Event;
   /** Emitted upon error. */
-  error: (err: Error) => void;
+  error: CustomEvent<Error>;
 };
 
 /** Fetch Data packets as guided by FetchLogic. */
-export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
+export class Fetcher extends TypedEventTarget<EventMap> {
   /** Number of segments retrieved so far. */
   public get count() { return this.count_; }
   private count_ = 0;
@@ -28,8 +27,11 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
   constructor(private readonly name: Name, private readonly opts: Fetcher.Options) {
     super();
     this.logic = new FetchLogic(opts);
-    this.logic.on("end", () => { this.emit("end"); this.close(); });
-    this.logic.on("exceedRetxLimit", (segNum) => {
+    this.logic.addEventListener("end", () => {
+      this.dispatchTypedEvent("end", new Event("end"));
+      this.close();
+    });
+    this.logic.addEventListener("exceedRetxLimit", (segNum) => {
       this.fail(new Error(`cannot retrieve segment ${segNum}`));
     });
 
@@ -44,7 +46,6 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
   }
 
   public close() {
-    this.on("error", () => undefined); // ignore further errors
     this.opts.signal?.removeEventListener("abort", this.handleAbort);
     this.logic.close();
     this.face.close();
@@ -102,12 +103,12 @@ export class Fetcher extends (EventEmitter as new() => TypedEmitter<Events>) {
       }
     }
     ++this.count_;
-    this.emit("segment", { segNum, data });
+    this.dispatchTypedEvent("segment", new Fetcher.SegmentDataEvent("segment", segNum, data));
   }
 
   private fail(err: Error): void {
     setTimeout(() => {
-      this.emit("error", err);
+      this.dispatchTypedEvent("error", new CustomEvent("error", { detail: err }));
       this.close();
     }, 0);
   }
@@ -160,5 +161,11 @@ export namespace Fetcher {
   export interface SegmentData {
     segNum: number;
     data: Data;
+  }
+
+  export class SegmentDataEvent extends Event implements SegmentData {
+    constructor(type: string, public readonly segNum: number, public readonly data: Data) {
+      super(type);
+    }
   }
 }

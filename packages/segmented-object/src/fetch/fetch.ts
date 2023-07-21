@@ -18,18 +18,17 @@ class FetchResult implements fetch.Result {
     const ctx = new Fetcher(this.name, this.opts);
     this.ctx = ctx;
     return new EventIterator<Fetcher.SegmentData>(({ push, stop, fail, on }) => {
-      let resume: () => void | undefined;
+      let resume: (() => void) | undefined;
       on("highWater", () => { resume = ctx.pause(); });
       on("lowWater", () => { resume?.(); });
 
-      ctx.on("segment", push);
-      ctx.on("end", stop);
-      ctx.on("error", fail);
+      const abort = new AbortController();
+      ctx.addEventListener("segment", push, { signal: abort.signal });
+      ctx.addEventListener("end", stop, { signal: abort.signal });
+      ctx.addEventListener("error", ({ detail }) => fail(detail), { signal: abort.signal });
       return () => {
         resume?.();
-        ctx.off("segment", push);
-        ctx.off("end", stop);
-        ctx.off("error", fail);
+        abort.abort();
       };
     });
   }
