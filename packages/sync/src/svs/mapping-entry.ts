@@ -1,6 +1,6 @@
 import { GenericNumber, Timestamp } from "@ndn/naming-convention2";
 import { Component, Name, TT as l3TT } from "@ndn/packet";
-import { type Decodable, type Decoder, type Encodable, type EncodableObj, type Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry } from "@ndn/tlv";
+import { type Decodable, type Decoder, type Encodable, type EncodableObj, type Encoder, EvDecoder, Extensible, ExtensionRegistry } from "@ndn/tlv";
 
 import { TT } from "./an";
 
@@ -78,16 +78,8 @@ export class SvTimedMappingEntry extends SvMappingEntry implements Extensible {
   }
 
   public readonly [Extensible.TAG] = timedExtensions;
-
-  public get timestamp(): Date | undefined {
-    return Extension.get(this, Timestamp.type) as Date | undefined;
-  }
-
-  public set timestamp(v) {
-    if (v === undefined) {
-      Extension.clear(this, Timestamp.type);
-    } else {
-      Extension.set(this, Timestamp.type, v);
-    }
-  }
+  public declare timestamp: Date | undefined;
 }
+Extensible.defineGettersSetters(SvTimedMappingEntry, {
+  timestamp: Timestamp.type,
+});

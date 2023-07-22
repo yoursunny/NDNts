@@ -11,41 +11,44 @@ const EVD = new EvDecoder<ExtTestTarget>("ExtTestTarget")
 
 class ExtTestTarget implements Extensible {
   public readonly [Extensible.TAG] = EXTENSIONS;
+  public declare a1: number | undefined;
+  public declare a2: boolean | undefined;
 
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(0xA0, ...EXTENSIONS.encode(this));
   }
 }
-
-class A1Extension implements Extension<ExtTestTarget, number> {
-  public readonly tt = 0xA1;
-  public readonly order = 0xA3;
-  public decode(obj: ExtTestTarget, { nni }: Decoder.Tlv, accumulator?: number): number {
-    return (accumulator ?? 0) + nni;
-  }
-
-  public encode(obj: ExtTestTarget, value: number): Encodable {
-    return [this.tt, NNI(value)];
-  }
-}
-
-class A2Extension implements Extension<ExtTestTarget, boolean> {
-  public readonly tt = 0xA2;
-  public decode(): boolean {
-    return true;
-  }
-
-  public encode(obj: ExtTestTarget, value: boolean): Encodable {
-    if (value) {
-      return [this.tt];
-    }
-    return undefined;
-  }
-}
+Extensible.defineGettersSetters(ExtTestTarget, {
+  a1: 0xA1,
+  a2: 0xA2,
+});
 
 beforeEach(() => {
-  EXTENSIONS.registerExtension(new A1Extension());
-  EXTENSIONS.registerExtension(new A2Extension());
+  EXTENSIONS.registerExtension<number>({
+    tt: 0xA1,
+    order: 0xA3,
+    decode(obj, { nni }, accumulator = 0): number {
+      void obj;
+      return accumulator + nni;
+    },
+    encode(obj, value): Encodable {
+      void obj;
+      return [this.tt, NNI(value)];
+    },
+  });
+  EXTENSIONS.registerExtension<boolean>({
+    tt: 0xA2,
+    decode() {
+      return true;
+    },
+    encode(obj, value) {
+      void obj;
+      if (value) {
+        return [this.tt];
+      }
+      return undefined;
+    },
+  });
   return () => {
     EXTENSIONS.unregisterExtension(0xA1);
     EXTENSIONS.unregisterExtension(0xA2);
@@ -58,8 +61,8 @@ test("encode", () => {
     0xA0, 0x00,
   ]);
 
-  Extension.set(target, 0xA1, 5);
-  Extension.set(target, 0xA2, true);
+  target.a1 = 5;
+  target.a2 = true;
   expect(target).toEncodeAs([
     0xA0, 0x05,
     0xA2, 0x00,
@@ -74,8 +77,8 @@ test("encode", () => {
     0xA1, 0x01, 0x05,
   ]);
 
-  Extension.clear(target, 0xA1);
-  Extension.set(target, 0xA2, false);
+  target.a1 = undefined;
+  target.a2 = false;
   expect(target).toEncodeAs([
     0xA0, 0x00,
   ]);
@@ -91,16 +94,16 @@ test("decode", () => {
     0xA1, 0x01, 0x03,
   ));
   let obj = EVD.decode(new ExtTestTarget(), decoder);
-  expect(Extension.get(obj, 0xA1)).toBe(4);
-  expect(Extension.get(obj, 0xA2)).toBeUndefined();
+  expect(obj.a1).toBe(4);
+  expect(obj.a2).toBeUndefined();
 
   decoder = new Decoder(Uint8Array.of(
     0xA0, 0x02,
     0xA2, 0x00,
   ));
   obj = EVD.decode(new ExtTestTarget(), decoder);
-  expect(Extension.get(obj, 0xA1)).toBeUndefined();
-  expect(Extension.get(obj, 0xA2)).toBe(true);
+  expect(obj.a1).toBeUndefined();
+  expect(obj.a2).toBe(true);
 
   decoder = new Decoder(Uint8Array.of(
     0xA0, 0x02,

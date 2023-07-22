@@ -17,6 +17,29 @@ export namespace Extensible {
   export function cloneRecord(dst: Extensible, src: Extensible): void {
     RECORDS.set(dst, new Map(RECORDS.get(src)));
   }
+
+  /**
+   * Define simple getters and setters.
+   * @param typ Extensible subclass constructor.
+   * @param exts extensions, each key is a property name and each value is the TLV-TYPE number.
+   */
+  export function defineGettersSetters<T extends Extensible>(typ: new() => T, exts: Record<string, number>): void {
+    for (const [prop, tt] of Object.entries(exts)) {
+      Object.defineProperty(typ.prototype, prop, {
+        enumerable: true,
+        get(this: T) {
+          return Extension.get(this, tt);
+        },
+        set(this: T, value: unknown) {
+          if (value === undefined) {
+            Extension.clear(this, tt);
+          } else {
+            Extension.set(this, tt, value);
+          }
+        },
+      });
+    }
+  }
 }
 
 /**
@@ -55,12 +78,12 @@ export namespace Extension {
   }
 
   /** Assign value of an extension field. */
-  export function set(obj: Extensible, tt: number, value: unknown) {
+  export function set(obj: Extensible, tt: number, value: unknown): void {
     RECORDS.get(obj).set(tt, value);
   }
 
   /** Clear value of an extension field. */
-  export function clear(obj: Extensible, tt: number) {
+  export function clear(obj: Extensible, tt: number): void {
     RECORDS.get(obj).delete(tt);
   }
 }
@@ -70,17 +93,18 @@ export class ExtensionRegistry<T extends Extensible> {
   private readonly table = new Map<number, Extension<T, any>>();
 
   /** Add an extension. */
-  public readonly registerExtension = <R>(ext: Extension<T, R>) => {
+  public readonly registerExtension = <R>(ext: Extension<T, R>): void => {
     this.table.set(ext.tt, ext);
   };
 
   /** Remove an extension. */
-  public readonly unregisterExtension = (tt: number) => {
+  public readonly unregisterExtension = (tt: number): void => {
     this.table.delete(tt);
   };
 
   /** UnknownElementCallback for EvDecoder. */
   public readonly decodeUnknown = (target: T, tlv: Decoder.Tlv, order: number) => {
+    void order;
     const { type: tt } = tlv;
     const ext = this.table.get(tt);
     if (!ext) {
