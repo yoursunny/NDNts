@@ -7,22 +7,19 @@ namespace Timestamp {
 using TlvType = std::integral_constant<int, 0x38>;
 
 inline uint64_t
-now()
-{
+now() {
   ::timespec tp;
   ::clock_gettime(CLOCK_REALTIME, &tp);
   return static_cast<uint64_t>(tp.tv_sec) * 1000000 + static_cast<uint64_t>(tp.tv_nsec) / 1000;
 }
 
 inline ndn::Name::Component
-create(uint64_t v = now())
-{
+create(uint64_t v = now()) {
   return ndn::Name::Component::fromNumber(v, ndn_NameComponentType_OTHER_CODE, TlvType::value);
 }
 
 inline uint64_t
-parse(const ndn::Name::Component& comp)
-{
+parse(const ndn::Name::Component& comp) {
   if (comp.getType() == ndn_NameComponentType_OTHER_CODE &&
       comp.getOtherTypeCode() == TlvType::value) {
     return comp.toNumber();
@@ -33,11 +30,9 @@ parse(const ndn::Name::Component& comp)
 } // namespace Timestamp
 
 int
-main(int argc, char** argv)
-{
+main(int argc, char** argv) {
   INIT_LOGGERS();
   log4cxx::Logger::getRootLogger()->setLevel(log4cxx::Level::getTrace());
-  // ndn::WireFormat::setDefaultWireFormat(ndn::Tlv0_3WireFormat::get());
 
   if (argc != 4) {
     std::cerr << "./demo SYNC-PREFIX SUB-PREFIX PUB-PREFIX" << std::endl;

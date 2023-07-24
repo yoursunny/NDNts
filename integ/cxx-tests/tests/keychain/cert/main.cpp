@@ -5,8 +5,7 @@
 #include <iostream>
 
 int
-main()
-{
+main() {
   auto cert = ndn::io::load<ndn::security::Certificate>(std::cin, ndn::io::NO_ENCODING);
   if (cert == nullptr) {
     return 1;

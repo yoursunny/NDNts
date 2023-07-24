@@ -3,6 +3,7 @@ BasedOnStyle: Mozilla
 AllowShortFunctionsOnASingleLine: Empty
 BinPackArguments: true
 BinPackParameters: true
+BreakBeforeBraces: Attach
 ColumnLimit: 100
 Cpp11BracedListStyle: true
 FixNamespaceComments: true

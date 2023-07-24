@@ -6,8 +6,7 @@
 #include <iostream>
 
 int
-main(int argc, char* argv[])
-{
+main(int argc, char* argv[]) {
   auto cert = ndn::io::load<ndn::security::Certificate>(argv[1], ndn::io::NO_ENCODING);
   auto packet = ndn::io::load<ndn::Data>(argv[2], ndn::io::NO_ENCODING);
   if (cert == nullptr || packet == nullptr) {

@@ -7,16 +7,14 @@
 using namespace ndn::time_literals;
 
 static void
-handleUpdate(const std::vector<psync::MissingDataInfo>& updates)
-{
+handleUpdate(const std::vector<psync::MissingDataInfo>& updates) {
   for (const auto& update : updates) {
     std::cout << update.prefix << "\t" << update.lowSeq << "\t" << update.highSeq << std::endl;
   }
 }
 
 int
-main(int argc, char* argv[])
-{
+main(int argc, char* argv[]) {
   ndn::Face face("127.0.0.1", argv[1]);
   ndn::KeyChain keyChain;
 
