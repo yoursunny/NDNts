@@ -38,7 +38,7 @@
     "p-event": "^6.0.0",
     "p-lazy": "^4.0.0",
     "streaming-iterables": "^7.1.0",
-    "tslib": "^2.6.0",
+    "tslib": "^2.6.1",
     "typescript-event-target": "^1.0.5"
   },
   "devDependencies": {

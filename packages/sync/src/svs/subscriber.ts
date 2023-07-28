@@ -1,7 +1,6 @@
 import { EventEmitter } from "node:events";
 
-import type { ConsumerOptions } from "@ndn/endpoint";
-import { Endpoint } from "@ndn/endpoint";
+import { type ConsumerOptions, Endpoint } from "@ndn/endpoint";
 import { GenericNumber, Segment } from "@ndn/naming-convention2";
 import { Data, Interest, lpm, Name, noopSigning, TT as l3TT, type Verifier } from "@ndn/packet";
 import { fetch } from "@ndn/segmented-object";

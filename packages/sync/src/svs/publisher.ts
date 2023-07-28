@@ -2,8 +2,7 @@ import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
 import { GenericNumber } from "@ndn/naming-convention2";
 import { Data, Name, type NameLike, nullSigner, type Signer } from "@ndn/packet";
 import type { DataStore as S } from "@ndn/repo-api";
-import type { ChunkOptions } from "@ndn/segmented-object";
-import { BufferChunkSource, DataProducer } from "@ndn/segmented-object";
+import { BufferChunkSource, type ChunkOptions, DataProducer } from "@ndn/segmented-object";
 import { Encoder } from "@ndn/tlv";
 import { collect, map } from "streaming-iterables";
 

@@ -2,6 +2,7 @@ import type { AddressInfo } from "node:net";
 
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 import EventIterator from "event-iterator";
+import type { Except } from "type-fest";
 
 import { joinHostPort } from "./hostport";
 import * as udp from "./udp-helper";
@@ -118,7 +119,7 @@ export namespace UdpTransport {
   export const createMulticastFace = L3Face.makeCreateFace(multicast);
 
   /** Create multicast transports on every interface. */
-  export async function multicasts(opts: Omit<udp.MulticastOptions, "intf"> = {}): Promise<UdpTransport[]> {
+  export async function multicasts(opts: Except<udp.MulticastOptions, "intf"> = {}): Promise<UdpTransport[]> {
     const intfs = udp.listMulticastIntfs();
     return (await Promise.allSettled(intfs.map((intf) => multicast({ ...opts, intf }))))
       .filter((res): res is PromiseFulfilledResult<UdpTransport> => res.status === "fulfilled")

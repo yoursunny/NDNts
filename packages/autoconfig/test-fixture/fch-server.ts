@@ -1,14 +1,14 @@
+import { once } from "node:events";
 import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 
 import Koa from "koa";
-import { pEvent } from "p-event";
 
 /** Mock NDN-FCH server. */
 export class FchServer {
   public static async create(): Promise<FchServer> {
     const s = new FchServer();
-    await pEvent(s.server, "listening", { timeout: 1000 });
+    await once(s.server, "listening", { signal: AbortSignal.timeout(1000) });
     return s;
   }
 

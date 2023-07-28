@@ -1,5 +1,6 @@
 import type { Certificate } from "@ndn/keychain";
 import type { Name, Verifier } from "@ndn/packet";
+import type { Except } from "type-fest";
 
 import { PolicyVerifier } from "../policy-verifier";
 import type { TrustSchemaPolicy } from "./policy";
@@ -35,7 +36,7 @@ export class TrustSchemaVerifier extends PolicyVerifier<Context> {
 }
 
 export namespace TrustSchemaVerifier {
-  export interface Options extends Omit<PolicyVerifier.Options, "trustAnchors"> {
+  export interface Options extends Except<PolicyVerifier.Options, "trustAnchors"> {
     /** The trust schema. */
     schema: TrustSchema;
   }

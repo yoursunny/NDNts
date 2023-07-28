@@ -1,5 +1,3 @@
-import "./api";
-
 import type { FwFace } from "@ndn/fw";
 import { Name } from "@ndn/packet";
 import { makePSyncCompatParam, PSyncPartialSubscriber, type SyncUpdate } from "@ndn/sync";

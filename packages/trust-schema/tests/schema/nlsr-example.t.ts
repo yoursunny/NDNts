@@ -5,8 +5,7 @@ import { Component, Data, type Name } from "@ndn/packet";
 import { collect, take } from "streaming-iterables";
 import { beforeAll, expect, test } from "vitest";
 
-import type { TrustSchemaPolicy } from "../..";
-import { pattern as P, printESM, TrustSchema, TrustSchemaSigner, versec } from "../..";
+import { pattern as P, printESM, TrustSchema, type TrustSchemaPolicy, TrustSchemaSigner, versec } from "../..";
 
 const NLSR_POLICY = `
 // adapted from https://pollere.net/Pdfdocs/BuildingBridge.pdf

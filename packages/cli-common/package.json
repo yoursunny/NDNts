@@ -34,7 +34,7 @@
     "@ndn/util": "workspace:*",
     "@sadams/environment": "^9.0.0",
     "dotenv": "^16.3.1",
-    "tslib": "^2.6.0",
+    "tslib": "^2.6.1",
     "wtfnode": "^0.9.1"
   }
 }

@@ -1,6 +1,7 @@
 import { Data, type Signer } from "@ndn/packet";
 import { type EncodableTlv, Encoder, EvDecoder } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
+import type { Except } from "type-fest";
 
 import * as crypto from "../crypto-common";
 import { TT } from "./an";
@@ -42,7 +43,7 @@ export namespace NewResponse {
     challenges: string[];
   }
 
-  export type Options = Omit<Fields, "ecdhPubRaw"> & {
+  export type Options = Except<Fields, "ecdhPubRaw"> & {
     profile: CaProfile;
     request: NewRequest;
     ecdhPub: CryptoKey;

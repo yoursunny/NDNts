@@ -3,6 +3,7 @@ import { Data } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 import Ajv, { type JSONSchemaType } from "ajv";
 import { toBase64, toBuffer as b64ToBuffer } from "b64-lite";
+import type { Except } from "type-fest";
 
 import type { CaProfile } from "../packet/ca-profile";
 import { retrieveCaProfile, type RetrieveCaProfileOptions } from "./retrieve-profile";
@@ -59,7 +60,7 @@ export function exportClientConf(profile: CaProfile): ClientConf {
 /** Retrieve CA profile according to client.conf of NDNCERT C++ implementation. */
 export async function importClientConf(
     conf: ClientConf,
-    opts: Omit<RetrieveCaProfileOptions, "caPrefix" | "caCertFullName"> = {},
+    opts: Except<RetrieveCaProfileOptions, "caPrefix" | "caCertFullName"> = {},
 ): Promise<CaProfile> {
   if (!validate(conf)) {
     throw new Error(`invalid client.conf\n${JSON.stringify(validate.errors)}`);

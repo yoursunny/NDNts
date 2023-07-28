@@ -28,7 +28,7 @@
   "dependencies": {
     "@types/minimalistic-assert": "^1.0.1",
     "minimalistic-assert": "^1.0.1",
-    "tslib": "^2.6.0"
+    "tslib": "^2.6.1"
   },
   "devDependencies": {
     "@types/tmp": "^0.2.3",

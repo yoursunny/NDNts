@@ -4,11 +4,12 @@ import { Certificate, type KeyChain } from "@ndn/keychain";
 import { Interest, type Name, NameMap } from "@ndn/packet";
 import { Closers } from "@ndn/util";
 import map from "obliterator/map.js";
+import type { Except } from "type-fest";
 
 import { ControlCommand } from "./control-command";
 import type { ControlParameters } from "./control-parameters";
 
-type CommandOptions = Omit<ControlCommand.Options, "endpoint">;
+type CommandOptions = Except<ControlCommand.Options, "endpoint">;
 type RouteOptions = Pick<ControlParameters.Fields, "origin" | "cost" | "flags">;
 type Options = CommandOptions & RouteOptions & {
   retry?: ReadvertiseDestination.RetryOptions;

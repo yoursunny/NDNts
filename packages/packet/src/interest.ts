@@ -1,5 +1,6 @@
 import { type Decoder, type Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { assert, sha256 } from "@ndn/util";
+import type { Except } from "type-fest";
 
 import { TT } from "./an";
 import { FwHint } from "./fwhint";
@@ -53,7 +54,7 @@ class Fields {
   public paramsPortion?: Uint8Array;
   public signedPortion?: Uint8Array;
 }
-interface PublicFields extends Omit<Fields, "paramsPortion" | "signedPortion"> {}
+interface PublicFields extends Except<Fields, "paramsPortion" | "signedPortion"> {}
 
 const EVD = new EvDecoder<Fields>("Interest", TT.Interest)
   .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })

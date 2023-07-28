@@ -1,6 +1,7 @@
 import { createEncrypter, type NamedEncrypter, RSAOAEP } from "@ndn/keychain";
 import { type Component, Data, type LLEncrypt, type Name, type Signer } from "@ndn/packet";
 import * as asn1 from "@yoursunny/asn1";
+import type { Except } from "type-fest";
 
 import { ContentTypeKEY, DefaultFreshness, Keyword } from "./an";
 
@@ -63,7 +64,7 @@ export namespace KeyEncryptionKey {
   }
 
   /** Create subject name for RSA-OAEP key generation. */
-  export function makeSubjectName({ prefix, subset }: Omit<NameParts, "keyId">): Name {
+  export function makeSubjectName({ prefix, subset }: Except<NameParts, "keyId">): Name {
     return prefix.append(Keyword.NAC, ...subset.comps);
   }
 

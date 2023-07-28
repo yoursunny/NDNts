@@ -33,11 +33,12 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "obliterator": "^2.0.4",
-    "tslib": "^2.6.0"
+    "tslib": "^2.6.1"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
+    "type-fest": "^4.0.0",
     "typescript-event-target": "^1.0.5"
   }
 }

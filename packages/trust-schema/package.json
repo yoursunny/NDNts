@@ -32,7 +32,8 @@
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
     "mnemonist": "^0.39.5",
-    "tslib": "^2.6.0"
+    "tslib": "^2.6.1",
+    "type-fest": "^4.0.0"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:*",

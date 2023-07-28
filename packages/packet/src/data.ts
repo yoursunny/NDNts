@@ -1,5 +1,6 @@
 import { type Decoder, type Encodable, type EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { sha256 } from "@ndn/util";
+import type { Except } from "type-fest";
 
 import { TT } from "./an";
 import { definePublicFields, FIELDS } from "./impl-public-fields";
@@ -72,7 +73,7 @@ class Fields {
   public topTlv?: Uint8Array;
   public topTlvDigest?: Uint8Array;
 }
-interface PublicFields extends Omit<Fields, "signedPortion" | "topTlv" | "topTlvDigest"> {}
+interface PublicFields extends Except<Fields, "signedPortion" | "topTlv" | "topTlvDigest"> {}
 
 const EVD = new EvDecoder<Fields>("Data", TT.Data)
   .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })

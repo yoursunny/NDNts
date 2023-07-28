@@ -24,13 +24,13 @@
     "events": "^3.3.0"
   },
   "devDependencies": {
-    "@nodelib/fs.walk": "^1.2.8",
+    "@nodelib/fs.walk": "^2.0.0",
     "@types/webpack": "^5.28.1",
     "fork-ts-checker-webpack-plugin": "^8.0.0",
     "html-webpack-plugin": "^5.5.3",
     "puppeteer": "^20.9.0",
     "ts-loader": "^9.4.4",
-    "tslib": "^2.6.0",
+    "tslib": "^2.6.1",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1"

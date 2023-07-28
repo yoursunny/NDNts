@@ -34,7 +34,7 @@
     "it-pushable": "^3.2.1",
     "stdout-stream": "^2.0.0",
     "streaming-iterables": "^7.1.0",
-    "tslib": "^2.6.0",
+    "tslib": "^2.6.1",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

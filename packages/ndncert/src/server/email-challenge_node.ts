@@ -2,6 +2,7 @@ import { AltUri } from "@ndn/naming-convention2";
 import type { Name } from "@ndn/packet";
 import { fromUtf8, toHex } from "@ndn/util";
 import type { SendMailOptions, SentMessageInfo, Transporter } from "nodemailer";
+import type { Merge } from "type-fest";
 
 import type { ChallengeRequest } from "../packet/mod";
 import type { ServerChallengeContext, ServerChallengeResponse } from "./challenge";
@@ -114,12 +115,12 @@ export namespace ServerEmailChallenge {
    * disableUrlAccess and disableFileAccess are set to true by default,
    * but they may be overridden in the template object.
    */
-  export type Template = {
+  export type Template = Merge<SendMailOptions, {
     from: string;
     subject: string;
     text: string;
     html?: string;
-  } & Omit<SendMailOptions, "to" | "text" | "html" | "raw">;
+  }>;
 
   export interface Options {
     assignmentPolicy?: AssignmentPolicy;
