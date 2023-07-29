@@ -1,5 +1,5 @@
 import { type Decoder, type Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
-import { assert, sha256 } from "@ndn/util";
+import { assert, constrain, sha256 } from "@ndn/util";
 import type { Except, Schema } from "type-fest";
 
 import { TT } from "./an";
@@ -36,15 +36,15 @@ class Fields {
   public fwHint?: FwHint;
 
   public get nonce() { return this.nonce_; }
-  public set nonce(v) { this.nonce_ = v && NNI.constrain(v, "Nonce", 0xFFFFFFFF); }
+  public set nonce(v) { this.nonce_ = v && constrain(v, "Nonce", 0xFFFFFFFF); }
   private nonce_: number | undefined;
 
   public get lifetime() { return this.lifetime_; }
-  public set lifetime(v) { this.lifetime_ = NNI.constrain(v, "InterestLifetime"); }
+  public set lifetime(v) { this.lifetime_ = constrain(Math.trunc(v), "InterestLifetime"); }
   private lifetime_: number = Interest.DefaultLifetime;
 
   public get hopLimit() { return this.hopLimit_; }
-  public set hopLimit(v) { this.hopLimit_ = NNI.constrain(v, "HopLimit", HOPLIMIT_MAX); }
+  public set hopLimit(v) { this.hopLimit_ = constrain(v, "HopLimit", HOPLIMIT_MAX); }
   private hopLimit_: number = HOPLIMIT_MAX;
 
   public appParameters?: Uint8Array;

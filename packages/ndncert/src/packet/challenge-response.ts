@@ -1,6 +1,6 @@
 import { Data, FwHint, type LLDecrypt, type LLEncrypt, Name, type Signer, TT as l3TT } from "@ndn/packet";
 import { Decoder, type Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
-import { toUtf8 } from "@ndn/util";
+import { constrain, toUtf8 } from "@ndn/util";
 
 import { Status, TT } from "./an";
 import type { CaProfile } from "./ca-profile";
@@ -9,7 +9,7 @@ import * as encrypted_payload from "./encrypted";
 import * as parameter_kv from "./parameter-kv";
 
 const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse")
-  .add(TT.Status, (t, { nni }) => t.status = NNI.constrain(nni, "Status", Status.MIN, Status.MAX),
+  .add(TT.Status, (t, { nni }) => t.status = constrain(nni, "Status", Status.MIN, Status.MAX),
     { order: 1, required: true })
   .add(TT.ChallengeStatus, (t, { text }) => t.challengeStatus = text, { order: 2 })
   .add(TT.RemainingTries, (t, { nni }) => t.remainingTries = nni, { order: 3 })

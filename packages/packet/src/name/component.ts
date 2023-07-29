@@ -1,18 +1,12 @@
 import { Decoder, Encoder } from "@ndn/tlv";
-import { fromHex, fromUtf8, toHex, toUtf8 } from "@ndn/util";
+import { assert, constrain, fromHex, fromUtf8, toHex, toUtf8 } from "@ndn/util";
 import bufferCompare from "buffer-compare";
 
 import { TT } from "../an";
 import type { NamingConvention } from "./convention";
 
-function checkType(t: number): boolean {
-  return Number.isInteger(t) && t >= 0x01 && t <= 0xFFFF;
-}
-
-function assertType(t: number): void {
-  if (!checkType(t)) {
-    throw new Error(`Component TLV-TYPE ${t} out of range`);
-  }
+function assertType(t: number): number {
+  return constrain(t, "Component TLV-TYPE", 0x01, 0xFFFF);
 }
 
 const CHAR_ENCODE: Record<number, string> = {};
@@ -22,6 +16,9 @@ for (let b = 0x00; b <= 0xFF; ++b) {
 }
 const CODEPOINT_PERCENT = "%".codePointAt(0)!;
 const CODEPOINT_PERIOD = ".".codePointAt(0)!;
+
+const encoderHeadroom = 10;
+const FROM = Symbol("Component.from");
 
 /** Name component or component URI. */
 export type ComponentLike = Component | string;
@@ -46,14 +43,15 @@ export class Component {
     let posValue = 0;
     const posEqual = input.indexOf("=");
     if (posEqual >= 1) {
-      const iType = Number.parseInt(input, 10);
-      if (checkType(iType)) {
-        type = iType;
+      try {
+        type = assertType(Number.parseInt(input, 10));
         posValue = posEqual + 1;
-      }
+      } catch {}
     }
 
-    const value = new Uint8Array(input.length - posValue);
+    const maxLength = input.length - posValue;
+    const encoder = new Encoder(encoderHeadroom + maxLength);
+    const value = encoder.prependRoom(maxLength);
     let length = 0;
     let hasNonPeriods = false;
     for (let i = posValue; i < input.length;) {
@@ -70,7 +68,7 @@ export class Component {
     if (!hasNonPeriods && length >= 3) {
       length -= 3;
     }
-    return new Component(type, value.subarray(0, length));
+    return new Component(type, FROM, encoder, length);
   }
 
   /** Whole TLV. */
@@ -101,21 +99,34 @@ export class Component {
   /** Construct from TLV. */
   constructor(tlv: Uint8Array);
 
+  constructor(type: number, isFrom: typeof FROM, encoder: Encoder, length: number);
+
   constructor(
       arg1: number | Uint8Array = TT.GenericNameComponent,
-      value: Uint8Array | string = new Uint8Array(),
+      value?: Uint8Array | string | typeof FROM,
+      encoder?: Encoder, length?: number,
   ) {
     if (arg1 instanceof Uint8Array) {
       this.tlv = arg1;
       const decoder = new Decoder(arg1);
       ({ type: this.type, value: this.value } = decoder.read());
+      assert(decoder.eof);
     } else {
       this.type = arg1;
-      if (typeof value === "string") {
-        value = toUtf8(value);
+      let tailroom = 0;
+      if (value === FROM) {
+        tailroom = encoder!.size - length!;
+      } else {
+        if (typeof value === "string") {
+          value = toUtf8(value);
+        }
+        length = value?.length ?? 0;
+        encoder = new Encoder(encoderHeadroom + length);
+        encoder.encode(value);
       }
-      this.tlv = Encoder.encode([this.type, value], 10 + value.length);
-      this.value = this.tlv.subarray(this.tlv.length - value.length);
+      this.value = encoder!.slice(0, length);
+      encoder?.prependTypeLength(this.type, length!);
+      this.tlv = encoder!.slice(0, encoder!.size - tailroom);
     }
     assertType(this.type);
   }

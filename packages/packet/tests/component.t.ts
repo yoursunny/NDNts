@@ -32,7 +32,7 @@ test("decode", () => {
   expect(AltUri.ofComponent(comp)).toEqual("65535=A");
 });
 
-test("error on decode TLV-TYPE out of range", () => {
+test("decode TLV-TYPE out of range", () => {
   expect(() => new Component(0x00)).toThrow();
   expect(() => new Component(0x10000)).toThrow();
 
@@ -40,6 +40,10 @@ test("error on decode TLV-TYPE out of range", () => {
   expect(() => decoder.decode(Component)).toThrow();
   decoder = new Decoder(Uint8Array.of(0xFE, 0x00, 0x01, 0x00, 0x00, 0x01, 0x41));
   expect(() => decoder.decode(Component)).toThrow();
+});
+
+test("decode junk after end", () => {
+  expect(() => new Component(Uint8Array.of(0x08, 0x01, 0xC0, 0xFF))).toThrow();
 });
 
 test("from URI or string", () => {

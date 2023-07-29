@@ -1,5 +1,5 @@
 import { type Decoder, type Encodable, type EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
-import { sha256 } from "@ndn/util";
+import { constrain, sha256 } from "@ndn/util";
 import type { Except } from "type-fest";
 
 import { TT } from "./an";
@@ -33,11 +33,11 @@ class Fields {
   public name = new Name();
 
   public get contentType() { return this.contentType_; }
-  public set contentType(v) { this.contentType_ = NNI.constrain(v, "ContentType"); }
+  public set contentType(v) { this.contentType_ = constrain(v, "ContentType"); }
   private contentType_ = 0;
 
   public get freshnessPeriod() { return this.freshnessPeriod_; }
-  public set freshnessPeriod(v) { this.freshnessPeriod_ = NNI.constrain(v, "FreshnessPeriod"); }
+  public set freshnessPeriod(v) { this.freshnessPeriod_ = constrain(Math.trunc(v), "FreshnessPeriod"); }
   private freshnessPeriod_ = 0;
 
   public finalBlockId?: Component;

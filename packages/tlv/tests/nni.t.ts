@@ -81,15 +81,3 @@ test("decode fixed size", () => {
   expect(NNI.decode(Uint8Array.of(0x00, 0x00, 0x00, 0x04), { len: 4 })).toBe(0x04);
   expect(() => NNI.decode(Uint8Array.of(0x00, 0x00, 0x03), { len: 4 })).toThrow();
 });
-
-test("constrain", () => {
-  expect(NNI.constrain(0, "XXXX")).toBe(0);
-  expect(NNI.constrain(1.8, "XXXX")).toBe(1);
-  expect(NNI.constrain(Number.MAX_SAFE_INTEGER, "XXXX")).toBe(Number.MAX_SAFE_INTEGER);
-  expect(() => NNI.constrain(-1, "XXXX")).toThrow(/XXXX/);
-  expect(() => NNI.constrain(Number.MAX_VALUE, "XXXX")).toThrow(/XXXX/);
-  expect(NNI.constrain(8, "XXXX", 8)).toBe(8);
-  expect(() => NNI.constrain(9, "XXXX", 8)).toThrow(/XXXX/);
-  expect(NNI.constrain(2, "XXXX", 2, 6)).toBe(2);
-  expect(() => NNI.constrain(1, "XXXX", 2, 6)).toThrow(/XXXX/);
-});

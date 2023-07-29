@@ -1,4 +1,4 @@
-import { asDataView, assert } from "@ndn/util";
+import { asDataView, assert, constrain } from "@ndn/util";
 
 interface Entry {
   count: number;
@@ -81,9 +81,7 @@ export class IBLT {
   }
 
   private update(change: number, key: number): void {
-    assert(key >= 0);
-    assert(key <= 0xFFFFFFFF);
-    assert(Math.trunc(key) === key);
+    key = constrain(key, "IBLT.key", 0xFFFFFFFF);
     this.key.save(key);
     this.update2(this.ht, change, key);
   }

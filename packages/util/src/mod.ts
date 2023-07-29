@@ -9,5 +9,6 @@ export * from "./crypto";
 export * from "./event";
 export * from "./iter";
 export * from "./key-map";
+export * from "./number";
 export * from "./string";
 export * from "./timer";

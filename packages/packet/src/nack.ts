@@ -1,4 +1,5 @@
 import { type Decoder, type Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { constrain } from "@ndn/util";
 
 import { NackReason, TT } from "./an";
 import type { Interest } from "./interest";
@@ -9,7 +10,7 @@ const EVD = new EvDecoder<NackHeader>("NackHeader", TT.Nack)
 /** Nack header. */
 export class NackHeader {
   public get reason() { return this.reason_; }
-  public set reason(v) { this.reason_ = NNI.constrain(v, "Reason"); }
+  public set reason(v) { this.reason_ = constrain(v, "NackReason"); }
 
   private reason_ = 0;
 
