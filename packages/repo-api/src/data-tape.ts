@@ -7,6 +7,7 @@ import pDefer, { type DeferredPromise } from "p-defer";
 import { pEvent } from "p-event";
 import { consume, filter, map, pipeline } from "streaming-iterables";
 import throat from "throat";
+import type { Promisable } from "type-fest";
 
 import * as S from "./data-store";
 import { makeOpenFileStreamFunction } from "./data-tape-file_node";
@@ -167,7 +168,7 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
     return output;
   }
 
-  private async findFirst(predicate: (data: Data) => boolean | Promise<boolean>): Promise<Data | undefined> {
+  private async findFirst(predicate: (data: Data) => Promisable<boolean>): Promise<Data | undefined> {
     return this.useReader(async (reader) => {
       for await (const data of reader) {
         if (await predicate(data)) {

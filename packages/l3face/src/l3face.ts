@@ -6,6 +6,7 @@ import { abortableSource, AbortError as IteratorAbortError } from "abortable-ite
 import { pushable } from "it-pushable";
 import * as retry from "retry";
 import { consume, filter, map, pipeline } from "streaming-iterables";
+import type { AsyncReturnType } from "type-fest";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { Transport } from "./transport";
@@ -284,7 +285,7 @@ export namespace L3Face {
 
   export function makeCreateFace<
     C extends (...args: any[]) => Promise<Transport | Transport[]>,
-  >(createTransport: C): CreateFaceFunc<C extends (...args: any[]) => Promise<infer R> ? R : never, Parameters<C>> {
+  >(createTransport: C): CreateFaceFunc<AsyncReturnType<C>, Parameters<C>> {
     return (async (opts: CreateFaceOptions, ...args: Parameters<C>) => {
       const created = await createTransport(...args);
       const {

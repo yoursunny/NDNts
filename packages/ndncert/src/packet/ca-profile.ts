@@ -3,6 +3,7 @@ import { Segment, Version } from "@ndn/naming-convention2";
 import { Data, Name, type Signer } from "@ndn/packet";
 import { type EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { toHex, toUtf8 } from "@ndn/util";
+import type { JsonValue } from "type-fest";
 
 import { C, TT } from "./an";
 import * as decode_common from "./decode-common";
@@ -57,7 +58,7 @@ Certificate digest: ${toHex(this.certDigest)}`;
       maxValidityPeriod: this.maxValidityPeriod,
       certName: this.cert.data.name.toString(),
       certDigest: toHex(this.certDigest),
-    };
+    } satisfies JsonValue;
   }
 }
 export interface CaProfile extends Readonly<CaProfile.Fields> {}

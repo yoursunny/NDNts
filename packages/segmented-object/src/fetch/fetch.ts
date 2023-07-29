@@ -2,6 +2,7 @@ import { type Data, Name, type NameLike } from "@ndn/packet";
 import { assert, concatBuffers } from "@ndn/util";
 import EventIterator from "event-iterator";
 import { collect, map, writeToStream } from "streaming-iterables";
+import type { Promisable } from "type-fest";
 
 import { Fetcher } from "./fetcher";
 import { Reorder } from "./reorder";
@@ -61,8 +62,8 @@ class FetchResult implements fetch.Result {
 
   // eslint-disable-next-line unicorn/no-thenable
   public then<R, J>(
-      onfulfilled?: ((value: Uint8Array) => R | PromiseLike<R>) | null,
-      onrejected?: ((reason: any) => J | PromiseLike<J>) | null,
+      onfulfilled?: ((value: Uint8Array) => Promisable<R>) | null,
+      onrejected?: ((reason: any) => Promisable<J>) | null,
   ) {
     this.promise ??= this.startPromise();
     return this.promise.then(onfulfilled, onrejected);

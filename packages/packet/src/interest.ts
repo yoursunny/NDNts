@@ -1,6 +1,6 @@
 import { type Decoder, type Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { assert, sha256 } from "@ndn/util";
-import type { Except } from "type-fest";
+import type { Except, Schema } from "type-fest";
 
 import { TT } from "./an";
 import { FwHint } from "./fwhint";
@@ -308,10 +308,10 @@ export namespace Interest {
       return input;
     }
 
-    const patch: ModifyFields = {};
-    for (const key of ["canBePrefix", "mustBeFresh", "fwHint", "lifetime", "hopLimit"] as ReadonlyArray<keyof ModifyFields>) {
+    const patch: Schema<ModifyFields, unknown> = {};
+    for (const key of ["canBePrefix", "mustBeFresh", "fwHint", "lifetime", "hopLimit"] as const) {
       if (input[key] !== undefined) {
-        patch[key] = input[key] as any;
+        patch[key] = input[key];
       }
     }
     return (interest) => {

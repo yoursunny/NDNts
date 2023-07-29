@@ -75,7 +75,7 @@ test("TX throttle", async () => {
 });
 
 test("connect error", async () => {
-  const uri = server.uri;
+  const { uri } = server;
   await server.close();
   await expect(WsTransport.connect(uri, { connectTimeout: 500 })).rejects.toThrow();
 });

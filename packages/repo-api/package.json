@@ -46,6 +46,7 @@
     "@types/duplexify": "^3.6.1",
     "@types/tmp": "^0.2.3",
     "stream-mock": "^2.0.5",
-    "tmp": "^0.2.1"
+    "tmp": "^0.2.1",
+    "type-fest": "^4.0.0"
   }
 }

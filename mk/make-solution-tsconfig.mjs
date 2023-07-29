@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 
+/** @type {import("type-fest").TsConfigJson} */
 const tsconfig = {
   extends: "../mk/tsconfig-base.json",
   include: [],

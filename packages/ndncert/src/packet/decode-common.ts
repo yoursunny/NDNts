@@ -1,5 +1,6 @@
 import { Component, type Data, type Interest, type Name, type NamingConvention } from "@ndn/packet";
 import { Decoder, type EvDecoder } from "@ndn/tlv";
+import type { Promisable } from "type-fest";
 
 import { C } from "./an";
 
@@ -35,7 +36,7 @@ export function checkName(
 export async function fromInterest<T extends Readonly<Fields>, Fields extends {}>(
     interest: Interest,
     evd: EvDecoder<Fields>,
-    fn: (fields: Fields) => T | Promise<T>,
+    fn: (fields: Fields) => Promisable<T>,
 ): Promise<T> {
   await interest.validateParamsDigest(true);
   const fields = evd.decodeValue({} as Fields, new Decoder(interest.appParameters!));
@@ -52,7 +53,7 @@ export async function fromInterest<T extends Readonly<Fields>, Fields extends {}
 export async function fromData<T extends Readonly<Fields>, Fields extends {}>(
     data: Data,
     evd: EvDecoder<Fields>,
-    fn: (fields: Fields) => T | Promise<T>,
+    fn: (fields: Fields) => Promisable<T>,
 ) {
   const fields = evd.decodeValue({} as Fields, new Decoder(data.content));
   return Object.assign(await fn(fields), fields);

@@ -4,6 +4,7 @@ import * as path from "node:path";
 const act = process.argv[2];
 const publishUri = process.env.NDNTS_PUBLISH_URI ?? "https://ndnts-nightly.ndn.today";
 
+/** @type {import("type-fest").PackageJson} */
 const j = JSON.parse(await fs.readFile("package.json"));
 
 if (act.includes("V")) {

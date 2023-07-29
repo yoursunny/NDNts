@@ -23,6 +23,7 @@ const ignoredMissing = new Set(["memif"]);
 const ignoredUnused = new Set(["@types/web-bluetooth", "graphql", "tslib"]);
 const ignoredTypes = new Set(["yargs"]);
 
+/** @type {import("@pnpm/lockfile-types").Lockfile} */
 const doc = yaml.load(await fs.readFile("pnpm-lock.yaml"));
 if (!satisfies(doc.lockfileVersion, "^6.0.0")) {
   throw new Error("lockfileVersion not supported");

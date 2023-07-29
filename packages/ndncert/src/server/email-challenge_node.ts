@@ -2,7 +2,7 @@ import { AltUri } from "@ndn/naming-convention2";
 import type { Name } from "@ndn/packet";
 import { fromUtf8, toHex } from "@ndn/util";
 import type { SendMailOptions, SentMessageInfo, Transporter } from "nodemailer";
-import type { Merge } from "type-fest";
+import type { OverrideProperties } from "type-fest";
 
 import type { ChallengeRequest } from "../packet/mod";
 import type { ServerChallengeContext, ServerChallengeResponse } from "./challenge";
@@ -90,7 +90,7 @@ export class ServerEmailChallenge extends ServerPinLikeChallenge<ServerPinLikeCh
       to,
       subject: templateSub(this.template.subject, sub),
       text: templateSub(this.template.text, sub),
-      html: this.template.html ? templateSub(this.template.html, sub) : undefined,
+      html: this.template.html && templateSub(this.template.html, sub),
     };
   }
 }
@@ -115,7 +115,7 @@ export namespace ServerEmailChallenge {
    * disableUrlAccess and disableFileAccess are set to true by default,
    * but they may be overridden in the template object.
    */
-  export type Template = Merge<SendMailOptions, {
+  export type Template = OverrideProperties<SendMailOptions, {
     from: string;
     subject: string;
     text: string;

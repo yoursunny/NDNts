@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const rootdir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
+/** @type {import("type-fest").TsConfigJson & { typedocOptions: import("typedoc").TypeDocOptions }} */
 const tsconfig = {
   extends: "../../mk/tsconfig-base.json",
   compilerOptions: {
@@ -23,6 +24,7 @@ const tsconfig = {
   },
 };
 
+/** @type {import("type-fest").PackageJson} */
 const pkg = JSON.parse(await fs.readFile("package.json"));
 for (const [dep, specifier] of Object.entries(pkg.dependencies)) {
   if (specifier.startsWith("workspace:")) {
