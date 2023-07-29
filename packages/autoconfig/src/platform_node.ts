@@ -1,7 +1,7 @@
 import * as os from "node:os";
 
 import type { FwFace } from "@ndn/fw";
-import { splitHostPort, TcpTransport, udp_helper, UdpTransport } from "@ndn/node-transport";
+import { splitHostPort, TcpTransport, UdpTransport } from "@ndn/node-transport";
 import nodeFetch from "node-fetch";
 
 import type { PlatformFchDefaults } from "./fch";
@@ -11,15 +11,15 @@ export function fetch(input: RequestInfo, init?: RequestInit): Promise<Response>
   return nodeFetch(input as any, init as any) as any;
 }
 
-function hasAddressFamily(want: udp_helper.AddressFamily): boolean {
+function hasAddressFamily(want: os.NetworkInterfaceInfo["family"]): boolean {
   return Object.values(os.networkInterfaces()).some(
-    (addrs) => addrs?.some((addr) => udp_helper.intfHasAddressFamily(want, addr)));
+    (addrs) => addrs?.some((addr) => addr.family === want && !addr.internal));
 }
 
 export const FCH_DEFAULTS: PlatformFchDefaults = {
   transports() { return ["udp"]; },
-  get hasIPv4() { return hasAddressFamily(4); },
-  get hasIPv6() { return hasAddressFamily(6); },
+  get hasIPv4() { return hasAddressFamily("IPv4"); },
+  get hasIPv6() { return hasAddressFamily("IPv6"); },
 };
 
 export async function getDefaultGateway(): Promise<string> {

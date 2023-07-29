@@ -1,5 +1,3 @@
-import type * as dgram from "node:dgram";
-
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import { delay } from "@ndn/util";
 import { collect } from "streaming-iterables";
@@ -7,11 +5,6 @@ import { beforeEach, describe, expect, test } from "vitest";
 
 import { udp_helper as udp, UdpTransport } from "..";
 import { UdpServer, UdpServerBroadcast } from "../test-fixture/udp-server";
-
-test("SocketOption type", () => {
-  const x: Required<dgram.SocketOptions> extends Required<udp.SocketBufferOption> ? boolean : never = true;
-  expect(x).toBeTruthy();
-});
 
 describe.each([
   { family: 4, address: "127.0.0.1" },
@@ -63,7 +56,7 @@ describe("multicast", () => {
   }
 
   const opts: udp.MulticastOptions = {
-    intf: intfs[0]!,
+    intf: intfs[0],
     group: "224.0.0.254", // https://datatracker.ietf.org/doc/html/rfc4727#section-2.4.2
     port: 56363,
     multicastTtl: 0,

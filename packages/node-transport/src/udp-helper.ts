@@ -9,29 +9,17 @@ const DEFAULT_MULTICAST_PORT = 56363;
 
 export type Socket = dgram.Socket;
 
-export interface SocketBufferOption {
-  recvBufferSize?: number;
-  sendBufferSize?: number;
-}
+export type SocketBufferOptions = Pick<dgram.SocketOptions, "recvBufferSize" | "sendBufferSize">;
 
 export type AddressFamily = 4 | 6;
 
-export function intfHasAddressFamily(want: AddressFamily, { family }: os.NetworkInterfaceInfo): boolean {
-  // https://github.com/nodejs/node/issues/42787
-  // Node.js 16.x: NetworkInterfaceInfo.family is either "IPv4" or "IPv6"
-  // Node.js 18.x: NetworkInterfaceInfo.family is either 4 or 6
-  return (family as any) === want || (family as any) === `IPv${want}`;
-}
-
-export interface AddressFamilyOption {
+export interface OpenSocketOptions extends SocketBufferOptions {
   /**
    * IPv4 or IPv6.
    * Default is IPv4, unless hostname is an IPv6 address (contains a colon).
    */
   family?: AddressFamily;
-}
 
-export interface OpenSocketOptions extends SocketBufferOption, AddressFamilyOption {
   /** Bind options, such as local address and port. */
   bind?: dgram.BindOptions;
 }
@@ -95,12 +83,17 @@ export async function openUnicast(opts: UnicastOptions): Promise<Socket> {
  * @returns IPv4 address of each network interface.
  */
 export function listMulticastIntfs(): string[] {
-  return Object.values(os.networkInterfaces())
-    .flatMap((addrs = []) => addrs.filter((a) => intfHasAddressFamily(4, a) && !a.internal)
-      .map(({ address }) => address).slice(0, 1));
+  return Object.values(os.networkInterfaces()).flatMap((addrs = []) => {
+    for (const addr of addrs) {
+      if (addr.family === "IPv4" && !addr.internal) {
+        return addr.address;
+      }
+    }
+    return [];
+  });
 }
 
-export interface MulticastOptions extends SocketBufferOption {
+export interface MulticastOptions extends SocketBufferOptions {
   /** IPv4 address of local network interface. */
   intf: string;
   /** Multicast group address. */
