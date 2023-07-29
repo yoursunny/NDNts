@@ -138,7 +138,7 @@ test("modify", () => {
 
 test("encode parameterized", async () => {
   // insert empty AppParameters
-  let interest = new Interest(new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"));
+  let interest = new Interest(new Name(["A", ParamsDigest.PLACEHOLDER, "C"]));
   await interest.updateParamsDigest();
   expect(interest).toEncodeAs(({ value }) => {
     expect(value).toMatchTlv(
@@ -166,10 +166,7 @@ test("encode parameterized", async () => {
   await interest.validateParamsDigest();
 
   // cannot encode placeholder
-  interest = new Interest(
-    new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"),
-    Uint8Array.of(0xC0, 0xC1),
-  );
+  interest = new Interest(new Name(["A", ParamsDigest.PLACEHOLDER, "C"]), Uint8Array.of(0xC0, 0xC1));
   expect(() => Encoder.encode(interest)).toThrow(/ParamsDigest/);
 });
 
@@ -190,10 +187,7 @@ test("decode parameterized", async () => {
   expect(interest.name).toHaveLength(2);
   expect(interest.appParameters).toBeDefined();
 
-  interest = new Interest(
-    new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"),
-    Uint8Array.of(0xC0, 0xC1),
-  );
+  interest = new Interest(new Name(["A", ParamsDigest.PLACEHOLDER, "C"]), Uint8Array.of(0xC0, 0xC1));
   await interest.updateParamsDigest();
   const wire = Encoder.encode(interest);
   decoder = new Decoder(wire);
@@ -215,7 +209,7 @@ test("decode parameterized", async () => {
 
 test("encode signed", async () => {
   // error on out of place ParamsDigest
-  const interest = new Interest(new Name("/A").append(ParamsDigest.PLACEHOLDER).append("C"));
+  const interest = new Interest(new Name(["A", ParamsDigest.PLACEHOLDER, "C"]));
   interest.sigInfo = new SigInfo(SigType.Sha256);
   const sign = vi.fn();
   await expect(interest[LLSign.OP](sign)).rejects.toThrow(/out of place/);

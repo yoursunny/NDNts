@@ -19,7 +19,7 @@ export class Name {
   }
 
   /** List of name components. */
-  public readonly comps: readonly Component[];
+  public readonly comps: readonly Component[] = [];
 
   /** Create empty name, or copy from other name, or parse from URI. */
   constructor(input?: NameLike);
@@ -35,40 +35,29 @@ export class Name {
 
   constructor(
       arg1?: NameLike | Uint8Array | readonly ComponentLike[],
-      parseComponent = Component.from as any,
+      parseComponent: (input: string) => Component = Component.from,
   ) {
-    switch (true) {
-      case arg1 instanceof Name: {
-        const other = arg1 as Name;
-        this.comps = other.comps;
-        this.value_ = other.value_;
-        break;
-      }
-      case typeof arg1 === "string": {
-        const uri = arg1 as string;
-        this.comps = uri.replace(/^(?:ndn:)?\/*/, "").split("/")
-          .filter((comp) => comp !== "").map(parseComponent);
-        this.valueEncoderBufSize = uri.length + 4 * this.comps.length;
-        break;
-      }
-      case Array.isArray(arg1): {
-        this.comps = Array.from(arg1 as readonly ComponentLike[], Component.from);
-        break;
-      }
-      case arg1 instanceof Uint8Array: {
-        this.value_ = arg1 as Uint8Array;
-        const comps = [] as Component[];
-        const decoder = new Decoder(this.value_);
-        while (!decoder.eof) {
-          comps.push(decoder.decode(Component));
+    if (arg1 === undefined) {
+      this.valueEncoderBufSize = 0;
+    } else if (arg1 instanceof Name) {
+      this.comps = arg1.comps;
+      this.value_ = arg1.value_;
+      this.uri_ = arg1.uri_;
+      this.hex_ = arg1.hex_;
+    } else if (typeof arg1 === "string") {
+      for (const comp of arg1.replace(/^(?:ndn:)?\/*/, "").split("/")) {
+        if (comp !== "") {
+          (this.comps as Component[]).push(parseComponent(comp));
         }
-        this.comps = comps;
-        break;
       }
-      default: { // undefined
-        this.comps = [];
-        this.valueEncoderBufSize = 0;
-        break;
+      this.valueEncoderBufSize = arg1.length + 4 * this.comps.length;
+    } else if (Array.isArray(arg1)) {
+      this.comps = Array.from(arg1 as readonly ComponentLike[], Component.from);
+    } else if (arg1 instanceof Uint8Array) {
+      this.value_ = arg1;
+      const decoder = new Decoder(this.value_);
+      while (!decoder.eof) {
+        (this.comps as Component[]).push(decoder.decode(Component));
       }
     }
   }
@@ -85,9 +74,7 @@ export class Name {
 
   /** Name TLV-VALUE. */
   public get value(): Uint8Array {
-    if (!this.value_) {
-      this.value_ = Encoder.encode(this.comps, this.valueEncoderBufSize ?? 256);
-    }
+    this.value_ ??= Encoder.encode(this.comps, this.valueEncoderBufSize ?? 256);
     return this.value_;
   }
 
@@ -208,10 +195,15 @@ export class Name {
 }
 
 export namespace Name {
+  /** Determine if obj is Name or Name URI. */
   export function isNameLike(obj: any): obj is NameLike {
     return obj instanceof Name || typeof obj === "string";
   }
 
+  /**
+   * Create Name from Name or Name URI.
+   * This is more efficient than new Name(input) if input is already a Name.
+   */
   export function from(input: NameLike): Name {
     return input instanceof Name ? input : new Name(input);
   }

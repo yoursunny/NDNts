@@ -127,7 +127,7 @@ export class Encoder {
       (obj as EncodableObj).encodeTo(this);
     } else if (Array.isArray(obj)) {
       if (typeof obj[0] === "number") {
-        this.prependTlv(...(obj as [any]));
+        this.prependTlv(...(obj as [number, ...any[]]));
       } else {
         this.prependValue(...(obj as readonly Encodable[]));
       }

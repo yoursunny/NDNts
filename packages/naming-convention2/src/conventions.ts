@@ -1,5 +1,6 @@
 import { Component, type NamingConvention, TT } from "@ndn/packet";
 import { Encoder, NNI } from "@ndn/tlv";
+import { assert } from "@ndn/util";
 
 abstract class Typed {
   constructor(protected readonly tt: number) {}
@@ -35,19 +36,15 @@ abstract class TypedNumberBase extends Typed {
   }
 
   public create(v: number | bigint): Component {
-    return new Component(this.tt, Encoder.encode(NNI(v), 8));
+    return new Component(Encoder.encode([this.tt, NNI(v)], 12));
   }
 
   public override match(comp: Component): boolean {
     return super.match(comp) && NNI.isValidLength(comp.length);
   }
 
-  protected parseRaw(comp: Component): bigint {
-    return NNI.decode(comp.value, { big: true });
-  }
-
   public toAltUri(comp: Component): string {
-    return `${this.altUriPrefix}${this.parseRaw(comp)}`;
+    return this.altUriPrefix + NNI.decode(comp.value, { big: true });
   }
 
   public fromAltUri(input: string): Component | undefined {
@@ -101,7 +98,7 @@ class TypedTimestamp extends TypedNumber implements NumberConvention<Date> {
   constructor(
       tt: number,
       private readonly unit: number,
-      private readonly max = Number.MAX_SAFE_INTEGER,
+      private readonly max: number,
   ) {
     super(tt, "t=");
   }
@@ -123,9 +120,7 @@ class TypedTimestamp extends TypedNumber implements NumberConvention<Date> {
   }
 
   private checkMax(v: number): void {
-    if (v > this.max) {
-      throw new Error("timestamp number too large");
-    }
+    assert(v <= this.max, "timestamp number too large");
   }
 }
 
@@ -138,7 +133,7 @@ interface TimestampConvention extends NumberConvention<Date> {
 
 function makeTimestampConvention(tt: number): TimestampConvention {
   const ms = new TypedTimestamp(tt, 1000, 8787511468039992);
-  const us = new TypedTimestamp(tt, 1);
+  const us = new TypedTimestamp(tt, 1, Number.MAX_SAFE_INTEGER);
   return Object.assign(ms, { ms, us });
 }
 

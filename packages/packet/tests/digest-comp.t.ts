@@ -38,7 +38,7 @@ test("ImplicitDigest strip", () => {
 
   const digest = new Uint8Array(32);
   digest[1] = 0xAA;
-  expect(ImplicitDigest.strip(new Name("/A").append(ImplicitDigest.create(digest)))).toEqualName("/A");
+  expect(ImplicitDigest.strip(new Name(["A", ImplicitDigest.create(digest)]))).toEqualName("/A");
 });
 
 test("ParamsDigest placeholder", () => {
