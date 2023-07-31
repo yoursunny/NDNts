@@ -17,7 +17,7 @@ exitClosers.push(sync);
 
 const subs = new Map<string, Subscription>();
 
-sync.on("state", (topics) => {
+sync.addEventListener("state", ({ topics }) => {
   for (const topic of topics) {
     const shouldSubscribe = Math.random() < 0.4;
     if (shouldSubscribe) {
@@ -26,7 +26,7 @@ sync.on("state", (topics) => {
         console.log(`SUBSCRIBE ${topic.prefix}`);
         sub = sync.subscribe(topic);
         subs.set(topic.prefix.valueHex, sub);
-        sub.on("update", ({ id, loSeqNum, hiSeqNum }) => {
+        sub.addEventListener("update", ({ id, loSeqNum, hiSeqNum }) => {
           console.log(`UPDATE ${id} ${loSeqNum}${loSeqNum === hiSeqNum ? "" : `..${hiSeqNum}`}`);
         });
       }

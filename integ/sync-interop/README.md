@@ -5,11 +5,11 @@
 Test environment:
 
 * Ubuntu 22.04
-* Node.js 20.4.0
+* Node.js 20.5.0
 
 Reference implementation:
 
-* ndn-cxx 0.8.1-24-g67bc114a
+* ndn-cxx 0.8.1-26-g502c4c3b
 * NFD 22.12-10-g6bf94c02
 * libpsync 0.4.0-2-g88b7bbd
 
@@ -65,7 +65,8 @@ corepack pnpm literate integ/sync-interop/psync-partial-subscriber.ts
 Test environment:
 
 * Ubuntu 22.04
-* Node.js 20.4.0
+* Node.js 20.5.0
+* Docker 24.0.5
 
 Reference implementation:
 

@@ -18,7 +18,7 @@ const sync = new PSyncFull({
 });
 exitClosers.push(sync);
 
-sync.on("update", ({ id, loSeqNum, hiSeqNum }) => {
+sync.addEventListener("update", ({ id, loSeqNum, hiSeqNum }) => {
   console.log(`UPDATE ${id} ${loSeqNum}${loSeqNum === hiSeqNum ? "" : `..${hiSeqNum}`}`);
 });
 

@@ -16,7 +16,7 @@ const sync = new PSyncPartialPublisher({
 });
 exitClosers.push(sync);
 if (process.env.NDNTS_SYNC_DEBUG === "1") {
-  sync.on("debug", ({ action, interestName }) => {
+  sync.addEventListener("debug", ({ detail: { action, interestName } }) => {
     console.log(`DEBUG ${action} ${interestName ?? ""}`);
   });
 }

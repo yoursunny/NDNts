@@ -49,13 +49,13 @@ expect.extend({
     };
   },
   toEqualNames(received: Iterable<Name> | undefined, names: Iterable<NameLike>) {
-    const expected = new Set<string>();
-    for (const name of received ?? []) {
-      expected.add(`${name}`);
-    }
     const actual = new Set<string>();
+    for (const name of received ?? []) {
+      actual.add(`${name}`);
+    }
+    const expected = new Set<string>();
     for (const name of names) {
-      actual.add(`${Name.from(name)}`);
+      expected.add(`${Name.from(name)}`);
     }
     const missing = set.difference(expected, actual);
     const excess = set.difference(actual, expected);

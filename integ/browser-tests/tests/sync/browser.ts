@@ -25,13 +25,13 @@ window.startPSyncPartial = async (uri) => {
   });
   updates = [];
 
-  sub.on("state", (topics) => {
+  sub.addEventListener("state", ({ topics }) => {
     for (const topic of topics) {
       if (!topic.prefix.equals("/P/2")) {
         continue;
       }
       const subscription = sub.subscribe(topic);
-      subscription.on("update", saveUpdate);
+      subscription.addEventListener("update", saveUpdate);
     }
   });
 };

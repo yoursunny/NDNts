@@ -1,11 +1,10 @@
-import { EventEmitter } from "node:events";
-
 import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
 import { Data, type Interest, type Name, NameMap, type Signer } from "@ndn/packet";
+import { CustomEvent, trackEventListener } from "@ndn/util";
 import { BloomFilter } from "@yoursunny/psync-bloom";
 import pDefer, { type DeferredPromise } from "p-defer";
-import type TypedEmitter from "typed-emitter";
+import { TypedEventTarget } from "typescript-event-target";
 
 import type { IBLT } from "../iblt";
 import type { SyncNode, SyncProtocol } from "../types";
@@ -26,13 +25,12 @@ interface DebugEntry {
   interestName?: Name;
 }
 
-type Events = SyncProtocol.Events<Name> & {
-  debug: (entry: DebugEntry) => void;
+type EventMap = SyncProtocol.EventMap<Name> & {
+  debug: CustomEvent<DebugEntry>;
 };
 
 /** PSync - PartialSync publisher. */
-export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitter<Events>)
-  implements SyncProtocol<Name> {
+export class PSyncPartialPublisher extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
   constructor({
     p,
     endpoint = new Endpoint(),
@@ -67,6 +65,7 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
     });
   }
 
+  private readonly maybeHaveEventListener = trackEventListener(this);
   private readonly endpoint: Endpoint;
   public readonly describe: string;
   private readonly syncPrefix: Name;
@@ -82,13 +81,16 @@ export class PSyncPartialPublisher extends (EventEmitter as new() => TypedEmitte
   private readonly sPendings = new NameMap<PendingInterest>();
 
   private debug(action: string, interest?: Interest): void {
-    if (this.listenerCount("debug") === 0) {
+    if (!this.maybeHaveEventListener.debug) {
       return;
     }
-    this.emit("debug", {
-      action,
-      interestName: interest?.name,
-    });
+    /* c8 ignore next */
+    this.dispatchTypedEvent("debug", new CustomEvent<DebugEntry>("debug", {
+      detail: {
+        action,
+        interestName: interest?.name,
+      },
+    }));
   }
 
   /** Stop the protocol operation. */

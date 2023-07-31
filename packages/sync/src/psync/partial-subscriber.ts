@@ -1,9 +1,8 @@
-import { EventEmitter } from "node:events";
-
 import { Endpoint } from "@ndn/endpoint";
 import type { Component, Name, Verifier } from "@ndn/packet";
+import { CustomEvent } from "@ndn/util";
 import { BloomFilter, type Parameters as BloomParameters } from "@yoursunny/psync-bloom";
-import type TypedEmitter from "typed-emitter";
+import { TypedEventTarget } from "typescript-event-target";
 
 import { computeInterval, type IntervalFunc } from "../detail/interval";
 import { SubscriptionTable } from "../detail/subscription-table";
@@ -20,13 +19,13 @@ interface DebugEntry {
   action: string;
 }
 
-type Events = {
-  debug: (entry: DebugEntry) => void;
-  state: (topics: readonly PSyncPartialSubscriber.TopicInfo[]) => void;
+type EventMap = {
+  debug: CustomEvent<DebugEntry>;
+  state: PSyncPartialSubscriber.StateEvent;
 };
 
 /** PSync - PartialSync subscriber. */
-export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitter<Events>)
+export class PSyncPartialSubscriber extends TypedEventTarget<EventMap>
   implements Subscriber<Name, Update, PSyncPartialSubscriber.TopicInfo> {
   constructor({
     p,
@@ -73,9 +72,9 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
   private cAbort?: AbortController;
 
   private debug(action: string): void {
-    this.emit("debug", {
-      action,
-    });
+    this.dispatchTypedEvent("debug", new CustomEvent<DebugEntry>("debug", {
+      detail: { action },
+    }));
   }
 
   /** Stop the protocol operation. */
@@ -155,7 +154,7 @@ export class PSyncPartialSubscriber extends (EventEmitter as new() => TypedEmitt
 
     this.debug("h-response");
     this.handleState(state);
-    this.emit("state", state);
+    this.dispatchTypedEvent("state", new PSyncPartialSubscriber.StateEvent("state", state));
   }
 
   private async sendSyncInterest(abort: AbortController): Promise<void> {
@@ -247,4 +246,13 @@ export namespace PSyncPartialSubscriber {
   }
 
   export interface TopicInfo extends PSyncCore.PrefixSeqNum {}
+
+  export class StateEvent extends Event {
+    constructor(
+        type: string,
+        public readonly topics: readonly TopicInfo[],
+    ) {
+      super(type);
+    }
+  }
 }

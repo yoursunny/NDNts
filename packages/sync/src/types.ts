@@ -1,9 +1,9 @@
 import type { Name } from "@ndn/packet";
 import { assert } from "@ndn/util";
-import type TypedEmitter from "typed-emitter";
+import type { TypedEventTarget } from "typescript-event-target";
 
 /** A sync protocol participant. */
-export interface SyncProtocol<ID = any> extends TypedEmitter<SyncProtocol.Events<ID>> {
+export interface SyncProtocol<ID = any> extends TypedEventTarget<SyncProtocol.EventMap<ID>> {
   /** Stop the protocol operation. */
   close(): void;
 
@@ -15,9 +15,9 @@ export interface SyncProtocol<ID = any> extends TypedEmitter<SyncProtocol.Events
 }
 
 export namespace SyncProtocol {
-  export type Events<ID> = {
+  export type EventMap<ID> = {
     /** Emitted when a node is updated, i.e. has new sequence numbers. */
-    update: (update: SyncUpdate<ID>) => void;
+    update: SyncUpdate<ID>;
   };
 }
 
@@ -47,7 +47,7 @@ export interface SyncNode<ID = any> {
 }
 
 /** A received update regarding a node. */
-export class SyncUpdate<ID = any> {
+export class SyncUpdate<ID = any> extends Event {
   /**
    * Constructor.
    * @param node the node.
@@ -58,7 +58,9 @@ export class SyncUpdate<ID = any> {
       public readonly node: SyncNode<ID>,
       public readonly loSeqNum: number,
       public readonly hiSeqNum: number,
+      eventType = "update",
   ) {
+    super(eventType);
     assert(loSeqNum <= hiSeqNum);
   }
 
@@ -80,7 +82,8 @@ export class SyncUpdate<ID = any> {
   }
 }
 
-export interface Subscriber<Topic = Name, Update = any, SubscribeInfo = Topic> {
+/** A pubsub protocol subscriber. */
+export interface Subscriber<Topic = Name, Update extends Event = SyncUpdate<Topic>, SubscribeInfo = Topic> {
   subscribe: (topic: SubscribeInfo) => Subscription<Topic, Update>;
 }
 
@@ -88,7 +91,7 @@ export interface Subscriber<Topic = Name, Update = any, SubscribeInfo = Topic> {
  * A subscription on a topic.
  * Listen to the 'update' event to receive updates on incoming publications matching the topic.
  */
-export interface Subscription<Topic = Name, Update = SyncUpdate<Topic>> extends TypedEmitter<Subscription.Events<Update>> {
+export interface Subscription<Topic = Name, Update extends Event = SyncUpdate<Topic>> extends TypedEventTarget<Subscription.EventMap<Update>> {
   /** The topic. */
   readonly topic: Topic;
 
@@ -97,8 +100,8 @@ export interface Subscription<Topic = Name, Update = SyncUpdate<Topic>> extends 
 }
 
 export namespace Subscription {
-  export type Events<Update> = {
+  export type EventMap<Update extends Event> = {
     /** Emitted when a subscription update is received. */
-    update: (update: Update) => void;
+    update: Update;
   };
 }

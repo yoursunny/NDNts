@@ -36,12 +36,12 @@ test("simple", async () => {
   });
   closers.push(sync);
 
-  const update = vi.fn<[SyncUpdate<Name>], void>();
-  sync.on("update", update);
+  const handleUpdate = vi.fn<[SyncUpdate<Name>], void>();
+  sync.addEventListener("update", handleUpdate);
 
   p.kill("SIGUSR1");
   await delay(1500);
-  expect(update).toHaveBeenCalledTimes(1);
+  expect(handleUpdate).toHaveBeenCalledTimes(1);
   expect(sync.get(userA)?.seqNum).toBe(1);
 
   const nodeB = sync.add(userB);

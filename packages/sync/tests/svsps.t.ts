@@ -53,7 +53,7 @@ function enableDebug(subs: Record<string, SvSubscriber<any>>): void {
     return;
   }
   for (const [id, sub] of Object.entries(subs)) {
-    sub.on("error", (err) => console.error(id, err));
+    sub.addEventListener("error", ({ detail }) => console.error(id, detail));
   }
 }
 
@@ -68,24 +68,22 @@ async function publishCheck(
     expectReceive: readonly Sub[],
     expectNotReceive: readonly Sub[],
 ) {
-  const updateEventHandlers: Array<[sub: Sub, handler: UpdateHandler]> = [];
+  const abort = new AbortController();
   const received = Array.from<SvSubscriber.Update | undefined>({ length: expectReceive.length });
   for (const [i, sub] of expectReceive.entries()) {
     let isReceived = false;
-    const h: UpdateHandler = (update) => {
+    const handleUpdate: UpdateHandler = (update) => {
       expect(isReceived).toBeFalsy();
       isReceived = true;
       received[i] = update;
     };
-    sub.on("update", h);
-    updateEventHandlers.push([sub, h]);
+    sub.addEventListener("update", handleUpdate, { signal: abort.signal });
   }
   for (const sub of expectNotReceive) {
-    const h: UpdateHandler = ({ publisher, seqNum, name }) => {
+    const handleUpdate: UpdateHandler = ({ publisher, seqNum, name }) => {
       expect.fail(`unexpected update ${publisher}:${seqNum} ${name}`);
     };
-    sub.on("update", h);
-    updateEventHandlers.push([sub, h]);
+    sub.addEventListener("update", handleUpdate, { signal: abort.signal });
   }
 
   const payload = crypto.getRandomValues(new Uint8Array(payloadLength));
@@ -99,9 +97,7 @@ async function publishCheck(
     expect(update!.name).toEqualName(name);
     expect(update!.payload).toEqualUint8Array(payload);
   }
-  for (const [sub, handler] of updateEventHandlers) {
-    sub.off("update", handler);
-  }
+  abort.abort();
 }
 
 test("simple", async () => {

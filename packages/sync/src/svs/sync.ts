@@ -1,9 +1,7 @@
-import { EventEmitter } from "node:events";
-
 import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
 import { Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
-import { randomJitter } from "@ndn/util";
-import type TypedEmitter from "typed-emitter";
+import { CustomEvent, randomJitter, trackEventListener } from "@ndn/util";
+import { TypedEventTarget } from "typescript-event-target";
 
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "../types";
 import { SvStateVector } from "./state-vector";
@@ -18,13 +16,12 @@ interface DebugEntry {
   ourNewer?: number;
 }
 
-type Events = SyncProtocol.Events<Name> & {
-  debug: (entry: DebugEntry) => void;
+type EventMap = SyncProtocol.EventMap<Name> & {
+  debug: CustomEvent<DebugEntry>;
 };
 
 /** StateVectorSync participant. */
-export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
-  implements SyncProtocol<Name> {
+export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
   constructor({
     endpoint = new Endpoint(),
     describe,
@@ -51,6 +48,7 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
     });
   }
 
+  private readonly maybeHaveEventListener = trackEventListener(this);
   private readonly endpoint: Endpoint;
   public readonly describe: string;
   public readonly syncPrefix: Name;
@@ -75,15 +73,19 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
   private timer!: NodeJS.Timeout | number;
 
   private debug(action: string, entry: Partial<DebugEntry> = {}, recv?: SvStateVector): void {
-    if (this.listenerCount("debug") > 0) {
-      this.emit("debug", {
+    if (!this.maybeHaveEventListener.debug) {
+      return;
+    }
+    /* c8 ignore next */
+    this.dispatchTypedEvent("debug", new CustomEvent<DebugEntry>("debug", {
+      detail: {
         action,
         own: this.own.toJSON(),
         recv: recv?.toJSON(),
         state: this.aggregated ? "suppression" : "steady",
         ...entry,
-      });
-    }
+      },
+    }));
   }
 
   public close(): void {
@@ -118,7 +120,7 @@ export class SvSync extends (EventEmitter as new() => TypedEmitter<Events>)
     this.own.mergeFrom(recv);
 
     for (const { id, loSeqNum, hiSeqNum } of ourOlder) {
-      this.emit("update", new SyncUpdate(this.get(id), loSeqNum, hiSeqNum));
+      this.dispatchTypedEvent("update", new SyncUpdate(this.get(id), loSeqNum, hiSeqNum));
     }
 
     if (this.aggregated) { // in suppression state

@@ -2,7 +2,7 @@ import { Closers, console } from "@ndn/util";
 import wtfnode from "wtfnode";
 
 /** Print diagnostics to help determine why the program cannot exit. */
-export function wtf() {
+export function wtf(): void {
   wtfnode.setLogger("info", console.info);
   wtfnode.setLogger("warn", console.warn);
   wtfnode.setLogger("error", console.error);
@@ -13,7 +13,7 @@ export function wtf() {
 export const exitClosers = new Closers();
 
 /** SIGINT (CTRL+C) handler. */
-export function exitHandler() {
+export function exitHandler(): void {
   exitClosers.close();
 
   setTimeout(() => {

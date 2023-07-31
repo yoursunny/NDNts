@@ -14,14 +14,14 @@ const sync = new SyncpsPubsub({
 });
 exitClosers.unshift(sync);
 if (process.env.NDNTS_SYNC_DEBUG === "1") {
-  sync.on("debug", ({ action, name, content }) => {
+  sync.addEventListener("debug", ({ detail: { action, name, content } }) => {
     console.log(`DEBUG ${action} ${name ?? ""
     } ${content ? `[${content.map((name) => `${name}`).join(",")}]` : ""}`);
   });
 }
 
 const sub = sync.subscribe(new Name("/syncps-interop-data"));
-sub.on("update", ({ name }) => {
+sub.addEventListener("update", ({ detail: { name } }) => {
   console.log(`UPDATE ${name}`);
 });
 

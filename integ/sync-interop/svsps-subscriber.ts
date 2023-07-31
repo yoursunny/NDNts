@@ -12,9 +12,9 @@ const sub = new SvSubscriber({
   outerVerifier: digestSigning,
   mappingVerifier: digestSigning,
 });
-sub.on("error", (err) => console.error(`SUB-ERR ${err}`));
+sub.addEventListener("error", ({ detail }) => console.error(`SUB-ERR ${detail}`));
 exitClosers.push(sub);
 
-sub.subscribe(new Name("/chat")).on("update", ({ publisher, seqNum, name, payload }) => {
+sub.subscribe(new Name("/chat")).addEventListener("update", ({ publisher, seqNum, name, payload }) => {
   console.log(`MSG ${publisher}:${seqNum} ${name} ${fromUtf8(payload)}`);
 });

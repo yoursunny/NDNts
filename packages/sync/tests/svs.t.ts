@@ -11,7 +11,7 @@ import { SvSync } from "..";
 
 class UpdateHandler {
   constructor(sync: SvSync) {
-    sync.on("update", (update) => {
+    sync.addEventListener("update", (update) => {
       const id = update.id.toString().slice(-1);
       expect(update.loSeqNum).toBe(this.lastSeqNum.get(id) + 1);
       expect(update.loSeqNum).toBeLessThanOrEqual(update.hiSeqNum);
@@ -34,7 +34,7 @@ class DebugHandler {
 
   public start(sync: SvSync): void {
     const id = sync.describe;
-    sync.on("debug", ({ action, state, nextState, ourOlder, ourNewer }) => {
+    sync.addEventListener("debug", ({ detail: { action, state, nextState, ourOlder, ourNewer } }) => {
       const cnt = `${id}:${action}`;
       this.cnt.set(cnt, this.cnt.get(cnt) + 1);
       if (DebugHandler.printing) {

@@ -15,7 +15,7 @@ const producer = endpoint.produce(myDataPrefix, async (interest) => {
 });
 exitClosers.push(producer);
 
-sync.on("update", (update) => {
+sync.addEventListener("update", (update) => {
   const { id, loSeqNum, hiSeqNum } = update;
   console.log(`UPDATE ${id} ${loSeqNum}..${hiSeqNum}`);
   for (const seqNum of update.seqNums()) {

@@ -1,11 +1,9 @@
-import { EventEmitter } from "node:events";
-
 import { type Name, NameMultiMap } from "@ndn/packet";
-import type TypedEmitter from "typed-emitter";
+import { TypedEventTarget } from "typescript-event-target";
 
 import type { Subscription } from "../types";
 
-class Sub<Update> extends (EventEmitter as new() => TypedEmitter<Subscription.Events<any>>) implements Subscription<Name, Update> {
+class Sub<Update extends Event> extends TypedEventTarget<Subscription.EventMap<any>> implements Subscription<Name, Update> {
   constructor(
       public readonly topic: Name,
       public readonly remove: () => void,
@@ -14,7 +12,7 @@ class Sub<Update> extends (EventEmitter as new() => TypedEmitter<Subscription.Ev
   }
 }
 
-export class SubscriptionTable<Update> extends NameMultiMap<Subscription<Name, Update>> {
+export class SubscriptionTable<Update extends Event> extends NameMultiMap<Subscription<Name, Update>> {
   public handleRemoveTopic?: (topic: Name, objKey: object) => void;
 
   public subscribe(topic: Name): { sub: Subscription<Name, Update>; objKey?: object } {
@@ -35,7 +33,7 @@ export class SubscriptionTable<Update> extends NameMultiMap<Subscription<Name, U
 
   public update(set: Iterable<Subscription<Name, Update>>, update: Update): void {
     for (const sub of set) {
-      sub.emit("update", update);
+      sub.dispatchTypedEvent("update", update);
     }
   }
 }

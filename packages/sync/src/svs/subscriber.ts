@@ -1,13 +1,11 @@
-import { EventEmitter } from "node:events";
-
 import { type ConsumerOptions, Endpoint } from "@ndn/endpoint";
 import { GenericNumber, Segment } from "@ndn/naming-convention2";
 import { Data, Interest, lpm, Name, noopSigning, TT as l3TT, type Verifier } from "@ndn/packet";
 import { fetch } from "@ndn/segmented-object";
 import { Decoder, EvDecoder } from "@ndn/tlv";
-import { assert, concatBuffers } from "@ndn/util";
+import { assert, concatBuffers, CustomEvent } from "@ndn/util";
 import { batch, consume, pipeline, transform } from "streaming-iterables";
-import type TypedEmitter from "typed-emitter";
+import { TypedEventTarget } from "typescript-event-target";
 
 import { SubscriptionTable } from "../detail/subscription-table";
 import type { Subscriber, Subscription, SyncUpdate } from "../types";
@@ -15,8 +13,8 @@ import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
 import { SvMappingEntry } from "./mapping-entry";
 import type { SvSync } from "./sync";
 
-type Events = {
-  error: (err: Error) => void;
+type EventMap = {
+  error: CustomEvent<Error>;
 };
 
 /**
@@ -26,7 +24,7 @@ type Events = {
  * If it is not SvMappingEntry base class, its constructor must be specified in Options.mappingEntryType.
  */
 export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
-  extends (EventEmitter as new() => TypedEmitter<Events>)
+  extends TypedEventTarget<EventMap>
   implements Subscriber<Name, SvSubscriber.Update, SvSubscriber.SubscribeInfo<MappingEntry>> {
   constructor({
     endpoint = new Endpoint(),
@@ -40,7 +38,6 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
     mappingVerifier = noopSigning,
   }: SvSubscriber.Options) {
     super();
-    this.on("error", () => undefined);
     this.endpoint = endpoint;
     this.syncPrefix = sync.syncPrefix;
     this.mappingBatch = mappingBatch;
@@ -67,14 +64,14 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
       retx: retxLimit,
       verifier: mappingVerifier,
     };
-    sync.on("update", this.handleSyncUpdate);
+    sync.addEventListener("update", this.handleSyncUpdate);
   }
 
   private readonly abort = new AbortController();
   private readonly endpoint: Endpoint;
   private readonly syncPrefix: Name;
   private readonly nameSubs = new SubscriptionTable<SvSubscriber.Update>();
-  private readonly nameFilters = new WeakMap<Subscription, (entry: MappingEntry) => boolean>();
+  private readonly nameFilters = new WeakMap<Subscription<Name, SvSubscriber.Update>, (entry: MappingEntry) => boolean>();
   private readonly publisherSubs = new SubscriptionTable<SvSubscriber.Update>();
   private readonly mappingBatch: number;
   private readonly mappingEVD: EvDecoder<Mapping<MappingEntry>>;
@@ -83,6 +80,12 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
   private readonly outerFetchOpts: fetch.Options;
   private readonly outerConsumerOpts: ConsumerOptions;
   private readonly mappingConsumerOpts: ConsumerOptions;
+
+  private emitError(message: string): void {
+    this.dispatchTypedEvent("error", new CustomEvent("error", {
+      detail: new Error(message),
+    }));
+  }
 
   /**
    * Stop subscriber operations.
@@ -118,7 +121,7 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
         try {
           await this.dispatchUpdate(update.id, publisherSubs, seqNum, mapping);
         } catch (err: unknown) {
-          this.emit("error", new Error(`dispatchUpdate(${update.id}, ${seqNum}): ${err}`));
+          this.emitError(`dispatchUpdate(${update.id}, ${seqNum}): ${err}`);
         }
       }),
       consume,
@@ -141,7 +144,7 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
           const data = await this.endpoint.consume(interest, this.mappingConsumerOpts);
           this.mappingEVD.decode(m, new Decoder(data.content));
         } catch (err: unknown) {
-          this.emit("error", new Error(`retrieveMapping(${update.id},${loSeqNum}..${hiSeqNum}): ${err}`));
+          this.emitError(`retrieveMapping(${update.id},${loSeqNum}..${hiSeqNum}): ${err}`);
         }
       }),
       consume,
@@ -185,12 +188,7 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
       payload = await this.retrieveSegmented(outerPrefix, decap);
     }
 
-    const update: SvSubscriber.Update = {
-      publisher,
-      seqNum,
-      name: name!,
-      payload,
-    };
+    const update = new SvSubscriber.Update(publisher, seqNum, name!, payload);
     this.publisherSubs.update(publisherSubs, update);
     this.nameSubs.update(nameSubs!, update);
   }
@@ -313,11 +311,15 @@ export namespace SvSubscriber {
   }
 
   /** Received update. */
-  export interface Update {
-    readonly publisher: Name;
-    readonly seqNum: number;
-    readonly name: Name;
-    readonly payload: Uint8Array;
+  export class Update extends Event {
+    constructor(
+        public readonly publisher: Name,
+        public readonly seqNum: number,
+        public readonly name: Name,
+        public readonly payload: Uint8Array,
+    ) {
+      super("update");
+    }
   }
 }
 

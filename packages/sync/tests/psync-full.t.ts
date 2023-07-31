@@ -32,7 +32,7 @@ class DebugPrinter {
     if (!DebugPrinter.enabled) {
       return;
     }
-    sync.on("debug", ({ action, ownIblt, recvIblt, state }) => {
+    sync.addEventListener("debug", ({ detail: { action, ownIblt, recvIblt, state } }) => {
       process.stderr.write(`${Date.now() - this.t0} ${title} ${action} ${
         this.reprIblt(ownIblt)} ${this.reprIblt(recvIblt)} ${this.reprState(state)}\n`);
     });
@@ -102,7 +102,7 @@ class Fixture {
         .mockImplementation(({ id, loSeqNum, hiSeqNum }) => { // eslint-disable-line @typescript-eslint/no-loop-func
           debugPrinter.log(title, `UPDATE ${id} ${loSeqNum} ${hiSeqNum}`);
         });
-      sync.on("update", handleUpdate);
+      sync.addEventListener("update", handleUpdate);
       this.updates.push(handleUpdate);
     }
   }

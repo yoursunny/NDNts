@@ -1,10 +1,8 @@
-import { EventEmitter } from "node:events";
-
 import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
 import type { Component, Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
-import { KeyMap, toHex } from "@ndn/util";
+import { CustomEvent, KeyMap, toHex, trackEventListener } from "@ndn/util";
 import pDefer, { type DeferredPromise } from "p-defer";
-import type TypedEmitter from "typed-emitter";
+import { TypedEventTarget } from "typescript-event-target";
 
 import { computeInterval, type IntervalFunc, type IntervalRange } from "../detail/interval";
 import type { IBLT } from "../iblt";
@@ -28,13 +26,12 @@ interface DebugEntry {
   state?: PSyncCore.State;
 }
 
-type Events = SyncProtocol.Events<Name> & {
-  debug: (entry: DebugEntry) => void;
+type EventMap = SyncProtocol.EventMap<Name> & {
+  debug: CustomEvent<DebugEntry>;
 };
 
 /** PSync - FullSync participant. */
-export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
-  implements SyncProtocol<Name> {
+export class PSyncFull extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
   constructor({
     p,
     endpoint = new Endpoint(),
@@ -69,6 +66,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
     this.scheduleSyncInterest(0);
   }
 
+  private readonly maybeHaveEventListener = trackEventListener(this);
   private readonly endpoint: Endpoint;
   public readonly describe: string;
   private readonly syncPrefix: Name;
@@ -88,15 +86,18 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
   private cCurrentInterestName?: Name;
 
   private debug(action: string, recvIblt?: IBLT, state?: PSyncCore.State): void {
-    if (this.listenerCount("debug") > 0) {
-      /* c8 ignore next */
-      this.emit("debug", {
+    if (!this.maybeHaveEventListener.debug) {
+      return;
+    }
+    /* c8 ignore next */
+    this.dispatchTypedEvent("debug", new CustomEvent<DebugEntry>("debug", {
+      detail: {
         action,
         ownIblt: this.c.iblt.clone(),
         recvIblt: recvIblt?.clone(),
         state,
-      });
-    }
+      },
+    }));
   }
 
   /** Stop the protocol operation. */
@@ -243,7 +244,7 @@ export class PSyncFull extends (EventEmitter as new() => TypedEmitter<Events>)
       node.setSeqNum(seqNum, false);
 
       hasUpdates = true;
-      this.emit("update", new SyncUpdate(node, prevSeqNum + 1, seqNum));
+      this.dispatchTypedEvent("update", new SyncUpdate(node, prevSeqNum + 1, seqNum));
     }
     this.debug("c-processed");
 

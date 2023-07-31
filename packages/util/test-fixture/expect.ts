@@ -2,7 +2,7 @@ import { expect } from "vitest";
 
 import { toHex } from "..";
 
-export type Uint8ArrayExpect = Uint8Array | Array<number | undefined>;
+export type Uint8ArrayExpect = Uint8Array | ReadonlyArray<number | undefined>;
 
 export function toEqualUint8Array(received: Uint8Array, expected: Uint8ArrayExpect) {
   let pass: boolean;

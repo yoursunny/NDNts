@@ -1,14 +1,12 @@
-import { EventEmitter } from "node:events";
-
 import { Endpoint, type Producer } from "@ndn/endpoint";
 import { Timestamp } from "@ndn/naming-convention2";
 import { type Component, Data, digestSigning, Interest, lpm, type Name, type Signer, type Verifier } from "@ndn/packet";
-import { KeyMap, toHex } from "@ndn/util";
+import { CustomEvent, KeyMap, toHex, trackEventListener } from "@ndn/util";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import filter from "obliterator/filter.js";
 import take from "obliterator/take.js";
 import pDefer, { type DeferredPromise } from "p-defer";
-import type TypedEmitter from "typed-emitter";
+import { TypedEventTarget } from "typescript-event-target";
 
 import { SubscriptionTable } from "../detail/subscription-table";
 import { IBLT } from "../iblt";
@@ -45,8 +43,8 @@ interface DebugEntry {
   content?: Name[];
 }
 
-type Events = {
-  debug: (entry: DebugEntry) => void;
+type EventMap = {
+  debug: CustomEvent<DebugEntry>;
 };
 
 function defaultModifyPublication(pub: Data) {
@@ -80,8 +78,7 @@ function defaultFilterPubs(items: SyncpsPubsub.FilterPubItem[]) {
 }
 
 /** syncps - pubsub service. */
-export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>)
-  implements Subscriber<Name, Data> {
+export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscriber<Name, CustomEvent<Data>> {
   constructor({
     p,
     endpoint = new Endpoint(),
@@ -130,6 +127,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
     this.scheduleSyncInterest(0);
   }
 
+  private readonly maybeHaveEventListener = trackEventListener(this);
   private readonly endpoint: Endpoint;
   public readonly describe: string;
   private readonly syncPrefix: Name;
@@ -140,7 +138,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
   private readonly pubs = new Map<number, PublicationEntry>();
   private readonly maxPubLifetime: number;
   private readonly maxClockSkew: number;
-  private readonly subs = new SubscriptionTable<Data>();
+  private readonly subs = new SubscriptionTable<CustomEvent<Data>>();
 
   private readonly dModify: SyncpsPubsub.ModifyPublicationCallback;
   private readonly dIsExpired: SyncpsPubsub.IsExpiredCallback;
@@ -165,17 +163,20 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
   private debug(action: string, key?: number, pub?: Data): void;
   private debug(action: string, recvIblt?: IBLT, content?: readonly Data[], contentFirst?: number): void;
   private debug(action: string, arg2?: number | IBLT, arg3?: Data | readonly Data[], contentFirst = 0): void {
-    if (this.listenerCount("debug") === 0) {
+    if (!this.maybeHaveEventListener.debug) {
       return;
     }
-    this.emit("debug", {
-      action,
-      key: typeof arg2 === "number" ? arg2 : undefined,
-      name: arg3 instanceof Data ? arg3.name : undefined,
-      ownIblt: this.iblt.clone(),
-      recvIblt: typeof arg2 === "object" ? arg2.clone() : undefined,
-      content: Array.isArray(arg3) ? (arg3 as readonly Data[]).slice(0, contentFirst).map(({ name }) => name) : undefined,
-    });
+    /* c8 ignore next */
+    this.dispatchTypedEvent("debug", new CustomEvent<DebugEntry>("debug", {
+      detail: {
+        action,
+        key: typeof arg2 === "number" ? arg2 : undefined,
+        name: arg3 instanceof Data ? arg3.name : undefined,
+        ownIblt: this.iblt.clone(),
+        recvIblt: typeof arg2 === "object" ? arg2.clone() : undefined,
+        content: Array.isArray(arg3) ? (arg3 as readonly Data[]).slice(0, contentFirst).map(({ name }) => name) : undefined,
+      },
+    }));
   }
 
   /** Stop the protocol operation. */
@@ -231,7 +232,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
    * Subscribe to a topic.
    * @param topic a name prefix.
    */
-  public subscribe(topic: Name): Subscription<Name, Data> {
+  public subscribe(topic: Name): Subscription<Name, CustomEvent<Data>> {
     const { sub } = this.subs.subscribe(topic);
     return sub;
   }
@@ -383,7 +384,7 @@ export class SyncpsPubsub extends (EventEmitter as new() => TypedEmitter<Events>
           (s) => s.size > 0), 1);
         if (sub) {
           this.debug("c-deliver", key, pub);
-          this.subs.update(sub, pub);
+          this.subs.update(sub, new CustomEvent<Data>("update", { detail: pub }));
         } else {
           this.debug("c-nosub", key, pub);
         }

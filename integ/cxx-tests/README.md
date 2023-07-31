@@ -5,6 +5,7 @@ They only work on Linux, and require `build-essential libndn-cxx-dev libpsync-de
 
 `corepack pnpm test` runs the tests.
 C++ compilation is handled automatically.
+After upgrading ndn-cxx and related libraries, `make clean` may be necessary.
 
 `corepack pnpm clang-format` at the codebase root fixes C++ code style.
 This requires `clang-format-15` package.
