@@ -93,18 +93,18 @@ docker run -it --rm \
 corepack pnpm literate integ/sync-interop/syncps.ts
 ```
 
-## SvSync
+## StateVectorSync
 
 Test environment:
 
-* Ubuntu 20.04
-* Node.js 19.3.0
+* Ubuntu 22.04
+* Node.js 20.5.0
 
 Reference implementation:
 
-* ndn-cxx 0.8.0-59-g15fa994b
-* NFD 0.8.0-59-g15fa994b
-* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `e39538ed1ddd789de9a34c242af47c3ba4f3583d` (2022-12-08)
+* ndn-cxx 0.8.1-26-g502c4c3b
+* NFD 22.12-10-g6bf94c02
+* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `4c933b2fcc2aafc8bc78905f5801359831282656` (2023-07-10)
 
 Build reference program:
 
