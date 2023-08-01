@@ -11,8 +11,9 @@ import { LpService, TT } from "..";
 test("rx", async () => {
   const input = [
     Uint8Array.of( // LP packet successfully decoded, deliver payload only
-      0x64, 0x22,
+      0x64, 0x27,
       0x62, 0x04, 0xD0, 0xD1, 0xD2, 0xD3, // PitToken
+      0xFD, 0x03, 0x40, 0x01, 0x17, // CongestionMark
       0xFD, 0x03, 0x48, 0x08, 0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, // TxSeqNum ignored
       0x50, 0x0E, // LpPayload
       0x06, 0x0C, // Data
@@ -38,7 +39,7 @@ test("rx", async () => {
       0x07, 0x03, 0x08, 0x01, 0x4E, // Name
       0x0A, 0x04, 0xA0, 0xA1, 0xA2, 0xA3, // Nonce
     ),
-    Uint8Array.of( // NackHeader with Data, error
+    Uint8Array.of( // NackHeader on Data, error
       0x64, 0x14,
       0xFD, 0x03, 0x20, 0x00, // Nack
       0x50, 0x0E, // LpPayload
@@ -62,11 +63,13 @@ test("rx", async () => {
   expect(output0.l3).toBeInstanceOf(Data);
   expect(output0.l3).toHaveName("/D");
   expect(output0.token).toEqualUint8Array([0xD0, 0xD1, 0xD2, 0xD3]);
+  expect(output0.congestionMark).toBe(0x17);
   expect(output[1]).not.toBeInstanceOf(LpService.RxError);
   const output1 = output[1] as LpService.Packet;
   expect(output1.l3).toBeInstanceOf(Interest);
   expect(output1.l3).toHaveName("/I");
   expect(output1.token).toBeUndefined();
+  expect(output1.congestionMark).toBeUndefined();
   expect(output[2]).toBeInstanceOf(LpService.RxError);
   expect(output[3]).not.toBeInstanceOf(LpService.RxError);
   const output3 = output[3] as LpService.Packet;
@@ -96,7 +99,7 @@ test("tx", async () => {
 
     await delay(200);
     const pkt4 = new Interest("/P");
-    yield { l3: pkt4, token: Uint8Array.of(0xD4, 0xD5) };
+    yield { l3: pkt4, token: Uint8Array.of(0xD4, 0xD5), congestionMark: 0x13 };
   }
 
   const output = await pipeline(
@@ -132,6 +135,10 @@ test("tx", async () => {
         expect(type).toBe(TT.PitToken);
         expect(length).toBe(2);
         expect(value).toEqualUint8Array([0xD4, 0xD5]);
+      },
+      ({ type, nni }) => {
+        expect(type).toBe(TT.CongestionMark);
+        expect(nni).toBe(0x13);
       },
       ({ type }) => {
         expect(type).toBe(TT.LpPayload);

@@ -44,7 +44,7 @@ export class Fragmenter {
     const fragments: LpPacket[] = [];
 
     const first = new LpPacket();
-    first.copyL3HeadersFrom(full);
+    Object.assign(first, full.l3);
     first.fragSeqNum = this.seqNumGen.next();
     first.payload = full.payload!.subarray(0, sizeofFirstFragment);
     fragments.push(first);

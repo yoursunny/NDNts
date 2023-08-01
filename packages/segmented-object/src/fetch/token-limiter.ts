@@ -5,7 +5,7 @@ export class TokenLimiter {
   private readonly queue = new Set<() => void>();
   private nTaken_ = 0;
 
-  constructor(private capacity_: number = 0) {}
+  constructor(private capacity_ = 0) {}
 
   public get nWaiting() { return this.queue.size; }
   public get nTaken() { return this.nTaken_; }

@@ -1,8 +1,9 @@
 import assert from "minimalistic-assert";
+import type { AnyIterable } from "streaming-iterables";
 
 /** Yield all values from an iterable but catch any error. */
 export async function* safeIter<T>(
-    iterable: AsyncIterable<T>,
+    iterable: AnyIterable<T>,
     onError?: (err?: unknown) => void,
 ): AsyncIterableIterator<T> {
   try {
@@ -17,8 +18,8 @@ export async function* safeIter<T>(
  * This differs from flatMap in streaming-iterables, which recursively flattens the result.
  */
 export async function* flatMapOnce<T, R>(
-    f: (item: T) => Iterable<R> | AsyncIterable<R>,
-    iterable: Iterable<T> | AsyncIterable<T>,
+    f: (item: T) => AnyIterable<R>,
+    iterable: AnyIterable<T>,
 ): AsyncIterable<R> {
   for await (const item of iterable) {
     yield* f(item);
@@ -36,5 +37,5 @@ export function evict<K>(capacity: number, ct: evict.Container<K>): void {
   }
 }
 export namespace evict {
-  export type Container<K> = Pick<Set<K>, "delete" | "size" | "keys">;
+  export type Container<K> = Pick<Set<K> & Map<K, unknown>, "delete" | "size" | "keys">;
 }

@@ -1,6 +1,6 @@
 import { Data, Interest, Nack, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, printTT } from "@ndn/tlv";
-import { assert, flatMapOnce, toHex } from "@ndn/util";
+import { flatMapOnce, toHex } from "@ndn/util";
 import itKeepAlive from "it-keepalive";
 
 import { TT } from "./an";
@@ -29,7 +29,8 @@ export class LpService {
   private readonly fragmenter = new Fragmenter();
   private readonly reassembler: Reassembler;
 
-  public rx = (iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<LpService.Packet | LpService.RxError> => flatMapOnce((tlv) => this.decode(tlv), iterable);
+  public readonly rx = (iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<LpService.Packet | LpService.RxError> =>
+    flatMapOnce((tlv) => this.decode(tlv), iterable);
 
   private *decode(dtlv: Decoder.Tlv) {
     const { type, decoder, tlv } = dtlv;
@@ -54,6 +55,7 @@ export class LpService {
         }
       }
       l3pkt.token = lpp.pitToken;
+      l3pkt.congestionMark = lpp.congestionMark;
       yield l3pkt;
     } catch (err: unknown) {
       yield new LpService.RxError(err as Error, tlv);
@@ -88,26 +90,24 @@ export class LpService {
     }
 
     const mtu = Math.min(this.mtu, this.transport.mtu);
-    const { l3, token } = pkt;
+    const { l3 } = pkt;
     const lpp = new LpPacket();
-    lpp.pitToken = token;
+    lpp.pitToken = pkt.token;
+    lpp.congestionMark = pkt.congestionMark;
     try {
-      if (l3 instanceof Interest || l3 instanceof Data) {
-        const payload = Encoder.encode(l3);
-        if (!token && payload.length <= mtu) {
-          return yield payload;
-        }
-        lpp.payload = payload;
-      } else {
-        assert(l3 instanceof Nack);
+      if (l3 instanceof Nack) {
         lpp.nack = l3.header;
         lpp.payload = Encoder.encode(l3.interest);
+      } else {
+        lpp.payload = Encoder.encode(l3);
       }
     } catch (err: unknown) {
-      return yield new LpService.TxError(err as Error, l3);
+      return yield new LpService.TxError(err as Error, pkt.l3);
     }
 
-    if (Number.isFinite(mtu)) {
+    if (!lpp.hasL3Headers() && lpp.payload.length <= mtu) {
+      yield lpp.payload;
+    } else if (Number.isFinite(mtu)) {
       yield* this.fragmenter.fragment(lpp, mtu).map((fragment) => Encoder.encode(fragment, mtu));
     } else {
       yield Encoder.encode(lpp);
@@ -118,9 +118,7 @@ export class LpService {
 export namespace LpService {
   /** An object to report transport MTU. */
   export interface Transport {
-    /**
-     * Return current transport MTU.
-     */
+    /** Return current transport MTU. */
     readonly mtu: number;
   }
 
@@ -151,6 +149,7 @@ export namespace LpService {
   export interface Packet {
     l3: L3Pkt;
     token?: Uint8Array;
+    congestionMark?: number;
   }
 
   export class RxError extends Error {

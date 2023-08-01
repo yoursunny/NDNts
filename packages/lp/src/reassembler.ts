@@ -38,11 +38,10 @@ class PartialPacket {
   }
 
   private reassemble(): LpPacket {
-    const full = new LpPacket();
-    full.copyL3HeadersFrom(this.buffer[0]!);
+    const full = Object.assign(new LpPacket(), this.buffer[0]!.l3);
     const parts: Uint8Array[] = [];
     for (const fragment of this.buffer) {
-      const part = fragment?.payload;
+      const part = fragment!.payload;
       if (part) {
         parts.push(part);
       }
