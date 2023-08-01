@@ -45,7 +45,7 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
   } = opts;
 
   const connected: ConnectRouterResult[] = [];
-  const errors: string[] = [];
+  const errs: Record<string, unknown> = {};
   for await (const routers of
     (async function*(): AsyncIterable<string[]> {
       const routers: string[] = [];
@@ -70,7 +70,7 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
       try {
         connected.push(await connectToRouter(router, opts));
       } catch (err: unknown) {
-        errors.push(`  ${router} ${err}`);
+        errs[router] = err;
       }
     }));
     if (connected.length > 0) {
@@ -79,7 +79,9 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
   }
 
   if (connected.length === 0) {
-    throw new Error(`connect to network failed\n${errors.join("\n")}`);
+    const errorMsgs = Object.entries(errs).map(([router, err]) => `  ${router} ${err}`);
+    throw new AggregateError(Object.values(errs),
+      `connect to network failed\n${errorMsgs.join("\n")}`);
   }
 
   connected.sort((a, b) => a.testConnectionDuration - b.testConnectionDuration);

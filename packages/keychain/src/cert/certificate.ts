@@ -57,7 +57,7 @@ export class Certificate {
       algoList: readonly A[],
   ): Promise<[A, CryptoAlgorithm.PublicKey<I>]> {
     const der = asn1.parseVerbose(this.publicKeySpki);
-    const errs: string[] = [];
+    const errs: Record<string, unknown> = {};
     for (const algo of algoList) {
       if (!algo.importSpki) {
         continue;
@@ -65,10 +65,12 @@ export class Certificate {
       try {
         return [algo, await algo.importSpki(this.publicKeySpki, der)];
       } catch (err: unknown) {
-        errs.push(`${algo.uuid}: ${err}`);
+        errs[algo.uuid] = err;
       }
     }
-    throw new Error(`cannot import key\n${errs.join("\n")}\n(you may need to specify an algoList with more algorithms)`);
+    const errorMsgs = Object.entries(errs).map(([uuid, err]) => `  ${uuid} ${err}`);
+    throw new AggregateError(Object.values(errs),
+      `cannot import key\n${errorMsgs.join("\n")}\n(you may need to specify an algoList with more algorithms)`);
   }
 }
 

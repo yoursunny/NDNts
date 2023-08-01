@@ -66,17 +66,13 @@ export abstract class KeyChain {
       { prefixMatch = false, fallback, useKeyNameKeyLocator = false }: KeyChain.GetSignerOptions = {},
   ): Promise<Signer> {
     const useFallback = (err?: Error) => {
-      switch (typeof fallback) {
-        case "function": {
-          return fallback(name, this, err);
-        }
-        case "undefined": {
-          throw new Error(`signer ${name} not found ${err}`);
-        }
-        default: {
-          return fallback;
-        }
+      if (fallback === undefined) {
+        throw new Error(`signer ${name} not found ${err}`, { cause: err });
       }
+      if (typeof fallback === "function") {
+        return fallback(name, this, err);
+      }
+      return fallback;
     };
     const changeKeyLocator = (signer: NamedSigner, certName?: Name) => {
       if (certName && !useKeyNameKeyLocator) {
