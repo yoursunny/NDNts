@@ -5,16 +5,16 @@ import { afterEach, beforeAll, expect, test } from "vitest";
 import { fchQuery } from "..";
 import { FchServer } from "../test-fixture/fch-server";
 
-let server: FchServer;
+let fchServer: FchServer;
 beforeAll(async () => {
-  server = await FchServer.create();
-  return () => { server.close(); };
+  fchServer = await FchServer.create();
+  return () => { fchServer.close(); };
 });
-afterEach(() => server.handle = undefined);
+afterEach(() => fchServer.handle = undefined);
 
 test("json", async () => {
   const updated = Date.now() - 300000;
-  server.handle = async () => ({
+  fchServer.handle = () => ({
     updated,
     routers: [
       {
@@ -30,7 +30,7 @@ test("json", async () => {
   });
 
   const res = await fchQuery({
-    server: server.uri,
+    server: fchServer.uri,
     transport: "udp",
     count: 3,
   });
@@ -43,7 +43,7 @@ test("json", async () => {
 });
 
 test("text", async () => {
-  server.handle = async (search: URLSearchParams) => {
+  fchServer.handle = async (search: URLSearchParams) => {
     expect(search.get("cap")).toBe("udp");
     expect(search.get("k")).toBe("2");
     expect(search.get("ipv4")).toBe("1");
@@ -55,7 +55,7 @@ test("text", async () => {
   };
 
   const res = await fchQuery({
-    server: server.uri,
+    server: fchServer.uri,
     transports: ["udp"],
     count: 2,
     ipv4: true,
@@ -71,7 +71,7 @@ test("text", async () => {
 });
 
 test("text2", async () => {
-  server.handle = async (search: URLSearchParams) => {
+  fchServer.handle = async (search: URLSearchParams) => {
     const cap = search.getAll("cap").join(",");
     const k = search.getAll("k").join(",");
     switch (cap) {
@@ -96,7 +96,7 @@ test("text2", async () => {
   };
 
   const res = await fchQuery({
-    server: server.uri,
+    server: fchServer.uri,
     transports: { udp: 2, wss: 1 },
   });
   expect(res.updated).toBeUndefined();
@@ -108,12 +108,12 @@ test("text2", async () => {
 });
 
 test("server error", async () => {
-  server.handle = async (params, ctx) => {
+  fchServer.handle = async (params, ctx) => {
     ctx.status = 500;
     return "";
   };
-  await expect(fchQuery({ server: server.uri })).resolves.toMatchObject({ routers: [] });
+  await expect(fchQuery({ server: fchServer.uri })).resolves.toMatchObject({ routers: [] });
 
-  server.handle = async () => "";
-  await expect(fchQuery({ server: server.uri })).resolves.toMatchObject({ routers: [] });
+  fchServer.handle = async () => "";
+  await expect(fchQuery({ server: fchServer.uri })).resolves.toMatchObject({ routers: [] });
 });

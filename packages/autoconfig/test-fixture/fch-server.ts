@@ -3,6 +3,7 @@ import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 
 import Koa from "koa";
+import type { Promisable } from "type-fest";
 
 /** Mock NDN-FCH server. */
 export class FchServer {
@@ -34,5 +35,5 @@ export class FchServer {
   }
 
   /** Handler of "GET /" request. */
-  public handle?: (params: URLSearchParams, ctx: Koa.Context) => Promise<unknown>;
+  public handle?: (params: URLSearchParams, ctx: Koa.Context) => Promisable<unknown>;
 }

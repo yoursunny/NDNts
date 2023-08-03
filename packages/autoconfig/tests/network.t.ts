@@ -10,14 +10,14 @@ import { connectToNetwork } from "..";
 import { FchServer } from "../test-fixture/fch-server";
 
 const closers = new Closers();
-let server: FchServer;
+let fchServer: FchServer;
 beforeAll(async () => {
-  server = await FchServer.create();
-  return () => { server.close(); };
+  fchServer = await FchServer.create();
+  return () => { fchServer.close(); };
 });
 afterEach(() => {
   closers.close();
-  server.handle = undefined;
+  fchServer.handle = undefined;
   Forwarder.deleteDefault();
 });
 
@@ -77,7 +77,7 @@ test("connectToNetwork", async () => {
 });
 
 test("defaultGateway", async () => {
-  server.handle = async () => "127.0.0.1:7001,127.0.0.1:7002";
+  fchServer.handle = async () => "127.0.0.1:7001,127.0.0.1:7002";
   const mockGatewayResult: defaultGateway.Result<4> = {
     gateway: "127.0.0.1",
     version: 4,
@@ -102,7 +102,7 @@ test("defaultGateway", async () => {
     });
 
   const faces = await connectToNetwork({
-    fch: { server: server.uri },
+    fch: { server: fchServer.uri },
     fallback: ["127.0.0.1:7004"],
     testConnection,
   });
@@ -115,7 +115,7 @@ test("defaultGateway", async () => {
   expect(testConnection).toHaveBeenCalledTimes(3);
   expect(calledWith6363).toBeTruthy();
   expect(calledWith7004).toBeFalsy();
-});
+}, { timeout: 10000 });
 
 test("connectFailure", async () => {
   const testConnection = vi.fn<[FwFace], Promise<unknown>>()
