@@ -7,7 +7,11 @@ export class H3Transport extends Transport {
 
   public override readonly rx: Transport.Rx;
 
-  constructor(private readonly uri: string, private readonly tr: WebTransport) {
+  constructor(
+      private readonly uri: string,
+      private readonly opts: WebTransportOptions,
+      private readonly tr: WebTransport,
+  ) {
     super({
       describe: `H3(${uri})`,
     });
@@ -40,7 +44,7 @@ export class H3Transport extends Transport {
   };
 
   public override reopen() {
-    return H3Transport.connect(this.uri);
+    return H3Transport.connect(this.uri, this.opts);
   }
 }
 
@@ -48,12 +52,13 @@ export namespace H3Transport {
   /**
    * Create a transport and connect to remote endpoint.
    * @param uri server URI.
+   * @param opts WebTransport options.
    */
-  export async function connect(uri: string): Promise<H3Transport> {
-    const tr = new WebTransport(uri);
+  export async function connect(uri: string, opts: WebTransportOptions = {}): Promise<H3Transport> {
+    const tr = new WebTransport(uri, opts);
     void tr.closed.catch(() => undefined);
     await tr.ready;
-    return new H3Transport(uri, tr);
+    return new H3Transport(uri, opts, tr);
   }
 
   /** Create a transport and add to forwarder. */

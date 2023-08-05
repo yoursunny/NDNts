@@ -1,7 +1,7 @@
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { delay } from "@ndn/util";
+import { console, delay } from "@ndn/util";
 import puppeteer, { type Page } from "puppeteer";
 import { beforeAll } from "vitest";
 
@@ -11,6 +11,7 @@ export let page: Page;
 beforeAll(async () => {
   const browser = await puppeteer.launch({ headless: "new" });
   page = await browser.newPage();
+  page.on("console", (evt) => { console.log(`[BROWSER ${evt.type()}] ${evt.text()}`); });
   return async () => {
     await browser.close();
   };

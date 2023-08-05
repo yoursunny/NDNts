@@ -1,7 +1,7 @@
 import { Endpoint } from "@ndn/endpoint";
 import { FwTracer } from "@ndn/fw";
 import { H3Transport } from "@ndn/quic-transport";
-import { delay } from "@ndn/util";
+import { delay, fromHex } from "@ndn/util";
 import { WebBluetoothTransport } from "@ndn/web-bluetooth-transport";
 
 import { addManualTest } from "../../test-fixture/manual";
@@ -41,24 +41,35 @@ async function testH3() {
     HTTP3 router:
     <input type="text" name="router" value="https://localhost:6367/ndn">
     <br>
+    Certificate hash:
+    <input type="text" name="cert-hash">
+    <br>
     ping:
     <input type="text" name="prefix" value="/example/quic/ping">
     <br>
     <button>OK</button>
     </form>
   `;
-  const [router, prefix] = await new Promise<[string, string]>((resolve) => {
+  const [router, certHash, prefix] = await new Promise<[string, string, string]>((resolve) => {
     const $form = document.querySelector("form")!;
     $form.addEventListener("submit", (evt) => {
       evt.preventDefault();
       resolve([
         document.querySelector<HTMLInputElement>("input[name=router]")!.value,
+        document.querySelector<HTMLInputElement>("input[name=cert-hash]")!.value,
         document.querySelector<HTMLInputElement>("input[name=prefix]")!.value,
       ]);
       document.body.innerHTML = "";
     });
   });
-  await H3Transport.createFace({}, router);
+  const opts: WebTransportOptions = {};
+  if (certHash) {
+    opts.serverCertificateHashes = [{
+      algorithm: "sha-256",
+      value: fromHex(certHash.replaceAll(":", "")),
+    }];
+  }
+  await H3Transport.createFace({}, router, opts);
   return facePing(prefix);
 }
 

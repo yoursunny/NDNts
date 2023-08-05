@@ -3,7 +3,15 @@ import * as net from "node:net";
 
 import { tmpNameSync } from "tmp";
 
-export abstract class NetServerBase<Server extends EventEmitter, Client> {
+export interface TestServer<Server, Client> {
+  readonly server: Server;
+  readonly clients: ReadonlySet<Client>;
+  open(): Promise<void>;
+  close(): Promise<void>;
+  waitNClients(n: number): Promise<Client[]>;
+}
+
+export abstract class NetServerBase<Server extends EventEmitter, Client> implements TestServer<Server, Client> {
   public get clients() { return this.clients_; }
   private readonly clients_ = new Set<Client>();
 
