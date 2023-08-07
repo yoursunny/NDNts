@@ -150,7 +150,7 @@ interest.lifetime = 2000;
 
 // Encode and decode the Interest.
 const interestWire = Encoder.encode(interest);
-const interest2 = new Decoder(interestWire).decode(Interest);
+const interest2 = Decoder.decode(interestWire, Interest);
 assert.equal(interest2.name.toString(), "/8=A");
 
 // We got a Data type, too.
@@ -173,7 +173,7 @@ await digestSigning.sign(data);
 const dataWire = Encoder.encode(data);
 
 // And then decode it.
-const data2 = new Decoder(dataWire).decode(Data);
+const data2 = Decoder.decode(dataWire, Data);
 
 // Data signature should be verified.
 // If the verify() function does not throw, it means the signature is good.
@@ -219,7 +219,7 @@ assert.equal(fullName2.toString(), fullName.toString());
 assert.equal(await data.canSatisfy(interest), true);
 const interest3 = new Interest("/B");
 assert.equal(await data.canSatisfy(interest3), false);
-const data3 = new Decoder(dataWire).decode(Data);
+const data3 = Decoder.decode(dataWire, Data);
 const interestWithFullName = new Interest(fullName);
 assert.equal(await data.canSatisfy(interestWithFullName), true);
 ```

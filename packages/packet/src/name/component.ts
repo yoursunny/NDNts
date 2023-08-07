@@ -1,5 +1,5 @@
 import { Decoder, Encoder } from "@ndn/tlv";
-import { assert, constrain, fromHex, fromUtf8, toHex, toUtf8 } from "@ndn/util";
+import { constrain, fromHex, fromUtf8, toHex, toUtf8 } from "@ndn/util";
 import bufferCompare from "buffer-compare";
 
 import { TT } from "../an";
@@ -110,7 +110,7 @@ export class Component {
       this.tlv = arg1;
       const decoder = new Decoder(arg1);
       ({ type: this.type, value: this.value } = decoder.read());
-      assert(decoder.eof);
+      decoder.throwUnlessEof();
     } else {
       this.type = arg1;
       let tailroom = 0;

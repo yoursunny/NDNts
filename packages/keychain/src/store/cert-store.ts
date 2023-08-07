@@ -13,7 +13,7 @@ export class CertStore extends StoreBase<StoredCert> {
   public async get(name: Name): Promise<Certificate> {
     let { certBuffer } = await this.getValue(name);
     certBuffer = StoreBase.bufferFromStorable(certBuffer);
-    return Certificate.fromData(new Decoder(certBuffer).decode(Data));
+    return Certificate.fromData(Decoder.decode(certBuffer, Data));
   }
 
   public async insert(cert: Certificate): Promise<void> {

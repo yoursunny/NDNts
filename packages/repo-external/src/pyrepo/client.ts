@@ -92,7 +92,7 @@ export class PyRepoClient {
         if (data === false) {
           throw new Error("command timeout");
         }
-        const response = new Decoder(data.content).decode(CommandResponse);
+        const response = Decoder.decode(data.content, CommandResponse);
         if (response.statusCode === 200) {
           break;
         }

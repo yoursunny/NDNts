@@ -26,7 +26,7 @@ export class PrefixRegServer {
 
   private readonly handleCommand = async (interest: Interest) => {
     const verb = interest.name.at(3).text;
-    const params = new Decoder(interest.name.at(4).value).decode(ControlParameters);
+    const params = Decoder.decode(interest.name.at(4).value, ControlParameters);
 
     switch (verb) {
       case "register": {

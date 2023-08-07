@@ -17,7 +17,7 @@ export const keyChain: KeyChain = openKeyChain();
 export async function inputBase64<R>(d: Decodable<R>, filename?: string): Promise<R> {
   const read = filename ? fs.readFile(filename, "utf8") : getStdin();
   const wire = Buffer.from(await read, "base64");
-  return new Decoder(wire).decode(d);
+  return Decoder.decode(wire, d);
 }
 
 /** Read base64 certificate from file or stdin. */
@@ -42,7 +42,7 @@ export async function inputCaProfile(filename: string, strict = false): Promise<
 
   const content = await fs.readFile(filename);
   try {
-    return await CaProfile.fromData(new Decoder(content).decode(Data));
+    return await CaProfile.fromData(Decoder.decode(content, Data));
   } catch (err: unknown) {
     if (strict) {
       throw err;

@@ -28,15 +28,15 @@ test("encode decode", async () => {
   expect(data.freshnessPeriod).toBe(3600000);
 
   const wire = Encoder.encode(cert.data);
-  data = new Decoder(wire).decode(Data);
+  data = Decoder.decode(wire, Data);
   data.name = new Name("/operator/not-KEY/key-1/self/%FD%01");
   expect(() => Certificate.fromData(data)).toThrow(/name/);
 
-  data = new Decoder(wire).decode(Data);
+  data = Decoder.decode(wire, Data);
   data.contentType = 0x00;
   expect(() => Certificate.fromData(data)).toThrow(/ContentType/);
 
-  data = new Decoder(wire).decode(Data);
+  data = Decoder.decode(wire, Data);
   ValidityPeriod.set(data.sigInfo, undefined);
   expect(() => Certificate.fromData(data)).toThrow(/ValidityPeriod/);
 });

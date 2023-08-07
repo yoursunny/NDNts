@@ -26,7 +26,7 @@ export class Consumer implements Decrypter {
   ) {}
 
   public async decrypt(data: Data): Promise<void> {
-    const enc = new Decoder(data.content).decode(EncryptedContent);
+    const enc = Decoder.decode(data.content, EncryptedContent);
     ContentKey.parseLocator(enc.name);
     const ckData = await this.endpoint.consume(
       new Interest(enc.name, Interest.CanBePrefix),

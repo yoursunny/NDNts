@@ -43,7 +43,7 @@ export async function retrieveMetadata(prefix: NameLike, arg2: any = {}, opts: r
     signal,
     verifier,
   });
-  return new Decoder(data.content).decode(ctor);
+  return Decoder.decode(data.content, ctor);
 }
 
 export namespace retrieveMetadata {

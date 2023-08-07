@@ -4,6 +4,17 @@ import { expect, test } from "vitest";
 
 import { Decoder } from "..";
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+export class A1 {
+  public static decodeFrom(decoder: Decoder): A1 {
+    const { type, length, value } = decoder.read();
+    expect(type).toBe(0xA1);
+    expect(length).toBe(1);
+    expect(value).toEqualUint8Array([0x10]);
+    return new A1();
+  }
+}
+
 test("simple", () => {
   const decoder = new Decoder(Uint8Array.of(
     0x01, 0x00,
@@ -70,4 +81,10 @@ test("error on incomplete TLV-VALUE", () => {
     0x01, 0x05, 0xA0, 0xA1, 0xA2,
   ));
   expect(() => decoder.read()).toThrow();
+});
+
+test("decodable", () => {
+  const wire = Uint8Array.of(0xA1, 0x01, 0x10, 0xFF);
+  expect(new Decoder(wire).decode(A1)).toBeInstanceOf(A1);
+  expect(() => Decoder.decode(wire, A1)).toThrow(/junk/);
 });

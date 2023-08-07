@@ -89,7 +89,7 @@ describe("HMAC", () => {
 
   test("verify", async () => {
     const wire = fromHex("063b070308014116121b01041c0d070b08014808034b4559080178172097ab86d234f84a5b3224838b9a99aa0d43fc9d6313bd772fbdc05ba79c2431cb");
-    const pkt = new Decoder(wire).decode(Data);
+    const pkt = Decoder.decode(wire, Data);
 
     const [, key] = await generateSigningKey("/H/KEY/x", HMAC, {
       importRaw: fromHex("A0A1A2A3A4A5A6A7A8A9AAABACADAEAF"),

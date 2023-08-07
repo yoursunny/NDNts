@@ -57,7 +57,7 @@ window.testEd25519 = async () => {
 
 window.testSafeBagDecode = async (wire: Serialize.Value<Uint8Array>, passphrase: string) => {
   const keyChain = KeyChain.createTemp(CryptoAlgorithmListFull);
-  const safeBag = new Decoder(Serialize.parse(wire)).decode(SafeBag);
+  const safeBag = Decoder.decode(Serialize.parse(wire), SafeBag);
   const certName = safeBag.certificate.name;
   await safeBag.saveKeyPair(passphrase, keyChain);
   const pvt = await keyChain.getSigner(certName);

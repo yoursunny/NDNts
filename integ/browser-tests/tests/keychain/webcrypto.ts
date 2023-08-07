@@ -29,7 +29,7 @@ async function testSigningKey(keyPair: Promise<[Signer, Verifier]>, canMakeCert 
 
   let pkt = new Data("/D");
   await pvt.sign(pkt);
-  pkt = new Decoder(Encoder.encode(pkt)).decode(Data);
+  pkt = Decoder.decode(Encoder.encode(pkt), Data);
   await verifier.verify(pkt);
 }
 

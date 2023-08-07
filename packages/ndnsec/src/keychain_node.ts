@@ -49,7 +49,7 @@ export class NdnsecKeyChain extends KeyChain {
       get lines() { return stdout.split("\n"); },
       decode<R>(d: Decodable<R>): R {
         const wire = Buffer.from(stdout, "base64");
-        return new Decoder(wire).decode(d);
+        return Decoder.decode(wire, d);
       },
     };
   }

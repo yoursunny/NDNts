@@ -3,6 +3,7 @@ import "../test-fixture/expect";
 import { expect, test, vi } from "vitest";
 
 import { Decoder, EvDecoder } from "..";
+import { A1 } from "./decoder.t";
 
 class EvdTestTarget {
   public a1 = 0;
@@ -22,17 +23,6 @@ class EvdTestTarget {
   public setCallbacks(evd: EvDecoder<EvdTestTarget>): void {
     evd.beforeObservers.splice(0, 1, this.observeBefore);
     evd.afterObservers.splice(0, 1, this.observeAfter);
-  }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-class A1 {
-  public static decodeFrom(decoder: Decoder): A1 {
-    const { type, length, value } = decoder.read();
-    expect(type).toBe(0xA1);
-    expect(length).toBe(1);
-    expect(value).toEqualUint8Array([0x10]);
-    return new A1();
   }
 }
 

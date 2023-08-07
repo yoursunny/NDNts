@@ -73,8 +73,7 @@ class Subscription implements PrpsSubscriber.Subscription {
       return undefined;
     }
 
-    const { publisher, nonce, publisherFwHint } =
-      new Decoder(interest.appParameters).decode(NotifyParams);
+    const { publisher, nonce, publisherFwHint } = Decoder.decode(interest.appParameters, NotifyParams);
     const messageInterest = new Interest(publisher.append(
       MsgSuffix, ...this.topic.comps, new Component(undefined, nonce)));
     if (publisherFwHint) {

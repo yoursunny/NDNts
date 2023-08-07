@@ -150,7 +150,7 @@ test("ImplicitDigest", async () => {
   expect(data.getImplicitDigest()).toEqualUint8Array(expectedDigest);
   await expect(data.computeImplicitDigest()).resolves.toEqualUint8Array(expectedDigest);
 
-  data = new Decoder(wire).decode(Data);
+  data = Decoder.decode(wire, Data);
   expect(data.getFullName()).toBeUndefined();
   const fullName = await data.computeFullName();
   expect(fullName).toEqualName(`/A/${ImplicitDigest.create(expectedDigest)}`);

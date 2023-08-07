@@ -163,7 +163,7 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
     }
 
     const decap = async ({ content }: Data): Promise<Data | false> => {
-      const inner = new Decoder(content).decode(Data);
+      const inner = Decoder.decode(content, Data);
       await this.innerVerifier.verify(inner);
       name ??= inner.name.get(-2)?.equals(Version0) ? inner.name.getPrefix(-2) : inner.name;
       if ((nameSubs ??= this.listNameSubs(name, mapping?.get(seqNum))).length === 0 && publisherSubs.size === 0) {

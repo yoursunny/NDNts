@@ -59,6 +59,6 @@ export namespace ControlCommand {
     await signedInterestPolicy.makeSigner(signer).sign(interest);
 
     const data = await endpoint.consume(interest, { describe: `ControlCommand(${command})` });
-    return new Decoder(data.content).decode(ControlResponse);
+    return Decoder.decode(data.content, ControlResponse);
   }
 }

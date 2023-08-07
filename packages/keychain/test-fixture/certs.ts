@@ -8,7 +8,7 @@ function b64decode(input: string): Uint8Array {
 
 function makeDataFromBase64(input: string): () => Data {
   const wire = b64decode(input);
-  const data = new Decoder(wire).decode(Data);
+  const data = Decoder.decode(wire, Data);
   return () => new Data(data);
 }
 

@@ -11,7 +11,7 @@ import { SafeBagEC, SafeBagRSA } from "../test-fixture/safe-bag";
 test.each([
   SafeBagEC, SafeBagRSA,
 ])("import %#", async ({ sigType, canRSAOAEP, certName, wire, passphrase }) => {
-  const safeBag = new Decoder(wire).decode(SafeBag);
+  const safeBag = Decoder.decode(wire, SafeBag);
   const { certificate: cert } = safeBag;
   expect(cert.name).toEqualName(certName);
   const keyName = CertNaming.toKeyName(cert.name);

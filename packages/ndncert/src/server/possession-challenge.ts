@@ -68,12 +68,11 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
     }
 
     try {
-      const data = new Decoder(certWire).decode(Data);
-      const cert = Certificate.fromData(data);
+      const cert = Certificate.fromData(Decoder.decode(certWire, Data));
       if (!cert.validity.includes(Date.now())) {
         return invalidResponse;
       }
-      await this.verifier.verify(data);
+      await this.verifier.verify(cert.data);
       await this.assignmentPolicy?.(subjectName, cert);
 
       const [algo, key] = await cert.importPublicKey(this.algoList);

@@ -75,7 +75,7 @@ test("SafeBagEncode", async () => {
   const wire = Serialize.parse(
     await pageInvoke<typeof window.testSafeBagEncode>("testSafeBagEncode", passphrase));
 
-  const safeBag = new Decoder(wire).decode(SafeBag);
+  const safeBag = Decoder.decode(wire, SafeBag);
   const { certificate: cert } = safeBag;
   expect(cert.isSelfSigned).toBeTruthy();
   expect(CertNaming.toSubjectName(cert.name)).toEqualName("/S");

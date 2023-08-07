@@ -48,7 +48,7 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
     const verb = interest.name.at(-3).text;
     verbs.push(verb);
 
-    const params = new Decoder(interest.name.at(-2).value).decode(ControlParameters);
+    const params = Decoder.decode(interest.name.at(-2).value, ControlParameters);
     expect(params.name).toEqualName("/R");
     expect(params.origin).toBe(65);
     if (verb === "register") {

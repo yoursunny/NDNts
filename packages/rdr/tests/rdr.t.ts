@@ -64,7 +64,7 @@ describe("producer", () => {
 
     expect(data.name).toHaveLength(4);
     expect(data.freshnessPeriod).toBe(1);
-    const name2 = new Decoder(data.content).decode(Name);
+    const name2 = Decoder.decode(data.content, Name);
     expect(name2).toEqualName(simpleMetadata.name);
   });
 
@@ -76,7 +76,7 @@ describe("producer", () => {
     const data = await new Endpoint().consume(new Interest("/R/32=metadata", Interest.CanBePrefix, Interest.MustBeFresh));
     expect(data.name).toHaveLength(4);
     expect(data.freshnessPeriod).toBe(100);
-    const name2 = new Decoder(data.content).decode(Name);
+    const name2 = Decoder.decode(data.content, Name);
     expect(name2).toEqualName(simpleMetadata.name);
 
     expect(makeMetadata).toHaveBeenCalled();

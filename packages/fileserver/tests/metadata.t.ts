@@ -68,7 +68,7 @@ test("file", async () => {
     },
   );
 
-  const d = new Decoder(pkt.content).decode(FileMetadata) as FileMetadata;
+  const d = Decoder.decode(pkt.content, FileMetadata) as FileMetadata;
   expect(d.isFile).toBeTruthy();
   expect(d.isDir).toBeFalsy();
 });
@@ -95,7 +95,7 @@ test("dir", async () => {
     },
   );
 
-  const d = new Decoder(pkt.content).decode(FileMetadata) as FileMetadata;
+  const d = Decoder.decode(pkt.content, FileMetadata) as FileMetadata;
   expect(d.isFile).toBeFalsy();
   expect(d.isDir).toBeTruthy();
 });

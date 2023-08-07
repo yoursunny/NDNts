@@ -117,7 +117,7 @@ test.each(TABLE)("verify %j", async ({ Packet, checkWire }) => {
   await ALGO0.verify(src);
   await expect(ALGO1.verify(src)).rejects.toThrow(/incorrect/);
 
-  const obj = new Decoder(wire).decode(Packet);
+  const obj = Decoder.decode(wire, Packet);
   await ALGO0.verify(obj);
   await expect(ALGO1.verify(obj)).rejects.toThrow(/incorrect/);
 });

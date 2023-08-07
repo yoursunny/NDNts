@@ -67,7 +67,7 @@ export async function importClientConf(
   }
   const confProfile = conf["ca-list"][0]!;
 
-  const caCertData = new Decoder(b64ToBuffer(confProfile.certificate)).decode(Data);
+  const caCertData = Decoder.decode(b64ToBuffer(confProfile.certificate), Data);
   return retrieveCaProfile({
     ...opts,
     caPrefix: AltUri.parseName(confProfile["ca-prefix"]),

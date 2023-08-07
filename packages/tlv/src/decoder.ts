@@ -6,7 +6,7 @@ export interface Decodable<R> {
   decodeFrom: (decoder: Decoder) => R;
 }
 
-class DecodedTlv {
+class DecodedTlv implements Decoder.Tlv {
   public get length(): number {
     return this.offsetE - this.offsetV;
   }
@@ -62,16 +62,23 @@ class DecodedTlv {
 
 /** TLV decoder. */
 export class Decoder {
-  /** Determine whether end of input has been reached. */
-  public get eof(): boolean {
-    return this.offset >= this.input.length;
+  constructor(private readonly input: Uint8Array) {
+    this.dv = asDataView(input);
   }
 
   private readonly dv: DataView;
   private offset = 0;
 
-  constructor(private readonly input: Uint8Array) {
-    this.dv = asDataView(input);
+  /** Determine whether end of input has been reached. */
+  public get eof(): boolean {
+    return this.offset >= this.input.length;
+  }
+
+  /** Throw an error if EOF has not been reached. */
+  public throwUnlessEof(): void {
+    if (!this.eof) {
+      throw new Error("junk after end of TLV");
+    }
   }
 
   /** Read TLV structure. */
@@ -150,5 +157,16 @@ export namespace Decoder {
     readonly before: Uint8Array;
     /** Siblings after this TLV. */
     readonly after: Uint8Array;
+  }
+
+  /**
+   * Decode a single object from Uint8Array.
+   * The input is expected to contain no junk after the object.
+   */
+  export function decode<R>(input: Uint8Array, d: Decodable<R>): R {
+    const decoder = new Decoder(input);
+    const res = d.decodeFrom(decoder);
+    decoder.throwUnlessEof();
+    return res;
   }
 }
