@@ -43,7 +43,7 @@ test("json", async () => {
 });
 
 test("text", async () => {
-  fchServer.handle = async (search: URLSearchParams) => {
+  fchServer.handle = async (search) => {
     expect(search.get("cap")).toBe("udp");
     expect(search.get("k")).toBe("2");
     expect(search.get("ipv4")).toBe("1");
@@ -71,7 +71,7 @@ test("text", async () => {
 });
 
 test("text2", async () => {
-  fchServer.handle = async (search: URLSearchParams) => {
+  fchServer.handle = async (search) => {
     const cap = search.getAll("cap").join(",");
     const k = search.getAll("k").join(",");
     switch (cap) {
@@ -109,6 +109,7 @@ test("text2", async () => {
 
 test("server error", async () => {
   fchServer.handle = async (params, ctx) => {
+    void params;
     ctx.status = 500;
     return "";
   };

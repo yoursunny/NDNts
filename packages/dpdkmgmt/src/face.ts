@@ -82,84 +82,78 @@ async function openFaceImpl(
   return face;
 }
 
-async function openFaceUdp(opts: openFace.Options) {
-  let {
-    gqlServer = DefaultGqlServer,
-    localHost,
-    udp: udpOptionsInput,
-  } = opts;
-  localHost ??= await detectLocalAddress(gqlServer);
-  const sock = await udp_helper.openSocket({
-    bind: { address: localHost },
-    ...udpOptionsInput,
-  });
-  try {
-    return await openFaceImpl(opts,
+const openFaceScheme = {
+  async udp(opts) {
+    let {
+      gqlServer = DefaultGqlServer,
+      localHost,
+      udp: udpOptionsInput,
+    } = opts;
+    localHost ??= await detectLocalAddress(gqlServer);
+    const sock = await udp_helper.openSocket({
+      bind: { address: localHost },
+      ...udpOptionsInput,
+    });
+    try {
+      return await openFaceImpl(opts,
+        {
+          scheme: "udp",
+          remote: joinHostPort(localHost, sock.address().port),
+        },
+        async (loc) => {
+          const { host, port } = splitHostPort((loc as { local?: string }).local ?? "");
+          if (!host || !port) {
+            throw new Error(`unexpected locator: ${JSON.stringify(loc)}`);
+          }
+          await udp_helper.connect(sock, { host, port });
+          return [new UdpTransport(sock), 1400];
+        });
+    } catch (err: unknown) {
+      sock.close();
+      throw err;
+    }
+  },
+  async memif(opts) {
+    const {
+      memif: {
+        socketPath = "/run/ndn",
+        dataroom = 2048,
+        ringCapacity = 1024,
+      } = {},
+    } = opts;
+    const socketName = path.join(socketPath, `NDNts-memif-${process.pid}-${Date.now()}.sock`);
+    const socketOwner = (process.getuid && process.getgid) ? [process.getuid(), process.getgid()] : undefined;
+    return openFaceImpl(opts,
       {
-        scheme: "udp",
-        remote: joinHostPort(localHost, sock.address().port),
-      },
-      async (loc) => {
-        const { host, port } = splitHostPort((loc as { local?: string }).local ?? "");
-        if (!host || !port) {
-          throw new Error(`unexpected locator: ${JSON.stringify(loc)}`);
-        }
-        await udp_helper.connect(sock, { host, port });
-        return [new UdpTransport(sock), 1450];
-      });
-  } catch (err: unknown) {
-    sock.close();
-    throw err;
-  }
-}
-
-async function openFaceMemif(opts: openFace.Options) {
-  const {
-    memif: {
-      socketPath = "/run/ndn",
-      dataroom = 2048,
-      ringCapacity = 1024,
-    } = {},
-  } = opts;
-  const socketName = path.join(socketPath, `NDNts-memif-${process.pid}-${Date.now()}.sock`);
-  return openFaceImpl(opts,
-    {
-      scheme: "memif",
-      role: "server",
-      socketName,
-      socketOwner: [process.getuid!(), process.getgid!()],
-      id: 0,
-      dataroom,
-      ringCapacity,
-    },
-    async () => {
-      const transport = await MemifTransport.connect({
-        role: "client",
+        scheme: "memif",
+        role: "server",
         socketName,
+        socketOwner,
         id: 0,
         dataroom,
         ringCapacity,
+      },
+      async () => {
+        const transport = await MemifTransport.connect({
+          role: "client",
+          socketName,
+          id: 0,
+          dataroom,
+          ringCapacity,
+        });
+        return [transport, dataroom];
       });
-      return [transport, dataroom];
-    });
-}
+  },
+} satisfies Record<string, (opts: openFace.Options) => Promise<FwFace>>;
 
 /** Open a face on NDN-DPDK. */
 export async function openFace(opts: openFace.Options = {}): Promise<FwFace> {
-  const {
-    scheme = "udp",
-  } = opts;
-  switch (scheme) {
-    case "udp": {
-      return openFaceUdp(opts);
-    }
-    case "memif": {
-      return openFaceMemif(opts);
-    }
-    default: {
-      throw new Error(`unknown scheme ${scheme}`);
-    }
+  const { scheme = "udp" } = opts;
+  const face = await openFaceScheme[scheme]?.(opts);
+  if (face === undefined) {
+    throw new Error(`unknown scheme ${scheme}`);
   }
+  return face;
 }
 
 export namespace openFace {
@@ -186,7 +180,7 @@ export namespace openFace {
      * Transport scheme.
      * Default is "udp".
      */
-    scheme?: "udp" | "memif";
+    scheme?: keyof typeof openFaceScheme;
 
     /** UDP socket options. */
     udp?: udp_helper.OpenSocketOptions;

@@ -28,8 +28,8 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
           preferTcp: autoconfigPreferTcp,
         });
         return [faces[0]!, true];
-      } catch {
-        throw new Error("autoconfig unavailable, set uplink in NDNTS_UPLINK");
+      } catch (err: unknown) {
+        throw new Error(`autoconfig failed: ${err}\nset uplink in NDNTS_UPLINK`, { cause: err });
       }
     }
     case "tcp:": {

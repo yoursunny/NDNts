@@ -107,7 +107,7 @@ export namespace SigInfo {
     };
   }
 
-  export function SeqNum(v: bigint) {
+  export function SeqNum(v: bigint): CtorTag {
     return {
       [ctorAssign](si: SigInfo) { si.seqNum = v; },
     };

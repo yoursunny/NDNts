@@ -39,7 +39,7 @@ export const env = makeEnv({
     envVarName: "NDNTS_MTU",
     parser: parsers.positiveInteger,
     required: false,
-    defaultValue: 1450,
+    defaultValue: 1400,
   },
   nfdReg: {
     envVarName: "NDNTS_NFDREG",

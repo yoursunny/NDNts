@@ -38,7 +38,7 @@ The default is:
 * other platforms: `unix:///var/run/nfd.sock`
 
 `NDNTS_MTU` environment variable sets the MTU for fragmentation of outgoing packets, applicable to UDP and memif.
-It must be a positive integer, and the default value is 1450.
+It must be a positive integer, and the default value is 1400.
 It's recommended to increase this value when using memif.
 
 `NDNTS_NFDREG=0` environment variable disables prefix registration on the uplink using NFD management protocol.
@@ -50,7 +50,7 @@ The default is using the same key as `NDNTS_KEY`.
 
 `NDNTS_NDNDPDK_GQLSERVER` environment variable specifies the NDN-DPDK GraphQL server endpoint.
 The default is `http://127.0.0.1:3030`.
-This is only used when `NDNTS_UPLINK` is set to `ndndpdk:` or `ndndpdk-memif:`.
+This is only used when `NDNTS_UPLINK` specifies an uplink in NDN-DPDK.
 
 `NDNTS_NDNDPDK_LOCAL` environment variable specifies a local IP address that is reachable from NDN-DPDK.
 The default is auto-detected from GraphQL HTTP client.

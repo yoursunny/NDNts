@@ -24,7 +24,7 @@ export interface ConnectNetworkOptions extends ConnectRouterOptions {
   tryDefaultGateway?: boolean;
 
   /** Fallback routers, used if FCH and default gateway are both unavailable. */
-  fallback?: string[];
+  fallback?: readonly string[];
 
   /**
    * Number of faces to keep; others are closed.
@@ -47,7 +47,7 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
   const connected: ConnectRouterResult[] = [];
   const errs: Record<string, unknown> = {};
   for await (const routers of
-    (async function*(): AsyncIterable<string[]> {
+    (async function*(): AsyncIterable<readonly string[]> {
       const routers: string[] = [];
       if (fch !== false) {
         fch.transports ??= FCH_DEFAULTS.transports(opts);
