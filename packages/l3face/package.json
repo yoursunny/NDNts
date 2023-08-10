@@ -35,9 +35,9 @@
     "it-pushable": "^3.2.1",
     "p-event": "^6.0.0",
     "retry": "^0.13.1",
-    "streaming-iterables": "^7.1.0",
+    "streaming-iterables": "^8.0.0",
     "tslib": "^2.6.1",
-    "type-fest": "^4.1.0",
+    "type-fest": "^4.2.0",
     "typescript-event-target": "^1.0.5"
   },
   "devDependencies": {

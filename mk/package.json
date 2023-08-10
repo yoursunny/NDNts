@@ -8,9 +8,9 @@
     "js-yaml": "^4.1.0",
     "readlink": "^3.0.0",
     "split2": "^4.2.0",
-    "type-fest": "^4.1.0"
+    "type-fest": "^4.2.0"
   },
   "dependencies": {
-    "compare-versions": "6.0.0"
+    "compare-versions": "6.1.0"
   }
 }

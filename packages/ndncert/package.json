@@ -41,7 +41,7 @@
     "nodemailer": "^6.9.4",
     "p-timeout": "^6.1.2",
     "tslib": "^2.6.1",
-    "type-fest": "^4.1.0",
+    "type-fest": "^4.2.0",
     "typescript-event-target": "^1.0.5"
   },
   "devDependencies": {

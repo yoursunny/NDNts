@@ -4,7 +4,7 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 
 This package provides signing algorithms, encryption algorithms, and certificate management features.
 
-The implementation uses [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) that is natively supported in modern browers and Node.js since 16.x.
+The implementation uses [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) that is natively supported in Node.js and modern browsers.
 Most browsers restrict WebCrypto to [secure contexts](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts) only, so that this implementation will not work on a webpage that is not delivered securely.
 During development, you may use `http://localhost` or [ngrok](https://ngrok.com/) to serve the webpage from a secure context.
 

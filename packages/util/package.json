@@ -28,7 +28,7 @@
   "dependencies": {
     "@types/minimalistic-assert": "^1.0.1",
     "minimalistic-assert": "^1.0.1",
-    "streaming-iterables": "^7.1.0",
+    "streaming-iterables": "^8.0.0",
     "tslib": "^2.6.1"
   },
   "devDependencies": {
@@ -39,6 +39,6 @@
     "write": "^2.0.0"
   },
   "engines": {
-    "node": "^16.19.0 || ^18.13.0 || ^20.0.0"
+    "node": "^18.13.0 || ^20.0.0"
   }
 }

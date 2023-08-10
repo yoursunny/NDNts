@@ -33,10 +33,10 @@
     "@ndn/util": "workspace:*",
     "mnemonist": "^0.39.5",
     "tslib": "^2.6.1",
-    "type-fest": "^4.1.0"
+    "type-fest": "^4.2.0"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:*",
-    "streaming-iterables": "^7.1.0"
+    "streaming-iterables": "^8.0.0"
   }
 }

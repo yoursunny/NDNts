@@ -37,7 +37,7 @@
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
     "p-lazy": "^4.0.0",
-    "streaming-iterables": "^7.1.0",
+    "streaming-iterables": "^8.0.0",
     "tslib": "^2.6.1",
     "typescript-event-target": "^1.0.5"
   },
@@ -45,6 +45,6 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/repo-api": "workspace:*",
     "stream-mock": "^2.0.5",
-    "type-fest": "^4.1.0"
+    "type-fest": "^4.2.0"
   }
 }

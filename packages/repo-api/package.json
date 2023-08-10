@@ -35,7 +35,7 @@
     "it-pushable": "^3.2.1",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
-    "streaming-iterables": "^7.1.0",
+    "streaming-iterables": "^8.0.0",
     "throat": "^6.0.2",
     "tslib": "^2.6.1"
   },
@@ -47,6 +47,6 @@
     "@types/tmp": "^0.2.3",
     "stream-mock": "^2.0.5",
     "tmp": "^0.2.1",
-    "type-fest": "^4.1.0"
+    "type-fest": "^4.2.0"
   }
 }

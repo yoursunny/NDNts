@@ -27,7 +27,7 @@ jobs:
   unittest:
     strategy:
       matrix:
-        node: [16, 18, 20]
+        node: [18, 20]
       fail-fast: false
     runs-on: ubuntu-22.04
     steps:

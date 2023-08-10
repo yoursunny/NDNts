@@ -38,7 +38,7 @@
     "abstract-leveldown": "^7.2.0",
     "encoding-down": "^7.1.0",
     "levelup": "^5.1.1",
-    "streaming-iterables": "^7.1.0",
+    "streaming-iterables": "^8.0.0",
     "throat": "^6.0.2",
     "tslib": "^2.6.1",
     "typescript-event-target": "^1.0.5"
