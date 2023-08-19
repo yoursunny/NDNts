@@ -34,7 +34,7 @@
     "leveldown": "^6.1.1",
     "progress": "^2.0.3",
     "streaming-iterables": "^8.0.0",
-    "tslib": "^2.6.1",
+    "tslib": "^2.6.2",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

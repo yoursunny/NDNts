@@ -11,7 +11,7 @@
     "@ndn/repo": "workspace:*",
     "@ndn/util": "workspace:*",
     "memdown": "^6.1.1",
-    "tslib": "^2.6.1"
+    "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@types/memdown": "^3.0.1"

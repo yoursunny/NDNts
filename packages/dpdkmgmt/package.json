@@ -28,9 +28,9 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "graphql": "^16.7.1",
+    "graphql": "^16.8.0",
     "graphql-request": "^6.1.0",
-    "tslib": "^2.6.1"
+    "tslib": "^2.6.2"
   },
   "optionalDependencies": {
     "memif": "0.0.20230715"

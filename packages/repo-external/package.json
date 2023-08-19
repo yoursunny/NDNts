@@ -37,6 +37,6 @@
     "p-defer": "^4.0.0",
     "streaming-iterables": "^8.0.0",
     "throat": "^6.0.2",
-    "tslib": "^2.6.1"
+    "tslib": "^2.6.2"
   }
 }

@@ -3,7 +3,7 @@ import { pipeline, Transform } from "node:stream";
 /** Break packet-sized buffers into random-sized buffers, for testing TCP/Unix transports. */
 export class BufferBreaker extends Transform {
   private buf?: Buffer;
-  private timer: NodeJS.Timer;
+  private timer: NodeJS.Timeout;
 
   constructor() {
     super({ readableObjectMode: true, writableObjectMode: false });

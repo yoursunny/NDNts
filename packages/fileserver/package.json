@@ -31,6 +31,6 @@
     "@ndn/rdr": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "tslib": "^2.6.1"
+    "tslib": "^2.6.2"
   }
 }

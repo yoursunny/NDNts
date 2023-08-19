@@ -29,7 +29,7 @@
     "@ndn/l3face": "workspace:*",
     "@types/ws": "^8.5.5",
     "event-iterator": "^2.0.0",
-    "tslib": "^2.6.1",
+    "tslib": "^2.6.2",
     "ws": "^8.13.0"
   },
   "devDependencies": {

@@ -29,7 +29,7 @@
     "@types/minimalistic-assert": "^1.0.1",
     "minimalistic-assert": "^1.0.1",
     "streaming-iterables": "^8.0.0",
-    "tslib": "^2.6.1"
+    "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@types/tmp": "^0.2.3",
