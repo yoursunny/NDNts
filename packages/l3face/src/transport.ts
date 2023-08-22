@@ -34,7 +34,7 @@ export abstract class Transport {
 }
 
 export namespace Transport {
-  export interface Attributes extends Record<string, any> {
+  export interface Attributes extends Record<string, unknown> {
     /**
      * Textual description.
      * Default is automatically generated from constructor name.

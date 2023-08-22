@@ -108,7 +108,7 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
         }
         return true;
       }),
-      map(({ l3, token: wireToken }: LpService.Packet) => {
+      map(({ l3, token: wireToken, congestionMark }: LpService.Packet): FwPacket => {
         let internalToken: Uint8Array | number | undefined;
         if (l3 instanceof Interest) {
           internalToken = wireToken;
@@ -118,7 +118,7 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
             internalToken = dv.getUint32(2);
           }
         }
-        return FwPacket.create(l3, internalToken);
+        return FwPacket.create(l3, internalToken, congestionMark);
       }),
     );
   }
@@ -127,7 +127,7 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
     return pipeline(
       () => fwTx,
       filter((pkt: FwPacket) => FwPacket.isEncodable(pkt)),
-      map(({ l3, token: internalToken }: FwPacket) => {
+      map(({ l3, token: internalToken, congestionMark }: FwPacket): LpService.Packet => {
         let wireToken: Uint8Array | undefined;
         if (typeof internalToken === "number") {
           wireToken = new Uint8Array(6);
@@ -137,7 +137,7 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
         } else if (internalToken instanceof Uint8Array) {
           wireToken = internalToken;
         }
-        return { l3, token: wireToken };
+        return { l3, token: wireToken, congestionMark };
       }),
       this.lp.tx,
       filter((value: Uint8Array | LpService.TxError): value is Uint8Array => {
@@ -164,8 +164,7 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
       }
 
       const abort = new AbortController();
-      const handleStateChange = () => abort.abort();
-      this.addEventListener("state", handleStateChange, { once: true });
+      this.addEventListener("state", () => abort.abort(), { once: true, signal: abort.signal });
 
       try {
         const txSource = abortableSource<Uint8Array>(txSourceIterable, abort.signal);
@@ -183,7 +182,6 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
         }
       } finally {
         abort.abort();
-        this.removeEventListener("state", handleStateChange);
       }
     }
     this.reopenRetry?.stop();

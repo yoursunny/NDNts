@@ -1,5 +1,4 @@
 import "@ndn/tlv/test-fixture/expect";
-import "@ndn/packet/test-fixture/expect";
 
 import { toUtf8 } from "@ndn/util";
 import { describe, expect, test } from "vitest";
@@ -44,7 +43,7 @@ test("parse truncated", () => {
   const input = toUtf8([
     "fileA\0",
     "dirD/\0",
-    "not-trailing-zero",
+    "no-trailing-zero",
   ].join(""));
   expect(() => Array.from(parseDirectoryListing(input))).toThrow();
 });

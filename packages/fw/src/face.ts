@@ -44,7 +44,7 @@ export interface FwFace extends TypedEventTarget<EventMap> {
 }
 
 export namespace FwFace {
-  export interface Attributes extends Record<string, any> {
+  export interface Attributes extends Record<string, unknown> {
     /** Short string to identify the face. */
     describe?: string;
     /** Whether face is local. Default is false. */

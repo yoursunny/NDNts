@@ -6,12 +6,13 @@ type L3Pkt = Interest | Data | Nack;
 export interface FwPacket<T extends L3Pkt = L3Pkt> {
   l3: T;
   token?: unknown;
+  congestionMark?: number;
   reject?: RejectInterest.Reason;
   cancel?: boolean;
 }
 export namespace FwPacket {
-  export function create<T extends L3Pkt>(l3: T, token?: unknown): FwPacket<T> {
-    return { l3, token };
+  export function create<T extends L3Pkt>(l3: T, token?: unknown, congestionMark?: number): FwPacket<T> {
+    return { l3, token, congestionMark };
   }
 
   /** Whether this is a plain packet that can be sent on the wire. */
