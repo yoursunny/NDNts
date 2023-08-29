@@ -12,7 +12,7 @@ function generatePin(): Uint8Array {
 /** Base of a challenge where client submits a server-generated pin code. */
 export abstract class ServerPinLikeChallenge<
   State extends ServerPinLikeChallenge.State = ServerPinLikeChallenge.State,
-  EventMap extends {} = {},
+  EventMap extends Record<string, Event> = {},
 >
   extends TypedEventTarget<EventMap> implements ServerChallenge<State> {
   public abstract readonly challengeId: string;

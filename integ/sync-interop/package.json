@@ -10,7 +10,7 @@
     "@ndn/repo": "workspace:*",
     "@ndn/sync": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@types/memdown": "^3.0.1",
+    "@types/memdown": "^3.0.2",
     "memdown": "^6.1.1",
     "tslib": "^2.6.2"
   }

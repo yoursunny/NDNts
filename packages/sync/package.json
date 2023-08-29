@@ -49,7 +49,7 @@
     "@ndn/keychain": "workspace:*",
     "@ndn/l3face": "workspace:*",
     "@ndn/repo": "workspace:*",
-    "@types/memdown": "^3.0.1",
+    "@types/memdown": "^3.0.2",
     "@types/murmurhash3js-revisited": "^3.0.1",
     "@types/pako": "^2.0.0",
     "memdown": "^6.1.1"

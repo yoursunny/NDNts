@@ -1,5 +1,6 @@
 import "@ndn/util/test-fixture/expect";
 
+// eslint-disable-next-line n/no-unsupported-features/node-builtins
 import { Blob } from "node:buffer";
 
 import { Endpoint, type ProducerHandler } from "@ndn/endpoint";

@@ -25,13 +25,13 @@
   },
   "devDependencies": {
     "@nodelib/fs.walk": "^2.0.0",
-    "@types/webpack": "^5.28.1",
+    "@types/webpack": "^5.28.2",
     "fork-ts-checker-webpack-plugin": "^8.0.0",
     "html-webpack-plugin": "^5.5.3",
-    "puppeteer": "^21.1.0",
+    "puppeteer": "^21.1.1",
     "ts-loader": "^9.4.4",
     "tslib": "^2.6.2",
-    "type-fest": "^4.2.0",
+    "type-fest": "^4.3.1",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1"

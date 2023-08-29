@@ -12,18 +12,18 @@
     "test": "vitest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@8.6.12",
+  "packageManager": "pnpm@8.7.0",
   "devDependencies": {
-    "@types/node": "^20.5.1",
+    "@types/node": "^20.5.7",
     "@types/wtfnode": "^0.7.0",
     "@typescript/lib-dom": "npm:@types/web@0.0.114",
-    "@vitest/coverage-v8": "^0.34.2",
+    "@vitest/coverage-v8": "^0.34.3",
     "@yoursunny/xo-config": "0.55.0",
     "codedown": "^2.2.0",
     "tslib": "^2.6.2",
-    "typedoc": "^0.24.8",
-    "typescript": "~5.1.6",
-    "vitest": "^0.34.2"
+    "typedoc": "^0.25.0",
+    "typescript": "~5.2.2",
+    "vitest": "^0.34.3"
   },
   "engines": {
     "node": "^18.13.0 || ^20.0.0"
