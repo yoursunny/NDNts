@@ -5,22 +5,20 @@ type EventMap = {
   cwndupdate: Event;
 };
 
-const CWND = Symbol("CongestionAvoidance.CWND");
-
 /** Congestion avoidance algorithm. */
 export abstract class CongestionAvoidance extends TypedEventTarget<EventMap> {
-  private [CWND]: number;
+  private cwnd_: number;
 
   constructor(initialCwnd: number) {
     super();
-    this[CWND] = initialCwnd;
+    this.cwnd_ = initialCwnd;
   }
 
-  public get cwnd() { return this[CWND]; }
+  public get cwnd() { return this.cwnd_; }
 
   protected updateCwnd(v: number) {
     assert(v >= 0);
-    this[CWND] = v;
+    this.cwnd_ = v;
     this.dispatchTypedEvent("cwndupdate", new Event("cwndupdate"));
   }
 

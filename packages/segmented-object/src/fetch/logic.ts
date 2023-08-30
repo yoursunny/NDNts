@@ -1,4 +1,4 @@
-import { assert } from "@ndn/util";
+import { assert, CustomEvent } from "@ndn/util";
 import hirestime from "hirestime";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import pDefer from "p-defer";
@@ -33,16 +33,18 @@ type SegRequest<T> = Pick<Readonly<SegState>, "segNum" | "isRetx" | "rto"> & {
   interest: T;
 };
 
-const UNBLOCK = "FetchLogic.unblock";
-
 type EventMap = {
-  [UNBLOCK]: Event;
+  /** Periodical unblock, for internal use. */
+  unblock: Event;
 
   /** Fetching finished. */
   end: Event;
 
-  /** A segment request has exceeded maximum retx limit and will not be retried. */
-  exceedRetxLimit: FetchLogic.SegNumEvent;
+  /**
+   * A segment request has exceeded maximum retx limit and will not be retried.
+   * Event detail is the segment number.
+   */
+  exceedRetxLimit: CustomEvent<number>;
 };
 
 /** Congestion control logic. */
@@ -90,7 +92,7 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
   /** Abort. */
   public close() {
     this.running = false;
-    this.dispatchTypedEvent(UNBLOCK, new Event(UNBLOCK));
+    this.dispatchTypedEvent("unblock", new Event("unblock"));
     for (const [, { rtoExpiry }] of this.pending) {
       clearTimeout(rtoExpiry);
     }
@@ -167,7 +169,7 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
         this.dispatchTypedEvent("end", new Event("end"));
         break;
       }
-      await pEvent(this, UNBLOCK);
+      await pEvent(this, "unblock");
     }
   }
 
@@ -183,9 +185,11 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
    * Notify a request has been satisfied.
    * @param now reading of `this.now()` at packet arrival (e.g. before verification)
    */
-  public satisfy(segNum: number, now = this.now()) {
+  public satisfy(segNum: number, now: number, hasCongestionMark: boolean) {
     const req = this.pending.get(segNum);
-    if (!req) { return; }
+    if (!req) {
+      return;
+    }
     this.pending.delete(segNum);
     if (!this.retxQueue.delete(segNum)) {
       clearTimeout(req.rtoExpiry);
@@ -196,13 +200,18 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
       const rtt = now - req.txTime;
       this.rtte.push(rtt, this.tl.nTaken + 1);
     }
-    this.ca.increase(now, this.rtte.sRtt);
+
+    if (hasCongestionMark) {
+      this.decrease(now, false);
+    } else {
+      this.ca.increase(now, this.rtte.sRtt);
+    }
 
     this.hiDataSegNum = Math.max(this.hiDataSegNum, segNum);
     if (this.hiDataSegNum === this.estimatedFinalSegNum && this.estimatedFinalSegNum < this.finalSegNum) {
       ++this.estimatedFinalSegNum;
     }
-    this.dispatchTypedEvent(UNBLOCK, new Event(UNBLOCK));
+    this.dispatchTypedEvent("unblock", new Event("unblock"));
   }
 
   private rtoTimeout(segNum: number) {
@@ -210,21 +219,31 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
     assert(!!req);
     this.tl.put();
 
-    if (segNum > this.finalSegNum) { return; }
-
-    if (this.hiDataSegNum > this.cwndDecreaseSegNum) {
-      this.ca.decrease(this.now());
-      this.rtte.backoff();
-      this.cwndDecreaseSegNum = this.hiInterestSegNum;
+    if (segNum > this.finalSegNum) {
+      return;
     }
+
+    this.decrease(this.now(), true);
 
     if (req.nRetx >= this.retxLimit) {
       this.pending.delete(segNum);
-      this.dispatchTypedEvent("exceedRetxLimit", new FetchLogic.SegNumEvent("exceedRetxLimit", segNum));
+      this.dispatchTypedEvent("exceedRetxLimit", new CustomEvent("exceedRetxLimit", { detail: segNum }));
     } else {
       this.retxQueue.add(segNum);
     }
-    this.dispatchTypedEvent(UNBLOCK, new Event(UNBLOCK));
+    this.dispatchTypedEvent("unblock", new Event("unblock"));
+  }
+
+  /** Decrease congestion window at most once per RTT. */
+  private decrease(now: number, backoff: boolean) {
+    if (this.hiDataSegNum <= this.cwndDecreaseSegNum) {
+      return;
+    }
+    this.ca.decrease(now);
+    if (backoff) {
+      this.rtte.backoff();
+    }
+    this.cwndDecreaseSegNum = this.hiInterestSegNum;
   }
 
   /**
@@ -241,7 +260,7 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
       this.finalSegNum = finalSegNum;
       this.processCancels = true;
     }
-    this.dispatchTypedEvent(UNBLOCK, new Event(UNBLOCK));
+    this.dispatchTypedEvent("unblock", new Event("unblock"));
   }
 }
 
@@ -275,11 +294,5 @@ export namespace FetchLogic {
      * Default is 15.
      */
     retxLimit?: number;
-  }
-
-  export class SegNumEvent extends Event {
-    constructor(type: string, public readonly segNum: number) {
-      super(type);
-    }
   }
 }

@@ -1,7 +1,7 @@
 import type { Forwarder, FwFace } from "@ndn/fw";
 import type { NameLike } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
-import { delay } from "@ndn/util";
+import { assert, delay } from "@ndn/util";
 import { pushable } from "it-pushable";
 import pDefer from "p-defer";
 import { filter, map, pipeline, transform } from "streaming-iterables";
@@ -45,18 +45,16 @@ function makeRelayFunc(relay: Bridge.Relay): Bridge.RelayFunc {
   if (typeof relay === "function") {
     return relay;
   }
-  let {
+  const {
     minDelay = 1,
     maxDelay = 1,
     loss = 0,
   } = relay;
-  if (minDelay > maxDelay) {
-    [minDelay, maxDelay] = [maxDelay, minDelay];
-  }
+  assert(minDelay <= maxDelay);
   const delayRange = maxDelay - minDelay;
   return (it) => pipeline(
     () => it,
-    filter(() => Math.random() >= loss),
+    filter(() => loss === 0 || Math.random() >= loss),
     transform(64, async (pkt) => {
       await delay(minDelay + delayRange * Math.random());
       return pkt;
@@ -79,8 +77,8 @@ export namespace Bridge {
     bridgeName?: string;
     fwA: Forwarder;
     fwB: Forwarder;
-    relayAB?: RelayFunc | RelayOptions;
-    relayBA?: RelayFunc | RelayOptions;
+    relayAB?: Relay;
+    relayBA?: Relay;
     routesAB?: NameLike[];
     routesBA?: NameLike[];
   }

@@ -1,7 +1,7 @@
 import { type Data, Name, type NameLike } from "@ndn/packet";
 import { assert, concatBuffers } from "@ndn/util";
 import EventIterator from "event-iterator";
-import { collect, map, writeToStream } from "streaming-iterables";
+import { collect, map, type WritableStreamish, writeToStream } from "streaming-iterables";
 import type { Promisable } from "type-fest";
 
 import { Fetcher } from "./fetcher";
@@ -51,7 +51,7 @@ class FetchResult implements fetch.Result {
     return map((data) => data.content, this.ordered());
   }
 
-  public pipe(dest: NodeJS.WritableStream) {
+  public pipe(dest: WritableStreamish) {
     return writeToStream(dest, this.chunks());
   }
 
@@ -102,7 +102,7 @@ export namespace fetch {
     chunks: () => AsyncIterable<Uint8Array>;
 
     /** Write all chunks to the destination stream. */
-    pipe: (dest: NodeJS.WritableStream) => Promise<void>;
+    pipe: (dest: WritableStreamish) => Promise<void>;
 
     /** Number of segments retrieved so far. */
     readonly count: number;

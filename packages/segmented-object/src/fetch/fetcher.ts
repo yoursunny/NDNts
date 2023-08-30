@@ -23,6 +23,7 @@ export class Fetcher extends TypedEventTarget<EventMap> {
   private count_ = 0;
   private readonly logic: FetchLogic;
   private readonly face: FwFace;
+  private readonly modifyInterest: Interest.ModifyFunc;
 
   constructor(private readonly name: Name, private readonly opts: Fetcher.Options) {
     super();
@@ -31,7 +32,7 @@ export class Fetcher extends TypedEventTarget<EventMap> {
       this.dispatchTypedEvent("end", new Event("end"));
       this.close();
     });
-    this.logic.addEventListener("exceedRetxLimit", (segNum) => {
+    this.logic.addEventListener("exceedRetxLimit", ({ detail: segNum }) => {
       this.fail(new Error(`cannot retrieve segment ${segNum}`));
     });
 
@@ -42,6 +43,8 @@ export class Fetcher extends TypedEventTarget<EventMap> {
       describe: opts.describe ?? `fetch(${name})`,
     });
 
+    this.modifyInterest = Interest.makeModifyFunc(opts.modifyInterest);
+
     opts.signal?.addEventListener("abort", this.handleAbort);
   }
 
@@ -51,6 +54,10 @@ export class Fetcher extends TypedEventTarget<EventMap> {
     this.face.close();
   }
 
+  /**
+   * Pause outgoing Interests, for backpressure from Data consumer.
+   * Return a function for resuming.
+   */
   public pause() {
     return this.logic.pause();
   }
@@ -58,15 +65,13 @@ export class Fetcher extends TypedEventTarget<EventMap> {
   private tx(): AsyncIterable<FwPacket> {
     const {
       segmentNumConvention = defaultSegmentConvention,
-      modifyInterest,
       lifetimeAfterRto = 1000,
     } = this.opts;
-    const modify = Interest.makeModifyFunc(modifyInterest);
     return this.logic.outgoing(
       ({ segNum, rto }) => {
         const interest = new Interest(this.name.append(segmentNumConvention, segNum),
           Interest.Lifetime(rto + lifetimeAfterRto));
-        modify(interest);
+        this.modifyInterest(interest);
         return FwPacket.create(interest, segNum);
       },
       ({ interest: { l3, token } }) => new CancelInterest(l3, token),
@@ -77,14 +82,14 @@ export class Fetcher extends TypedEventTarget<EventMap> {
     const {
       acceptContentType = [0],
     } = this.opts;
-    for await (const { l3, token } of iterable) {
+    for await (const { l3, token, congestionMark = 0 } of iterable) {
       if (l3 instanceof Data && typeof token === "number" && acceptContentType.includes(l3.contentType)) {
-        void this.handleData(l3, token);
+        void this.handleData(l3, token, congestionMark);
       }
     }
   };
 
-  private async handleData(data: Data, segNum: number) {
+  private async handleData(data: Data, segNum: number, congestionMark: number) {
     const now = this.logic.now();
     try {
       await this.opts.verifier?.verify(data);
@@ -93,7 +98,7 @@ export class Fetcher extends TypedEventTarget<EventMap> {
       return;
     }
 
-    this.logic.satisfy(segNum, now);
+    this.logic.satisfy(segNum, now, congestionMark !== 0);
     if (data.isFinalBlock) {
       this.logic.setFinalSegNum(segNum);
     } else {
