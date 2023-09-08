@@ -23,7 +23,7 @@ export class WsServer extends NetServerBase<WebSocketServer, WebSocket> {
     this.http.listen(0, "127.0.0.1");
     await once(this.http, "listening");
     const { port } = this.http.address() as net.AddressInfo;
-    this.uri = `ws://127.0.0.1:${port}`;
+    this.uri = `ws://127.0.0.1:${port}/`;
   }
 
   public override async close(): Promise<void> {

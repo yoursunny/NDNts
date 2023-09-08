@@ -87,18 +87,21 @@ const openFaceScheme = {
     let {
       gqlServer = DefaultGqlServer,
       localHost,
+      mtu = 1400,
       udp: udpOptionsInput,
     } = opts;
     localHost ??= await detectLocalAddress(gqlServer);
-    const sock = await udp_helper.openSocket({
+    const sockOpts = {
       bind: { address: localHost },
       ...udpOptionsInput,
-    });
+    };
+    const sock = await udp_helper.openSocket(sockOpts);
     try {
       return await openFaceImpl(opts,
         {
           scheme: "udp",
           remote: joinHostPort(localHost, sock.address().port),
+          mtu,
         },
         async (loc) => {
           const { host, port } = splitHostPort((loc as { local?: string }).local ?? "");
@@ -106,7 +109,7 @@ const openFaceScheme = {
             throw new Error(`unexpected locator: ${JSON.stringify(loc)}`);
           }
           await udp_helper.connect(sock, { host, port });
-          return [new UdpTransport(sock), 1400];
+          return [new UdpTransport(sock), mtu];
         });
     } catch (err: unknown) {
       sock.close();
@@ -114,10 +117,11 @@ const openFaceScheme = {
     }
   },
   async memif(opts) {
+    const { mtu = 2048 } = opts;
     const {
       memif: {
         socketPath = "/run/ndn",
-        dataroom = 2048,
+        dataroom = mtu,
         ringCapacity = 1024,
       } = {},
     } = opts;
@@ -181,6 +185,13 @@ export namespace openFace {
      * Default is "udp".
      */
     scheme?: keyof typeof openFaceScheme;
+
+    /**
+     * Face MTU.
+     * If scheme is "udp", default is 1400.
+     * If scheme is "memif", default is 2048, but ignored if .memif.dataroom is set.
+     */
+    mtu?: number;
 
     /** UDP socket options. */
     udp?: udp_helper.OpenSocketOptions;

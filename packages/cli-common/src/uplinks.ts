@@ -54,9 +54,9 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
         gqlServer: env.dpdkGql,
         localHost: env.dpdkLocal,
         scheme: dpdkScheme,
+        mtu: env.mtu,
         memif: {
           socketPath: env.dpdkMemifSocketPath,
-          dataroom: env.mtu,
         },
       });
       return [face, false];

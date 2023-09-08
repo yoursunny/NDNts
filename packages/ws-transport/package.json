@@ -30,7 +30,7 @@
     "@types/ws": "^8.5.5",
     "event-iterator": "^2.0.0",
     "tslib": "^2.6.2",
-    "ws": "^8.13.0"
+    "ws": "^8.14.0"
   },
   "devDependencies": {
     "@ndn/node-transport": "workspace:*",
