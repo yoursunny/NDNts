@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/cache@v3
         with:
           path: ~/.local/share/pnpm/store
@@ -31,7 +31,7 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/cache@v3
         with:
           path: ~/.local/share/pnpm/store
@@ -63,7 +63,7 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/cache@v3
         with:
           path: |
@@ -87,9 +87,10 @@ jobs:
       - run: corepack pnpm literate
       - run: cd integ/browser-tests && corepack pnpm test
       - run: cd integ/cxx-tests && corepack pnpm test
-      - name: Check C++ code style
+      - name: Check C++ and bash code style
         run: |
           corepack pnpm clang-format
+          corepack pnpm shfmt
           git diff --exit-code
     timeout-minutes: 30
   publish:
@@ -97,7 +98,7 @@ jobs:
     if: ${{ github.repository == 'yoursunny/NDNts' && github.event_name == 'push' }}
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/cache@v3
         with:
           path: ~/.local/share/pnpm/store
@@ -125,7 +126,7 @@ jobs:
           fqdn: ndnts-nightly.ndn.today
         env:
           GH_PAT: ${{ secrets.NIGHTLY_ACCESS_TOKEN }}
-      - uses: nwtgck/actions-netlify@30aa80fe8d5eec30813fc8b17b77e0a6663f09b5
+      - uses: nwtgck/actions-netlify@v2.1.0
         with:
           publish-dir: ./docs/
           production-deploy: true
