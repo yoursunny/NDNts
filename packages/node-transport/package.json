@@ -35,10 +35,10 @@
     "@ndn/fw": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@types/tmp": "^0.2.3",
+    "@types/tmp": "^0.2.4",
     "@types/url-format-lax": "^2.0.1",
     "@types/url-parse-lax": "^5.0.0",
-    "streaming-iterables": "^8.0.0",
+    "streaming-iterables": "^8.0.1",
     "tmp": "^0.2.1"
   }
 }

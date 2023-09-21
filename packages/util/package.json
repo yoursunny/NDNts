@@ -28,11 +28,11 @@
   "dependencies": {
     "@types/minimalistic-assert": "^1.0.1",
     "minimalistic-assert": "^1.0.1",
-    "streaming-iterables": "^8.0.0",
+    "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
-    "@types/tmp": "^0.2.3",
+    "@types/tmp": "^0.2.4",
     "@types/write": "^2.0.1",
     "it-pushable": "^3.2.1",
     "tmp": "^0.2.1",

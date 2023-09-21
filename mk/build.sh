@@ -63,8 +63,8 @@ fi
 
 TSCFLAG=
 case $ACT in
-  watch) TSCFLAG=-w;;
-  force) TSCFLAG=-f;;
+  watch) TSCFLAG=-w ;;
+  force) TSCFLAG=-f ;;
 esac
-tsc -b mk/tsconfig-solution.json $TSCFLAG --listEmittedFiles \
-  | node mk/build-post.mjs
+tsc -b mk/tsconfig-solution.json $TSCFLAG --listEmittedFiles |
+  node mk/build-post.mjs

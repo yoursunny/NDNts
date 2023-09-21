@@ -34,6 +34,6 @@
     "type-fest": "^4.3.1"
   },
   "devDependencies": {
-    "@types/buffer-compare": "^0.0.30"
+    "@types/buffer-compare": "^0.0.31"
   }
 }

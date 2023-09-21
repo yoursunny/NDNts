@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@types/b64-lite": "^1.4.0",
-    "@types/tmp": "^0.2.3",
+    "@types/tmp": "^0.2.4",
     "b64-lite": "^1.4.0",
     "tmp": "^0.2.1"
   }
