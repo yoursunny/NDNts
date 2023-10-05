@@ -45,9 +45,9 @@
   "devDependencies": {
     "@types/fast-chunk-string": "^1.0.1",
     "@types/leveldown": "^4.0.4",
-    "@types/nodemailer": "^6.4.10",
-    "@types/prompts": "^2.4.4",
+    "@types/nodemailer": "^6.4.11",
+    "@types/prompts": "^2.4.5",
     "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^17.0.24"
+    "@types/yargs": "^17.0.26"
   }
 }

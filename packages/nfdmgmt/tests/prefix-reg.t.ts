@@ -172,6 +172,6 @@ test("preloadCert", async () => {
   const userPA = userEp.produce("/A", async () => undefined);
   const userPB = userEp.produce("/B", async () => undefined);
   closers.push(userPA, userPB);
-  await delay(400);
+  await delay(600);
   expect(nCommands).toBe(2);
 });

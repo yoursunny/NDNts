@@ -8,7 +8,7 @@
     "js-yaml": "^4.1.0",
     "readlink": "^3.0.0",
     "split2": "^4.2.0",
-    "type-fest": "^4.3.1"
+    "type-fest": "^4.3.3"
   },
   "dependencies": {
     "compare-versions": "6.1.0"

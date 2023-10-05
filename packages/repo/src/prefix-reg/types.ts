@@ -1,12 +1,12 @@
-import type { FwFace } from "@ndn/fw";
+import type { Name } from "@ndn/packet";
+import type { Closer } from "@ndn/util";
 
 import type { DataStore } from "../data-store";
 
-export interface PrefixRegContext {
-  close: () => void;
+interface Face {
+  addRoute(name: Name): void;
+  removeRoute(name: Name): void;
 }
 
-type Face = Pick<FwFace, "addRoute" | "removeRoute">;
-
 /** Control prefix registrations of a repo producer. */
-export type PrefixRegController = (store: DataStore, face: Face) => PrefixRegContext;
+export type PrefixRegController = (store: DataStore, face: Face) => Closer;

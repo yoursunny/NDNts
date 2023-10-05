@@ -28,7 +28,7 @@
   "dependencies": {
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@types/retry": "^0.12.2",
+    "@types/retry": "^0.12.3",
     "hirestime": "^7.0.3",
     "it-pushable": "^3.2.1",
     "mnemonist": "^0.39.5",

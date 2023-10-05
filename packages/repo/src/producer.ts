@@ -1,23 +1,23 @@
 import { Endpoint, type Producer as EpProducer, type ProducerHandler } from "@ndn/endpoint";
 import type { Data, Interest } from "@ndn/packet";
+import type { Closer } from "@ndn/util";
 
 import type { DataStore } from "./data-store";
-import { PrefixRegStrip } from "./prefix-reg/mod";
-import type { PrefixRegContext, PrefixRegController } from "./prefix-reg/types";
+import { type PrefixRegController, PrefixRegStrip } from "./prefix-reg/mod";
 
 /** Make packets in DataStore available for retrieval. */
 export class Producer {
   public static create(store: DataStore, {
     endpoint = new Endpoint(),
     describe = "repo",
-    fallback = () => Promise.resolve(undefined),
+    fallback = async () => undefined,
     reg = PrefixRegStrip(PrefixRegStrip.stripNonGeneric),
   }: Producer.Options = {}) {
     return new Producer(store, endpoint, describe, fallback, reg);
   }
 
   private readonly prod: EpProducer;
-  private readonly reg: PrefixRegContext;
+  private readonly reg: Closer;
 
   private constructor(
       private readonly store: DataStore,
