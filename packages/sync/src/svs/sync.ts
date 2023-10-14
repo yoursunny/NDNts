@@ -22,7 +22,7 @@ type EventMap = SyncProtocol.EventMap<Name> & {
 
 /** StateVectorSync participant. */
 export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
-  constructor({
+  public static async create({
     endpoint = new Endpoint(),
     describe,
     syncPrefix,
@@ -31,17 +31,24 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     suppressionTimer = [200, 0.5],
     signer = nullSigner,
     verifier,
-  }: SvSync.Options) {
-    super();
-    this.endpoint = endpoint;
-    this.describe = describe ?? `SvSync(${syncPrefix})`;
-    this.syncPrefix = syncPrefix;
-    this.syncInterestLifetime = syncInterestLifetime;
-    this.steadyTimer = randomJitter(steadyTimer[1], steadyTimer[0]);
-    this.suppressionTimer = randomJitter(suppressionTimer[1], suppressionTimer[0]);
-    this.signer = signer;
-    this.verifier = verifier;
+  }: SvSync.Options): Promise<SvSync> {
+    return new SvSync(
+      endpoint, describe ?? `SvSync(${syncPrefix})`, syncPrefix, syncInterestLifetime,
+      randomJitter(steadyTimer[1], steadyTimer[0]), randomJitter(suppressionTimer[1], suppressionTimer[0]),
+      signer, verifier);
+  }
 
+  private constructor(
+      private readonly endpoint: Endpoint,
+      public readonly describe: string,
+      public readonly syncPrefix: Name,
+      private readonly syncInterestLifetime: number,
+      private readonly steadyTimer: () => number,
+      private readonly suppressionTimer: () => number,
+      private readonly signer: Signer,
+      private readonly verifier?: Verifier,
+  ) {
+    super();
     this.producer = this.endpoint.produce(this.syncPrefix, this.handleSyncInterest, {
       describe: `${this.describe}[p]`,
       routeCapture: false,
@@ -49,15 +56,6 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
   }
 
   private readonly maybeHaveEventListener = trackEventListener(this);
-  private readonly endpoint: Endpoint;
-  public readonly describe: string;
-  public readonly syncPrefix: Name;
-  private readonly syncInterestLifetime: number;
-  private readonly steadyTimer: () => number;
-  private readonly suppressionTimer: () => number;
-  private readonly signer: Signer;
-  private readonly verifier?: Verifier;
-
   private readonly producer: Producer;
 
   /** Own state vector. */

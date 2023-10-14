@@ -69,15 +69,15 @@ test("example", async () => {
     suppressionTimer: [50, 0.4],
   };
 
-  const pA = new SvSync({ ...opts, describe: "A" });
+  const pA = await SvSync.create({ ...opts, describe: "A" });
   const nA = pA.add("/A");
   nA.seqNum = 10;
   const uA = new UpdateHandler(pA);
-  const pB = new SvSync({ ...opts, describe: "B" });
+  const pB = await SvSync.create({ ...opts, describe: "B" });
   const nB = pB.add("/B");
   nB.seqNum = 15;
   const uB = new UpdateHandler(pB);
-  const pC = new SvSync({ ...opts, describe: "C", endpoint: new Endpoint({ fw: fwC }) });
+  const pC = await SvSync.create({ ...opts, describe: "C", endpoint: new Endpoint({ fw: fwC }) });
   const nC = pC.add(new Name("/C"));
   nC.seqNum = 25;
   const uC = new UpdateHandler(pC);

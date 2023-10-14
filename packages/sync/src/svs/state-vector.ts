@@ -30,12 +30,12 @@ export class SvStateVector {
     }
   }
 
-  /** List nodes with older sequence number in this version vector than other. */
+  /** List nodes with older sequence number in this state vector than other. */
   public listOlderThan(other: SvStateVector): SvStateVector.DiffEntry[] {
     return Array.from(this.iterOlderThan(other));
   }
 
-  /** Update this version vector to have newer sequence numbers between this and other. */
+  /** Update this state vector to have newer sequence numbers between this and other. */
   public mergeFrom(other: SvStateVector): void {
     for (const { id, hiSeqNum } of this.iterOlderThan(other)) {
       this.set(id, hiSeqNum);

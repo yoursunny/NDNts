@@ -12,7 +12,7 @@ export async function openSvSync(): Promise<SvSync> {
   const key = await HMAC.cryptoGenerate({
     importRaw: Buffer.from("dGhpcyBpcyBhIHNlY3JldCBtZXNzYWdl", "base64"),
   }, false);
-  const sync = new SvSync({
+  const sync = await SvSync.create({
     syncPrefix,
     signer: createSigner(HMAC, key),
     verifier: createVerifier(HMAC, key),

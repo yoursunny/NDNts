@@ -103,10 +103,10 @@ async function publishCheck(
 test("simple", async () => {
   const [signerE] = await generateSigningKey("/kE");
 
-  const syncA = new SvSync({ ...syncOpts, describe: "A" });
-  const syncB = new SvSync({ ...syncOpts, describe: "B" });
-  const syncC = new SvSync({ ...syncOpts, describe: "C" });
-  const syncD = new SvSync({ ...syncOpts, describe: "D" });
+  const syncA = await SvSync.create({ ...syncOpts, describe: "A" });
+  const syncB = await SvSync.create({ ...syncOpts, describe: "B" });
+  const syncC = await SvSync.create({ ...syncOpts, describe: "C" });
+  const syncD = await SvSync.create({ ...syncOpts, describe: "D" });
   closers.push(syncA, syncB, syncC, syncD);
 
   const repoA = new DataStore(memdown());
@@ -149,8 +149,8 @@ test("simple", async () => {
 }, { timeout: 20000 });
 
 test("timed", async () => {
-  const syncA = new SvSync({ ...syncOpts, describe: "A" });
-  const syncB = new SvSync({ ...syncOpts, describe: "B" });
+  const syncA = await SvSync.create({ ...syncOpts, describe: "A" });
+  const syncB = await SvSync.create({ ...syncOpts, describe: "B" });
   closers.push(syncA, syncB);
 
   const repoA = new DataStore(memdown());
