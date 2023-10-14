@@ -27,9 +27,6 @@ const config = {
     alias: {
       vitest: false,
     },
-    fallback: {
-      events: require.resolve("events/"),
-    },
   },
   node: false,
   plugins: [
