@@ -45,6 +45,13 @@ class DebugHandler {
   }
 }
 
+const baseOpts: SvSync.Options = {
+  syncPrefix: new Name("/svs-test"),
+  syncInterestLifetime: 200,
+  steadyTimer: [900, 0.05],
+  suppressionTimer: [50, 0.4],
+};
+
 const closers = new Closers();
 afterEach(closers.close);
 
@@ -62,11 +69,8 @@ test("example", async () => {
   closers.push(bridge);
 
   const opts: SvSync.Options = {
+    ...baseOpts,
     endpoint: new Endpoint({ fw: fwAB }),
-    syncPrefix: new Name("/svs-test"),
-    syncInterestLifetime: 200,
-    steadyTimer: [900, 0.05],
-    suppressionTimer: [50, 0.4],
   };
 
   const pA = await SvSync.create({ ...opts, describe: "A" });
@@ -114,7 +118,7 @@ test("example", async () => {
   debugHandler.cnt.clear();
 
   lossToC = false;
-  await delay(1000);
+  await delay(1200);
   expect(pA.get("/A").seqNum).toBe(11);
   expect(pB.get("/A").seqNum).toBe(11);
   expect(pC.get("/A").seqNum).toBe(11);
@@ -125,4 +129,72 @@ test("example", async () => {
   expect(uA.lastSeqNumRecord).toEqual({ B: 15, C: 25 });
   expect(uB.lastSeqNumRecord).toEqual({ C: 25, A: 11 });
   expect(uC.lastSeqNumRecord).toEqual({ A: 11, B: 15 });
+});
+
+test("initialize", async () => {
+  const debugHandler = new DebugHandler();
+  const fw = Forwarder.create();
+  const opts: SvSync.Options = {
+    ...baseOpts,
+    endpoint: new Endpoint({ fw }),
+  };
+
+  const p0 = await SvSync.create({ ...opts, describe: "0" });
+  closers.push(p0);
+  debugHandler.start(p0);
+
+  const n0A = p0.get("/A");
+  n0A.seqNum = 11;
+  n0A.remove(); // no effect
+  const n0B = p0.get("/B");
+  n0B.seqNum = 12;
+  const n0C = p0.get("/C");
+  n0C.seqNum = 13;
+  n0C.seqNum = 3; // no effect
+  await delay(200);
+  expect(debugHandler.cnt.get("0:send")).toBe(1);
+
+  p0.close();
+  const v0 = p0.currentStateVector;
+  expect(v0.get(new Name("/A"))).toBe(11);
+  expect(v0.get(new Name("/B"))).toBe(12);
+  expect(v0.get(new Name("/C"))).toBe(13);
+  expect(v0.get(new Name("/D"))).toBe(0);
+
+  const p1 = await SvSync.create({
+    ...opts,
+    describe: "1",
+    initialStateVector: v0,
+    async initialize(sync) {
+      closers.push(sync);
+      debugHandler.start(sync);
+
+      const n1A = sync.get("/A");
+      const n1B = sync.get("/B");
+      const n1C = sync.get("/C");
+      const n1D = sync.get("/D");
+
+      expect(n1A.seqNum).toBe(11);
+      expect(n1B.seqNum).toBe(12);
+      expect(n1C.seqNum).toBe(13);
+      expect(n1D.seqNum).toBe(0);
+
+      n1A.remove();
+      n1B.seqNum = 22; // increase
+      n1C.seqNum = 3; // decrease
+      n1D.seqNum = 4; // new node
+
+      await delay(1200); // longer than steady timer, but no sync Interest would be sent
+    },
+  });
+  expect(debugHandler.cnt.get("1:send")).toBe(0);
+
+  expect(p1.get("/A").seqNum).toBe(0);
+  expect(p1.get("/B").seqNum).toBe(22);
+  expect(p1.get("/C").seqNum).toBe(3);
+  const n1D = p1.get("/D");
+  expect(n1D.seqNum).toBe(4);
+  ++n1D.seqNum;
+  await delay(200);
+  expect(debugHandler.cnt.get("1:send")).toBe(1);
 });

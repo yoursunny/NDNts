@@ -25,6 +25,8 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
   public static async create({
     endpoint = new Endpoint(),
     describe,
+    initialStateVector = new SvStateVector(),
+    initialize,
     syncPrefix,
     syncInterestLifetime = 1000,
     steadyTimer = [30000, 0.1],
@@ -32,15 +34,22 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     signer = nullSigner,
     verifier,
   }: SvSync.Options): Promise<SvSync> {
-    return new SvSync(
-      endpoint, describe ?? `SvSync(${syncPrefix})`, syncPrefix, syncInterestLifetime,
+    const sync = new SvSync(
+      endpoint, describe ?? `SvSync(${syncPrefix})`, initialStateVector, syncPrefix, syncInterestLifetime,
       randomJitter(steadyTimer[1], steadyTimer[0]), randomJitter(suppressionTimer[1], suppressionTimer[0]),
       signer, verifier);
+    await initialize?.(sync);
+    sync.producer = sync.endpoint.produce(sync.syncPrefix, sync.handleSyncInterest, {
+      describe: `${sync.describe}[p]`,
+      routeCapture: false,
+    });
+    return sync;
   }
 
   private constructor(
       private readonly endpoint: Endpoint,
       public readonly describe: string,
+      private readonly own: SvStateVector,
       public readonly syncPrefix: Name,
       private readonly syncInterestLifetime: number,
       private readonly steadyTimer: () => number,
@@ -49,17 +58,10 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
       private readonly verifier?: Verifier,
   ) {
     super();
-    this.producer = this.endpoint.produce(this.syncPrefix, this.handleSyncInterest, {
-      describe: `${this.describe}[p]`,
-      routeCapture: false,
-    });
   }
 
   private readonly maybeHaveEventListener = trackEventListener(this);
-  private readonly producer: Producer;
-
-  /** Own state vector. */
-  private readonly own = new SvStateVector();
+  private producer?: Producer;
 
   /**
    * In steady state, undefined.
@@ -88,20 +90,36 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
 
   public close(): void {
     clearTimeout(this.timer);
-    this.producer.close();
+    this.producer?.close();
   }
 
   public get(id: NameLike): SyncNode<Name> {
-    return new SvSyncNode(Name.from(id), this.own, this.handlePublish);
+    return new SvSyncNode(Name.from(id), this.nodeOp);
   }
 
   public add(id: NameLike): SyncNode<Name> {
     return this.get(id);
   }
 
-  private readonly handlePublish = () => {
-    this.debug("publish");
-    this.resetTimer(true);
+  /**
+   * Obtain a copy of own state vector.
+   * This may be used in initialStateVector to re-create an SvSync instance.
+   */
+  public get currentStateVector(): SvStateVector {
+    return new SvStateVector(this.own);
+  }
+
+  private readonly nodeOp = (id: Name, n: number | undefined): number => {
+    if (n !== undefined) { // setSeqNum requested
+      if (!this.producer) { // decrement/remove permitted during initialization
+        this.own.set(id, n);
+      } else if (n > this.own.get(id)) { // increment only after initialization
+        this.own.set(id, n);
+        this.debug("publish");
+        this.resetTimer(true);
+      }
+    }
+    return this.own.get(id);
   };
 
   private readonly handleSyncInterest: ProducerHandler = async (interest) => {
@@ -192,6 +210,20 @@ export namespace SvSync {
     /** Description for debugging purpose. */
     describe?: string;
 
+    /**
+     * Initial state vector.
+     * Default is empty state vector.
+     */
+    initialStateVector?: SvStateVector;
+
+    /**
+     * Application initialization function.
+     * During initialization, it's possible to remove SyncNode or decrease seqNum.
+     * Calling .close() has no effect.
+     * Sync protocol starts running after the returned Promise is resolved.
+     */
+    initialize?: (sync: SvSync) => Promise<void>;
+
     /** Sync group prefix. */
     syncPrefix: Name;
 
@@ -230,24 +262,18 @@ export namespace SvSync {
 class SvSyncNode implements SyncNode<Name> {
   constructor(
       public readonly id: Name,
-      private readonly own: SvStateVector,
-      private readonly handlePublish: () => void,
+      private readonly op: (id: Name, n: number | undefined) => number,
   ) {}
 
   public get seqNum(): number {
-    return this.own.get(this.id);
+    return this.op(this.id, undefined);
   }
 
   public set seqNum(n: number) {
-    if (n <= this.seqNum) {
-      return;
-    }
-
-    this.own.set(this.id, n);
-    this.handlePublish();
+    this.op(this.id, n);
   }
 
   public remove(): void {
-    // no effect
+    this.op(this.id, 0);
   }
 }
