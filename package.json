@@ -13,7 +13,7 @@
     "test": "vitest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@8.9.0",
+  "packageManager": "pnpm@8.9.2",
   "devDependencies": {
     "@types/node": "^20.8.6",
     "@types/wtfnode": "^0.7.1",

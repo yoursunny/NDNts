@@ -7,7 +7,7 @@ import DefaultMap from "mnemonist/default-map.js";
 import { filter } from "streaming-iterables";
 import { afterEach, expect, test } from "vitest";
 
-import { SvSync } from "..";
+import { SvStateVector, SvSync } from "..";
 
 class UpdateHandler {
   constructor(sync: SvSync) {
@@ -161,10 +161,11 @@ test("initialize", async () => {
   expect(v0.get(new Name("/C"))).toBe(13);
   expect(v0.get(new Name("/D"))).toBe(0);
 
+  const v1 = new SvStateVector(JSON.parse(JSON.stringify(v0)));
   const p1 = await SvSync.create({
     ...opts,
     describe: "1",
-    initialStateVector: v0,
+    initialStateVector: v1,
     async initialize(sync) {
       closers.push(sync);
       debugHandler.start(sync);

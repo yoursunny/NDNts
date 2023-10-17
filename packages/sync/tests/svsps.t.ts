@@ -1,7 +1,5 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { setMaxListeners } from "node:events";
-
 import { Endpoint } from "@ndn/endpoint";
 import { generateSigningKey } from "@ndn/keychain";
 import { Name, type NameLike } from "@ndn/packet";
@@ -17,8 +15,6 @@ let pubOpts: Partial<SvPublisher.Options>;
 let subOpts: Partial<SvSubscriber.Options>;
 
 beforeAll(async () => {
-  setMaxListeners(20);
-
   const [signerS, verifierS] = await generateSigningKey("/kS");
   const [signerI, verifierI] = await generateSigningKey("/kI");
   const [signerO, verifierO] = await generateSigningKey("/kO");
