@@ -3,5 +3,6 @@ export * from "./algolist/mod";
 export * from "./cert/mod";
 export * from "./iv/mod";
 export * from "./key/mod";
-export * as CertNaming from "./naming";
+import * as CertNaming from "./naming";
+export { CertNaming };
 export * from "./store/mod";
