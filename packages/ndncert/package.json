@@ -33,20 +33,20 @@
     "@ndn/rdr": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@types/imap": "^0.8.38",
-    "@types/nodemailer": "^6.4.11",
+    "@types/imap": "^0.8.40",
+    "@types/nodemailer": "^6.4.14",
     "ajv": "^8.12.0",
     "b64-lite": "^1.4.0",
     "imap-emails": "^1.0.4",
-    "nodemailer": "^6.9.6",
+    "nodemailer": "^6.9.7",
     "p-timeout": "^6.1.2",
     "tslib": "^2.6.2",
-    "type-fest": "^4.4.0",
-    "typescript-event-target": "^1.0.5"
+    "type-fest": "^4.7.0",
+    "typescript-event-target": "^1.1.0"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:*",
-    "@types/b64-lite": "^1.4.0",
-    "@types/mailparser": "^3.4.2"
+    "@types/b64-lite": "^1.4.2",
+    "@types/mailparser": "^3.4.4"
   }
 }

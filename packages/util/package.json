@@ -26,19 +26,19 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@types/minimalistic-assert": "^1.0.1",
+    "@types/minimalistic-assert": "^1.0.3",
     "minimalistic-assert": "^1.0.1",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
-    "@types/tmp": "^0.2.4",
-    "@types/write": "^2.0.2",
+    "@types/tmp": "^0.2.6",
+    "@types/write": "^2.0.4",
     "it-pushable": "^3.2.1",
     "tmp": "^0.2.1",
     "write": "^2.0.0"
   },
   "engines": {
-    "node": "^18.13.0 || ^20.0.0"
+    "node": "^18.13.0 || ^20.0.0 || ^21.0.0"
   }
 }

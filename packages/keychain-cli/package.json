@@ -36,18 +36,18 @@
     "fast-chunk-string": "^1.0.1",
     "get-stdin": "^9.0.0",
     "leveldown": "^6.1.1",
-    "nodemailer": "^6.9.6",
+    "nodemailer": "^6.9.7",
     "prompts": "^2.4.2",
     "stdout-stream": "^2.0.0",
     "tslib": "^2.6.2",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/fast-chunk-string": "^1.0.1",
-    "@types/leveldown": "^4.0.4",
-    "@types/nodemailer": "^6.4.11",
-    "@types/prompts": "^2.4.6",
-    "@types/stdout-stream": "^1.4.0",
-    "@types/yargs": "^17.0.28"
+    "@types/fast-chunk-string": "^1.0.3",
+    "@types/leveldown": "^4.0.6",
+    "@types/nodemailer": "^6.4.14",
+    "@types/prompts": "^2.4.8",
+    "@types/stdout-stream": "^1.4.2",
+    "@types/yargs": "^17.0.31"
   }
 }

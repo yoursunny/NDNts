@@ -39,12 +39,12 @@
     "p-lazy": "^4.0.0",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",
-    "typescript-event-target": "^1.0.5"
+    "typescript-event-target": "^1.1.0"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
     "@ndn/repo-api": "workspace:*",
     "stream-mock": "^2.0.5",
-    "type-fest": "^4.4.0"
+    "type-fest": "^4.7.0"
   }
 }

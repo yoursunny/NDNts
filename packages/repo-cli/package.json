@@ -38,8 +38,8 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/leveldown": "^4.0.4",
-    "@types/progress": "^2.0.5",
-    "@types/yargs": "^17.0.28"
+    "@types/leveldown": "^4.0.6",
+    "@types/progress": "^2.0.7",
+    "@types/yargs": "^17.0.31"
   }
 }

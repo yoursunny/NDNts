@@ -27,7 +27,7 @@
     "@ndn/l3face": "workspace:*",
     "event-iterator": "^2.0.0",
     "tslib": "^2.6.2",
-    "type-fest": "^4.4.0",
+    "type-fest": "^4.7.0",
     "url-format-lax": "^2.0.0",
     "url-parse-lax": "^5.0.0"
   },
@@ -35,9 +35,9 @@
     "@ndn/fw": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@types/tmp": "^0.2.4",
-    "@types/url-format-lax": "^2.0.1",
-    "@types/url-parse-lax": "^5.0.0",
+    "@types/tmp": "^0.2.6",
+    "@types/url-format-lax": "^2.0.3",
+    "@types/url-parse-lax": "^5.0.2",
     "streaming-iterables": "^8.0.1",
     "tmp": "^0.2.1"
   }

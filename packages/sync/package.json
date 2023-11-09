@@ -42,16 +42,16 @@
     "pako": "^2.1.0",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",
-    "typescript-event-target": "^1.0.5"
+    "typescript-event-target": "^1.1.0"
   },
   "devDependencies": {
     "@ndn/fw": "workspace:*",
     "@ndn/keychain": "workspace:*",
     "@ndn/l3face": "workspace:*",
     "@ndn/repo": "workspace:*",
-    "@types/memdown": "^3.0.3",
-    "@types/murmurhash3js-revisited": "^3.0.1",
-    "@types/pako": "^2.0.1",
+    "@types/memdown": "^3.0.5",
+    "@types/murmurhash3js-revisited": "^3.0.3",
+    "@types/pako": "^2.0.3",
     "memdown": "^6.1.1"
   }
 }
