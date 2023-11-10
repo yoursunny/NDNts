@@ -75,7 +75,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
     this.readvertise = (fw as ForwarderImpl).readvertise;
     this.readvertise.destinations.add(this);
     for (const [name] of this.readvertise.announcements.associations()) {
-      this.queue.push(name);
+      this.advertise(name);
     }
     void this.process();
   }

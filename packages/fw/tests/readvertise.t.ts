@@ -13,39 +13,74 @@ beforeEach(() => {
 });
 
 class SimpleDest extends ReadvertiseDestination {
-  public override doAdvertise = vi.fn<[Name, {}], Promise<void>>().mockResolvedValue(undefined);
-  public override doWithdraw = vi.fn<[Name, {}], Promise<void>>().mockResolvedValue(undefined);
+  protected override doAdvertise = vi.fn<[Name, {}], Promise<void>>().mockResolvedValue(undefined);
+  protected override doWithdraw = vi.fn<[Name, {}], Promise<void>>().mockResolvedValue(undefined);
 
-  public readonly annadd = vi.fn<[Forwarder.AnnouncementEvent], void>();
-  public readonly annrm = vi.fn<[Forwarder.AnnouncementEvent], void>();
+  private hasEvents = false;
+  private readonly annadd = vi.fn<[Forwarder.AnnouncementEvent], void>();
+  private readonly annrm = vi.fn<[Forwarder.AnnouncementEvent], void>();
 
   public attachEventHandlers(fw: Forwarder): void {
+    this.hasEvents = true;
     fw.addEventListener("annadd", this.annadd);
     fw.addEventListener("annrm", this.annrm);
   }
 
-  public expectAdvertise(names: NameLike[]): void {
-    SimpleDest.check(this.doAdvertise, this.annadd, names);
+  public expectAdvertise(names: readonly NameLike[]): void {
+    SimpleDest.check(this.doAdvertise, this.hasEvents && this.annadd, names);
   }
 
-  public expectWithdraw(names: NameLike[]): void {
-    SimpleDest.check(this.doWithdraw, this.annrm, names);
+  public expectWithdraw(names: readonly NameLike[]): void {
+    SimpleDest.check(this.doWithdraw, this.hasEvents && this.annrm, names);
   }
 
   private static check(
       doFn: Mock<[Name, {}], Promise<void>>,
-      onFn: Mock<[Forwarder.AnnouncementEvent], void>,
-      names: NameLike[],
+      onFn: false | Mock<[Forwarder.AnnouncementEvent], void>,
+      names: readonly NameLike[],
   ) {
     expect(doFn).toHaveBeenCalledTimes(names.length);
-    expect(onFn).toHaveBeenCalledTimes(names.length);
+    if (onFn) {
+      expect(onFn).toHaveBeenCalledTimes(names.length);
+    }
+
     for (const [i, nameLike] of names.entries()) {
       expect(doFn.mock.calls[i]![0]).toEqualName(nameLike);
-      expect(onFn.mock.calls[i]![0].name).toEqualName(nameLike);
+      if (onFn) {
+        expect(onFn.mock.calls[i]![0].name).toEqualName(nameLike);
+      }
     }
+
     doFn.mockClear();
-    onFn.mockClear();
+    if (onFn) {
+      onFn.mockClear();
+    }
   }
+}
+
+class StatefulDest extends ReadvertiseDestination<{ S: true }> {
+  constructor() {
+    super({
+      minTimeout: 1,
+      maxTimeout: 1,
+    });
+  }
+
+  public override makeState = vi.fn().mockReturnValue({ S: true });
+
+  public doAdvertise = vi.fn().mockImplementationOnce(async () => {
+    await delay(90);
+    throw new Error("advertise error");
+  }).mockImplementation(async () => {
+    await delay(90);
+  });
+
+  public doWithdraw = vi.fn().mockImplementationOnce(async () => {
+    await delay(90);
+    throw new Error("withdraw error");
+  }).mockImplementation(async () => {
+    await delay(90);
+  });
 }
 
 test("simple", async () => {
@@ -92,31 +127,6 @@ test("simple", async () => {
   dest.expectAdvertise([]);
 });
 
-class StatefulDest extends ReadvertiseDestination<{ S: true }> {
-  constructor() {
-    super({
-      minTimeout: 1,
-      maxTimeout: 1,
-    });
-  }
-
-  public override makeState = vi.fn().mockReturnValue({ S: true });
-
-  public doAdvertise = vi.fn().mockImplementationOnce(async () => {
-    await delay(90);
-    throw new Error("advertise error");
-  }).mockImplementation(async () => {
-    await delay(90);
-  });
-
-  public doWithdraw = vi.fn().mockImplementationOnce(async () => {
-    await delay(90);
-    throw new Error("withdraw error");
-  }).mockImplementation(async () => {
-    await delay(90);
-  });
-}
-
 test("disable", async () => {
   const dest = new StatefulDest();
   dest.enable(fw);
@@ -130,6 +140,21 @@ test("disable", async () => {
   await delay(210);
   expect(dest.doWithdraw).toHaveBeenCalledTimes(1);
   // no retry after closing
+});
+
+test("new dest", async () => {
+  const dest0 = new SimpleDest();
+  dest0.enable(fw);
+
+  const faceA = fw.addFace(new NoopFace());
+  faceA.addAnnouncement("/A");
+  await delay(5);
+  dest0.expectAdvertise(["/A"]);
+
+  const dest1 = new SimpleDest();
+  dest1.enable(fw);
+  await delay(5);
+  dest1.expectAdvertise(["/A"]);
 });
 
 test("retry", async () => {
