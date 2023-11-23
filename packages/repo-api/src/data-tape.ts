@@ -21,16 +21,17 @@ interface WriteItem {
  * DataTape is a file or stream that consists of a sequence of Data packets.
  * This type implements DataStore interfaces on top of such a file or stream.
  */
-export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find, S.Insert {
+export class DataTape implements DataTape.Reader, DataTape.Writer {
   /**
    * Constructor.
    * @param stream a readable/writable stream, a function to (re)open the stream, or a filename.
    *
-   * If stream is a stream (instead of a function or a filename), only one method may be called once.
-   * Otherwise, methods can be called, but they must be sequenced because this type is non-thread-safe.
-   *
    * DataTape.Reader methods are available only if the stream is readable.
    * DataTape.Writer methods are available only if the stream is writable.
+   *
+   * If stream is a stream instance, it allows either one read or multiple writes.
+   * If stream is an opener function or filename, it allows multiple reads and writes.
+   * Function calls must be sequenced because this type is non-thread-safe.
    */
   constructor(stream: NodeJS.ReadableStream | NodeJS.WritableStream | DataTape.OpenStream | string) {
     switch (typeof stream) {
@@ -70,7 +71,7 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
     this.currentWriter = undefined;
   }
 
-  private async useReader<R>(cb: (reader: AsyncIterable<Data>) => Promise<R>): Promise<R> {
+  private async useReader<R>(cb: (reader: AsyncIterable<Data>) => Promisable<R>): Promise<R> {
     let result: any;
     await this.mutex(async () => {
       await this.closeCurrentWriter();
@@ -148,24 +149,14 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
     return map((data) => data.name, this.listData(prefix));
   }
 
-  public listData(prefix?: Name): AsyncIterable<Data> {
-    const output = pushable<Data>({ objectMode: true });
-    void (async () => {
-      try {
-        await this.useReader(async (reader) => {
-          for await (const data of reader) {
-            if (!prefix || prefix.isPrefixOf(data.name)) {
-              output.push(data);
-            }
-          }
-        });
-      } catch (err: unknown) {
-        output.end(err as Error);
-        return;
+  public async *listData(prefix?: Name): AsyncIterable<Data> {
+    yield* await this.useReader(async function*(reader): AsyncGenerator<Data> {
+      for await (const data of reader) {
+        if (!prefix || prefix.isPrefixOf(data.name)) {
+          yield data;
+        }
       }
-      output.end();
-    })();
-    return output;
+    });
   }
 
   private async findFirst(predicate: (data: Data) => Promisable<boolean>): Promise<Data | undefined> {
@@ -198,6 +189,15 @@ export class DataTape implements S.Close, S.ListNames, S.ListData, S.Get, S.Find
 }
 
 export namespace DataTape {
+  /** Desired mode of opening a stream. */
   export type StreamMode = "read" | "append";
+
+  /** Function to open a stream for use by DataTape. */
   export type OpenStream = (mode: StreamMode) => NodeJS.ReadableStream | NodeJS.WritableStream;
+
+  /** Interface of DataTape read operations. */
+  export type Reader = S.Close & S.ListNames & S.ListData & S.Get & S.Find;
+
+  /** Interface of DataTape write operations. */
+  export type Writer = S.Close & S.Insert;
 }

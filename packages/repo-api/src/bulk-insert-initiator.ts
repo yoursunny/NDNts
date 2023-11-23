@@ -1,8 +1,10 @@
 import type { L3Face } from "@ndn/l3face";
 import type { Data } from "@ndn/packet";
+import { CustomEvent } from "@ndn/util";
 import { pushable } from "it-pushable";
 import pDefer, { type DeferredPromise } from "p-defer";
 import { consume, map } from "streaming-iterables";
+import { TypedEventTarget } from "typescript-event-target";
 
 import * as S from "./data-store";
 
@@ -11,17 +13,34 @@ interface InsertJob {
   defer: DeferredPromise<undefined>;
 }
 
+type EventMap = {
+  error: CustomEvent<Error>;
+};
+
 /** Send packets to a bulk insertion target. */
-export class BulkInsertInitiator implements S.Close, S.Insert {
+export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S.Close, S.Insert {
   private readonly jobs = pushable<InsertJob>({ objectMode: true });
   private readonly faceTx: Promise<void>;
 
+  /**
+   * Constructor.
+   * @param face bulk insertion target.
+   *             RX side is ignored.
+   *             Data packets are sent to its TX side, errors raise 'error' event.
+   */
   constructor(face: L3Face) {
+    super();
     consume(face.rx).catch(() => undefined);
-    this.faceTx = face.tx(this.tx()).catch(() => undefined);
+    this.faceTx = face.tx(this.tx()).catch((err) => {
+      this.dispatchTypedEvent("error", new CustomEvent("error", { detail: err }));
+    });
   }
 
-  public async close() {
+  /**
+   * Finish insertion and close the target.
+   * .insert() cannot be called after this.
+   */
+  public async close(): Promise<void> {
     this.jobs.end();
     await this.faceTx;
   }

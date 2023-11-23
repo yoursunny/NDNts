@@ -7,10 +7,11 @@ export class BufferBreaker extends Transform {
 
   constructor() {
     super({ readableObjectMode: true, writableObjectMode: false });
-    this.timer = setInterval(this.flushBuf, 100);
+    this.timer = setInterval(this.flushBuf, 50);
   }
 
   public override _transform(chunk: Buffer, enc: unknown, callback: (err?: Error) => void) {
+    void enc;
     const buf = this.buf ? Buffer.concat([this.buf, chunk]) : chunk;
     const count = Math.min(buf.length, Math.ceil(Math.random() * 1.5 * buf.length));
     this.push(buf.subarray(0, count));

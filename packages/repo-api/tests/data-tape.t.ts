@@ -7,7 +7,7 @@ import { Data, Interest, Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import { delay } from "@ndn/util";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
-import { collect, map, pipeline, writeToStream } from "streaming-iterables";
+import { collect } from "streaming-iterables";
 import { dirSync as tmpDir } from "tmp";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
@@ -15,24 +15,11 @@ import { BulkInsertInitiator, BulkInsertTarget, copy, DataTape } from "..";
 
 function makeDataTapeReadStream(mode: DataTape.StreamMode): NodeJS.ReadableStream {
   expect(mode).toBe("read");
-  const bb = new BufferBreaker();
-  void (async () => {
-    try {
-      await pipeline(
-        async function*() {
-          for (let i = 0; i < 500; ++i) {
-            yield new Data(`/A/${Math.trunc(i / 100)}/${i % 100}`);
-            if (i % 20 === 0) {
-              await delay(Math.random() * 5);
-            }
-          }
-        },
-        map((data) => Encoder.encode(data)),
-        writeToStream(bb),
-      );
-    } catch {} finally { bb.end(); }
-  })();
-  return bb;
+  return new BufferReadableMock((function*() {
+    for (let i = 0; i < 500; ++i) {
+      yield Encoder.encode(new Data(`/A/${Math.trunc(i / 100)}/${i % 100}`));
+    }
+  })()).pipe(new BufferBreaker());
 }
 
 function makeDataTapeAppendStream(): [open: DataTape.OpenStream, retrieve: () => Buffer] {
@@ -50,7 +37,10 @@ function makeDataTapeAppendStream(): [open: DataTape.OpenStream, retrieve: () =>
 
 describe("DataTape reader", () => {
   let tape: DataTape;
-  beforeEach(() => {tape = new DataTape(makeDataTapeReadStream);});
+  beforeEach(async () => {
+    tape = new DataTape(makeDataTapeReadStream);
+    await delay(200);
+  });
 
   test("listNames", async () => {
     const names = await collect(tape.listNames());
@@ -77,7 +67,7 @@ describe("DataTape reader", () => {
 
 describe("DataTape file", () => {
   let dir: string;
-  beforeEach(async () => {
+  beforeEach(() => {
     const d = tmpDir({ unsafeCleanup: true });
     dir = d.name;
     return d.removeCallback;
@@ -106,10 +96,15 @@ async function testBulkInsertTarget(
     parallel: 8,
   });
   await bi.accept(makeDataTapeReadStream("read"));
+  let total = 0;
+  for (const [i, call] of storeInsert.mock.calls.entries()) {
+    console.log(`storeInsert ${i} ${call.length} ${total += call.length}`);
+  }
   expect(storeInsert).toHaveBeenCalledTimes(16);
 
   await tape.close();
   const readback = new DataTape(new BufferReadableMock(retrieve()));
+  // XXX 2023-11-23 this is failing on Node 21.2 but passing on Node 21.1
   await expect(collect(readback.listData())).resolves.toHaveLength(500);
 }
 
@@ -126,6 +121,9 @@ test("BulkInsertTarget make-stream", () => {
 test("BulkInsertInitiator", async () => {
   const transport = new MockTransport();
   const bi = new BulkInsertInitiator(new L3Face(transport));
+  bi.addEventListener("error", (evt) => {
+    expect(evt.detail).toBeUndefined();
+  });
   let n = 0;
   for (let i = 0; i < 10; ++i) {
     await delay(Math.random() * 20);
