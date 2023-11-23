@@ -147,7 +147,7 @@ function* scanLine(line: string, lineNum: number): Iterable<Token> {
     column += count;
   };
   const makePosition = () => new Position(lineNum, column);
-  const withPosition = (token: Token): typeof token => {
+  const withPosition = (token: Token): Token => {
     token.position = makePosition();
     return token;
   };
@@ -157,7 +157,8 @@ function* scanLine(line: string, lineNum: number): Iterable<Token> {
 
   // eslint-disable-next-line no-unmodified-loop-condition
   for (skipWhitespace(); line !== ""; skipWhitespace()) {
-    let m: RegExpExecArray | null | undefined;
+    let mOperator: RegExpExecArray | null | undefined;
+    let mIdent: RegExpExecArray | null | undefined;
     switch (true) {
       case line.startsWith("//"): {
         return;
@@ -172,14 +173,14 @@ function* scanLine(line: string, lineNum: number): Iterable<Token> {
         skipChars(pos + 1);
         break;
       }
-      case !!(m = RE_OPERATOR.exec(line)): {
-        const op = m![1]!;
+      case !!(mOperator = RE_OPERATOR.exec(line)): {
+        const op = mOperator[1]!;
         yield withPosition(new OPERATORS[op]!());
         skipChars(op.length);
         break;
       }
-      case !!(m = RE_IDENT.exec(line)): {
-        const id = m![1]!;
+      case !!(mIdent = RE_IDENT.exec(line)): {
+        const id = mIdent[1]!;
         yield withPosition(new Ident(id));
         skipChars(id.length);
         break;

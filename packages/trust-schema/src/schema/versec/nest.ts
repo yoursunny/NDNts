@@ -47,16 +47,16 @@ export function scan(tokens: Iterable<T.Token>): Unit[] {
   for (const token of tokens) {
     switch (true) {
       case token instanceof T.ParenL: {
-        pushNest(new Paren(token as T.Operator));
+        pushNest(new Paren(token));
         break;
       }
       case token instanceof T.BraceL: {
-        pushNest(new Brace(token as T.Operator));
+        pushNest(new Brace(token));
         break;
       }
       case token instanceof T.ParenR:
       case token instanceof T.BraceR: {
-        popNest(token as T.Operator);
+        popNest(token);
         break;
       }
       default: {

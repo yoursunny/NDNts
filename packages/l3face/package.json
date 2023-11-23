@@ -32,12 +32,12 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "abortable-iterator": "^5.0.1",
-    "it-pushable": "^3.2.1",
+    "it-pushable": "^3.2.3",
     "p-event": "^6.0.0",
     "retry": "^0.13.1",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",
-    "type-fest": "^4.7.1",
+    "type-fest": "^4.8.2",
     "typescript-event-target": "^1.1.0"
   },
   "devDependencies": {

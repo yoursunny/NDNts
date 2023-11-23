@@ -34,7 +34,7 @@
   "devDependencies": {
     "@types/tmp": "^0.2.6",
     "@types/write": "^2.0.4",
-    "it-pushable": "^3.2.1",
+    "it-pushable": "^3.2.3",
     "tmp": "^0.2.1",
     "write": "^2.0.0"
   },

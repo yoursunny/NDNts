@@ -91,16 +91,16 @@ export class Tracer {
         const act = pkt.cancel ? "Cancel" :
           pkt.reject ? `Reject(${pkt.reject})` :
           "I";
-        this.output.log(`${face} ${dir}${act} ${interestToString(pkt.l3 as Interest)}`);
+        this.output.log(`${face} ${dir}${act} ${interestToString(pkt.l3)}`);
         break;
       }
       case pkt.l3 instanceof Data: {
-        const { name } = pkt.l3 as Data;
+        const { name } = pkt.l3;
         this.output.log(`${face} ${dir}D ${name}`);
         break;
       }
       case pkt.l3 instanceof Nack: {
-        const { interest, reason } = pkt.l3 as Nack;
+        const { interest, reason } = pkt.l3;
         this.output.log(`${face} ${dir}N ${interestToString(interest)}~${reason}`);
         break;
       }
