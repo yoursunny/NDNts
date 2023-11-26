@@ -19,7 +19,41 @@ function delayedWrite(filename, lines) {
 }
 
 /**
- * Transform a declaration file: delete source map.
+ * Match import or export statement.
+ * @param {string} line
+ */
+function matchImportExport(line) {
+  const m = /^(import|export) (\* as )?(.*?)( from )?["'](.*)["'];$/.exec(line);
+  if (!m) {
+    return false;
+  }
+
+  const [, action, allAs = "", imports, from = "", specifier] = m;
+  return { action, allAs, imports, from, specifier };
+}
+
+/**
+ * Reconstruct import or export statement.
+ * @param {Exclude<ReturnType<typeof matchImportExport>, boolean>} m
+ */
+function toImportExport(m) {
+  const { action, allAs, imports, from, specifier } = m;
+  if (action === "export" && allAs) {
+    return `import ${allAs}${imports}${from}"${specifier}"; export { ${imports} };`;
+  }
+  return `${action} ${allAs}${imports}${from}"${specifier}";`;
+}
+
+/**
+ * Determine if an import specifier refers to a relative path.
+ * @param {string} specifier
+ */
+function isRelativeSpecifier(specifier) {
+  return /^\.(?:[^/]*\/)*[^/.]+$/.test(specifier);
+}
+
+/**
+ * Transform a declaration file.
  * @param {string} filename
  */
 async function transformDeclaration(filename) {
@@ -28,17 +62,14 @@ async function transformDeclaration(filename) {
       return "";
     }
 
-    const m = /^(import|export) (\* as )?(.*?)( from )?["'](.*)["'];$/.exec(line);
+    const m = matchImportExport(line);
     if (!m) {
       return line;
     }
-
-    const [, action, allAs = "", imports, from = "", specifier] = m;
-    if (/^\.(?:[^/]*\/)*[^/.]+$/.test(specifier)) {
-      return `${action} ${allAs}${imports}${from}"${specifier}.js";`;
+    if (isRelativeSpecifier(m.specifier)) {
+      m.specifier += ".js";
     }
-
-    return line;
+    return toImportExport(m);
   });
   delayedWrite(filename, lines);
 }
@@ -149,36 +180,35 @@ class TransformJs {
    * @param {string} line
    */
   transformImportExport(line) {
-    const m = /^(import|export) (\* as )?(.*?)( from )?["'](.*)["'];$/.exec(line);
+    const m = matchImportExport(line);
     if (!m) {
       return this.emitLine(line);
     }
 
-    let [, action, allAs = "", imports, from = "", specifier] = m;
-    if (/^\.(?:[^/]*\/)*[^/.]+$/.test(specifier)) {
+    let { specifier } = m;
+    if (isRelativeSpecifier(specifier)) {
       if (specifier.endsWith("_node")) {
         specifier = specifier.slice(0, -5); // trim "_node"
       }
       return this.emitLine(
-        `${action} ${allAs}${imports}${from}"${specifier}_node.js";`,
-        `${action} ${allAs}${imports}${from}"${specifier}_browser.js";`,
+        toImportExport({ ...m, specifier: `${specifier}_node.js` }),
+        toImportExport({ ...m, specifier: `${specifier}_browser.js` }),
       );
     }
 
     const pkg = specifier.split("/").slice(0, specifier.startsWith("@") ? 2 : 1).join("/");
     if (pkg.startsWith("node:")) {
-      const browserSpecifier = specifier.slice(5); // trim "node:"
       return this.emitLine(
-        `${action} ${allAs}${imports}${from}"${specifier}";`,
-        `${action} ${allAs}${imports}${from}"${browserSpecifier}";`,
+        toImportExport({ ...m, specifier }),
+        toImportExport({ ...m, specifier: specifier.slice(5) }), // trim "node:" in specifier
       );
     }
-    if (!CJS_IMPORTS.has(pkg) || !from) {
-      return this.emitLine(line);
+    if (!CJS_IMPORTS.has(pkg) || !m.from) {
+      return this.emitLine(toImportExport(m));
     }
 
     const importVar = `_cjsDefaultImport${this.nCjsImports++}`;
-    const [, defaultExport, namedExports] = /^\s*([^,{]+)?\s*,?\s*({[^}]+})?\s*$/.exec(imports);
+    const [, defaultExport, namedExports] = /^\s*([^,{]+)?\s*,?\s*({[^}]+})?\s*$/.exec(m.imports);
     const importLines = [`import ${importVar} from "${specifier}";`];
     if (defaultExport) {
       importLines.push(`const ${defaultExport} = __importDefault(${importVar}).default;`);
