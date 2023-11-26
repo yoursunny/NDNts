@@ -27,7 +27,7 @@ jobs:
   unittest:
     strategy:
       matrix:
-        node: [18, 20, '21.1']
+        node: [18, 20, 21]
       fail-fast: false
     runs-on: ubuntu-22.04
     steps:
@@ -118,7 +118,7 @@ jobs:
           [[ -f docs/typedoc/modules/_ndn_packet.html ]]
         env:
           GTAGID: G-YSW3MP43Z4
-      - uses: crazy-max/ghaction-github-pages@v3
+      - uses: crazy-max/ghaction-github-pages@v4
         with:
           repo: yoursunny/NDNts-nightly
           build_dir: ./mk/nightly-output/
