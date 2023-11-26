@@ -23,7 +23,7 @@ export interface RetrieveCaProfileOptions {
   caCertFullName: Name;
 }
 
-/** Retrieve and verify CA profile. */
+/** Retrieve and validate CA profile. */
 export async function retrieveCaProfile({
   endpoint = new Endpoint({ retx: 4 }),
   caPrefix,

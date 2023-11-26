@@ -45,7 +45,7 @@ export namespace NewResponse {
     /** Salt for session key generation. */
     salt: Uint8Array;
 
-    /** Certificate request session ID. */
+    /** Request session ID. */
     requestId: Uint8Array;
 
     /** Available challenge types. */

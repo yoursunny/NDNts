@@ -262,7 +262,7 @@ export class Server {
     };
   }
 
-  private readonly lookupContext = async (requestId: Uint8Array) => this.state.get(requestId);
+  private readonly lookupContext = (requestId: Uint8Array) => this.state.get(requestId);
 
   private deleteContext({ requestId }: ChallengeRequest) {
     this.state.delete(requestId);

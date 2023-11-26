@@ -67,9 +67,9 @@ export namespace ChallengeRequest {
   /** Contextual information to decode and verify CHALLENGE request packet. */
   export interface Context extends ContextBase {
     /**
-     * Callback to locate certificate request session.
-     * @param requestId certificate request session ID.
-     * @returns certificate request session information, or undefined if not found.
+     * Callback to locate request session.
+     * @param requestId request session ID.
+     * @returns request session information, or undefined if not found.
      */
     lookupRequest: (requestId: Uint8Array) => Promisable<RequestInfo | undefined>;
   }
@@ -85,17 +85,17 @@ export namespace ChallengeRequest {
 
   /** Options to construct CHALLENGE request packet. */
   export interface Options extends ContextBase, Fields {
-    /** Certificate request session ID. */
+    /** Request session ID. */
     requestId: Uint8Array;
 
     /**
-     * Certificate request session encrypter.
+     * Request session encrypter.
      * @see makeSessionKey
      */
     sessionEncrypter: LLEncrypt.Key;
 
     /**
-     * Certificate request session local decrypter.
+     * Request session local decrypter.
      * @see makeSessionKey
      */
     sessionLocalDecrypter: LLDecrypt.Key;

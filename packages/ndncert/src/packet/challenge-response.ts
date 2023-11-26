@@ -78,7 +78,7 @@ function checkFieldsByStatus({
 export namespace ChallengeResponse {
   /** Fields of CHALLENGE response packet. */
   export interface Fields {
-    /** Certificate request session status. */
+    /** Request session status. */
     status: Status;
 
     /** Challenge specific status string. */
@@ -109,13 +109,13 @@ export namespace ChallengeResponse {
     profile: CaProfile;
 
     /**
-     * Certificate request session encrypter.
+     * Request session encrypter.
      * @see makeSessionKey
      */
     sessionEncrypter: LLEncrypt.Key;
 
     /**
-     * Certificate request session local decrypter.
+     * Request session local decrypter.
      * @see makeSessionKey
      */
     sessionLocalDecrypter: LLDecrypt.Key;

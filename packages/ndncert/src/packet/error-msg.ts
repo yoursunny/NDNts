@@ -4,6 +4,7 @@ import { toUtf8 } from "@ndn/util";
 
 import { ErrorCode, TT } from "./an";
 
+/** ErrorMessage packet. */
 export interface ErrorMsg {
   errorCode: number;
   errorInfo: string;
@@ -36,7 +37,7 @@ export namespace ErrorMsg {
   }
 
   /** Throw an exception if the given packet is an error message packet. */
-  export function throwOnError(data: Data) {
+  export function throwOnError(data: Data): void {
     let e: ErrorMsg | undefined;
     try { e = fromData(data); } catch { return; }
     throw new Error(`CA response error ${e.errorCode}: ${e.errorInfo}`);
