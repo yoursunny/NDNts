@@ -11,6 +11,7 @@ parameter_kv.parseEvDecoder(EVD, 1);
 
 /** PROBE request packet. */
 export class ProbeRequest {
+  /** Decode PROBE request from Interest packet. */
   public static fromInterest(
       interest: Interest,
       { profile }: ProbeRequest.Context,
@@ -40,17 +41,22 @@ function checkKeys({ probeKeys }: CaProfile, { parameters }: ProbeRequest.Fields
 }
 
 export namespace ProbeRequest {
+  /** Contextual information to decode and verify PROBE request packet. */
   export interface Context {
+    /** CA profile packet. */
     profile: CaProfile;
   }
 
+  /** Fields of PROBE request packet. */
   export interface Fields {
     parameters: parameter_kv.ParameterKV;
   }
 
+  /** Options to construct PROBE request packet. */
   export interface Options extends Context, Fields {
   }
 
+  /** Construct PROBE request packet. */
   export async function build({
     profile,
     parameters,

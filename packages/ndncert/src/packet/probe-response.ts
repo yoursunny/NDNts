@@ -38,6 +38,7 @@ EVD.afterObservers.push(({ entries, redirects }) => {
 
 /** PROBE response packet. */
 export class ProbeResponse {
+  /** Decode PROBE response from Data packet. */
   public static async fromData(data: Data, profile: CaProfile): Promise<ProbeResponse> {
     await profile.publicKey.verify(data);
     return decode_common.fromData(data, EVD, () => new ProbeResponse(data));
@@ -48,26 +49,36 @@ export class ProbeResponse {
 export interface ProbeResponse extends Readonly<ProbeResponse.Fields> {}
 
 export namespace ProbeResponse {
+  /** Available name response entry. */
   export interface Entry {
     prefix: Name;
     maxSuffixLength?: number;
   }
 
+  /** Redirection response entry. */
   export interface Redirect {
     caCertFullName: Name;
   }
 
+  /** Fields of PROBE response packet. */
   export interface Fields {
     entries: Entry[];
     redirects: Redirect[];
   }
 
+  /** Options to construct PROBE response packet. */
   export type Options = Partial<Fields> & {
+    /** CA profile packet. */
     profile: CaProfile;
+
+    /** PROBE request packet. */
     request: ProbeRequest;
+
+    /** Signing key correspond to CA certificate. */
     signer: Signer;
   };
 
+  /** Construct PROBE response packet. */
   export async function build({
     profile,
     request: { interest: { name } },

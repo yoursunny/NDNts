@@ -2,6 +2,7 @@ import type { NamedSigner, NamedVerifier } from "@ndn/keychain";
 import { Component, Interest, type LLDecrypt, type LLEncrypt, type SignedInterestPolicy } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
+import { type Promisable } from "type-fest";
 
 import * as crypto from "../crypto-common";
 import { C, TT } from "./an";
@@ -21,6 +22,7 @@ parameter_kv.parseEvDecoder(EVD, 2);
 
 /** CHALLENGE request packet. */
 export class ChallengeRequest {
+  /** Decode CHALLENGE request from Interest packet. */
   public static async fromInterest(interest: Interest, {
     profile,
     signedInterestPolicy,
@@ -55,27 +57,57 @@ export interface ChallengeRequest extends Readonly<ChallengeRequest.Fields> {}
 
 export namespace ChallengeRequest {
   interface ContextBase {
+    /** CA profile packet. */
     profile: CaProfile;
+
+    /** Signed Interest validation policy. */
     signedInterestPolicy: SignedInterestPolicy;
   }
 
+  /** Contextual information to decode and verify CHALLENGE request packet. */
   export interface Context extends ContextBase {
-    lookupRequest: (requestId: Uint8Array) => Promise<RequestInfo | undefined>;
+    /**
+     * Callback to locate certificate request session.
+     * @param requestId certificate request session ID.
+     * @returns certificate request session information, or undefined if not found.
+     */
+    lookupRequest: (requestId: Uint8Array) => Promisable<RequestInfo | undefined>;
   }
 
+  /** Fields of CHALLENGE request packet. */
   export interface Fields {
+    /** Selected challenge type. */
     selectedChallenge: string;
+
+    /** Challenge parameter key-value pairs. */
     parameters: parameter_kv.ParameterKV;
   }
 
+  /** Options to construct CHALLENGE request packet. */
   export interface Options extends ContextBase, Fields {
+    /** Certificate request session ID. */
     requestId: Uint8Array;
+
+    /**
+     * Certificate request session encrypter.
+     * @see makeSessionKey
+     */
     sessionEncrypter: LLEncrypt.Key;
+
+    /**
+     * Certificate request session local decrypter.
+     * @see makeSessionKey
+     */
     sessionLocalDecrypter: LLDecrypt.Key;
+
+    /** Certificate request public key. */
     publicKey: NamedVerifier.PublicKey;
+
+    /** Certificate request private key. */
     privateKey: NamedSigner.PrivateKey;
   }
 
+  /** Construct CHALLENGE request packet. */
   export async function build({
     profile,
     signedInterestPolicy,
@@ -101,7 +133,7 @@ export namespace ChallengeRequest {
     return ChallengeRequest.fromInterest(interest, {
       profile,
       signedInterestPolicy,
-      lookupRequest: () => Promise.resolve({
+      lookupRequest: () => ({
         sessionKey: { sessionDecrypter: sessionLocalDecrypter },
         certRequestPub: publicKey,
       }),

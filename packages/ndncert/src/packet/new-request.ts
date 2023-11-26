@@ -59,24 +59,46 @@ function truncateValidity(
 }
 
 export namespace NewRequest {
+  /** Contextual information to decode and verify NEW request packet. */
   export interface Context {
+    /** CA profile packet. */
     profile: CaProfile;
+
+    /** Signed Interest validation policy. */
     signedInterestPolicy: SignedInterestPolicy;
   }
 
+  /** Fields of NEW request packet. */
   export interface Fields {
+    /** Client ECDH public key. */
     ecdhPubRaw: Uint8Array;
+
+    /** Client certificate request as self-signed certificate. */
     certRequest: Certificate;
   }
 
+  /** Options to construct NEW request packet. */
   export interface Options extends Context {
+    /** Client ECDH public key. */
     ecdhPub: CryptoKey;
+
+    /** Certificate request public key. */
     publicKey: NamedVerifier.PublicKey;
+
+    /** Certificate request private key. */
     privateKey: NamedSigner.PrivateKey;
+
+    /**
+     * Desired ValidityPeriod.
+     * This will be truncated to maximum validity permitted by the CA profile.
+     */
     validity?: ValidityPeriod;
+
+    /** List of recognized algorithms for certificate request. */
     algoList?: readonly SigningAlgorithm[];
   }
 
+  /** Construct NEW request packet. */
   export async function build({
     profile,
     signedInterestPolicy,

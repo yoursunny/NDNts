@@ -64,6 +64,7 @@ Certificate digest: ${toHex(this.certDigest)}`;
 export interface CaProfile extends Readonly<CaProfile.Fields> {}
 
 export namespace CaProfile {
+  /** JSON representation of CA profile. */
   export interface ToJSON {
     prefix: string;
     info: string;
@@ -73,20 +74,48 @@ export namespace CaProfile {
     certDigest: string;
   }
 
+  /** Fields of CA profile packet. */
   export interface Fields {
+    /**
+     * CA name prefix.
+     * Typically, this should not have "CA" as its last component.
+     */
     prefix: Name;
+
+    /** CA description. */
     info: string;
+
+    /**
+     * Property keys for PROBE command.
+     */
     probeKeys: string[];
-    maxValidityPeriod: number; // milliseconds
+
+    /** Maximum ValidityPeriod for issued certificates, in milliseconds. */
+    maxValidityPeriod: number;
+
+    /** CA certificate. */
     cert: Certificate;
   }
 
+  /** Options to construct CA profile packet. */
   export type Options = Fields & {
+    /** Signing key correspond to CA certificate. */
     signer: Signer;
+
+    /**
+     * Version number in the CA profile packet name.
+     * Default is current Unix timestamp in milliseconds.
+     */
     version?: number;
+
+    /**
+     * List of recognized algorithms for CA certificate.
+     * This must contain the crypto algorithm used by the CA certificate.
+     */
     algoList?: readonly SigningAlgorithm[];
   };
 
+  /** Construct CA profile packet. */
   export async function build({
     prefix,
     info,

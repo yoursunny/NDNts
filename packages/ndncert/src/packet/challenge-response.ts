@@ -20,6 +20,7 @@ parameter_kv.parseEvDecoder(EVD, 5);
 
 /** CHALLENGE response packet. */
 export class ChallengeResponse {
+  /** Decode CHALLENGE response from Data packet. */
   public static async fromData(data: Data, profile: CaProfile, requestId: Uint8Array,
       sessionDecrypter: LLDecrypt.Key): Promise<ChallengeResponse> {
     await profile.publicKey.verify(data);
@@ -75,24 +76,58 @@ function checkFieldsByStatus({
 }
 
 export namespace ChallengeResponse {
+  /** Fields of CHALLENGE response packet. */
   export interface Fields {
+    /** Certificate request session status. */
     status: Status;
+
+    /** Challenge specific status string. */
     challengeStatus?: string;
+
+    /** Number of remaining tries to complete challenge. */
     remainingTries?: number;
-    remainingTime?: number; // milliseconds
+
+    /** Remaining time to complete challenge, in milliseconds. */
+    remainingTime?: number;
+
+    /** Challenge parameter key-value pairs. */
     parameters?: parameter_kv.ParameterKV;
+
+    /**
+     * Issued certificate name.
+     * This should end with an implicit digest component.
+     */
     issuedCertName?: Name;
+
+    /** Forwarding hint needed for retrieving issued certificate. */
     fwHint?: FwHint;
   }
 
+  /** Options to construct CHALLENGE response packet. */
   export interface Options extends Fields {
+    /** CA profile packet. */
     profile: CaProfile;
+
+    /**
+     * Certificate request session encrypter.
+     * @see makeSessionKey
+     */
     sessionEncrypter: LLEncrypt.Key;
+
+    /**
+     * Certificate request session local decrypter.
+     * @see makeSessionKey
+     */
     sessionLocalDecrypter: LLDecrypt.Key;
+
+    /** CHALLENGE request packet. */
     request: ChallengeRequest;
+
+    /** Signing key correspond to CA certificate. */
     signer: Signer;
   }
 
+  /** Construct CHALLENGE response packet. */
   export async function build(opts: Options): Promise<ChallengeResponse> {
     const {
       profile,

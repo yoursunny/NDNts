@@ -18,6 +18,7 @@ EVD.beforeObservers.push((t) => t.challenges = []);
 
 /** NEW response packet. */
 export class NewResponse {
+  /** Decode NEW response from Data packet. */
   public static async fromData(data: Data, profile: CaProfile): Promise<NewResponse> {
     await profile.publicKey.verify(data);
     return decode_common.fromData(data, EVD, async (f) => {
@@ -36,20 +37,37 @@ export class NewResponse {
 export interface NewResponse extends Readonly<NewResponse.Fields> {}
 
 export namespace NewResponse {
+  /** Fields of NEW response packet. */
   export interface Fields {
+    /** Server ECDH public key. */
     ecdhPubRaw: Uint8Array;
+
+    /** Salt for session key generation. */
     salt: Uint8Array;
+
+    /** Certificate request session ID. */
     requestId: Uint8Array;
+
+    /** Available challenge types. */
     challenges: string[];
   }
 
+  /** Options to construct NEW response packet. */
   export type Options = Except<Fields, "ecdhPubRaw"> & {
+    /** CA profile packet. */
     profile: CaProfile;
+
+    /** NEW request packet. */
     request: NewRequest;
+
+    /** Server ECDH public key. */
     ecdhPub: CryptoKey;
+
+    /** Signing key correspond to CA certificate. */
     signer: Signer;
   };
 
+  /** Construct NEW response packet. */
   export async function build({
     profile,
     request: { interest: { name } },
