@@ -8,7 +8,7 @@ import { TypedEventTarget } from "typescript-event-target";
 
 import * as S from "./data-store";
 
-interface InsertJob {
+interface Burst {
   pkts: AsyncIterable<Data>;
   defer: DeferredPromise<undefined>;
 }
@@ -19,7 +19,7 @@ type EventMap = {
 
 /** Send packets to a bulk insertion target. */
 export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S.Close, S.Insert {
-  private readonly jobs = pushable<InsertJob>({ objectMode: true });
+  private readonly queue = pushable<Burst>({ objectMode: true });
   private readonly faceTx: Promise<void>;
 
   /**
@@ -41,7 +41,7 @@ export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S
    * .insert() cannot be called after this.
    */
   public async close(): Promise<void> {
-    this.jobs.end();
+    this.queue.end();
     await this.faceTx;
   }
 
@@ -53,16 +53,13 @@ export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S
    */
   public async insert(...args: S.Insert.Args<{}>): Promise<void> {
     const { pkts } = S.Insert.parseArgs<{}>(args);
-    const job: InsertJob = {
-      pkts,
-      defer: pDefer(),
-    };
-    this.jobs.push(job);
-    return job.defer.promise;
+    const defer = pDefer<undefined>();
+    this.queue.push({ pkts, defer });
+    return defer.promise;
   }
 
   private async *tx(): AsyncIterable<{ l3: Data }> {
-    for await (const job of this.jobs) {
+    for await (const job of this.queue) {
       yield* map((data) => ({ l3: data }), job.pkts);
       job.defer.resolve();
     }

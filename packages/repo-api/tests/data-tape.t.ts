@@ -96,10 +96,6 @@ async function testBulkInsertTarget(
     parallel: 8,
   });
   await bi.accept(makeDataTapeReadStream("read"));
-  let total = 0;
-  for (const [i, call] of storeInsert.mock.calls.entries()) {
-    console.log(`storeInsert ${i} ${call.length} ${total += call.length}`);
-  }
   expect(storeInsert).toHaveBeenCalledTimes(16);
 
   await tape.close();

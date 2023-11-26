@@ -28,6 +28,7 @@ function* genData({ prefix, start, count, size }: GenDataArgs) {
 interface BaseArgs extends GenDataArgs {
   batch: number;
   parallel: number;
+  progress: boolean;
 }
 
 function declareBaseArgv(argv: Argv): Argv<BaseArgs> {
@@ -62,19 +63,26 @@ function declareBaseArgv(argv: Argv): Argv<BaseArgs> {
       default: 1,
       desc: "number of parallel transactions",
       type: "number",
+    })
+    .option("progress", {
+      default: true,
+      desc: "show progress bar",
+      type: "boolean",
     });
 }
 
 async function execute(args: BaseArgs, store: DataStore.Insert) {
-  const progress = new ProgressBar(":bar :current/:total :rateD/s :elapseds ETA:etas", { total: args.count });
+  const progress = args.progress ?
+    new ProgressBar(":bar :current/:total :rateD/s :elapseds ETA:etas", { total: args.count }) :
+    undefined;
   await pipeline(
     () => genData(args),
     batch(args.batch),
-    tap((pkts) => progress.tick(pkts.length)),
+    tap((pkts) => progress?.tick(pkts.length)),
     transform(args.parallel, (pkts) => store.insert(...pkts)),
     consume,
   );
-  progress.terminate();
+  progress?.terminate();
 }
 
 export const FillStoreCommand: CommandModule<{}, BaseArgs & StoreArgs> = {

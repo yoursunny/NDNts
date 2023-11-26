@@ -1,6 +1,7 @@
 import { createServer } from "node:net";
 
 import { exitClosers, getSigner, openUplinks } from "@ndn/cli-common";
+import { joinHostPort } from "@ndn/node-transport";
 import { BulkInsertTarget, type DataStore, RepoProducer, respondRdr } from "@ndn/repo";
 import type { CommandModule } from "yargs";
 
@@ -22,8 +23,15 @@ function enableBulkInsertion(store: DataStore, {
   "bi-parallel": parallel,
 }: Args) {
   const bi = BulkInsertTarget.create(store, { batch, parallel });
-  const server = createServer((sock) => {
-    void bi.accept(sock);
+  const server = createServer(async (sock) => {
+    const addr = joinHostPort(sock.remoteAddress ?? "", sock.remotePort ?? 0);
+    try {
+      console.log(`BulkInsertTarget(${addr}) accepted`);
+      const n = await bi.accept(sock);
+      console.log(`BulkInsertTarget(${addr}) inserted ${n}`);
+    } catch (err: unknown) {
+      console.warn(`BulkInsertTarget(${addr}) error ${err}`);
+    }
   }).listen(port, host);
   exitClosers.push(server);
 }

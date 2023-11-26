@@ -14,7 +14,7 @@ This package defines the programming interface of an abstract Data repository, a
 * `listNames(prefix?)` iterates over names of stored Data.
 * `listData(prefix?)` iterates over stored Data.
 * `insert(options?, ...pkts)` inserts Data packets.
-* `erase(...names)` deletes Data packets.
+* `delete(...names)` deletes Data packets.
 
 ## DataTape
 

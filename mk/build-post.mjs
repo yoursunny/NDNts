@@ -52,7 +52,6 @@ const CJS_IMPORTS = new Set([
   "@yoursunny/asn1",
   "applymixins",
   "buffer-compare",
-  "duplexify",
   "encoding-down",
   "event-iterator",
   "fast-chunk-string",

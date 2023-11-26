@@ -1,21 +1,15 @@
-import { L3Face, StreamTransport } from "@ndn/l3face";
+import { rxFromStream } from "@ndn/l3face";
 import { Data, type Interest, type Name } from "@ndn/packet";
-import duplexify from "duplexify";
+import { Encoder } from "@ndn/tlv";
+import { assert } from "@ndn/util";
 import { isReadableStream, isWritableStream } from "is-stream";
-import { type Pushable, pushable } from "it-pushable";
-import pDefer, { type DeferredPromise } from "p-defer";
 import { pEvent } from "p-event";
-import { consume, filter, map, pipeline } from "streaming-iterables";
+import { filter, map, pipeline, writeToStream } from "streaming-iterables";
 import throat from "throat";
 import type { Promisable } from "type-fest";
 
 import * as S from "./data-store";
 import { makeOpenFileStreamFunction } from "./data-tape-file_node";
-
-interface WriteItem {
-  pkts: AsyncIterable<Data>;
-  done: DeferredPromise<void>;
-}
 
 /**
  * DataTape is a file or stream that consists of a sequence of Data packets.
@@ -59,89 +53,49 @@ export class DataTape implements DataTape.Reader, DataTape.Writer {
 
   private readonly makeStream: (mode: DataTape.StreamMode) => NodeJS.ReadableStream | NodeJS.WritableStream;
   private readonly mutex = throat(1);
-  private currentWriter?: [L3Face, Pushable<WriteItem>];
+  private currentWriter?: NodeJS.WritableStream;
 
   private async closeCurrentWriter() {
     if (!this.currentWriter) {
       return;
     }
-    const [face, tx] = this.currentWriter;
-    tx.end();
-    await pEvent(face, "close");
+    this.currentWriter.end();
+    await pEvent(this.currentWriter, "finish");
     this.currentWriter = undefined;
   }
 
   private async useReader<R>(cb: (reader: AsyncIterable<Data>) => Promisable<R>): Promise<R> {
-    let result: any;
-    await this.mutex(async () => {
+    return this.mutex(async (): Promise<R> => {
       await this.closeCurrentWriter();
 
       const stream = this.makeStream("read");
-      if (!isReadableStream(stream)) {
-        throw new Error("stream is not Readable");
-      }
+      assert(isReadableStream(stream), "stream is not Readable");
 
-      const duplex = duplexify(undefined, stream);
-      const defer = pDefer<void>();
-      const close = () => defer.resolve();
-      duplex.once("end", close);
-
-      const face = new L3Face(new StreamTransport(duplex));
-      // eslint-disable-next-line require-yield
-      void face.tx((async function*() { await defer.promise; })());
-
-      const reader = pipeline(
-        () => face.rx,
-        map((pkt) => pkt.l3),
-        filter((pkt): pkt is Data => pkt instanceof Data),
+      return pipeline(
+        () => rxFromStream(stream),
+        map(({ decoder }) => {
+          try {
+            return decoder.decode(Data);
+          } catch {
+            return undefined;
+          }
+        }),
+        filter((data): data is Data => data instanceof Data),
+        cb,
       );
-
-      try {
-        result = await cb(reader);
-      } finally {
-        close();
-      }
     });
-    return result;
   }
 
   private async useWriter(cb: (write: (pkts: AsyncIterable<Data>) => Promise<void>) => Promise<void>) {
     await this.mutex(async () => {
-      if (!this.currentWriter) {
-        const stream = this.makeStream("append");
-        if (!isWritableStream(stream)) {
-          throw new Error("stream is not Writable");
-        }
+      this.currentWriter ??= this.makeStream("append") as NodeJS.WritableStream;
+      assert(isWritableStream(this.currentWriter), "stream is not Writable");
 
-        const duplex = duplexify(stream, undefined);
-        const face = new L3Face(new StreamTransport(duplex));
-        consume(face.rx).catch(() => undefined);
-
-        const tx = pushable<WriteItem>({ objectMode: true });
-        face.tx((async function*() {
-          for await (const item of tx) {
-            try {
-              yield* map((l3) => ({ l3 }), item.pkts);
-            } catch (err: unknown) {
-              item.done.reject(err);
-              return;
-            }
-            item.done.resolve();
-          }
-        })()).then(() => duplex.end(), () => undefined);
-
-        this.currentWriter = [face, tx];
-      }
-
-      await cb(async (pkts) => {
-        const item = {
-          pkts,
-          done: pDefer<void>(),
-        };
-        const [, tx] = this.currentWriter!;
-        tx.push(item);
-        await item.done.promise;
-      });
+      await cb((pkts) => pipeline(
+        () => pkts,
+        map((pkt) => Encoder.encode(pkt)),
+        writeToStream(this.currentWriter!),
+      ));
     });
   }
 

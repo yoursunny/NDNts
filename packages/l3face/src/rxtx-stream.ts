@@ -1,10 +1,18 @@
+import type { Socket } from "node:net";
+
 import { Decoder } from "@ndn/tlv";
 import { safeIter } from "@ndn/util";
 import { pEvent } from "p-event";
 import { writeToStream } from "streaming-iterables";
 
 import type { Transport } from "./transport";
+// import { pipeline } from "node:stream/promises";
 
+/**
+ * Parse TLVs from input stream.
+ * @param conn input stream, such as a socket.
+ * @returns AsyncIterable of TLVs.
+ */
 export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.Rx {
   let leftover = Buffer.alloc(0);
   for await (const chunk of safeIter(conn as AsyncIterable<Buffer>)) {
@@ -27,17 +35,24 @@ export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.Rx {
   }
 }
 
+/**
+ * Pipe encoded packets to output stream.
+ * @param conn output stream, such as a socket.
+ * @returns a function that accepts AsyncIterable of Uint8Array containing encoded packets.
+ */
 export function txToStream(conn: NodeJS.WritableStream): Transport.Tx {
   return async (iterable: AsyncIterable<Uint8Array>) => {
     try {
       await writeToStream(conn, iterable);
     } finally {
-      conn.end();
-      try { await pEvent(conn, "finish", { timeout: 100 }); } catch {}
+      try {
+        conn.end();
+        await pEvent(conn, "finish", { timeout: 100 });
+      } catch {}
 
-      const destroyable = conn as unknown as { destroy?: () => void };
-      if (typeof destroyable.destroy === "function") {
-        destroyable.destroy();
+      const socket = conn as Socket;
+      if (typeof socket.destroy === "function") {
+        socket.destroy();
       }
     }
   };

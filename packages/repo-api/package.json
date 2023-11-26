@@ -30,8 +30,8 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/rdr": "workspace:*",
+    "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "duplexify": "^4.1.2",
     "is-stream": "^3.0.0",
     "it-pushable": "^3.2.3",
     "p-defer": "^4.0.0",
@@ -43,8 +43,6 @@
   },
   "devDependencies": {
     "@ndn/node-transport": "workspace:*",
-    "@ndn/tlv": "workspace:*",
-    "@types/duplexify": "^3.6.4",
     "@types/tmp": "^0.2.6",
     "stream-mock": "^2.0.5",
     "tmp": "^0.2.1",

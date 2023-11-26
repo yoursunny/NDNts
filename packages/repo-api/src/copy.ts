@@ -17,13 +17,14 @@ export interface CopyOptions {
  * @param prefix name prefix to select Data packets.
  * @param dst destination DataStore.
  * @param opts insert options and copy batching options.
+ * @returns number of Data packets copied.
  */
 export async function copy<InsertOptions extends {} = never>(src: S.ListData, prefix: Name,
-  dst: S.Insert<InsertOptions>, opts?: CopyOptions & InsertOptions): Promise<void>;
+  dst: S.Insert<InsertOptions>, opts?: CopyOptions & InsertOptions): Promise<number>;
 export async function copy<InsertOptions extends {} = never>(src: S.ListData,
-  dst: S.Insert<InsertOptions>, opts?: CopyOptions & InsertOptions): Promise<void>;
+  dst: S.Insert<InsertOptions>, opts?: CopyOptions & InsertOptions): Promise<number>;
 
-export async function copy(src: S.ListData, arg2: any, arg3?: any, arg4?: any): Promise<void> {
+export async function copy(src: S.ListData, arg2: any, arg3?: any, arg4?: any): Promise<number> {
   const [prefix, dst, opts = {}]: [Name | undefined, S.Insert<any>, any] =
     arg2 instanceof Name ? [arg2, arg3, arg4] : [undefined, arg2, arg3];
   const {
@@ -34,10 +35,15 @@ export async function copy(src: S.ListData, arg2: any, arg3?: any, arg4?: any): 
   delete insertOpts.batch;
   delete insertOpts.parallel;
 
-  return pipeline(
+  let n = 0;
+  await pipeline(
     () => src.listData(prefix),
     batch(batchSize),
-    transform(parallel, (pkts) => dst.insert(insertOpts, ...pkts)),
+    transform(parallel, async (pkts) => {
+      await dst.insert(insertOpts, ...pkts);
+      n += pkts.length;
+    }),
     consume,
   );
+  return n;
 }

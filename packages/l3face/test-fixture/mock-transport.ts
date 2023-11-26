@@ -1,7 +1,6 @@
 import { Decoder, type Encodable, Encoder } from "@ndn/tlv";
 import { abortableSource, AbortError as IteratorAbortError } from "abortable-iterator";
 import { pushable } from "it-pushable";
-import { consume, pipeline, tap } from "streaming-iterables";
 
 import { Transport } from "..";
 
@@ -15,8 +14,11 @@ export class MockTransport extends Transport {
   }
 
   public recv(pkt: Encodable) {
-    const tlv = new Decoder(Encoder.encode(pkt)).read();
+    const wire = Encoder.encode(pkt);
+    const decoder = new Decoder(wire);
+    const tlv = decoder.read();
     this.rx.push(tlv);
+    decoder.throwUnlessEof();
   }
 
   public close(err?: Error) {
@@ -26,11 +28,9 @@ export class MockTransport extends Transport {
 
   public override readonly tx = async (iterable: AsyncIterable<Uint8Array>) => {
     try {
-      await pipeline(
-        () => abortableSource(iterable, this.closing.signal),
-        tap((pkt) => this.send(pkt)),
-        consume,
-      );
+      for await (const pkt of abortableSource(iterable, this.closing.signal)) {
+        this.send(pkt);
+      }
     } catch (err: unknown) {
       if (!(err instanceof IteratorAbortError)) {
         throw err;

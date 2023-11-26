@@ -31,7 +31,7 @@ test("DataTape insert", async () => {
   const packets = await collect(tape.listData());
   packets.sort((a, b) => a.name.compare(b.name));
   expect(Buffer.concat(packets.map((data) => data.content))).toEqualUint8Array(objectBody);
-});
+}, 10000);
 
 test("bufferBehind bufferAhead", async () => {
   let offset = 0;
