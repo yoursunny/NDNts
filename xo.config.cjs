@@ -12,19 +12,19 @@ function makePackageOverrides(config, ...pkgs) {
   return [
     {
       files: [
-        pkgs.map((pkg) => `**${pkg}/**/*.ts`),
+        pkgs.map((pkg) => `**${pkg}/**/*.{ts,cts,mts}`),
       ],
       ...config,
     },
     {
       files: [
-        pkgs.map((pkg) => `**${pkg}/**/*_browser.ts`),
+        pkgs.map((pkg) => `**${pkg}/**/*_browser.{ts,cts,mts}`),
       ],
       ...merge(config, web),
     },
     {
       files: [
-        pkgs.flatMap((pkg) => [`**${pkg}/test-fixture/**/*.ts`, `**${pkg}/tests/**/*.ts`]),
+        pkgs.flatMap((pkg) => [`**${pkg}/test-fixture/**/*.{ts,cts,mts}`, `**${pkg}/tests/**/*.{ts,cts,mts}`]),
       ],
       ...merge(config, {
         rules: {
@@ -46,7 +46,7 @@ module.exports = {
     ),
     {
       files: [
-        "**/integ/browser-tests/**/*.ts",
+        "**/integ/browser-tests/**/*.{ts,cts,mts}",
       ],
       ...merge(js, ts, web, pptr),
     },

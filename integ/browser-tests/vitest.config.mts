@@ -11,6 +11,6 @@ export default defineConfig({
     watch: false,
     threads: false,
     testTimeout: 30000,
-    globalSetup: "./setup-webpack.ts",
+    globalSetup: "./setup-webpack.mts",
   },
 });
