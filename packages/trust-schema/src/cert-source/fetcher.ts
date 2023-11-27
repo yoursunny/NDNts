@@ -68,11 +68,25 @@ class Cache {
 }
 
 interface CacheOptions {
-  /** Cache lifetime for successful retrieval. Default is 1 hour. */
+  /**
+   * Cache lifetime for successful retrieval, in milliseconds.
+   * During this period, return the same certificate instead of re-fetching.
+   * @default 1-hour
+   */
   positiveTtl?: number;
-  /** Cache lifetime for unsuccessful retrieval. Default is 10 seconds. */
+
+  /**
+   * Cache lifetime for unsuccessful retrieval, in milliseconds.
+   * During this period, report the certificate as un-retrievable instead of re-fetching.
+   * @default 10-seconds
+   */
   negativeTtl?: number;
-  /** Cache cleanup interval. Default is 5 minutes. */
+
+  /**
+   * Cache cleanup interval, in milliseconds.
+   * This determines how often expired cache entries are deleted.
+   * @default 5-minutes
+   */
   cacheCleanupInterval?: number;
 }
 
@@ -109,6 +123,12 @@ export class CertFetcher implements CertSource {
   private readonly consumerOpts: ConsumerOptions;
   private readonly cache: Cache;
 
+  /**
+   * Fetch certificates from network by certificate name or key name.
+   * Upon successful retrieval, yields the certificate.
+   * Upon unsuccessful retrieval, ends the iterable without yielding.
+   * Retrieval result is cached for a period of time.
+   */
   public async *findCerts(keyLocator: Name): AsyncIterable<Certificate> {
     const cached = this.cache.lookup(keyLocator);
     if (cached) {

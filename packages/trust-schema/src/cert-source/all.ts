@@ -16,25 +16,41 @@ export class CertSources implements CertSource {
   constructor(opts: CertSources.Options) {
     const {
       trustAnchors = [],
-      offline = false,
       keyChain,
+      offline = false,
     } = opts;
 
     this.trustAnchors = Array.isArray(trustAnchors) ? new TrustAnchorContainer(trustAnchors) : trustAnchors;
     this.list = [this.trustAnchors];
+
     if (keyChain) {
       this.keyChainSource = new KeyChainCertSource(keyChain);
       this.list.push(this.keyChainSource);
     }
+
     if (!offline) {
       this.fetcher = new CertFetcher(opts);
       this.list.push(this.fetcher);
     }
   }
 
+  /**
+   * Find certificates by certificate name or key name, from sources in this order:
+   * - trust anchors
+   * - local KeyChain
+   * - network retrieval
+   * After finding one or more certificates in a source, subsequent sources are skipped.
+   */
   public async *findCerts(keyLocator: Name): AsyncIterable<Certificate> {
     for (const s of this.list) {
-      yield* s.findCerts(keyLocator);
+      let found = false;
+      for await (const cert of s.findCerts(keyLocator)) {
+        yield cert;
+        found = true;
+      }
+      if (found) {
+        break;
+      }
     }
   }
 
@@ -45,11 +61,13 @@ export class CertSources implements CertSource {
 
 export namespace CertSources {
   export interface Options extends CertFetcher.Options {
+    /** Trust anchor certificates. */
     trustAnchors?: TrustAnchorContainer | Certificate[];
+
+    /** Local KeyChain. */
+    keyChain?: KeyChain;
 
     /** If true, disable CertFetcher. */
     offline?: boolean;
-
-    keyChain?: KeyChain;
   }
 }

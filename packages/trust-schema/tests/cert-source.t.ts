@@ -8,7 +8,7 @@ import { delay } from "@ndn/util";
 import { collect } from "streaming-iterables";
 import { beforeAll, beforeEach, describe, expect, type SpyInstance, test, vi } from "vitest";
 
-import { CertFetcher, type CertSource, KeyChainCertSource, TrustAnchorContainer } from "..";
+import { CertFetcher, type CertSource, CertSources, KeyChainCertSource, TrustAnchorContainer } from "..";
 
 let keyChain: KeyChain;
 let pvtA: NamedSigner.PrivateKey;
@@ -83,7 +83,7 @@ test("KeyChainCertSource", async () => {
 
 describe("CertFetcher", () => {
   let endpoint: Endpoint;
-  let consumeFn: SpyInstance< Parameters<Endpoint["consume"]>, ReturnType<Endpoint["consume"]>>;
+  let consumeFn: SpyInstance<Parameters<Endpoint["consume"]>, ReturnType<Endpoint["consume"]>>;
   let fetcher0: CertFetcher;
   let fetcher1: CertFetcher;
   beforeEach(async () => {
@@ -144,5 +144,31 @@ describe("CertFetcher", () => {
     found = await findIn(fetcher1, pubA);
     expect(found).toHaveLength(0);
     expect(consumeFn).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("CertSources", () => {
+  let keyChainGetCertFn: SpyInstance<Parameters<KeyChain["getCert"]>, ReturnType<KeyChain["getCert"]>>;
+  beforeEach(() => {
+    keyChainGetCertFn = vi.spyOn(keyChain, "getCert");
+    return () => {
+      keyChainGetCertFn.mockRestore();
+    };
+  });
+
+  test("TrustAnchor-KeyChain", async () => {
+    const s = new CertSources({
+      trustAnchors: [selfA],
+      keyChain,
+      offline: true,
+    });
+
+    let found = await findIn(s, selfA);
+    expect(found).toHaveLength(1);
+    expect(keyChainGetCertFn).toHaveBeenCalledTimes(0);
+
+    found = await findIn(s, certB);
+    expect(found).toHaveLength(1);
+    expect(keyChainGetCertFn).toHaveBeenCalledTimes(1);
   });
 });

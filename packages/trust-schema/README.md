@@ -108,7 +108,7 @@ Some notes and limitations:
 const policy = versec.load(`
 _site: "a"/"blog"
 root: _site/_KEY
-article: _site/"article"/category/year/month <= author
+#article: _site/"article"/category/year/month <= author
 
 // Notice the variable name distinction between 'adminName' and 'authorName', which is necessary
 // to allow them to have different values. Also, the variables cannot be named 'admin' and 'author'
