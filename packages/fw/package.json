@@ -31,7 +31,7 @@
     "@types/retry": "^0.12.5",
     "hirestime": "^7.0.3",
     "it-pushable": "^3.2.3",
-    "mnemonist": "^0.39.5",
+    "mnemonist": "^0.39.6",
     "retry": "^0.13.1",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",

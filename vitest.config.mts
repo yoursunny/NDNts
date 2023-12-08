@@ -5,6 +5,7 @@ const coverage: CoverageOptions<"v8"> = {
   provider: "v8",
   reporter: process.env.CI ? "lcovonly" : ["html", "text-summary"],
   include: ["packages/**/src/**/*.ts"],
+  all: false,
 };
 
 if (process.env.COVERPKG) {

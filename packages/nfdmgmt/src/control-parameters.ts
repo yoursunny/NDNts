@@ -19,7 +19,7 @@ function decodeString({ text }: Decoder.Tlv) {
   return text;
 }
 
-const fieldDefs: Array<FieldDef<any>> = [
+const fieldDefs: ReadonlyArray<FieldDef<any>> = [
   [TT.Name, "name", (name) => name.value, ({ decoder }) => decoder.decode(Name)],
   [0x69, "faceId", NNI, decodeNNI],
   [0x72, "uri", toUtf8, decodeString],

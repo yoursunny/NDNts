@@ -29,9 +29,9 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "buffer-compare": "^1.1.1",
-    "mnemonist": "^0.39.5",
+    "mnemonist": "^0.39.6",
     "tslib": "^2.6.2",
-    "type-fest": "^4.8.2"
+    "type-fest": "^4.8.3"
   },
   "devDependencies": {
     "@types/buffer-compare": "^0.0.33"

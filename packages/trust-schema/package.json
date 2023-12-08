@@ -31,9 +31,9 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
-    "mnemonist": "^0.39.5",
+    "mnemonist": "^0.39.6",
     "tslib": "^2.6.2",
-    "type-fest": "^4.8.2"
+    "type-fest": "^4.8.3"
   },
   "devDependencies": {
     "@ndn/repo": "workspace:*",
