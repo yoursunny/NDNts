@@ -22,7 +22,7 @@ main(int argc, char* argv[]) {
   psync::FullProducer sync(face, keyChain, 30, argv[2], userNode, handleUpdate, 100_ms, 500_ms,
                            psync::CompressionScheme::NONE, psync::CompressionScheme::NONE);
 
-  boost::asio::signal_set signalSet(face.getIoService(), SIGINT, SIGUSR1);
+  boost::asio::signal_set signalSet(face.getIoContext(), SIGINT, SIGUSR1);
   std::function<void(const boost::system::error_code&, int signal)> handleSignal =
     [&](const boost::system::error_code&, int signal) {
       signalSet.async_wait(handleSignal);
