@@ -21,7 +21,7 @@ export class ControlResponse {
     return EVD.decode(new ControlResponse(), decoder);
   }
 
-  public constructor(public statusCode = 0, public statusText = "", public body?: Encodable) {}
+  constructor(public statusCode = 0, public statusText = "", public body?: Encodable) {}
 
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(

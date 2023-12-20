@@ -119,7 +119,7 @@ export class PitEntry {
 
 /** Pending Interest table. */
 export class Pit {
-  public constructor(public readonly dataNoTokenMatch: boolean) {}
+  constructor(public readonly dataNoTokenMatch: boolean) {}
 
   private readonly byName = new Map<string, PitEntry>();
   private readonly byToken = new Map<number, PitEntry>();

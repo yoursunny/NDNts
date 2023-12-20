@@ -15,9 +15,9 @@ type CP<R extends keyof ControlParameters.Fields, O extends keyof ControlParamet
 
 /** Declare required and optional fields of each command. */
 interface Commands {
-  "face/create": CP<"uri", "localUri" | "facePersistency" | "baseCongestionMarkingInterval" |
+  "faces/create": CP<"uri", "localUri" | "facePersistency" | "baseCongestionMarkingInterval" |
   "defaultCongestionPeriod" | "mtu" | "flags" | "mask">;
-  "face/update": CP<never, "faceId" | "facePersistency" | "baseCongestionMarkingInterval" |
+  "faces/update": CP<never, "faceId" | "facePersistency" | "baseCongestionMarkingInterval" |
   "defaultCongestionPeriod" | "flags" | "mask">;
   "face/destroy": CP<"faceId", never>;
   "strategy-choice/set": CP<"name" | "strategy", never>;
@@ -30,21 +30,47 @@ const defaultSIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce(), Signed
 
 /** NFD Management - Control Command client. */
 export namespace ControlCommand {
-  export interface Options {
-    endpoint?: Endpoint;
-    commandPrefix?: Name;
-    signer?: Signer;
-    signedInterestPolicy?: SignedInterestPolicy;
-  }
-
   export const localhostPrefix = new Name("/localhost/nfd");
   export const localhopPrefix = new Name("/localhop/nfd");
 
-  export function getPrefix(isLocal?: boolean) {
-    return (isLocal ?? false) ? localhostPrefix : localhopPrefix;
+  /**
+   * Determine the NFD management prefix.
+   * @param isLocal whether the client is connected to a NFD local face.
+   * @returns NFD management prefix.
+   */
+  export function getPrefix(isLocal = false) {
+    return isLocal ? localhostPrefix : localhopPrefix;
   }
 
-  /** Invoke a command and wait for response. */
+  export interface Options {
+    /** Endpoint for communication. */
+    endpoint?: Endpoint;
+
+    /**
+     * NFD management prefix.
+     * @default getPrefix()
+     */
+    commandPrefix?: Name;
+
+    /**
+     * Command Interest signer.
+     * Default is digest signing.
+     */
+    signer?: Signer;
+
+    /**
+     * Signed Interest policy for the command Interest.
+     * Default is including SigNonce and SigTime in the signed Interest.
+     */
+    signedInterestPolicy?: SignedInterestPolicy;
+  }
+
+  /**
+   * Invoke a command and wait for response.
+   * @param command command module and verb.
+   * @param params command parameters.
+   * @returns command response.
+   */
   export async function call<C extends keyof Commands>(command: C, params: Commands[C], {
     endpoint = new Endpoint(),
     commandPrefix: prefix = localhostPrefix,
