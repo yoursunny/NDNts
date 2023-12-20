@@ -1,5 +1,5 @@
 import { type Forwarder, type FwFace, FwPacket } from "@ndn/fw";
-import { Data, Interest, Name, type NameLike, type Signer, SigType } from "@ndn/packet";
+import { Data, Interest, type Name, type Signer, SigType } from "@ndn/packet";
 import { flatTransform } from "streaming-iterables";
 
 import type { DataBuffer } from "./data-buffer";
@@ -37,16 +37,16 @@ export interface ProducerOptions {
    * What name to be readvertised.
    * Ignored if prefix is undefined.
    */
-  announcement?: EndpointProducer.RouteAnnouncement;
+  announcement?: FwFace.RouteAnnouncement;
 
   /**
    * How many Interests to process in parallel.
-   * Default is 1.
+   * @default 1
    */
   concurrency?: number;
 
   /**
-   * If specified, automatically sign Data packets unless already signed.
+   * If specified, automatically sign Data packets that are not yet signed.
    * This does not apply to Data packets manually inserted to the dataBuffer.
    */
   dataSigner?: Signer;
@@ -56,8 +56,8 @@ export interface ProducerOptions {
 
   /**
    * Whether to add handler return value to buffer.
-   * Default is true.
    * Ignored when dataBuffer is not specified.
+   * @default true
    */
   autoBuffer?: boolean;
 }
@@ -84,99 +84,95 @@ export interface Producer {
   close: () => void;
 }
 
-/** Producer functionality of Endpoint. */
-export class EndpointProducer {
-  declare public fw: Forwarder;
-  declare public opts: ProducerOptions;
+export class ProducerImpl implements Producer {
+  constructor(
+      fw: Forwarder,
+      public readonly prefix: Name | undefined,
+      private readonly handler: ProducerHandler,
+      {
+        describe = `produce(${prefix})`,
+        signal,
+        routeCapture = true,
+        announcement,
+        concurrency = 1,
+        dataSigner,
+        dataBuffer,
+        autoBuffer = true,
+      }: ProducerOptions,
+  ) {
+    this.signal = signal;
+    this.dataSigner = dataSigner;
+    this.dataBuffer = dataBuffer;
 
-  /**
-   * Start a producer.
-   * @param prefixInput prefix registration; if undefined, prefixes may be added later.
-   * @param handler function to handle incoming Interest.
-   */
-  public produce(prefixInput: NameLike | undefined, handler: ProducerHandler, opts: ProducerOptions = {}): Producer {
-    const prefix = prefixInput === undefined ? undefined : new Name(prefixInput);
-    const {
-      describe = `produce(${prefix})`,
-      signal,
-      routeCapture = true,
-      announcement,
-      concurrency = 1,
-      dataSigner,
-      dataBuffer,
-      autoBuffer = true,
-    } = { ...this.opts, ...opts };
-    let producer: Producer; // eslint-disable-line prefer-const
-
-    const processInterestUnbuffered = async (interest: Interest) => {
-      const data = await handler(interest, producer);
-      if (!(data instanceof Data)) {
-        return undefined;
-      }
-
-      await signUnsignedData(data, dataSigner);
-      if (!await data.canSatisfy(interest)) { // isCacheLookup=false because the buffer is not considered a cache
-        return undefined;
-      }
-      return data;
-    };
-
-    let processInterest = processInterestUnbuffered;
-    if (dataBuffer) {
-      processInterest = async (interest: Interest) => {
-        let found = await dataBuffer.find(interest);
-        if (!found) {
-          const output = await processInterestUnbuffered(interest);
-          if (output) {
-            if (autoBuffer) { await dataBuffer.insert(output); }
-            return output;
-          }
-          found = await dataBuffer.find(interest);
-        }
-        return found;
-      };
-    }
-
-    const face = this.fw.addFace({
-      duplex: flatTransform(concurrency, async function*({ l3: interest, token }: FwPacket) {
-        if (!(interest instanceof Interest)) {
-          return;
-        }
-        const data = await processInterest(interest).catch(() => undefined);
-        if (!data) {
-          return;
-        }
-        yield FwPacket.create(data, token);
-      }),
-    },
-    {
-      describe,
-      local: true,
-      routeCapture,
-    });
+    this.face = fw.addFace(
+      {
+        duplex: flatTransform(concurrency, this.faceDuplex.bind(this)),
+      },
+      {
+        describe,
+        local: true,
+        routeCapture,
+      },
+    );
     if (prefix) {
-      face.addRoute(prefix, announcement);
+      this.face.addRoute(prefix, announcement);
     }
 
-    const onAbort = () => {
-      face.close();
-      signal?.removeEventListener("abort", onAbort);
-    };
-    signal?.addEventListener("abort", onAbort);
-
-    producer = {
-      prefix,
-      face,
-      dataBuffer,
-      processInterest,
-      close: onAbort,
-    };
-    return producer;
+    this.processInterest = this.dataBuffer ?
+      this.processBuffered.bind(this, autoBuffer) :
+      this.processUnbuffered.bind(this);
+    signal?.addEventListener("abort", this.close);
   }
-}
 
-export namespace EndpointProducer {
-  export type RouteAnnouncement = FwFace.RouteAnnouncement;
+  public readonly face: FwFace;
+  private readonly signal?: AbortSignal;
+  private readonly dataSigner?: Signer;
+  public readonly dataBuffer?: DataBuffer;
+
+  private async *faceDuplex({ l3: interest, token }: FwPacket): AsyncGenerator<FwPacket> {
+    if (!(interest instanceof Interest)) {
+      return;
+    }
+    const data = await this.processInterest(interest).catch(() => undefined);
+    if (data) {
+      yield FwPacket.create(data, token);
+    }
+  }
+
+  public readonly processInterest: (interest: Interest) => Promise<Data | undefined>;
+
+  private async processUnbuffered(interest: Interest): Promise<Data | undefined> {
+    const data = await this.handler(interest, this);
+    if (!(data instanceof Data)) {
+      return undefined;
+    }
+
+    await signUnsignedData(data, this.dataSigner);
+    if (!await data.canSatisfy(interest)) { // isCacheLookup=false because the buffer is not considered a cache
+      return undefined;
+    }
+    return data;
+  }
+
+  private async processBuffered(autoBuffer: boolean, interest: Interest): Promise<Data | undefined> {
+    let found = await this.dataBuffer!.find(interest);
+    if (!found) {
+      const output = await this.processUnbuffered(interest);
+      if (output) {
+        if (autoBuffer) {
+          await this.dataBuffer!.insert(output);
+        }
+        return output;
+      }
+      found = await this.dataBuffer!.find(interest);
+    }
+    return found;
+  }
+
+  public close = (): void => {
+    this.face.close();
+    this.signal?.removeEventListener("abort", this.close);
+  };
 }
 
 export async function signUnsignedData(data: Data, dataSigner: Signer | undefined) {

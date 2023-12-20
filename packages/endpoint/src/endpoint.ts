@@ -1,8 +1,8 @@
-import { Forwarder } from "@ndn/fw";
-import applyMixins from "applymixins";
+import { Forwarder, type FwFace } from "@ndn/fw";
+import { Interest, Name, type NameLike } from "@ndn/packet";
 
-import { type ConsumerOptions, EndpointConsumer } from "./consumer";
-import { EndpointProducer, type ProducerOptions } from "./producer";
+import { type ConsumerContext, type ConsumerOptions, makeConsumer } from "./consumer";
+import { type Producer, type ProducerHandler, ProducerImpl, type ProducerOptions } from "./producer";
 
 export interface Options extends ConsumerOptions, ProducerOptions {
   fw?: Forwarder;
@@ -18,13 +18,37 @@ export class Endpoint {
   constructor(public readonly opts: Options = {}) {
     this.fw = opts.fw ?? Forwarder.getDefault();
   }
+
+  /**
+   * Retrieve a single piece of Data.
+   * @param interest Interest or Interest name.
+   */
+  public consume(interest: Interest | NameLike, opts: ConsumerOptions = {}): ConsumerContext {
+    return makeConsumer(
+      this.fw,
+      interest instanceof Interest ? interest : new Interest(interest),
+      { ...this.opts, ...opts },
+    );
+  }
+
+  /**
+   * Start a producer.
+   * @param prefix prefix registration; if undefined, prefixes may be added later.
+   * @param handler function to handle incoming Interest.
+   */
+  public produce(prefix: NameLike | undefined, handler: ProducerHandler, opts: ProducerOptions = {}): Producer {
+    return new ProducerImpl(
+      this.fw,
+      prefix === undefined ? undefined : Name.from(prefix),
+      handler,
+      { ...this.opts, ...opts },
+    );
+  }
 }
-export interface Endpoint extends EndpointConsumer, EndpointProducer {}
-applyMixins(Endpoint, [EndpointConsumer, EndpointProducer]);
 
 export namespace Endpoint {
   /** Delete default Forwarder instance (mainly for unit testing). */
   export const deleteDefaultForwarder = Forwarder.deleteDefault;
 
-  export type RouteAnnouncement = EndpointProducer.RouteAnnouncement;
+  export type RouteAnnouncement = FwFace.RouteAnnouncement;
 }

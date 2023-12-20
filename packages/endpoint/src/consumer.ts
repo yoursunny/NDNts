@@ -1,5 +1,5 @@
 import { CancelInterest, type Forwarder, FwPacket } from "@ndn/fw";
-import { Data, Interest, type NameLike, type Verifier } from "@ndn/packet";
+import { Data, Interest, type Verifier } from "@ndn/packet";
 import { pushable } from "it-pushable";
 
 import { makeRetxGenerator, type RetxPolicy } from "./retx";
@@ -41,86 +41,81 @@ export interface ConsumerContext extends Promise<Data> {
   readonly nRetx: number;
 }
 
-/** Consumer functionality of Endpoint. */
-export class EndpointConsumer {
-  declare public fw: Forwarder;
-  declare public opts: ConsumerOptions;
-
-  /** Consume a single piece of Data. */
-  public consume(interestInput: Interest | NameLike, opts: ConsumerOptions = {}): ConsumerContext {
-    const interest = interestInput instanceof Interest ? interestInput : new Interest(interestInput);
-    const {
+export function makeConsumer(
+    fw: Forwarder,
+    interest: Interest,
+    {
       describe = `consume(${interest.name})`,
       signal,
       modifyInterest,
       retx,
       verifier,
-    } = { ...this.opts, ...opts };
-    Interest.makeModifyFunc(modifyInterest)(interest);
+    }: ConsumerOptions,
+): ConsumerContext {
+  Interest.makeModifyFunc(modifyInterest)(interest);
 
-    let nRetx = -1;
-    const retxGen = makeRetxGenerator(retx)(interest.lifetime)[Symbol.iterator]();
+  let nRetx = -1;
+  const retxGen = makeRetxGenerator(retx)(interest.lifetime)[Symbol.iterator]();
 
-    const promise = new Promise<Data>((resolve, reject) => {
-      const rx = pushable<FwPacket>({ objectMode: true });
+  const promise = new Promise<Data>((resolve, reject) => {
+    const rx = pushable<FwPacket>({ objectMode: true });
 
-      let timer: NodeJS.Timeout | number | undefined;
-      const cancelRetx = () => {
-        clearTimeout(timer);
-        timer = undefined;
-      };
+    let timer: NodeJS.Timeout | number | undefined;
+    const cancelRetx = () => {
+      clearTimeout(timer);
+      timer = undefined;
+    };
 
-      const sendInterest = () => {
-        cancelRetx();
-        const { value, done } = retxGen.next();
-        if (!done) {
-          timer = setTimeout(sendInterest, value);
-        }
-        rx.push(FwPacket.create(interest));
-        ++nRetx;
-      };
+    const sendInterest = () => {
+      cancelRetx();
+      const { value, done } = retxGen.next();
+      if (!done) {
+        timer = setTimeout(sendInterest, value);
+      }
+      rx.push(FwPacket.create(interest));
+      ++nRetx;
+    };
 
-      const onAbort = () => {
-        cancelRetx();
-        rx.push(new CancelInterest(interest));
-      };
-      signal?.addEventListener("abort", onAbort);
+    const onAbort = () => {
+      cancelRetx();
+      rx.push(new CancelInterest(interest));
+    };
+    signal?.addEventListener("abort", onAbort);
 
-      this.fw.addFace({
-        rx,
-        async tx(iterable) {
-          for await (const pkt of iterable) {
-            if (pkt.l3 instanceof Data) {
-              try {
-                await verifier?.verify(pkt.l3);
-              } catch (err: unknown) {
-                reject(new Error(`Data verify failed: ${err} @${describe}`));
-                break;
-              }
-              resolve(pkt.l3);
+    fw.addFace({
+      rx,
+      async tx(iterable) {
+        for await (const pkt of iterable) {
+          if (pkt.l3 instanceof Data) {
+            try {
+              await verifier?.verify(pkt.l3);
+            } catch (err: unknown) {
+              reject(new Error(`Data verify failed: ${err} @${describe}`));
               break;
             }
-            if (pkt.reject && !timer) {
-              reject(new Error(`Interest rejected: ${pkt.reject} @${describe}`));
-              break;
-            }
+            resolve(pkt.l3);
+            break;
           }
-          cancelRetx();
-          signal?.removeEventListener("abort", onAbort);
-          rx.end();
-        },
+          if (pkt.reject && !timer) {
+            reject(new Error(`Interest rejected: ${pkt.reject} @${describe}`));
+            break;
+          }
+        }
+        cancelRetx();
+        signal?.removeEventListener("abort", onAbort);
+        rx.end();
       },
-      {
-        describe,
-        local: true,
-      });
-
-      sendInterest();
+    },
+    {
+      describe,
+      local: true,
     });
 
-    return Object.defineProperties(promise, {
-      interest: { value: interest },
-      nRetx: { get() { return nRetx; } },
-    }) as ConsumerContext;
-  }
+    sendInterest();
+  });
+
+  return Object.defineProperties(promise, {
+    interest: { value: interest },
+    nRetx: { get() { return nRetx; } },
+  }) as ConsumerContext;
 }
