@@ -16,10 +16,10 @@ type CP<R extends keyof ControlParameters.Fields, O extends keyof ControlParamet
 /** Declare required and optional fields of each command. */
 interface Commands {
   "faces/create": CP<"uri", "localUri" | "facePersistency" | "baseCongestionMarkingInterval" |
-  "defaultCongestionPeriod" | "mtu" | "flags" | "mask">;
+  "defaultCongestionThreshold" | "mtu" | "flags" | "mask">;
   "faces/update": CP<never, "faceId" | "facePersistency" | "baseCongestionMarkingInterval" |
-  "defaultCongestionPeriod" | "flags" | "mask">;
-  "face/destroy": CP<"faceId", never>;
+  "defaultCongestionThreshold" | "flags" | "mask">;
+  "faces/destroy": CP<"faceId", never>;
   "strategy-choice/set": CP<"name" | "strategy", never>;
   "strategy-choice/unset": CP<"name", never>;
   "rib/register": CP<"name", "faceId" | "origin" | "cost" | "flags" | "expirationPeriod">;
