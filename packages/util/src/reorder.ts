@@ -13,20 +13,20 @@ export class Reorder<T> {
   /** Determine whether buffer is empty, i.e. all items emitted. */
   public get empty() { return this.buffer.size === 0; }
 
-  /** Add a new item, and return in-order items. */
-  public push(index: number, obj: T): T[] {
+  /** Add a new item. */
+  public push(index: number, obj: T): void {
     if (index >= this.next) {
       this.buffer.set(index, obj);
     }
-    return this.pop();
   }
 
-  private pop(): T[] {
+  /** Return and remove in-order items. */
+  public shift(): T[] {
     const result: T[] = [];
-    let obj: T | undefined;
-    while ((obj = this.buffer.get(this.next)) !== undefined) {
-      result.push(obj);
-      this.buffer.delete(this.next++);
+    while (this.buffer.has(this.next)) {
+      result.push(this.buffer.get(this.next)!);
+      this.buffer.delete(this.next);
+      ++this.next;
     }
     return result;
   }

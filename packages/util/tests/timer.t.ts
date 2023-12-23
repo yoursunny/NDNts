@@ -1,5 +1,3 @@
-import "../test-fixture/expect";
-
 import { expect, test } from "vitest";
 
 import { randomJitter } from "..";

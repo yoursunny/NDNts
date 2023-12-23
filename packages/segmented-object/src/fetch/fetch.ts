@@ -1,11 +1,10 @@
 import { type Data, Name, type NameLike } from "@ndn/packet";
-import { assert, concatBuffers } from "@ndn/util";
+import { assert, concatBuffers, Reorder } from "@ndn/util";
 import EventIterator from "event-iterator";
 import { collect, map, type WritableStreamish, writeToStream } from "streaming-iterables";
 import type { Promisable } from "type-fest";
 
 import { Fetcher } from "./fetcher";
-import { Reorder } from "./reorder";
 
 class FetchResult implements fetch.Result {
   constructor(private readonly name: Name, private readonly opts: fetch.Options) {}
@@ -41,10 +40,10 @@ class FetchResult implements fetch.Result {
   private async *ordered() {
     const reorder = new Reorder<Data>(this.opts.segmentRange?.[0]);
     for await (const { segNum, data } of this.startFetcher()) {
-      const ordered = reorder.push(segNum, data);
-      yield* ordered;
+      reorder.push(segNum, data);
+      yield* reorder.shift();
     }
-    assert(reorder.empty);
+    assert(reorder.empty, `${reorder.size} leftover segments`);
   }
 
   public chunks() {
@@ -74,7 +73,7 @@ class FetchResult implements fetch.Result {
   }
 }
 
-/** Fetch a segment object as AsyncIterable of payload. */
+/** Fetch a segmented object. */
 export function fetch(name: NameLike, opts: fetch.Options = {}): fetch.Result {
   return new FetchResult(Name.from(name), opts);
 }

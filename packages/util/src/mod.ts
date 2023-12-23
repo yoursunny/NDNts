@@ -10,5 +10,6 @@ export * from "./event";
 export * from "./iter";
 export * from "./key-map";
 export * from "./number";
+export * from "./reorder";
 export * from "./string";
 export * from "./timer";
