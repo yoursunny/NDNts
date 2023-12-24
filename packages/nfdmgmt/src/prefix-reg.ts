@@ -7,7 +7,7 @@ import map from "obliterator/map.js";
 import type { Except } from "type-fest";
 
 import { ControlCommand } from "./control-command";
-import type { ControlParameters } from "./control-parameters";
+import { ControlParameters } from "./control-parameters";
 
 type CommandOptions = Except<ControlCommand.Options, "endpoint">;
 type RouteOptions = Pick<ControlParameters.Fields, "origin" | "cost" | "flags">;
@@ -51,7 +51,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     this.routeOptions = {
       origin: 65,
       cost: 0,
-      flags: 0x02, // CAPTURE
+      flags: ControlParameters.RouteFlags.Capture,
       ...opts,
     };
 
