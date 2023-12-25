@@ -3,7 +3,15 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package implements basic support for [NFD Management protocol](https://redmine.named-data.net/projects/nfd/wiki/Management).
-In particular, it enables prefix registration on NFD.
+It includes both a generic variant and a NFD-specific variant with additional typing.
+
+* [X] ControlCommand
+  * [X] generic: `invokeGeneric`, `ControlResponse`
+  * [X] NFD: `invoke`, `ControlParameters`
+* [ ] StatusDataset
+* [ ] NotificationStream
+
+This implementation is validated against NFD using [nfdmgmt-interop](../../integ/nfdmgmt-interop/).
 
 ```ts
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";

@@ -2,6 +2,41 @@ import { Name, TT } from "@ndn/packet";
 import { Decoder, type Encodable, type Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
 
+import { type ControlCommandOptions, invokeGeneric } from "./control-command-generic";
+import { type ControlResponse } from "./control-response";
+
+/**
+ * Pick fields from ControlParameters.Fields.
+ * R are required.
+ * O are optional.
+ */
+type CP<R extends keyof ControlParameters.Fields, O extends keyof ControlParameters.Fields> =
+  Required<Pick<ControlParameters.Fields, R>> & Pick<ControlParameters.Fields, O>;
+
+/** Declare required and optional fields of each command. */
+interface Commands {
+  "faces/create": CP<"uri", "localUri" | "facePersistency" | "baseCongestionMarkingInterval" |
+  "defaultCongestionThreshold" | "mtu" | "flags" | "mask">;
+  "faces/update": CP<never, "faceId" | "facePersistency" | "baseCongestionMarkingInterval" |
+  "defaultCongestionThreshold" | "flags" | "mask">;
+  "faces/destroy": CP<"faceId", never>;
+  "strategy-choice/set": CP<"name" | "strategy", never>;
+  "strategy-choice/unset": CP<"name", never>;
+  "rib/register": CP<"name", "faceId" | "origin" | "cost" | "flags" | "expirationPeriod">;
+  "rib/unregister": CP<"name", "faceId" | "origin">;
+}
+
+/**
+ * Invoke NFD ControlCommand and wait for response.
+ * @param command command module and verb.
+ * @param params command parameters.
+ * @param opts other options.
+ * @returns command response.
+ */
+export async function invoke<C extends keyof Commands>(command: C, params: Commands[C], opts: ControlCommandOptions = {}): Promise<ControlResponse> {
+  return invokeGeneric(command, new ControlParameters(params), opts);
+}
+
 /** NFD Management ControlParameters struct. */
 export class ControlParameters {
   public static decodeFrom(decoder: Decoder): ControlParameters {

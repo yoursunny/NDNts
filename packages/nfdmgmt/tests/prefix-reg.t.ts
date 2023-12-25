@@ -5,39 +5,34 @@ import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Certificate, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
-import { Component, Data, Interest, Name, ParamsDigest } from "@ndn/packet";
+import { Component, Data, Interest, type Name, ParamsDigest } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
 import { Closers, delay } from "@ndn/util";
 import { TypedEventTarget } from "typescript-event-target";
 import { afterEach, expect, test } from "vitest";
 
-import { ControlCommand, ControlParameters, ControlResponse, enableNfdPrefixReg } from "..";
+import { ControlParameters, ControlResponse, enableNfdPrefixReg, localhopPrefix, localhostPrefix } from "..";
 
 const closers = new Closers();
 afterEach(closers.close);
 
 interface Row {
   faceIsLocal?: boolean;
-  commandPrefix?: Name;
   expectedPrefix: Name;
 }
 
 const TABLE: Row[] = [
   {
     faceIsLocal: true,
-    expectedPrefix: ControlCommand.localhostPrefix,
+    expectedPrefix: localhostPrefix,
   },
   {
     faceIsLocal: false,
-    expectedPrefix: ControlCommand.localhopPrefix,
-  },
-  {
-    commandPrefix: new Name("/Q"),
-    expectedPrefix: new Name("/Q"),
+    expectedPrefix: localhopPrefix,
   },
 ];
 
-test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }) => {
+test.each(TABLE)("reg %#", async ({ faceIsLocal, expectedPrefix }) => {
   const fw = Forwarder.create();
   closers.push(fw);
 
@@ -74,7 +69,6 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, commandPrefix, expectedPrefix }
   const uplink = fw.addFace(uplinkL3, { local: faceIsLocal });
   closers.push(uplink);
   enableNfdPrefixReg(uplink, {
-    commandPrefix,
     retry: {
       minTimeout: 1,
       maxTimeout: 1,
