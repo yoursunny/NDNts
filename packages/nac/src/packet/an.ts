@@ -6,7 +6,7 @@ export const TT = {
   EncryptedPayload: 0x84,
   InitializationVector: 0x85,
   EncryptedPayloadKey: 0x86,
-};
+} as const;
 
 export const ContentTypeKEY = 0x02;
 export const DefaultFreshness = 3600_000;

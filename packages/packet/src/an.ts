@@ -33,7 +33,7 @@ export const TT = {
 
   Nack: 0x0320,
   NackReason: 0x0321,
-};
+} as const;
 
 export const SigType = {
   Sha256: 0x00,
@@ -42,10 +42,10 @@ export const SigType = {
   HmacWithSha256: 0x04,
   Ed25519: 0x05,
   Null: 0xC8,
-};
+} as const;
 
 export const NackReason = {
   Congestion: 50,
   Duplicate: 100,
   NoRoute: 150,
-};
+} as const;

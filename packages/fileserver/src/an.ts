@@ -8,7 +8,7 @@ export const TT = {
   Btime: 0xF508,
   Ctime: 0xF50A,
   Mtime: 0xF50C,
-};
+} as const;
 
 export const ModeFile = 0x8000;
 export const ModeDir = 0x4000;

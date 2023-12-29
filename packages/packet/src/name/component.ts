@@ -39,7 +39,7 @@ export class Component {
       return input;
     }
 
-    let type = TT.GenericNameComponent;
+    let type: number = TT.GenericNameComponent;
     let posValue = 0;
     const posEqual = input.indexOf("=");
     if (posEqual >= 1) {

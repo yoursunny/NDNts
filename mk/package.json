@@ -4,11 +4,11 @@
   "devDependencies": {
     "@k-foss/ts-esnode": "^2.0.3",
     "@nodelib/fs.walk": "^2.0.0",
-    "@pnpm/lockfile-types": "^5.1.4",
+    "@pnpm/lockfile-types": "^5.1.5",
     "js-yaml": "^4.1.0",
     "readlink": "^3.0.0",
     "split2": "^4.2.0",
-    "type-fest": "^4.8.3"
+    "type-fest": "^4.9.0"
   },
   "dependencies": {
     "compare-versions": "6.1.0"

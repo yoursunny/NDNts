@@ -1,8 +1,8 @@
-import { Component, digestSigning, Interest, Name, SignedInterestPolicy, type Signer, TT } from "@ndn/packet";
+import { Component, digestSigning, Interest, SignedInterestPolicy, type Signer, TT } from "@ndn/packet";
 import { Decoder, type Encodable, Encoder } from "@ndn/tlv";
 
+import { CommonOptions, makeName } from "./common";
 import { ControlResponse } from "./control-response";
-import { CommonOptions } from "./options";
 
 const defaultSIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce(), SignedInterestPolicy.Time());
 
@@ -34,11 +34,7 @@ export async function invokeGeneric(command: string, params: Encodable, opts: Co
     signedInterestPolicy = defaultSIP,
   } = opts;
 
-  const interest = new Interest(new Name([
-    ...prefix.comps,
-    ...command.split("/"),
-    new Component(TT.GenericNameComponent, Encoder.encode(params)),
-  ]));
+  const interest = new Interest(makeName(prefix, command, [new Component(TT.GenericNameComponent, Encoder.encode(params))]));
   await signedInterestPolicy.makeSigner(signer).sign(interest);
 
   const data = await endpoint.consume(interest, {

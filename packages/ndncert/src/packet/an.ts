@@ -27,7 +27,7 @@ export const TT = {
   AuthenticationTag: 0xAF,
   CertToRevoke: 0xB1,
   ProbeRedirect: 0xB3,
-};
+} as const;
 
 export const C = {
   CA: Component.from("CA"),

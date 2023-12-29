@@ -6,7 +6,6 @@ import { pEvent } from "p-event";
 import { writeToStream } from "streaming-iterables";
 
 import type { Transport } from "./transport";
-// import { pipeline } from "node:stream/promises";
 
 /**
  * Parse TLVs from input stream.

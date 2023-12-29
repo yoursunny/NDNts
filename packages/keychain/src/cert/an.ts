@@ -1,7 +1,7 @@
-export namespace TT {
-  export const ValidityPeriod = 0xFD;
-  export const NotBefore = 0xFE;
-  export const NotAfter = 0xFF;
-}
+export const TT = {
+  ValidityPeriod: 0xFD,
+  NotBefore: 0xFE,
+  NotAfter: 0xFF,
+} as const;
 
 export const ContentTypeKEY = 0x02;

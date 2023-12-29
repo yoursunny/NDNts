@@ -98,7 +98,7 @@ const TT = {
   Adjacency: 0x84,
   Cost: 0x8C,
   Uri: 0x8D,
-};
+} as const;
 
 // Create the decoder.
 const EVD = new EvDecoder<Adjacency>("Adjacency", TT.Adjacency)

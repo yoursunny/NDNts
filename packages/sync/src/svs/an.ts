@@ -7,7 +7,7 @@ export const TT = {
   SeqNo: 0xCC,
   MappingData: 0xCD,
   MappingEntry: 0xCE,
-};
+} as const;
 
 export const MappingKeyword = Component.from("MAPPING");
 export const Version0 = Version.create(0);

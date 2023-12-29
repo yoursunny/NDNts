@@ -1,5 +1,5 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Name, noopSigning, type Verifier } from "@ndn/packet";
+import { type Component, Name, noopSigning, type Verifier } from "@ndn/packet";
 
 export const localhostPrefix = new Name("/localhost/nfd");
 export const localhopPrefix = new Name("/localhop/nfd");
@@ -38,4 +38,8 @@ export namespace CommonOptions {
   }: CommonOptions): Required<CommonOptions> {
     return { endpoint, prefix, verifier };
   }
+}
+
+export function makeName(prefix: Name, subName: string, params: readonly Component[]): Name {
+  return new Name([...prefix.comps, ...subName.split("/"), ...params]);
 }

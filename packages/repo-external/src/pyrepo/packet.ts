@@ -15,7 +15,7 @@ const TT = {
   ForwardingHint: 0xD3,
   RegisterPrefix: 0xD4,
   CheckPrefix: 0xD5,
-};
+} as const;
 
 export class CommandParameter {
   constructor(

@@ -10,4 +10,4 @@ export const TT = {
   Nack: l3TT.Nack,
   NackReason: l3TT.NackReason,
   CongestionMark: 0x0340,
-};
+} as const;

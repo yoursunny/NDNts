@@ -6,9 +6,9 @@ import { Closers } from "@ndn/util";
 import map from "obliterator/map.js";
 import type { Except } from "type-fest";
 
+import { getPrefix } from "./common";
 import type { ControlCommandOptions } from "./control-command-generic";
 import { ControlParameters, invoke } from "./control-command-nfd";
-import { getPrefix } from "./options";
 
 type CommandOptions = Except<ControlCommandOptions, "endpoint" | "prefix">;
 type RouteOptions = Pick<ControlParameters.Fields, "origin" | "cost" | "flags">;

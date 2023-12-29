@@ -7,7 +7,7 @@ export const NotifySuffix = Component.from("notify");
 const TT = {
   NotifyNonce: 0x80,
   PublisherFwHint: 0xD3,
-};
+} as const;
 
 const EVD = new EvDecoder<NotifyParams>("NotifyParams")
   .add(l3TT.Name, (t, { decoder }) => t.publisher = decoder.decode(Name))

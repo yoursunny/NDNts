@@ -20,7 +20,7 @@ export class SigInfo {
     return EVD.decode(new SigInfo(), decoder);
   }
 
-  public type = SigType.Null;
+  public type: number = SigType.Null;
   public keyLocator?: KeyLocator;
   public nonce?: Uint8Array;
   public time?: number;
