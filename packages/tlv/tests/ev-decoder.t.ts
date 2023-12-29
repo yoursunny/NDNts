@@ -1,5 +1,3 @@
-import "../test-fixture/expect";
-
 import { expect, test, vi } from "vitest";
 
 import { Decoder, EvDecoder } from "..";

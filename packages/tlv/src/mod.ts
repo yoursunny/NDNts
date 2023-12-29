@@ -4,3 +4,4 @@ export * from "./ev-decoder";
 export * from "./extensible";
 export * from "./nni";
 export * from "./string";
+export * from "./struct-builder";

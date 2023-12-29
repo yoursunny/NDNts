@@ -40,25 +40,28 @@ export class EvDecoder<T> {
     this.topTT = Array.isArray(topTT) ? (topTT as readonly number[]) : [topTT as number];
   }
 
+  public applyDefaultsToRuleOptions({
+    order = (this.nextOrder += AUTO_ORDER_SKIP),
+    required = false,
+    repeat = false,
+  }: Partial<EvDecoder.RuleOptions> = {}): EvDecoder.RuleOptions {
+    return { order, required, repeat };
+  }
+
   /**
    * Add a decoding rule.
    * @param tt TLV-TYPE to match this rule.
    * @param cb callback or nested EvDecoder to handle element TLV.
-   * @param options additional rule options.
+   * @param opts additional rule options.
    */
-  public add(tt: number, cb: EvDecoder.ElementDecoder<T> | EvDecoder<T>, {
-    order = (this.nextOrder += AUTO_ORDER_SKIP),
-    required = false,
-    repeat = false,
-  }: Partial<EvDecoder.RuleOptions> = {}): this {
+  public add(tt: number, cb: EvDecoder.ElementDecoder<T> | EvDecoder<T>, opts: Partial<EvDecoder.RuleOptions> = {}): this {
+    const ro = this.applyDefaultsToRuleOptions(opts);
     assert(!this.rules.has(tt), "duplicate rule for same TLV-TYPE");
     this.rules.set(tt, {
+      ...ro,
       cb: cb instanceof EvDecoder ? nest(cb) : cb,
-      order,
-      required,
-      repeat,
     });
-    if (required) {
+    if (ro.required) {
       this.requiredTT.add(tt);
     }
     return this;
@@ -181,6 +184,12 @@ export namespace EvDecoder {
    * Unrecognized or out-of-order TLV element with a critical TLV-TYPE number causes decoding error.
    */
   export type IsCritical = (tt: number) => boolean;
+
+  /**
+   * IsCritical callback that always returns false.
+   * This means unrecognized or out-of-order TLV elements are ignored.
+   */
+  export const neverCritical: IsCritical = () => false;
 
   /**
    * Callback before or after decoding TLV-VALUE.

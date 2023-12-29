@@ -8,7 +8,7 @@ export const MetadataKeyword: Component = Keyword.create("metadata");
 function makeEvd<M extends Metadata>(title: string) {
   return new EvDecoder<M>(title)
     .add(TT.Name, (t, { value }) => t.name = new Name(value), { required: true })
-    .setIsCritical(() => false);
+    .setIsCritical(EvDecoder.neverCritical);
 }
 
 const EVD = makeEvd<Metadata>("Metadata");
