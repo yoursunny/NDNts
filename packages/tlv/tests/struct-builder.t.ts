@@ -2,7 +2,7 @@ import "../test-fixture/expect";
 
 import { expect, test } from "vitest";
 
-import { Decoder, Encoder, StructBuilder, StructFieldNNI, StructFieldNNIBig, StructFieldText } from "..";
+import { Decoder, Encoder, StructBuilder, StructFieldNNI, StructFieldNNIBig, StructFieldText, StructFieldType } from "..";
 
 test("basic", () => {
   const b = new StructBuilder("MyType", 0x40)
@@ -71,6 +71,96 @@ test("basic", () => {
   expect(decoded.a44).toEqual([0xAA0044, 0xAA0144]);
 });
 
+test("no-topTT", () => {
+  const b = new StructBuilder("MyType")
+    .add(0x41, "a41", StructFieldNNI, { repeat: true });
+  class MyType extends b.baseClass<MyType>() {}
+  b.subclass = MyType;
+
+  const myObj = new MyType();
+  myObj.a41.push(0xAA0041, 0xAA0141);
+  expect(myObj.toString()).toBe([
+    "MyType",
+    `a41=[${0xAA0041}, ${0xAA0141}]`,
+  ].join(" "));
+
+  const wire = Encoder.encode(myObj);
+  expect(wire).toMatchTlv(
+    ({ type, nni }) => {
+      expect(type).toBe(0x41);
+      expect(nni).toBe(0xAA0041);
+    },
+    ({ type, nni }) => {
+      expect(type).toBe(0x41);
+      expect(nni).toBe(0xAA0141);
+    },
+  );
+
+  const decoded = Decoder.decode(wire, MyType);
+  expect(decoded.a41).toEqual([0xAA0041, 0xAA0141]);
+});
+
+test("wrap-nest", () => {
+  class Inner {
+    public static decodeFrom(decoder: Decoder): Inner {
+      const { length } = decoder.read();
+      return new Inner(length);
+    }
+
+    constructor(public n = 0) {}
+
+    public encodeTo(encoder: Encoder): void {
+      const value = new Uint8Array(this.n);
+      value.fill(0xBB);
+      encoder.encode([0x4F, value]);
+    }
+
+    public toString(): string {
+      return this.n.toString(16).toUpperCase();
+    }
+  }
+
+  const b = new StructBuilder("MyType")
+    .add(0x41, "a41", StructFieldType.wrap(Inner), { required: true })
+    .add(0x42, "a42", StructFieldType.nest(Inner), { required: true });
+  class MyType extends b.baseClass<MyType>() {}
+  b.subclass = MyType;
+
+  const myObj = new MyType();
+  expect(myObj.a41).toBeInstanceOf(Inner);
+  expect(myObj.a42).toBeInstanceOf(Inner);
+
+  myObj.a41 = new Inner(0xAA41);
+  myObj.a42 = new Inner(0xAA42);
+  expect(myObj.toString()).toBe([
+    "MyType",
+    "a41=AA41",
+    "a42=AA42",
+  ].join(" "));
+
+  const wire = Encoder.encode(myObj);
+  expect(wire).toMatchTlv(
+    ({ type, length }) => {
+      expect(type).toBe(0x41);
+      expect(length).toBe(0xAA41);
+    },
+    ({ type, value }) => {
+      expect(type).toBe(0x42);
+      expect(value).toMatchTlv(
+        ({ type, length }) => {
+          expect(type).toBe(0x4F);
+          expect(length).toBe(0xAA42);
+        },
+      );
+    },
+  );
+
+  const decoded = Decoder.decode(wire, MyType);
+  expect(decoded).toBeInstanceOf(MyType);
+  expect(decoded.a41.n).toBe(0xAA41);
+  expect(decoded.a42.n).toBe(0xAA42);
+});
+
 test("types", () => {
   const b = new StructBuilder("MyType")
     .add(0x41, "a41", StructFieldNNI, { required: true })
@@ -136,34 +226,4 @@ test("order", () => {
       expect(nni).toBe(0xAA41);
     },
   );
-});
-
-test("no-topTT", () => {
-  const b = new StructBuilder("MyType")
-    .add(0x41, "a41", StructFieldNNI, { repeat: true });
-  class MyType extends b.baseClass<MyType>() {}
-  b.subclass = MyType;
-
-  const myObj = new MyType();
-  myObj.a41.push(0xAA0041, 0xAA0141);
-  expect(myObj.toString()).toBe([
-    "MyType",
-    `a41=[${0xAA0041}, ${0xAA0141}]`,
-  ].join(" "));
-
-  const wire = Encoder.encode(myObj);
-  expect(wire).toMatchTlv(
-    ({ type, nni }) => {
-      expect(type).toBe(0x41);
-      expect(nni).toBe(0xAA0041);
-    },
-    ({ type, nni }) => {
-      expect(type).toBe(0x41);
-      expect(nni).toBe(0xAA0141);
-    },
-  );
-
-  const decoded = Decoder.decode(wire, MyType);
-  expect(decoded).toBeInstanceOf(MyType);
-  expect(decoded.a41).toEqual([0xAA0041, 0xAA0141]);
 });

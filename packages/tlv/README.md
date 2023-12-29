@@ -6,10 +6,10 @@ This package implements Type-Length-Value structure encoder and decoder as speci
 It has full support for TLV evolvability guidelines.
 
 ```ts
-import { Encoder, Decoder, EvDecoder, NNI } from "@ndn/tlv";
+import { Encoder, Decoder, EvDecoder, NNI, StructBuilder, StructFieldNNI, StructFieldText } from "@ndn/tlv";
 
 // other imports for examples
-import { Name, TT as nameTT } from "@ndn/packet";
+import { Name, TT as l3TT, StructFieldName } from "@ndn/packet";
 import assert from "node:assert/strict";
 ```
 
@@ -69,7 +69,7 @@ assert.equal(name.toString(), "/8=A");
 The **EvDecoder** is a decoder that is aware of TLV evolvability guidelines.
 It's used to implement decoding functions of TLV objects, such as `Interest.decodeFrom`.
 
-Suppose we want to decode [NLSR's LSDB Dataset](https://redmine.named-data.net/projects/nlsr/wiki/LSDB_DataSet/11):
+Suppose we want to decode `Adjacency` type in [NLSR's LSDB Dataset](https://redmine.named-data.net/projects/nlsr/wiki/LSDB_DataSet/13):
 
 ```abnf
 Adjacency = ADJACENCY-TYPE TLV-LENGTH
@@ -94,7 +94,7 @@ class Adjacency {
 
 // Declare constants for TLV-TYPE numbers.
 const TT = {
-  ...nameTT,
+  ...l3TT,
   Adjacency: 0x84,
   Cost: 0x8C,
   Uri: 0x8D,
@@ -120,11 +120,62 @@ const adjacencyWire = Uint8Array.of(
   0xF0, 0x00, // unrecognized non-critical TLV-TYPE, ignored
   0x8C, 0x01, 0x80, // Cost
 );
-const adjacencyDecoder = new Decoder(adjacencyWire);
 
 // We can decode it with the EVD.
-const adjacency = EVD.decode(new Adjacency(), adjacencyDecoder);
+const adjacency = EVD.decode(new Adjacency(), new Decoder(adjacencyWire));
 assert.equal(adjacency.name.toString(), "/8=A");
 assert.equal(adjacency.uri, "B");
 assert.equal(adjacency.cost, 128);
 ```
+
+## StructBuilder
+
+The **StructBuilder** is a helper for defining a class that represents a TLV structure.
+It allows you to define the typing, constructor, encoder, and decoder, while writing each field only once.
+
+```ts
+// Create a StructBuilder and add the fields.
+const buildAdj = new StructBuilder("Adjacency", TT.Adjacency)
+  .add(TT.Name, "name", StructFieldName, { required: true })
+  .add(TT.Uri, "uri", StructFieldText, { required: true })
+  .add(TT.Cost, "cost", StructFieldNNI, { required: true });
+// You should call .add() on each successive return value, and save the last return value into the
+// builder variable. This gradually builds up the typing of the TLV class.
+// WRONG EXAMPLE:
+//   const builder = new StructBuilder();
+//   builder.add(...);
+//   builder.add(...);
+// In the wrong example, typing information is not saved into the builder variable.
+
+// Declare a class to represent the Adjacency type, inheriting from a base class supplied by the builder.
+class Adj extends buildAdj.baseClass<Adj>() {}
+
+// Assign the subclass to the builder (otherwise the decoding function will not work).
+buildAdj.subclass = Adj;
+
+// We can construct an instance and encode it.
+const adj0 = new Adj();
+adj0.name = new Name("/A");
+adj0.uri = "B";
+adj0.cost = 128;
+const adj0Wire = Encoder.encode(adj0);
+assert.deepEqual(adj0Wire, Uint8Array.of(
+  0x84, 0x0B,
+  0x07, 0x03, 0x08, 0x01, 0x41, // Name
+  0x8D, 0x01, 0x42, // Uri
+  0x8C, 0x01, 0x80, // Cost
+));
+
+// We can decode the wire encoding.
+const adj1 = Decoder.decode(adjacencyWire, Adj);
+assert.equal(adj1.name.toString(), "/8=A");
+assert.equal(adj1.uri, "B");
+assert.equal(adj1.cost, 128);
+```
+
+**StructBuilder** enables rapid development of TLV based structures, but is less flexible than writing code with Encoder, Decoder, and EvDecoder.
+Some limitations are:
+
+* You cannot write JSDoc for individual fields.
+* You cannot decode multiple TLV-TYPE numbers into the same field (counterexample: `Name` with typed name components).
+* You cannot encode the structure with different TLV-TYPE numbers (counterexample: `SigInfo` encoded as either ISigInfo or DSigInfo).

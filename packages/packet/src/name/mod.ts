@@ -5,3 +5,4 @@ export * from "./convention";
 export * from "./digest-comp";
 export * from "./name";
 export * from "./name-map";
+export * from "./struct-field";

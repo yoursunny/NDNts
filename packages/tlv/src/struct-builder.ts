@@ -1,13 +1,13 @@
 import { assert, toUtf8 } from "@ndn/util";
 import type { Constructor, Simplify } from "type-fest";
 
-import type { Decodable, Decoder } from "./decoder";
-import type { Encodable, EncodableObj, Encoder } from "./encoder";
+import { type Decodable, Decoder } from "./decoder";
+import { type Encodable, type EncodableObj, Encoder } from "./encoder";
 import { EvDecoder } from "./ev-decoder";
 import { NNI } from "./nni";
 
 /**
- * Represents a field type in StructBuilder.
+ * StructBuilder field type.
  * @template T value type.
  */
 export interface StructFieldType<T> {
@@ -16,9 +16,33 @@ export interface StructFieldType<T> {
   decode(this: void, tlv: Decoder.Tlv): T;
   asString?(this: void, value: T): string;
 }
+export namespace StructFieldType {
+  export function wrap<T extends EncodableObj>(F: Constructor<T> & Decodable<T>, overrides: Partial<StructFieldType<T>> = {}): StructFieldType<T> {
+    return {
+      newValue: () => new F(),
+      encode: (value) => {
+        const d = new Decoder(Encoder.encode(value));
+        return d.read().value;
+      },
+      decode: ({ decoder }) => decoder.decode(F),
+      asString: (value) => value.toString(),
+      ...overrides,
+    };
+  }
+
+  export function nest<T extends EncodableObj>(F: Constructor<T> & Decodable<T>, overrides: Partial<StructFieldType<T>> = {}): StructFieldType<T> {
+    return {
+      newValue: () => new F(),
+      encode: (value) => value,
+      decode: ({ vd }) => vd.decode(F),
+      asString: (value) => value.toString(),
+      ...overrides,
+    };
+  }
+}
 
 /**
- * Field type of non-negative integer.
+ * StructBuilder field type of non-negative integer.
  * The field is defined as number.
  * If the field is required, it is initialized as zero.
  */
@@ -29,7 +53,7 @@ export const StructFieldNNI: StructFieldType<number> = {
 };
 
 /**
- * Field type of non-negative integer.
+ * StructBuilder field type of non-negative integer.
  * The field is defined as bigint.
  * If the field is required, it is initialized as zero.
  */
@@ -40,7 +64,7 @@ export const StructFieldNNIBig: StructFieldType<bigint> = {
 };
 
 /**
- * Field type of UTF-8 text.
+ * StructBuilder field type of UTF-8 text.
  * The field is defined as string.
  * If the field is required, it is initialized as an empty string.
  */
@@ -90,14 +114,31 @@ type InferField<T, Required extends boolean, Repeat extends boolean> =
  * constructor to .subclass property of the builder.
  */
 export class StructBuilder<U extends {}> {
+  /**
+   * Constructor.
+   * @param typeName type name, used in error messages.
+   * @param topTT if specified, encode as complete TLV; otherwise, encode as TLV-VALUE only.
+   */
   constructor(public readonly typeName: string, public readonly topTT?: number) {
     this.EVD = new EvDecoder<any>(typeName, topTT);
   }
 
+  /**
+   * Subclass constructor.
+   * This must be assigned, otherwise decoding function will not work.
+   */
   public subclass?: Constructor<U, []>;
   private readonly rules: Array<Rule<any>> = [];
   private readonly EVD: EvDecoder<any>;
 
+  /**
+   * Add a field.
+   * @param tt TLV-TYPE number.
+   * @param key field name on the base class.
+   * @param type field type.
+   * @param opts field options.
+   * @returns StructBuilder annotated with field typing.
+   */
   public add<T, K extends string, Required extends boolean = false, Repeat extends boolean = false>(
       tt: number,
       key: K,
@@ -173,11 +214,16 @@ export class StructBuilder<U extends {}> {
     return this as any;
   }
 
+  /** Change IsCritical on the EvDecoder. */
   public setIsCritical(cb: EvDecoder.IsCritical): this {
     this.EVD.setIsCritical(cb);
     return this;
   }
 
+  /**
+   * Obtain a base class for the TLV structure class.
+   * The base class has constructor, encoding, and decoding functions.
+   */
   public baseClass<S>(): (new() => Simplify<U> & EncodableObj) & Decodable<S> {
     this.rules.sort(({ order: a }, { order: b }) => a - b);
     const b = this; // eslint-disable-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias

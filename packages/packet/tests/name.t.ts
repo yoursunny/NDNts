@@ -1,9 +1,9 @@
 import "../test-fixture/expect";
 
-import { Decoder } from "@ndn/tlv";
+import { Decoder, Encoder, StructBuilder } from "@ndn/tlv";
 import { expect, test } from "vitest";
 
-import { AltUri, Component, Name } from "..";
+import { AltUri, Component, Name, StructFieldName, StructFieldNameNested, TT } from "..";
 
 test("construct", () => {
   let name = new Name();
@@ -119,4 +119,41 @@ test("NameLike", () => {
   const fromQ = Name.from("/Q");
   expect(fromQ).toEqualName(nameQ);
   expect(fromQ).not.toBe(nameQ);
+});
+
+test("StructFieldType", () => {
+  const b = new StructBuilder("MyType")
+    .add(TT.Name, "a41", StructFieldName, { required: true })
+    .add(0x42, "a42", StructFieldNameNested, { required: true });
+  class MyType extends b.baseClass<MyType>() {}
+  b.subclass = MyType;
+
+  const myObj = new MyType();
+  expect(myObj.a41).toBeInstanceOf(Name);
+  expect(myObj.a42).toBeInstanceOf(Name);
+
+  myObj.a41 = new Name("/AA41");
+  myObj.a42 = new Name("/AA/42");
+  expect(myObj.toString()).toBe([
+    "MyType",
+    "a41=/8=AA41",
+    "a42=/8=AA/8=42",
+  ].join(" "));
+
+  const wire = Encoder.encode(myObj);
+  expect(wire).toMatchTlv(
+    ({ type, decoder }) => {
+      expect(type).toBe(TT.Name);
+      expect(decoder.decode(Name)).toEqualName("/AA41");
+    },
+    ({ type, vd }) => {
+      expect(type).toBe(0x42);
+      expect(vd.decode(Name)).toEqualName("/AA/42");
+    },
+  );
+
+  const decoded = Decoder.decode(wire, MyType);
+  expect(decoded).toBeInstanceOf(MyType);
+  expect(decoded.a41).toEqualName("/AA41");
+  expect(decoded.a42).toEqualName("/AA/42");
 });
