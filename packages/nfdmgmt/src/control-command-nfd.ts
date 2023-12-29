@@ -121,7 +121,7 @@ const fieldDefs: Array<[
 ]> = [];
 
 const EVD = new EvDecoder<ControlParameters.Fields>("ControlParameters", TtControlParameters)
-  .setIsCritical(() => false);
+  .setIsCritical(EvDecoder.neverCritical);
 
 function defField<K extends keyof ControlParameters.Fields>(tt: number, key: K,
     encodeValue: (v: NonNullable<ControlParameters.Fields[K]>) => Encodable,

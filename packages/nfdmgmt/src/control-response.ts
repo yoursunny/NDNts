@@ -13,7 +13,7 @@ const EVD = new EvDecoder<ControlResponse>("ControlResponse", TT.ControlResponse
     t.statusText = text;
     t.body = after;
   })
-  .setIsCritical(() => false);
+  .setIsCritical(EvDecoder.neverCritical);
 
 /** NFD Management ControlResponse struct. */
 export class ControlResponse {

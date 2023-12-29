@@ -22,9 +22,9 @@ export interface ControlCommandOptions extends CommonOptions {
 
 /**
  * Invoke generic ControlCommand and wait for response.
- * @param command command name components.
+ * @param command command name.
  * @param params command parameters.
- * @param opts target prefix and other options.
+ * @param opts other options. Set .opts.prefix to target non-NFD producer.
  * @returns command response.
  */
 export async function invokeGeneric(command: string, params: Encodable, opts: ControlCommandOptions = {}): Promise<ControlResponse> {

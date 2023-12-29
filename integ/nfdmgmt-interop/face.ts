@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
 
 import { closeUplinks, openUplinks } from "@ndn/cli-common";
-import { ControlParameters, invoke } from "@ndn/nfdmgmt";
+import { ControlParameters, FaceQuery, FaceStatus, invoke, list } from "@ndn/nfdmgmt";
 
 await openUplinks();
+
+for (const face of await list(FaceStatus)) {
+  console.log(face.toString());
+}
 
 const res0 = await invoke("faces/create", {
   uri: "udp4://127.0.0.1:7001",
@@ -26,6 +30,10 @@ const body1 = ControlParameters.decodeFromResponseBody(res1);
 console.log(body1.toString());
 assert.equal(body1.faceId, faceId);
 assert.equal(body1.facePersistency, ControlParameters.FacePersistency.Permanent);
+
+for (const face of await list(FaceQuery({ faceId }))) {
+  console.log(face.toString());
+}
 
 const res2 = await invoke("faces/destroy", {
   faceId,
