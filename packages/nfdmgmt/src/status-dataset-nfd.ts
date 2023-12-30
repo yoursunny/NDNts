@@ -23,8 +23,7 @@ const buildFaceStatus = new StructBuilder("FaceStatus", 0x80)
   .add(0x98, "nOutNacks", StructFieldNNIBig, { required: true })
   .add(0x94, "nInBytes", StructFieldNNIBig, { required: true })
   .add(0x95, "nOutBytes", StructFieldNNIBig, { required: true })
-  .add(0x6C, "flags", StructFieldNNI, { required: true })
-  .asFlags("flags", FaceFlags, "flag")
+  .add(0x6C, "flags", StructFieldNNI, { required: true, flagPrefix: "flag", flagBits: FaceFlags })
   .setIsCritical(EvDecoder.neverCritical);
 /** NFD faces/list and faces/query dataset item. */
 export class FaceStatus extends buildFaceStatus.baseClass<FaceStatus>() {
@@ -68,8 +67,7 @@ buildChannelStatus.subclass = ChannelStatus satisfies StatusDataset<ChannelStatu
 
 const buildCsInfo = new StructBuilder("CsInfo", 0x80)
   .add(0x83, "capacity", StructFieldNNIBig, { required: true })
-  .add(0x6C, "flags", StructFieldNNI, { required: true })
-  .asFlags("flags", CsFlags, "flag")
+  .add(0x6C, "flags", StructFieldNNI, { required: true, flagPrefix: "flag", flagBits: CsFlags })
   .add(0x87, "nCsEntries", StructFieldNNIBig, { required: true })
   .add(0x81, "nHits", StructFieldNNIBig, { required: true })
   .add(0x82, "nMisses", StructFieldNNIBig, { required: true })
@@ -94,8 +92,7 @@ const buildRoute = new StructBuilder("Route")
   .add(0x69, "faceId", StructFieldNNI, { required: true })
   .add(0x6F, "origin", StructFieldNNI, { required: true })
   .add(0x6A, "cost", StructFieldNNI, { required: true })
-  .add(0x6C, "flags", StructFieldNNI, { required: true })
-  .asFlags("flags", RouteFlags, "flag")
+  .add(0x6C, "flags", StructFieldNNI, { required: true, flagPrefix: "flag", flagBits: RouteFlags })
   .add(0x6D, "expirationPeriod", StructFieldNNI)
   .setIsCritical(EvDecoder.neverCritical);
 /** NFD Route within rib/list dataset. */

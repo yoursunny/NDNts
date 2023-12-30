@@ -2,7 +2,7 @@ import "../test-fixture/expect";
 
 import { expect, test } from "vitest";
 
-import { Decoder, Encoder, StructBuilder, StructFieldNNI, StructFieldNNIBig, StructFieldText, StructFieldType } from "..";
+import { Decoder, Encoder, StructBuilder, StructFieldEnum, StructFieldNNI, StructFieldNNIBig, StructFieldText, StructFieldType } from "..";
 
 test("basic", () => {
   const b = new StructBuilder("MyType", 0x40)
@@ -100,12 +100,44 @@ test("no-topTT", () => {
   expect(decoded.a41).toEqual([0xAA0041, 0xAA0141]);
 });
 
-test("asFlags", () => {
+test("order", () => {
   const b = new StructBuilder("MyType")
-    .add(0x41, "a41", StructFieldNNI)
-    .asFlags("a41", { p: 0x01, q: 0x10 })
-    .add(0x42, "a42", StructFieldNNI, { required: true })
-    .asFlags("a42", { p: 0x02, q: 0x20, R: 0x20 }, "b");
+    .add(0x41, "a41", StructFieldNNI, { order: 2 })
+    .add(0x42, "a42", StructFieldNNI, { order: 1 });
+  class MyType extends b.baseClass<MyType>() {}
+  b.subclass = MyType;
+
+  const myObj = new MyType();
+  myObj.a41 = 0xAA41;
+  myObj.a42 = 0xAA42;
+  expect(myObj.toString()).toBe([
+    "MyType",
+    `a42=${0xAA42}`,
+    `a41=${0xAA41}`,
+  ].join(" "));
+
+  expect(myObj).toEncodeAs(
+    ({ type, nni }) => {
+      expect(type).toBe(0x42);
+      expect(nni).toBe(0xAA42);
+    },
+    ({ type, nni }) => {
+      expect(type).toBe(0x41);
+      expect(nni).toBe(0xAA41);
+    },
+  );
+});
+
+test("flags", () => {
+  const b = new StructBuilder("MyType")
+    .add(0x41, "a41", StructFieldNNI, {
+      flagBits: { p: 0x01, q: 0x10 },
+    })
+    .add(0x42, "a42", StructFieldNNI, {
+      required: true,
+      flagPrefix: "b",
+      flagBits: { p: 0x02, q: 0x20, R: 0x20 },
+    });
   class MyType extends b.baseClass<MyType>() {}
   b.subclass = MyType;
 
@@ -209,26 +241,42 @@ test("wrap-nest", () => {
 });
 
 test("types", () => {
+  enum MyEnum {
+    P = 1,
+    Q = 2,
+  }
+
   const b = new StructBuilder("MyType")
     .add(0x41, "a41", StructFieldNNI, { required: true })
     .add(0x42, "a42", StructFieldNNIBig, { required: true })
-    .add(0x43, "a43", StructFieldText, { required: true });
+    .add(0x43, "a43", StructFieldEnum<MyEnum>(MyEnum), { required: true })
+    .add(0x44, "a44", StructFieldText, { required: true });
   class MyType extends b.baseClass<MyType>() {}
   b.subclass = MyType;
 
   const myObj = new MyType();
   expect(myObj.a41).toBe(0);
   expect(myObj.a42).toBe(0n);
-  expect(myObj.a43).toBe("");
+  expect(myObj.a43).toBe(0);
+  expect(myObj.a44).toBe("");
+  expect(myObj.toString()).toBe([
+    "MyType",
+    "a41=0",
+    "a42=0",
+    "a43=0(unknown)",
+    "a44=",
+  ].join(" "));
 
   myObj.a41 = 0xAA41;
   myObj.a42 = 0xAA42n;
-  myObj.a43 = "AA43";
+  myObj.a43 = MyEnum.Q;
+  myObj.a44 = "AA44";
   expect(myObj.toString()).toBe([
     "MyType",
     `a41=${0xAA41}`,
     `a42=${0xAA42n}`,
-    "a43=AA43",
+    "a43=2(Q)",
+    "a44=AA44",
   ].join(" "));
 
   expect(myObj).toEncodeAs(
@@ -240,37 +288,13 @@ test("types", () => {
       expect(type).toBe(0x42);
       expect(nniBig).toBe(0xAA42n);
     },
-    ({ type, text }) => {
+    ({ type, nni }) => {
       expect(type).toBe(0x43);
-      expect(text).toBe("AA43");
+      expect(nni).toBe(2);
     },
-  );
-});
-
-test("order", () => {
-  const b = new StructBuilder("MyType")
-    .add(0x41, "a41", StructFieldNNI, { order: 2 })
-    .add(0x42, "a42", StructFieldNNI, { order: 1 });
-  class MyType extends b.baseClass<MyType>() {}
-  b.subclass = MyType;
-
-  const myObj = new MyType();
-  myObj.a41 = 0xAA41;
-  myObj.a42 = 0xAA42;
-  expect(myObj.toString()).toBe([
-    "MyType",
-    `a42=${0xAA42}`,
-    `a41=${0xAA41}`,
-  ].join(" "));
-
-  expect(myObj).toEncodeAs(
-    ({ type, nni }) => {
-      expect(type).toBe(0x42);
-      expect(nni).toBe(0xAA42);
-    },
-    ({ type, nni }) => {
-      expect(type).toBe(0x41);
-      expect(nni).toBe(0xAA41);
+    ({ type, text }) => {
+      expect(type).toBe(0x44);
+      expect(text).toBe("AA44");
     },
   );
 });

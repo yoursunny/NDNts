@@ -1,5 +1,5 @@
 import { assert, toUtf8 } from "@ndn/util";
-import type { ConditionalExcept, Constructor, Simplify } from "type-fest";
+import type { Constructor, IfNever, Simplify } from "type-fest";
 
 import { type Decodable, Decoder } from "./decoder";
 import { type Encodable, type EncodableObj, Encoder } from "./encoder";
@@ -88,7 +88,12 @@ export const StructFieldText: StructFieldType<string> = {
 };
 
 /** StructBuilder field options. */
-export interface StructFieldOptions<Required extends boolean = boolean, Repeat extends boolean = boolean> extends Partial<EvDecoder.RuleOptions> {
+interface Options<
+  Required extends boolean,
+  Repeat extends boolean,
+  FlagPrefix extends string,
+  FlagBit extends string,
+> extends Partial<EvDecoder.RuleOptions> {
   /**
    * Whether the field is required.
    * If both .required and .repeat are false, the field may be set to undefined and is initialized as undefined.
@@ -101,6 +106,18 @@ export interface StructFieldOptions<Required extends boolean = boolean, Repeat e
    * @default false
    */
   repeat?: Repeat;
+
+  /**
+   * Prefix of bit property names.
+   * Default is same as primary field name.
+   * Ignored if flagBits is unspecified.
+   */
+  flagPrefix?: FlagPrefix;
+  /**
+   * Mapping from bit name to bit value.
+   * If specified, the field is treated as bit flags.
+   */
+  flagBits?: Record<FlagBit, number>;
 }
 
 interface Rule<T> extends EvDecoder.RuleOptions {
@@ -112,7 +129,7 @@ interface Rule<T> extends EvDecoder.RuleOptions {
 }
 
 interface FlagBit {
-  readonly flags: string;
+  readonly key: string;
   readonly prop: string;
   readonly bit: number;
 }
@@ -121,6 +138,10 @@ type InferField<T, Required extends boolean, Repeat extends boolean> =
   Repeat extends true ? T[] :
   Required extends true ? T :
   (T | undefined);
+
+type ValidateOptions<T, Repeat extends boolean, FlagBit extends string, R> =
+  IfNever<FlagBit, R, InferField<T, true, Repeat> extends number ? R :
+  "ERROR: can only define flags on a non-repeatable number field">;
 
 /**
  * Helper to build a base class that represents a TLV structure.
@@ -159,13 +180,23 @@ export class StructBuilder<U extends {}> {
    * @param opts field options.
    * @returns StructBuilder annotated with field typing.
    */
-  public add<T, K extends string, Required extends boolean = false, Repeat extends boolean = false>(
+  public add<
+    T,
+    K extends string,
+    Required extends boolean = false,
+    Repeat extends boolean = false,
+    FlagPrefix extends string = K,
+    FlagBit extends string = never,
+  >(
       tt: number,
       key: K,
       type: StructFieldType<T>,
-      opts: StructFieldOptions<Required, Repeat> = {},
-  ): StructBuilder<U & { [key in K]: InferField<T, Required, Repeat> }> {
-    const fo = { ...opts, ...this.EVD.applyDefaultsToRuleOptions(opts) };
+      opts: Options<Required, Repeat, FlagPrefix, FlagBit> = {},
+  ): ValidateOptions<T, Repeat, FlagBit,
+      StructBuilder<Simplify<U & { [key in K]: InferField<T, Required, Repeat>; } &
+      { [key in `${FlagPrefix}${Capitalize<FlagBit>}`]: boolean; }>
+      >> {
+    const fo = { flagPrefix: key, ...opts, ...this.EVD.applyDefaultsToRuleOptions(opts) };
     const { asString: itemAsString = (value) => `${value}` } = type;
 
     if (fo.repeat) {
@@ -191,31 +222,31 @@ export class StructBuilder<U extends {}> {
           yield "]";
         },
       } satisfies Rule<T[]>);
-    } else if (fo.required) {
-      this.rules.push({
-        ...fo,
-        tt,
-        key,
-        newValue: type.newValue,
-        *encode(v) {
-          yield type.encode(v);
-        },
-        *asString(v) {
-          yield ` ${key}=${itemAsString(v)}`;
-        },
-      } satisfies Rule<T>);
     } else {
       this.rules.push({
         ...fo,
         tt,
         key,
-        newValue: () => undefined,
+        newValue: fo.required ? type.newValue : () => undefined,
         *encode(v) {
           if (v !== undefined) {
             yield type.encode(v);
           }
         },
-        *asString(v) {
+        asString: fo.flagBits ? function*(v) {
+          if (typeof v !== "number") {
+            return;
+          }
+          yield ` ${key}=0x${v.toString(16).toUpperCase()}(`;
+          let delim = "";
+          for (const [str, bit] of Object.entries<number>(fo.flagBits!)) {
+            if ((v & bit) !== 0) {
+              yield `${delim}${str}`;
+              delim = "|";
+            }
+          }
+          yield ")";
+        } : function*(v) {
           if (v !== undefined) {
             yield ` ${key}=${itemAsString(v)}`;
           }
@@ -231,46 +262,13 @@ export class StructBuilder<U extends {}> {
       fo,
     );
 
-    return this as any;
-  }
-
-  /**
-   * Declare a field as bit flags.
-   * @param flags existing non-repeatable NNI field.
-   * @param map mapping from bit name to bit value.
-   * @param prefix prefix of bit fields.
-   * @returns StructBuilder annotated with field typing.
-   */
-  public asFlags<
-    K extends string & keyof U,
-    F extends string,
-    P extends string = K,
-  >(flags: K, map: Record<F, number>, prefix?: P): StructBuilder<U & { [key in `${P}${Capitalize<F>}`]: boolean }> {
-    const index = this.rules.findIndex(({ key }) => key === flags);
-    assert(index >= 0);
-    this.rules.splice(index, 1, {
-      ...this.rules[index]!,
-      *asString(v?: number) {
-        if (v === undefined) {
-          return;
-        }
-        yield ` ${flags}=0x${v.toString(16).toUpperCase()}(`;
-        let delim = "";
-        for (const [str, bit] of Object.entries<number>(map)) {
-          if ((v & bit) !== 0) {
-            yield `${delim}${str}`;
-            delim = "|";
-          }
-        }
-        yield ")";
-      },
-    });
-
-    prefix ??= flags as any;
-    for (const [str, bit] of Object.entries<number>(map)) {
-      const prop = prefix + str.slice(0, 1).toUpperCase() + str.slice(1);
-      this.flagBits.push({ flags, prop, bit });
+    if (fo.flagBits) {
+      for (const [str, bit] of Object.entries<number>(fo.flagBits)) {
+        const prop = fo.flagPrefix + str.slice(0, 1).toUpperCase() + str.slice(1);
+        this.flagBits.push({ key, prop, bit });
+      }
     }
+
     return this as any;
   }
 
@@ -293,19 +291,19 @@ export class StructBuilder<U extends {}> {
           (this as any)[key] = construct();
         }
 
-        for (const { flags, prop, bit } of b.flagBits) {
+        for (const { key, prop, bit } of b.flagBits) {
           Object.defineProperty(this, prop, {
             configurable: true,
             enumerable: false,
             get(): boolean {
-              return (((this)[flags] ?? 0) & bit) !== 0;
+              return (((this)[key] ?? 0) & bit) !== 0;
             },
             set(v: boolean) {
-              (this)[flags] ??= 0;
+              (this)[key] ??= 0;
               if (v) {
-                (this)[flags] |= bit;
+                (this)[key] |= bit;
               } else {
-                (this)[flags] &= ~bit;
+                (this)[key] &= ~bit;
               }
             },
           });
@@ -348,4 +346,4 @@ export class StructBuilder<U extends {}> {
  * Infer fields of a class built by StructBuilder.
  * @template B StructBuilder annotated with field typing.
  */
-export type StructFields<B extends StructBuilder<{}>> = ConditionalExcept<B extends StructBuilder<infer U> ? U : never, Function>;
+export type StructFields<B extends StructBuilder<{}>> = B extends StructBuilder<infer U> ? U : never;

@@ -5,7 +5,7 @@ import { type ControlCommandOptions, invokeGeneric } from "./control-command-gen
 import { type ControlResponse } from "./control-response";
 import { CsFlags, FaceFlags, FacePersistency, RouteFlags } from "./enum-nfd";
 
-const allFlags = { ...FaceFlags, ...CsFlags, ...RouteFlags };
+const flagBits = { ...FaceFlags, ...CsFlags, ...RouteFlags };
 
 const buildControlParameters = new StructBuilder("ControlParameters", 0x68)
   .add(TT.Name, "name", StructFieldName)
@@ -19,10 +19,8 @@ const buildControlParameters = new StructBuilder("ControlParameters", 0x68)
   .add(0x87, "baseCongestionMarkingInterval", StructFieldNNI)
   .add(0x88, "defaultCongestionThreshold", StructFieldNNI)
   .add(0x89, "mtu", StructFieldNNI)
-  .add(0x6C, "flags", StructFieldNNI)
-  .asFlags("flags", allFlags, "flag")
-  .add(0x70, "mask", StructFieldNNI)
-  .asFlags("mask", allFlags)
+  .add(0x6C, "flags", StructFieldNNI, { flagPrefix: "flag", flagBits: flagBits })
+  .add(0x70, "mask", StructFieldNNI, { flagBits: flagBits })
   .add(0x6B, "strategy", StructFieldNameNested)
   .add(0x6D, "expirationPeriod", StructFieldNNI)
   .add(0x85, "facePersistency", StructFieldEnum<FacePersistency>(FacePersistency))
