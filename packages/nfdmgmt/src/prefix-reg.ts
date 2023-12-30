@@ -2,17 +2,19 @@ import { Endpoint, type Producer } from "@ndn/endpoint";
 import { type FwFace, ReadvertiseDestination, TapFace } from "@ndn/fw";
 import { Certificate, type KeyChain } from "@ndn/keychain";
 import { Interest, type Name, NameMap } from "@ndn/packet";
+import { type Encodable, NNI } from "@ndn/tlv";
 import { Closers } from "@ndn/util";
 import map from "obliterator/map.js";
-import type { Except } from "type-fest";
+import type { Except, Promisable } from "type-fest";
 
+import { RouteFlags, TT } from "./an-nfd";
 import { getPrefix } from "./common";
-import type { ControlCommandOptions } from "./control-command-generic";
-import { ControlParameters, invoke } from "./control-command-nfd";
-import type { RouteFlags } from "./enum-nfd";
+import { type ControlCommandOptions, invokeGeneric } from "./control-command-generic";
+import type { ControlParameters } from "./control-command-nfd";
+import type { ControlResponse } from "./control-response";
 
 type CommandOptions = Except<ControlCommandOptions, "endpoint" | "prefix">;
-type RouteOptions = Pick<ControlParameters.Fields, "origin" | "cost" | "flags" | `flag${keyof typeof RouteFlags}`>;
+type RouteOptions = Pick<ControlParameters.Fields, "origin" | "cost" | `flag${keyof typeof RouteFlags}`>;
 type Options = CommandOptions & RouteOptions & {
   retry?: ReadvertiseDestination.RetryOptions;
 
@@ -35,7 +37,7 @@ interface State {
 
 class NfdPrefixReg extends ReadvertiseDestination<State> {
   private readonly commandOptions: Except<ControlCommandOptions, "endpoint">;
-  private readonly routeOptions: RouteOptions;
+  private readonly routeOptions: [origin: Encodable, cost: Encodable, flags: Encodable];
   private readonly refreshInterval: number | false;
   private readonly preloadCertName?: Name;
   private readonly preloadFromKeyChain?: KeyChain;
@@ -50,12 +52,20 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
       ...opts,
     };
 
-    this.routeOptions = new ControlParameters({
-      origin: 65,
-      cost: 0,
-      flagCapture: true,
-      ...opts,
-    });
+    const {
+      origin = 65,
+      cost = 0,
+      flagChildInherit = false,
+      flagCapture = true,
+    } = opts;
+    this.routeOptions = [
+      [TT.Origin, NNI(origin)],
+      [TT.Cost, NNI(cost)],
+      [TT.Flags, NNI(
+        (Number(flagChildInherit) * RouteFlags.ChildInherit) |
+        (Number(flagCapture) * RouteFlags.Capture),
+      )],
+    ];
 
     this.refreshInterval = opts.refreshInterval ?? 300000;
     this.preloadCertName = opts.preloadCertName;
@@ -71,7 +81,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     super.disable();
   }
 
-  private async tap(): Promise<[opts: ControlCommandOptions, untap: () => void]> {
+  private async tap<R>(f: (opts: ControlCommandOptions) => Promisable<R>): Promise<R> {
     const tapFace = TapFace.create(this.face);
     tapFace.addRoute("/");
     const endpoint = new Endpoint({
@@ -83,10 +93,11 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
 
     const closers = new Closers();
     closers.push(...map(preloadProducers, ([, p]) => p), tapFace);
-    return [
-      { ...this.commandOptions, endpoint },
-      closers.close,
-    ];
+    try {
+      return await f({ ...this.commandOptions, endpoint });
+    } finally {
+      closers.close();
+    }
   }
 
   private async preload(endpoint: Endpoint) {
@@ -131,23 +142,13 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
   };
 
   protected override async doAdvertise(name: Name, state: State) {
-    const [opts, untap] = await this.tap();
-    try {
-      const cr = await invoke("rib/register", {
-        name,
-        origin: this.routeOptions.origin,
-        cost: this.routeOptions.cost,
-        flags: this.routeOptions.flags,
-      }, opts);
-      if (cr.statusCode !== 200) {
-        throw new Error(`${cr.statusCode} ${cr.statusText}`);
-      }
-    } finally {
-      untap();
-    }
     if (this.refreshInterval !== false) {
       this.scheduleRefresh(name, state, this.refreshInterval);
     }
+
+    const cr = await this.tap((opts) => invokeGeneric(
+      "rib/register", [TT.ControlParameters, name, ...this.routeOptions], opts));
+    this.checkSuccess(cr);
   }
 
   private scheduleRefresh(name: Name, state: State, after: number): void {
@@ -168,17 +169,14 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     if (this.closed) {
       return;
     }
-    const [opts, untap] = await this.tap();
-    try {
-      const cr = await invoke("rib/unregister", {
-        name,
-        origin: this.routeOptions.origin,
-      }, opts);
-      if (cr.statusCode !== 200) {
-        throw new Error(`${cr.statusCode} ${cr.statusText}`);
-      }
-    } finally {
-      untap();
+    const cr = await this.tap((opts) => invokeGeneric(
+      "rib/unregister", [TT.ControlParameters, name, this.routeOptions[0]], opts));
+    this.checkSuccess(cr);
+  }
+
+  private checkSuccess(cr: ControlResponse): void {
+    if (cr.statusCode !== 200) {
+      throw new Error(`${cr.statusCode} ${cr.statusText}`);
     }
   }
 }

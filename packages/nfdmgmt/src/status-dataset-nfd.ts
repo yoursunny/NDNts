@@ -1,29 +1,29 @@
-import { Component, StructFieldName, StructFieldNameNested, TT } from "@ndn/packet";
+import { Component, StructFieldName, StructFieldNameNested, TT as l3TT } from "@ndn/packet";
 import { Encoder, EvDecoder, StructBuilder, StructFieldEnum, StructFieldNNI, StructFieldNNIBig, type StructFields, StructFieldText, StructFieldType } from "@ndn/tlv";
 
-import { CsFlags, FaceFlags, FacePersistency, FaceScope, LinkType, RouteFlags } from "./enum-nfd";
+import { CsFlags, FaceFlags, FacePersistency, FaceScope, LinkType, RouteFlags, TT } from "./an-nfd";
 import type { StatusDataset } from "./status-dataset-generic";
 
-const buildFaceStatus = new StructBuilder("FaceStatus", 0x80)
-  .add(0x69, "faceId", StructFieldNNI, { required: true })
-  .add(0x72, "uri", StructFieldText, { required: true })
-  .add(0x81, "localUri", StructFieldText, { required: true })
-  .add(0x6D, "expirationPeriod", StructFieldNNI)
-  .add(0x84, "faceScope", StructFieldEnum(FaceScope), { required: true })
-  .add(0x85, "facePersistency", StructFieldEnum(FacePersistency), { required: true })
-  .add(0x86, "linkType", StructFieldEnum(LinkType), { required: true })
-  .add(0x87, "baseCongestionMarkingInterval", StructFieldNNI)
-  .add(0x88, "defaultCongestionThreshold", StructFieldNNI)
-  .add(0x89, "mtu", StructFieldNNI)
-  .add(0x90, "nInInterests", StructFieldNNIBig, { required: true })
-  .add(0x91, "nInData", StructFieldNNIBig, { required: true })
-  .add(0x97, "nInNacks", StructFieldNNIBig, { required: true })
-  .add(0x92, "nOutInterests", StructFieldNNIBig, { required: true })
-  .add(0x93, "nOutData", StructFieldNNIBig, { required: true })
-  .add(0x98, "nOutNacks", StructFieldNNIBig, { required: true })
-  .add(0x94, "nInBytes", StructFieldNNIBig, { required: true })
-  .add(0x95, "nOutBytes", StructFieldNNIBig, { required: true })
-  .add(0x6C, "flags", StructFieldNNI, { required: true, flagPrefix: "flag", flagBits: FaceFlags })
+const buildFaceStatus = new StructBuilder("FaceStatus", TT.FaceStatus)
+  .add(TT.FaceId, "faceId", StructFieldNNI, { required: true })
+  .add(TT.Uri, "uri", StructFieldText, { required: true })
+  .add(TT.LocalUri, "localUri", StructFieldText, { required: true })
+  .add(TT.ExpirationPeriod, "expirationPeriod", StructFieldNNI)
+  .add(TT.FaceScope, "faceScope", StructFieldEnum(FaceScope), { required: true })
+  .add(TT.FacePersistency, "facePersistency", StructFieldEnum(FacePersistency), { required: true })
+  .add(TT.LinkType, "linkType", StructFieldEnum(LinkType), { required: true })
+  .add(TT.BaseCongestionMarkingInterval, "baseCongestionMarkingInterval", StructFieldNNI)
+  .add(TT.DefaultCongestionThreshold, "defaultCongestionThreshold", StructFieldNNI)
+  .add(TT.Mtu, "mtu", StructFieldNNI)
+  .add(TT.NInInterests, "nInInterests", StructFieldNNIBig, { required: true })
+  .add(TT.NInData, "nInData", StructFieldNNIBig, { required: true })
+  .add(TT.NInNacks, "nInNacks", StructFieldNNIBig, { required: true })
+  .add(TT.NOutInterests, "nOutInterests", StructFieldNNIBig, { required: true })
+  .add(TT.NOutData, "nOutData", StructFieldNNIBig, { required: true })
+  .add(TT.NOutNacks, "nOutNacks", StructFieldNNIBig, { required: true })
+  .add(TT.NInBytes, "nInBytes", StructFieldNNIBig, { required: true })
+  .add(TT.NOutBytes, "nOutBytes", StructFieldNNIBig, { required: true })
+  .add(TT.Flags, "flags", StructFieldNNI, { required: true, flagPrefix: "flag", flagBits: FaceFlags })
   .setIsCritical(EvDecoder.neverCritical);
 /** NFD faces/list and faces/query dataset item. */
 export class FaceStatus extends buildFaceStatus.baseClass<FaceStatus>() {
@@ -31,15 +31,15 @@ export class FaceStatus extends buildFaceStatus.baseClass<FaceStatus>() {
 }
 buildFaceStatus.subclass = FaceStatus satisfies StatusDataset<FaceStatus>;
 
-const buildFaceQueryFilter = new StructBuilder("FaceQueryFilter", 0x96)
-  .add(0x69, "faceId", StructFieldNNI)
-  .add(0x83, "uriScheme", StructFieldText)
-  .add(0x72, "uri", StructFieldText)
-  .add(0x81, "localUri", StructFieldText)
-  .add(0x6D, "expirationPeriod", StructFieldNNI)
-  .add(0x84, "faceScope", StructFieldEnum(FaceScope))
-  .add(0x85, "facePersistency", StructFieldEnum(FacePersistency))
-  .add(0x86, "linkType", StructFieldEnum(LinkType))
+const buildFaceQueryFilter = new StructBuilder("FaceQueryFilter", TT.FaceQueryFilter)
+  .add(TT.FaceId, "faceId", StructFieldNNI)
+  .add(TT.UriScheme, "uriScheme", StructFieldText)
+  .add(TT.Uri, "uri", StructFieldText)
+  .add(TT.LocalUri, "localUri", StructFieldText)
+  .add(TT.ExpirationPeriod, "expirationPeriod", StructFieldNNI)
+  .add(TT.FaceScope, "faceScope", StructFieldEnum(FaceScope))
+  .add(TT.FacePersistency, "facePersistency", StructFieldEnum(FacePersistency))
+  .add(TT.LinkType, "linkType", StructFieldEnum(LinkType))
   .setIsCritical(EvDecoder.neverCritical);
 /** NFD faces/query dataset parameter. */
 export class FaceQueryFilter extends buildFaceQueryFilter.baseClass<FaceQueryFilter>() {}
@@ -56,8 +56,8 @@ export namespace FaceQuery {
   export type Filter = Partial<StructFields<typeof buildFaceQueryFilter>>;
 }
 
-const buildChannelStatus = new StructBuilder("ChannelStatus", 0x82)
-  .add(0x81, "localUri", StructFieldText, { required: true })
+const buildChannelStatus = new StructBuilder("ChannelStatus", TT.ChannelStatus)
+  .add(TT.LocalUri, "localUri", StructFieldText, { required: true })
   .setIsCritical(EvDecoder.neverCritical);
 /** NFD faces/channel dataset item. */
 export class ChannelStatus extends buildChannelStatus.baseClass<ChannelStatus>() {
@@ -65,12 +65,12 @@ export class ChannelStatus extends buildChannelStatus.baseClass<ChannelStatus>()
 }
 buildChannelStatus.subclass = ChannelStatus satisfies StatusDataset<ChannelStatus>;
 
-const buildCsInfo = new StructBuilder("CsInfo", 0x80)
-  .add(0x83, "capacity", StructFieldNNIBig, { required: true })
-  .add(0x6C, "flags", StructFieldNNI, { required: true, flagPrefix: "flag", flagBits: CsFlags })
-  .add(0x87, "nCsEntries", StructFieldNNIBig, { required: true })
-  .add(0x81, "nHits", StructFieldNNIBig, { required: true })
-  .add(0x82, "nMisses", StructFieldNNIBig, { required: true })
+const buildCsInfo = new StructBuilder("CsInfo", TT.CsInfo)
+  .add(TT.Capacity, "capacity", StructFieldNNIBig, { required: true })
+  .add(TT.Flags, "flags", StructFieldNNI, { required: true, flagPrefix: "flag", flagBits: CsFlags })
+  .add(TT.NCsEntries, "nCsEntries", StructFieldNNIBig, { required: true })
+  .add(TT.NHits, "nHits", StructFieldNNIBig, { required: true })
+  .add(TT.NMisses, "nMisses", StructFieldNNIBig, { required: true })
   .setIsCritical(EvDecoder.neverCritical);
 /** NFD cs/info dataset item. */
 export class CsInfo extends buildCsInfo.baseClass<CsInfo>() {
@@ -78,9 +78,9 @@ export class CsInfo extends buildCsInfo.baseClass<CsInfo>() {
 }
 buildCsInfo.subclass = CsInfo satisfies StatusDataset<CsInfo>;
 
-const buildStrategyChoice = new StructBuilder("StrategyChoice", 0x80)
-  .add(TT.Name, "name", StructFieldName, { required: true })
-  .add(0x6B, "strategy", StructFieldNameNested, { required: true })
+const buildStrategyChoice = new StructBuilder("StrategyChoice", TT.StrategyChoice)
+  .add(l3TT.Name, "name", StructFieldName, { required: true })
+  .add(TT.Strategy, "strategy", StructFieldNameNested, { required: true })
   .setIsCritical(EvDecoder.neverCritical);
 /** NFD strategy-choice/list dataset item. */
 export class StrategyChoice extends buildStrategyChoice.baseClass<StrategyChoice>() {
@@ -89,19 +89,19 @@ export class StrategyChoice extends buildStrategyChoice.baseClass<StrategyChoice
 buildStrategyChoice.subclass = StrategyChoice satisfies StatusDataset<StrategyChoice>;
 
 const buildRoute = new StructBuilder("Route")
-  .add(0x69, "faceId", StructFieldNNI, { required: true })
-  .add(0x6F, "origin", StructFieldNNI, { required: true })
-  .add(0x6A, "cost", StructFieldNNI, { required: true })
-  .add(0x6C, "flags", StructFieldNNI, { required: true, flagPrefix: "flag", flagBits: RouteFlags })
-  .add(0x6D, "expirationPeriod", StructFieldNNI)
+  .add(TT.FaceId, "faceId", StructFieldNNI, { required: true })
+  .add(TT.Origin, "origin", StructFieldNNI, { required: true })
+  .add(TT.Cost, "cost", StructFieldNNI, { required: true })
+  .add(TT.Flags, "flags", StructFieldNNI, { required: true, flagPrefix: "flag", flagBits: RouteFlags })
+  .add(TT.ExpirationPeriod, "expirationPeriod", StructFieldNNI)
   .setIsCritical(EvDecoder.neverCritical);
 /** NFD Route within rib/list dataset. */
 export class Route extends buildRoute.baseClass<Route>() {}
 buildRoute.subclass = Route;
 
-const buildRibEntry = new StructBuilder("RibEntry", 0x80)
-  .add(TT.Name, "name", StructFieldName, { required: true })
-  .add(0x81, "route", StructFieldType.nest(Route), { required: true, repeat: true })
+const buildRibEntry = new StructBuilder("RibEntry", TT.RibEntry)
+  .add(l3TT.Name, "name", StructFieldName, { required: true })
+  .add(TT.Route, "route", StructFieldType.nest(Route), { required: true, repeat: true })
   .setIsCritical(EvDecoder.neverCritical);
 /** NFD rib/list dataset item. */
 export class RibEntry extends buildRibEntry.baseClass<RibEntry>() {

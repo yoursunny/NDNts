@@ -1,29 +1,29 @@
-import { StructFieldName, StructFieldNameNested, TT } from "@ndn/packet";
+import { StructFieldName, StructFieldNameNested, TT as l3TT } from "@ndn/packet";
 import { Decoder, EvDecoder, StructBuilder, StructFieldEnum, StructFieldNNI, type StructFields, StructFieldText } from "@ndn/tlv";
 
+import { CsFlags, FaceFlags, FacePersistency, RouteFlags, TT } from "./an-nfd";
 import { type ControlCommandOptions, invokeGeneric } from "./control-command-generic";
 import { type ControlResponse } from "./control-response";
-import { CsFlags, FaceFlags, FacePersistency, RouteFlags } from "./enum-nfd";
 
 const flagBits = { ...FaceFlags, ...CsFlags, ...RouteFlags };
 
 const buildControlParameters = new StructBuilder("ControlParameters", 0x68)
-  .add(TT.Name, "name", StructFieldName)
-  .add(0x69, "faceId", StructFieldNNI)
-  .add(0x72, "uri", StructFieldText)
-  .add(0x81, "localUri", StructFieldText)
-  .add(0x6F, "origin", StructFieldNNI)
-  .add(0x6A, "cost", StructFieldNNI)
-  .add(0x83, "capacity", StructFieldNNI)
-  .add(0x84, "count", StructFieldNNI)
-  .add(0x87, "baseCongestionMarkingInterval", StructFieldNNI)
-  .add(0x88, "defaultCongestionThreshold", StructFieldNNI)
-  .add(0x89, "mtu", StructFieldNNI)
-  .add(0x6C, "flags", StructFieldNNI, { flagPrefix: "flag", flagBits: flagBits })
-  .add(0x70, "mask", StructFieldNNI, { flagBits: flagBits })
-  .add(0x6B, "strategy", StructFieldNameNested)
-  .add(0x6D, "expirationPeriod", StructFieldNNI)
-  .add(0x85, "facePersistency", StructFieldEnum<FacePersistency>(FacePersistency))
+  .add(l3TT.Name, "name", StructFieldName)
+  .add(TT.FaceId, "faceId", StructFieldNNI)
+  .add(TT.Uri, "uri", StructFieldText)
+  .add(TT.LocalUri, "localUri", StructFieldText)
+  .add(TT.Origin, "origin", StructFieldNNI)
+  .add(TT.Cost, "cost", StructFieldNNI)
+  .add(TT.Capacity, "capacity", StructFieldNNI)
+  .add(TT.Count, "count", StructFieldNNI)
+  .add(TT.BaseCongestionMarkingInterval, "baseCongestionMarkingInterval", StructFieldNNI)
+  .add(TT.DefaultCongestionThreshold, "defaultCongestionThreshold", StructFieldNNI)
+  .add(TT.Mtu, "mtu", StructFieldNNI)
+  .add(TT.Flags, "flags", StructFieldNNI, { flagPrefix: "flag", flagBits: flagBits })
+  .add(TT.Mask, "mask", StructFieldNNI, { flagBits: flagBits })
+  .add(TT.Strategy, "strategy", StructFieldNameNested)
+  .add(TT.ExpirationPeriod, "expirationPeriod", StructFieldNNI)
+  .add(TT.FacePersistency, "facePersistency", StructFieldEnum<FacePersistency>(FacePersistency))
   .setIsCritical(EvDecoder.neverCritical);
 /** NFD Management ControlParameters struct. */
 export class ControlParameters extends buildControlParameters.baseClass<ControlParameters>() {
