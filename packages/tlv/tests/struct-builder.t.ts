@@ -100,6 +100,53 @@ test("no-topTT", () => {
   expect(decoded.a41).toEqual([0xAA0041, 0xAA0141]);
 });
 
+test("asFlags", () => {
+  const b = new StructBuilder("MyType")
+    .add(0x41, "a41", StructFieldNNI)
+    .asFlags("a41", { p: 0x01, q: 0x10 })
+    .add(0x42, "a42", StructFieldNNI, { required: true })
+    .asFlags("a42", { p: 0x02, q: 0x20, R: 0x20 }, "b");
+  class MyType extends b.baseClass<MyType>() {}
+  b.subclass = MyType;
+
+  const myObj = new MyType();
+  expect(myObj.a41).toBeUndefined();
+  expect(myObj.a41P).toBeFalsy();
+  expect(myObj.a41Q).toBeFalsy();
+  expect(myObj.a42).toBe(0x00);
+  expect(myObj.bP).toBeFalsy();
+  expect(myObj.bQ).toBeFalsy();
+  expect(myObj.toString()).toBe("MyType a42=0x0()");
+
+  myObj.a42 = 0xFF;
+  expect(myObj.bP).toBeTruthy();
+  expect(myObj.bQ).toBeTruthy();
+  expect(myObj.bR).toBeTruthy();
+  expect(myObj.toString()).toBe("MyType a42=0xFF(p|q|R)");
+  myObj.bP = false;
+  myObj.bR = false;
+  expect(myObj.bQ).toBeFalsy();
+  expect(myObj.a42).toBe(0xDD);
+  expect(myObj.toString()).toBe("MyType a42=0xDD()");
+
+  myObj.a41P = false;
+  myObj.a41Q = false;
+  expect(myObj.a41).toBe(0x00);
+  expect(myObj.toString()).toBe("MyType a41=0x0() a42=0xDD()");
+  myObj.a41P = true;
+  expect(myObj.a41).toBe(0x01);
+  expect(myObj.toString()).toBe("MyType a41=0x1(p) a42=0xDD()");
+  myObj.a41Q = true;
+  expect(myObj.a41).toBe(0x11);
+  expect(myObj.toString()).toBe("MyType a41=0x11(p|q) a42=0xDD()");
+  myObj.a41P = false;
+  expect(myObj.a41).toBe(0x10);
+  expect(myObj.toString()).toBe("MyType a41=0x10(q) a42=0xDD()");
+  myObj.a41Q = false;
+  expect(myObj.a41).toBe(0x00);
+  expect(myObj.toString()).toBe("MyType a41=0x0() a42=0xDD()");
+});
+
 test("wrap-nest", () => {
   class Inner {
     public static decodeFrom(decoder: Decoder): Inner {

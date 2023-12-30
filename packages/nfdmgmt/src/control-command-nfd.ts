@@ -1,9 +1,52 @@
-import { Name, TT } from "@ndn/packet";
-import { Decoder, type Encodable, type Encoder, EvDecoder, NNI } from "@ndn/tlv";
-import { toUtf8 } from "@ndn/util";
+import { StructFieldName, StructFieldNameNested, TT } from "@ndn/packet";
+import { Decoder, EvDecoder, StructBuilder, StructFieldEnum, StructFieldNNI, type StructFields, StructFieldText } from "@ndn/tlv";
 
 import { type ControlCommandOptions, invokeGeneric } from "./control-command-generic";
 import { type ControlResponse } from "./control-response";
+import { CsFlags, FaceFlags, FacePersistency, RouteFlags } from "./enum-nfd";
+
+const allFlags = { ...FaceFlags, ...CsFlags, ...RouteFlags };
+
+const buildControlParameters = new StructBuilder("ControlParameters", 0x68)
+  .add(TT.Name, "name", StructFieldName)
+  .add(0x69, "faceId", StructFieldNNI)
+  .add(0x72, "uri", StructFieldText)
+  .add(0x81, "localUri", StructFieldText)
+  .add(0x6F, "origin", StructFieldNNI)
+  .add(0x6A, "cost", StructFieldNNI)
+  .add(0x83, "capacity", StructFieldNNI)
+  .add(0x84, "count", StructFieldNNI)
+  .add(0x87, "baseCongestionMarkingInterval", StructFieldNNI)
+  .add(0x88, "defaultCongestionThreshold", StructFieldNNI)
+  .add(0x89, "mtu", StructFieldNNI)
+  .add(0x6C, "flags", StructFieldNNI)
+  .asFlags("flags", allFlags, "flag")
+  .add(0x70, "mask", StructFieldNNI)
+  .asFlags("mask", allFlags)
+  .add(0x6B, "strategy", StructFieldNameNested)
+  .add(0x6D, "expirationPeriod", StructFieldNNI)
+  .add(0x85, "facePersistency", StructFieldEnum<FacePersistency>(FacePersistency))
+  .setIsCritical(EvDecoder.neverCritical);
+/** NFD Management ControlParameters struct. */
+export class ControlParameters extends buildControlParameters.baseClass<ControlParameters>() {
+  /**
+   * Decode from ControlResponse body.
+   * @param response ControlResponse that contains ControlParameters.
+   */
+  public static decodeFromResponseBody(response: { body: Uint8Array }): ControlParameters {
+    return Decoder.decode(response.body, ControlParameters);
+  }
+
+  constructor(value: ControlParameters.Fields = {}) {
+    super();
+    Object.assign(this, value);
+  }
+}
+buildControlParameters.subclass = ControlParameters;
+
+export namespace ControlParameters {
+  export type Fields = Partial<StructFields<typeof buildControlParameters>>;
+}
 
 /**
  * Pick fields from ControlParameters.Fields.
@@ -16,13 +59,14 @@ type CP<R extends keyof ControlParameters.Fields, O extends keyof ControlParamet
 /** Declare required and optional fields of each command. */
 interface Commands {
   "faces/create": CP<"uri", "localUri" | "facePersistency" | "baseCongestionMarkingInterval" |
-  "defaultCongestionThreshold" | "mtu" | "flags" | "mask">;
+  "defaultCongestionThreshold" | "mtu" | "flags" | `flag${keyof typeof FaceFlags}` | "mask">;
   "faces/update": CP<never, "faceId" | "facePersistency" | "baseCongestionMarkingInterval" |
-  "defaultCongestionThreshold" | "flags" | "mask">;
+  "defaultCongestionThreshold" | "flags" | `flag${keyof typeof FaceFlags}` | "mask">;
   "faces/destroy": CP<"faceId", never>;
   "strategy-choice/set": CP<"name" | "strategy", never>;
   "strategy-choice/unset": CP<"name", never>;
-  "rib/register": CP<"name", "faceId" | "origin" | "cost" | "flags" | "expirationPeriod">;
+  "rib/register": CP<"name", "faceId" | "origin" | "cost" | "flags" |
+  `flag${keyof typeof RouteFlags}` | "expirationPeriod">;
   "rib/unregister": CP<"name", "faceId" | "origin">;
 }
 
@@ -36,124 +80,3 @@ interface Commands {
 export async function invoke<C extends keyof Commands>(command: C, params: Commands[C], opts: ControlCommandOptions = {}): Promise<ControlResponse> {
   return invokeGeneric(command, new ControlParameters(params), opts);
 }
-
-/** NFD Management ControlParameters struct. */
-export class ControlParameters {
-  public static decodeFrom(decoder: Decoder): ControlParameters {
-    return EVD.decode(new ControlParameters(), decoder);
-  }
-
-  /**
-   * Decode from ControlResponse body.
-   * @param response ControlResponse that contains ControlParameters.
-   */
-  public static decodeFromResponseBody(response: { body: Uint8Array }): ControlParameters {
-    return Decoder.decode(response.body, ControlParameters);
-  }
-
-  constructor(value: ControlParameters.Fields = {}) {
-    Object.assign(this, value);
-  }
-
-  public encodeTo(encoder: Encoder) {
-    encoder.prependTlv(
-      TtControlParameters,
-      ...fieldDefs.map(([tt, key, encodeValue]): Encodable => {
-        const v = this[key];
-        return v !== undefined && [tt, encodeValue(v)];
-      }),
-    );
-  }
-
-  public toString(): string {
-    return fieldDefs.flatMap(([, key]) => {
-      const v = this[key];
-      return v === undefined ? [] : `${key}=${v}`;
-    }).join(", ");
-  }
-}
-export interface ControlParameters extends ControlParameters.Fields {}
-
-export namespace ControlParameters {
-  export interface Fields {
-    name?: Name;
-    faceId?: number;
-    uri?: string;
-    localUri?: string;
-    origin?: number;
-    cost?: number;
-    capacity?: number;
-    count?: number;
-    baseCongestionMarkingInterval?: number;
-    defaultCongestionThreshold?: number;
-    mtu?: number;
-    flags?: number;
-    mask?: number;
-    strategy?: Name;
-    expirationPeriod?: number;
-    facePersistency?: number;
-  }
-
-  export enum FacePersistency {
-    OnDemand = 0,
-    Persistent = 1,
-    Permanent = 2,
-  }
-
-  export const FaceFlags = {
-    LocalFieldsEnabled: 1 << 0,
-    LpReliabilityEnabled: 1 << 1,
-    CongestionMarkingEnabled: 1 << 2,
-  };
-
-  export const RouteFlags = {
-    ChildInherit: 1 << 0,
-    Capture: 1 << 1,
-  };
-}
-
-const TtControlParameters = 0x68;
-
-const fieldDefs: Array<[
-  tt: number,
-  key: keyof ControlParameters.Fields,
-  encodeValue: (v: any) => Encodable,
-]> = [];
-
-const EVD = new EvDecoder<ControlParameters.Fields>("ControlParameters", TtControlParameters)
-  .setIsCritical(EvDecoder.neverCritical);
-
-function defField<K extends keyof ControlParameters.Fields>(tt: number, key: K,
-    encodeValue: (v: NonNullable<ControlParameters.Fields[K]>) => Encodable,
-    decode: (tlv: Decoder.Tlv) => ControlParameters.Fields[K],
-): void {
-  fieldDefs.push([tt, key, encodeValue]);
-  EVD.add(tt, (t, tlv) => {
-    t[key] = decode(tlv);
-  });
-}
-
-function decodeNNI({ nni }: Decoder.Tlv) {
-  return nni;
-}
-
-function decodeString({ text }: Decoder.Tlv) {
-  return text;
-}
-
-defField(TT.Name, "name", (name) => name.value, ({ decoder }) => decoder.decode(Name));
-defField(0x69, "faceId", NNI, decodeNNI);
-defField(0x72, "uri", toUtf8, decodeString);
-defField(0x81, "localUri", toUtf8, decodeString);
-defField(0x6F, "origin", NNI, decodeNNI);
-defField(0x6A, "cost", NNI, decodeNNI);
-defField(0x83, "capacity", NNI, decodeNNI);
-defField(0x84, "count", NNI, decodeNNI);
-defField(0x87, "baseCongestionMarkingInterval", NNI, decodeNNI);
-defField(0x88, "defaultCongestionThreshold", NNI, decodeNNI);
-defField(0x89, "mtu", NNI, decodeNNI);
-defField(0x6C, "flags", NNI, decodeNNI);
-defField(0x70, "mask", NNI, decodeNNI);
-defField(0x6B, "strategy", (name) => name, ({ vd }) => vd.decode(Name));
-defField(0x6D, "expirationPeriod", NNI, decodeNNI);
-defField(0x85, "facePersistency", NNI, decodeNNI);

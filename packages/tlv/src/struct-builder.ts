@@ -1,5 +1,5 @@
 import { assert, toUtf8 } from "@ndn/util";
-import type { Constructor, Simplify } from "type-fest";
+import type { ConditionalExcept, Constructor, Simplify } from "type-fest";
 
 import { type Decodable, Decoder } from "./decoder";
 import { type Encodable, type EncodableObj, Encoder } from "./encoder";
@@ -64,6 +64,19 @@ export const StructFieldNNIBig: StructFieldType<bigint> = {
 };
 
 /**
+ * Declare a StructBuilder field type of non-negative integer.
+ * The field is defined as a flat enum type.
+ * If the field is required, it is initialized as zero.
+ */
+export function StructFieldEnum<E extends number>(Enum: Record<number, string>): StructFieldType<E> {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return {
+    ...StructFieldNNI,
+    asString: (value) => `${value}(${Enum[value] ?? "unknown"})`,
+  } as StructFieldType<E>;
+}
+
+/**
  * StructBuilder field type of UTF-8 text.
  * The field is defined as string.
  * If the field is required, it is initialized as an empty string.
@@ -98,6 +111,12 @@ interface Rule<T> extends EvDecoder.RuleOptions {
   asString(v: T): Iterable<string>;
 }
 
+interface FlagBit {
+  readonly flags: string;
+  readonly prop: string;
+  readonly bit: number;
+}
+
 type InferField<T, Required extends boolean, Repeat extends boolean> =
   Repeat extends true ? T[] :
   Required extends true ? T :
@@ -129,6 +148,7 @@ export class StructBuilder<U extends {}> {
    */
   public subclass?: Constructor<U, []>;
   private readonly rules: Array<Rule<any>> = [];
+  private readonly flagBits: FlagBit[] = [];
   private readonly EVD: EvDecoder<any>;
 
   /**
@@ -214,6 +234,46 @@ export class StructBuilder<U extends {}> {
     return this as any;
   }
 
+  /**
+   * Declare a field as bit flags.
+   * @param flags existing non-repeatable NNI field.
+   * @param map mapping from bit name to bit value.
+   * @param prefix prefix of bit fields.
+   * @returns StructBuilder annotated with field typing.
+   */
+  public asFlags<
+    K extends string & keyof U,
+    F extends string,
+    P extends string = K,
+  >(flags: K, map: Record<F, number>, prefix?: P): StructBuilder<U & { [key in `${P}${Capitalize<F>}`]: boolean }> {
+    const index = this.rules.findIndex(({ key }) => key === flags);
+    assert(index >= 0);
+    this.rules.splice(index, 1, {
+      ...this.rules[index]!,
+      *asString(v?: number) {
+        if (v === undefined) {
+          return;
+        }
+        yield ` ${flags}=0x${v.toString(16).toUpperCase()}(`;
+        let delim = "";
+        for (const [str, bit] of Object.entries<number>(map)) {
+          if ((v & bit) !== 0) {
+            yield `${delim}${str}`;
+            delim = "|";
+          }
+        }
+        yield ")";
+      },
+    });
+
+    prefix ??= flags as any;
+    for (const [str, bit] of Object.entries<number>(map)) {
+      const prop = prefix + str.slice(0, 1).toUpperCase() + str.slice(1);
+      this.flagBits.push({ flags, prop, bit });
+    }
+    return this as any;
+  }
+
   /** Change IsCritical on the EvDecoder. */
   public setIsCritical(cb: EvDecoder.IsCritical): this {
     this.EVD.setIsCritical(cb);
@@ -231,6 +291,24 @@ export class StructBuilder<U extends {}> {
       constructor() {
         for (const { key, newValue: construct } of b.rules) {
           (this as any)[key] = construct();
+        }
+
+        for (const { flags, prop, bit } of b.flagBits) {
+          Object.defineProperty(this, prop, {
+            configurable: true,
+            enumerable: false,
+            get(): boolean {
+              return (((this)[flags] ?? 0) & bit) !== 0;
+            },
+            set(v: boolean) {
+              (this)[flags] ??= 0;
+              if (v) {
+                (this)[flags] |= bit;
+              } else {
+                (this)[flags] &= ~bit;
+              }
+            },
+          });
         }
       }
 
@@ -265,3 +343,9 @@ export class StructBuilder<U extends {}> {
     } as any;
   }
 }
+
+/**
+ * Infer fields of a class built by StructBuilder.
+ * @template B StructBuilder annotated with field typing.
+ */
+export type StructFields<B extends StructBuilder<{}>> = ConditionalExcept<B extends StructBuilder<infer U> ? U : never, Function>;

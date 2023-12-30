@@ -9,9 +9,10 @@ import type { Except } from "type-fest";
 import { getPrefix } from "./common";
 import type { ControlCommandOptions } from "./control-command-generic";
 import { ControlParameters, invoke } from "./control-command-nfd";
+import type { RouteFlags } from "./enum-nfd";
 
 type CommandOptions = Except<ControlCommandOptions, "endpoint" | "prefix">;
-type RouteOptions = Pick<ControlParameters.Fields, "origin" | "cost" | "flags">;
+type RouteOptions = Pick<ControlParameters.Fields, "origin" | "cost" | "flags" | `flag${keyof typeof RouteFlags}`>;
 type Options = CommandOptions & RouteOptions & {
   retry?: ReadvertiseDestination.RetryOptions;
 
@@ -49,12 +50,12 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
       ...opts,
     };
 
-    this.routeOptions = {
+    this.routeOptions = new ControlParameters({
       origin: 65,
       cost: 0,
-      flags: ControlParameters.RouteFlags.Capture,
+      flagCapture: true,
       ...opts,
-    };
+    });
 
     this.refreshInterval = opts.refreshInterval ?? 300000;
     this.preloadCertName = opts.preloadCertName;

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
 import { closeUplinks, openUplinks } from "@ndn/cli-common";
-import { ControlParameters, FaceQuery, FaceStatus, invoke, list } from "@ndn/nfdmgmt";
+import { ControlParameters, FacePersistency, FaceQuery, FaceStatus, invoke, list } from "@ndn/nfdmgmt";
 
 await openUplinks();
 
@@ -11,25 +11,25 @@ for (const face of await list(FaceStatus)) {
 
 const res0 = await invoke("faces/create", {
   uri: "udp4://127.0.0.1:7001",
-  facePersistency: ControlParameters.FacePersistency.OnDemand,
+  facePersistency: FacePersistency.OnDemand,
 });
 assert.equal(res0.statusCode, 200);
 assert(res0.body !== undefined);
 const body0 = ControlParameters.decodeFromResponseBody(res0);
 console.log(body0.toString());
-assert.equal(body0.facePersistency, ControlParameters.FacePersistency.OnDemand);
+assert.equal(body0.facePersistency, FacePersistency.OnDemand);
 const faceId = body0.faceId!;
 
 const res1 = await invoke("faces/update", {
   faceId,
-  facePersistency: ControlParameters.FacePersistency.Permanent,
+  facePersistency: FacePersistency.Permanent,
 });
 assert.equal(res1.statusCode, 200);
 assert(res1.body !== undefined);
 const body1 = ControlParameters.decodeFromResponseBody(res1);
 console.log(body1.toString());
 assert.equal(body1.faceId, faceId);
-assert.equal(body1.facePersistency, ControlParameters.FacePersistency.Permanent);
+assert.equal(body1.facePersistency, FacePersistency.Permanent);
 
 for (const face of await list(FaceQuery({ faceId }))) {
   console.log(face.toString());
