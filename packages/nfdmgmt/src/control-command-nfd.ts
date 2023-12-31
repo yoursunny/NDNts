@@ -1,9 +1,10 @@
 import { StructFieldName, StructFieldNameNested, TT as l3TT } from "@ndn/packet";
 import { Decoder, EvDecoder, StructBuilder, StructFieldEnum, StructFieldNNI, type StructFields, StructFieldText } from "@ndn/tlv";
+import type { SetRequired } from "type-fest";
 
 import { CsFlags, FaceFlags, FacePersistency, RouteFlags, TT } from "./an-nfd";
 import { type ControlCommandOptions, invokeGeneric } from "./control-command-generic";
-import { type ControlResponse } from "./control-response";
+import type { ControlResponse } from "./control-response";
 
 const flagBits = { ...FaceFlags, ...CsFlags, ...RouteFlags };
 
@@ -52,19 +53,29 @@ export namespace ControlParameters {
  * O are optional.
  */
 type CP<R extends keyof ControlParameters.Fields, O extends keyof ControlParameters.Fields> =
-  Required<Pick<ControlParameters.Fields, R>> & Pick<ControlParameters.Fields, O>;
+  SetRequired<Pick<ControlParameters.Fields, R | O>, R>;
 
 /** Declare required and optional fields of each command. */
 interface Commands {
-  "faces/create": CP<"uri", "localUri" | "facePersistency" | "baseCongestionMarkingInterval" |
-  "defaultCongestionThreshold" | "mtu" | "flags" | `flag${keyof typeof FaceFlags}` | "mask">;
-  "faces/update": CP<never, "faceId" | "facePersistency" | "baseCongestionMarkingInterval" |
-  "defaultCongestionThreshold" | "flags" | `flag${keyof typeof FaceFlags}` | "mask">;
+  "faces/create": CP<"uri",
+  "localUri" | "facePersistency" | "baseCongestionMarkingInterval" | "defaultCongestionThreshold" |
+  "mtu" | "flags" | `flag${keyof typeof FaceFlags}` | "mask" | `mask${keyof typeof FaceFlags}`
+  >;
+
+  "faces/update": CP<never,
+  "faceId" | "facePersistency" | "baseCongestionMarkingInterval" | "defaultCongestionThreshold" |
+  "flags" | `flag${keyof typeof FaceFlags}` | "mask" | `mask${keyof typeof FaceFlags}`
+  >;
+
   "faces/destroy": CP<"faceId", never>;
+
   "strategy-choice/set": CP<"name" | "strategy", never>;
+
   "strategy-choice/unset": CP<"name", never>;
-  "rib/register": CP<"name", "faceId" | "origin" | "cost" | "flags" |
-  `flag${keyof typeof RouteFlags}` | "expirationPeriod">;
+
+  "rib/register": CP<"name",
+  "faceId" | "origin" | "cost" | "flags" | `flag${keyof typeof RouteFlags}` | "expirationPeriod">;
+
   "rib/unregister": CP<"name", "faceId" | "origin">;
 }
 

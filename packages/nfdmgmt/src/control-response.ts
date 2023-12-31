@@ -39,7 +39,7 @@ export class ControlResponse {
    *   ControlParameters.decodeFromResponseBody(response);
    */
   public get body(): Uint8Array {
-    return Encoder.encode(this.body_);
+    return ArrayBuffer.isView(this.body_) ? this.body_ : Encoder.encode(this.body_);
   }
 
   public set body(value: Encodable) {

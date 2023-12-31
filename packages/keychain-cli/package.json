@@ -36,7 +36,7 @@
     "fast-chunk-string": "^1.0.1",
     "get-stdin": "^9.0.0",
     "leveldown": "^6.1.1",
-    "nodemailer": "^6.9.7",
+    "nodemailer": "^6.9.8",
     "prompts": "^2.4.2",
     "stdout-stream": "^2.0.0",
     "tslib": "^2.6.2",

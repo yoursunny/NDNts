@@ -3,7 +3,7 @@ import { type FwFace, ReadvertiseDestination, TapFace } from "@ndn/fw";
 import { Certificate, type KeyChain } from "@ndn/keychain";
 import { Interest, type Name, NameMap } from "@ndn/packet";
 import { type Encodable, NNI } from "@ndn/tlv";
-import { Closers } from "@ndn/util";
+import { Closers, randomJitter } from "@ndn/util";
 import map from "obliterator/map.js";
 import type { Except, Promisable } from "type-fest";
 
@@ -37,8 +37,8 @@ interface State {
 
 class NfdPrefixReg extends ReadvertiseDestination<State> {
   private readonly commandOptions: Except<ControlCommandOptions, "endpoint">;
-  private readonly routeOptions: [origin: Encodable, cost: Encodable, flags: Encodable];
-  private readonly refreshInterval: number | false;
+  private readonly routeElements: [origin: Encodable, cost: Encodable, flags: Encodable, expiry: Encodable];
+  private readonly refreshInterval?: () => number;
   private readonly preloadCertName?: Name;
   private readonly preloadFromKeyChain?: KeyChain;
   private readonly preloadInterestLifetime: ReturnType<typeof Interest.Lifetime>;
@@ -57,17 +57,22 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
       cost = 0,
       flagChildInherit = false,
       flagCapture = true,
+      refreshInterval = 300000,
     } = opts;
-    this.routeOptions = [
+    this.routeElements = [
       [TT.Origin, NNI(origin)],
       [TT.Cost, NNI(cost)],
       [TT.Flags, NNI(
         (Number(flagChildInherit) * RouteFlags.ChildInherit) |
         (Number(flagCapture) * RouteFlags.Capture),
       )],
+      undefined,
     ];
 
-    this.refreshInterval = opts.refreshInterval ?? 300000;
+    if (refreshInterval !== false) {
+      this.routeElements[3] = [TT.ExpirationPeriod, NNI(Math.max(refreshInterval * 4, 60000))];
+      this.refreshInterval = randomJitter(0.1, refreshInterval);
+    }
     this.preloadCertName = opts.preloadCertName;
     this.preloadFromKeyChain = opts.preloadFromKeyChain;
     this.preloadInterestLifetime = Interest.Lifetime(opts.preloadInterestLifetime ?? 500);
@@ -142,12 +147,12 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
   };
 
   protected override async doAdvertise(name: Name, state: State) {
-    if (this.refreshInterval !== false) {
-      this.scheduleRefresh(name, state, this.refreshInterval);
+    if (this.refreshInterval !== undefined) {
+      this.scheduleRefresh(name, state, this.refreshInterval());
     }
 
     const cr = await this.tap((opts) => invokeGeneric(
-      "rib/register", [TT.ControlParameters, name, ...this.routeOptions], opts));
+      "rib/register", [TT.ControlParameters, name, ...this.routeElements], opts));
     this.checkSuccess(cr);
   }
 
@@ -170,7 +175,7 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
       return;
     }
     const cr = await this.tap((opts) => invokeGeneric(
-      "rib/unregister", [TT.ControlParameters, name, this.routeOptions[0]], opts));
+      "rib/unregister", [TT.ControlParameters, name, this.routeElements[0]], opts));
     this.checkSuccess(cr);
   }
 

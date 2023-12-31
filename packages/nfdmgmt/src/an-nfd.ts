@@ -54,6 +54,7 @@ export const enum TT {
   Uri = 0x72,
   UriScheme = 0x83,
 }
+/* eslint-enable @typescript-eslint/no-duplicate-enum-values */
 
 export enum FaceScope {
   NonLocal = 0,

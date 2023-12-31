@@ -11,7 +11,7 @@ import { Closers, delay } from "@ndn/util";
 import { TypedEventTarget } from "typescript-event-target";
 import { afterEach, expect, test } from "vitest";
 
-import { ControlParameters, ControlResponse, enableNfdPrefixReg, localhopPrefix, localhostPrefix } from "..";
+import { ControlParameters, ControlResponse, enableNfdPrefixReg, localhopPrefix, localhostPrefix, RouteFlags } from "..";
 
 const closers = new Closers();
 afterEach(closers.close);
@@ -48,10 +48,12 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, expectedPrefix }) => {
     expect(params.origin).toBe(65);
     if (verb === "register") {
       expect(params.cost).toBe(0);
-      expect(params.flags).toBe(0x02);
+      expect(params.flags).toBe(RouteFlags.Capture);
+      expect(params.expirationPeriod).toBe(60000);
     } else {
       expect(params.cost).toBeUndefined();
       expect(params.flags).toBeUndefined();
+      expect(params.expirationPeriod).toBeUndefined();
     }
 
     const status = [1, 5].includes(verbs.length) ? 400 : 200;

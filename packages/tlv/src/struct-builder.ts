@@ -128,20 +128,24 @@ interface Rule<T> extends EvDecoder.RuleOptions {
   asString(v: T): Iterable<string>;
 }
 
-interface FlagBit {
+interface FlagBitDesc {
   readonly key: string;
   readonly prop: string;
   readonly bit: number;
 }
 
-type InferField<T, Required extends boolean, Repeat extends boolean> =
-  Repeat extends true ? T[] :
-  Required extends true ? T :
-  (T | undefined);
+type ErrFlags = "ERROR: can only define flags on a non-repeatable number field";
 
 type ValidateOptions<T, Repeat extends boolean, FlagBit extends string, R> =
-  IfNever<FlagBit, R, InferField<T, true, Repeat> extends number ? R :
-  "ERROR: can only define flags on a non-repeatable number field">;
+  IfNever<FlagBit, R, Repeat extends true ? ErrFlags : T extends number ? R : ErrFlags>;
+
+type AddField<K extends string, T, Required extends boolean, Repeat extends boolean> =
+  Repeat extends true ? { [key in K]: T[]; } :
+  Required extends true ? { [key in K]: T; } :
+  { [key in K]?: T; };
+
+type AddFlags<FlagPrefix extends string, FlagBit extends string> =
+  { [key in `${FlagPrefix}${Capitalize<FlagBit>}`]: boolean; };
 
 /**
  * Helper to build a base class that represents a TLV structure.
@@ -169,7 +173,7 @@ export class StructBuilder<U extends {}> {
    */
   public subclass?: Constructor<U, []>;
   private readonly rules: Array<Rule<any>> = [];
-  private readonly flagBits: FlagBit[] = [];
+  private readonly flagBits: FlagBitDesc[] = [];
   private readonly EVD: EvDecoder<any>;
 
   /**
@@ -189,13 +193,10 @@ export class StructBuilder<U extends {}> {
     FlagBit extends string = never,
   >(
       tt: number,
-      key: K,
+      key: ValidateOptions<T, Repeat, FlagBit, K>,
       type: StructFieldType<T>,
       opts: Options<Required, Repeat, FlagPrefix, FlagBit> = {},
-  ): ValidateOptions<T, Repeat, FlagBit,
-      StructBuilder<Simplify<U & { [key in K]: InferField<T, Required, Repeat>; } &
-      { [key in `${FlagPrefix}${Capitalize<FlagBit>}`]: boolean; }>
-      >> {
+  ): StructBuilder<Simplify<U & AddField<K, T, Required, Repeat> & AddFlags<FlagPrefix, FlagBit>>> {
     const fo = { flagPrefix: key, ...opts, ...this.EVD.applyDefaultsToRuleOptions(opts) };
     const { asString: itemAsString = (value) => `${value}` } = type;
 
