@@ -35,7 +35,7 @@
     "@yoursunny/asn1": "0.0.20200718",
     "@yoursunny/webcrypto-ed25519": "0.0.20230624",
     "idb-keyval": "^6.2.1",
-    "mnemonist": "^0.39.6",
+    "mnemonist": "^0.39.7",
     "throat": "^6.0.2",
     "tslib": "^2.6.2"
   },

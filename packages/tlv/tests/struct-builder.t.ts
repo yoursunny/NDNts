@@ -12,6 +12,7 @@ test("basic", () => {
     .add(0x44, "a44", StructFieldNNI, { required: true, repeat: true });
   class MyType extends b.baseClass<MyType>() {}
   b.subclass = MyType;
+  expect(b.keys).toEqual(["a41", "a42", "a43", "a44"]);
 
   const myObj = new MyType();
   expect(myObj.a41).toBeUndefined();

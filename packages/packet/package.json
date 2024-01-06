@@ -29,7 +29,7 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "buffer-compare": "^1.1.1",
-    "mnemonist": "^0.39.6",
+    "mnemonist": "^0.39.7",
     "tslib": "^2.6.2",
     "type-fest": "^4.9.0"
   },

@@ -120,7 +120,7 @@ interface Options<
   flagBits?: Record<FlagBit, number>;
 }
 
-interface Rule<T> extends EvDecoder.RuleOptions {
+interface Field<T> extends EvDecoder.RuleOptions {
   readonly tt: number;
   readonly key: string;
   newValue(): T;
@@ -172,9 +172,14 @@ export class StructBuilder<U extends {}> {
    * This must be assigned, otherwise decoding function will not work.
    */
   public subclass?: Constructor<U, []>;
-  private readonly rules: Array<Rule<any>> = [];
+  private readonly fields: Array<Field<any>> = [];
   private readonly flagBits: FlagBitDesc[] = [];
   private readonly EVD: EvDecoder<any>;
+
+  /** Return field names. */
+  public get keys(): string[] {
+    return this.fields.map(({ key }) => key);
+  }
 
   /**
    * Add a field.
@@ -201,7 +206,7 @@ export class StructBuilder<U extends {}> {
     const { asString: itemAsString = (value) => `${value}` } = type;
 
     if (fo.repeat) {
-      this.rules.push({
+      this.fields.push({
         ...fo,
         tt,
         key,
@@ -222,9 +227,9 @@ export class StructBuilder<U extends {}> {
           }
           yield "]";
         },
-      } satisfies Rule<T[]>);
+      } satisfies Field<T[]>);
     } else {
-      this.rules.push({
+      this.fields.push({
         ...fo,
         tt,
         key,
@@ -252,7 +257,7 @@ export class StructBuilder<U extends {}> {
             yield ` ${key}=${itemAsString(v)}`;
           }
         },
-      } satisfies Rule<T | undefined>);
+      } satisfies Field<T | undefined>);
     }
 
     this.EVD.add(
@@ -284,11 +289,11 @@ export class StructBuilder<U extends {}> {
    * The base class has constructor, encoding, and decoding functions.
    */
   public baseClass<S>(): (new() => Simplify<U> & EncodableObj) & Decodable<S> {
-    this.rules.sort(({ order: a }, { order: b }) => a - b);
+    this.fields.sort(({ order: a }, { order: b }) => a - b);
     const b = this; // eslint-disable-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
     return class {
       constructor() {
-        for (const { key, newValue: construct } of b.rules) {
+        for (const { key, newValue: construct } of b.fields) {
           (this as any)[key] = construct();
         }
 
@@ -313,7 +318,7 @@ export class StructBuilder<U extends {}> {
 
       public encodeTo(encoder: Encoder): void {
         const elements: Encodable[] = [];
-        for (const { tt, key, encode } of b.rules) {
+        for (const { tt, key, encode } of b.fields) {
           for (const value of encode((this as any)[key])) {
             elements.push([tt, value]);
           }
@@ -334,7 +339,7 @@ export class StructBuilder<U extends {}> {
 
       public toString(): string {
         const tokens: string[] = [b.typeName];
-        for (const { key, asString } of b.rules) {
+        for (const { key, asString } of b.fields) {
           tokens.push(...asString((this as any)[key]));
         }
         return tokens.join("");

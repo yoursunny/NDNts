@@ -4,6 +4,41 @@ import { Encoder, EvDecoder, StructBuilder, StructFieldEnum, StructFieldNNI, Str
 import { CsFlags, FaceFlags, FacePersistency, FaceScope, LinkType, RouteFlags, TT } from "./an-nfd";
 import type { StatusDataset } from "./status-dataset-generic";
 
+const timeFmt = new Intl.DateTimeFormat([], { dateStyle: "medium", timeStyle: "medium" });
+const StructFieldTimestamp: StructFieldType<number> = {
+  ...StructFieldNNI,
+  asString: (value) => timeFmt.format(value),
+};
+
+const buildGeneralStatus = new StructBuilder("GeneralStatus")
+  .add(TT.NfdVersion, "nfdVersion", StructFieldText, { required: true })
+  .add(TT.StartTimestamp, "startTimestamp", StructFieldTimestamp, { required: true })
+  .add(TT.CurrentTimestamp, "currentTimestamp", StructFieldTimestamp, { required: true })
+  .add(TT.NNameTreeEntries, "nNameTreeEntries", StructFieldNNI, { required: true })
+  .add(TT.NFibEntries, "nFibEntries", StructFieldNNI, { required: true })
+  .add(TT.NPitEntries, "nPitEntries", StructFieldNNI, { required: true })
+  .add(TT.NMeasurementsEntries, "nMeasurementsEntries", StructFieldNNI, { required: true })
+  .add(TT.NCsEntries, "nCsEntries", StructFieldNNI, { required: true })
+  .add(TT.NInInterests, "nInInterests", StructFieldNNI, { required: true })
+  .add(TT.NInData, "nInData", StructFieldNNI, { required: true })
+  .add(TT.NInNacks, "nInNacks", StructFieldNNI, { required: true })
+  .add(TT.NOutInterests, "nOutInterests", StructFieldNNI, { required: true })
+  .add(TT.NOutData, "nOutData", StructFieldNNI, { required: true })
+  .add(TT.NOutNacks, "nOutNacks", StructFieldNNI, { required: true })
+  .add(TT.NSatisfiedInterests, "nSatisfiedInterests", StructFieldNNI, { required: true })
+  .add(TT.NUnsatisfiedInterests, "nUnsatisfiedInterests", StructFieldNNI, { required: true })
+  .setIsCritical(EvDecoder.neverCritical);
+/** NFD status/general dataset. */
+export class GeneralStatus extends buildGeneralStatus.baseClass<GeneralStatus>() {
+  public static datasetName = "status/general";
+
+  /** Uptime in milliseconds. */
+  public get uptime(): number {
+    return this.currentTimestamp - this.startTimestamp;
+  }
+}
+buildGeneralStatus.subclass = GeneralStatus satisfies StatusDataset<GeneralStatus>;
+
 const buildFaceStatus = new StructBuilder("FaceStatus", TT.FaceStatus)
   .add(TT.FaceId, "faceId", StructFieldNNI, { required: true })
   .add(TT.Uri, "uri", StructFieldText, { required: true })

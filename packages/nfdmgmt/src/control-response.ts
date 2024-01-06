@@ -1,11 +1,11 @@
 import { type Decoder, type Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
 
-const TT = {
-  ControlResponse: 0x65,
-  StatusCode: 0x66,
-  StatusText: 0x67,
-} as const;
+const enum TT {
+  ControlResponse = 0x65,
+  StatusCode = 0x66,
+  StatusText = 0x67,
+}
 
 const EVD = new EvDecoder<ControlResponse>("ControlResponse", TT.ControlResponse)
   .add(TT.StatusCode, (t, { nni }) => t.statusCode = nni)

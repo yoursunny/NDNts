@@ -8,7 +8,7 @@ import type { ControlResponse } from "./control-response";
 
 const flagBits = { ...FaceFlags, ...CsFlags, ...RouteFlags };
 
-const buildControlParameters = new StructBuilder("ControlParameters", 0x68)
+const buildControlParameters = new StructBuilder("ControlParameters", TT.ControlParameters)
   .add(l3TT.Name, "name", StructFieldName)
   .add(TT.FaceId, "faceId", StructFieldNNI)
   .add(TT.Uri, "uri", StructFieldText)
@@ -17,14 +17,14 @@ const buildControlParameters = new StructBuilder("ControlParameters", 0x68)
   .add(TT.Cost, "cost", StructFieldNNI)
   .add(TT.Capacity, "capacity", StructFieldNNI)
   .add(TT.Count, "count", StructFieldNNI)
-  .add(TT.BaseCongestionMarkingInterval, "baseCongestionMarkingInterval", StructFieldNNI)
-  .add(TT.DefaultCongestionThreshold, "defaultCongestionThreshold", StructFieldNNI)
-  .add(TT.Mtu, "mtu", StructFieldNNI)
-  .add(TT.Flags, "flags", StructFieldNNI, { flagPrefix: "flag", flagBits: flagBits })
-  .add(TT.Mask, "mask", StructFieldNNI, { flagBits: flagBits })
+  .add(TT.Flags, "flags", StructFieldNNI, { flagPrefix: "flag", flagBits })
+  .add(TT.Mask, "mask", StructFieldNNI, { flagBits })
   .add(TT.Strategy, "strategy", StructFieldNameNested)
   .add(TT.ExpirationPeriod, "expirationPeriod", StructFieldNNI)
   .add(TT.FacePersistency, "facePersistency", StructFieldEnum<FacePersistency>(FacePersistency))
+  .add(TT.BaseCongestionMarkingInterval, "baseCongestionMarkingInterval", StructFieldNNI)
+  .add(TT.DefaultCongestionThreshold, "defaultCongestionThreshold", StructFieldNNI)
+  .add(TT.Mtu, "mtu", StructFieldNNI)
   .setIsCritical(EvDecoder.neverCritical);
 /** NFD Management ControlParameters struct. */
 export class ControlParameters extends buildControlParameters.baseClass<ControlParameters>() {
@@ -38,7 +38,9 @@ export class ControlParameters extends buildControlParameters.baseClass<ControlP
 
   constructor(value: ControlParameters.Fields = {}) {
     super();
-    Object.assign(this, value);
+    for (const key of buildControlParameters.keys) {
+      (this as any)[key] = (value as any)[key];
+    }
   }
 }
 buildControlParameters.subclass = ControlParameters;
@@ -64,7 +66,7 @@ interface Commands {
 
   "faces/update": CP<never,
   "faceId" | "facePersistency" | "baseCongestionMarkingInterval" | "defaultCongestionThreshold" |
-  "flags" | `flag${keyof typeof FaceFlags}` | "mask" | `mask${keyof typeof FaceFlags}`
+  "mtu" | "flags" | `flag${keyof typeof FaceFlags}` | "mask" | `mask${keyof typeof FaceFlags}`
   >;
 
   "faces/destroy": CP<"faceId", never>;
