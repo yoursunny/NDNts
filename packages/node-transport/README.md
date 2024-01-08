@@ -30,7 +30,7 @@ The `connect()` function of each transport creates a transport.
 // UnixTransport.connect() establishes a UNIX socket connection.
 // It accepts a Unix socket path.
 try {
-  const unix = await UnixTransport.connect(process.env.DEMO_NFD_UNIX ?? "/run/nfd.sock");
+  const unix = await UnixTransport.connect(process.env.DEMO_NFD_UNIX ?? "/run/nfd/nfd.sock");
   await useInL3Face(unix);
 } catch (err: unknown) { // NFD is not running
   console.warn("unix", err);
@@ -39,7 +39,7 @@ try {
 // TcpTransport.connect() establishes a TCP tunnel.
 // It accepts either host+port or an options object for net.connect().
 try {
-  const tcp4 = await TcpTransport.connect("hobo.cs.arizona.edu", 6363);
+  const tcp4 = await TcpTransport.connect("suns.cs.ucla.edu", 6363);
   await useInL3Face(tcp4);
 } catch (err: unknown) { // router unavailable
   console.warn("tcp4", err);
@@ -55,7 +55,7 @@ try {
 
 // UdpTransport.connect() establishes a UDP tunnel.
 try {
-  const udp4 = await UdpTransport.connect("hobo.cs.arizona.edu");
+  const udp4 = await UdpTransport.connect("suns.cs.ucla.edu");
   await useInL3Face(udp4);
 } catch (err: unknown) { // router unavailable
   console.warn("udp4", err);
@@ -95,7 +95,7 @@ See `@ndn/ws-transport` package documentation for a complete example of `createF
 // the face to a non-default Forwarder instance. This argument is required.
 // Subsequent parameters are same as the corresponding connect() function.
 // It returns a FwFace instance (from @ndn/fw package).
-const face = await UdpTransport.createFace({}, "hobo.cs.arizona.edu");
+const face = await UdpTransport.createFace({}, "suns.cs.ucla.edu");
 face.close();
 // TcpTransport.createFace() and UnixTransport.createFace() behave similarly.
 
@@ -131,7 +131,7 @@ async function useInL3Face(transport: Transport) {
       let seq = Math.trunc(Math.random() * 1e8);
       for (let i = 0; i < 5; ++i) {
         await delay(50);
-        const interest = new Interest(`/ndn/edu/arizona/ping/NDNts/${seq++}`);
+        const interest = new Interest(`/ndn/edu/ucla/ping/NDNts/${seq++}`);
         console.log(`${transport} <I ${interest.name}`);
         yield FwPacket.create(interest);
       }

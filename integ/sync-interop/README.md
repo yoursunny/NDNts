@@ -5,13 +5,13 @@
 Test environment:
 
 * Ubuntu 22.04
+* ndn-cxx 0.8.1-26-g502c4c3b
+* NFD 22.12-10-g6bf94c02
 * Node.js 20.5.0
 
 Reference implementation:
 
-* ndn-cxx 0.8.1-26-g502c4c3b
-* NFD 22.12-10-g6bf94c02
-* libpsync 0.4.0-2-g88b7bbd
+* PSync 0.4.0-2-g88b7bbd
 
 Build reference program:
 
@@ -65,8 +65,10 @@ corepack pnpm literate integ/sync-interop/psync-partial-subscriber.ts
 Test environment:
 
 * Ubuntu 22.04
-* Node.js 20.5.0
-* Docker 24.0.5
+* ndn-cxx 0.8.1-51-g16203ea2
+* NFD 22.12-37-g4c95771b
+* Node.js 20.10.0
+* Docker 24.0.7
 
 Reference implementation:
 
@@ -86,7 +88,7 @@ Test `SyncpsPubsub`:
 ```bash
 # with NFD running
 docker run -it --rm \
-  --mount type=bind,src=/run/nfd.sock,target=/run/nfd.sock \
+  --mount type=bind,src=/run/nfd/nfd.sock,target=/var/run/nfd.sock \
   localhost/ndnts-sync-interop-syncps \
   /sync-interop/syncps-ind.exe /syncps-interop /syncps-interop-data /syncps-interop-data/ind/$RANDOM
 
@@ -99,12 +101,12 @@ corepack pnpm literate integ/sync-interop/syncps.ts
 Test environment:
 
 * Ubuntu 22.04
+* ndn-cxx 0.8.1-38-g5686c51b
+* NFD 22.12-18-g910232fc
 * Node.js 20.5.1
 
 Reference implementation:
 
-* ndn-cxx 0.8.1-38-g5686c51b
-* NFD 22.12-18-g910232fc
 * [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `81ab1a16765533e3844d9aac11dabc47a737170b` (2023-08-23)
 
 Build reference program:

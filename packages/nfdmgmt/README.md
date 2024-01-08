@@ -40,7 +40,7 @@ const fwC = Forwarder.create();
 const fwP = Forwarder.create();
 
 // Connect to NFD using Unix socket transport.
-const unixSocket = process.env.DEMO_NFD_UNIX ?? "/run/nfd.sock";
+const unixSocket = process.env.DEMO_NFD_UNIX ?? "/run/nfd/nfd.sock";
 let uplinkC: FwFace;
 try {
   uplinkC = await UnixTransport.createFace({ fw: fwC }, unixSocket);

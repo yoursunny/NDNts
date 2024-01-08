@@ -1,3 +1,6 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+
 import { connectToNetwork, connectToRouter } from "@ndn/autoconfig";
 import { openFace as dpdkOpenFace } from "@ndn/dpdkmgmt";
 import { type FwFace, FwTracer } from "@ndn/fw";
@@ -11,6 +14,14 @@ import { getSignerImpl, openKeyChain } from "./keychain";
 
 if (env.pktTrace) {
   FwTracer.enable();
+}
+
+async function checkUnixSocket(pathname: string): Promise<boolean> {
+  try {
+    return path.isAbsolute(pathname) && (await fs.stat(pathname)).isSocket();
+  } catch {
+    return false;
+  }
 }
 
 async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
@@ -41,7 +52,17 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
         { preferTcp: false, mtu: env.mtu, testConnection: false })).face, true];
     }
     case "unix:": {
-      const face = await UnixTransport.createFace({}, env.uplink.pathname);
+      let { pathname } = env.uplink;
+      const fallbacks = env.uplink.searchParams.getAll("fallback");
+      if (fallbacks.length > 0 && !(await checkUnixSocket(pathname))) {
+        for (const fallback of fallbacks) {
+          if (await checkUnixSocket(fallback)) {
+            pathname = fallback;
+            break;
+          }
+        }
+      }
+      const face = await UnixTransport.createFace({}, pathname);
       return [face, true];
     }
     case "ndndpdk-memif:": {

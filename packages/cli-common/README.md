@@ -24,18 +24,22 @@ If the specified prefix does not match any existing key, digest signing will be 
 `NDNTS_UPLINK` environment variable creates an uplink to another forwarder/node.
 It supports:
 
-* connect to NFD (or similar) via Unix socket, e.g. `unix:///run/nfd.sock`
+* connect to NFD (or similar) via Unix socket, e.g. `unix:///run/nfd/nfd.sock`
+  * This scheme accepts `fallback` parameters for alternative Unix socket paths.
+    If the primary socket does not exist but a fallback exists, it would be used instead.
 * connect to NFD via TCP, e.g. `tcp://192.0.2.1:6363`
 * connect to NFD via UDP unicast, e.g. `udp://192.0.2.1:6363`
 * connect to NDN-DPDK via UDP: `ndndpdk:` or `ndndpdk-udp:`
+  * See `NDNTS_NDNDPDK_*` environment variables described below.
 * connect to NDN-DPDK via memif: `ndndpdk-memif:`
+  * See `NDNTS_NDNDPDK_*` environment variables described below.
 * perform NDN-FCH query and connect to global NDN network: `autoconfig:` (prefer UDP) or `autoconfig-tcp:` (prefer TCP)
 
-The default is:
+The default is platform-dependent:
 
-* Linux: `unix:///run/nfd.sock`
+* Linux: `unix:///run/nfd/nfd.sock` with fallback `/run/nfd.sock` and `/run/ndn/nfd.sock`
 * Windows: `tcp://127.0.0.1:6363`
-* other platforms: `unix:///var/run/nfd.sock`
+* other platforms: `unix:///var/run/nfd/nfd.sock` with fallback `/var/run/nfd.sock`
 
 `NDNTS_MTU` environment variable sets the MTU for fragmentation of outgoing packets, applicable to UDP and memif.
 It must be a positive integer, and the default value is 1400.
@@ -57,6 +61,7 @@ The default is auto-detected from GraphQL HTTP client.
 
 `NDNTS_NDNDPDK_MEMIF_SOCKETPATH` environment variable specifies a directory for memif control socket.
 The default is `/run/ndn`.
+If NDN-DPDK is running in a container, this directory must be mounted into the NDN-DPDK container.
 
 ## API
 

@@ -3,12 +3,24 @@ import "dotenv/config";
 import { Name } from "@ndn/packet";
 import { makeEnv, parsers } from "@sadams/environment";
 
-const {
-  [process.platform]: defaultUplink = "unix:///var/run/nfd.sock",
-}: Partial<Record<NodeJS.Platform, string>> = {
-  linux: "unix:///run/nfd.sock",
-  win32: "tcp://127.0.0.1:6363",
-};
+function determineDefaultUplink(): URL {
+  switch (process.platform) {
+    case "win32": {
+      return new URL("tcp://127.0.0.1:6363");
+    }
+    case "linux": {
+      const u = new URL("unix:///run/nfd/nfd.sock"); // NFD since 2024
+      u.searchParams.append("fallback", "/run/nfd.sock"); // NFD until 2023
+      u.searchParams.append("fallback", "/run/ndn/nfd.sock"); // ndn6 Docker
+      return u;
+    }
+    default: {
+      const u = new URL("unix:///var/run/nfd/nfd.sock"); // NFD since 2024
+      u.searchParams.append("fallback", "/var/run/nfd.sock"); // NFD until 2023
+      return u;
+    }
+  }
+}
 
 export const env = makeEnv({
   keychain: {
@@ -33,7 +45,7 @@ export const env = makeEnv({
     envVarName: "NDNTS_UPLINK",
     parser: (value) => new URL(value),
     required: false,
-    defaultValue: new URL(defaultUplink),
+    defaultValue: determineDefaultUplink(),
   },
   mtu: {
     envVarName: "NDNTS_MTU",
