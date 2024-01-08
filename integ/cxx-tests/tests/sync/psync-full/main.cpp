@@ -6,21 +6,27 @@
 
 using namespace ndn::time_literals;
 
-static void
-handleUpdate(const std::vector<psync::MissingDataInfo>& updates) {
-  for (const auto& update : updates) {
-    std::cout << update.prefix << "\t" << update.lowSeq << "\t" << update.highSeq << std::endl;
-  }
-}
-
 int
 main(int argc, char* argv[]) {
   ndn::Face face("127.0.0.1", argv[1]);
   ndn::KeyChain keyChain;
 
+  psync::FullProducer::Options opts;
+  opts.onUpdate = [](const std::vector<psync::MissingDataInfo>& updates) {
+    for (const auto& update : updates) {
+      std::cout << update.prefix << "\t" << update.lowSeq << "\t" << update.highSeq << std::endl;
+    }
+  };
+  opts.ibfCount = 30;
+  opts.ibfCompression = psync::CompressionScheme::NONE;
+  opts.syncInterestLifetime = 100_ms;
+  opts.syncDataFreshness = 500_ms;
+  opts.contentCompression = psync::CompressionScheme::NONE;
+
+  psync::FullProducer sync(face, keyChain, argv[2], opts);
+
   ndn::Name userNode(argv[3]);
-  psync::FullProducer sync(face, keyChain, 30, argv[2], userNode, handleUpdate, 100_ms, 500_ms,
-                           psync::CompressionScheme::NONE, psync::CompressionScheme::NONE);
+  sync.addUserNode(userNode);
 
   boost::asio::signal_set signalSet(face.getIoContext(), SIGINT, SIGUSR1);
   std::function<void(const boost::system::error_code&, int signal)> handleSignal =

@@ -23,7 +23,7 @@ export function execute(importMetaUrl: string, args: readonly string[] = [],
   return execa("./a.out", args, {
     cwd: dir,
     stderr: "inherit",
-    env: { NDN_NAME_ALT_URI: "0" },
     ...opts,
+    env: { NDN_NAME_ALT_URI: "0", ...opts.env },
   });
 }
