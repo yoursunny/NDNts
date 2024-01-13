@@ -1,6 +1,6 @@
 {
   "name": "@ndn/repo",
-  "version": "0.0.20230121",
+  "version": "0.0.20240113",
   "description": "NDNts: Data Repository",
   "keywords": [
     "NDN",

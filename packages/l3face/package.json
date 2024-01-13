@@ -1,6 +1,6 @@
 {
   "name": "@ndn/l3face",
-  "version": "0.0.20230121",
+  "version": "0.0.20240113",
   "description": "NDNts: Network Layer Face",
   "keywords": [
     "NDN",
