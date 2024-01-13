@@ -77,7 +77,7 @@ console.log("fastest face is", `${fastestFace}`);
 // By default, default route "/" is added to the face, so that you can send Interests right away.
 try {
   const t0 = Date.now();
-  const data = await new Endpoint({ fw }).consume(`/ndn/edu/ucla/ping/${Math.trunc(Math.random() * 1e8)}`);
+  const data = await new Endpoint({ fw }).consume(`/ndn/edu/memphis/ping/${Math.trunc(Math.random() * 1e8)}`);
   console.log("Interest satisfied", `${data.name}`, `${Date.now() - t0}ms`);
 } catch (err: unknown) {
   console.warn(err);

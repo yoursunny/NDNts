@@ -13,8 +13,7 @@ literate_run() {
     pushd $1 >/dev/null
     FILE=README.md
   fi
-  export TS_CONFIG_PATH=$ROOTDIR/mk/tsconfig-literate.json
-  node --loader $ROOTDIR/mk/loader.mjs $FILE
+  node --import $ROOTDIR/mk/loader-import.mjs $FILE
   popd >/dev/null
 }
 
