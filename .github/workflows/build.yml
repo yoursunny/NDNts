@@ -16,7 +16,7 @@ jobs:
           key: build-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
       - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
@@ -49,11 +49,11 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - run: corepack pnpm test
-        if: ${{ matrix.node != 18 }}
+        if: ${{ matrix.node != 20 }}
       - run: corepack pnpm cover
-        if: ${{ matrix.node == 18 }}
+        if: ${{ matrix.node == 20 }}
       - uses: coverallsapp/github-action@master
-        if: ${{ matrix.node == 18 }}
+        if: ${{ matrix.node == 20 }}
         continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
