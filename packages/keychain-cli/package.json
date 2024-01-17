@@ -32,7 +32,7 @@
     "@ndn/repo": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@sadams/environment": "^9.0.0",
+    "env-var": "^7.4.1",
     "fast-chunk-string": "^1.0.1",
     "get-stdin": "^9.0.0",
     "leveldown": "^6.1.1",

@@ -79,11 +79,11 @@ async function transformDeclaration(filename) {
  * All other packages are assumed to have ES Module entrypoint.
  */
 const CJS_IMPORTS = new Set([
-  "@sadams/environment",
   "@yoursunny/asn1",
   "applymixins",
   "buffer-compare",
   "encoding-down",
+  "env-var",
   "event-iterator",
   "fast-chunk-string",
   "it-keepalive",

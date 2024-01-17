@@ -4,7 +4,7 @@ import { Server, type ServerChallenge, ServerEmailChallenge, ServerNopChallenge,
 import type { Verifier } from "@ndn/packet";
 import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
 import { toHex } from "@ndn/util";
-import { makeEnv, parsers } from "@sadams/environment";
+import envvar from "env-var";
 import leveldown from "leveldown";
 import { createTransport as createMT } from "nodemailer";
 import stdout from "stdout-stream";
@@ -74,46 +74,15 @@ export const Ndncert03CaCommand: CommandModule<{}, Args> = {
           break;
         }
         case "email": {
-          const env = makeEnv({
-            host: {
-              envVarName: "CA_EMAIL_HOST",
-              parser: parsers.string,
-              required: true,
-            },
-            port: {
-              envVarName: "CA_EMAIL_PORT",
-              parser: parsers.port,
-              required: false,
-              defaultValue: 587,
-            },
-            user: {
-              envVarName: "CA_EMAIL_USER",
-              parser: parsers.string,
-              required: true,
-            },
-            pass: {
-              envVarName: "CA_EMAIL_PASS",
-              parser: parsers.string,
-              required: true,
-            },
-            from: {
-              envVarName: "CA_EMAIL_FROM",
-              parser: parsers.email,
-              required: true,
-            },
-          });
+          const host = envvar.get("CA_EMAIL_HOST").required().asString();
+          const port = envvar.get("CA_EMAIL_PORT").default(587).asPortNumber();
+          const user = envvar.get("CA_EMAIL_USER").required().asString();
+          const pass = envvar.get("CA_EMAIL_PASS").required().asString();
+          const from = envvar.get("CA_EMAIL_FROM").required().asString(); // asEmailString() is too strict
           const challenge = new ServerEmailChallenge({
-            mail: createMT({
-              host: env.host,
-              port: env.port,
-              secure: env.port === 465,
-              auth: {
-                user: env.user,
-                pass: env.pass,
-              },
-            }),
+            mail: createMT({ host, port, secure: port === 465, auth: { user, pass } }),
             template: {
-              from: env.from,
+              from,
               subject: "NDNCERT email challenge",
               text: `Hi there
 
