@@ -42,7 +42,7 @@ test("RX error", async () => {
   ]);
 
   expect(handleRxError).toHaveBeenCalledOnce();
-  expect(handleRxError.mock.calls[0]![0]!.detail.message).toContain("F000");
+  expect(handleRxError.mock.calls[0]![0].detail.message).toContain("F000");
 });
 
 test("createFace", async () => {

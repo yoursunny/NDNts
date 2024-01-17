@@ -136,7 +136,7 @@ class Fixture {
       n += fn.mock.calls.length;
     }
 
-    const update = fn.mock.calls[n]![0]!;
+    const update = fn.mock.calls[n]![0];
     this.expectUpdateIs(update, prefix, seqNums);
     return update;
   }

@@ -1,7 +1,7 @@
 import { CryptoAlgorithmListFull, KeyChain } from "@ndn/keychain";
 import { Data, digestSigning, Name, type Signer } from "@ndn/packet";
 
-import { env } from "./env";
+import * as env from "./env";
 
 let theKeyChain: KeyChain | undefined;
 
@@ -17,7 +17,7 @@ export function openKeyChain(): KeyChain {
   return theKeyChain;
 }
 
-export async function getSignerImpl(prefix = new Name()): Promise<[signer: Signer, klName?: Name]> {
+export async function getSignerImpl(prefix: Name): Promise<[signer: Signer, klName?: Name]> {
   const keyChain = openKeyChain();
   const signer = await keyChain.getSigner(prefix, {
     prefixMatch: true,

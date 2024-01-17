@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 import { Name } from "@ndn/packet";
-import { makeEnv, parsers } from "@sadams/environment";
+import { from } from "env-var";
 
 function determineDefaultUplink(): URL {
   switch (process.platform) {
@@ -22,65 +22,19 @@ function determineDefaultUplink(): URL {
   }
 }
 
-export const env = makeEnv({
-  keychain: {
-    envVarName: "NDNTS_KEYCHAIN",
-    parser: parsers.string,
-    required: false,
-    defaultValue: undefined,
-  },
-  key: {
-    envVarName: "NDNTS_KEY",
-    parser: Name.from,
-    required: false,
-    defaultValue: undefined,
-  },
-  pktTrace: {
-    envVarName: "NDNTS_PKTTRACE",
-    parser: parsers.boolean,
-    required: false,
-    defaultValue: false,
-  },
-  uplink: {
-    envVarName: "NDNTS_UPLINK",
-    parser: (value) => new URL(value),
-    required: false,
-    defaultValue: determineDefaultUplink(),
-  },
-  mtu: {
-    envVarName: "NDNTS_MTU",
-    parser: parsers.positiveInteger,
-    required: false,
-    defaultValue: 1400,
-  },
-  nfdReg: {
-    envVarName: "NDNTS_NFDREG",
-    parser: parsers.boolean,
-    required: false,
-    defaultValue: true,
-  },
-  nfdRegKey: {
-    envVarName: "NDNTS_NFDREGKEY",
-    parser: Name.from,
-    required: false,
-    defaultValue: undefined,
-  },
-  dpdkGql: {
-    envVarName: "NDNTS_NDNDPDK_GQLSERVER",
-    parser: parsers.url,
-    required: false,
-    defaultValue: undefined,
-  },
-  dpdkLocal: {
-    envVarName: "NDNTS_NDNDPDK_LOCAL",
-    parser: parsers.ipAddress,
-    required: false,
-    defaultValue: undefined,
-  },
-  dpdkMemifSocketPath: {
-    envVarName: "NDNTS_NDNDPDK_MEMIF_SOCKETPATH",
-    parser: parsers.string,
-    required: false,
-    defaultValue: undefined,
+const env = from(process.env, {
+  asName(value) {
+    return new Name(value);
   },
 });
+
+export const keychain = env.get("NDNTS_KEYCHAIN").asString();
+export const key = env.get("NDNTS_KEY").asName() ?? new Name();
+export const pktTrace = env.get("NDNTS_PKTTRACE").asBool() ?? false;
+export const uplink = env.get("NDNTS_UPLINK").asUrlObject() ?? determineDefaultUplink();
+export const mtu = env.get("NDNTS_MTU").asIntPositive() ?? 1400;
+export const nfdReg = env.get("NDNTS_NFDREG").asBool() ?? true;
+export const nfdRegKey = env.get("NDNTS_NFDREGKEY").asName() ?? key;
+export const dpdkGql = env.get("NDNTS_NDNDPDK_GQLSERVER").asUrlString();
+export const dpdkLocal = env.get("NDNTS_NDNDPDK_LOCAL").asString();
+export const dpdkMemifSocketPath = env.get("NDNTS_NDNDPDK_MEMIF_SOCKETPATH").asString();

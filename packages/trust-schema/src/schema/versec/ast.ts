@@ -395,7 +395,7 @@ function parseComponentConstraintTerm(units: readonly N.Unit[]): ComponentConstr
   if (kv.length !== 2 || kv[0]!.length !== 1 || !(kv[0]![0] instanceof T.Ident)) {
     throwParseError("invalid component constraint term", units);
   }
-  return new ComponentConstraintTerm(Ident.fromToken(kv[0]![0]!), parseExpr(kv[1]!));
+  return new ComponentConstraintTerm(Ident.fromToken(kv[0]![0]), parseExpr(kv[1]!));
 }
 
 function parseSigningConstraint(units: readonly N.Unit[]): SigningConstraint {

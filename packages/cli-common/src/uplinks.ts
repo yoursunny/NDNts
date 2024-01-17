@@ -8,7 +8,7 @@ import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { UnixTransport } from "@ndn/node-transport";
 import { Closers } from "@ndn/util";
 
-import { env } from "./env";
+import * as env from "./env";
 import { exitClosers } from "./exit";
 import { getSignerImpl, openKeyChain } from "./keychain";
 
@@ -95,11 +95,10 @@ export async function openUplinks({ autoClose = true }: openUplinks.Options = {}
   if (!theUplinks) {
     const [face, nfd] = await makeFace();
     if (nfd && env.nfdReg) {
-      const signerName = env.nfdRegKey ?? env.key;
-      const [signer, klName] = await getSignerImpl(signerName);
+      const [signer, klName] = await getSignerImpl(env.nfdRegKey);
       enableNfdPrefixReg(face, {
         signer,
-        preloadCertName: klName ?? signerName,
+        preloadCertName: klName ?? env.nfdRegKey,
         preloadFromKeyChain: openKeyChain(),
       });
     }
