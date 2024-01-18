@@ -40,6 +40,7 @@ const config = {
     allowedHosts: "all",
     host: "::",
     port: 9327,
+    webSocketServer: false,
   },
 };
 

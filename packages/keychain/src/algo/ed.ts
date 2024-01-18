@@ -1,12 +1,12 @@
 import { type LLSign, type LLVerify, SigType, Verifier } from "@ndn/packet";
 import { crypto } from "@ndn/util";
 import type * as asn1 from "@yoursunny/asn1";
-import { Ed25519Algorithm, polyfillEd25519 } from "@yoursunny/webcrypto-ed25519";
+import { Ed25519Algorithm, ponyfillEd25519 } from "@yoursunny/webcrypto-ed25519";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
 import { assertSpkiAlgorithm } from "./impl-spki";
 
-polyfillEd25519();
+const subtle = ponyfillEd25519(crypto.subtle);
 
 class EdAlgo implements SigningAlgorithm<{}, true, {}> {
   constructor(
@@ -27,15 +27,15 @@ class EdAlgo implements SigningAlgorithm<{}, true, {}> {
     if (importPkcs8) {
       const [pkcs8, spki] = importPkcs8;
       [privateKey, publicKey] = await Promise.all([
-        crypto.subtle.importKey("pkcs8", pkcs8, this.algo, extractable, this.keyUsages.private),
-        crypto.subtle.importKey("spki", spki, this.algo, true, this.keyUsages.public),
+        subtle.importKey("pkcs8", pkcs8, this.algo, extractable, this.keyUsages.private),
+        subtle.importKey("spki", spki, this.algo, true, this.keyUsages.public),
       ]);
     } else {
-      ({ privateKey, publicKey } = await crypto.subtle.generateKey(this.algo, extractable,
+      ({ privateKey, publicKey } = await subtle.generateKey(this.algo, extractable,
         [...this.keyUsages.private, ...this.keyUsages.public]) as CryptoKeyPair);
     }
 
-    const spki = new Uint8Array(await crypto.subtle.exportKey("spki", publicKey));
+    const spki = new Uint8Array(await subtle.exportKey("spki", publicKey));
     return {
       privateKey,
       publicKey,
@@ -47,7 +47,7 @@ class EdAlgo implements SigningAlgorithm<{}, true, {}> {
 
   public async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
     assertSpkiAlgorithm(der, this.algo.name, this.oid);
-    const key = await crypto.subtle.importKey(
+    const key = await subtle.importKey(
       "spki", spki, this.algo, true, this.keyUsages.public);
     return {
       publicKey: key,
@@ -58,14 +58,14 @@ class EdAlgo implements SigningAlgorithm<{}, true, {}> {
 
   public makeLLSign({ privateKey }: CryptoAlgorithm.PrivateKey<{}>): LLSign {
     return async (input) => {
-      const raw = await crypto.subtle.sign(this.algo, privateKey, input);
+      const raw = await subtle.sign(this.algo, privateKey, input);
       return new Uint8Array(raw);
     };
   }
 
   public makeLLVerify({ publicKey }: CryptoAlgorithm.PublicKey<{}>): LLVerify {
     return async (input, sig) => {
-      const ok = await crypto.subtle.verify(this.algo, publicKey, sig, input);
+      const ok = await subtle.verify(this.algo, publicKey, sig, input);
       Verifier.throwOnBadSig(ok);
     };
   }
