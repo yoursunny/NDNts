@@ -42,7 +42,8 @@ export async function execute(keyChain: KeyChain, enabled: Enable = {}): Promise
   })()));
   const keys1 = gen.map(([pvt]) => pvt.name).map(String);
 
-  const keyNames2 = (await keyChain.listKeys()).sort((a, b) => a.compare(b));
+  const keyNames2 = await keyChain.listKeys();
+  keyNames2.sort((a, b) => a.compare(b));
   const keys2 = (await Promise.all(keyNames2.map((n) => keyChain.getKey(n, "signer"))))
     .map((pvt) => pvt.name.toString());
 
@@ -50,7 +51,8 @@ export async function execute(keyChain: KeyChain, enabled: Enable = {}): Promise
     keys2.filter((u, i) => i % 4 === 0)
       .map((u) => keyChain.deleteKey(new Name(u))),
   );
-  const keyNames3 = (await keyChain.listKeys()).sort((a, b) => a.compare(b));
+  const keyNames3 = await keyChain.listKeys();
+  keyNames3.sort((a, b) => a.compare(b));
   const keys3 = (await Promise.all(keyNames3.map((n) => keyChain.getKey(n, "verifier"))))
     .map((pub) => pub.name.toString());
 

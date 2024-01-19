@@ -69,12 +69,13 @@ function defaultFilterPubs(items: SyncpsPubsub.FilterPubItem[]) {
   }
 
   const timestampMap = new DefaultWeakMap<Data, number>((pub) => safeExtractTimestamp(pub));
-  return items.sort((a, b) => {
+  items.sort((a, b) => {
     if (a.own !== b.own) {
       return a.own ? -1 : 1;
     }
     return timestampMap.get(b.pub) - timestampMap.get(a.pub);
   });
+  return items;
 }
 
 /** syncps - pubsub service. */

@@ -31,8 +31,10 @@ export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S
   constructor(face: L3Face) {
     super();
     consume(face.rx).catch(() => undefined);
-    this.faceTx = face.tx(this.tx()).catch((err) => {
-      this.dispatchTypedEvent("error", new CustomEvent("error", { detail: err }));
+    this.faceTx = face.tx(this.tx()).catch((err: unknown) => {
+      this.dispatchTypedEvent("error", new CustomEvent("error", {
+        detail: err instanceof Error ? err : new Error(`${err}`),
+      }));
     });
   }
 
