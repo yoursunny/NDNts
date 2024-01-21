@@ -38,7 +38,7 @@ export abstract class DataProducer {
     }
   }
 
-  public processInterest: ProducerHandler = (interest: Interest): Promise<Data | undefined> => {
+  public readonly processInterest: ProducerHandler = (interest: Interest): Promise<Data | undefined> => {
     const segmentNum = this.parseInterest(interest);
     return this.getData(segmentNum);
   };

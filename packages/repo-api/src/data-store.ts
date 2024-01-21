@@ -3,27 +3,27 @@ import type { AnyIterable } from "streaming-iterables";
 
 export interface Close {
   /** Close the store. */
-  close: () => Promise<void>;
+  close(): Promise<void>;
 }
 
 export interface ListNames {
   /** List Data names, optionally filtered by name prefix. */
-  listNames: (prefix?: Name) => AsyncIterable<Name>;
+  listNames(prefix?: Name): AsyncIterable<Name>;
 }
 
 export interface ListData {
   /** List Data packets, optionally filtered by name prefix. */
-  listData: (prefix?: Name) => AsyncIterable<Data>;
+  listData(prefix?: Name): AsyncIterable<Data>;
 }
 
 export interface Get {
   /** Retrieve Data by exact name. */
-  get: (name: Name) => Promise<Data | undefined>;
+  get(name: Name): Promise<Data | undefined>;
 }
 
 export interface Find {
   /** Find Data that satisfies Interest. */
-  find: (interest: Interest) => Promise<Data | undefined>;
+  find(interest: Interest): Promise<Data | undefined>;
 }
 
 export interface Insert<Options extends {} = {}> {
@@ -34,10 +34,10 @@ export interface Insert<Options extends {} = {}> {
    * - an optional Options object
    * - zero or more Data, Iterable<Data>, or AsyncIterable<Data>
    */
-  insert: (...args: Insert.Args<Options>) => Promise<void>;
+  insert(...args: Insert.Args<Options>): Promise<void>;
 }
 export namespace Insert {
-  export type Args<O extends {}> = [...(object extends O ? [O] | [] : []), ...Array<Data | AnyIterable<Data>>];
+  export type Args<O extends {}> = [...(object extends O ? [O] | [] : []), ...ReadonlyArray<Data | AnyIterable<Data>>];
 
   export interface ParsedArgs<O> {
     readonly opts?: O;
@@ -80,5 +80,5 @@ export namespace Insert {
 
 export interface Delete {
   /** Delete Data packets with given names. */
-  delete: (...names: Name[]) => Promise<void>;
+  delete(...names: readonly Name[]): Promise<void>;
 }

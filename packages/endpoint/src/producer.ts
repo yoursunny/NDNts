@@ -78,10 +78,10 @@ export interface Producer {
    * 2. Producer A can invoke this function to let producer B generate a response.
    * 3. The response should be sent by producer A.
    */
-  processInterest: (interest: Interest) => Promise<Data | undefined>;
+  processInterest(interest: Interest): Promise<Data | undefined>;
 
   /** Close the producer. */
-  close: () => void;
+  close(): void;
 }
 
 export class ProducerImpl implements Producer {
@@ -169,7 +169,7 @@ export class ProducerImpl implements Producer {
     return found;
   }
 
-  public close = (): void => {
+  public readonly close = (): void => {
     this.face.close();
     this.signal?.removeEventListener("abort", this.close);
   };

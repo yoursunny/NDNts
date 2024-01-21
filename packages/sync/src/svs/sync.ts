@@ -222,7 +222,7 @@ export namespace SvSync {
      * Calling .close() has no effect.
      * Sync protocol starts running after the returned Promise is resolved.
      */
-    initialize?: (sync: SvSync) => Promise<void>;
+    initialize?(sync: SvSync): Promise<void>;
 
     /** Sync group prefix. */
     syncPrefix: Name;

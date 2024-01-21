@@ -125,6 +125,6 @@ export namespace PrpsSubscriber {
     readonly topic: Name;
 
     /** Unsubscribe. */
-    close: () => void;
+    close(): void;
   };
 }

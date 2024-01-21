@@ -16,16 +16,16 @@ export interface ChunkSource {
    * Generate chunks sequentially.
    * @returns an AsyncIterable of chunks in order.
    */
-  listChunks: () => AsyncIterable<Chunk>;
+  listChunks(): AsyncIterable<Chunk>;
 
   /**
    * Generate a chunk on-demand.
    * @param i chunk number, starting from zero.
    * @returns a Promise that resolves to requested chunk, or undefined if out of range.
    */
-  getChunk?: (i: number) => Promise<Chunk | undefined>;
+  getChunk?(i: number): Promise<Chunk | undefined>;
 
-  close?: () => void;
+  close?(): void;
 }
 
 export abstract class KnownSizeChunkSource implements ChunkSource {

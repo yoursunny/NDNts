@@ -15,10 +15,10 @@ export interface Server {
    * The producer handler is already attached to the Endpoint and will react to incoming Interests.
    * It's usually unnecessary to call this function manually.
    */
-  processInterest: (interest: Interest) => Promise<Data | undefined>;
+  processInterest(interest: Interest): Promise<Data | undefined>;
 
   /** Stop the producer. */
-  close: () => void;
+  close(): void;
 }
 
 /**

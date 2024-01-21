@@ -252,7 +252,7 @@ export namespace L3Face {
     fw?: Forwarder;
 
     /** Routes to be added on the created face. Default is ["/"]. */
-    addRoutes?: NameLike[];
+    addRoutes?: readonly NameLike[];
 
     /**
      * L3Face attributes.
@@ -267,7 +267,7 @@ export namespace L3Face {
      * A callback to receive Transport, L3Face, and FwFace objects.
      * This can be useful for reading counters or listening to events on these objects.
      */
-    callback?: (transport: Transport, l3face: L3Face, fwFace: FwFace) => void;
+    callback?(transport: Transport, l3face: L3Face, fwFace: FwFace): void;
   }
 
   /**

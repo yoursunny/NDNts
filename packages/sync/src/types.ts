@@ -84,7 +84,7 @@ export class SyncUpdate<ID = any> extends Event {
 
 /** A pubsub protocol subscriber. */
 export interface Subscriber<Topic = Name, Update extends Event = SyncUpdate<Topic>, SubscribeInfo = Topic> {
-  subscribe: (topic: SubscribeInfo) => Subscription<Topic, Update>;
+  subscribe(topic: SubscribeInfo): Subscription<Topic, Update>;
 }
 
 /**

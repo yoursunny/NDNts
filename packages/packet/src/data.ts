@@ -242,7 +242,7 @@ definePublicFields<Data, Fields, PublicFields>(Data, {
 
 const ctorAssign = Symbol("Data.ctorAssign");
 interface CtorTag {
-  [ctorAssign]: (f: Fields) => void;
+  [ctorAssign](f: Fields): void;
 }
 
 export namespace Data {

@@ -35,5 +35,5 @@ export class FchServer {
   }
 
   /** Handler of "GET /" request. */
-  public handle?: (params: URLSearchParams, ctx: Koa.Context) => Promisable<unknown>;
+  public handle?(params: URLSearchParams, ctx: Koa.Context): Promisable<unknown>;
 }

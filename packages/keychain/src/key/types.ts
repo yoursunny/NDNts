@@ -31,7 +31,7 @@ export interface NamedSigner<Asym extends boolean = any> extends Key<KeyKind.Pri
   readonly sigType: number;
 
   /** Create a Signer that signs with this private key but a different KeyLocator. */
-  withKeyLocator: (keyLocator: KeyLocator.CtorArg) => Signer;
+  withKeyLocator(keyLocator: KeyLocator.CtorArg): Signer;
 }
 export namespace NamedSigner {
   /** Named private key signer. */
@@ -85,15 +85,15 @@ export interface CryptoAlgorithm<I = any, Asym extends boolean = any, G = any> {
   {}>;
 
   /** Generate key pair or secret key. */
-  cryptoGenerate: (params: G, extractable: boolean)
-  => Promise<If<Asym, CryptoAlgorithm.GeneratedKeyPair<I>, CryptoAlgorithm.GeneratedSecretKey<I>, never>>;
+  cryptoGenerate(params: G, extractable: boolean): Promise<
+  If<Asym, CryptoAlgorithm.GeneratedKeyPair<I>, CryptoAlgorithm.GeneratedSecretKey<I>, never>>;
 
   /**
    * Import public key from SPKI.
    *
    * This should only appear on asymmetric algorithm.
    */
-  importSpki?: (spki: Uint8Array, der: asn1.ElementBuffer) => Promise<CryptoAlgorithm.PublicKey<I>>;
+  importSpki?(spki: Uint8Array, der: asn1.ElementBuffer): Promise<CryptoAlgorithm.PublicKey<I>>;
 }
 
 export namespace CryptoAlgorithm {

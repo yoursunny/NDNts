@@ -244,7 +244,7 @@ definePublicFields<Interest, Fields, PublicFields>(Interest, {
 
 const ctorAssign = Symbol("Interest.ctorAssign");
 interface CtorTag {
-  [ctorAssign]: (f: Fields) => void;
+  [ctorAssign](f: Fields): void;
 }
 
 export namespace Interest {

@@ -45,21 +45,21 @@ export namespace PSyncCodec {
     contentCompression: Compression;
 
     /** Encode State to buffer (without compression). */
-    encodeState: (state: PSyncCore.State) => Uint8Array;
+    encodeState(state: PSyncCore.State): Uint8Array;
 
     /** Decode State from buffer (without decompression). */
-    decodeState: (payload: Uint8Array) => PSyncCore.State;
+    decodeState(payload: Uint8Array): PSyncCore.State;
 
     /** Convert a name prefix to a Bloom filter key. */
-    toBloomKey: (prefix: Name) => string | Uint8Array;
+    toBloomKey(prefix: Name): string | Uint8Array;
 
     /** Number of name components in an encoded Bloom filter. */
     encodeBloomLength: number;
 
     /** Encode a Bloom filter. */
-    encodeBloom: (bf: BloomFilter) => Component[];
+    encodeBloom(bf: BloomFilter): Component[];
 
     /** Decode a Bloom filter. */
-    decodeBloom: (Bloom: typeof BloomFilter, comps: readonly Component[]) => Promise<BloomFilter>;
+    decodeBloom(Bloom: typeof BloomFilter, comps: readonly Component[]): Promise<BloomFilter>;
   }
 }

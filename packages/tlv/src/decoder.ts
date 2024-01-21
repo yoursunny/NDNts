@@ -3,7 +3,7 @@ import { asDataView, fromUtf8 } from "@ndn/util";
 import { NNI } from "./nni";
 
 export interface Decodable<R> {
-  decodeFrom: (decoder: Decoder) => R;
+  decodeFrom(decoder: Decoder): R;
 }
 
 class DecodedTlv implements Decoder.Tlv {

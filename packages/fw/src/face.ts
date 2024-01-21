@@ -66,13 +66,13 @@ export namespace FwFace {
   export interface RxTxBase {
     readonly attributes?: Attributes;
 
-    addEventListener?: <K extends keyof RxTxEventMap>(type: K, listener: (ev: RxTxEventMap[K]) => any, options?: AddEventListenerOptions) => void;
-    removeEventListener?: <K extends keyof RxTxEventMap>(type: K, listener: (ev: RxTxEventMap[K]) => any, options?: EventListenerOptions) => void;
+    addEventListener?<K extends keyof RxTxEventMap>(type: K, listener: (ev: RxTxEventMap[K]) => any, options?: AddEventListenerOptions): void;
+    removeEventListener?<K extends keyof RxTxEventMap>(type: K, listener: (ev: RxTxEventMap[K]) => any, options?: EventListenerOptions): void;
   }
 
   export interface RxTx extends RxTxBase {
     rx: AsyncIterable<FwPacket>;
-    tx: (iterable: AsyncIterable<FwPacket>) => void;
+    tx(iterable: AsyncIterable<FwPacket>): void;
   }
 
   export interface RxTxDuplex extends RxTxBase {
@@ -80,7 +80,7 @@ export namespace FwFace {
      * The transform function takes an iterable of packets sent by the forwarder,
      * and returns an iterable of packets received by the forwarder.
      */
-    duplex: (iterable: AsyncIterable<FwPacket>) => AsyncIterable<FwPacket>;
+    duplex(iterable: AsyncIterable<FwPacket>): AsyncIterable<FwPacket>;
   }
 }
 

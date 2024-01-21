@@ -13,10 +13,10 @@ export interface StoreProvider<T> {
    */
   readonly canSClone: boolean;
 
-  list: () => Promise<string[]>;
-  get: (key: string) => Promise<T>;
-  insert: (key: string, value: T) => Promise<void>;
-  erase: (key: string) => Promise<void>;
+  list(): Promise<string[]>;
+  get(key: string): Promise<T>;
+  insert(key: string, value: T): Promise<void>;
+  erase(key: string): Promise<void>;
 }
 
 /** Memory based KV store provider. */

@@ -38,7 +38,7 @@ class BridgeTransport extends Transport {
 export interface Bridge {
   faceA: FwFace;
   faceB: FwFace;
-  close: () => void;
+  close(): void;
 }
 
 function makeRelayFunc(relay: Bridge.Relay): Bridge.RelayFunc {
@@ -79,8 +79,8 @@ export namespace Bridge {
     fwB: Forwarder;
     relayAB?: Relay;
     relayBA?: Relay;
-    routesAB?: NameLike[];
-    routesBA?: NameLike[];
+    routesAB?: readonly NameLike[];
+    routesBA?: readonly NameLike[];
   }
 
   /**

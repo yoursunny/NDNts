@@ -6,7 +6,7 @@ import type { CryptoAlgorithm, EncryptionAlgorithm } from "../key/mod";
 
 export interface AesEncryption<I, G extends AesGenParams> extends EncryptionAlgorithm<I, false, G> {
   readonly ivLength: number;
-  makeAesKeyGenParams: (genParams: G) => AesKeyGenParams;
+  makeAesKeyGenParams(genParams: G): AesKeyGenParams;
 }
 
 export type AesKeyLength = 128 | 192 | 256;

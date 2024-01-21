@@ -5,6 +5,6 @@ export interface FetchedInfo {
 
 declare global {
   interface Window {
-    testBlobChunkSource: () => Promise<FetchedInfo>;
+    testBlobChunkSource(): Promise<FetchedInfo>;
   }
 }

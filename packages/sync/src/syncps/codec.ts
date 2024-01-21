@@ -20,12 +20,12 @@ export namespace SyncpsCodec {
     ibltCompression: Compression;
 
     /** Compute the hash of a publication. */
-    hashPub: (pub: Data) => number;
+    hashPub(pub: Data): number;
 
     /** Encode Content to buffer. */
-    encodeContent: (pubs: readonly Data[], maxSize: number) => [wire: Uint8Array, count: number];
+    encodeContent(pubs: readonly Data[], maxSize: number): [wire: Uint8Array, count: number];
 
     /** Decode Content from buffer. */
-    decodeContent: (payload: Uint8Array) => Data[];
+    decodeContent(payload: Uint8Array): Data[];
   }
 }

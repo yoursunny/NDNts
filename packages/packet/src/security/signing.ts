@@ -15,7 +15,7 @@ export namespace LLSign {
   export const OP = Symbol("LLSign.OP");
 
   export interface Signable {
-    [OP]: (signer: LLSign) => Promise<void>;
+    [OP](signer: LLSign): Promise<void>;
   }
 }
 
@@ -30,7 +30,7 @@ export namespace LLVerify {
   export const OP = Symbol("LLVerify.OP");
 
   export interface Verifiable {
-    [OP]: (verifier: LLVerify) => Promise<void>;
+    [OP](verifier: LLVerify): Promise<void>;
   }
 }
 
@@ -43,7 +43,7 @@ interface PacketWithSignature {
 /** High level signer, such as a named private key. */
 export interface Signer {
   /** Sign a packet. */
-  sign: (pkt: Signer.Signable) => Promise<void>;
+  sign(pkt: Signer.Signable): Promise<void>;
 }
 
 export namespace Signer {
@@ -75,7 +75,7 @@ export interface Verifier {
    * Verify a packet.
    * @returns a Promise is resolved upon good signature/policy or rejected upon bad signature/policy.
    */
-  verify: (pkt: Verifier.Verifiable) => Promise<void>;
+  verify(pkt: Verifier.Verifiable): Promise<void>;
 }
 
 export namespace Verifier {
