@@ -45,6 +45,6 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/repo-api": "workspace:*",
     "stream-mock": "^2.0.5",
-    "type-fest": "^4.9.0"
+    "type-fest": "^4.10.0"
   }
 }
