@@ -112,18 +112,20 @@ test.each([
   [0, 200 * 1000 + 500, 201],
   [190 * 1000 + 1, 200 * 1000, 10],
   [190 * 1000, 200 * 1000 + 1, 11],
+  [190 * 1000 + 1, 200 * 1000 + 1, 11],
   [500, 501, 1],
   [500, 500, 0],
   [1000, 1000, 0],
-])("readFileInto %d-%d", async (fileBegin, fileEnd, nSegs) => {
-  const buffer = new Uint8Array(400 + (fileEnd - fileBegin) + 600);
+])("readFileInto [%d,%d)", async (fileBegin, fileEnd, nSegs) => {
+  const [headL, tailL] = [400, 600];
+  const buffer = new Uint8Array(headL + (fileEnd - fileBegin) + tailL);
   const bufferHeadTail = makeObjectBody(buffer.length);
   buffer.set(bufferHeadTail);
 
   const statB = await client.stat("A/B.bin");
-  await client.readFileInto(statB, buffer, 400, fileEnd - fileBegin, fileBegin);
+  await client.readFileInto(statB, buffer, headL, fileEnd - fileBegin, fileBegin);
   expect(segNumsB.size).toBe(nSegs);
-  expect(buffer.subarray(0, 400)).toEqualUint8Array(bufferHeadTail.subarray(0, 400));
-  expect(buffer.subarray(-600)).toEqualUint8Array(bufferHeadTail.subarray(-600));
-  expect(buffer.subarray(400, -600)).toEqualUint8Array(bodyB.subarray(fileBegin, fileEnd));
+  expect(buffer.subarray(0, headL)).toEqualUint8Array(bufferHeadTail.subarray(0, headL));
+  expect(buffer.subarray(-tailL)).toEqualUint8Array(bufferHeadTail.subarray(-tailL));
+  expect(buffer.subarray(headL, -tailL)).toEqualUint8Array(bodyB.subarray(fileBegin, fileEnd));
 });

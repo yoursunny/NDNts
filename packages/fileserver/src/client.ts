@@ -84,11 +84,17 @@ export class Client {
       segmentRange: [segFirst, segLast + 1],
     });
 
-    // TODO use fetching.unordered()
-    const input = await fetching;
-    const inputBegin = position - segFirst * m.segmentSize!;
-    const inputEnd = inputBegin + length;
-    assert(input.length >= inputEnd);
-    buffer.set(input.subarray(inputBegin, inputEnd), offset);
+    for await (const { segNum, content } of fetching.unordered()) {
+      let src = content;
+      let dst = m.segmentSize! * segNum - position;
+      if (dst < 0) {
+        src = src.subarray(-dst);
+        dst = 0;
+      }
+      if (dst + src.length > length) {
+        src = src.subarray(0, length - dst);
+      }
+      buffer.set(src, offset + dst);
+    }
   }
 }

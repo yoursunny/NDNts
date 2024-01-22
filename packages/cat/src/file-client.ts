@@ -133,17 +133,17 @@ class Downloader {
 
   private async downloadFile(local: string) {
     const m = await this.client.stat(this.relPath(local));
-    const fh = await fs.open(local, "w");
-
     const fetching = this.client.readFile(m);
 
-    let ok = false;
+    let fh: fs.FileHandle | undefined;
     try {
+      fh = await fs.open(local, "w");
       await fetching.pipe(fh.createWriteStream());
-      ok = true;
-    } finally {
       await fh.close();
-      if (!ok) {
+      fh = undefined;
+    } finally {
+      if (fh !== undefined) {
+        await fh.close();
         await fs.unlink(local);
       }
     }
