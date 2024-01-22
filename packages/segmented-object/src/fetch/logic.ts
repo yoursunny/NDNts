@@ -84,7 +84,7 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
     this.retxLimit = retxLimit;
 
     this.hiInterestSegNum = segmentRange[0] - 1;
-    this.finalSegNum = (segmentRange[1] ?? Number.MAX_SAFE_INTEGER) - 1;
+    this.finalSegNum = Math.min(segmentRange[1] ?? Infinity, Number.MAX_SAFE_INTEGER) - 1;
     assert(this.hiInterestSegNum < this.finalSegNum, "invalid segmentRange");
     this.estimatedFinalSegNum = estimatedFinalSegNum ?? this.finalSegNum;
   }

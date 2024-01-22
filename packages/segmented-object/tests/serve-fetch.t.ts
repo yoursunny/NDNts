@@ -99,9 +99,9 @@ test("iterable to unordered", async () => {
   const receivedSegments = new Set<number>();
   const fetched = fetch("/R");
   for await (const data of fetched.unordered()) {
-    const segNum = data.name.at(-1).as(Segment3);
-    expect(receivedSegments.has(segNum)).toBeFalsy();
-    receivedSegments.add(segNum);
+    expect(data.segNum).toBe(data.name.at(-1).as(Segment3));
+    expect(receivedSegments.has(data.segNum)).toBeFalsy();
+    receivedSegments.add(data.segNum);
     expect(data.content.length).toBeLessThanOrEqual(6000);
     totalLength += data.content.length;
     expect(fetched.count).toBe(receivedSegments.size);
@@ -121,6 +121,8 @@ test("ranged", async () => {
     expect(fetch("/R", { segmentRange: [8, 24] }))
       .resolves.toEqualUint8Array(objectBody.subarray(8 * 1024, 24 * 1024)),
     expect(fetch("/R", { segmentRange: [1022, undefined] }))
+      .resolves.toEqualUint8Array(objectBody.subarray(1022 * 1024)),
+    expect(fetch("/R", { segmentRange: [1022, Infinity] }))
       .resolves.toEqualUint8Array(objectBody.subarray(1022 * 1024)),
     expect(fetch("/R", { segmentRange: [1022, 1050] }))
       .resolves.toEqualUint8Array(objectBody.subarray(1022 * 1024)),

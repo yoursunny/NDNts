@@ -34,7 +34,10 @@ class FetchResult implements fetch.Result {
   }
 
   public unordered() {
-    return map(({ data }) => data, this.startFetcher());
+    return map(
+      ({ data, segNum }) => Object.assign(data, { segNum }),
+      this.startFetcher(),
+    );
   }
 
   private async *ordered() {
@@ -95,7 +98,7 @@ export namespace fetch {
    */
   export interface Result extends PromiseLike<Uint8Array>, AsyncIterable<Data> {
     /** Iterate over Data packets as they arrive, not sorted in segment number order. */
-    unordered(): AsyncIterable<Data>;
+    unordered(): AsyncIterable<Data & { readonly segNum: number }>;
 
     /** Iterate over payload chunks in segment number order. */
     chunks(): AsyncIterable<Uint8Array>;
