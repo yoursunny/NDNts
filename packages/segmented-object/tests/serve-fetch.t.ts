@@ -81,7 +81,7 @@ describe("file source", () => {
 
 test("iterable to unordered", async () => {
   const chunkSource = makeChunkSource((async function*() {
-    const yieldSizes = [5000, 7000, 3000];
+    const yieldSizes = [5000, 7000, 20000];
     let i = -1;
     for (let offset = 0; offset < objectBody.length;) {
       const end = offset + yieldSizes[++i % yieldSizes.length]!;
