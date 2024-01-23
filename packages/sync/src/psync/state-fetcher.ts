@@ -23,7 +23,9 @@ export class PSyncStateFetcher {
     const versioned = await discoverVersion(name, {
       endpoint: this.endpoint,
       describe: `${this.describe}[${describeSuffix}v]`,
-      expectedSuffixLen: 2 + this.codec.nUselessCompsAfterIblt,
+      // PSync C++ library prior to 62f0800a61f49c7dd698e142e046831dbc88c5b9 would insert a useless
+      // component, making a 3-component suffix; otherwise, it's a 2-component suffix
+      expectedSuffixLen: [2, 3],
       modifyInterest: { lifetime: this.syncInterestLifetime },
       retxLimit: 0,
       signal,

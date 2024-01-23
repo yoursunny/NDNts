@@ -196,8 +196,7 @@ export class PSyncFull extends TypedEventTarget<EventMap> implements SyncProtoco
       this.scheduleSyncInterest(0);
     }
 
-    const server = this.pBuffer.add(interest.name.append(...this.codec.uselessCompsAfterIblt),
-      state, this.pFreshness);
+    const server = this.pBuffer.add(interest.name, state, this.pFreshness);
     return server.processInterest(interest);
   }
 

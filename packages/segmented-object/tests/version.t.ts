@@ -86,17 +86,27 @@ test("discover simple", async () => {
     .resolves.toEqualName(new Name("/A").append(Version3, 2));
 });
 
-test.each([3, discoverVersion.ANY_SUFFIX_LEN] as Array<discoverVersion.Options["expectedSuffixLen"]>,
-)("discover expectedSuffixLen", async (expectedSuffixLen) => {
+test.each<[discoverVersion.Options["expectedSuffixLen"], string, boolean]>([
+  [3, "/S", true],
+  [3, "/S/S", false],
+  [[5, 7, 3], "/S", true],
+  [[5, 7, 3], "/S/S", false],
+  [[5, 7, 3], "/S/S/S", true],
+  [discoverVersion.ANY_SUFFIX_LEN, "/S", true],
+  [discoverVersion.ANY_SUFFIX_LEN, "/S/S", true],
+])("discover expectedSuffixLen %#", async (expectedSuffixLen, nameMid, ok) => {
+  const versioned = new Name(`/A${nameMid}`).append(Version3, 2);
   const producer = new Endpoint().produce("/A",
-    async () => {
-      const name = new Name("/A/S").append(Version3, 2).append(Segment3, 4);
-      return new Data(name, Data.FreshnessPeriod(1000));
-    });
+    async () => new Data(versioned.append(Segment3, 4), Data.FreshnessPeriod(1000)),
+  );
   closers.push(producer);
 
-  await expect(discoverVersion(new Name("/A"), { expectedSuffixLen }))
-    .resolves.toEqualName(new Name("/A/S").append(Version3, 2));
+  const promise = discoverVersion(new Name("/A"), { expectedSuffixLen });
+  if (ok) {
+    await expect(promise).resolves.toEqualName(versioned);
+  } else {
+    await expect(promise).rejects.toThrow(/cannot extract version/);
+  }
 });
 
 const wrongNames = [

@@ -1,4 +1,4 @@
-import { Component, type Name } from "@ndn/packet";
+import type { Component, Name } from "@ndn/packet";
 import type { BloomFilter } from "@yoursunny/psync-bloom";
 import applyMixins from "applymixins";
 
@@ -9,13 +9,7 @@ import type { PSyncCore } from "./core";
 export class PSyncCodec {
   constructor(p: PSyncCodec.Parameters, protected readonly ibltParams: IBLT.PreparedParameters) {
     Object.assign(this, p);
-
-    for (let i = 0; i < this.nUselessCompsAfterIblt; ++i) {
-      this.uselessCompsAfterIblt.push(new Component());
-    }
   }
-
-  public readonly uselessCompsAfterIblt: Component[] = [];
 
   public state2buffer(state: PSyncCore.State): Uint8Array {
     return this.contentCompression.compress(this.encodeState(state));
@@ -34,12 +28,6 @@ export namespace PSyncCodec {
   export interface Parameters {
     /** Compression method for IBLT in name component. */
     ibltCompression: Compression;
-
-    /**
-     * Number of useless components between IBLT and Version.
-     * @see https://github.com/named-data/PSync/blob/b60398c5fc216a1b577b9dbcf61d48a21cb409a4/PSync/full-producer.cpp#L239
-     */
-    nUselessCompsAfterIblt: number;
 
     /** Compression method for State in segmented object. */
     contentCompression: Compression;

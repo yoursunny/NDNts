@@ -32,8 +32,7 @@ export async function discoverVersion(name: Name, {
   const vComp = data.name.get(-2);
   const sComp = data.name.get(-1);
   let conventionIndex: number;
-  if ((expectedSuffixLen !== discoverVersion.ANY_SUFFIX_LEN &&
-       data.name.length !== name.length + expectedSuffixLen) ||
+  if (!checkSuffixLength(expectedSuffixLen, data.name.length - name.length) ||
       (conventionIndex = conventions.findIndex(([v, s]) => v.match(vComp!) && s.match(sComp!))) < 0) {
     throw new Error(`cannot extract version from ${data.name}`);
   }
@@ -62,9 +61,10 @@ export namespace discoverVersion {
     /**
      * Expected number of suffix components, including Version and Segment.
      * Minimum and default are 2, i.e. Version and Segment components.
+     * This can be a single number or an array of acceptable numbers.
      * ANY_SUFFIX_LEN allows any suffix length.
      */
-    expectedSuffixLen?: number | typeof ANY_SUFFIX_LEN;
+    expectedSuffixLen?: number | readonly number[] | typeof ANY_SUFFIX_LEN;
   }
 
   export type Result = Name & {
@@ -74,4 +74,18 @@ export namespace discoverVersion {
     /** Recognized segment number naming convention. */
     segmentNumConvention: SegmentConvention;
   };
+}
+
+function checkSuffixLength(expected: discoverVersion.Options["expectedSuffixLen"], actual: number): boolean {
+  switch (true) {
+    case expected === discoverVersion.ANY_SUFFIX_LEN: {
+      return true;
+    }
+    case Array.isArray(expected): {
+      return expected.includes(actual);
+    }
+    default: {
+      return expected === actual;
+    }
+  }
 }

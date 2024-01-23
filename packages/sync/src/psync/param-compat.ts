@@ -81,7 +81,6 @@ export function makePSyncCompatParam({
     joinPrefixSeqNum,
 
     ibltCompression,
-    nUselessCompsAfterIblt: 1,
 
     contentCompression,
     encodeState(state) {
