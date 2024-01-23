@@ -26,16 +26,17 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
+    "@browserfs/core": "^0.0.12",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
+    "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
-    "@ndn/endpoint": "workspace:*",
-    "streaming-iterables": "^8.0.1"
+    "@ndn/endpoint": "workspace:*"
   }
 }

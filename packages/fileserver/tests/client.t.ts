@@ -1,5 +1,8 @@
 import "@ndn/util/test-fixture/expect";
 
+import { assert } from "node:console";
+
+import { configure as bfsConfigure, fs as bfs, registerBackend as bfsRegisterBackend } from "@browserfs/core/index.js";
 import { Endpoint } from "@ndn/endpoint";
 import { Segment, Version } from "@ndn/naming-convention2";
 import { Data, Name } from "@ndn/packet";
@@ -7,9 +10,9 @@ import { makeMetadataPacket, MetadataKeyword } from "@ndn/rdr";
 import { BufferChunkSource, DataProducer } from "@ndn/segmented-object";
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
 import { collect } from "streaming-iterables";
-import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
+import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
-import { buildDirectoryListing, Client, FileMetadata, lsKeyword, ModeDir, ModeFile } from "..";
+import { buildDirectoryListing, Client, FileMetadata, lsKeyword, ModeDir, ModeFile, NDNFileSystem } from "..";
 
 // Directory hierarchy:
 //   /
@@ -23,7 +26,7 @@ const versionA = versionRoot - 1000;
 const versionB = versionRoot - 2000;
 let bodyB: Buffer;
 const segNumsB = new Set<number>();
-beforeAll(() => {
+beforeAll(async () => {
   const endpoint = new Endpoint();
 
   const versionedNameRoot = prefix.append(lsKeyword, Version.create(versionRoot));
@@ -81,12 +84,45 @@ beforeAll(() => {
       return makeMetadataPacket(m, { prefix: interest.name });
     },
   );
-});
-beforeEach(() => {
+
   client = new Client(prefix);
-  segNumsB.clear();
+
+  bfsRegisterBackend(NDNFileSystem);
+  await bfsConfigure({
+    "/N": {
+      fs: "NDN",
+      options: { client },
+    },
+  });
 });
 afterAll(Endpoint.deleteDefaultForwarder);
+
+type ReadFileIntoCase = [fileBegin: number, fileEnd: number, nSegs: number];
+const readFileIntoCases: readonly ReadFileIntoCase[] = [
+  [0, 200 * 1000 + 500, 201],
+  [190 * 1000 + 1, 200 * 1000, 10],
+  [190 * 1000, 200 * 1000 + 1, 11],
+  [190 * 1000 + 1, 200 * 1000 + 1, 11],
+  [500, 501, 1],
+  [500, 500, 0],
+  [1000, 1000, 0],
+];
+async function testReadFileInto(
+    doReadFileInto: (buffer: Uint8Array, offset: number, length: number, position: number) => Promise<void>,
+    fileBegin: number, fileEnd: number, nSegs: number,
+): Promise<void> {
+  const [headL, tailL] = [400, 600];
+  const buffer = new Uint8Array(headL + (fileEnd - fileBegin) + tailL);
+  const bufferHeadTail = makeObjectBody(buffer.length);
+  buffer.set(bufferHeadTail);
+
+  segNumsB.clear();
+  await doReadFileInto(buffer, headL, fileEnd - fileBegin, fileBegin);
+  expect(segNumsB.size).toBe(nSegs);
+  expect(buffer.subarray(0, headL)).toEqualUint8Array(bufferHeadTail.subarray(0, headL));
+  expect(buffer.subarray(-tailL)).toEqualUint8Array(bufferHeadTail.subarray(-tailL));
+  expect(buffer.subarray(headL, -tailL)).toEqualUint8Array(bodyB.subarray(fileBegin, fileEnd));
+}
 
 test("readdir", async () => {
   const statRoot = await client.stat("");
@@ -108,24 +144,51 @@ test("readFile", async () => {
   expect(readB).toEqualUint8Array(bodyB);
 });
 
-test.each([
-  [0, 200 * 1000 + 500, 201],
-  [190 * 1000 + 1, 200 * 1000, 10],
-  [190 * 1000, 200 * 1000 + 1, 11],
-  [190 * 1000 + 1, 200 * 1000 + 1, 11],
-  [500, 501, 1],
-  [500, 500, 0],
-  [1000, 1000, 0],
-])("readFileInto [%d,%d)", async (fileBegin, fileEnd, nSegs) => {
-  const [headL, tailL] = [400, 600];
-  const buffer = new Uint8Array(headL + (fileEnd - fileBegin) + tailL);
-  const bufferHeadTail = makeObjectBody(buffer.length);
-  buffer.set(bufferHeadTail);
+test.each(readFileIntoCases)("readFileInto [%d,%d)", async (...tc) => {
+  await testReadFileInto(async (...args) => {
+    const statB = await client.stat("A/B.bin");
+    await client.readFileInto(statB, ...args);
+  }, ...tc);
+});
 
-  const statB = await client.stat("A/B.bin");
-  await client.readFileInto(statB, buffer, headL, fileEnd - fileBegin, fileBegin);
-  expect(segNumsB.size).toBe(nSegs);
-  expect(buffer.subarray(0, headL)).toEqualUint8Array(bufferHeadTail.subarray(0, headL));
-  expect(buffer.subarray(-tailL)).toEqualUint8Array(bufferHeadTail.subarray(-tailL));
-  expect(buffer.subarray(headL, -tailL)).toEqualUint8Array(bodyB.subarray(fileBegin, fileEnd));
+test("bfs stat", async () => {
+  const statRoot = await bfs.promises.stat("/N");
+  expect(statRoot.isDirectory()).toBeTruthy();
+
+  const statA = await bfs.promises.stat("/N/A");
+  expect(statA.isDirectory()).toBeTruthy();
+
+  const statB = await bfs.promises.stat("/N/A/B.bin");
+  expect(statB.isFile()).toBeTruthy();
+  expect(statB.size).toBe(bodyB.length);
+});
+
+test("bfs open reject", async () => {
+  await expect(bfs.promises.open("/N/A/B.bin", "w")).rejects.toThrow();
+});
+
+describe("bfs open", () => {
+  let fd: number;
+  beforeAll(async () => {
+    const fh = await bfs.promises.open("/N/A/B.bin", "r");
+    assert(typeof fh === "number"); // https://github.com/browser-fs/core/issues/32
+    fd = fh as unknown as number;
+  });
+  afterAll(async () => {
+    await bfs.promises.close(fd);
+  });
+
+  test("stat", async () => {
+    expect((await bfs.promises.fstat(fd)).size).toBe(bodyB.length);
+  });
+
+  test.each(readFileIntoCases)("read [%d,%d)", async (...tc) => {
+    await testReadFileInto(async (...args) => {
+      await bfs.promises.read(fd, ...args);
+    }, ...tc);
+  });
+});
+
+test("bfs readFile", async () => {
+  await expect(bfs.promises.readFile("/N/A/B.bin")).resolves.toEqualUint8Array(bodyB);
 });
