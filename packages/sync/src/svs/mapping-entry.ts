@@ -40,7 +40,11 @@ export namespace SvMappingEntry {
   }
 
   /** Class decorator on an extensible MappingEntry subclass. */
-  export function extend<M extends SvMappingEntry & Extensible>(ctor: new() => M): void {
+  export function extend<M extends SvMappingEntry & Extensible>(
+      ctor: new() => M,
+      ctx?: ClassDecoratorContext,
+  ): void {
+    void ctx; // cannot use due to https://github.com/vitest-dev/vitest/issues/3140
     const registry = new ctor()[Extensible.TAG];
     const evd = makeEvd<M>(ctor.name).setUnknown(registry.decodeUnknown);
     Object.defineProperty(ctor, "decodeFrom", {

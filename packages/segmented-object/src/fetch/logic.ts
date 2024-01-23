@@ -50,7 +50,7 @@ type EventMap = {
 /** Congestion control logic. */
 export class FetchLogic extends TypedEventTarget<EventMap> {
   /** Internal clock. */
-  public readonly now = hirestime();
+  public readonly now: () => number = hirestime();
 
   private readonly rtte: RttEstimator;
   private readonly ca: CongestionAvoidance;
