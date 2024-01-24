@@ -151,6 +151,16 @@ test.each(readFileIntoCases)("readFileInto [%d,%d)", async (...tc) => {
   }, ...tc);
 });
 
+test("bfs rejects", async () => {
+  expect(() => bfs.statSync("/N/A")).toThrow(/ENOTSUP/);
+  expect(() => bfs.readdirSync("/N/A")).toThrow(/ENOTSUP/);
+  await expect(bfs.promises.open("/N/A/B.bin", "w")).rejects.toThrow(/ENOTSUP/);
+
+  // below are not ENOTSUP due to BaseFilesystem wrappers
+  expect(() => bfs.readFileSync("/N/A/B.bin")).toThrow(/ENOENT/);
+  expect(() => bfs.openSync("/N/A/B.bin", "r")).toThrow(/ENOENT/);
+});
+
 test("bfs stat", async () => {
   const statRoot = await bfs.promises.stat("/N");
   expect(statRoot.isDirectory()).toBeTruthy();
@@ -161,15 +171,6 @@ test("bfs stat", async () => {
   const statB = await bfs.promises.stat("/N/A/B.bin");
   expect(statB.isFile()).toBeTruthy();
   expect(statB.size).toBe(bodyB.length);
-});
-
-test("bfs open reject", async () => {
-  await expect(bfs.promises.open("/N/A/B.bin", "w")).rejects.toThrow();
-});
-
-test("bfs readdir", async () => {
-  await expect(bfs.promises.readdir("/N")).resolves.toEqual(["A"]);
-  await expect(bfs.promises.readdir("/N/A")).resolves.toEqual(["B.bin"]);
 });
 
 describe("bfs open", () => {
@@ -183,7 +184,14 @@ describe("bfs open", () => {
     await bfs.promises.close(fd);
   });
 
+  test("rejects", () => {
+    const buf = new Uint8Array(16);
+    expect(() => bfs.readSync(fd, buf)).toThrow(/ENOTSUP/);
+    expect(() => bfs.readSync(fd, buf, 0, 16, 0)).toThrow(/ENOTSUP/);
+  });
+
   test("stat", async () => {
+    expect(bfs.fstatSync(fd).size).toBe(bodyB.length);
     expect((await bfs.promises.fstat(fd)).size).toBe(bodyB.length);
   });
 
@@ -192,6 +200,11 @@ describe("bfs open", () => {
       await bfs.promises.read(fd, ...args);
     }, ...tc);
   });
+});
+
+test("bfs readdir", async () => {
+  await expect(bfs.promises.readdir("/N")).resolves.toEqual(["A"]);
+  await expect(bfs.promises.readdir("/N/A")).resolves.toEqual(["B.bin"]);
 });
 
 test("bfs readFile", async () => {

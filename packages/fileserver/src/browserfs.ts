@@ -1,5 +1,5 @@
 import { type BackendOption, CreateBackend } from "@browserfs/core/backends/backend.js";
-import { ApiError, BaseFile, BaseFileSystem, type Cred, ErrorCode, type File, type FileFlag, type FileSystem, type FileSystemMetadata, FileType, Stats } from "@browserfs/core/index.js";
+import { ApiError, BaseFile, BaseFileSystem, type Cred, ErrorCode, type File, type FileFlag, type FileSystemMetadata, FileType, Stats } from "@browserfs/core/index.js";
 import { assert } from "@ndn/util";
 import LRUCache from "mnemonist/lru-cache.js";
 import { collect, map, pipeline } from "streaming-iterables";
@@ -7,40 +7,45 @@ import { collect, map, pipeline } from "streaming-iterables";
 import { Client } from "./client";
 import { type FileMetadata } from "./metadata";
 
-/** ndn6-file-server client wrapped as BrowserFS backend. */
-export class NDNFileSystem extends BaseFileSystem implements FileSystem {
+/**
+ * ndn6-file-server client wrapped as BrowserFS backend.
+ * This backend only supports async operations.
+ */
+export class NDNFileSystem extends BaseFileSystem {
   public static override readonly Name = "NDN";
   public static readonly Create = CreateBackend.bind(this);
-  public static readonly Options = {
+  public static readonly Options: Record<string, BackendOption<unknown>> = {
     client: {
       type: "object",
       description: "Client instance",
-      validator(opt: Client) {
+      validator(opt) {
         assert(opt instanceof Client);
       },
-    } satisfies BackendOption<Client>,
+    },
     statsCacheCapacity: {
       type: "number",
-      description: "cache capacity for FileMetadata",
+      description: "cache capacity for FileMetadata, 0 disables cache",
       optional: true,
-      validator(opt: number) {
+      validator(opt) {
         assert(typeof opt === "number");
       },
-    } satisfies BackendOption<number>,
-  } satisfies Record<string, BackendOption<unknown>>;
+    },
+  };
 
   public static isAvailable(): boolean {
     return true;
   }
 
-  constructor({
-    client,
-    statsCacheCapacity = 16,
-  }: Partial<NDNFileSystem.Options> = {}) {
-    super();
+  constructor(opts: Partial<NDNFileSystem.Options> = {}) {
+    // opts is declared as optional and Partial to satisfy typing,
+    // but bfs.configure() would validate it against Options definition.
+    super(opts);
+    const {
+      client,
+      statsCacheCapacity = 16,
+    } = opts;
 
-    // use Partial<Options> to avoid typing error in Create function
-    assert(!!client);
+    assert(client instanceof Client);
     this.client = client;
 
     if (statsCacheCapacity > 0) {
@@ -52,9 +57,10 @@ export class NDNFileSystem extends BaseFileSystem implements FileSystem {
   private readonly statsCache?: LRUCache<string, FileMetadata>;
 
   public override get metadata(): FileSystemMetadata {
-    return Object.assign(super.metadata, {
+    return {
+      ...super.metadata,
       readonly: true,
-    } as Partial<FileSystemMetadata>);
+    };
   }
 
   private async getFileMetadata(p: string): Promise<FileMetadata> {
@@ -111,14 +117,6 @@ class NDNFile extends BaseFile implements File {
       private readonly m: FileMetadata,
   ) {
     super();
-    for (const methodName of fileMethodsNotsup) {
-      this[methodName] = () => {
-        throw new ApiError(ErrorCode.ENOTSUP);
-      };
-    }
-    for (const methodName of fileMethodsAsync) {
-      this[methodName] = async (...args: any[]) => (this[`${methodName}Sync`] as any)(...args);
-    }
   }
 
   public getPos(): number | undefined {
@@ -153,6 +151,16 @@ const fileMethodsAsync = [
   "truncate",
   "write",
 ] as const satisfies ReadonlyArray<keyof File>;
+for (const methodName of fileMethodsNotsup) {
+  NDNFile.prototype[methodName] = () => {
+    throw new ApiError(ErrorCode.ENOTSUP);
+  };
+}
+for (const methodName of fileMethodsAsync) {
+  NDNFile.prototype[methodName] = async function (this: NDNFile, ...args: any[]) {
+    return (this[`${methodName}Sync`] as any)(...args);
+  };
+}
 
 function statsFromFileMetadata(m: FileMetadata): Stats {
   return new Stats(
