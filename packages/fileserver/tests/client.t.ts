@@ -167,6 +167,11 @@ test("bfs open reject", async () => {
   await expect(bfs.promises.open("/N/A/B.bin", "w")).rejects.toThrow();
 });
 
+test("bfs readdir", async () => {
+  await expect(bfs.promises.readdir("/N")).resolves.toEqual(["A"]);
+  await expect(bfs.promises.readdir("/N/A")).resolves.toEqual(["B.bin"]);
+});
+
 describe("bfs open", () => {
   let fd: number;
   beforeAll(async () => {

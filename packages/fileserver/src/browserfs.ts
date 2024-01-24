@@ -1,6 +1,7 @@
 import { type BackendOption, CreateBackend } from "@browserfs/core/backends/backend.js";
 import { ApiError, BaseFile, BaseFileSystem, type Cred, ErrorCode, type File, type FileFlag, type FileSystem, type FileSystemMetadata, FileType, Stats } from "@browserfs/core/index.js";
 import { assert } from "@ndn/util";
+import LRUCache from "mnemonist/lru-cache.js";
 import { collect, map, pipeline } from "streaming-iterables";
 
 import { Client } from "./client";
@@ -17,20 +18,38 @@ export class NDNFileSystem extends BaseFileSystem implements FileSystem {
       validator(opt: Client) {
         assert(opt instanceof Client);
       },
-    },
+    } satisfies BackendOption<Client>,
+    statsCacheCapacity: {
+      type: "number",
+      description: "cache capacity for FileMetadata",
+      optional: true,
+      validator(opt: number) {
+        assert(typeof opt === "number");
+      },
+    } satisfies BackendOption<number>,
   } satisfies Record<string, BackendOption<unknown>>;
 
   public static isAvailable(): boolean {
     return true;
   }
 
-  constructor(opts?: Partial<NDNFileSystem.Options>) {
+  constructor({
+    client,
+    statsCacheCapacity = 16,
+  }: Partial<NDNFileSystem.Options> = {}) {
     super();
-    assert(opts?.client);
-    this.client = opts.client;
+
+    // use Partial<Options> to avoid typing error in Create function
+    assert(!!client);
+    this.client = client;
+
+    if (statsCacheCapacity > 0) {
+      this.statsCache = new LRUCache(statsCacheCapacity);
+    }
   }
 
   private readonly client: Client;
+  private readonly statsCache?: LRUCache<string, FileMetadata>;
 
   public override get metadata(): FileSystemMetadata {
     return Object.assign(super.metadata, {
@@ -39,7 +58,12 @@ export class NDNFileSystem extends BaseFileSystem implements FileSystem {
   }
 
   private async getFileMetadata(p: string): Promise<FileMetadata> {
-    return this.client.stat(p.slice(1));
+    let m = this.statsCache?.get(p);
+    if (!m) {
+      m = await this.client.stat(p.slice(1));
+      this.statsCache?.set(p, m);
+    }
+    return m;
   }
 
   public override async stat(p: string, cred: Cred): Promise<Stats> {
@@ -66,10 +90,18 @@ export class NDNFileSystem extends BaseFileSystem implements FileSystem {
     const m = await this.getFileMetadata(p);
     return new NDNFile(this.client, m);
   }
+
+  public override async readFile(p: string, flag: FileFlag, cred: Cred): Promise<Uint8Array> {
+    void flag;
+    void cred;
+    const m = await this.getFileMetadata(p);
+    return this.client.readFile(m);
+  }
 }
 export namespace NDNFileSystem {
   export interface Options {
     client: Client;
+    statsCacheCapacity?: number;
   }
 }
 
@@ -79,14 +111,13 @@ class NDNFile extends BaseFile implements File {
       private readonly m: FileMetadata,
   ) {
     super();
-    for (const methodName of fileMethods) {
-      if (methodName.endsWith("Sync")) {
-        this[methodName] = () => {
-          throw new ApiError(ErrorCode.ENOTSUP);
-        };
-      } else {
-        (this[methodName] as any) = async (...args: any[]) => (this as any)[`${methodName}Sync`](...args);
-      }
+    for (const methodName of fileMethodsNotsup) {
+      this[methodName] = () => {
+        throw new ApiError(ErrorCode.ENOTSUP);
+      };
+    }
+    for (const methodName of fileMethodsAsync) {
+      this[methodName] = async (...args: any[]) => (this[`${methodName}Sync`] as any)(...args);
     }
   }
 
@@ -110,14 +141,17 @@ class NDNFile extends BaseFile implements File {
     return { bytesRead: length, buffer };
   }
 }
-interface NDNFile extends Pick<File, typeof fileMethods[number]> {}
-
-const fileMethods = [
+interface NDNFile extends Pick<File, typeof fileMethodsNotsup[number] | typeof fileMethodsAsync[number]> {}
+const fileMethodsNotsup = [
+  "truncateSync",
+  "writeSync",
+  "readSync",
+] as const satisfies ReadonlyArray<keyof File>;
+const fileMethodsAsync = [
   "stat",
   "close",
-  "truncate", "truncateSync",
-  "write", "writeSync",
-  "readSync",
+  "truncate",
+  "write",
 ] as const satisfies ReadonlyArray<keyof File>;
 
 function statsFromFileMetadata(m: FileMetadata): Stats {

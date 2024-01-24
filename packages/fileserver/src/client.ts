@@ -2,6 +2,7 @@ import { Component, type Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
 import { assert } from "@ndn/util";
+import map from "obliterator/map.js";
 
 import { type DirEntry, parseDirectoryListing } from "./ls";
 import { FileMetadata } from "./metadata";
@@ -13,7 +14,8 @@ export interface ClientOptions extends retrieveMetadata.Options, fetch.Options {
 export class Client {
   constructor(
       public readonly prefix: Name,
-      private readonly opts: ClientOptions = {}) {}
+      private readonly opts: ClientOptions = {},
+  ) {}
 
   /**
    * Retrieve metadata of given relative path.
@@ -28,11 +30,15 @@ export class Client {
    */
   public stat(parentRelPath: string, de: DirEntry): Promise<FileMetadata>;
 
-  public stat(relPath: string, de?: DirEntry): Promise<FileMetadata> {
-    const name = this.prefix.append(
-      ...(relPath === "" ? [] : relPath.split("/").map((comp) => new Component(undefined, comp))),
-      ...(de ? [de.name] : []),
-    );
+  public stat(relPath: string, child?: DirEntry): Promise<FileMetadata> {
+    const name = this.prefix.append(...map((function*() {
+      if (relPath !== "") {
+        yield* relPath.split("/");
+      }
+      if (child) {
+        yield child.name;
+      }
+    })(), (comp) => new Component(undefined, comp)));
     return retrieveMetadata(name, FileMetadata, this.opts);
   }
 

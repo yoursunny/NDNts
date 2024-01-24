@@ -33,6 +33,8 @@
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
+    "mnemonist": "^0.39.7",
+    "obliterator": "^2.0.4",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2"
   },
