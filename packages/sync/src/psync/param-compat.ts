@@ -58,7 +58,7 @@ function splitPrefixSeqNum(value: Uint8Array) {
 }
 
 const noCompression: PSyncCodec.Compression = {
-  compress: (input) => new Uint8Array(input), // make a copy
+  compress: (input) => input.slice(), // make a copy
   decompress: (input) => input,
 };
 

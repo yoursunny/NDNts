@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
-import { Bridge } from "@ndn/l3face/test-fixture/bridge";
+import { Bridge } from "@ndn/l3face";
 import { Timestamp } from "@ndn/naming-convention2";
 import { Data, Name, type NameLike } from "@ndn/packet";
 import { assert, Closers, delay } from "@ndn/util";
@@ -57,17 +57,15 @@ class Fixture {
     this.syncs.push(new SyncpsPubsub({ ...opts }));
 
     for (let i = 1; i < n; ++i) {
-      const fw = Forwarder.create();
       const bridge = Bridge.create({
         fwA: Forwarder.getDefault(),
-        fwB: fw,
         relayAB: { loss, delay: 3, jitter: 0.6 },
         relayBA: { delay: 3, jitter: 0.6 },
       });
 
       this.syncs.push(new SyncpsPubsub({
         ...opts,
-        endpoint: new Endpoint({ fw }),
+        endpoint: new Endpoint({ fw: bridge.fwB }),
       }));
       closers.push(bridge);
     }

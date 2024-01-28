@@ -1,6 +1,6 @@
 import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
-import { Bridge } from "@ndn/l3face/test-fixture/bridge";
+import { Bridge } from "@ndn/l3face";
 import { Name } from "@ndn/packet";
 import { Closers, delay } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
@@ -58,14 +58,11 @@ afterEach(closers.close);
 // specification section 5.2 example
 test("example", async () => {
   const debugHandler = new DebugHandler();
-  const fwAB = Forwarder.create();
-  const fwC = Forwarder.create();
   let lossToC = false;
   using bridge = Bridge.create({
-    fwA: fwAB,
-    fwB: fwC,
     relayAB: (it) => filter(() => !lossToC, it),
-  });
+  }).rename("AB", "C");
+  const { fwAB, fwC } = bridge;
 
   const opts: SvSync.Options = {
     ...baseOpts,

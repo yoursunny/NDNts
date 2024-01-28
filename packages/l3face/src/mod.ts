@@ -1,3 +1,4 @@
+export * from "./bridge";
 export * from "./l3face";
 export * from "./rxtx-iterable";
 export * from "./rxtx-stream";

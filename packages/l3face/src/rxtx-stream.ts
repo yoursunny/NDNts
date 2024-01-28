@@ -1,7 +1,7 @@
 import type { Socket } from "node:net";
 
 import { Decoder } from "@ndn/tlv";
-import { safeIter } from "@ndn/util";
+import { concatBuffers, safeIter } from "@ndn/util";
 import { pEvent } from "p-event";
 import { writeToStream } from "streaming-iterables";
 
@@ -13,10 +13,10 @@ import type { Transport } from "./transport";
  * @returns AsyncIterable of TLVs.
  */
 export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.Rx {
-  let leftover = Buffer.alloc(0);
+  let leftover = new Uint8Array();
   for await (const chunk of safeIter(conn as AsyncIterable<Buffer>)) {
     if (leftover.length > 0) {
-      leftover = Buffer.concat([leftover, chunk], leftover.length + chunk.length);
+      leftover = concatBuffers([leftover, chunk], leftover.length + chunk.length);
     } else {
       leftover = chunk;
     }

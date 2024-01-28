@@ -4,7 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Certificate, generateSigningKey, KeyChain, ValidityPeriod } from "@ndn/keychain";
-import { Bridge } from "@ndn/l3face/test-fixture/bridge";
+import { Bridge } from "@ndn/l3face";
 import { Component, Data, Interest, type Name, ParamsDigest } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
 import { Closers, delay } from "@ndn/util";
@@ -136,10 +136,10 @@ test("preloadCert", async () => {
   });
   await userKeyChain.insertCert(userCert);
 
-  const nfdFw = Forwarder.create();
-  const nfdEp = new Endpoint({ fw: nfdFw });
+  using bridge = Bridge.create().rename("NFD", "User");
+  const nfdEp = new Endpoint({ fw: bridge.fwNFD });
   const interP = new Endpoint({
-    fw: nfdFw,
+    fw: bridge.fwNFD,
     announcement: false,
   }).produce(interPub.name, async () => interCert.data);
   let nCommands = 0;
@@ -152,19 +152,16 @@ test("preloadCert", async () => {
       [0x66, NNI(200)],
       [0x67]]));
   });
+  closers.push(nfdP, interP);
 
-  const userFw = Forwarder.create();
-  using bridge = Bridge.create({ fwA: nfdFw, fwB: userFw });
-  closers.push(nfdFw, nfdP, interP, userFw);
-
-  enableNfdPrefixReg(bridge.faceB, {
+  enableNfdPrefixReg(bridge.faceUser, {
     signer: userPvt.withKeyLocator(userCert.name),
     preloadCertName: userCert.name,
     preloadFromKeyChain: userKeyChain,
     preloadInterestLifetime: 100,
   });
 
-  const userEp = new Endpoint({ fw: userFw });
+  const userEp = new Endpoint({ fw: bridge.fwUser });
   const userPA = userEp.produce("/A", async () => undefined);
   const userPB = userEp.produce("/B", async () => undefined);
   closers.push(userPA, userPB);

@@ -5,7 +5,7 @@ import { Blob } from "node:buffer";
 
 import { Endpoint, type ProducerHandler } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
-import { Bridge } from "@ndn/l3face/test-fixture/bridge";
+import { Bridge } from "@ndn/l3face";
 import { Segment2, Segment3 } from "@ndn/naming-convention2";
 import { Data, FwHint, Name, type Verifier } from "@ndn/packet";
 import { Closers, delay } from "@ndn/util";
@@ -17,9 +17,10 @@ import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vi
 import { BlobChunkSource, BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, makeChunkSource, serve, StreamChunkSource } from "..";
 import { makeObjectBody } from "../test-fixture/object-body";
 
+const fwOpts: Forwarder.Options = { dataNoTokenMatch: false };
 const closers = new Closers();
 const objectBody = makeObjectBody();
-beforeEach(() => Forwarder.replaceDefault(Forwarder.create({ dataNoTokenMatch: false })));
+beforeEach(() => Forwarder.replaceDefault(Forwarder.create(fwOpts)));
 afterEach(() => {
   closers.close();
   Forwarder.deleteDefault();
@@ -135,20 +136,18 @@ test.each([
   (fw, fwHint) => ({ fw, modifyInterest: { fwHint } }),
   (fw, fwHint) => ({ endpoint: new Endpoint({ fw, modifyInterest: { fwHint } }) }),
 ] satisfies Array<(fw: Forwarder, fwHint: FwHint) => fetch.Options>)("modifyInterest %#", async (makeOpts) => {
-  const fwA = Forwarder.create({ dataNoTokenMatch: false });
-  fwA.nodeNames.push(new Name("/S"));
-  const server = serve("/R", new BufferChunkSource(objectBody), { endpoint: new Endpoint({ fw: fwA }) });
-  closers.push(server);
-
-  const fwB = Forwarder.create({ dataNoTokenMatch: false });
   using bridge = Bridge.create({
-    fwA,
-    fwB,
+    fwOpts,
     routesAB: [],
     routesBA: ["/S"],
+  }).rename("S", "F");
+  bridge.fwS.nodeNames.push(new Name("/S"));
+  const server = serve("/R", new BufferChunkSource(objectBody), {
+    endpoint: new Endpoint({ fw: bridge.fwS }),
   });
+  closers.push(server);
 
-  await expect(fetch("/R", makeOpts(fwB, new FwHint("/S")))).resolves.toEqualUint8Array(objectBody);
+  await expect(fetch("/R", makeOpts(bridge.fwF, new FwHint("/S")))).resolves.toEqualUint8Array(objectBody);
 });
 
 describe("empty object", () => {
@@ -217,10 +216,6 @@ test("abort", async () => {
 });
 
 test("congestion avoidance", async () => {
-  const fw = Forwarder.create();
-  const server = serve("/R", new BufferChunkSource(objectBody), { endpoint: new Endpoint({ fw }) });
-  closers.push(server);
-
   const relay: Bridge.RelayOptions = {
     loss: 0.02,
     delay: 50,
@@ -228,10 +223,15 @@ test("congestion avoidance", async () => {
   };
   using bridge = Bridge.create({
     fwA: Forwarder.getDefault(),
-    fwB: fw,
+    fwOpts,
     relayAB: relay,
     relayBA: relay,
+  }).rename("F", "S");
+
+  const server = serve("/R", new BufferChunkSource(objectBody), {
+    endpoint: new Endpoint({ fw: bridge.fwS }),
   });
+  closers.push(server);
 
   const fetched = fetch("/R");
   await expect(fetched).resolves.toEqualUint8Array(objectBody);
