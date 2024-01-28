@@ -99,8 +99,12 @@ export class Fetcher extends TypedEventTarget<EventMap> {
   private readonly rx = async (iterable: AsyncIterable<FwPacket>) => {
     for await (const { l3, token, congestionMark = 0 } of iterable) {
       if (l3 instanceof Data && typeof token === "number" && this.acceptContentType.includes(l3.contentType)) {
-        void this.handleData(l3, token, congestionMark);
+        await this.handleData(l3, token, congestionMark);
       }
+    }
+    const ok = this.logic.end();
+    if (!ok) {
+      this.fail(new Error("fetch incomplete"));
     }
   };
 
@@ -131,7 +135,7 @@ export class Fetcher extends TypedEventTarget<EventMap> {
   }
 
   private readonly handleAbort = () => {
-    this.fail(new Error("abort"));
+    this.fail(new Error("fetch aborted"));
   };
 }
 

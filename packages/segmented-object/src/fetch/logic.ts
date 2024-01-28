@@ -90,7 +90,7 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
   }
 
   /** Abort. */
-  public close() {
+  public close(): void {
     this.running = false;
     this.dispatchTypedEvent("unblock", new Event("unblock"));
     for (const [, { rtoExpiry }] of this.pending) {
@@ -250,7 +250,7 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
    * Update final segment number (inclusive) when it becomes known.
    * Increasing this above opts.segmentRange[1] or a previous value has no effect.
    */
-  public setFinalSegNum(finalSegNum: number, estimated = false) {
+  public setFinalSegNum(finalSegNum: number, estimated = false): void {
     if (finalSegNum >= this.finalSegNum) {
       return;
     }
@@ -261,6 +261,11 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
       this.processCancels = true;
     }
     this.dispatchTypedEvent("unblock", new Event("unblock"));
+  }
+
+  /** Notify that the incoming stream has ended. */
+  public end(): boolean {
+    return this.pending.size === 0;
   }
 }
 

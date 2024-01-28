@@ -26,6 +26,14 @@ afterEach(() => {
   Forwarder.deleteDefault();
 });
 
+async function* generateChunksSlowly() {
+  const yieldSize = 8 * 1024;
+  for (let i = 0; i < objectBody.length; i += yieldSize) {
+    yield objectBody.subarray(i, i + yieldSize);
+    await delay(100);
+  }
+}
+
 test("buffer to buffer", async () => {
   const chunkSource = makeChunkSource(objectBody);
   expect(chunkSource).toBeInstanceOf(BufferChunkSource);
@@ -195,24 +203,39 @@ test("segment number convention mismatch", async () => {
 });
 
 test("abort", async () => {
-  const src = (async function*() {
-    const yieldSize = 8 * 1024;
-    for (let i = 0; i < objectBody.length; i += yieldSize) {
-      yield objectBody.subarray(i, i + yieldSize);
-      await delay(100);
-    }
-  })();
-  const server = serve("/R", new IterableChunkSource(src));
+  const server = serve("/R", new IterableChunkSource(generateChunksSlowly()));
   closers.push(server);
 
-  const signal = AbortSignal.timeout(150);
+  const signal = AbortSignal.timeout(200);
+  const t0 = Date.now();
   await Promise.all([
-    expect(fetch("/R", { signal })).rejects.toThrow(),
-    expect(fetch("/R", { endpoint: new Endpoint({ signal }) })).rejects.toThrow(),
-    expect(consume(fetch("/R", { signal }))).rejects.toThrow(),
-    expect(consume(fetch("/R", { signal }).chunks())).rejects.toThrow(),
-    expect(consume(fetch("/R", { signal }).unordered())).rejects.toThrow(),
+    expect(fetch("/R", { signal })).rejects.toThrow(/aborted/),
+    expect(fetch("/R", { endpoint: new Endpoint({ signal }) })).rejects.toThrow(/aborted/),
+    expect(consume(fetch("/R", { signal }))).rejects.toThrow(/aborted/),
+    expect(consume(fetch("/R", { signal }).chunks())).rejects.toThrow(/aborted/),
+    expect(consume(fetch("/R", { signal }).unordered())).rejects.toThrow(/aborted/),
   ]);
+  expect(Date.now() - t0).toBeLessThan(400);
+});
+
+test("FwFace closing", async () => {
+  using bridge = Bridge.create({
+    fwB: Forwarder.getDefault(),
+  }).rename("S", "F");
+  const server = serve("/R", new IterableChunkSource(generateChunksSlowly()), {
+    endpoint: new Endpoint({ fw: bridge.fwS }),
+  });
+  closers.push(server);
+
+  setTimeout(() => Forwarder.deleteDefault(), 200);
+  const t0 = Date.now();
+  await Promise.all([
+    expect(fetch("/R")).rejects.toThrow(/incomplete/),
+    expect(consume(fetch("/R"))).rejects.toThrow(/incomplete/),
+    expect(consume(fetch("/R").chunks())).rejects.toThrow(/incomplete/),
+    expect(consume(fetch("/R").unordered())).rejects.toThrow(/incomplete/),
+  ]);
+  expect(Date.now() - t0).toBeLessThan(400);
 });
 
 test("congestion avoidance", async () => {

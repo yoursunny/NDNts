@@ -74,12 +74,9 @@ export namespace Forwarder {
     defaultInstance = fw;
   }
 
-  /** Delete default instance (mainly for unit testing). */
+  /** Close and delete default instance (mainly for unit testing). */
   export function deleteDefault() {
-    if (!defaultInstance) {
-      return;
-    }
-    defaultInstance.close();
+    defaultInstance?.close();
     defaultInstance = undefined;
   }
 
