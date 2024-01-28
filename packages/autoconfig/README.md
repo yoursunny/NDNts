@@ -67,7 +67,7 @@ const fw = Forwarder.create();
 // Keep only the fastest face and close others.
 const faces = await connectToNetwork({
   fw,
-  fallback: ["suns.cs.ucla.edu", "vnetlab.gcom.di.uminho.pt"],
+  fallback: ["titan.cs.memphis.edu", "vnetlab.gcom.di.uminho.pt"],
   connectTimeout: 3000,
 });
 assert.equal(faces.length, 1);

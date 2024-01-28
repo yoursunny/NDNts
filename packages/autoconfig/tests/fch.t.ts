@@ -1,20 +1,13 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { afterEach, beforeAll, expect, test } from "vitest";
+import { expect, test } from "vitest";
 
 import { fchQuery } from "..";
 import { FchServer } from "../test-fixture/fch-server";
 
-let fchServer: FchServer;
-beforeAll(async () => {
-  fchServer = await FchServer.create();
-  return () => { fchServer.close(); };
-});
-afterEach(() => fchServer.handle = undefined);
-
 test("json", async () => {
   const updated = Date.now() - 300000;
-  fchServer.handle = () => ({
+  await using fchServer = await FchServer.create(() => ({
     updated,
     routers: [
       {
@@ -27,7 +20,7 @@ test("json", async () => {
         prefix: "/7002",
       },
     ],
-  });
+  }));
 
   const res = await fchQuery({
     server: fchServer.uri,
@@ -43,7 +36,7 @@ test("json", async () => {
 });
 
 test("text", async () => {
-  fchServer.handle = async (search) => {
+  await using fchServer = await FchServer.create((search) => {
     expect(search.get("cap")).toBe("udp");
     expect(search.get("k")).toBe("2");
     expect(search.get("ipv4")).toBe("1");
@@ -52,7 +45,7 @@ test("text", async () => {
     expect(Number.parseFloat(String(search.get("lat")))).toBeCloseTo(39.144, 2);
     expect(search.get("network")).toBe("demo-network");
     return "127.0.0.1:7001,127.0.0.1:7002";
-  };
+  });
 
   const res = await fchQuery({
     server: fchServer.uri,
@@ -71,7 +64,7 @@ test("text", async () => {
 });
 
 test("text2", async () => {
-  fchServer.handle = async (search) => {
+  await using fchServer = await FchServer.create((search) => {
     const cap = search.getAll("cap").join(",");
     const k = search.getAll("k").join(",");
     switch (cap) {
@@ -92,8 +85,8 @@ test("text2", async () => {
         return "127.0.0.1:7003";
       }
     }
-    throw new Error(`unexpected cap=${cap}`);
-  };
+    expect.fail(`unexpected cap=${cap}`);
+  });
 
   const res = await fchQuery({
     server: fchServer.uri,
@@ -107,14 +100,14 @@ test("text2", async () => {
   expect(res.routers[2]).toMatchObject({ transport: "wss", connect: "127.0.0.1:7003" });
 });
 
-test("server error", async () => {
-  fchServer.handle = async (params, ctx) => {
+test.each([
+  [200, ""],
+  [500, "127.0.0.1:7001"],
+])("server error %d", async (status, body) => {
+  await using fchServer = await FchServer.create((params, ctx) => {
     void params;
-    ctx.status = 500;
-    return "";
-  };
-  await expect(fchQuery({ server: fchServer.uri })).resolves.toMatchObject({ routers: [] });
-
-  fchServer.handle = async () => "";
+    ctx.status = status;
+    return body;
+  });
   await expect(fchQuery({ server: fchServer.uri })).resolves.toMatchObject({ routers: [] });
 });

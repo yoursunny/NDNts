@@ -4,20 +4,14 @@ import { UdpServer, UdpServerForwarder } from "@ndn/node-transport/test-fixture/
 import { Data, Name } from "@ndn/packet";
 import { Closers, delay } from "@ndn/util";
 import defaultGateway from "default-gateway";
-import { afterEach, beforeAll, expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 
 import { connectToNetwork } from "..";
 import { FchServer } from "../test-fixture/fch-server";
 
 const closers = new Closers();
-let fchServer: FchServer;
-beforeAll(async () => {
-  fchServer = await FchServer.create();
-  return () => { fchServer.close(); };
-});
 afterEach(() => {
   closers.close();
-  fchServer.handle = undefined;
   Forwarder.deleteDefault();
 });
 
@@ -76,7 +70,7 @@ test("connectToNetwork", async () => {
 });
 
 test("defaultGateway", async () => {
-  fchServer.handle = async () => "127.0.0.1:7001,127.0.0.1:7002";
+  await using fchServer = await FchServer.create(() => "127.0.0.1:7001,127.0.0.1:7002");
   const mockGatewayResult: defaultGateway.Result<4> = {
     gateway: "127.0.0.1",
     version: 4,
