@@ -32,14 +32,13 @@ async function addServerWithDelayProducer(delayDuration: number): Promise<string
 }
 
 async function addClosedServers(count = 1): Promise<string[]> {
-  const servers = new Closers();
+  using servers = new Closers();
   const hostPorts: string[] = [];
   for (let i = 0; i < count; ++i) {
     const server = await UdpServer.create(UdpServerForwarder);
     hostPorts.push(server.hostport);
     servers.push(server);
   }
-  servers.close();
   return hostPorts;
 }
 

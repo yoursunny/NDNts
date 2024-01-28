@@ -1,6 +1,6 @@
 import { once } from "node:events";
-import * as net from "node:net";
-import * as path from "node:path";
+import net from "node:net";
+import path from "node:path";
 
 import { Forwarder, type FwFace } from "@ndn/fw";
 import { L3Face, type Transport } from "@ndn/l3face";

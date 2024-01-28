@@ -8,17 +8,19 @@ import { execute } from "../../../test-fixture/cxxprogram";
 
 afterEach(deleteTmpFiles);
 
-type Row<G> = {
-  algo: SigningAlgorithm<any, true, G>;
-  genParam: G;
-};
+type Row<G> = [
+  desc: string,
+  algo: SigningAlgorithm<any, true, G>,
+  genParam: G,
+];
 
 const TABLE = ([] as Array<Row<any>>).concat(
-  EcCurve.Choices.map((curve) => ({ algo: ECDSA, genParam: { curve } })),
-  RsaModulusLength.Choices.map((modulusLength) => ({ algo: RSA, genParam: { modulusLength } })),
+  EcCurve.Choices.map((curve) => [`ECDSA ${curve}`, ECDSA, { curve }]),
+  RsaModulusLength.Choices.map((modulusLength) => [`RSA ${modulusLength}`, RSA, { modulusLength }]),
 );
 
-test.each(TABLE)("%j", async ({ algo, genParam }) => {
+test.each(TABLE)("%s", async (desc, algo, genParam) => {
+  void desc;
   const [privateKey, publicKey] = await generateSigningKey("/A", algo, genParam);
   const cert = await Certificate.selfSign({ privateKey, publicKey });
 

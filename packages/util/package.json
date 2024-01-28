@@ -14,7 +14,9 @@
   "type": "module",
   "main": "src/mod.ts",
   "module": "lib/mod_browser.js",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/polyfill*"
+  ],
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
@@ -26,6 +28,7 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
+    "@shigen/polyfill-symbol-dispose": "^1.0.1",
     "@types/minimalistic-assert": "^1.0.3",
     "minimalistic-assert": "^1.0.1",
     "streaming-iterables": "^8.0.1",
@@ -39,6 +42,6 @@
     "write": "^2.0.0"
   },
   "engines": {
-    "node": "^18.18.0 || ^20.0.0 || ^21.0.0"
+    "node": "^18.18.0 || ^20.4.0 || ^21.0.0"
   }
 }

@@ -1,4 +1,4 @@
-import * as os from "node:os";
+import os from "node:os";
 
 import type { FwFace } from "@ndn/fw";
 import { splitHostPort, TcpTransport, UdpTransport } from "@ndn/node-transport";

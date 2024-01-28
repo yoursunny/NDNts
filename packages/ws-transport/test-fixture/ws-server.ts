@@ -1,5 +1,5 @@
 import { once } from "node:events";
-import * as http from "node:http";
+import http from "node:http";
 import type * as net from "node:net";
 
 import { NetServerBase } from "@ndn/node-transport/test-fixture/net-server";

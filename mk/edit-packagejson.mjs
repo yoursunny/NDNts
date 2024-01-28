@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import * as path from "node:path";
+import path from "node:path";
 
 const act = process.argv[2];
 const publishUri = process.env.NDNTS_PUBLISH_URI ?? "https://ndnts-nightly.ndn.today";

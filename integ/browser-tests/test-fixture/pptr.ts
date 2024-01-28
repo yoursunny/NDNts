@@ -1,4 +1,4 @@
-import * as path from "node:path";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { console, delay } from "@ndn/util";

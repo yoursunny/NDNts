@@ -14,6 +14,7 @@ if (process.env.COVERPKG) {
 }
 
 export default defineConfig({
+  esbuild: { target: "es2022" },
   test: {
     coverage,
     deps: {

@@ -1,6 +1,6 @@
-import * as dgram from "node:dgram";
+import dgram from "node:dgram";
 import { once } from "node:events";
-import * as os from "node:os";
+import os from "node:os";
 
 export const DEFAULT_MTU = 65000;
 const DEFAULT_UNICAST_PORT = 6363;

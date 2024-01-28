@@ -106,13 +106,11 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     });
     const preloadProducers = await this.preload(endpoint);
 
-    const closers = new Closers();
+    using closers = new Closers();
     closers.push(...map(preloadProducers, ([, p]) => p), tapFace);
-    try {
-      return await f({ ...this.commandOptions, endpoint });
-    } finally {
-      closers.close();
-    }
+    // https://github.com/typescript-eslint/typescript-eslint/issues/7889
+    // eslint-disable-next-line @typescript-eslint/return-await
+    return await f({ ...this.commandOptions, endpoint });
   }
 
   private async preload(endpoint: Endpoint) {

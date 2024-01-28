@@ -1,5 +1,5 @@
 import { type EventEmitter, once } from "node:events";
-import * as net from "node:net";
+import net from "node:net";
 
 import { tmpNameSync } from "tmp";
 

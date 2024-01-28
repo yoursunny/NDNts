@@ -1,3 +1,5 @@
+import "./polyfill_node";
+
 import assert from "minimalistic-assert";
 
 export { assert };

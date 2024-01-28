@@ -13,21 +13,21 @@
     "test": "vitest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@8.14.3",
+  "packageManager": "pnpm@8.15.0+sha256.fd1eab68a6d403f35cf3259c53780d70b0f14bd74e39da2f917d201f554d8665",
   "devDependencies": {
-    "@types/node": "^20.11.6",
+    "@types/node": "^20.11.8",
     "@types/wtfnode": "^0.7.3",
     "@typescript/lib-dom": "npm:@types/web@0.0.135",
-    "@vitest/coverage-v8": "^1.2.1",
+    "@vitest/coverage-v8": "^1.2.2",
     "@yoursunny/xo-config": "0.56.2",
     "codedown": "^3.1.0",
     "tslib": "^2.6.2",
     "typedoc": "^0.25.7",
     "typescript": "~5.3.3",
-    "vitest": "^1.2.1"
+    "vitest": "^1.2.2"
   },
   "engines": {
-    "node": "^18.18.0 || ^20.0.0 || ^21.0.0"
+    "node": "^18.18.0 || ^20.4.0 || ^21.0.0"
   },
   "pnpm": {
     "peerDependencyRules": {

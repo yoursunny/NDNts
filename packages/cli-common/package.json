@@ -32,7 +32,7 @@
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
-    "dotenv": "^16.4.0",
+    "dotenv": "^16.4.1",
     "env-var": "^7.4.1",
     "tslib": "^2.6.2",
     "wtfnode": "^0.9.1"

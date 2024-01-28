@@ -1,4 +1,4 @@
-import * as dgram from "node:dgram";
+import dgram from "node:dgram";
 
 import { Forwarder } from "@ndn/fw";
 import { L3Face, type Transport } from "@ndn/l3face";

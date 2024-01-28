@@ -1,4 +1,4 @@
-import * as net from "node:net";
+import net from "node:net";
 
 import { L3Face, StreamTransport } from "@ndn/l3face";
 import type { Except } from "type-fest";

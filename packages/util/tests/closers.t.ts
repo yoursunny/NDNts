@@ -1,3 +1,7 @@
+/* eslint-disable no-use-extend-native/no-use-extend-native --
+ * Symbol.dispose and Symbol.asyncDispose are polyfilled
+**/
+
 import { expect, test, vi } from "vitest";
 
 import { Closers, delay } from "..";
@@ -46,4 +50,31 @@ test("closers", async () => {
   expect(f2).toHaveBeenCalledOnce();
   expect(f3).not.toHaveBeenCalled();
   expect(f4).not.toHaveBeenCalled();
+});
+
+test("disposable", () => {
+  const c0 = {
+    close: vi.fn<[], void>(),
+    [Symbol.dispose]: vi.fn<[], void>(),
+    [Symbol.asyncDispose]: vi.fn<[], Promise<void>>().mockResolvedValue(),
+  };
+  const c1 = {
+    [Symbol.dispose]: vi.fn<[], void>(),
+    [Symbol.asyncDispose]: vi.fn<[], Promise<void>>().mockResolvedValue(),
+  };
+  const c2 = {
+    [Symbol.asyncDispose]: vi.fn<[], Promise<void>>().mockResolvedValue(),
+  };
+
+  {
+    using closers = new Closers();
+    closers.push(c0, c1, c2);
+  }
+
+  expect(c0.close).toHaveBeenCalledOnce();
+  expect(c0[Symbol.dispose]).not.toHaveBeenCalled();
+  expect(c0[Symbol.asyncDispose]).not.toHaveBeenCalled();
+  expect(c1[Symbol.dispose]).toHaveBeenCalledOnce();
+  expect(c1[Symbol.asyncDispose]).not.toHaveBeenCalled();
+  expect(c2[Symbol.asyncDispose]).toHaveBeenCalledOnce();
 });
