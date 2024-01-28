@@ -75,15 +75,8 @@ class Fixture {
       const bridge = Bridge.create({
         fwA: Forwarder.getDefault(),
         fwB: fw,
-        relayAB: {
-          minDelay: 1,
-          maxDelay: 5,
-          loss,
-        },
-        relayBA: {
-          minDelay: 1,
-          maxDelay: 5,
-        },
+        relayAB: { loss, delay: 3, jitter: 0.6 },
+        relayBA: { delay: 3, jitter: 0.6 },
       });
 
       this.syncs.push(new PSyncFull({

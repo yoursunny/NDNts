@@ -141,13 +141,12 @@ test.each([
   closers.push(server);
 
   const fwB = Forwarder.create({ dataNoTokenMatch: false });
-  const bridge = Bridge.create({
+  using bridge = Bridge.create({
     fwA,
     fwB,
     routesAB: [],
     routesBA: ["/S"],
   });
-  closers.push(bridge);
 
   await expect(fetch("/R", makeOpts(fwB, new FwHint("/S")))).resolves.toEqualUint8Array(objectBody);
 });
@@ -223,17 +222,16 @@ test("congestion avoidance", async () => {
   closers.push(server);
 
   const relay: Bridge.RelayOptions = {
-    minDelay: 10,
-    maxDelay: 90,
     loss: 0.02,
+    delay: 50,
+    jitter: 0.8,
   };
-  const bridge = Bridge.create({
+  using bridge = Bridge.create({
     fwA: Forwarder.getDefault(),
     fwB: fw,
     relayAB: relay,
     relayBA: relay,
   });
-  closers.push(bridge);
 
   const fetched = fetch("/R");
   await expect(fetched).resolves.toEqualUint8Array(objectBody);

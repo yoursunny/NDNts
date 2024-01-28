@@ -1,7 +1,7 @@
 import type { Forwarder, FwFace } from "@ndn/fw";
 import type { NameLike } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
-import { assert, delay } from "@ndn/util";
+import { delay, randomJitter } from "@ndn/util";
 import { pushable } from "it-pushable";
 import pDefer from "p-defer";
 import { filter, map, pipeline, transform } from "streaming-iterables";
@@ -13,7 +13,7 @@ class BridgeTransport extends Transport {
   public bridgePeer?: BridgeTransport;
   private readonly bridgeRx = pushable<Uint8Array>({ objectMode: true });
 
-  constructor(bridgeName: string, relay: Bridge.RelayFunc, private readonly closePromise: Promise<undefined>) {
+  constructor(bridgeName: string, relay: Bridge.RelayFunc, private readonly closePromise: Promise<false>) {
     super({ describe: `BRIDGE(${bridgeName})` });
     this.rx = map((wire) => new Decoder(wire).read(), relay(this.bridgeRx));
   }
@@ -35,10 +35,9 @@ class BridgeTransport extends Transport {
 }
 
 /** A bridge that links two forwarders. */
-export interface Bridge {
+export interface Bridge extends Disposable {
   faceA: FwFace;
   faceB: FwFace;
-  close(): void;
 }
 
 function makeRelayFunc(relay: Bridge.Relay): Bridge.RelayFunc {
@@ -46,17 +45,16 @@ function makeRelayFunc(relay: Bridge.Relay): Bridge.RelayFunc {
     return relay;
   }
   const {
-    minDelay = 1,
-    maxDelay = 1,
     loss = 0,
+    delay: delayMs = 1,
+    jitter = 0,
   } = relay;
-  assert(minDelay <= maxDelay);
-  const delayRange = maxDelay - minDelay;
+  const delayJitter = randomJitter(jitter, delayMs);
   return (it) => pipeline(
     () => it,
     filter(() => loss === 0 || Math.random() >= loss),
     transform(64, async (pkt) => {
-      await delay(minDelay + delayRange * Math.random());
+      await delay(delayJitter());
       return pkt;
     }),
   );
@@ -66,9 +64,23 @@ export namespace Bridge {
   export type RelayFunc = (it: AsyncIterable<Uint8Array>) => AsyncIterable<Uint8Array>;
 
   export interface RelayOptions {
-    minDelay?: number;
-    maxDelay?: number;
+    /**
+     * Packet loss rate between 0.0 (no loss) and 1.0 (100% loss).
+     * @default 0
+     */
     loss?: number;
+
+    /**
+     * Median delay in milliseconds.
+     * @default 1
+     */
+    delay?: number;
+
+    /**
+     * Jitter around median delay, see @ndn/util randomJitter function.
+     * @default 0
+     */
+    jitter?: number;
   }
 
   export type Relay = RelayFunc | RelayOptions;
@@ -85,7 +97,7 @@ export namespace Bridge {
 
   /**
    * Create a bridge that links two forwarders.
-   * The relay functions can inject delay, loss, and jitter to the simulated link.
+   * The relay functions can inject loss, delay, and jitter to the simulated link.
    */
   export function create({
     bridgeName = "bridge",
@@ -96,7 +108,7 @@ export namespace Bridge {
     routesAB,
     routesBA,
   }: CreateOptions): Bridge {
-    const close = pDefer<undefined>();
+    const close = pDefer<false>();
     const tA = new BridgeTransport(bridgeName, makeRelayFunc(relayBA), close.promise);
     const tB = new BridgeTransport(bridgeName, makeRelayFunc(relayAB), close.promise);
     tA.bridgePeer = tB;
@@ -108,10 +120,10 @@ export namespace Bridge {
     return {
       faceA,
       faceB,
-      close() {
+      [Symbol.dispose]() {
         faceA.close();
         faceB.close();
-        close.resolve();
+        close.resolve(false);
       },
     };
   }

@@ -154,8 +154,8 @@ test("preloadCert", async () => {
   });
 
   const userFw = Forwarder.create();
-  const bridge = Bridge.create({ fwA: nfdFw, fwB: userFw });
-  closers.push(nfdFw, nfdP, interP, userFw, bridge);
+  using bridge = Bridge.create({ fwA: nfdFw, fwB: userFw });
+  closers.push(nfdFw, nfdP, interP, userFw);
 
   enableNfdPrefixReg(bridge.faceB, {
     signer: userPvt.withKeyLocator(userCert.name),

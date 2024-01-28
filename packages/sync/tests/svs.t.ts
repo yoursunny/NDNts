@@ -61,12 +61,11 @@ test("example", async () => {
   const fwAB = Forwarder.create();
   const fwC = Forwarder.create();
   let lossToC = false;
-  const bridge = Bridge.create({
+  using bridge = Bridge.create({
     fwA: fwAB,
     fwB: fwC,
     relayAB: (it) => filter(() => !lossToC, it),
   });
-  closers.push(bridge);
 
   const opts: SvSync.Options = {
     ...baseOpts,

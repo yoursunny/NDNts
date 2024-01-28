@@ -61,15 +61,8 @@ class Fixture {
       const bridge = Bridge.create({
         fwA: Forwarder.getDefault(),
         fwB: fw,
-        relayAB: {
-          minDelay: 1,
-          maxDelay: 5,
-          loss,
-        },
-        relayBA: {
-          minDelay: 1,
-          maxDelay: 5,
-        },
+        relayAB: { loss, delay: 3, jitter: 0.6 },
+        relayBA: { delay: 3, jitter: 0.6 },
       });
 
       this.syncs.push(new SyncpsPubsub({
@@ -92,7 +85,7 @@ class Fixture {
     await this.syncs[i]!.publish(new Data(pub), cb);
   }
 
-  public subscribe(i: number, topic: NameLike): [sub: Subscription, updates: readonly Name[]] {
+  public subscribe(i: number, topic: NameLike): [sub: Subscription<Name, CustomEvent<Data>>, updates: readonly Name[]] {
     const title = String.fromCodePoint(0x41 + i);
     topic = Name.from(topic);
     const updates: Name[] = [];

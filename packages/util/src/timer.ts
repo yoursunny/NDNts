@@ -8,6 +8,10 @@
  */
 export function randomJitter(r: number, x = 1): () => number {
   r = Math.max(0, Math.min(r, 1));
+  if (r === 0) {
+    return () => x;
+  }
+
   const min = 1 - r;
   const distance = 2 * r;
   return () => x * (min + distance * Math.random());
