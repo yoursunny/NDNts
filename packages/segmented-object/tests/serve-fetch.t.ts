@@ -7,7 +7,7 @@ import { Endpoint, type ProducerHandler } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face/test-fixture/bridge";
 import { Segment2, Segment3 } from "@ndn/naming-convention2";
-import { Data, Name, type Verifier } from "@ndn/packet";
+import { Data, FwHint, Name, type Verifier } from "@ndn/packet";
 import { Closers, delay } from "@ndn/util";
 import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
@@ -131,6 +131,27 @@ test("ranged", async () => {
   ]);
 });
 
+test.each([
+  (fw, fwHint) => ({ fw, modifyInterest: { fwHint } }),
+  (fw, fwHint) => ({ endpoint: new Endpoint({ fw, modifyInterest: { fwHint } }) }),
+] satisfies Array<(fw: Forwarder, fwHint: FwHint) => fetch.Options>)("modifyInterest %#", async (makeOpts) => {
+  const fwA = Forwarder.create({ dataNoTokenMatch: false });
+  fwA.nodeNames.push(new Name("/S"));
+  const server = serve("/R", new BufferChunkSource(objectBody), { endpoint: new Endpoint({ fw: fwA }) });
+  closers.push(server);
+
+  const fwB = Forwarder.create({ dataNoTokenMatch: false });
+  const bridge = Bridge.create({
+    fwA,
+    fwB,
+    routesAB: [],
+    routesBA: ["/S"],
+  });
+  closers.push(bridge);
+
+  await expect(fetch("/R", makeOpts(fwB, new FwHint("/S")))).resolves.toEqualUint8Array(objectBody);
+});
+
 describe("empty object", () => {
   const handler1 = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>(
     async (interest) => new Data(interest.name, Data.ContentType(3)));
@@ -156,10 +177,13 @@ describe("empty object", () => {
     expect(handler1).toHaveBeenCalled();
   });
 
-  test("verify error", async () => {
+  test.each([
+    (verifier) => ({ verifier }),
+    (verifier) => ({ endpoint: new Endpoint({ verifier }) }),
+  ] satisfies Array<(verifier: Verifier) => fetch.Options>)("verify error %#", async (makeOpts) => {
     const verify = vi.fn<Parameters<Verifier["verify"]>, ReturnType<Verifier["verify"]>>()
       .mockRejectedValue(new Error("mock-verify-error"));
-    await expect(fetch("/R", { verifier: { verify }, retxLimit: 0 }))
+    await expect(fetch("/R", { retxLimit: 0, ...makeOpts({ verify }) }))
       .rejects.toThrow(/mock-verify-error/);
     expect(verify).toHaveBeenCalledTimes(1);
   });
@@ -183,14 +207,10 @@ test("abort", async () => {
   const server = serve("/R", new IterableChunkSource(src));
   closers.push(server);
 
-  const abort = new AbortController();
-  const { signal } = abort;
+  const signal = AbortSignal.timeout(150);
   await Promise.all([
-    (async () => {
-      await delay(150);
-      abort.abort();
-    })(),
     expect(fetch("/R", { signal })).rejects.toThrow(),
+    expect(fetch("/R", { endpoint: new Endpoint({ signal }) })).rejects.toThrow(),
     expect(consume(fetch("/R", { signal }))).rejects.toThrow(),
     expect(consume(fetch("/R", { signal }).chunks())).rejects.toThrow(),
     expect(consume(fetch("/R", { signal }).unordered())).rejects.toThrow(),

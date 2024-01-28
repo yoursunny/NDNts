@@ -247,6 +247,10 @@ interface CtorTag {
   [ctorAssign](f: Fields): void;
 }
 
+const modifyFields = [
+  "canBePrefix", "mustBeFresh", "fwHint", "lifetime", "hopLimit",
+] as const satisfies ReadonlyArray<keyof PublicFields>;
+
 export namespace Interest {
   /** Generate a random nonce. */
   export function generateNonce(): number {
@@ -294,22 +298,19 @@ export namespace Interest {
   export type ModifyFunc = (interest: Interest) => void;
 
   /** Common fields to assign onto an existing Interest. */
-  export type ModifyFields = Partial<Pick<Fields, "canBePrefix" | "mustBeFresh" | "fwHint" | "lifetime" | "hopLimit">>;
+  export type ModifyFields = Partial<Pick<PublicFields, typeof modifyFields[number]>>;
 
   /** A structure to modify an existing Interest. */
   export type Modify = ModifyFunc | ModifyFields;
 
   /** Turn ModifyFields to ModifyFunc; return ModifyFunc as-is. */
-  export function makeModifyFunc(input?: Modify): ModifyFunc {
-    if (!input) {
-      return () => undefined;
-    }
+  export function makeModifyFunc(input: Modify = () => undefined): ModifyFunc {
     if (typeof input === "function") {
       return input;
     }
 
     const patch: Schema<ModifyFields, unknown> = {};
-    for (const key of ["canBePrefix", "mustBeFresh", "fwHint", "lifetime", "hopLimit"] as const) {
+    for (const key of modifyFields) {
       if (input[key] !== undefined) {
         patch[key] = input[key];
       }
