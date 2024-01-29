@@ -1,17 +1,18 @@
 import * as TestReopen from "@ndn/l3face/test-fixture/reopen";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
+import { Closers } from "@ndn/util";
 import { beforeEach, expect, test } from "vitest";
 
 import { UnixTransport } from "..";
 import { BufferBreaker } from "../test-fixture/buffer-breaker";
 import { IpcServer } from "../test-fixture/net-server";
 
+const closers = new Closers();
 let server: IpcServer;
-
 beforeEach(async () => {
-  server = new IpcServer();
-  await server.open();
-  return async () => { await server.close(); };
+  server = await new IpcServer().open();
+  closers.push(server);
+  return closers.close;
 });
 
 test("pair", async () => {
@@ -28,7 +29,7 @@ test("pair", async () => {
 
 test("connect error", async () => {
   const path = server.path;
-  await server.close();
+  await server[Symbol.asyncDispose](); // eslint-disable-line no-use-extend-native/no-use-extend-native
   await expect(UnixTransport.connect(path)).rejects.toThrow();
 });
 

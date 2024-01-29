@@ -75,8 +75,7 @@ export async function execute(keyChain: KeyChain, enabled: Enable = {}): Promise
   };
 }
 
-export function check(record: TestRecord, enabled: Enable = {},
-) {
+export function check(record: TestRecord, enabled: Enable = {}) {
   let nEnabled = 0;
   let nDisabled = 0;
   for (const algoName of Object.keys(algoRecord)) {

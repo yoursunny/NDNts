@@ -7,7 +7,7 @@ import { PrefixRegShorter } from "@ndn/repo";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
-import { HierarchicalSigner, HierarchicalVerifier, pattern as P, TrustSchema, TrustSchemaPolicy, TrustSchemaSigner, TrustSchemaVerifier } from "../src/mod";
+import { HierarchicalSigner, HierarchicalVerifier, pattern as P, TrustSchema, TrustSchemaPolicy, TrustSchemaSigner, TrustSchemaVerifier } from "..";
 
 afterAll(Endpoint.deleteDefaultForwarder);
 

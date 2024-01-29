@@ -52,9 +52,9 @@ export class PrefixRegServer {
 export class FakeNfd extends TcpServer {
   public readonly fw = Forwarder.create();
 
-  public override close() {
+  public override [Symbol.asyncDispose]() {
     this.fw.close();
-    return super.close();
+    return super[Symbol.asyncDispose](); // eslint-disable-line no-use-extend-native/no-use-extend-native
   }
 
   /** Wait until at least n clients are connected, and enable PrefixRegServer on them. */

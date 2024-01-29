@@ -2,8 +2,7 @@ import assert from "node:assert/strict";
 
 import { closeUplinks, openUplinks } from "@ndn/cli-common";
 import { ControlParameters, invoke, list, StrategyChoice } from "@ndn/nfdmgmt";
-
-import { Name } from "../../packages/packet/src/mod";
+import { Name } from "@ndn/packet";
 
 await openUplinks();
 

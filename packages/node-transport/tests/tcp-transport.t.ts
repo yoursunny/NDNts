@@ -1,17 +1,19 @@
 import * as TestReopen from "@ndn/l3face/test-fixture/reopen";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
+import { Closers } from "@ndn/util";
 import { beforeEach, expect, test } from "vitest";
 
 import { TcpTransport } from "..";
 import { BufferBreaker } from "../test-fixture/buffer-breaker";
 import { TcpServer } from "../test-fixture/net-server";
 
+const closers = new Closers();
 let server: TcpServer;
 
 beforeEach(async () => {
-  server = new TcpServer();
-  await server.open();
-  return async () => { await server.close(); };
+  server = await new TcpServer().open();
+  closers.push(server);
+  return closers.close;
 });
 
 test("pair", async () => {
@@ -28,7 +30,7 @@ test("pair", async () => {
 
 test("connect error", async () => {
   const port = server.port;
-  await server.close();
+  await server[Symbol.asyncDispose](); // eslint-disable-line no-use-extend-native/no-use-extend-native
   await Promise.all([
     expect(TcpTransport.connect("localhost", port, { connectTimeout: 500 })).rejects.toThrow(),
     expect(TcpTransport.connect({ port, connectTimeout: 500 })).rejects.toThrow(),

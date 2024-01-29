@@ -1,6 +1,6 @@
 import * as TestReopen from "@ndn/l3face/test-fixture/reopen";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
-import { delay } from "@ndn/util";
+import { Closers, delay } from "@ndn/util";
 import { pushable } from "it-pushable";
 import { beforeEach, expect, test, vi } from "vitest";
 import type WebSocket from "ws";
@@ -8,11 +8,12 @@ import type WebSocket from "ws";
 import { WsTransport } from "..";
 import { bridgeWebSockets, WsServer } from "../test-fixture/ws-server";
 
+const closers = new Closers();
 let server: WsServer;
 beforeEach(async () => {
-  server = new WsServer();
-  await server.open();
-  return async () => { await server.close(); };
+  server = await new WsServer().open();
+  closers.push(server);
+  return closers.close;
 });
 
 test("pair", async () => {
@@ -76,7 +77,7 @@ test("TX throttle", async () => {
 
 test("connect error", async () => {
   const { uri } = server;
-  await server.close();
+  await server[Symbol.asyncDispose](); // eslint-disable-line no-use-extend-native/no-use-extend-native
   await expect(WsTransport.connect(uri, { connectTimeout: 500 })).rejects.toThrow();
 });
 

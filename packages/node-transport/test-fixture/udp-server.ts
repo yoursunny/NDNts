@@ -1,11 +1,11 @@
 import dgram from "node:dgram";
+import { once } from "node:events";
 
 import { Forwarder } from "@ndn/fw";
 import { L3Face, type Transport } from "@ndn/l3face";
 import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
 
-import { joinHostPort } from "../src/hostport";
-import type * as udp from "../src/udp-helper";
+import { joinHostPort, type udp_helper as udp } from "..";
 
 class UdpServerTransport extends MockTransport {
   constructor(
@@ -21,12 +21,16 @@ class UdpServerTransport extends MockTransport {
   }
 }
 
-export abstract class UdpServer {
-  public static async create<T extends UdpServer>(ctor: new(sock: dgram.Socket, host: string, port: number) => T, family: udp.AddressFamily = 4, address = "127.0.0.1"): Promise<T> {
+export abstract class UdpServer implements AsyncDisposable {
+  public static async create<T extends UdpServer>(
+      ctor: new(sock: dgram.Socket, address: string, port: number) => T,
+      family: udp.AddressFamily = 4,
+      address = "127.0.0.1",
+  ): Promise<T> {
     const sock = dgram.createSocket({ type: `udp${family}` });
     sock.on("error", () => undefined);
-    const port = await new Promise<number>((r) =>
-      sock.bind({ address }, () => r(sock.address().port)));
+    const port = await new Promise<number>((resolve) =>
+      sock.bind({ address }, () => resolve(sock.address().port)));
     return new ctor(sock, address, port);
   }
 
@@ -44,11 +48,12 @@ export abstract class UdpServer {
     return joinHostPort(this.address, this.port);
   }
 
-  public close(): void {
+  public async [Symbol.asyncDispose](): Promise<void> {
     for (const transport of this.transports.values()) {
       transport.close();
     }
     this.sock.close();
+    await once(this.sock, "close");
   }
 
   public addClient(port: number, address = this.address): void {

@@ -3,7 +3,7 @@ import http from "node:http";
 import type * as net from "node:net";
 
 import { NetServerBase } from "@ndn/node-transport/test-fixture/net-server";
-import { WebSocket, WebSocketServer } from "ws";
+import { type MessageEvent, WebSocket, WebSocketServer } from "ws";
 
 /** WebSocket test server. */
 export class WsServer extends NetServerBase<WebSocketServer, WebSocket> {
@@ -19,14 +19,15 @@ export class WsServer extends NetServerBase<WebSocketServer, WebSocket> {
     this.http = this.server.options.server as http.Server;
   }
 
-  public override async open(): Promise<void> {
+  public override async open(): Promise<this> {
     this.http.listen(0, "127.0.0.1");
     await once(this.http, "listening");
     const { port } = this.http.address() as net.AddressInfo;
     this.uri = `ws://127.0.0.1:${port}/`;
+    return this;
   }
 
-  public override async close(): Promise<void> {
+  public override async [Symbol.asyncDispose](): Promise<void> {
     for (const client of this.server.clients) {
       client.close();
     }
@@ -38,10 +39,10 @@ export class WsServer extends NetServerBase<WebSocketServer, WebSocket> {
 
 /** Connect several WebSockets and relay messages among them. */
 export function bridgeWebSockets(sockets: readonly WebSocket[]): void {
-  const send = (evt: { data: any; target: WebSocket }) => {
+  const send = ({ target: src, data }: MessageEvent) => {
     for (const dst of sockets) {
-      if (dst !== evt.target && dst.readyState === WebSocket.OPEN) {
-        dst.send(evt.data);
+      if (dst !== src && dst.readyState === WebSocket.OPEN) {
+        dst.send(data);
       }
     }
   };

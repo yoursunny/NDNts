@@ -3,7 +3,7 @@ import { FakeNfd } from "@ndn/nfdmgmt/test-fixture/prefix-reg";
 import { Name } from "@ndn/packet";
 import { makePSyncCompatParam, PSyncFull, type SyncUpdate } from "@ndn/sync";
 import { Closers, delay } from "@ndn/util";
-import { beforeAll, expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 
 import { execute } from "../../../test-fixture/cxxprogram";
 
@@ -13,15 +13,11 @@ const userB = new Name("/userB");
 const userC = new Name("/userC");
 
 const closers = new Closers();
-let nfd: FakeNfd;
-beforeAll(async () => {
-  nfd = new FakeNfd();
-  closers.push(nfd);
-  await nfd.open();
-  return closers.close;
-});
+afterEach(closers.close);
 
 test("simple", async () => {
+  await using nfd = await new FakeNfd().open();
+
   const p = execute(import.meta.url, [`${nfd.port}`, `${syncPrefix}`, `${userA}`]);
   await nfd.waitNFaces(1);
 

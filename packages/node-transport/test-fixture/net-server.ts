@@ -3,11 +3,10 @@ import net from "node:net";
 
 import { tmpNameSync } from "tmp";
 
-export interface TestServer<Server, Client> {
+export interface TestServer<Server, Client> extends AsyncDisposable {
   readonly server: Server;
   readonly clients: ReadonlySet<Client>;
-  open(): Promise<void>;
-  close(): Promise<void>;
+  open(): Promise<this>;
   waitNClients(n: number): Promise<Client[]>;
 }
 
@@ -18,10 +17,10 @@ export abstract class NetServerBase<Server extends EventEmitter, Client> impleme
   constructor(public readonly server: Server) {}
 
   /** Start listening. */
-  public abstract open(): Promise<void>;
+  public abstract open(): Promise<this>;
 
   /** Shutdown the server. */
-  public abstract close(): Promise<void>;
+  public abstract [Symbol.asyncDispose](): Promise<void>;
 
   /** Wait until at least n clients are connected. */
   public readonly waitNClients = async (n: number): Promise<Client[]> => {
@@ -43,10 +42,11 @@ export abstract class NetServer extends NetServerBase<net.Server, net.Socket> {
     this.server.on("connection", this.handleNewClient);
   }
 
-  public override async open(): Promise<void> {
+  public override async open(): Promise<this> {
     this.listenBegin();
     await once(this.server, "listening");
     this.listenEnd();
+    return this;
   }
 
   protected abstract listenBegin(): void;
@@ -54,7 +54,7 @@ export abstract class NetServer extends NetServerBase<net.Server, net.Socket> {
     //
   }
 
-  public override async close(): Promise<void> {
+  public override async [Symbol.asyncDispose](): Promise<void> {
     this.server.off("connection", this.handleNewClient);
     this.server.close();
     await once(this.server, "close");

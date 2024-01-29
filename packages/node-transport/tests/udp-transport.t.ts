@@ -1,20 +1,22 @@
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
-import { delay } from "@ndn/util";
+import { Closers, delay } from "@ndn/util";
 import { collect } from "streaming-iterables";
-import { beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { udp_helper as udp, UdpTransport } from "..";
 import { UdpServer, UdpServerBroadcast } from "../test-fixture/udp-server";
 
-describe.each([
-  { family: 4, address: "127.0.0.1" },
-  { family: 6, address: "::1" },
-] as Array<{ family: udp.AddressFamily; address: string }>)("unicast %j", ({ family, address }) => {
+const closers = new Closers();
+afterEach(closers.close);
+
+describe.each<[family: udp.AddressFamily, address: string]>([
+  [4, "127.0.0.1"],
+  [6, "::1"],
+])("unicast %d", (family, address) => {
   let server: UdpServerBroadcast;
 
   beforeEach(async () => {
     server = await UdpServer.create(UdpServerBroadcast, family, address);
-    return async () => { server.close(); };
   });
 
   test("pair", async () => {
@@ -56,7 +58,7 @@ describe("multicast", () => {
   }
 
   const opts: udp.MulticastOptions = {
-    intf: intfs[0],
+    intf: intfs[0]!,
     group: "224.0.0.254", // https://datatracker.ietf.org/doc/html/rfc4727#section-2.4.2
     port: 56363,
     multicastTtl: 0,
@@ -72,9 +74,7 @@ describe("multicast", () => {
 
   test("creates", async () => {
     const faces = await UdpTransport.createMulticastFaces({}, opts);
+    closers.push(...faces);
     expect(faces).toHaveLength(intfs.length);
-    for (const face of faces) {
-      face.close();
-    }
   });
 });

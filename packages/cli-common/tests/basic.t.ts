@@ -7,6 +7,9 @@ import { Closers } from "@ndn/util";
 import { dirSync as tmpDir } from "tmp";
 import { afterAll, expect, test } from "vitest";
 
+const closers = new Closers();
+afterAll(closers.close);
+
 const tmpKeyChain = tmpDir({ unsafeCleanup: true });
 afterAll(tmpKeyChain.removeCallback);
 let signerName: Name;
@@ -18,11 +21,8 @@ let signerName: Name;
 process.env.NDNTS_KEYCHAIN = tmpKeyChain.name;
 process.env.NDNTS_KEY = "/key-signer";
 
-const closers = new Closers();
-afterAll(closers.close);
-const nfd = new FakeNfd();
+const nfd = await new FakeNfd().open();
 closers.push(nfd);
-await nfd.open();
 process.env.NDNTS_UPLINK = `tcp://127.0.0.1:${nfd.port}`;
 
 const { openUplinks, getSigner } = await import("..");

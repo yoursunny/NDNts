@@ -1,43 +1,38 @@
 import "./api";
 import "@ndn/packet/test-fixture/expect";
 
-import type { FwFace } from "@ndn/fw";
 import { Name } from "@ndn/packet";
 import { makePSyncCompatParam, PSyncPartialPublisher } from "@ndn/sync";
-import { delay } from "@ndn/util";
+import { Closers, delay } from "@ndn/util";
 import { WsTransport } from "@ndn/ws-transport";
 import { WsServer } from "@ndn/ws-transport/test-fixture/ws-server";
 import { beforeEach, expect, test } from "vitest";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 
+const closers = new Closers();
 let server: WsServer;
-let face: FwFace | undefined;
-let pub: PSyncPartialPublisher | undefined;
-
 beforeEach(async () => {
-  server = new WsServer();
-  await server.open();
+  server = await new WsServer().open();
+  closers.push(server);
   await navigateToPage(import.meta.url);
 
-  return async () => {
-    face?.close();
-    pub?.close();
-    await server.close();
-  };
+  return closers.close;
 });
 
 test("PSyncPartial", async () => {
-  pub = new PSyncPartialPublisher({
+  const pub = new PSyncPartialPublisher({
     p: makePSyncCompatParam(),
     syncPrefix: new Name("/psync-test"),
   });
+  closers.push(pub);
 
   await Promise.all([
     pageInvoke<typeof window.startPSyncPartial>("startPSyncPartial", server.uri),
     (async () => {
       const sock = (await server.waitNClients(1))[0]!;
-      face = await WsTransport.createFace({}, sock);
+      const face = await WsTransport.createFace({}, sock);
+      closers.push(face);
     })(),
   ]);
 

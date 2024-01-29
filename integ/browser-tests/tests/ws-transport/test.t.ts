@@ -1,20 +1,19 @@
 import "./api";
 
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
+import { Closers } from "@ndn/util";
 import { bridgeWebSockets, WsServer } from "@ndn/ws-transport/test-fixture/ws-server";
 import { beforeEach, test } from "vitest";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 
+const closers = new Closers();
 let server: WsServer;
-
 beforeEach(async () => {
-  server = new WsServer();
-  await server.open();
+  server = await new WsServer().open();
+  closers.push(server);
   await navigateToPage(import.meta.url);
-  return async () => {
-    await server.close();
-  };
+  return closers.close;
 });
 
 test("pair", async () => {
