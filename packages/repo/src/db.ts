@@ -42,7 +42,7 @@ export function openDb(db: AbstractLevelDOWN): Db {
         const { read: jTextLen = 0, written: jBufLen = 0 } = textEncoder.encodeInto(jText, jBuf);
         assert.equal(jTextLen, jText.length);
         encoder.encode(record.data);
-        return asBuffer(encoder.slice(0, encoder.size - jBufCap + jBufLen));
+        return asBuffer(encoder.output.subarray(0, encoder.size - jBufCap + jBufLen));
       },
       decode(stored: Buffer): Record {
         const tlv = new Decoder(stored).read();

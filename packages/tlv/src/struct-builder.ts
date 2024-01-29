@@ -8,7 +8,7 @@ import { NNI } from "./nni";
 
 /**
  * StructBuilder field type.
- * @template T value type.
+ * @typeParam T - Value type.
  */
 export interface StructFieldType<T> {
   newValue(this: void): T;
@@ -43,6 +43,8 @@ export namespace StructFieldType {
 
 /**
  * StructBuilder field type of non-negative integer.
+ *
+ * @remarks
  * The field is defined as number.
  * If the field is required, it is initialized as zero.
  */
@@ -54,6 +56,8 @@ export const StructFieldNNI: StructFieldType<number> = {
 
 /**
  * StructBuilder field type of non-negative integer.
+ *
+ * @remarks
  * The field is defined as bigint.
  * If the field is required, it is initialized as zero.
  */
@@ -64,7 +68,10 @@ export const StructFieldNNIBig: StructFieldType<bigint> = {
 };
 
 /**
- * Declare a StructBuilder field type of non-negative integer.
+ * Declare a StructBuilder field type of non-negative integer from an enum.
+ * @param Enum - A flat (not OR'ed flags) enum type.
+ *
+ * @remarks
  * The field is defined as a flat enum type.
  * If the field is required, it is initialized as zero.
  */
@@ -78,6 +85,8 @@ export function StructFieldEnum<E extends number>(Enum: Record<number, string>):
 
 /**
  * StructBuilder field type of UTF-8 text.
+ *
+ * @remarks
  * The field is defined as string.
  * If the field is required, it is initialized as an empty string.
  */
@@ -93,26 +102,29 @@ interface Options<
   Repeat extends boolean,
   FlagPrefix extends string,
   FlagBit extends string,
-> extends Partial<EvDecoder.RuleOptions> {
+> extends EvDecoder.RuleOptions {
   /**
    * Whether the field is required.
-   * If both .required and .repeat are false, the field may be set to undefined and is initialized as undefined.
-   * @default false
+   * If both `.required` and `.repeat` are false, the field may be set to undefined and is initialized as undefined.
+   * @defaultValue `false`
    */
   required?: Required;
+
   /**
    * Whether the field is repeated.
-   * If .repeat is true, the field is defined as an array and is initialized as an empty array.
-   * @default false
+   * If `.repeat` is true, the field is defined as an array and is initialized as an empty array.
+   * @defaultValue `false`
    */
   repeat?: Repeat;
 
   /**
    * Prefix of bit property names.
-   * Default is same as primary field name.
-   * Ignored if flagBits is unspecified.
+   * Ignored if `.flagBits` is unspecified.
+   *
+   * @defaultValue Same as primary field name.
    */
   flagPrefix?: FlagPrefix;
+
   /**
    * Mapping from bit name to bit value.
    * If specified, the field is treated as bit flags.
@@ -120,7 +132,7 @@ interface Options<
   flagBits?: Record<FlagBit, number>;
 }
 
-interface Field<T> extends EvDecoder.RuleOptions {
+interface Field<T> extends Required<EvDecoder.RuleOptions> {
   readonly tt: number;
   readonly key: string;
   newValue(): T;
@@ -149,19 +161,25 @@ type AddFlags<FlagPrefix extends string, FlagBit extends string> =
 
 /**
  * Helper to build a base class that represents a TLV structure.
- * The TLV structure shall contain a sequence of sub-TLV elements with distinct TLV-TYPE numbers,
- * where each sub-TLV-TYPE may appear zero, one, or multiple times.
- * Calling code should invoke .add() method to define these sub-TLV elements.
- * The resulting base class, obtained via .baseClass() method, would contain one field for each
- * sub-TLV-TYPE as defined.
- * Calling code should declare a subclass deriving from this base class, and then assign its
- * constructor to .subclass property of the builder.
+ *
+ * @remarks
+ * StructBuilder allows you to define the typing, constructor, encoder, and decoder, while writing
+ * each field only once. It is only compatible with a subset of TLV structures. Namely, the TLV
+ * structure shall contain a sequence of sub-TLV elements with distinct TLV-TYPE numbers, where
+ * each sub-TLV-TYPE may appear zero, one, or multiple times.
+ *
+ * To use StructBuilder, calling code should follow these steps:
+ * 1. Invoke `.add()` method successively to define sub-TLV elements.
+ * 2. Obtain a base class via `.baseClass()` method, would contain one field for each sub-TLV-TYPE
+ *    as defined, along with constructor, encoding, and decoding functions.
+ * 3. Declare a subclass deriving from this base class, to add more functionality.
+ * 4. Assign the subclass constructor to `.subclass` property of the builder.
  */
 export class StructBuilder<U extends {}> {
   /**
    * Constructor.
-   * @param typeName type name, used in error messages.
-   * @param topTT if specified, encode as complete TLV; otherwise, encode as TLV-VALUE only.
+   * @param typeName - Type name, used in error messages.
+   * @param topTT - If specified, encode as complete TLV; otherwise, encode as TLV-VALUE only.
    */
   constructor(public readonly typeName: string, public readonly topTT?: number) {
     this.EVD = new EvDecoder<any>(typeName, topTT);
@@ -183,10 +201,10 @@ export class StructBuilder<U extends {}> {
 
   /**
    * Add a field.
-   * @param tt TLV-TYPE number.
-   * @param key field name on the base class.
-   * @param type field type.
-   * @param opts field options.
+   * @param tt - TLV-TYPE number.
+   * @param key - Field name on the base class.
+   * @param type - Field type.
+   * @param opts - Field options.
    * @returns StructBuilder annotated with field typing.
    */
   public add<
@@ -286,7 +304,7 @@ export class StructBuilder<U extends {}> {
 
   /**
    * Obtain a base class for the TLV structure class.
-   * The base class has constructor, encoding, and decoding functions.
+   * @typeParam S - Subclass type.
    */
   public baseClass<S>(): (new() => Simplify<U> & EncodableObj) & Decodable<S> {
     this.fields.sort(({ order: a }, { order: b }) => a - b);
@@ -350,6 +368,6 @@ export class StructBuilder<U extends {}> {
 
 /**
  * Infer fields of a class built by StructBuilder.
- * @template B StructBuilder annotated with field typing.
+ * @typeParam B - StructBuilder annotated with field typing.
  */
 export type StructFields<B extends StructBuilder<{}>> = B extends StructBuilder<infer U> ? U : never;

@@ -11,7 +11,7 @@ export interface Extensible {
 }
 
 export namespace Extensible {
-  export const TAG = Symbol("Extensible");
+  export const TAG = Symbol("@ndn/tlv.Extensible");
 
   /** Clone extension fields of src to dst. */
   export function cloneRecord(dst: Extensible, src: Extensible): void {
@@ -20,8 +20,8 @@ export namespace Extensible {
 
   /**
    * Define simple getters and setters.
-   * @param typ Extensible subclass constructor.
-   * @param exts extensions, each key is a property name and each value is the TLV-TYPE number.
+   * @param typ - Extensible subclass constructor.
+   * @param exts - Extensions, each key is a property name and each value is the TLV-TYPE number.
    */
   export function defineGettersSetters<T extends Extensible>(typ: new() => T, exts: Record<string, number>): void {
     for (const [prop, tt] of Object.entries(exts)) {
@@ -44,8 +44,8 @@ export namespace Extensible {
 
 /**
  * An extension sub element on a parent TLV element.
- * T is the parent TLV element type.
- * R is the value type of this extension.
+ * @typeParam T - Parent TLV element type.
+ * @typeParam R - Value type of this extension.
  */
 export interface Extension<T, R = unknown> {
   /** TLV-TYPE. */
@@ -56,17 +56,17 @@ export interface Extension<T, R = unknown> {
 
   /**
    * Decode extension element.
-   * @param obj parent object.
-   * @param tlv TLV of sub element; its TLV-TYPE would be this.tt .
-   * @param accumulator previous decoded value, if extension element appears more than once.
+   * @param obj - Parent object.
+   * @param tlv - TLV of sub element; its TLV-TYPE would be `this.tt`.
+   * @param accumulator - Previous decoded value, if extension element appears more than once.
    */
   decode(obj: T, tlv: Decoder.Tlv, accumulator?: R): R;
 
   /**
    * Encode extension element.
-   * @param obj parent object.
-   * @param value decoded value.
-   * @returns encoding of sub element; its TLV-TYPE should be this.tt .
+   * @param obj - Parent object.
+   * @param value - Decoded value.
+   * @returns Encoding of sub element; its TLV-TYPE should be `this.tt`.
    */
   encode(obj: T, value: R): Encodable;
 }

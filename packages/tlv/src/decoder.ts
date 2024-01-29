@@ -2,6 +2,14 @@ import { asDataView, fromUtf8 } from "@ndn/util";
 
 import { NNI } from "./nni";
 
+/**
+ * An object that knows how to decode itself from TLV.
+ * @typeParam R - Result type.
+ *
+ * @remarks
+ * Most commonly, `decodeFrom` is added as a static method of type R, so that the constructor
+ * of R implements this interface.
+ */
 export interface Decodable<R> {
   decodeFrom(decoder: Decoder): R;
 }
@@ -74,14 +82,25 @@ export class Decoder {
     return this.offset >= this.input.length;
   }
 
-  /** Throw an error if EOF has not been reached. */
+  /**
+   * Ensure EOF has been reached.
+   *
+   * @throws Error
+   * Thrown if EOF has not been reached.
+   */
   public throwUnlessEof(): void {
     if (!this.eof) {
       throw new Error("junk after end of TLV");
     }
   }
 
-  /** Read TLV structure. */
+  /**
+   * Read the next TLV structure from input.
+   * @returns TLV structure.
+   *
+   * @throws Error
+   * Thrown if there isn't a complete TLV structure in the input.
+   */
   public read(): Decoder.Tlv {
     const offsetT = this.offset;
     const type = this.readVarNum();
@@ -99,6 +118,10 @@ export class Decoder {
     return d.decodeFrom(this);
   }
 
+  /**
+   * Read a variable-size number.
+   * @returns The number up to uint32 or `undefined` if there isn't a complete number.
+   */
   private readVarNum(): number | undefined {
     if (this.eof) {
       return undefined;
@@ -161,7 +184,12 @@ export namespace Decoder {
 
   /**
    * Decode a single object from Uint8Array.
-   * The input is expected to contain no junk after the object.
+   * @param input - Input buffer, which should contain the encoded object and nothing else.
+   * @param d - Decodable object type.
+   * @returns Decoded object.
+   *
+   * @throws Error
+   * Thrown if the input cannot be decoded as the specified object type, or there's junk leftover.
    */
   export function decode<R>(input: Uint8Array, d: Decodable<R>): R {
     const decoder = new Decoder(input);

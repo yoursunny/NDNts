@@ -124,9 +124,12 @@ export class Component {
         encoder = new Encoder(encoderHeadroom + length);
         encoder.encode(value);
       }
-      this.value = encoder!.slice(0, length);
-      encoder?.prependTypeLength(this.type, length!);
-      this.tlv = encoder!.slice(0, encoder!.size - tailroom);
+      encoder!.prependTypeLength(this.type, length!);
+      this.tlv = encoder!.output;
+      if (tailroom !== 0) {
+        this.tlv = this.tlv.subarray(0, -tailroom);
+      }
+      this.value = this.tlv.subarray(this.tlv.length - length!);
     }
     assertType(this.type);
   }

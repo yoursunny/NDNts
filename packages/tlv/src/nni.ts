@@ -1,6 +1,6 @@
 import { asDataView, toHex } from "@ndn/util";
 
-import type { Encodable, Encoder } from "./encoder";
+import type { Encodable, EncodableObj, Encoder } from "./encoder";
 
 class Nni1 {
   constructor(private readonly n: number) {}
@@ -61,26 +61,23 @@ function decode32(dv: DataView): number {
 
 type Len = 1 | 2 | 4 | 8;
 
-interface Options {
-  /** If set, use/enforce specific TLV-LENGTH. */
-  len?: Len;
-
-  /** If true, allow approximate integers. */
-  unsafe?: boolean;
-}
-
 const EncodeNniClass = {
   1: Nni1,
   2: Nni2,
   4: Nni4,
   8: Nni8Number,
-};
+} satisfies Record<Len, new(n: number) => EncodableObj>;
 
-/** Create Encodable from non-negative integer. */
+/**
+ * Create Encodable from non-negative integer.
+ *
+ * @throws RangeError
+ * Thrown if the number may lose precision and `unsafe` option is not set.
+ */
 export function NNI(n: number | bigint, {
   len,
   unsafe = false,
-}: Options = {}): Encodable {
+}: NNI.Options = {}): Encodable {
   if (len) {
     if (len === 8 && typeof n === "bigint") {
       return new Nni8Big(n);
@@ -126,6 +123,26 @@ export function NNI(n: number | bigint, {
 }
 
 export namespace NNI {
+  export interface Options {
+    /**
+     * Encode to specific length.
+     * Enforce specific length during decoding.
+     */
+    len?: Len;
+
+    /**
+     * Decode to bigint instead of number.
+     * @defaultValue `false`
+     */
+    big?: boolean;
+
+    /**
+     * Permit large numbers that exceed MAX_SAFE_INTEGER, which may lose precision.
+     * @defaultValue `false`
+     */
+    unsafe?: boolean;
+  }
+
   /** Determine if len is a valid length of encoded NNI. */
   export function isValidLength(len: number): boolean {
     return !!(EncodeNniClass as Record<number, unknown>)[len];
@@ -141,7 +158,7 @@ export namespace NNI {
     len,
     big = false,
     unsafe = false,
-  }: Options & { big?: boolean } = {}) {
+  }: Options = {}) {
     if (len && value.byteLength !== len) {
       throw new Error(`incorrect TLV-LENGTH of NNI${len}`);
     }

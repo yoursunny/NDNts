@@ -3,7 +3,7 @@ import { assert } from "@ndn/util";
 import type { Decoder } from "./decoder";
 import { printTT } from "./string";
 
-interface Rule<T> extends EvDecoder.RuleOptions {
+interface Rule<T> extends Required<EvDecoder.RuleOptions> {
   cb: EvDecoder.ElementDecoder<T>;
 }
 
@@ -17,7 +17,10 @@ function isCritical(tt: number): boolean {
   return tt <= 0x1F || tt % 2 === 1;
 }
 
-/** TLV-VALUE decoder that understands Packet Format v0.3 evolvability guidelines. */
+/**
+ * TLV-VALUE decoder that understands Packet Format v0.3 evolvability guidelines.
+ * @typeParam T - Target type being decoded.
+ */
 export class EvDecoder<T> {
   private readonly topTT: readonly number[];
   private readonly rules = new Map<number, Rule<T>>();
@@ -33,8 +36,8 @@ export class EvDecoder<T> {
 
   /**
    * Constructor.
-   * @param typeName type name, used in error messages.
-   * @param topTT if specified, check top-level TLV-TYPE to be in this list.
+   * @param typeName - type name, used in error messages.
+   * @param topTT - If specified, the top-level TLV-TYPE will be checked to be in this list.
    */
   constructor(private readonly typeName: string, topTT: number | readonly number[] = []) {
     this.topTT = Array.isArray(topTT) ? (topTT as readonly number[]) : [topTT as number];
@@ -44,15 +47,15 @@ export class EvDecoder<T> {
     order = (this.nextOrder += AUTO_ORDER_SKIP),
     required = false,
     repeat = false,
-  }: Partial<EvDecoder.RuleOptions> = {}): EvDecoder.RuleOptions {
+  }: EvDecoder.RuleOptions = {}): Required<EvDecoder.RuleOptions> {
     return { order, required, repeat };
   }
 
   /**
    * Add a decoding rule.
-   * @param tt TLV-TYPE to match this rule.
-   * @param cb callback or nested EvDecoder to handle element TLV.
-   * @param opts additional rule options.
+   * @param tt - TLV-TYPE to match this rule.
+   * @param cb - Callback or nested EvDecoder to handle element TLV.
+   * @param opts - Additional rule options.
    */
   public add(tt: number, cb: EvDecoder.ElementDecoder<T> | EvDecoder<T>, opts: Partial<EvDecoder.RuleOptions> = {}): this {
     const ro = this.applyDefaultsToRuleOptions(opts);
@@ -82,12 +85,11 @@ export class EvDecoder<T> {
   /** Decode TLV to target object. */
   public decode<R extends T = T>(target: R, decoder: Decoder): R {
     const topTlv = decoder.read();
-    const { type, vd } = topTlv;
-    if (this.topTT.length > 0 && !this.topTT.includes(type)) {
-      throw new Error(`TLV-TYPE ${printTT(type)} is not ${this.typeName}`);
+    if (this.topTT.length > 0 && !this.topTT.includes(topTlv.type)) {
+      throw new Error(`TLV-TYPE ${printTT(topTlv.type)} is not ${this.typeName}`);
     }
 
-    return this.decodeV(target, vd, topTlv);
+    return this.decodeV(target, topTlv.vd, topTlv);
   }
 
   /** Decode TLV-VALUE to target object. */
@@ -154,28 +156,32 @@ export namespace EvDecoder {
   export interface RuleOptions {
     /**
      * Expected order of appearance.
+     *
+     * @remarks
      * When using this option, it should be specified for all rules in a EvDecoder.
-     * Default to the order in which rules were added to EvDecoder.
+     *
+     * @defaultValue
+     * The order in which rules were added to EvDecoder.
      */
-    order: number;
+    order?: number;
 
     /**
      * Whether TLV element must appear at least once.
-     * Default is false.
+     * @defaultValue `false`
      */
-    required: boolean;
+    required?: boolean;
 
     /**
      * Whether TLV element may appear more than once.
-     * Default is false.
+     * @defaultValue `false`
      */
-    repeat: boolean;
+    repeat?: boolean;
   }
 
   /**
    * Invoked when a TLV element does not match any rule.
-   * 'order' denotes the order number of last recognized TLV element.
-   * Return true if this TLV element is accepted, or false to follow evolvability guidelines.
+   * @param order - Order number of the last recognized TLV element.
+   * @returns `true` if this TLV element is accepted; `false` to follow evolvability guidelines.
    */
   export type UnknownElementHandler<T> = (target: T, tlv: Decoder.Tlv, order: number) => boolean;
 
@@ -193,8 +199,8 @@ export namespace EvDecoder {
 
   /**
    * Callback before or after decoding TLV-VALUE.
-   * @param target target object.
-   * @param topTlv top-level TLV element, available in EVD.decode but unavailable in EVD.decodeValue.
+   * @param target - Target object.
+   * @param topTlv - Top-level TLV element, available in EVD.decode but unavailable in EVD.decodeValue.
    */
   export type TlvObserver<T> = (target: T, topTlv?: Decoder.Tlv) => void;
 }

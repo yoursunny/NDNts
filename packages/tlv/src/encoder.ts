@@ -8,13 +8,15 @@ export interface EncodableObj {
 /**
  * An encodable TLV structure.
  *
+ * @remarks
  * First item is a number for TLV-TYPE.
  * Optional second item could be OmitEmpty to omit the TLV if TLV-VALUE is empty.
  * Subsequent items are Encodables for TLV-VALUE.
  */
-export type EncodableTlv = [number, ...Encodable[]] | [number, typeof Encoder.OmitEmpty, ...Encodable[]];
+export type EncodableTlv = [type: number, ...Encodable[]] |
+[type: number, omitEmpty: typeof Encoder.OmitEmpty, ...Encodable[]];
 
-/** An object acceptable to Encoder.encode(). */
+/** An object acceptable to `Encoder.encode()`. */
 export type Encodable = Uint8Array | undefined | false | EncodableObj | EncodableTlv;
 
 function sizeofVarNum(n: number): number {
@@ -45,6 +47,11 @@ function writeVarNum(room: Uint8Array, off: number, n: number) {
 
 /** TLV encoder that accepts objects in reverse order. */
 export class Encoder {
+  constructor(initSize = 2048) {
+    this.buf = new ArrayBuffer(initSize);
+    this.off = initSize;
+  }
+
   private buf: ArrayBuffer;
   private off: number;
 
@@ -55,30 +62,20 @@ export class Encoder {
 
   /** Obtain encoding output. */
   public get output(): Uint8Array {
-    return this.slice();
-  }
-
-  constructor(initSize = 2048) {
-    this.buf = new ArrayBuffer(initSize);
-    this.off = initSize;
-  }
-
-  /** Obtain part of encoding output. */
-  public slice(start = 0, length?: number) {
-    return new Uint8Array(this.buf, this.off + start, length);
+    return new Uint8Array(this.buf, this.off);
   }
 
   /**
    * Make room to prepend an object.
-   * @param sizeofObject object size.
-   * @returns room to write object.
+   * @param sizeofObject - Object size.
+   * @returns Room to write object.
    */
   public prependRoom(sizeofObject: number): Uint8Array {
     if (this.off < sizeofObject) {
       this.grow(sizeofObject);
     }
     this.off -= sizeofObject;
-    return this.slice(0, sizeofObject);
+    return new Uint8Array(this.buf, this.off, sizeofObject);
   }
 
   /** Prepend TLV-TYPE and TLV-LENGTH. */
@@ -119,11 +116,11 @@ export class Encoder {
     }
   }
 
-  /** Prepend an Encodable object. */
-  public encode(obj: Encodable | readonly Encodable[]) {
+  /** Prepend an Encodable object or an array of Encodable objects. */
+  public encode(obj: Encodable | readonly Encodable[]): void {
     if (obj instanceof Uint8Array) {
       this.prependRoom(obj.byteLength).set(obj);
-    } else if (typeof obj === "object" && typeof (obj as EncodableObj).encodeTo === "function") {
+    } else if (typeof (obj as EncodableObj | undefined)?.encodeTo === "function") {
       (obj as EncodableObj).encodeTo(this);
     } else if (Array.isArray(obj)) {
       if (typeof obj[0] === "number") {
@@ -146,7 +143,7 @@ export class Encoder {
 }
 
 export namespace Encoder {
-  export const OmitEmpty = Symbol("OmitEmpty");
+  export const OmitEmpty = Symbol("@ndn/tlv.OmitEmpty");
 
   /** Encode a single object into Uint8Array. */
   export function encode(obj: Encodable | readonly Encodable[], initBufSize?: number): Uint8Array {
@@ -161,7 +158,7 @@ export namespace Encoder {
       encodeTo(encoder) {
         const sizeBefore = encoder.size;
         encoder.encode(obj);
-        cb(encoder.slice(0, encoder.size - sizeBefore));
+        cb(encoder.output.subarray(0, encoder.size - sizeBefore));
       },
     };
   }
