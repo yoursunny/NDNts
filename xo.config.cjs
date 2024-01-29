@@ -36,10 +36,21 @@ function makePackageOverrides(config, ...pkgs) {
 }
 
 /** @type {XoOptions} */
+const tsdoc = {
+  plugins: ["tsdoc"],
+  rules: {
+    "tsdoc/syntax": "warn",
+  },
+};
+
+/** @type {XoOptions} */
 module.exports = {
   ...js,
   overrides: [
     ...makePackageOverrides(merge(js, ts), ""),
+    ...makePackageOverrides(merge(js, ts, tsdoc),
+      "/packages/util",
+    ),
     ...makePackageOverrides(merge(js, ts, web),
       "/packages/web-bluetooth-transport",
       "/packages/ws-transport",

@@ -1,15 +1,14 @@
 /**
  * Map that transforms keys.
- *
- * K: input key type.
- * V: value type.
- * I: indexable key type.
- * L: lookup key type.
+ * @typeParam K - Input key type.
+ * @typeParam V - Value type.
+ * @typeParam I - Indexable key type.
+ * @typeParam L - Lookup key type.
  */
-export class KeyMap<K, V, I, L = K> {
+export class KeyMap<K, V, I, L = K> implements Iterable<[key: K, value: V]> {
   /**
    * Constructor.
-   * @param keyOf function to transform input key to indexable key.
+   * @param keyOf - Function to transform input key to indexable key.
    */
   constructor(private readonly keyOf: (key: K | L) => I) {}
 
@@ -41,16 +40,15 @@ export class KeyMap<K, V, I, L = K> {
 
 /**
  * MultiMap that transforms keys.
- *
- * K: input key type.
- * V: value type.
- * I: indexable key type.
- * L: lookup key type.
+ * @typeParam K - Input key type.
+ * @typeParam V - Value type.
+ * @typeParam I - Indexable key type.
+ * @typeParam L - Lookup key type.
  */
-export class KeyMultiMap<K, V, I, L = K> {
+export class KeyMultiMap<K, V, I, L = K> implements Iterable<[key: K, value: V]> {
   /**
    * Constructor.
-   * @param keyOf function to transform input key to indexable key.
+   * @param keyOf - Function to transform input key to indexable key.
    */
   constructor(keyOf: (key: K | L) => I) {
     this.m = new KeyMap<K, Set<V>, I, L>(keyOf);
@@ -96,7 +94,7 @@ export class KeyMultiMap<K, V, I, L = K> {
   /**
    * Remove a key-value pair.
    * No-op if key-value does not exist.
-   * @returns count(key) after the operation.
+   * @returns `count(key)` after the operation.
    */
   public remove(key: K | L, value: V): number {
     const c = this.m.get(key);
@@ -137,15 +135,14 @@ export class MultiMap<K, V> extends KeyMultiMap<K, V, K> {
 
 /**
  * MultiSet that transforms keys.
- *
- * K: input key type.
- * I: indexable key type.
- * L: lookup key type.
+ * @typeParam K - Input key type.
+ * @typeParam I - Indexable key type.
+ * @typeParam L - Lookup key type.
  */
 export class KeyMultiSet<K, I, L=K> {
   /**
    * Constructor.
-   * @param keyOf function to transform input key to indexable key.
+   * @param keyOf - Function to transform input key to indexable key.
    */
   constructor(keyOf: (key: K | L) => I) {
     this.m = new KeyMap<K, number, I, L>(keyOf);
@@ -167,7 +164,7 @@ export class KeyMultiSet<K, I, L=K> {
 
   /**
    * Add a key.
-   * @returns number of occurrences after the operation.
+   * @returns Number of occurrences after the operation.
    */
   public add(key: K): number {
     const n = this.count(key) + 1;
@@ -179,7 +176,7 @@ export class KeyMultiSet<K, I, L=K> {
   /**
    * Remove a key.
    * No-op if key does not exist.
-   * @returns number of occurrences after the operation.
+   * @returns Number of occurrences after the operation.
    */
   public remove(key: K): number {
     let n = this.count(key);

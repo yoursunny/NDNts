@@ -26,8 +26,11 @@ export namespace toHex {
 
 /**
  * Convert hexadecimal string to byte array.
+ * @param s - Input hexadecimal string (case insensitive).
  *
- * If the input is not a valid hexadecimal string, result will be incorrect.
+ * @remarks
+ * The input is expected to be valid hexadecimal string.
+ * If the input is invalid, the output would be wrong, but no error would be thrown.
  */
 export function fromHex(s: string): Uint8Array {
   const b = new Uint8Array(s.length / 2);

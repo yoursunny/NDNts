@@ -7,4 +7,9 @@ if [[ -n ${GTAGID:-} ]]; then
   GTAG="--gaID $GTAGID"
 fi
 
-exec env NODE_OPTIONS='--max-old-space-size=6144' typedoc --tsconfig mk/tsconfig-typedoc.json --entryPoints 'packages/*' $GTAG
+ENTRYPOINTS='packages/*'
+if [[ $# -gt 0 ]]; then
+  ENTRYPOINTS=''
+fi
+
+exec env NODE_OPTIONS='--max-old-space-size=6144' typedoc --tsconfig mk/tsconfig-typedoc.json $GTAG --entryPoints $ENTRYPOINTS "$@"

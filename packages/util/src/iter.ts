@@ -1,7 +1,12 @@
 import assert from "minimalistic-assert";
 import type { AnyIterable } from "streaming-iterables";
 
-/** Yield all values from an iterable but catch any error. */
+/**
+ * Yield all values from an iterable but catch any error.
+ * @param iterable - Input iterable.
+ * @param onError - Callback to receive errors thrown by the iterable.
+ * @returns Iterable that does not throw errors.
+ */
 export async function* safeIter<T>(
     iterable: AnyIterable<T>,
     onError?: (err?: unknown) => void,
@@ -14,8 +19,10 @@ export async function* safeIter<T>(
 }
 
 /**
- * Map and flatten once.
- * This differs from flatMap in streaming-iterables, which recursively flattens the result.
+ * Perform flatMap on an (async) iterable, but flatten at most once.
+ * @remarks
+ * flatMap of streaming-iterables recursively flattens the result.
+ * This function flattens at most once.
  */
 export async function* flatMapOnce<T, R>(
     f: (item: T) => AnyIterable<R>,
