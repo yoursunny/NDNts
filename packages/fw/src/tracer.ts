@@ -6,12 +6,12 @@ import { Forwarder } from "./forwarder";
 import type { FwPacket } from "./packet";
 
 /** Print trace logs from Forwarder events. */
-export class Tracer {
-  public static enable(opts: Tracer.Options = {}): Tracer {
-    return new Tracer(opts);
+export class FwTracer {
+  public static enable(opts: FwTracer.Options = {}): FwTracer {
+    return new FwTracer(opts);
   }
 
-  private readonly output: Tracer.Output;
+  private readonly output: FwTracer.Output;
   private readonly fw: Forwarder;
 
   constructor({
@@ -21,7 +21,7 @@ export class Tracer {
     prefix = true,
     ann = true,
     pkt = true,
-  }: Tracer.Options) {
+  }: FwTracer.Options) {
     this.output = output;
     this.fw = fw;
     if (face) {
@@ -42,7 +42,7 @@ export class Tracer {
     }
   }
 
-  public disable() {
+  public disable(): void {
     this.fw.removeEventListener("faceadd", this.faceadd);
     this.fw.removeEventListener("facerm", this.facerm);
     this.fw.removeEventListener("prefixadd", this.prefixadd);
@@ -53,35 +53,35 @@ export class Tracer {
     this.fw.removeEventListener("pkttx", this.pkttx);
   }
 
-  private faceadd = ({ face }: Forwarder.FaceEvent) => {
+  private readonly faceadd = ({ face }: Forwarder.FaceEvent) => {
     this.output.log(`+Face ${face}`);
   };
 
-  private facerm = ({ face }: Forwarder.FaceEvent) => {
+  private readonly facerm = ({ face }: Forwarder.FaceEvent) => {
     this.output.log(`-Face ${face}`);
   };
 
-  private prefixadd = ({ face, prefix }: Forwarder.PrefixEvent) => {
+  private readonly prefixadd = ({ face, prefix }: Forwarder.PrefixEvent) => {
     this.output.log(`${face} +Prefix ${prefix}`);
   };
 
-  private prefixrm = ({ face, prefix }: Forwarder.PrefixEvent) => {
+  private readonly prefixrm = ({ face, prefix }: Forwarder.PrefixEvent) => {
     this.output.log(`${face} -Prefix ${prefix}`);
   };
 
-  private annadd = ({ name }: Forwarder.AnnouncementEvent) => {
+  private readonly annadd = ({ name }: Forwarder.AnnouncementEvent) => {
     this.output.log(`+Announcement ${name}`);
   };
 
-  private annrm = ({ name }: Forwarder.AnnouncementEvent) => {
+  private readonly annrm = ({ name }: Forwarder.AnnouncementEvent) => {
     this.output.log(`-Announcement ${name}`);
   };
 
-  private pktrx = ({ face, packet }: Forwarder.PacketEvent) => {
+  private readonly pktrx = ({ face, packet }: Forwarder.PacketEvent) => {
     this.pkt(face, packet, ">");
   };
 
-  private pkttx = ({ face, packet }: Forwarder.PacketEvent) => {
+  private readonly pkttx = ({ face, packet }: Forwarder.PacketEvent) => {
     this.pkt(face, packet, "<");
   };
 
@@ -112,7 +112,7 @@ function interestToString({ name, canBePrefix, mustBeFresh }: Interest): string 
   return `${name}${canBePrefix ? "[P]" : ""}${mustBeFresh ? "[F]" : ""}`;
 }
 
-export namespace Tracer {
+export namespace FwTracer {
   export interface Output {
     log(str: string): void;
   }
@@ -126,31 +126,31 @@ export namespace Tracer {
 
     /**
      * Logical Forwarder instance.
-     * @default Forwarder.getDefault()
+     * @defaultValue `Forwarder.getDefault()`
      */
     fw?: Forwarder;
 
     /**
      * Whether to log face creations and deletions.
-     * @default true
+     * @defaultValue true
      */
     face?: boolean;
 
     /**
      * Whether to log prefix registrations.
-     * @default true
+     * @defaultValue true
      */
     prefix?: boolean;
 
     /**
      * Whether to log prefix announcements.
-     * @default true
+     * @defaultValue true
      */
     ann?: boolean;
 
     /**
      * Whether to log packets.
-     * @default true
+     * @defaultValue true
      */
     pkt?: boolean;
   }

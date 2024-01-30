@@ -2,7 +2,7 @@ import type { Data, Interest, Nack } from "@ndn/packet";
 
 type L3Pkt = Interest | Data | Nack;
 
-/** A logical packet in the forwarder. */
+/** A logical packet in the logical forwarder. */
 export interface FwPacket<T extends L3Pkt = L3Pkt> {
   l3: T;
   token?: unknown;
@@ -15,7 +15,7 @@ export namespace FwPacket {
     return { l3, token, congestionMark };
   }
 
-  /** Whether this is a plain packet that can be sent on the wire. */
+  /** Determine whether this is a plain packet that can be sent on the wire. */
   export function isEncodable({ reject, cancel }: FwPacket): boolean {
     return !reject && !cancel;
   }

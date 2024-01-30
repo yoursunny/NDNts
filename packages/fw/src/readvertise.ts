@@ -8,6 +8,7 @@ import { Forwarder, type ForwarderImpl } from "./forwarder";
 /**
  * Manage advertised prefix of the forwarder.
  *
+ * @remarks
  * This class keeps track of what prefixes are announced by the owning forwarder.
  * It accepts announcements from faces attached to the forwarder, and then informs
  * each destination on what prefixes should be advertised.
@@ -54,8 +55,9 @@ export class Readvertise {
 /**
  * A destination of prefix advertisement.
  *
+ * @remarks
  * Generally, a prefix advertised to a destination would cause Interests matching the prefix
- * to come to the forwarder, aka prefix registration.
+ * to come to the local logical forwarder, aka prefix registration.
  */
 export abstract class ReadvertiseDestination<State extends {} = {}> {
   private readvertise?: Readvertise;
@@ -83,6 +85,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
   /**
    * Disable and detach from forwarder.
    *
+   * @remarks
    * Once detached, this instance is no longer usable.
    */
   public disable(): void {

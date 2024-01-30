@@ -173,7 +173,8 @@ export class Pit {
 
   /**
    * Satisfy pending Interests with incoming Data.
-   * @returns true if Data satisfies any pending Interest; false if Data is unsolicited.
+   * @returns `true` if Data satisfies one or more pending Interests;
+   *          `false` if Data is unsolicited.
    */
   public async satisfy(face: FaceImpl, { l3: data, token }: FwPacket<Data>): Promise<boolean> {
     const nSentData = await pipeline(

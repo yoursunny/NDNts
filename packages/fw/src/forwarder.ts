@@ -27,7 +27,7 @@ type EventMap = {
   pkttx: Forwarder.PacketEvent;
 };
 
-/** Forwarding plane. */
+/** Logical forwarder. */
 export interface Forwarder extends TypedEventTarget<EventMap> {
   /** Node names, used in forwarding hint processing. */
   readonly nodeNames: Name[];
@@ -35,7 +35,7 @@ export interface Forwarder extends TypedEventTarget<EventMap> {
   /** Logical faces. */
   readonly faces: ReadonlySet<FwFace>;
 
-  /** Add a logical face to the forwarding plane. */
+  /** Add a logical face to the logical forwarder. */
   addFace(face: FwFace.RxTx | FwFace.RxTxDuplex, attributes?: FwFace.Attributes): FwFace;
 
   /**
