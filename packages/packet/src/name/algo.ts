@@ -3,11 +3,15 @@ import { toHex } from "@ndn/util";
 import type { Name } from "./name";
 
 /**
- * Name longest prefix match algorithm.
- * @param name target name.
- * @param get callback function to retrieve entry by hexadecimal name prefix.
+ * Perform name longest prefix match on a container of entries.
+ * @typeParam T - Entry type, which must not be `undefined`.
+ * @param name - Lookup target name.
+ * @param get - Callback function to retrieve entry by name prefix TLV-VALUE in hexadecimal format.
+ * @returns Matched entries.
+ * The first result is the longest prefix match. Subsequent results are matches on successively
+ * shorter prefixes. The caller may early-return the iterator to ignore subsequent results.
  */
-export function* lpm<Entry>(name: Name, get: (prefixHex: string) => Entry | undefined): Iterable<Entry> {
+export function* lpm<T>(name: Name, get: (prefixHex: string) => T | undefined): Iterable<T> {
   const prefixes = [""];
   let s = "";
   for (const comp of name.comps) {
@@ -15,8 +19,8 @@ export function* lpm<Entry>(name: Name, get: (prefixHex: string) => Entry | unde
     prefixes.push(s);
   }
 
-  while (prefixes.length > 0) {
-    const prefix = prefixes.pop()!;
+  let prefix: string | undefined;
+  while ((prefix = prefixes.pop()) !== undefined) {
     const entry = get(prefix);
     if (entry !== undefined) {
       yield entry;

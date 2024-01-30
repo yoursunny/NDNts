@@ -1,5 +1,5 @@
 import { Decoder, Encoder } from "@ndn/tlv";
-import { constrain, fromHex, fromUtf8, toHex, toUtf8 } from "@ndn/util";
+import { assert, constrain, fromHex, fromUtf8, toHex, toUtf8 } from "@ndn/util";
 import bufferCompare from "buffer-compare";
 
 import { TT } from "../an";
@@ -18,13 +18,15 @@ const CODEPOINT_PERCENT = "%".codePointAt(0)!;
 const CODEPOINT_PERIOD = ".".codePointAt(0)!;
 
 const encoderHeadroom = 10;
-const FROM = Symbol("Component.from");
+const FROM = Symbol("@ndn/packet.Component.from");
 
 /** Name component or component URI. */
 export type ComponentLike = Component | string;
 
 /**
  * Name component.
+ *
+ * @remarks
  * This type is immutable.
  */
 export class Component {
@@ -68,37 +70,29 @@ export class Component {
     if (!hasNonPeriods && length >= 3) {
       length -= 3;
     }
-    return new Component(type, FROM, encoder, length);
-  }
-
-  /** Whole TLV. */
-  public readonly tlv: Uint8Array;
-  /** TLV-TYPE. */
-  public readonly type: number;
-  /** TLV-VALUE. */
-  public readonly value: Uint8Array;
-
-  /** TLV-LENGTH. */
-  public get length(): number {
-    return this.value.length;
-  }
-
-  /** TLV-VALUE interpreted as UTF-8 string. */
-  public get text(): string {
-    return fromUtf8(this.value);
+    return new Component(type, FROM, encoder, length); // eslint-disable-line etc/no-internal
   }
 
   /**
    * Construct from TLV-TYPE and TLV-VALUE.
-   * @param type TLV-TYPE, default is GenericNameComponent.
-   * @param value TLV-VALUE; if specified as string, it's encoded as UTF-8 but not interpreted
-   *              as URI representation. Use from() to interpret URI.
+   * @param type - TLV-TYPE. Default is GenericNameComponent.
+   * @param value - TLV-VALUE. If specified as string, it's encoded as UTF-8 but not interpreted
+   *                as URI. Use `Component.from()` to interpret URI.
+   *
+   * @throws Error
+   * Thrown if `type` is not a valid name component TLV-TYPE.
    */
   constructor(type?: number, value?: Uint8Array | string);
 
-  /** Construct from TLV. */
+  /**
+   * Decode from TLV.
+   *
+   * @throws Error
+   * Thrown if `tlv` does not contain a complete name component TLV and nothing else.
+   */
   constructor(tlv: Uint8Array);
 
+  /** @internal */
   constructor(type: number, isFrom: typeof FROM, encoder: Encoder, length: number);
 
   constructor(
@@ -134,6 +128,23 @@ export class Component {
     assertType(this.type);
   }
 
+  /** Whole TLV. */
+  public readonly tlv: Uint8Array;
+  /** TLV-TYPE. */
+  public readonly type: number;
+  /** TLV-VALUE. */
+  public readonly value: Uint8Array;
+
+  /** TLV-LENGTH. */
+  public get length(): number {
+    return this.value.length;
+  }
+
+  /** TLV-VALUE interpreted as UTF-8 string. */
+  public get text(): string {
+    return fromUtf8(this.value);
+  }
+
   /** Get URI string. */
   public toString(): string {
     let s = `${this.type}=`;
@@ -159,9 +170,7 @@ export class Component {
 
   /** Convert with naming convention. */
   public as<R>(convention: NamingConvention<any, R>): R {
-    if (!convention.match(this)) {
-      throw new Error("component does not follow convention");
-    }
+    assert(convention.match(this), "component does not follow convention");
     return convention.parse(this);
   }
 

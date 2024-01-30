@@ -10,6 +10,8 @@ export type NameLike = Name | string;
 
 /**
  * Name.
+ *
+ * @remarks
  * This type is immutable.
  */
 export class Name {
@@ -18,8 +20,15 @@ export class Name {
     return new Name(value);
   }
 
-  /** List of name components. */
-  public readonly comps: readonly Component[] = [];
+  /**
+   * Create Name from Name or Name URI.
+   *
+   * @remarks
+   * This is more efficient than `new Name(input)` if input is already a Name.
+   */
+  public static from(input: NameLike): Name {
+    return input instanceof Name ? input : new Name(input);
+  }
 
   /** Create empty name, or copy from other name, or parse from URI. */
   constructor(input?: NameLike);
@@ -62,6 +71,9 @@ export class Name {
     }
   }
 
+  /** List of name components. */
+  public readonly comps: readonly Component[] = [];
+
   private readonly valueEncoderBufSize?: number;
   private value_?: Uint8Array;
   private uri_?: string;
@@ -84,7 +96,11 @@ export class Name {
     return this.hex_;
   }
 
-  /** Retrieve i-th component. */
+  /**
+   * Retrieve i-th component.
+   * @param i - Component index. Negative number counts from the end.
+   * @returns i-th component, or `undefined` if it does not exist.
+   */
   public get(i: number): Component | undefined {
     i = i < 0 ? i + this.length : i;
     return this.comps[i];
@@ -92,12 +108,16 @@ export class Name {
 
   /**
    * Retrieve i-th component.
-   * @throws i-th component does not exist.
+   * @param i - Component index. Negative number counts from the end.
+   * @returns i-th component.
+   *
+   * @throws RangeError
+   * Thrown if i-th component does not exist.
    */
   public at(i: number): Component {
     const comp = this.get(i);
     if (!comp) {
-      throw new Error(`component ${i} out of range`);
+      throw new RangeError(`component ${i} out of range`);
     }
     return comp;
   }
@@ -108,12 +128,12 @@ export class Name {
     return this.uri_;
   }
 
-  /** Get sub name [begin, end). */
+  /** Get sub name `[begin,end)`. */
   public slice(begin?: number, end?: number): Name {
     return new Name(this.comps.slice(begin, end));
   }
 
-  /** Get prefix of n components. */
+  /** Get prefix of `n` components. */
   public getPrefix(n: number): Name {
     return this.slice(0, n);
   }
@@ -135,7 +155,7 @@ export class Name {
     return new Name([...this.comps, ...suffix]);
   }
 
-  /** Return a copy of Name with a component replaced. */
+  /** Return a copy of Name with i-th component replaced with `comp`. */
   public replaceAt(i: number, comp: ComponentLike): Name {
     const comps: ComponentLike[] = [...this.comps];
     comps.splice(i, 1, comp);
@@ -198,14 +218,6 @@ export namespace Name {
   /** Determine if obj is Name or Name URI. */
   export function isNameLike(obj: any): obj is NameLike {
     return obj instanceof Name || typeof obj === "string";
-  }
-
-  /**
-   * Create Name from Name or Name URI.
-   * This is more efficient than new Name(input) if input is already a Name.
-   */
-  export function from(input: NameLike): Name {
-    return input instanceof Name ? input : new Name(input);
   }
 
   /** Name compare result. */

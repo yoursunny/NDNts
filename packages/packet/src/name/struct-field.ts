@@ -5,13 +5,16 @@ import { Name } from "./name";
 /**
  * StructBuilder field type of Name, where Name TLV is placed into the structure directly.
  *
- * Example ABNF structure:
+ * @remarks
+ * Example ABNF structure where this can be used:
+ * ```abnf
  *  MyType = MY-TYPE-TYPE TLV-LENGTH
  *             OtherTLV
  *             Name
  *             OtherTLV
+ * ```
  *
- * The field is defined as Name.
+ * The field is defined as `Name`.
  * If the field is required, it is initialized as an empty Name.
  */
 export const StructFieldName: StructFieldType<Name> = StructFieldType.wrap(Name, {
@@ -22,15 +25,18 @@ export const StructFieldName: StructFieldType<Name> = StructFieldType.wrap(Name,
 /**
  * StructBuilder field type of Name, where Name TLV is nested in an outer TLV.
  *
- * Example ABNF structure:
+ * @remarks
+ * Example ABNF structure where this can be used:
+ * ```abnf
  *  MyType = MY-TYPE-TYPE TLV-LENGTH
  *             OtherTLV
  *             NestedTLV
  *             OtherTLV
  *  NestedTLV = NESTED-TLV-TYPE TLV-LENGTH
  *                Name
+ * ```
  *
- * The field is defined as Name.
+ * The field is defined as `Name`.
  * If the field is required, it is initialized as an empty Name.
  */
 export const StructFieldNameNested: StructFieldType<Name> = StructFieldType.nest(Name);

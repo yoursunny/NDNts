@@ -49,10 +49,11 @@ class Fields {
   }
 
   /**
-   * Setting to false deletes FinalBlockId.
+   * Setting to `false` deletes FinalBlockId.
+   * Setting to `true` assigns FinalBlockId to be the last name component.
    *
-   * Setting to true assigns FinalBlockId to be the last name component.
-   * It is not allowed if the name is empty.
+   * @throws Error
+   * Thrown if attempting to set `true` while the name is empty.
    */
   public set isFinalBlock(v: boolean) {
     if (!v) {
@@ -96,13 +97,14 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
   /**
    * Construct from flexible arguments.
    *
+   * @remarks
    * Arguments can include, in any order unless otherwise specified:
    * - Data to copy from
-   * - Name or name URI
-   * - Data.ContentType(v)
-   * - Data.FreshnessPeriod(v)
-   * - Data.FinalBlock (must appear after Name)
-   * - Uint8Array as Content
+   * - {@link Name} or name URI
+   * - {@link Data.ContentType}`(v)`
+   * - {@link Data.FreshnessPeriod}`(v)`
+   * - {@link Data.FinalBlock} (must appear after Name)
+   * - `Uint8Array` as Content
    */
   constructor(...args: Array<Data | Data.CtorArg>) {
     this[FIELDS] = new Fields(...args);
@@ -185,10 +187,8 @@ export class Data implements LLSign.Signable, LLVerify.Verifiable, Signer.Signab
   }
 
   /**
-   * Determine if a Data can satisfy an Interest.
-   * @param isCacheLookup if true, Data with zero FreshnessPeriod cannot satisfy Interest with MustBeFresh;
-   *                      if false, this check does not apply.
-   * @returns a Promise that will be resolved with the result.
+   * Determine if this Data can satisfy an Interest.
+   * @returns Promise that resolves with the result.
    */
   public async canSatisfy(interest: Interest, { isCacheLookup = false }: Data.CanSatisfyOptions = {}): Promise<boolean> {
     if (isCacheLookup && interest.mustBeFresh && this.freshnessPeriod <= 0) {
@@ -240,7 +240,7 @@ definePublicFields<Data, Fields, PublicFields>(Data, {
   sigValue: clearingFields.slice(0, 2),
 });
 
-const ctorAssign = Symbol("Data.ctorAssign");
+const ctorAssign = Symbol("@ndn/packet.Data.ctorAssign");
 interface CtorTag {
   [ctorAssign](f: Fields): void;
 }
@@ -261,18 +261,18 @@ export namespace Data {
   }
 
   /** Constructor argument to set the current packet as FinalBlock. */
-  export const FinalBlock = Symbol("Data.FinalBlock");
+  export const FinalBlock = Symbol("@ndn/packet.Data.FinalBlock");
 
   /** Constructor argument. */
   export type CtorArg = NameLike | CtorTag | typeof FinalBlock | Uint8Array;
 
-  /** Data.canSatisfy options. */
+  /** {@link Data.canSatisfy} options. */
   export interface CanSatisfyOptions {
     /**
      * Whether the Interest-Data matching is in the context of cache lookup.
-     * If true, Data with zero FreshnessPeriod cannot satisfy Interest with MustBeFresh.
-     * If false, this check does not apply.
-     * @default false
+     * If `true`, Data with zero FreshnessPeriod cannot satisfy Interest with MustBeFresh.
+     * If `false`, this check does not apply.
+     * @defaultValue false
      */
     isCacheLookup?: boolean;
   }

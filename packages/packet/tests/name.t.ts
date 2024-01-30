@@ -10,7 +10,7 @@ test("construct", () => {
   expect(name).toHaveLength(0);
   expect(name.value).toEqualUint8Array([]);
   expect(name.toString()).toBe("/");
-  expect(AltUri.ofName(name)).toEqual("/");
+  expect(AltUri.ofName(name)).toBe("/");
 
   for (const uri of ["", "ndn:", "/", "ndn:/"]) {
     name = new Name(uri);
@@ -34,14 +34,14 @@ test("construct", () => {
   ));
   name = decoder.decode(Name);
   expect(name).toHaveLength(2);
-  expect(name.get(0)).toEqual(Component.from("A"));
-  expect(name.get(1)).toEqual(Component.from("240=BC"));
+  expect(name.get(0)).toEqualComponent(Component.from("A"));
+  expect(name.get(1)).toEqualComponent(Component.from("240=BC"));
   expect(name.value).toEqualUint8Array([
     0x08, 0x01, 0x41,
     0xF0, 0x02, 0x42, 0x43,
   ]);
   expect(name.toString()).toBe("/8=A/240=BC");
-  expect(AltUri.ofName(name)).toEqual("/A/240=BC");
+  expect(AltUri.ofName(name)).toBe("/A/240=BC");
 });
 
 test("get at", () => {
@@ -49,18 +49,18 @@ test("get at", () => {
   const comp1 = Component.from("B");
   const name = new Name([comp0, comp1]);
 
-  expect(name.get(0)).toEqual(comp0);
-  expect(name.get(1)).toEqual(comp1);
+  expect(name.get(0)).toEqualComponent(comp0);
+  expect(name.get(1)).toEqualComponent(comp1);
   expect(name.get(2)).toBeUndefined();
-  expect(name.get(-1)).toEqual(comp1);
-  expect(name.get(-2)).toEqual(comp0);
+  expect(name.get(-1)).toEqualComponent(comp1);
+  expect(name.get(-2)).toEqualComponent(comp0);
   expect(name.get(-3)).toBeUndefined();
 
-  expect(name.at(0)).toEqual(comp0);
-  expect(name.at(1)).toEqual(comp1);
+  expect(name.at(0)).toEqualComponent(comp0);
+  expect(name.at(1)).toEqualComponent(comp1);
   expect(() => name.at(2)).toThrow();
-  expect(name.at(-1)).toEqual(comp1);
-  expect(name.at(-2)).toEqual(comp0);
+  expect(name.at(-1)).toEqualComponent(comp1);
+  expect(name.at(-2)).toEqualComponent(comp0);
   expect(() => name.at(-3)).toThrow();
 });
 

@@ -103,15 +103,15 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
    * Construct from flexible arguments.
    *
    * Arguments can include, in any order:
-   * - Interest to copy from
-   * - Name or name URI
-   * - Interest.CanBePrefix
-   * - Interest.MustBeFresh
-   * - FwHint
-   * - Interest.Nonce(v)
-   * - Interest.Lifetime(v)
-   * - Interest.HopLimit(v)
-   * - Uint8Array as AppParameters
+   * - {@link Interest} to copy from
+   * - {@link Name} or name URI
+   * - {@link Interest.CanBePrefix}
+   * - {@link Interest.MustBeFresh}
+   * - {@link FwHint}
+   * - {@link Interest.Nonce}`(v)`
+   * - {@link Interest.Lifetime}`(v)`
+   * - {@link Interest.HopLimit}`(v)`
+   * - `Uint8Array` as AppParameters
    */
   constructor(...args: Array<Interest | Interest.CtorArg>) {
     this[FIELDS] = new Fields(...args);
@@ -242,7 +242,7 @@ definePublicFields<Interest, Fields, PublicFields>(Interest, {
   sigValue: ["paramsPortion"],
 });
 
-const ctorAssign = Symbol("Interest.ctorAssign");
+const ctorAssign = Symbol("@ndn/packet.Interest.ctorAssign");
 interface CtorTag {
   [ctorAssign](f: Fields): void;
 }
@@ -303,7 +303,10 @@ export namespace Interest {
   /** A structure to modify an existing Interest. */
   export type Modify = ModifyFunc | ModifyFields;
 
-  /** Turn ModifyFields to ModifyFunc; return ModifyFunc as-is. */
+  /**
+   * Turn {@link ModifyFields} to {@link ModifyFunc}.
+   * Return {@link ModifyFunc} as-is.
+   */
   export function makeModifyFunc(input: Modify = () => undefined): ModifyFunc {
     if (typeof input === "function") {
       return input;

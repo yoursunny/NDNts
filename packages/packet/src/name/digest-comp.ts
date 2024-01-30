@@ -10,7 +10,7 @@ const DIGEST_LENGTH = 32;
 class DigestComp implements NamingConvention<Uint8Array>, NamingConvention.WithAltUri {
   private readonly altUriRegex: RegExp;
 
-  constructor(private readonly tt: number, private readonly altUriPrefix: string) {
+  constructor(protected readonly tt: number, private readonly altUriPrefix: string) {
     this.altUriRegex = new RegExp(`^${altUriPrefix}=([0-9a-fA-F]{${2 * DIGEST_LENGTH}})$`);
   }
 
@@ -43,10 +43,6 @@ class DigestComp implements NamingConvention<Uint8Array>, NamingConvention.WithA
 }
 
 class ImplicitDigestComp extends DigestComp {
-  constructor() {
-    super(TT.ImplicitSha256DigestComponent, "sha256digest");
-  }
-
   /** Remove ImplicitDigest if present at last component. */
   public strip(name: Name): Name {
     if (name.get(-1)?.is(this)) {
@@ -56,25 +52,21 @@ class ImplicitDigestComp extends DigestComp {
   }
 }
 
-/** ImplicitSha256DigestComponent */
-export const ImplicitDigest = new ImplicitDigestComp();
+/** ImplicitSha256DigestComponent. */
+export const ImplicitDigest = new ImplicitDigestComp(TT.ImplicitSha256DigestComponent, "sha256digest");
 
-const PARAMS_PLACEHOLDER_TAG = Symbol("ParametersSha256DigestComponent.placeholder");
+class ParamsDigestPlaceHolder extends Component {}
 
 class ParamsDigestComp extends DigestComp {
   /** ParamsDigest placeholder during Interest encoding. */
-  public readonly PLACEHOLDER: Component;
-
-  constructor() {
-    super(TT.ParametersSha256DigestComponent, "params-sha256");
-    this.PLACEHOLDER = Object.assign(
-      new Component(TT.ParametersSha256DigestComponent),
-      { [PARAMS_PLACEHOLDER_TAG]: true });
-  }
+  public readonly PLACEHOLDER: Component = new ParamsDigestPlaceHolder(
+    this.tt,
+    "placeholder",
+  );
 
   /** Determine if comp is a ParamsDigest placeholder. */
   public isPlaceholder(comp: Component): boolean {
-    return !!(comp as any)[PARAMS_PLACEHOLDER_TAG];
+    return comp instanceof ParamsDigestPlaceHolder;
   }
 
   /** Find ParamsDigest or placeholder in name. */
@@ -85,4 +77,4 @@ class ParamsDigestComp extends DigestComp {
 }
 
 /** ParametersSha256DigestComponent */
-export const ParamsDigest = new ParamsDigestComp();
+export const ParamsDigest = new ParamsDigestComp(TT.ParametersSha256DigestComponent, "params-sha256");

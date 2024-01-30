@@ -1,4 +1,4 @@
-import { sha256, timingSafeEqual } from "@ndn/util";
+import { assert, sha256, timingSafeEqual } from "@ndn/util";
 
 import { SigType } from "../an";
 import { KeyLocator } from "../key-locator";
@@ -7,13 +7,15 @@ import { SigInfo } from "../sig-info";
 
 /**
  * Low level signing function.
- * It takes a buffer of signed portion, and returns a Promise of signature value.
+ * @param input - Buffer of signed portion.
+ * @returns Promise resolves to signature value or rejects with error.
  */
 export type LLSign = (input: Uint8Array) => Promise<Uint8Array>;
 
 export namespace LLSign {
-  export const OP = Symbol("LLSign.OP");
+  export const OP = Symbol("@ndn/packet.LLSign.OP");
 
+  /** Target packet compatible with low level signing function. */
   export interface Signable {
     [OP](signer: LLSign): Promise<void>;
   }
@@ -21,14 +23,16 @@ export namespace LLSign {
 
 /**
  * Low level verification function.
- * It takes a buffer of signed portion and the signature value, and returns a Promise
- * that is resolved upon good signature or rejected upon bad signature.
+ * @param input - Buffer of signed portion.
+ * @param sig - Buffer of signature value.
+ * @returns Promise resolves upon good signature or rejects upon bad signature.
  */
 export type LLVerify = (input: Uint8Array, sig: Uint8Array) => Promise<void>;
 
 export namespace LLVerify {
-  export const OP = Symbol("LLVerify.OP");
+  export const OP = Symbol("@ndn/packet.LLVerify.OP");
 
+  /** Target packet compatible with low level verification function. */
   export interface Verifiable {
     [OP](verifier: LLVerify): Promise<void>;
   }
@@ -47,13 +51,15 @@ export interface Signer {
 }
 
 export namespace Signer {
+  /** Target packet compatible with high level signer. */
   export interface Signable extends PacketWithSignature, LLSign.Signable {}
 
   /**
    * Put SigInfo on packet if it does not exist.
-   * @param pkt target packet.
-   * @param sigType optionally set sigType.
-   * @param keyLocator optionally set keyLocator; false to delete KeyLocator.
+   * @param pkt - Target packet.
+   * @param sigType - Optionally set sigType.
+   * @param keyLocator - Optionally set keyLocator; `false` to delete KeyLocator.
+   * @returns Existing or modified SigInfo.
    */
   export function putSigInfo(pkt: PacketWithSignature, sigType?: number, keyLocator?: KeyLocator.CtorArg | false): SigInfo {
     pkt.sigInfo ??= new SigInfo();
@@ -73,26 +79,28 @@ export namespace Signer {
 export interface Verifier {
   /**
    * Verify a packet.
-   * @returns a Promise is resolved upon good signature/policy or rejected upon bad signature/policy.
+   * @returns Promise resolves upon good signature/policy or rejects upon bad signature/policy.
    */
   verify(pkt: Verifier.Verifiable): Promise<void>;
 }
 
 export namespace Verifier {
+  /** Target packet compatible with high level verifier. */
   export interface Verifiable extends Readonly<PacketWithSignature>, LLVerify.Verifiable {}
 
-  /** Throw if packet does not have expected SigType. */
+  /**
+   * Ensure packet has the correct SigType.
+   *
+   * @throws Error
+   * Thrown if `pkt` lacks SigInfo or its SigType differs from `expectedSigType`.
+   */
   export function checkSigType(pkt: Readonly<PacketWithSignature>, expectedSigType: number) {
-    if (pkt.sigInfo?.type !== expectedSigType) {
-      throw new Error(`packet does not have SigType ${expectedSigType}`);
-    }
+    assert(pkt.sigInfo?.type === expectedSigType, `packet does not have SigType ${expectedSigType}`);
   }
 
   /** Throw bad signature error if not OK. */
   export function throwOnBadSig(ok: boolean): asserts ok {
-    if (!ok) {
-      throw new Error("bad signature value");
-    }
+    assert(ok, "bad signature value");
   }
 }
 

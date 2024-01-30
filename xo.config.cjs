@@ -50,6 +50,7 @@ module.exports = {
     ...makePackageOverrides(merge(js, ts), ""),
     ...makePackageOverrides(merge(js, ts, tsdoc),
       "/packages/ndn",
+      "/packages/packet",
       "/packages/tlv",
       "/packages/util",
     ),

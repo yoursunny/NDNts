@@ -20,23 +20,16 @@ export class SigInfo {
     return EVD.decode(new SigInfo(), decoder);
   }
 
-  public type: number = SigType.Null;
-  public keyLocator?: KeyLocator;
-  public nonce?: Uint8Array;
-  public time?: number;
-  public seqNum?: bigint;
-  public readonly [Extensible.TAG] = EXTENSIONS;
-
   /**
    * Construct from flexible arguments.
    *
    * Arguments can include, in any order:
-   * - SigInfo to copy from
+   * - {@link SigInfo} to copy from
    * - number as SigType
-   * - KeyLocator, or Name/URI/KeyDigest to construct KeyLocator
-   * - SigInfo.Nonce(v)
-   * - SigInfo.Time(v)
-   * - SigInfo.SeqNum(v)
+   * - {@link KeyLocator}, or Name/URI/KeyDigest to construct KeyLocator
+   * - {@link SigInfo.Nonce}`(v)`
+   * - {@link SigInfo.Time}`(v)`
+   * - {@link SigInfo.SeqNum}`(v)`
    */
   constructor(...args: SigInfo.CtorArg[]) {
     const klArgs: KeyLocator.CtorArg[] = [];
@@ -59,9 +52,16 @@ export class SigInfo {
     }
   }
 
+  public type: number = SigType.Null;
+  public keyLocator?: KeyLocator;
+  public nonce?: Uint8Array;
+  public time?: number;
+  public seqNum?: bigint;
+  public readonly [Extensible.TAG] = EXTENSIONS;
+
   /**
    * Create an Encodable.
-   * @param tt either TT.ISigInfo or TT.DSigInfo.
+   * @param tt - Either `TT.ISigInfo` or `TT.DSigInfo`.
    */
   public encodeAs(tt: number): EncodableObj {
     return {
@@ -81,12 +81,13 @@ export class SigInfo {
   }
 }
 
-const ctorAssign = Symbol("SigInfo.ctorAssign");
+const ctorAssign = Symbol("@ndn/packet.SigInfo.ctorAssign");
 interface CtorTag {
   [ctorAssign](si: SigInfo): void;
 }
 
 export namespace SigInfo {
+  /** Constructor argument to set SigNonce field. */
   export function Nonce(v?: Uint8Array | number): CtorTag {
     return {
       [ctorAssign](si: SigInfo) {
@@ -101,20 +102,26 @@ export namespace SigInfo {
     return crypto.getRandomValues(new Uint8Array(size));
   }
 
+  /** Constructor argument to set SigTime field. */
   export function Time(v = Date.now()): CtorTag {
     return {
       [ctorAssign](si: SigInfo) { si.time = v; },
     };
   }
 
+  /** Constructor argument to set SigSeqNum field. */
   export function SeqNum(v: bigint): CtorTag {
     return {
       [ctorAssign](si: SigInfo) { si.seqNum = v; },
     };
   }
 
+  /** Constructor argument. */
   export type CtorArg = SigInfo | number | KeyLocator.CtorArg | CtorTag;
 
+  /** Add an extension TLV in SigInfo. */
   export const registerExtension = EXTENSIONS.registerExtension;
+
+  /** Remove an extension TLV in SigInfo. */
   export const unregisterExtension = EXTENSIONS.unregisterExtension;
 }

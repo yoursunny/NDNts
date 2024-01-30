@@ -140,10 +140,10 @@ test("ranged", async () => {
   ]);
 });
 
-test.each([
+test.each<(fw: Forwarder, fwHint: FwHint) => fetch.Options>([
   (fw, fwHint) => ({ fw, modifyInterest: { fwHint } }),
   (fw, fwHint) => ({ endpoint: new Endpoint({ fw, modifyInterest: { fwHint } }) }),
-] satisfies Array<(fw: Forwarder, fwHint: FwHint) => fetch.Options>)("modifyInterest %#", async (makeOpts) => {
+])("modifyInterest %#", async (makeOpts) => {
   using bridge = Bridge.create({
     fwOpts,
     routesAB: [],
@@ -183,10 +183,10 @@ describe("empty object", () => {
     expect(handler1).toHaveBeenCalled();
   });
 
-  test.each([
+  test.each<(verifier: Verifier) => fetch.Options>([
     (verifier) => ({ verifier }),
     (verifier) => ({ endpoint: new Endpoint({ verifier }) }),
-  ] satisfies Array<(verifier: Verifier) => fetch.Options>)("verify error %#", async (makeOpts) => {
+  ])("verify error %#", async (makeOpts) => {
     const verify = vi.fn<Parameters<Verifier["verify"]>, ReturnType<Verifier["verify"]>>()
       .mockRejectedValue(new Error("mock-verify-error"));
     await expect(fetch("/R", { retxLimit: 0, ...makeOpts({ verify }) }))

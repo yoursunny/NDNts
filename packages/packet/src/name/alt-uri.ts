@@ -7,11 +7,12 @@ import { Name } from "./name";
 /**
  * Functions to print and parse names in alternate/pretty URI syntax.
  *
- * This class is constructed with a sequence of NamingConventions. Each component is matched
+ * @remarks
+ * This class is constructed with a sequence of `NamingConvention`s. Each component is matched
  * against these conventions in order, and the first matching convention can determine how to
  * print that component in an alternate URI syntax, if available.
  *
- * Other than pre-constructed 'AltUri' instances exported by this and naming convention packages,
+ * Other than pre-constructed `AltUri` instances exported by this and naming convention packages,
  * you may construct an instance with only the naming conventions you have adopted, so that a
  * component that happens to match a convention that your application did not adopt is not
  * mistakenly interpreted with that convention.

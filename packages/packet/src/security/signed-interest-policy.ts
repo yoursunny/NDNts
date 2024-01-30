@@ -14,12 +14,21 @@ export class SignedInterestPolicy {
 
   /**
    * Constructor.
-   * @param opts options.
-   * @param rules one or more rules created from SignedInterestPolicy.Nonce(),
-   *              SignedInterestPolicy.Time(), SignedInterestPolicy.SeqNum().
+   * @param opts - Options.
+   * @param rules -
+   *  One or more rules created from {@link SignedInterestPolicy.Nonce},
+   *  {@link SignedInterestPolicy.Time}, {@link SignedInterestPolicy.SeqNum}.
    */
   constructor(opts: SignedInterestPolicy.Options, ...rules: Rule[]);
+
+  /**
+   * Constructor.
+   * @param rules -
+   *  One or more rules created from {@link SignedInterestPolicy.Nonce},
+   *  {@link SignedInterestPolicy.Time}, {@link SignedInterestPolicy.SeqNum}.
+   */
   constructor(...rules: Rule[]);
+
   constructor(arg1?: SignedInterestPolicy.Options | Rule, ...rules: Rule[]) {
     let opts: SignedInterestPolicy.Options = {};
     if (typeof (arg1 as Rule | undefined)?.check === "function") {
@@ -35,7 +44,7 @@ export class SignedInterestPolicy {
 
   /**
    * Assign SigInfo fields on an Interest before signing.
-   * @param key signing key object to associate state with; if omitted, use global state.
+   * @param key - Signing key object to associate state with; if omitted, use global state.
    */
   public update(interest: Interest, key: object = this): void {
     const si = Signer.putSigInfo(interest);
@@ -46,7 +55,7 @@ export class SignedInterestPolicy {
 
   /**
    * Check SigInfo of an Interest.
-   * @returns a function to save state after the Interest has passed all verifications.
+   * @returns A function to save state after the Interest has passed all verifications.
    */
   public check({ sigInfo }: Interest): () => void {
     if (!sigInfo) {
@@ -80,6 +89,8 @@ export class SignedInterestPolicy {
 
   /**
    * Wrap an Interest to update/check SigInfo during signing/verification.
+   *
+   * @remarks
    * During signing, global state is being used because signer key cannot be detected.
    */
   public wrapInterest(interest: Interest): Signer.Signable & Verifier.Verifiable {
@@ -107,6 +118,8 @@ export class SignedInterestPolicy {
 
   /**
    * Wrap a Signer to update SigInfo when signing an Interest.
+   *
+   * @remarks
    * State is associated with the provided Signer.
    */
   public makeSigner(inner: Signer): Signer {
@@ -273,55 +286,62 @@ class SeqNumRule extends SequencedRuleBase<bigint> implements Rule {
 }
 
 export namespace SignedInterestPolicy {
+  /** Constructor options. */
   export interface Options {
     /**
      * How many distinct public keys to keep track.
      * Each different KeyLocator Name or KeyDigest is tracked separately.
+     * @defaultValue 256
      *
+     * @remarks
      * Minimum is 1.
-     * @default 256
      */
     trackedKeys?: number;
   }
 
+  /** {@link SignedInterestPolicy.makeVerifier} options. */
   export interface WrapOptions {
     /**
      * If true, non-Interest packets are passed through to the inner Verifier.
      * If false, non-Interest packets are rejected.
-     * @default true
+     * @defaultValue true
      */
     passData?: boolean;
 
     /**
      * If true, Interests without SigInfo are passed through to the inner Verifier.
      * If false, Interests without SigInfo are rejected.
-     * @default false
+     * @defaultValue false
      */
     passUnsignedInterest?: boolean;
   }
 
+  /** {@link SignedInterestPolicy.Nonce} options. */
   export interface NonceOptions {
     /**
      * Length of generated SigNonce.
+     * @defaultValue 8
      *
+     * @remarks
      * Minimum is 1.
-     * @default 8
      */
     nonceLength?: number;
 
     /**
      * Minimum required length of SigNonce.
+     * @defaultValue 8
      *
+     * @remarks
      * Minimum is 1.
-     * @default 8
      */
     minNonceLength?: number;
 
     /**
      * How many distinct SigNonce values to keep track, within each public key.
+     * @defaultValue 256
      *
+     * @remarks
      * Minimum is 1.
-     * @default 256
      */
     trackedNonces?: number;
   }
@@ -329,6 +349,7 @@ export namespace SignedInterestPolicy {
   /**
    * Create a rule to assign or check SigNonce.
    *
+   * @remarks
    * This rule assigns a random SigNonce of `nonceLength` octets that does not duplicate
    * last `trackedNonces` values.
    *
@@ -341,13 +362,15 @@ export namespace SignedInterestPolicy {
     return new NonceRule(opts);
   }
 
+  /** {@link SignedInterestPolicy.Time} options. */
   export interface TimeOptions {
     /**
      * Maximum allowed clock offset in milliseconds.
+     * @defaultValue 60000
      *
+     * @remarks
      * Minimum is 0. However, setting to 0 is inadvisable because it would require consumer and
      * producer to have precisely synchronized clocks.
-     * @default 60000
      */
     maxClockOffset?: number;
   }
@@ -355,6 +378,7 @@ export namespace SignedInterestPolicy {
   /**
    * Create a rule to assign or check SigTime.
    *
+   * @remarks
    * This rule assigns SigTime to be same as current timestamp, but may increment if it
    * duplicates the previous value.
    *
@@ -374,10 +398,11 @@ export namespace SignedInterestPolicy {
     return new TimeRule(opts);
   }
 
+  /** {@link SignedInterestPolicy.SeqNum} options. */
   export interface SeqNumOptions {
     /**
      * Initial sequence number.
-     * @default 0n
+     * @defaultValue 0n
      */
     initialSeqNum?: bigint;
   }
@@ -385,11 +410,12 @@ export namespace SignedInterestPolicy {
   /**
    * Create a rule to assign or check SigSeqNum.
    *
+   * @remarks
    * This rule assigns SigSeqNum to `initialSegNum`, or increments from previous value.
    *
    * This rule rejects an Interest on any of these conditions:
-   * (1) SigSeqNum is absent.
-   * (2) SigSeqNum value is less than or equal to a previous value.
+   * - SigSeqNum is absent.
+   * - SigSeqNum value is less than or equal to a previous value.
    */
   export function SeqNum(opts: SeqNumOptions = {}): Rule {
     return new SeqNumRule(opts);

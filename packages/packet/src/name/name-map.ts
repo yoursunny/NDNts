@@ -8,7 +8,7 @@ function keyOf(nameOrHex: Name | string): string {
 
 /**
  * Map keyed by name.
- * Lookups may accept either name or name.valueHex.
+ * Lookups may accept either name or `name.valueHex`.
  */
 export class NameMap<V> extends KeyMap<Name, V, string, string> {
   constructor() {
@@ -18,7 +18,7 @@ export class NameMap<V> extends KeyMap<Name, V, string, string> {
 
 /**
  * MultiMap keyed by name.
- * Lookups may accept either name or name.valueHex.
+ * Lookups may accept either name or `name.valueHex`.
  */
 export class NameMultiMap<V> extends KeyMultiMap<Name, V, string, string> {
   constructor() {
@@ -28,7 +28,7 @@ export class NameMultiMap<V> extends KeyMultiMap<Name, V, string, string> {
 
 /**
  * MultiSet keyed by name.
- * Lookups may accept either name or name.valueHex.
+ * Lookups may accept either name or `name.valueHex`.
  */
 export class NameMultiSet extends KeyMultiSet<Name, string, string> {
   constructor() {

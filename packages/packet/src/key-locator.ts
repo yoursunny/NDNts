@@ -13,9 +13,6 @@ export class KeyLocator {
     return EVD.decode(new KeyLocator(), decoder);
   }
 
-  public name?: Name;
-  public digest?: Uint8Array;
-
   constructor(...args: KeyLocator.CtorArg[]) {
     for (const arg of args) {
       if (Name.isNameLike(arg)) {
@@ -29,6 +26,9 @@ export class KeyLocator {
       }
     }
   }
+
+  public name?: Name;
+  public digest?: Uint8Array;
 
   public encodeTo(encoder: Encoder) {
     encoder.prependTlv(TT.KeyLocator, Encoder.OmitEmpty,
@@ -46,7 +46,8 @@ export namespace KeyLocator {
 
   /**
    * Extract KeyLocator name.
-   * @throws KeyLocator is missing or does not have Name.
+   * @throws Error
+   * Thrown if KeyLocator is missing or does not have Name.
    */
   export function mustGetName(kl?: KeyLocator): Name {
     const name = kl?.name;

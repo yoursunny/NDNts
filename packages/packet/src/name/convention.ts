@@ -2,8 +2,8 @@ import type { Component } from "./component";
 
 /**
  * Naming convention, which interprets a name component in a specific way.
- * @template A input type to construct component.
- * @template R output type to interpret component.
+ * @typeParam A - Input type to construct component.
+ * @typeParam R - Output type to interpret component.
  */
 export interface NamingConvention<A, R = A> {
   /** Determine if a component follows this naming convention. */
@@ -24,11 +24,12 @@ export namespace NamingConvention {
 
     /**
      * Parse from alternate URI.
-     * @returns component, or undefined if it cannot be parsed.
+     * @returns Component, or `undefined` if it cannot be parsed.
      */
     fromAltUri(input: string): Component | undefined;
   }
 
+  /** Determine whether an object implements `NamingConvention` interface. */
   export function isConvention(obj: any): obj is NamingConvention<any> {
     return typeof obj === "object" &&
            typeof obj.match === "function" &&

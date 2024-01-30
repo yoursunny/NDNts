@@ -1,4 +1,4 @@
-export const FIELDS = Symbol("FIELDS");
+export const FIELDS = Symbol("@ndn/packet.FIELDS");
 
 export function definePublicFields<
   Target extends PublicFields & { [FIELDS]: Fields },

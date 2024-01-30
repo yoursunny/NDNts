@@ -50,20 +50,28 @@ export namespace LLDecrypt {
 /**
  * High level encrypter.
  *
+ * @remarks
  * This captures both the encryption key and the wire format of encrypted content.
  */
 export interface Encrypter<T = Data> {
-  /** Encrypt a packet. The packet is modified in-place. */
+  /**
+   * Encrypt a packet.
+   * The packet is modified in-place.
+   */
   encrypt(pkt: T): Promise<void>;
 }
 
 /**
  * High level decrypter.
  *
+ * @remarks
  * This captures both the decryption key and the wire format of encrypted content.
  */
 export interface Decrypter<T = Data> {
-  /** Decrypt a packet. The packet is modified in-place. */
+  /**
+   * Decrypt a packet.
+   * The packet is modified in-place.
+   */
   decrypt(pkt: T): Promise<void>;
 }
 
