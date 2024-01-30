@@ -9,14 +9,14 @@ function isCritical(tt: number): boolean {
 }
 
 const EVD = new EvDecoder<LpPacket>("LpPacket", TT.LpPacket)
-  .setIsCritical(isCritical)
   .add(TT.LpSeqNum, (t, { nniBig }) => t.fragSeqNum = nniBig)
   .add(TT.FragIndex, (t, { nni }) => t.fragIndex = nni)
   .add(TT.FragCount, (t, { nni }) => t.fragCount = nni)
   .add(TT.PitToken, (t, { value }) => t.pitToken = value)
   .add(TT.Nack, (t, { decoder }) => t.nack = decoder.decode(NackHeader))
   .add(TT.CongestionMark, (t, { nni }) => t.congestionMark = nni)
-  .add(TT.LpPayload, (t, { value }) => t.payload = value);
+  .add(TT.LpPayload, (t, { value }) => t.payload = value)
+  .setIsCritical(isCritical);
 
 /** NDNLPv2 packet. */
 export class LpPacket {
@@ -27,11 +27,21 @@ export class LpPacket {
   public fragSeqNum?: bigint;
   public fragIndex = 0;
   public fragCount = 1;
+
+  /**
+   * L3 payload.
+   *
+   * @remarks
+   * This field may contain either a whole L3 packet or fragment of one.
+   * This is also known as *fragment* in other libraries.
+   */
   public payload?: Uint8Array;
 
   /**
-   * Return L3 fields only.
-   * They may be copied to another LpPacket via Object.assign().
+   * Extract L3 fields only.
+   *
+   * @remarks
+   * They may be copied to another LpPacket via `Object.assign()`.
    */
   public get l3(): LpL3 {
     const t: LpL3 = {};
@@ -41,7 +51,15 @@ export class LpPacket {
     return t;
   }
 
-  public encodeTo(encoder: Encoder) {
+  /**
+   * Prepend LpPacket to encoder.
+   *
+   * @throws Error
+   * Thrown if fragmentation headers violate invariants:
+   * - `.fragIndex >= .fragCount`
+   * - `.fragSeqNum` is unset but `.fragCount > 1`
+   */
+  public encodeTo(encoder: Encoder): void {
     encoder.prependTlv(TT.LpPacket,
       ...this.encodeFragHeaders(),
       ...this.encodeL3Headers(),
@@ -62,11 +80,19 @@ export class LpPacket {
     ];
   }
 
+  /**
+   * Determine whether any L3 header is present.
+   * @see {@link LpL3}
+   */
   public hasL3Headers(): boolean {
     const { congestionMark = 0 } = this;
-    return this.pitToken !== undefined || this.nack !== undefined || congestionMark > 0;
+    return !!this.pitToken || !!this.nack || congestionMark > 0;
   }
 
+  /**
+   * Encode L3 headers.
+   * @see {@link LpL3}
+   */
   public encodeL3Headers(): Encodable[] {
     const { congestionMark = 0 } = this;
     return [
@@ -78,7 +104,7 @@ export class LpPacket {
 }
 export interface LpPacket extends LpL3 {}
 
-/** L3 fields in LpPacket. */
+/** L3 fields in {@link LpPacket}. */
 export interface LpL3 {
   pitToken?: Uint8Array;
   nack?: NackHeader;

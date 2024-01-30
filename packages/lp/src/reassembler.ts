@@ -59,7 +59,7 @@ export class Reassembler {
 
   /**
    * Process a fragment.
-   * @returns fully reassembled packet, or undefined if packet is not yet complete.
+   * @returns Fully reassembled packet, or undefined if packet is not yet complete.
    */
   public accept(fragment: LpPacket): LpPacket | undefined {
     if (fragment.fragCount === 1) { // not fragmented

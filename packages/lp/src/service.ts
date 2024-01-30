@@ -1,6 +1,6 @@
 import { Data, Interest, Nack, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, printTT } from "@ndn/tlv";
-import { flatMapOnce, toHex } from "@ndn/util";
+import { assert, flatMapOnce, toHex } from "@ndn/util";
 import itKeepAlive from "it-keepalive";
 
 import { TT } from "./an";
@@ -32,12 +32,11 @@ export class LpService {
   public readonly rx = (iterable: AsyncIterable<Decoder.Tlv>): AsyncIterable<LpService.Packet | LpService.RxError> =>
     flatMapOnce((tlv) => this.decode(tlv), iterable);
 
-  private *decode(dtlv: Decoder.Tlv) {
+  private *decode(dtlv: Decoder.Tlv): Iterable<LpService.Packet | LpService.RxError> {
     const { type, decoder, tlv } = dtlv;
     try {
       if (type !== TT.LpPacket) {
-        yield this.decodeL3(dtlv);
-        return;
+        return yield this.decodeL3(dtlv);
       }
 
       const fragment = decoder.decode(LpPacket);
@@ -46,17 +45,14 @@ export class LpService {
         return;
       }
 
-      const l3pkt = this.decodeL3(new Decoder(lpp.payload).read());
+      const pkt = this.decodeL3(new Decoder(lpp.payload).read());
       if (lpp.nack) {
-        if (l3pkt.l3 instanceof Interest) {
-          l3pkt.l3 = new Nack(l3pkt.l3, lpp.nack);
-        } else {
-          throw new Error("Nack can only appear on Interest");
-        }
+        assert(pkt.l3 instanceof Interest, "Nack can only appear on Interest");
+        pkt.l3 = new Nack(pkt.l3, lpp.nack);
       }
-      l3pkt.token = lpp.pitToken;
-      l3pkt.congestionMark = lpp.congestionMark;
-      yield l3pkt;
+      pkt.token = lpp.pitToken;
+      pkt.congestionMark = lpp.congestionMark;
+      yield pkt;
     } catch (err: unknown) {
       yield new LpService.RxError(err as Error, tlv);
     }
@@ -116,30 +112,30 @@ export class LpService {
 }
 
 export namespace LpService {
-  /** An object to report transport MTU. */
+  /** An object that reports transport MTU. */
   export interface Transport {
-    /** Return current transport MTU. */
+    /** Current transport MTU. */
     readonly mtu: number;
   }
 
   export interface Options {
     /**
      * How often to send IDLE packets if nothing else was sent, in milliseconds.
-     * Set false or zero to disable keep-alive.
-     * @default 60000
+     * Set `false` or zero to disable keep-alive.
+     * @defaultValue 60000
      */
     keepAlive?: false | number;
 
     /**
      * Administrative MTU.
      * The lesser of this MTU and the transport's reported MTU is used for fragmentation.
-     * @default Infinity
+     * @defaultValue Infinity
      */
     mtu?: number;
 
     /**
      * Maximum number of partial packets kept in the reassembler.
-     * @default 16
+     * @defaultValue 16
      */
     reassemblerCapacity?: number;
   }

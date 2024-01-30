@@ -12,13 +12,16 @@ class SeqNumGen {
   }
 }
 
-const OVERHEAD = 0 +
-  1 + 3 + // LpPacket TL
-  1 + 1 + 8 + // LpSeqNum
-  1 + 1 + 2 + // FragIndex
-  1 + 1 + 2 + // FragCount
-  1 + 3 + // LpPayload TL
-  0;
+const enum OverheadC {
+  // eslint-disable-next-line @typescript-eslint/prefer-literal-enum-member
+  Overhead = 0 +
+    1 + 3 + // LpPacket TL
+    1 + 1 + 8 + // LpSeqNum
+    1 + 1 + 2 + // FragIndex
+    1 + 1 + 2 + // FragCount
+    1 + 3 + // LpPayload TL
+    0,
+}
 
 /** NDNLPv2 fragmenter. */
 export class Fragmenter {
@@ -26,10 +29,12 @@ export class Fragmenter {
 
   /**
    * Fragment a packet.
-   * @returns a sequence of fragments, or empty array if fragmentation fails.
+   * @param full - LpPacket contains full L3 packet and LpHeaders.
+   * @param mtu - Transport MTU.
+   * @returns LpPacket fragments, or empty array if fragmentation fails.
    */
   public fragment(full: LpPacket, mtu: number): LpPacket[] {
-    const fragmentRoom = mtu - OVERHEAD;
+    const fragmentRoom = mtu - OverheadC.Overhead;
     const sizeofL3Headers = Encoder.encode(full.encodeL3Headers()).length;
     const sizeofPayload = full.payload?.byteLength ?? 0;
     const sizeofFirstFragment = Math.min(sizeofPayload, fragmentRoom - sizeofL3Headers);
