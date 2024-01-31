@@ -3,8 +3,7 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package implements a WebSocket transport.
-It works in both Node.js (via [ws](https://www.npmjs.com/package/ws) library) and browser.
-However, experimental global `WebSocket` in Node 21.x is not yet supported.
+It works in both Node.js and browser.
 
 You can create a forwarder face that uses WebSocket transport with `WsTransport.createFace()` function.
 To create a WebSocket transport without wrapping into L3Face, use `WsTransport.connect()` function.
@@ -19,14 +18,14 @@ import { Data, Interest, Name } from "@ndn/packet";
 if (process.env.CI) { process.exit(0); }
 
 // Create a WebSocket face.
-// Unless otherwise specified, the face is added to the default Forwarder instance.
-// You may set an alternate Forwarder instance in the first argument.
+// Unless otherwise specified, the face is added to the default logical forwarder.
+// You may set an alternate logical forwarder in the first argument.
 //
 // A route for "/" prefix is added automatically.
 // You may customize the route prefixes via addRoutes property in the first argument.
 const uplink = await WsTransport.createFace({}, "wss://hobo.cs.arizona.edu/ws/");
 
-// Construct an Endpoint on the default Forwarder instance.
+// Construct an Endpoint on the default logical forwarder.
 const endpoint = new Endpoint();
 
 // We can now send Interests and retrieve Data.

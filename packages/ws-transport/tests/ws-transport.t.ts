@@ -3,7 +3,7 @@ import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import { Closers, delay } from "@ndn/util";
 import { pushable } from "it-pushable";
 import { beforeEach, expect, test, vi } from "vitest";
-import type WebSocket from "ws";
+import { WebSocket as WsWebSocket } from "ws";
 
 import { WsTransport } from "..";
 import { bridgeWebSockets, WsServer } from "../test-fixture/ws-server";
@@ -16,10 +16,10 @@ beforeEach(async () => {
   return closers.close;
 });
 
-test("pair", async () => {
+async function testPair(convert: (uri: string) => Parameters<typeof WsTransport.connect>[0]) {
   const [tA, tB, sockets] = await Promise.all([
     WsTransport.connect(server.uri),
-    WsTransport.connect(server.uri),
+    WsTransport.connect(convert(server.uri)),
     server.waitNClients(2),
   ]);
 
@@ -27,6 +27,18 @@ test("pair", async () => {
 
   bridgeWebSockets(sockets);
   TestTransport.check(await TestTransport.execute(tA, tB));
+}
+
+test("pair - connect to URI", async () => {
+  await testPair((uri) => uri);
+});
+
+test("pair - ws WebSocket", async () => {
+  await testPair((uri) => new WsWebSocket(uri));
+});
+
+test.runIf(globalThis.WebSocket)("pair - native WebSocket", async () => {
+  await testPair((uri) => new WebSocket(uri));
 });
 
 test("TX throttle", async () => {
@@ -35,7 +47,7 @@ test("TX throttle", async () => {
     server.waitNClients(1),
   ]);
 
-  const cws = (transport as any).sock as WebSocket;
+  const cws = (transport as any).sock as WsWebSocket;
   const bufferedAmount = vi.spyOn(cws, "bufferedAmount", "get");
 
   const sws = socks[0]!;

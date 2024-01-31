@@ -1,8 +1,8 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 import EventIterator from "event-iterator";
-import type WsWebSocket from "ws";
+import type { WebSocket as WsWebSocket } from "ws";
 
-import { binaryType, extractMessage, makeWebSocket } from "./ws_node";
+import { changeBinaryType, extractMessage, makeWebSocket } from "./ws_node";
 
 /** WebSocket transport. */
 export class WsTransport extends Transport {
@@ -18,7 +18,7 @@ export class WsTransport extends Transport {
    */
   constructor(private readonly sock: WebSocket, private readonly opts: WsTransport.Options) {
     super({ describe: `WebSocket(${sock.url})` });
-    sock.binaryType = binaryType as BinaryType;
+    changeBinaryType(sock);
     this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(({ push, stop }) => {
       const handleMessage = (evt: MessageEvent) => {
         push(extractMessage(evt));

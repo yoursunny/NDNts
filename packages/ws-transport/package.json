@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@ndn/l3face": "workspace:*",
+    "@ndn/util": "workspace:*",
     "@types/ws": "^8.5.10",
     "event-iterator": "^2.0.0",
     "tslib": "^2.6.2",
@@ -34,7 +35,9 @@
   },
   "devDependencies": {
     "@ndn/node-transport": "workspace:*",
-    "@ndn/util": "workspace:*",
     "it-pushable": "^3.2.3"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.8"
   }
 }

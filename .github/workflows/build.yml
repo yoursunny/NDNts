@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.local/share/pnpm/store
           key: build-${{ hashFiles('**/package.json') }}
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.local/share/pnpm/store
           key: unittest-${{ matrix.node }}-${{ hashFiles('**/package.json') }}
@@ -49,14 +49,20 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - run: corepack pnpm test
-        if: ${{ matrix.node != 20 }}
+        if: ${{ matrix.node == 18 }}
+      - run: corepack pnpm test
+        env:
+          NODE_OPTIONS: --experimental-websocket
+        if: ${{ matrix.node == 21 }}
       - run: corepack pnpm cover
+        env:
+          NODE_OPTIONS: --experimental-websocket
         if: ${{ matrix.node == 20 }}
       - uses: coverallsapp/github-action@master
-        if: ${{ matrix.node == 20 }}
-        continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ matrix.node == 20 }}
+        continue-on-error: true
     timeout-minutes: 30
   integ:
     strategy:
@@ -64,7 +70,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.local/share/pnpm/store
@@ -99,7 +105,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.local/share/pnpm/store
           key: publish-${{ hashFiles('**/package.json') }}
