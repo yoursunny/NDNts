@@ -128,9 +128,9 @@ export namespace WsTransport {
 
       const onerror = (evt: Event) => {
         sock.close();
-        reject(new Error((evt as ErrorEvent).message));
+        reject(evt.type === "error" ? (evt as ErrorEvent).error : new Error(`${evt}`));
       };
-      sock.addEventListener("error", onerror);
+      sock.addEventListener("error", onerror, { once: true });
 
       sock.addEventListener("open", () => {
         clearTimeout(timeout);

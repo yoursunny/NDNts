@@ -18,8 +18,13 @@ export class WsServer extends NetServerBase<WebSocketServer, WebSocket> {
   private readonly http: http.Server;
 
   constructor() {
-    super(new WebSocketServer({ server: http.createServer(), clientTracking: true }));
-    this.http = this.server.options.server as http.Server;
+    const server = http.createServer();
+    super(new WebSocketServer({ server, clientTracking: true }));
+    this.http = server;
+
+    this.server.on("connection", (sock) => {
+      sock.on("error", () => undefined);
+    });
   }
 
   public override async open(): Promise<this> {

@@ -2,6 +2,7 @@ import * as TestReopen from "@ndn/l3face/test-fixture/reopen";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
 import { Closers, delay } from "@ndn/util";
 import { pushable } from "it-pushable";
+import { pEvent } from "p-event";
 import { beforeEach, expect, test, vi } from "vitest";
 import { WebSocket as WsWebSocket } from "ws";
 
@@ -38,16 +39,21 @@ test("pair - ws WebSocket", async () => {
 });
 
 test.runIf(globalThis.WebSocket)("pair - native WebSocket", async () => {
+  // to run this test case, set environ NODE_OPTIONS=--experimental-websocket
   await testPair((uri) => new WebSocket(uri));
 });
 
 test("TX throttle", async () => {
+  let cws!: WsWebSocket;
   const [transport, socks] = await Promise.all([
-    WsTransport.connect(server.uri, { highWaterMark: 2000, lowWaterMark: 1000 }),
+    (async () => {
+      cws = new WsWebSocket(server.uri);
+      await pEvent(cws, "open");
+      return WsTransport.connect(cws, { highWaterMark: 2000, lowWaterMark: 1000 });
+    })(),
     server.waitNClients(1),
   ]);
 
-  const cws = (transport as any).sock as WsWebSocket;
   const bufferedAmount = vi.spyOn(cws, "bufferedAmount", "get");
 
   const sws = socks[0]!;
