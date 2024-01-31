@@ -9,22 +9,29 @@ export interface DataBuffer {
   insert(...pkts: readonly Data[]): Promise<void>;
 }
 
-/** Prototype of DataStore from @ndn/repo package. */
 interface DataStore {
   find(interest: Interest): Promise<Data | undefined>;
   insert(opts: { expireTime?: number }, ...pkts: readonly Data[]): Promise<void>;
 }
-// We declare an interface here instead of importing DataStore, in order to reduce bundle size for
-// webapps that do not use DataBuffer. The trade-off is that, applications wanting to use
-// DataBuffer would have to import memdown and @ndn/repo themselves.
 
-/**
- * DataBuffer implementation based on DataStore from @ndn/repo package.
- *
- * @example
- * new DataStoreBuffer(new DataStore(memdown()))
- */
+/** DataBuffer implementation based on `DataStore` from `@ndn/repo` package. */
 export class DataStoreBuffer implements DataBuffer {
+  /* eslint-disable tsdoc/syntax -- tsdoc-missing-reference */
+  /**
+   * Constructor.
+   * @param store - {@link \@ndn/repo!DataStore} instance.
+   *
+   * @example
+   * ```ts
+   * new DataStoreBuffer(new DataStore(memdown()))
+   * ```
+   *
+   * @remarks
+   * `DataStore` is declared as an interface instead of importing, in order to reduce bundle size
+   * for webapps that do not use DataBuffer. The trade-off is that, applications wanting to use
+   * DataBuffer would have to import `memdown` and `@ndn/repo` themselves.
+   */
+  /* eslint-enable tsdoc/syntax */
   constructor(public readonly store: DataStore, {
     ttl = 60000,
     dataSigner,
@@ -50,11 +57,19 @@ export class DataStoreBuffer implements DataBuffer {
   }
 }
 export namespace DataStoreBuffer {
+  /** {@link DataStoreBuffer} constructor options. */
   export interface Options {
-    /** Data expiration time. Default is 60000ms. 0 means infinity. */
+    /**
+     * Data expiration time in milliseconds.
+     * 0 means infinity.
+     * @defaultValue 60000ms
+     */
     ttl?: number;
 
-    /** If specified, automatically sign Data packets unless already signed. */
+    /**
+     * If specified, automatically sign Data packets unless already signed.
+     * @see {@link ProducerOptions.dataSigner}
+     */
     dataSigner?: Signer;
   }
 }

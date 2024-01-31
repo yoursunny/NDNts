@@ -4,8 +4,12 @@ import { pushable } from "it-pushable";
 
 import { makeRetxGenerator, type RetxPolicy } from "./retx";
 
+/** {@link Endpoint.consume} options. */
 export interface ConsumerOptions {
-  /** Description for debugging purpose. */
+  /**
+   * Description for debugging purpose.
+   * @defaultValue "consume" + Interest name.
+   */
   describe?: string;
 
   /** AbortSignal that allows canceling the Interest via AbortController. */
@@ -13,19 +17,19 @@ export interface ConsumerOptions {
 
   /**
    * Modify Interest according to specified options.
-   * Default is no modification.
+   * @defaultValue `undefined`, no modification.
    */
   modifyInterest?: Interest.Modify;
 
   /**
    * Retransmission policy.
-   * Default is disabling retransmission.
+   * @defaultValue `undefined`, no retransmission.
    */
   retx?: RetxPolicy;
 
   /**
    * Data verifier.
-   * Default is no verification.
+   * @defaultValue `undefined`, no verification.
    */
   verifier?: Verifier;
 }
@@ -33,6 +37,7 @@ export interface ConsumerOptions {
 /**
  * Progress of Data retrieval.
  *
+ * @remarks
  * This is a Promise that resolves with the retrieved Data and rejects upon timeout,
  * annotated with the Interest and some counters.
  */

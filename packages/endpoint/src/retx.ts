@@ -4,64 +4,72 @@ import { randomJitter } from "@ndn/util";
 export interface RetxOptions {
   /**
    * Maximum number of retransmissions, excluding initial Interest.
-   *
-   * Default is 0, which disables retransmissions.
+   * @defaultValue `0`, which disables retransmissions
    */
   limit?: number;
 
   /**
    * Initial retx interval
-   *
-   * Default is 50% of InterestLifetime.
+   * @defaultValue 50% of InterestLifetime
    */
   interval?: number;
 
   /**
    * Randomize retx interval within [1-randomize, 1+randomize].
+   * @defaultValue `0.1`
    *
-   * Suppose this is set to 0.1, an interval of 100ms would become [90ms, 110ms].
-   * Default is 0.1.
+   * @remarks
+   * Suppose this is set to `0.1`, an interval of 100ms would become `[90ms,110ms]`.
    */
   randomize?: number;
 
   /**
    * Multiply retx interval by backoff factor after each retx.
+   * @defaultValue `1.0`
    *
-   * This number should be in range [1.0, 2.0].
-   * Default is 1.0.
+   * @remarks
+   * Valid range is `[1.0, 2.0]`.
    */
   backoff?: number;
 
   /**
    * Maximum retx interval.
-   *
-   * Default is 90% of InterestLifetime.
+   * @defaultValue 90% of InterestLifetime
    */
   max?: number;
 }
 
-/** A function to generate retx intervals. */
+/**
+ * Function to generate retransmission intervals.
+ *
+ * @remarks
+ * The generator function is invoked once for each Interest. It should generate successive retx
+ * intervals for the given Interest, based on the policy it represents. When the generator ends
+ * (no more values from the returned iterable), no more retx is allowed.
+ */
 export type RetxGenerator = (interestLifetime: number) => Iterable<number>;
 
 /**
  * Interest retransmission policy.
  *
- * A number is interpreted as the limit.
- * Set 0 to disable retransmissions.
+ * @remarks
+ * A number is interpreted as {@link RetxOptions.limit} with other options at their defaults.
+ * Set `0` to disable retransmissions.
  */
 export type RetxPolicy = RetxOptions | RetxGenerator | number;
 
 /** Construct RetxGenerator from RetxPolicy. */
 export function makeRetxGenerator(policy: RetxPolicy | undefined): RetxGenerator {
-  if (!policy) {
+  if (!policy) { // applies to both `undefined` and zero
     return () => [];
-  }
-  if (typeof policy === "number") {
-    return makeRetxGenerator({ limit: policy });
   }
   if (typeof policy === "function") {
     return policy;
   }
+  if (typeof policy === "number") {
+    policy = { limit: policy };
+  }
+
   return function*(interestLifetime: number) {
     const {
       limit = 0,
@@ -69,7 +77,7 @@ export function makeRetxGenerator(policy: RetxPolicy | undefined): RetxGenerator
       randomize = 0.1,
       backoff = 1,
       max = interestLifetime * 0.9,
-    } = policy;
+    } = policy as RetxOptions;
     const jitter = randomJitter(randomize);
     let nextInterval = interval;
     for (let i = 0; i < limit; ++i) {
