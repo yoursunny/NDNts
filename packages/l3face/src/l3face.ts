@@ -6,7 +6,7 @@ import { abortableSource, AbortError as IteratorAbortError } from "abortable-ite
 import { pushable } from "it-pushable";
 import * as retry from "retry";
 import { consume, filter, map, pipeline } from "streaming-iterables";
-import type { AsyncReturnType } from "type-fest";
+import type { Promisable } from "type-fest";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { Transport } from "./transport";
@@ -28,11 +28,32 @@ type EventMap = {
 
 /** Network layer face for sending and receiving L3 packets. */
 export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
+  constructor(
+      private transport: Transport,
+      attributes: L3Face.Attributes = {},
+      lpOptions: LpService.Options = {},
+  ) {
+    super();
+    this.attributes = {
+      describe: `L3Face(${transport})`,
+      advertiseFrom: false,
+      ...transport.attributes,
+      ...attributes,
+    };
+    this.lp = new LpService(lpOptions, transport);
+    this.rx = this.makeRx();
+  }
+
   public readonly attributes: L3Face.Attributes;
   public readonly lp: LpService;
   public readonly rx: AsyncIterable<FwPacket>;
   private readonly wireTokenPrefix = Math.trunc(Math.random() * 0x10000);
 
+  /**
+   * Obtain face UP/DOWN state.
+   * @remarks
+   * Caller can get notifications about state transitions via state/up/down/close events.
+   */
   public get state() { return this.state_; }
   private set state(newState) {
     if (newState === this.state_) {
@@ -65,22 +86,6 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
   private lastError?: unknown;
   private readonly rxSources = pushable<Transport["rx"]>({ objectMode: true });
   private reopenRetry?: retry.RetryOperation;
-
-  constructor(
-      private transport: Transport,
-      attributes: L3Face.Attributes = {},
-      lpOptions: LpService.Options = {},
-  ) {
-    super();
-    this.attributes = {
-      describe: `L3Face(${transport})`,
-      advertiseFrom: false,
-      ...transport.attributes,
-      ...attributes,
-    };
-    this.lp = new LpService(lpOptions, transport);
-    this.rx = this.makeRx();
-  }
 
   private async *makeRx(): AsyncIterable<FwPacket> {
     for await (const source of this.rxSources) {
@@ -150,7 +155,7 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
     );
   }
 
-  public tx = async (iterable: AsyncIterable<FwPacket>) => {
+  public readonly tx = async (iterable: AsyncIterable<FwPacket>) => {
     const txSourceIterator = this.txTransform(iterable)[Symbol.asyncIterator]();
     const txSourceIterable: AsyncIterable<Uint8Array> = {
       [Symbol.asyncIterator]: () => ({
@@ -219,6 +224,7 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
 }
 
 export namespace L3Face {
+  /** Face state. */
   export enum State {
     UP,
     DOWN,
@@ -236,27 +242,43 @@ export namespace L3Face {
   }
 
   export interface Attributes extends Transport.Attributes {
-    /** Whether to readvertise registered routes. */
+    /* eslint-disable tsdoc/syntax -- tsdoc-missing-reference */
+    /**
+     * Whether to readvertise registered routes.
+     * @defaultValue `false`.
+     * This default is set in {@link CreateFaceFunc} but could be different elsewhere.
+     * @remarks
+     * This attribute passed to {@link \@ndn/fw!FwFace.Attributes.advertiseFrom}. With the default
+     * `false` value, routes "announced" by an L3Face would not be readvertised to
+     * {@link \@ndn/fw!ReadvertiseDestination}s, so that remote forwarders would not depend on the
+     * local logical forwarder to forward Interests between L3Faces.
+     */
+    /* eslint-enable tsdoc/syntax */
     advertiseFrom?: boolean;
   }
 
   export type RxError = LpService.RxError;
   export type TxError = LpService.TxError;
 
-  /** Options to createFace function as first parameter. */
+  /** Options to `createFace` as first parameter. */
   export interface CreateFaceOptions {
     /**
      * Forwarder instance to add the face to.
-     * Default is the default Forwarder.
+     * @defaultValue `Forwarder.getDefault()`
      */
     fw?: Forwarder;
 
-    /** Routes to be added on the created face. Default is ["/"]. */
+    /**
+     * Routes to be added on the created face.
+     * @defaultValue `["/"]`
+     */
     addRoutes?: readonly NameLike[];
 
     /**
      * L3Face attributes.
-     * l3.advertiseFrom defaults to false in createFace function.
+     *
+     * @remarks
+     * `.l3.advertiseFrom` defaults to false in createFace function.
      */
     l3?: Attributes;
 
@@ -264,35 +286,37 @@ export namespace L3Face {
     lp?: LpService.Options;
 
     /**
-     * A callback to receive Transport, L3Face, and FwFace objects.
+     * A callback to receive {@link Transport}, {@link L3Face}, and {@link FwFace} objects.
+     *
+     * @remarks
      * This can be useful for reading counters or listening to events on these objects.
      */
     callback?(transport: Transport, l3face: L3Face, fwFace: FwFace): void;
   }
 
-  /**
-   * A function to create a transport then add to forwarder.
-   * First parameter is CreateFaceOptions.
-   * Subsequent parameters are passed to Transport.connect() function.
-   * Returns FwFace.
-   */
   export type CreateFaceFunc<
-    R extends Transport | Transport[],
     P extends any[],
-  > = (opts: CreateFaceOptions, ...args: P) => Promise<R extends Transport[] ? FwFace[] : FwFace>;
+  > = (opts: CreateFaceOptions, ...args: P) => Promise<FwFace>;
 
-  export function makeCreateFace<
-    C extends (...args: any[]) => Promise<Transport | Transport[]>,
-  >(createTransport: C): CreateFaceFunc<AsyncReturnType<C>, Parameters<C>> {
-    return (async (opts: CreateFaceOptions, ...args: Parameters<C>) => {
+  export type CreateFacesFunc<
+    P extends any[],
+  > = (opts: CreateFaceOptions, ...args: P) => Promise<FwFace[]>;
+
+  /** Make a function to create a FwFace from a function that creates a transport. */
+  export function makeCreateFace<P extends any[]>(createTransport: (...args: P) => Promisable<Transport>): CreateFaceFunc<P>;
+
+  /** Make a function to create FwFaces from a function that creates transports. */
+  export function makeCreateFace<P extends any[]>(createTransports: (...args: P) => Promisable<Transport[]>): CreateFacesFunc<P>;
+
+  export function makeCreateFace(createTransport: (...args: any[]) => Promisable<any>): any {
+    return (async ({
+      fw = Forwarder.getDefault(),
+      addRoutes,
+      l3,
+      lp,
+      callback,
+    }: CreateFaceOptions, ...args: any[]) => {
       const created = await createTransport(...args);
-      const {
-        fw = Forwarder.getDefault(),
-        addRoutes,
-        l3,
-        lp,
-        callback,
-      } = opts;
       const makeFace = (transport: Transport) => {
         const l3face = new L3Face(transport, { advertiseFrom: false, ...l3 }, lp);
         const fwFace = fw.addFace(l3face);
@@ -301,9 +325,16 @@ export namespace L3Face {
         return fwFace;
       };
       return Array.isArray(created) ? created.map(makeFace) : makeFace(created);
-    }) as any;
+    });
   }
 
+  /**
+   * Add routes to a FwFace.
+   * @param fwFace - Target FwFace.
+   * @param addRoutes - List of routes.
+   * @remarks
+   * This function is typically used for implementing {@link CreateFaceOptions.addRoutes}.
+   */
   export function processAddRoutes(fwFace: FwFace, addRoutes: readonly NameLike[] = ["/"]): void {
     for (const routeName of addRoutes) {
       fwFace.addRoute(routeName);

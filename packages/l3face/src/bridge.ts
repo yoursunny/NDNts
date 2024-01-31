@@ -72,6 +72,7 @@ function makeRelayFunc(relay: Bridge.Relay): Bridge.RelayFunc {
 }
 
 function rename<A extends string, B extends string>(this: Bridge, A: A, B: B): Bridge.Renamed<A, B> {
+  assert(A as string !== B as string, "A and B must be different");
   const map = {
     [`fw${A}`]: "fwA",
     [`fw${B}`]: "fwB",
@@ -91,8 +92,8 @@ function rename<A extends string, B extends string>(this: Bridge, A: A, B: B): B
 export namespace Bridge {
   /**
    * Function to relay packets between two logical forwarders.
-   * @param it iterable of packet buffers received from peer side.
-   * @returns iterable of packet buffers injected into our side.
+   * @param it - stream of packet buffers received from peer side.
+   * @returns stream of packet buffers injected into our side.
    */
   export type RelayFunc = (it: AsyncIterable<Uint8Array>) => AsyncIterable<Uint8Array>;
 
@@ -100,65 +101,81 @@ export namespace Bridge {
   export interface RelayOptions {
     /**
      * Packet loss rate between 0.0 (no loss) and 1.0 (100% loss).
-     * @default 0
+     * @defaultValue 0
      */
     loss?: number;
 
     /**
      * Median delay in milliseconds.
-     * @default 1
+     * @defaultValue 1
      */
     delay?: number;
 
+    /* eslint-disable tsdoc/syntax -- tsdoc-missing-reference */
     /**
-     * Jitter around median delay, see @ndn/util randomJitter function.
-     * @default 0
+     * Jitter around median delay.
+     * @defaultValue 0
+     * @see {@link \@ndn/util!randomJitter}
      */
+    /* eslint-enable tsdoc/syntax */
     jitter?: number;
   }
 
   export type Relay = RelayFunc | RelayOptions;
 
+  /** {@link create} options. */
   export interface CreateOptions {
     /** Description for debugging purpose. */
     bridgeName?: string;
 
     /**
      * Forwarder A.
-     * Default is a new Forwarder that can be retrieved with bridge.fwA .
+     * @defaultValue
+     * A new Forwarder, which can be retrieved with `bridge.fwA`.
+     * @remarks
      * Disposing the bridge closes auto-created Forwarder but not passed-in Forwarder.
      */
     fwA?: Forwarder;
 
     /**
      * Forwarder B.
-     * Default is a new Forwarder that can be retrieved with bridge.fwB .
+     * @defaultValue
+     * A new Forwarder, which can be retrieved with `bridge.fwB`.
+     * @remarks
      * Disposing the bridge closes auto-created Forwarder but not passed-in Forwarder.
      */
     fwB?: Forwarder;
 
-    /** Options for creating Forwarder instances. */
+    /**
+     * Options for creating Forwarder instances via {@link Forwarder.create}.
+     * @remarks
+     * Ignored if both `.fwA` and `.fwB` are specified.
+     */
     fwOpts?: Forwarder.Options;
 
     /**
      * Relay options for packets from forwarder A to forwarder B.
-     * Default is 0% loss and 1ms delay.
+     * @defaultValue
+     * RelayOptions with 0% loss and 1ms delay.
      */
     relayAB?: Relay;
+
     /**
      * Relay options for packets from forwarder B to forwarder A.
-     * Default is 0% loss and 1ms delay.
+     * @defaultValue
+     * RelayOptions with 0% loss and 1ms delay.
      */
     relayBA?: Relay;
 
     /**
      * Routes from forwarder A to forwarder B.
-     * Default is ["/"].
+     * @defaultValue `["/"]`
      */
     routesAB?: readonly NameLike[];
+
     /**
      * Routes from forwarder B to forwarder A.
-     * Default is ["/"].
+     * @defaultValue `["/"]`
      */
     routesBA?: readonly NameLike[];
   }
@@ -199,9 +216,7 @@ export namespace Bridge {
       faceA,
       faceB,
       rename,
-      [Symbol.dispose]() {
-        closers.close();
-      },
+      [Symbol.dispose]: closers.close,
     };
   }
 

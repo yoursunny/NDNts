@@ -5,6 +5,7 @@ const DEFAULT_MTU = 1200;
 /**
  * Low-level transport.
  *
+ * @remarks
  * The transport understands NDN TLV structures, but does not otherwise concern with packet format.
  */
 export abstract class Transport {
@@ -15,13 +16,18 @@ export abstract class Transport {
 
   /**
    * Return the transport MTU, if known.
+   *
+   * @remarks
    * The transport should be able to send TLV structure of up to this size.
    */
   public get mtu() { return DEFAULT_MTU; }
 
   /**
    * Reopen the transport after it has failed.
-   * @returns the same transport or a new transport after it has been reconnected.
+   * @returns The same transport or a new transport after it has been reconnected.
+   *
+   * @throws {@link Transport.ReopenNotSupportedError}
+   * Thrown to indicate the transport does not support reopening.
    */
   public reopen(): Promise<Transport> {
     return Promise.reject(new Transport.ReopenNotSupportedError());
@@ -37,19 +43,19 @@ export namespace Transport {
   export interface Attributes extends Record<string, unknown> {
     /**
      * Textual description.
-     * Default is automatically generated from constructor name.
+     * @defaultValue Automatically generated from constructor name.
      */
     describe?: string;
 
     /**
      * Whether the transport connects to a destination on the local machine.
-     * Default is false.
+     * @defaultValue `false`
      */
     local?: boolean;
 
     /**
      * Whether the transport can possibly talk to multiple peers.
-     * Default is false;
+     * @defaultValue `false`
      */
     multicast?: boolean;
   }
@@ -64,8 +70,8 @@ export namespace Transport {
   export type Tx = (iterable: AsyncIterable<Uint8Array>) => Promise<void>;
 
   /**
-   * Error thrown by transport.reopen() to indicate that reopen operation is not supported.
-   * No further reopen() will be attempted.
+   * Error thrown by {@link Transport.reopen} to indicate that reopen operation is not supported.
+   * No further `.reopen()` should be attempted.
    */
   export class ReopenNotSupportedError extends Error {
     constructor() {

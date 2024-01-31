@@ -8,8 +8,8 @@ import { writeToStream } from "streaming-iterables";
 import type { Transport } from "./transport";
 
 /**
- * Parse TLVs from input stream.
- * @param conn input stream, such as a socket.
+ * Extract TLVs from continuous byte stream.
+ * @param conn - RX byte stream, such as a TCP socket.
  * @returns AsyncIterable of TLVs.
  */
 export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.Rx {
@@ -20,14 +20,20 @@ export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.Rx {
     } else {
       leftover = chunk;
     }
+
     const decoder = new Decoder(leftover);
     let consumed = 0;
     while (true) {
       let tlv: Decoder.Tlv;
-      try { tlv = decoder.read(); } catch { break; }
+      try {
+        tlv = decoder.read();
+      } catch {
+        break;
+      }
       yield tlv;
       consumed += tlv.size;
     }
+
     if (consumed > 0) {
       leftover = leftover.subarray(consumed);
     }
@@ -36,8 +42,11 @@ export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.Rx {
 
 /**
  * Pipe encoded packets to output stream.
- * @param conn output stream, such as a socket.
- * @returns a function that accepts AsyncIterable of Uint8Array containing encoded packets.
+ * @param conn - TX output stream, such as a TCP socket.
+ * @returns Function that accepts AsyncIterable of encoded TLVs.
+ *
+ * @remarks
+ * `conn` will be closed/destroyed upon reaching the end of packet stream.
  */
 export function txToStream(conn: NodeJS.WritableStream): Transport.Tx {
   return async (iterable: AsyncIterable<Uint8Array>) => {

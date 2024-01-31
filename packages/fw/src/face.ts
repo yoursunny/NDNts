@@ -56,6 +56,8 @@ export interface FwFace extends TypedEventTarget<EventMap> {
    *
    * Multiple FwFaces could make the same announcement. When the last FwFace making an announcement
    * is closed, the announcement is withdrawn from {@link ReadvertiseDestination}s.
+   *
+   * This function has no effect if `FwFace.Attributes.advertiseFrom` is set to `false`.
    */
   addAnnouncement(name: NameLike): void;
 
@@ -76,8 +78,10 @@ export namespace FwFace {
     local?: boolean;
 
     /**
-     * Whether to readvertise registered routes.
+     * Whether to allow prefix announcements.
      * @defaultValue true
+     * @remarks
+     * If `false`, {@link FwFace.addAnnouncement} has no effect.
      */
     advertiseFrom?: boolean;
 
