@@ -5,6 +5,13 @@ import { expect, vi } from "vitest";
 
 import { L3Face, type Transport } from "..";
 
+/**
+ * Test {@link Transport.reopen} implementation.
+ * @typeParam ServerSocket - Server side socket.
+ * @param transport - Transport instance.
+ * @param waitNClients - Function to wait for `n` clients at the server side.
+ * @param closeClient - Function to close a socket connected to a client at the server side.
+ */
 export async function run<ServerSocket>(
     transport: Transport,
     waitNClients: (n: number) => Promise<ServerSocket[]>,

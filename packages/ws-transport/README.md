@@ -3,7 +3,8 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package implements a WebSocket transport.
-It works in both Node and browser.
+It works in both Node.js (via [ws](https://www.npmjs.com/package/ws) library) and browser.
+However, experimental global `WebSocket` in Node 21.x is not yet supported.
 
 You can create a forwarder face that uses WebSocket transport with `WsTransport.createFace()` function.
 To create a WebSocket transport without wrapping into L3Face, use `WsTransport.connect()` function.

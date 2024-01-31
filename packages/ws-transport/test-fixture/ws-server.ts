@@ -10,8 +10,11 @@ export class WsServer extends NetServerBase<WebSocketServer, WebSocket> {
   public override get clients() { return this.server.clients; }
 
   /** WebSocket server URI. */
-  public uri!: string;
+  public get uri() {
+    return this.uri_;
+  }
 
+  private uri_!: string;
   private readonly http: http.Server;
 
   constructor() {
@@ -23,7 +26,7 @@ export class WsServer extends NetServerBase<WebSocketServer, WebSocket> {
     this.http.listen(0, "127.0.0.1");
     await once(this.http, "listening");
     const { port } = this.http.address() as net.AddressInfo;
-    this.uri = `ws://127.0.0.1:${port}/`;
+    this.uri_ = `ws://127.0.0.1:${port}/`;
     return this;
   }
 

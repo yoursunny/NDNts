@@ -10,6 +10,12 @@ export class WsTransport extends Transport {
   private readonly highWaterMark: number;
   private readonly lowWaterMark: number;
 
+  /**
+   * Constructor.
+   *
+   * @remarks
+   * {@link WsTransport.connect} and {@link WsTransport.createFace} are recommended.
+   */
   constructor(private readonly sock: WebSocket, private readonly opts: WsTransport.Options) {
     super({ describe: `WebSocket(${sock.url})` });
     sock.binaryType = binaryType as BinaryType;
@@ -29,7 +35,7 @@ export class WsTransport extends Transport {
     this.lowWaterMark = opts.lowWaterMark ?? 16 * 1024;
   }
 
-  public close() {
+  public close(): void {
     this.sock.close();
   }
 
@@ -70,23 +76,31 @@ export class WsTransport extends Transport {
 
 export namespace WsTransport {
   export interface Options {
-    /** Connect timeout (in milliseconds). */
+    /**
+     * Connect timeout (in milliseconds).
+     * @defaultValue 10 seconds
+     */
     connectTimeout?: number;
 
     /** AbortSignal that allows canceling connection attempt via AbortController. */
     signal?: AbortSignal;
 
-    /** Buffer amount (in bytes) to start TX throttling. */
+    /**
+     * Buffer amount (in bytes) to start TX throttling.
+     * @defaultValue 1 MiB
+     */
     highWaterMark?: number;
 
-    /** Buffer amount (in bytes) to stop TX throttling. */
+    /**
+     * Buffer amount (in bytes) to stop TX throttling.
+     * @defaultValue 16 KiB
+     */
     lowWaterMark?: number;
   }
 
   /**
-   * Create a transport and connect to remote endpoint.
-   * @param uri server URI or WebSocket object.
-   * @param opts other options.
+   * Create a transport by connecting to WebSocket server or from existing WebSocket instance.
+   * @param uri - Server URI or existing WebSocket instance.
    */
   export function connect(uri: string | WebSocket | WsWebSocket, opts: WsTransport.Options = {}): Promise<WsTransport> {
     const {
