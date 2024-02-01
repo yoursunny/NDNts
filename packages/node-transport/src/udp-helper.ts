@@ -2,7 +2,6 @@ import dgram from "node:dgram";
 import { once } from "node:events";
 import os from "node:os";
 
-export const DEFAULT_MTU = 65000;
 const DEFAULT_UNICAST_PORT = 6363;
 const DEFAULT_MULTICAST_GROUP = "224.0.23.170";
 const DEFAULT_MULTICAST_PORT = 56363;
@@ -13,10 +12,11 @@ export type SocketBufferOptions = Pick<dgram.SocketOptions, "recvBufferSize" | "
 
 export type AddressFamily = 4 | 6;
 
+/** {@link openSocket} options. */
 export interface OpenSocketOptions extends SocketBufferOptions {
   /**
    * IPv4 or IPv6.
-   * Default is IPv4, unless hostname is an IPv6 address (contains a colon).
+   * @defaultValue IPv4, unless hostname is a literal IPv6 address.
    */
   family?: AddressFamily;
 
@@ -24,6 +24,7 @@ export interface OpenSocketOptions extends SocketBufferOptions {
   bind?: dgram.BindOptions;
 }
 
+/** Create a UDP socket and start listening on local endpoint. */
 export async function openSocket({
   family,
   recvBufferSize,
@@ -47,6 +48,7 @@ export async function openSocket({
   return sock;
 }
 
+/** {@link connect} options. */
 export interface ConnectOptions {
   /** Remote address. */
   host: string;
@@ -54,6 +56,7 @@ export interface ConnectOptions {
   port?: number;
 }
 
+/** Connect a UDP socket to remote endpoint. */
 export async function connect(sock: Socket, {
   host,
   port = DEFAULT_UNICAST_PORT,
@@ -68,8 +71,10 @@ export async function connect(sock: Socket, {
   return sock;
 }
 
+/** {@link openUnicast} options. */
 export interface UnicastOptions extends OpenSocketOptions, ConnectOptions {}
 
+/** Create a UDP socket and connect to remote endpoint. */
 export async function openUnicast(opts: UnicastOptions): Promise<Socket> {
   if (!opts.family && opts.host.includes(":")) {
     opts.family = 6;
@@ -93,19 +98,43 @@ export function listMulticastIntfs(): string[] {
   });
 }
 
+/** {@link openMulticastRx} and {@link openMulticastTx} options. */
 export interface MulticastOptions extends SocketBufferOptions {
   /** IPv4 address of local network interface. */
   intf: string;
-  /** Multicast group address. */
+
+  /**
+   * Multicast group address.
+   * @defaultValue 224.0.23.170
+   */
   group?: string;
-  /** Local and group port. */
+
+  /**
+   * Local and group port.
+   * @defaultValue 56363
+   */
   port?: number;
-  /** Multicast TTL (for unit testing). */
+
+  /**
+   * Multicast TTL.
+   * @defaultValue 1
+   *
+   * @remarks
+   * Changing this option is inadvisable except for unit testing.
+   */
   multicastTtl?: number;
-  /** MulticastLoopback flag (for unit testing). */
+
+  /**
+   * MulticastLoopback flag.
+   * @defaultValue false
+   *
+   * @remarks
+   * Changing this option is inadvisable except for unit testing.
+   */
   multicastLoopback?: boolean;
 }
 
+/** Create a UDP socket and prepare for receiving multicast datagrams. */
 export async function openMulticastRx(opts: MulticastOptions): Promise<Socket> {
   const {
     intf,
@@ -128,6 +157,7 @@ export async function openMulticastRx(opts: MulticastOptions): Promise<Socket> {
   return sock;
 }
 
+/** Create a UDP socket and prepare for transmitting multicast datagrams. */
 export async function openMulticastTx(opts: MulticastOptions): Promise<Socket> {
   const {
     intf,

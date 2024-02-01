@@ -3,10 +3,26 @@ import net from "node:net";
 
 import { tmpNameSync } from "tmp";
 
+/**
+ * Transport test server.
+ * @typeParam Server - Server instance type.
+ * @typeParam Client - Client socket type as seen by the server.
+ */
 export interface TestServer<Server, Client> extends AsyncDisposable {
+  /** Server instance. */
   readonly server: Server;
+
+  /** Collection of active clients. */
   readonly clients: ReadonlySet<Client>;
+
+  /** Start listening. */
   open(): Promise<this>;
+
+  /**
+   * Wait until at least n clients are connected.
+   * @param n - Minimum required clients quantity.
+   * @returns Exactly n clients.
+   */
   waitNClients(n: number): Promise<Client[]>;
 }
 
@@ -16,13 +32,10 @@ export abstract class NetServerBase<Server extends EventEmitter, Client> impleme
 
   constructor(public readonly server: Server) {}
 
-  /** Start listening. */
   public abstract open(): Promise<this>;
 
-  /** Shutdown the server. */
   public abstract [Symbol.asyncDispose](): Promise<void>;
 
-  /** Wait until at least n clients are connected. */
   public readonly waitNClients = async (n: number): Promise<Client[]> => {
     while (this.clients.size < n) {
       await once(this.server, "connection");
@@ -49,7 +62,10 @@ export abstract class NetServer extends NetServerBase<net.Server, net.Socket> {
     return this;
   }
 
+  /** Action before waiting for "listening" event. */
   protected abstract listenBegin(): void;
+
+  /** Action after "listening" event has been emitted. */
   protected listenEnd(): void {
     //
   }
@@ -93,7 +109,8 @@ export abstract class NetServer extends NetServerBase<net.Server, net.Socket> {
 /** TCP socket test server. */
 export class TcpServer extends NetServer {
   /** TCP server port. */
-  public port = 0;
+  public get port() { return this.port_; }
+  private port_ = 0;
 
   protected override listenBegin(): void {
     this.server.listen();
@@ -101,20 +118,16 @@ export class TcpServer extends NetServer {
 
   protected override listenEnd(): void {
     const { port } = this.server.address() as net.AddressInfo;
-    this.port = port;
+    this.port_ = port;
   }
 }
 
 /** Unix socket test server. */
 export class IpcServer extends NetServer {
   /** Unix/IPC server path. */
-  public path = this.makePath();
-
-  private makePath(): string {
-    return process.platform === "win32" ?
-      `//./pipe/2a8370be-8abc-448f-bb09-54d8b243cf7a/${Math.trunc(Math.random() * 0x100000000)}` :
-      tmpNameSync();
-  }
+  public readonly path = process.platform === "win32" ?
+    `//./pipe/2a8370be-8abc-448f-bb09-54d8b243cf7a/${Math.trunc(Math.random() * 0x100000000)}` :
+    tmpNameSync();
 
   protected override listenBegin(): void {
     this.server.listen(this.path);

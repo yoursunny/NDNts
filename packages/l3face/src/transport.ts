@@ -9,16 +9,25 @@ const DEFAULT_MTU = 1200;
  * The transport understands NDN TLV structures, but does not otherwise concern with packet format.
  */
 export abstract class Transport {
+  /** Iterable of outgoing packets. */
   public abstract readonly rx: Transport.Rx;
+  /** Function to accept iterable of incoming packets. */
   public abstract readonly tx: Transport.Tx;
 
+  /**
+   * Constructor.
+   * @param attributes - Attributes of the transport.
+   */
   protected constructor(public readonly attributes: Transport.Attributes) {}
 
   /**
-   * Return the transport MTU, if known.
+   * Return the transport MTU.
    *
    * @remarks
    * The transport should be able to send TLV structure of up to this size.
+   * If not overridden, return a conservative number.
+   *
+   * Note that this does not restrict incoming packet size.
    */
   public get mtu() { return DEFAULT_MTU; }
 
@@ -58,6 +67,8 @@ export namespace Transport {
      * @defaultValue `false`
      */
     multicast?: boolean;
+
+    [k: string]: unknown;
   }
 
   /** RX iterable for incoming packets. */

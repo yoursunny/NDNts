@@ -39,6 +39,10 @@ export class WsTransport extends Transport {
     this.sock.close();
   }
 
+  /**
+   * Report MTU as Infinity.
+   * @see {@link https://stackoverflow.com/a/20658569}
+   */
   public override get mtu() { return Infinity; }
 
   public override readonly tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
@@ -69,6 +73,7 @@ export class WsTransport extends Transport {
     });
   }
 
+  /** Reopen the transport by connecting again with the same options. */
   public override reopen() {
     return WsTransport.connect(this.sock.url, this.opts);
   }

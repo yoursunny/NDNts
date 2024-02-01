@@ -21,6 +21,7 @@ class UdpServerTransport extends MockTransport {
   }
 }
 
+/** UDP socket test server. */
 export abstract class UdpServer implements AsyncDisposable {
   public static async create<T extends UdpServer>(
       ctor: new(sock: dgram.Socket, address: string, port: number) => T,
@@ -79,6 +80,7 @@ export abstract class UdpServer implements AsyncDisposable {
   };
 }
 
+/** UDP socket server that broadcasts each datagram from a client to all other clients. */
 export class UdpServerBroadcast extends UdpServer {
   public broadcast(pkt: Uint8Array, except?: Transport): void {
     for (const transport of this.transports.values()) {
@@ -98,6 +100,7 @@ export class UdpServerBroadcast extends UdpServer {
   }
 }
 
+/** UDP socket server that adds each client to a logical forwarder. */
 export class UdpServerForwarder extends UdpServer {
   public readonly fw = Forwarder.create();
 

@@ -4,6 +4,12 @@ import { L3Face, StreamTransport } from "@ndn/l3face";
 
 /** Unix socket transport. */
 export class UnixTransport extends StreamTransport {
+  /**
+   * Constructor.
+   *
+   * @remarks
+   * {@link UnixTransport.connect} and {@link UnixTransport.createFace} are recommended.
+   */
   constructor(sock: net.Socket, private readonly connectOpts: net.IpcNetConnectOpts) {
     super(sock, {
       describe: `Unix(${connectOpts.path})`,
@@ -11,6 +17,7 @@ export class UnixTransport extends StreamTransport {
     });
   }
 
+  /** Reopen the transport by connecting again with the same options. */
   public override reopen(): Promise<UnixTransport> {
     return UnixTransport.connect(this.connectOpts);
   }
@@ -19,12 +26,10 @@ export class UnixTransport extends StreamTransport {
 export namespace UnixTransport {
   /**
    * Create a transport and connect to remote endpoint.
-   * @param pathOrOpts Unix socket path.
+   * @param path - Unix socket path or IPC options.
    */
-  export function connect(pathOrOpts: string | net.IpcNetConnectOpts): Promise<UnixTransport> {
-    const connectOpts: net.IpcNetConnectOpts =
-      typeof pathOrOpts === "string" ? { path: pathOrOpts } :
-      pathOrOpts;
+  export function connect(path: string | net.IpcNetConnectOpts): Promise<UnixTransport> {
+    const connectOpts: net.IpcNetConnectOpts = typeof path === "string" ? { path } : path;
     return new Promise<UnixTransport>((resolve, reject) => {
       const sock = net.connect(connectOpts);
       sock.setNoDelay(true);

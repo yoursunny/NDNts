@@ -91,8 +91,10 @@ export namespace FwFace {
      * @defaultValue true
      * @see {@link \@ndn/endpoint!ProducerOptions.routeCapture}
      */
-    routeCapture?: boolean;
     /* eslint-enable tsdoc/syntax */
+    routeCapture?: boolean;
+
+    [k: string]: unknown;
   }
 
   /**

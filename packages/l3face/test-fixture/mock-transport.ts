@@ -4,8 +4,10 @@ import { pushable } from "it-pushable";
 
 import { Transport } from "..";
 
+/** Mock transport that records outgoing packets and allows injecting incoming packets */
 export class MockTransport extends Transport {
   public override readonly rx = pushable<Decoder.Tlv>({ objectMode: true });
+  /** Packets transmitted by the transport. */
   public sent: Uint8Array[] = [];
   private readonly closing = new AbortController();
 
@@ -13,6 +15,7 @@ export class MockTransport extends Transport {
     super(attributes);
   }
 
+  /** Cause the transport to receive an incoming packet */
   public recv(pkt: Encodable) {
     const wire = Encoder.encode(pkt);
     const decoder = new Decoder(wire);
@@ -21,7 +24,7 @@ export class MockTransport extends Transport {
     decoder.throwUnlessEof();
   }
 
-  public close(err?: Error) {
+  public close(err?: Error): void {
     this.rx.end(err);
     this.closing.abort();
   }

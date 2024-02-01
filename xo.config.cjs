@@ -56,6 +56,7 @@ module.exports = {
       "/packages/naming-convention1",
       "/packages/naming-convention2",
       "/packages/ndn",
+      "/packages/node-transport",
       "/packages/packet",
       "/packages/tlv",
       "/packages/util",

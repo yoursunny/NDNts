@@ -13,8 +13,15 @@ export interface TestRecord {
   namesB: string[];
 }
 
+/**
+ * Test a pair of transports.
+ *
+ * @remarks
+ * Two transports should be paired: packets sent on one transport should be received on the other.
+ */
 export async function execute<T extends Transport>(
-    transportA: T, transportB: T): Promise<TestRecord> {
+    transportA: T, transportB: T,
+): Promise<TestRecord> {
   const faceA = new L3Face(transportA, { describe: "A" });
   const faceB = new L3Face(transportB, { describe: "B" });
 
@@ -58,6 +65,12 @@ export async function execute<T extends Transport>(
   return record;
 }
 
+/**
+ * Check test records.
+ * @param record - {@link execute} return value.
+ * @param threshold - Minimum ratio of successful delivered.
+ * 0.9 means 90% delivery, i.e. tolerate 10% loss.
+ */
 export function check(record: TestRecord, threshold = 0.9) {
   expect(record.namesA.length).toBeGreaterThanOrEqual(Math.ceil(COUNT * threshold));
   expect(record.namesB.length).toBeGreaterThanOrEqual(Math.ceil(COUNT * threshold));

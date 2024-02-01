@@ -28,6 +28,13 @@ type EventMap = {
 
 /** Network layer face for sending and receiving L3 packets. */
 export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
+  /**
+   * Constructor.
+   * @param transport - Initial transport. It may be replaced through reopen mechanism.
+   * @param attributes - Additional attributes.
+   * L3Face attributes consist of transport attributes overridden by these attributes.
+   * @param lpOptions - NDNLPv2 service options.
+   */
   constructor(
       private transport: Transport,
       attributes: L3Face.Attributes = {},
@@ -44,6 +51,12 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
     this.rx = this.makeRx();
   }
 
+  /**
+   * Attributes of a network layer face.
+   *
+   * @remarks
+   * When L3Face is added to a logical forwarder, this is copied to {@link FwFace.attributes}.
+   */
   public readonly attributes: L3Face.Attributes;
   public readonly lp: LpService;
   public readonly rx: AsyncIterable<FwPacket>;

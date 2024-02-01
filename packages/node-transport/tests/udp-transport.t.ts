@@ -50,17 +50,11 @@ describe.each<[family: udp.AddressFamily, address: string]>([
   });
 });
 
-describe("multicast", () => {
-  const intfs = udp.listMulticastIntfs();
-  if (intfs.length === 0) {
-    test.skip("no multicast interface", () => undefined);
-    return;
-  }
-
+const intfs = udp.listMulticastIntfs();
+describe.runIf(intfs.length > 0)("multicast", () => {
   const opts: udp.MulticastOptions = {
     intf: intfs[0]!,
     group: "224.0.0.254", // https://datatracker.ietf.org/doc/html/rfc4727#section-2.4.2
-    port: 56363,
     multicastTtl: 0,
     multicastLoopback: true,
   };
