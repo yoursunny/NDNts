@@ -9,11 +9,6 @@ const DEFAULT_MTU = 1200;
  * The transport understands NDN TLV structures, but does not otherwise concern with packet format.
  */
 export abstract class Transport {
-  /** Iterable of outgoing packets. */
-  public abstract readonly rx: Transport.Rx;
-  /** Function to accept iterable of incoming packets. */
-  public abstract readonly tx: Transport.Tx;
-
   /**
    * Constructor.
    * @param attributes - Attributes of the transport.
@@ -30,6 +25,17 @@ export abstract class Transport {
    * Note that this does not restrict incoming packet size.
    */
   public get mtu() { return DEFAULT_MTU; }
+
+  /** Iterable of incoming packets received through the transport. */
+  public abstract readonly rx: Transport.RxIterable;
+
+  /**
+   * Function to accept outgoing packet stream.
+   * @param iterable - Iterable of outgoing packets sent through the transport.
+   * Size of each packet cannot exceed `.mtu`.
+   * @returns Promise that resolves when iterable is exhausted or rejects upon error.
+   */
+  public abstract tx(iterable: Transport.TxIterable): Promise<void>;
 
   /* eslint-disable tsdoc/syntax -- tsdoc-missing-reference */
   /**
@@ -75,14 +81,11 @@ export namespace Transport {
     [k: string]: unknown;
   }
 
-  /** RX iterable for incoming packets. */
-  export type Rx = AsyncIterable<Decoder.Tlv>;
+  /** RX packet stream. */
+  export type RxIterable = AsyncIterable<Decoder.Tlv>;
 
-  /**
-   * TX function for outgoing packets.
-   * @returns Promise that resolves when iterable is exhausted, and rejects upon error.
-   */
-  export type Tx = (iterable: AsyncIterable<Uint8Array>) => Promise<void>;
+  /** TX packet stream. */
+  export type TxIterable = AsyncIterable<Uint8Array>;
 
   /**
    * Error thrown by {@link Transport.reopen} to indicate that reopen operation is not supported.

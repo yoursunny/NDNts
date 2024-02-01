@@ -240,7 +240,7 @@ definePublicFields<Data, Fields, PublicFields>(Data, {
   sigValue: clearingFields.slice(0, 2),
 });
 
-const ctorAssign = Symbol("@ndn/packet.Data.ctorAssign");
+const ctorAssign = Symbol("@ndn/packet#Data.ctorAssign");
 interface CtorTag {
   [ctorAssign](f: Fields): void;
 }
@@ -261,7 +261,7 @@ export namespace Data {
   }
 
   /** Constructor argument to set the current packet as FinalBlock. */
-  export const FinalBlock = Symbol("@ndn/packet.Data.FinalBlock");
+  export const FinalBlock = Symbol("@ndn/packet#Data.FinalBlock");
 
   /** Constructor argument. */
   export type CtorArg = NameLike | CtorTag | typeof FinalBlock | Uint8Array;

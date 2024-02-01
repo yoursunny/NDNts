@@ -242,7 +242,7 @@ definePublicFields<Interest, Fields, PublicFields>(Interest, {
   sigValue: ["paramsPortion"],
 });
 
-const ctorAssign = Symbol("@ndn/packet.Interest.ctorAssign");
+const ctorAssign = Symbol("@ndn/packet#Interest.ctorAssign");
 interface CtorTag {
   [ctorAssign](f: Fields): void;
 }

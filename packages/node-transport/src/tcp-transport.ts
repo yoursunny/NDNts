@@ -5,78 +5,30 @@ import type { SetOptional } from "type-fest";
 
 import { joinHostPort } from "./hostport";
 
-const DEFAULT_PORT = 6363;
-
 /** TCP socket transport. */
-export class TcpTransport extends StreamTransport {
-  /**
-   * Constructor.
-   *
-   * @remarks
-   * {@link TcpTransport.connect} and {@link TcpTransport.createFace} are recommended.
-   */
-  constructor(sock: net.Socket, private readonly connectOpts: net.TcpNetConnectOpts) {
-    super(sock, {
-      describe: `TCP(${joinHostPort(sock.remoteAddress!, sock.remotePort!)})`,
-      local: sock.localAddress === sock.remoteAddress,
-    });
-  }
-
-  /** Reopen the transport by connecting again with the same options. */
-  public override reopen(): Promise<TcpTransport> {
-    return TcpTransport.connect(this.connectOpts);
-  }
-}
-
-export namespace TcpTransport {
-  type NetConnectOpts = SetOptional<net.TcpNetConnectOpts, "port">;
-
-  /** {@link connect} options. */
-  export interface Options {
-    /**
-     * Connect timeout (in milliseconds).
-     * @defaultValue 10 seconds
-     */
-    connectTimeout?: number;
-
-    /** AbortSignal that allows canceling connection attempt via AbortController. */
-    signal?: AbortSignal;
-  }
-
+export class TcpTransport extends StreamTransport<net.Socket> {
   /**
    * Create a transport and connect to remote endpoint.
-   * @param host - Remote host. Default is localhost.
+   * @param host - Remote host (default is localhost) or endpoint address (with other options).
    * @param port - Remote port. Default is 6363.
+   * @param opts - Other options.
+   * @see {@link TcpTransport.createFace}
    */
-  export function connect(host?: string, port?: number, opts?: Options): Promise<TcpTransport>;
-
-  /**
-   * Create a transport and connect to remote endpoint.
-   * @param opts - Remote endpoint and other options.
-   */
-  export function connect(opts: NetConnectOpts & Options): Promise<TcpTransport>;
-
-  export function connect(arg1?: string | (NetConnectOpts & Options), port?: number, opts?: Options) {
-    return connectImpl(arg1, port, opts);
-  }
-
-  function connectImpl(
-      arg1?: string | (NetConnectOpts & Options),
-      port = DEFAULT_PORT,
-      opts: Options = {},
+  public static connect(
+      host?: string | (SetOptional<net.TcpSocketConnectOpts, "port"> & TcpTransport.Options),
+      port = 6363,
+      opts: TcpTransport.Options = {},
   ): Promise<TcpTransport> {
-    const connectOpts: net.TcpNetConnectOpts =
-      arg1 === undefined ? { port } :
-      typeof arg1 === "string" ? { host: arg1, port } :
-      { host: arg1.host, port: arg1.port ?? DEFAULT_PORT, family: arg1.family };
-    const {
-      connectTimeout = 10000,
-      signal,
-    } = typeof arg1 === "object" ? arg1 : opts;
+    const combined: net.TcpSocketConnectOpts & TcpTransport.Options = {
+      port,
+      noDelay: true,
+      ...(typeof host === "string" ? { host } : host),
+      ...opts,
+    };
+    const { connectTimeout = 10000, signal } = combined;
 
     return new Promise<TcpTransport>((resolve, reject) => {
-      const sock = net.connect(connectOpts);
-      sock.setNoDelay(true);
+      const sock = net.connect(combined);
 
       let timeout: NodeJS.Timeout | undefined; // eslint-disable-line prefer-const
       const fail = (err?: Error) => {
@@ -95,11 +47,37 @@ export namespace TcpTransport {
         clearTimeout(timeout);
         sock.off("error", fail);
         signal?.removeEventListener("abort", onabort);
-        resolve(new TcpTransport(sock, connectOpts));
+        resolve(new TcpTransport(sock, combined));
       });
     });
   }
 
+  private constructor(sock: net.Socket, private readonly connectOpts: net.TcpSocketConnectOpts) {
+    super(sock, {
+      describe: `TCP(${joinHostPort(sock.remoteAddress!, sock.remotePort!)})`,
+      local: sock.localAddress === sock.remoteAddress,
+    });
+  }
+
+  /** Reopen the transport by connecting again with the same options. */
+  public override reopen(): Promise<TcpTransport> {
+    return TcpTransport.connect(this.connectOpts);
+  }
+}
+
+export namespace TcpTransport {
+  /** {@link TcpTransport.connect} options. */
+  export interface Options {
+    /**
+     * Connect timeout (in milliseconds).
+     * @defaultValue 10 seconds
+     */
+    connectTimeout?: number;
+
+    /** AbortSignal that allows canceling connection attempt via AbortController. */
+    signal?: AbortSignal;
+  }
+
   /** Create a transport and add to forwarder. */
-  export const createFace = L3Face.makeCreateFace(connectImpl);
+  export const createFace = L3Face.makeCreateFace(TcpTransport.connect);
 }

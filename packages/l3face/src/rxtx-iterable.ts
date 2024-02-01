@@ -6,9 +6,9 @@ import type { Transport } from "./transport";
 /**
  * Decode TLVs from datagrams.
  * @param iterable - RX datagram stream, such as a UDP socket.
- * @returns AsyncIterable of TLVs.
+ * @returns RX packet stream.
  */
-export async function* rxFromPacketIterable(iterable: AsyncIterable<Uint8Array>): Transport.Rx {
+export async function* rxFromPacketIterable(iterable: AsyncIterable<Uint8Array>): Transport.RxIterable {
   for await (const pkt of safeIter(iterable)) {
     const decoder = new Decoder(pkt);
     let tlv: Decoder.Tlv;

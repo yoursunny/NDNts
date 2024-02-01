@@ -6,8 +6,6 @@ const DEFAULT_UNICAST_PORT = 6363;
 const DEFAULT_MULTICAST_GROUP = "224.0.23.170";
 const DEFAULT_MULTICAST_PORT = 56363;
 
-export type Socket = dgram.Socket;
-
 export type SocketBufferOptions = Pick<dgram.SocketOptions, "recvBufferSize" | "sendBufferSize">;
 
 export type AddressFamily = 4 | 6;
@@ -30,7 +28,7 @@ export async function openSocket({
   recvBufferSize,
   sendBufferSize,
   bind = {},
-}: OpenSocketOptions): Promise<Socket> {
+}: OpenSocketOptions): Promise<dgram.Socket> {
   family ??= bind.address?.includes(":") ? 6 : 4;
   const sock = dgram.createSocket({
     type: `udp${family}`,
@@ -57,10 +55,10 @@ export interface ConnectOptions {
 }
 
 /** Connect a UDP socket to remote endpoint. */
-export async function connect(sock: Socket, {
+export async function connect(sock: dgram.Socket, {
   host,
   port = DEFAULT_UNICAST_PORT,
-}: ConnectOptions): Promise<Socket> {
+}: ConnectOptions): Promise<dgram.Socket> {
   try {
     sock.connect(port, host);
     await once(sock, "connect");
@@ -75,7 +73,7 @@ export async function connect(sock: Socket, {
 export interface UnicastOptions extends OpenSocketOptions, ConnectOptions {}
 
 /** Create a UDP socket and connect to remote endpoint. */
-export async function openUnicast(opts: UnicastOptions): Promise<Socket> {
+export async function openUnicast(opts: UnicastOptions): Promise<dgram.Socket> {
   if (!opts.family && opts.host.includes(":")) {
     opts.family = 6;
   }
@@ -135,7 +133,7 @@ export interface MulticastOptions extends SocketBufferOptions {
 }
 
 /** Create a UDP socket and prepare for receiving multicast datagrams. */
-export async function openMulticastRx(opts: MulticastOptions): Promise<Socket> {
+export async function openMulticastRx(opts: MulticastOptions): Promise<dgram.Socket> {
   const {
     intf,
     group = DEFAULT_MULTICAST_GROUP,
@@ -158,7 +156,7 @@ export async function openMulticastRx(opts: MulticastOptions): Promise<Socket> {
 }
 
 /** Create a UDP socket and prepare for transmitting multicast datagrams. */
-export async function openMulticastTx(opts: MulticastOptions): Promise<Socket> {
+export async function openMulticastTx(opts: MulticastOptions): Promise<dgram.Socket> {
   const {
     intf,
     group = DEFAULT_MULTICAST_GROUP,

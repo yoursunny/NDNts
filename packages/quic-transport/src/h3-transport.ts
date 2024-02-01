@@ -5,15 +5,19 @@ export class H3Transport extends Transport {
   /** Whether current browser supports WebTransport. */
   public static readonly supported: boolean = !!globalThis.WebTransport;
 
-  public override readonly rx: Transport.Rx;
-
   /**
-   * Constructor.
-   *
-   * @remarks
-   * {@link H3Transport.connect} and {@link H3Transport.createFace} are recommended.
+   * Create a transport and connect to remote endpoint.
+   * @param uri - Server URI.
+   * @param opts - WebTransport options.
    */
-  constructor(
+  public static async connect(uri: string, opts: WebTransportOptions = {}): Promise<H3Transport> {
+    const tr = new WebTransport(uri, opts);
+    void tr.closed.catch(() => undefined);
+    await tr.ready;
+    return new H3Transport(uri, opts, tr);
+  }
+
+  private constructor(
       private readonly uri: string,
       private readonly opts: WebTransportOptions,
       private readonly tr: WebTransport,
@@ -38,7 +42,9 @@ export class H3Transport extends Transport {
     return this.tr.datagrams.maxDatagramSize;
   }
 
-  public override readonly tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
+  public override readonly rx: Transport.RxIterable;
+
+  public override async tx(iterable: Transport.TxIterable) {
     const writer = this.tr.datagrams.writable.getWriter();
     try {
       for await (const pkt of iterable) {
@@ -48,7 +54,7 @@ export class H3Transport extends Transport {
     } finally {
       this.tr.close();
     }
-  };
+  }
 
   /** Reopen the transport by connecting again with the same options. */
   public override reopen() {
@@ -57,18 +63,6 @@ export class H3Transport extends Transport {
 }
 
 export namespace H3Transport {
-  /**
-   * Create a transport and connect to remote endpoint.
-   * @param uri - Server URI.
-   * @param opts - WebTransport options.
-   */
-  export async function connect(uri: string, opts: WebTransportOptions = {}): Promise<H3Transport> {
-    const tr = new WebTransport(uri, opts);
-    void tr.closed.catch(() => undefined);
-    await tr.ready;
-    return new H3Transport(uri, opts, tr);
-  }
-
   /** Create a transport and add to forwarder. */
   export const createFace = L3Face.makeCreateFace(H3Transport.connect);
 }

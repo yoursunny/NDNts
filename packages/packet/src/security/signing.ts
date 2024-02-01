@@ -13,7 +13,7 @@ import { SigInfo } from "../sig-info";
 export type LLSign = (input: Uint8Array) => Promise<Uint8Array>;
 
 export namespace LLSign {
-  export const OP = Symbol("@ndn/packet.LLSign.OP");
+  export const OP = Symbol("@ndn/packet#LLSign.OP");
 
   /** Target packet compatible with low level signing function. */
   export interface Signable {
@@ -30,7 +30,7 @@ export namespace LLSign {
 export type LLVerify = (input: Uint8Array, sig: Uint8Array) => Promise<void>;
 
 export namespace LLVerify {
-  export const OP = Symbol("@ndn/packet.LLVerify.OP");
+  export const OP = Symbol("@ndn/packet#LLVerify.OP");
 
   /** Target packet compatible with low level verification function. */
   export interface Verifiable {

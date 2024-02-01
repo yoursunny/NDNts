@@ -3,14 +3,26 @@ import net from "node:net";
 import { L3Face, StreamTransport } from "@ndn/l3face";
 
 /** Unix socket transport. */
-export class UnixTransport extends StreamTransport {
+export class UnixTransport extends StreamTransport<net.Socket> {
   /**
-   * Constructor.
-   *
-   * @remarks
-   * {@link UnixTransport.connect} and {@link UnixTransport.createFace} are recommended.
+   * Create a transport and connect to remote endpoint.
+   * @param path - Unix socket path or IPC options.
+   * @see {@link UdpTransport.createFace}
    */
-  constructor(sock: net.Socket, private readonly connectOpts: net.IpcNetConnectOpts) {
+  public static connect(path: string | net.IpcSocketConnectOpts): Promise<UnixTransport> {
+    const connectOpts: net.IpcNetConnectOpts = typeof path === "string" ? { path } : path;
+    return new Promise<UnixTransport>((resolve, reject) => {
+      const sock = net.connect(connectOpts);
+      sock.on("error", () => undefined);
+      sock.once("error", reject);
+      sock.once("connect", () => {
+        sock.off("error", reject);
+        resolve(new UnixTransport(sock, connectOpts));
+      });
+    });
+  }
+
+  private constructor(sock: net.Socket, private readonly connectOpts: net.IpcNetConnectOpts) {
     super(sock, {
       describe: `Unix(${connectOpts.path})`,
       local: true,
@@ -24,24 +36,6 @@ export class UnixTransport extends StreamTransport {
 }
 
 export namespace UnixTransport {
-  /**
-   * Create a transport and connect to remote endpoint.
-   * @param path - Unix socket path or IPC options.
-   */
-  export function connect(path: string | net.IpcNetConnectOpts): Promise<UnixTransport> {
-    const connectOpts: net.IpcNetConnectOpts = typeof path === "string" ? { path } : path;
-    return new Promise<UnixTransport>((resolve, reject) => {
-      const sock = net.connect(connectOpts);
-      sock.setNoDelay(true);
-      sock.on("error", () => undefined);
-      sock.once("error", reject);
-      sock.once("connect", () => {
-        sock.off("error", reject);
-        resolve(new UnixTransport(sock, connectOpts));
-      });
-    });
-  }
-
   /** Create a transport and add to forwarder. */
   export const createFace = L3Face.makeCreateFace(UnixTransport.connect);
 }

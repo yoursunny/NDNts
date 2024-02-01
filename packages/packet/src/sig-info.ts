@@ -81,7 +81,7 @@ export class SigInfo {
   }
 }
 
-const ctorAssign = Symbol("@ndn/packet.SigInfo.ctorAssign");
+const ctorAssign = Symbol("@ndn/packet#SigInfo.ctorAssign");
 interface CtorTag {
   [ctorAssign](si: SigInfo): void;
 }

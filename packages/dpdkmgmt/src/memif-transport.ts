@@ -5,43 +5,8 @@ import type { Memif } from "memif";
 
 /** Shared Memory Packet Interface (memif) transport. */
 export class MemifTransport extends Transport {
-  public override readonly rx: Transport.Rx;
-  public override readonly tx: Transport.Tx;
-
-  /**
-   * Access the underlying Memif instance.
-   * You may read counters and monitor "memif:up" "memif:down" events, but not send/receive packets.
-   */
-  public readonly memif: Memif;
-  private readonly mtu_: number;
-
-  constructor(opts: MemifTransport.Options, memif: Memif) {
-    super({
-      describe: `Memif(${opts.socketName}:${opts.id ?? 0})`,
-      local: true,
-      multicast: false,
-    });
-
-    this.memif = memif;
-    this.mtu_ = Math.min(memif.dataroom, opts.dataroom ?? Infinity);
-    this.rx = rxFromPacketIterable(this.memif);
-    this.tx = txToStream(this.memif);
-  }
-
-  public override get mtu() { return this.mtu_; }
-}
-
-export namespace MemifTransport {
-  export interface Options extends Memif.Options {
-    /**
-     * Whether to wait until the connection is up.
-     * Default is true;
-     */
-    waitUp?: boolean;
-  }
-
-  /** Create a memif transport. */
-  export async function connect(opts: Options): Promise<MemifTransport> {
+  /** Create a transport and establish connection. */
+  public static async connect(opts: MemifTransport.Options): Promise<MemifTransport> {
     const {
       waitUp = true,
     } = opts;
@@ -55,6 +20,46 @@ export namespace MemifTransport {
     return transport;
   }
 
+  private constructor(opts: MemifTransport.Options, memif: Memif) {
+    super({
+      describe: `Memif(${opts.socketName}:${opts.id ?? 0})`,
+      local: true,
+      multicast: false,
+    });
+
+    this.memif = memif;
+    this.mtu_ = Math.min(memif.dataroom, opts.dataroom ?? Infinity);
+    this.rx = rxFromPacketIterable(this.memif);
+  }
+
+  /**
+   * Access the underlying Memif instance.
+   *
+   * @remarks
+   * You may read counters and monitor "memif:up" "memif:down" events, but not send/receive packets.
+   */
+  public readonly memif: Memif;
+  private readonly mtu_: number;
+
+  public override get mtu() { return this.mtu_; }
+
+  public override readonly rx: Transport.RxIterable;
+
+  public override async tx(iterable: Transport.TxIterable) {
+    return txToStream(this.memif, iterable);
+  }
+}
+
+export namespace MemifTransport {
+  /** {@link MemifTransport.connect} options. */
+  export interface Options extends Memif.Options {
+    /**
+     * Whether to wait until the connection is up.
+     * @defaultValue true
+     */
+    waitUp?: boolean;
+  }
+
   /** Create a memif transport and add to forwarder. */
-  export const createFace = L3Face.makeCreateFace(connect);
+  export const createFace = L3Face.makeCreateFace(MemifTransport.connect);
 }

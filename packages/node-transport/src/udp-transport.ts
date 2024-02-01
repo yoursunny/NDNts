@@ -1,3 +1,4 @@
+import dgram from "node:dgram";
 import type { AddressInfo } from "node:net";
 
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
@@ -9,32 +10,40 @@ import * as udp from "./udp-helper";
 
 /** UDP socket transport. */
 export class UdpTransport extends Transport {
-  public override readonly rx: Transport.Rx;
-
-  /** Local endpoint address. */
-  public readonly laddr: AddressInfo;
-  /** Remote endpoint or multicast group address. */
-  public readonly raddr: AddressInfo;
-  private readonly rxSock: udp.Socket;
-  private readonly txSock: udp.Socket;
+  /**
+   * Create a unicast transport.
+   * @param host - Remote host or endpoint address (with other options) or existing socket.
+   * @param port - Remote port. Default is 6363.
+   * @see {@link UdpTransport.createFace}
+   */
+  public static async connect(host: string | udp.UnicastOptions | dgram.Socket, port?: number) {
+    if (typeof host === "string") {
+      host = { host };
+    }
+    const sock = host instanceof dgram.Socket ? host : await udp.openUnicast({ port, ...host });
+    return new UdpTransport(sock);
+  }
 
   /**
-   * Constructor for unicast.
-   *
-   * @remarks
-   * {@link UdpTransport.connect} and {@link UdpTransport.createFace} are recommended.
+   * Create a multicast transport.
+   * @param opts - Network interface and other options.
+   * @see {@link UdpTransport.createMulticastFace}
    */
-  constructor(unicast: udp.Socket);
+  public static async multicast(opts: udp.MulticastOptions): Promise<UdpTransport> {
+    const tx = await udp.openMulticastTx(opts);
+    let rx: dgram.Socket;
+    try {
+      rx = await udp.openMulticastRx(opts);
+    } catch (err: unknown) {
+      tx.close();
+      throw err;
+    }
+    return new UdpTransport(tx, rx);
+  }
 
-  /**
-   * Constructor for multicast.
-   *
-   * @remarks
-   * {@link UdpTransport.multicast} and {@link UdpTransport.createMulticastFace} are recommended.
-   */
-  constructor(multicastTx: udp.Socket, multicastRx: udp.Socket);
-
-  constructor(txSock: udp.Socket, rxSock?: udp.Socket) {
+  private constructor(unicast: dgram.Socket);
+  private constructor(multicastTx: dgram.Socket, multicastRx: dgram.Socket);
+  private constructor(txSock: dgram.Socket, rxSock?: dgram.Socket) {
     const [scheme, { address, port }] = rxSock ? ["UDPm", txSock.address()] : ["UDP", txSock.remoteAddress()];
     super({
       describe: `${scheme}(${joinHostPort(address, port)})`,
@@ -69,6 +78,13 @@ export class UdpTransport extends Transport {
     );
   }
 
+  /** Local endpoint address. */
+  public readonly laddr: AddressInfo;
+  /** Remote endpoint or multicast group address. */
+  public readonly raddr: AddressInfo;
+  private readonly rxSock: dgram.Socket;
+  private readonly txSock: dgram.Socket;
+
   /**
    * Report MTU as 65487.
    * @see {@link https://superuser.com/a/1697822}
@@ -76,6 +92,18 @@ export class UdpTransport extends Transport {
   // https://github.com/typescript-eslint/typescript-eslint/issues/3602
   // eslint-disable-next-line @typescript-eslint/class-literal-property-style
   public override get mtu() { return 65487; }
+
+  public override readonly rx: Transport.RxIterable;
+
+  public override async tx(iterable: Transport.TxIterable) {
+    try {
+      for await (const pkt of iterable) {
+        this.txSock.send(pkt);
+      }
+    } finally {
+      this.close();
+    }
+  }
 
   public close(): void {
     try {
@@ -85,68 +113,19 @@ export class UdpTransport extends Transport {
       }
     } catch {}
   }
-
-  public override readonly tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
-    try {
-      for await (const pkt of iterable) {
-        this.txSock.send(pkt);
-      }
-    } finally {
-      this.close();
-    }
-  };
 }
 
 export namespace UdpTransport {
-  /**
-   * Create a unicast transport.
-   * @param host - Remote host.
-   * @param port - Remote port. Default is 6363.
-   */
-  export function connect(host: string, port?: number): Promise<UdpTransport>;
-
-  /**
-   * Create a unicast transport.
-   * @param opts - Remote endpoint and other options.
-   */
-  export function connect(opts: udp.UnicastOptions): Promise<UdpTransport>;
-
-  export function connect(arg1: string | udp.UnicastOptions, port?: number) {
-    return connectImpl(arg1, port);
-  }
-
-  async function connectImpl(arg1: string | udp.UnicastOptions, port?: number): Promise<UdpTransport> {
-    const opts = typeof arg1 === "string" ? { host: arg1, port } : arg1;
-    const sock = await udp.openUnicast(opts);
-    return new UdpTransport(sock);
-  }
-
   /** Create a unicast transport and add to forwarder. */
-  export const createFace = L3Face.makeCreateFace(connectImpl);
-
-  /**
-   * Create a multicast transport.
-   * @param opts - Network interface and other options.
-   */
-  export async function multicast(opts: udp.MulticastOptions): Promise<UdpTransport> {
-    const tx = await udp.openMulticastTx(opts);
-    let rx: udp.Socket;
-    try {
-      rx = await udp.openMulticastRx(opts);
-    } catch (err: unknown) {
-      tx.close();
-      throw err;
-    }
-    return new UdpTransport(tx, rx);
-  }
+  export const createFace = L3Face.makeCreateFace(UdpTransport.connect);
 
   /** Create a multicast transport and add to forwarder. */
-  export const createMulticastFace = L3Face.makeCreateFace(multicast);
+  export const createMulticastFace = L3Face.makeCreateFace(UdpTransport.multicast);
 
   /** Create multicast transports on every multicast-capable netif. */
   export async function multicasts(opts: Except<udp.MulticastOptions, "intf"> = {}): Promise<UdpTransport[]> {
     const intfs = udp.listMulticastIntfs();
-    return (await Promise.allSettled(intfs.map((intf) => multicast({ ...opts, intf }))))
+    return (await Promise.allSettled(intfs.map((intf) => UdpTransport.multicast({ ...opts, intf }))))
       .filter((res): res is PromiseFulfilledResult<UdpTransport> => res.status === "fulfilled")
       .map(({ value }) => value);
   }

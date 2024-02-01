@@ -18,7 +18,7 @@ const CODEPOINT_PERCENT = "%".codePointAt(0)!;
 const CODEPOINT_PERIOD = ".".codePointAt(0)!;
 
 const encoderHeadroom = 10;
-const FROM = Symbol("@ndn/packet.Component.from");
+const FROM = Symbol("@ndn/packet#Component.from");
 
 /** Name component or component URI. */
 export type ComponentLike = Component | string;

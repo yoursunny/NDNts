@@ -11,7 +11,7 @@ export interface Extensible {
 }
 
 export namespace Extensible {
-  export const TAG = Symbol("@ndn/tlv.Extensible");
+  export const TAG = Symbol("@ndn/tlv#Extensible");
 
   /** Clone extension fields of src to dst. */
   export function cloneRecord(dst: Extensible, src: Extensible): void {

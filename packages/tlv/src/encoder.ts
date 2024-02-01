@@ -143,7 +143,7 @@ export class Encoder {
 }
 
 export namespace Encoder {
-  export const OmitEmpty = Symbol("@ndn/tlv.OmitEmpty");
+  export const OmitEmpty = Symbol("@ndn/tlv#OmitEmpty");
 
   /** Encode a single object into Uint8Array. */
   export function encode(obj: Encodable | readonly Encodable[], initBufSize?: number): Uint8Array {

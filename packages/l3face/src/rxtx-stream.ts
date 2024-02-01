@@ -10,9 +10,9 @@ import type { Transport } from "./transport";
 /**
  * Extract TLVs from continuous byte stream.
  * @param conn - RX byte stream, such as a TCP socket.
- * @returns AsyncIterable of TLVs.
+ * @returns RX packet stream.
  */
-export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.Rx {
+export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.RxIterable {
   let leftover = new Uint8Array();
   for await (const chunk of safeIter(conn as AsyncIterable<Buffer>)) {
     if (leftover.length > 0) {
@@ -43,25 +43,23 @@ export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.Rx {
 /**
  * Pipe encoded packets to output stream.
  * @param conn - TX output stream, such as a TCP socket.
- * @returns Function that accepts AsyncIterable of encoded TLVs.
+ * @param iterable - TX packet stream.
  *
  * @remarks
  * `conn` will be closed/destroyed upon reaching the end of packet stream.
  */
-export function txToStream(conn: NodeJS.WritableStream): Transport.Tx {
-  return async (iterable: AsyncIterable<Uint8Array>) => {
+export async function txToStream(conn: NodeJS.WritableStream, iterable: Transport.TxIterable): Promise<void> {
+  try {
+    await writeToStream(conn, iterable);
+  } finally {
     try {
-      await writeToStream(conn, iterable);
-    } finally {
-      try {
-        conn.end();
-        await pEvent(conn, "finish", { timeout: 100 });
-      } catch {}
+      conn.end();
+      await pEvent(conn, "finish", { timeout: 100 });
+    } catch {}
 
-      const socket = conn as Socket;
-      if (typeof socket.destroy === "function") {
-        socket.destroy();
-      }
+    const socket = conn as Socket;
+    if (typeof socket.destroy === "function") {
+      socket.destroy();
     }
-  };
+  }
 }

@@ -72,7 +72,7 @@ export class LpService {
     }
   }
 
-  public tx = (iterable: AsyncIterable<LpService.Packet>): AsyncIterable<Uint8Array | LpService.TxError> => flatMapOnce(
+  public readonly tx = (iterable: AsyncIterable<LpService.Packet>): AsyncIterable<Uint8Array | LpService.TxError> => flatMapOnce(
     (pkt) => this.encode(pkt),
     this.keepAlive ?
       itKeepAlive<LpService.Packet | false>(() => false, { timeout: this.keepAlive })(iterable) :

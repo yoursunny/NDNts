@@ -9,7 +9,7 @@ import { L3Face } from "./l3face";
 import { Transport } from "./transport";
 
 class BridgeTransport extends Transport {
-  public override readonly rx: Transport.Rx;
+  public override readonly rx: Transport.RxIterable;
   public bridgePeer?: BridgeTransport;
   private readonly bridgeRx = pushable<Uint8Array>({ objectMode: true });
 
@@ -18,7 +18,7 @@ class BridgeTransport extends Transport {
     this.rx = map((wire) => new Decoder(wire).read(), relay(this.bridgeRx));
   }
 
-  public override readonly tx = async (iterable: AsyncIterable<Uint8Array>) => {
+  public override async tx(iterable: Transport.TxIterable) {
     assert(this.bridgePeer, "bridgePeer must be set");
     const iterator = iterable[Symbol.asyncIterator]();
     while (true) {
@@ -32,7 +32,7 @@ class BridgeTransport extends Transport {
       const copy = result.value.slice();
       this.bridgePeer.bridgeRx.push(copy);
     }
-  };
+  }
 }
 
 /**

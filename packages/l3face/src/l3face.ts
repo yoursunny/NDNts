@@ -115,7 +115,7 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
     }
   }
 
-  private async *rxTransform(transportRx: Transport.Rx): AsyncIterable<FwPacket> {
+  private async *rxTransform(transportRx: Transport.RxIterable): AsyncIterable<FwPacket> {
     yield* pipeline(
       () => transportRx,
       this.lp.rx,
@@ -141,7 +141,7 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
     );
   }
 
-  private txTransform(fwTx: AsyncIterable<FwPacket>): AsyncIterable<Uint8Array> {
+  private txTransform(fwTx: AsyncIterable<FwPacket>): Transport.TxIterable {
     return pipeline(
       () => fwTx,
       filter((pkt: FwPacket) => FwPacket.isEncodable(pkt)),

@@ -109,7 +109,7 @@ const openFaceScheme = {
             throw new Error(`unexpected locator: ${JSON.stringify(loc)}`);
           }
           await udp_helper.connect(sock, { host, port });
-          return [new UdpTransport(sock), mtu];
+          return [await UdpTransport.connect(sock), mtu];
         });
     } catch (err: unknown) {
       sock.close();

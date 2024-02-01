@@ -11,7 +11,26 @@ const UUID_SC = "972f9527-0d83-4261-b95d-b1b2fc73bde4";
 
 /** Web Bluetooth transport. */
 export class WebBluetoothTransport extends Transport {
-  public override readonly rx: Transport.Rx;
+  /**
+   * Request for a connection.
+   * @see {@link WebBluetoothTransport.createFace}
+   */
+  public static async request(): Promise<WebBluetoothTransport> {
+    const device = await navigator.bluetooth.requestDevice({
+      filters: [
+        { services: [UUID_SVC] },
+      ],
+    });
+    if (!device.gatt) {
+      throw new Error("GATT is unavailable");
+    }
+    const server = await device.gatt.connect();
+    const svc = await server.getPrimaryService(UUID_SVC);
+    const cs = await svc.getCharacteristic(UUID_CS);
+    const sc = await svc.getCharacteristic(UUID_SC);
+    await sc.startNotifications();
+    return new WebBluetoothTransport(server, cs, sc);
+  }
 
   private constructor(
       private readonly server: BluetoothRemoteGATTServer,
@@ -43,11 +62,9 @@ export class WebBluetoothTransport extends Transport {
     ));
   }
 
-  public close() {
-    this.server.device.gatt!.disconnect();
-  }
+  public override readonly rx: Transport.RxIterable;
 
-  public override readonly tx = async (iterable: AsyncIterable<Uint8Array>): Promise<void> => {
+  public override async tx(iterable: Transport.TxIterable): Promise<void> {
     try {
       for await (const pkt of iterable) {
         await this.cs.writeValueWithoutResponse(pkt);
@@ -55,24 +72,10 @@ export class WebBluetoothTransport extends Transport {
     } finally {
       this.close();
     }
-  };
+  }
 
-  /** Request for a connection. */
-  public static async request() {
-    const device = await navigator.bluetooth.requestDevice({
-      filters: [
-        { services: [UUID_SVC] },
-      ],
-    });
-    if (!device.gatt) {
-      throw new Error("GATT is unavailable");
-    }
-    const server = await device.gatt.connect();
-    const svc = await server.getPrimaryService(UUID_SVC);
-    const cs = await svc.getCharacteristic(UUID_CS);
-    const sc = await svc.getCharacteristic(UUID_SC);
-    await sc.startNotifications();
-    return new WebBluetoothTransport(server, cs, sc);
+  public close(): void {
+    this.server.device.gatt!.disconnect();
   }
 }
 
