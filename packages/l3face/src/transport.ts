@@ -31,13 +31,17 @@ export abstract class Transport {
    */
   public get mtu() { return DEFAULT_MTU; }
 
+  /* eslint-disable tsdoc/syntax -- tsdoc-missing-reference */
   /**
    * Reopen the transport after it has failed.
    * @returns The same transport or a new transport after it has been reconnected.
    *
-   * @throws {@link Transport.ReopenNotSupportedError}
+   * @throws {@link \@ndn/l3face!Transport.ReopenNotSupportedError}
    * Thrown to indicate the transport does not support reopening.
    */
+  /* eslint-enable tsdoc/syntax */
+  // @link needs to be qualified with package name, otherwise TypeDoc will fail to resolve link
+  // when this method is inherited into subclass without being overridden or without own TSDoc.
   public reopen(): Promise<Transport> {
     return Promise.reject(new Transport.ReopenNotSupportedError());
   }

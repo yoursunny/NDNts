@@ -46,6 +46,6 @@
     "@types/tmp": "^0.2.6",
     "stream-mock": "^2.0.5",
     "tmp": "^0.2.1",
-    "type-fest": "^4.10.1"
+    "type-fest": "^4.10.2"
   }
 }

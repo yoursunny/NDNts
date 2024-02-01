@@ -7,6 +7,12 @@ export class H3Transport extends Transport {
 
   public override readonly rx: Transport.Rx;
 
+  /**
+   * Constructor.
+   *
+   * @remarks
+   * {@link H3Transport.connect} and {@link H3Transport.createFace} are recommended.
+   */
   constructor(
       private readonly uri: string,
       private readonly opts: WebTransportOptions,
@@ -27,6 +33,7 @@ export class H3Transport extends Transport {
     })());
   }
 
+  /** Report HTTP/3 maximum datagram size as MTU. */
   public override get mtu() {
     return this.tr.datagrams.maxDatagramSize;
   }
@@ -43,6 +50,7 @@ export class H3Transport extends Transport {
     }
   };
 
+  /** Reopen the transport by connecting again with the same options. */
   public override reopen() {
     return H3Transport.connect(this.uri, this.opts);
   }
@@ -51,8 +59,8 @@ export class H3Transport extends Transport {
 export namespace H3Transport {
   /**
    * Create a transport and connect to remote endpoint.
-   * @param uri server URI.
-   * @param opts WebTransport options.
+   * @param uri - Server URI.
+   * @param opts - WebTransport options.
    */
   export async function connect(uri: string, opts: WebTransportOptions = {}): Promise<H3Transport> {
     const tr = new WebTransport(uri, opts);
