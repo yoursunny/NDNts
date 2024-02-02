@@ -1,4 +1,6 @@
 import { Name, type Signer } from "@ndn/packet";
+import throat from "throat";
+import type { Promisable } from "type-fest";
 
 import { CryptoAlgorithmListSlim } from "../algolist/mod";
 import type { Certificate } from "../cert/mod";
@@ -12,13 +14,13 @@ import { openStores } from "./stores_node";
 /** Storage of own private keys and certificates. */
 export abstract class KeyChain {
   /** Return whether `.insertKey()` method expects JsonWebKey instead of CryptoKey. */
-  abstract readonly needJwk: boolean;
+  public abstract readonly needJwk: boolean;
 
   /** List keys, filtered by name prefix. */
-  abstract listKeys(prefix?: Name): Promise<Name[]>;
+  public abstract listKeys(prefix?: Name): Promise<Name[]>;
 
   /** Retrieve key pair by key name. */
-  abstract getKeyPair(name: Name): Promise<KeyChain.KeyPair>;
+  public abstract getKeyPair(name: Name): Promise<KeyChain.KeyPair>;
 
   /**
    * Retrieve key by key name.
@@ -30,16 +32,16 @@ export abstract class KeyChain {
   }
 
   /** Insert key pair. */
-  abstract insertKey(name: Name, stored: KeyStore.StoredKey): Promise<void>;
+  public abstract insertKey(name: Name, stored: KeyStore.StoredKey): Promise<void>;
 
   /** Delete key pair and associated certificates. */
-  abstract deleteKey(name: Name): Promise<void>;
+  public abstract deleteKey(name: Name): Promise<void>;
 
   /** List certificates, filtered by name prefix. */
-  abstract listCerts(prefix?: Name): Promise<Name[]>;
+  public abstract listCerts(prefix?: Name): Promise<Name[]>;
 
   /** Retrieve certificate by cert name. */
-  abstract getCert(name: Name): Promise<Certificate>;
+  public abstract getCert(name: Name): Promise<Certificate>;
 
   /**
    * Insert certificate.
@@ -47,10 +49,10 @@ export abstract class KeyChain {
    * @remarks
    * Corresponding key must exist.
    */
-  abstract insertCert(cert: Certificate): Promise<void>;
+  public abstract insertCert(cert: Certificate): Promise<void>;
 
   /** Delete certificate. */
-  abstract deleteCert(name: Name): Promise<void>;
+  public abstract deleteCert(name: Name): Promise<void>;
 
   /**
    * Create a signer from keys and certificates in the KeyChain.
@@ -143,53 +145,10 @@ export abstract class KeyChain {
   }
 }
 
-class KeyChainImpl extends KeyChain {
-  constructor(private readonly keys: KeyStore, private readonly certs: CertStore) {
-    super();
-  }
-
-  public override get needJwk() { return !this.keys.canSClone; }
-
-  public override async listKeys(prefix: Name = new Name()): Promise<Name[]> {
-    return (await this.keys.list()).filter((n) => prefix.isPrefixOf(n));
-  }
-
-  public override async getKeyPair(name: Name): Promise<KeyChain.KeyPair> {
-    return this.keys.get(name);
-  }
-
-  public override async insertKey(name: Name, stored: KeyStore.StoredKey): Promise<void> {
-    await this.keys.insert(name, stored);
-  }
-
-  public override async deleteKey(name: Name): Promise<void> {
-    const certs = await this.listCerts(name);
-    await Promise.all(certs.map((cert) => this.certs.erase(cert)));
-    await this.keys.erase(name);
-  }
-
-  public override async listCerts(prefix: Name = new Name()): Promise<Name[]> {
-    return (await this.certs.list()).filter((n) => prefix.isPrefixOf(n));
-  }
-
-  public override async getCert(name: Name): Promise<Certificate> {
-    return this.certs.get(name);
-  }
-
-  public override async insertCert(cert: Certificate): Promise<void> {
-    await this.getKeyPair(CertNaming.toKeyName(cert.name)); // ensure key exists
-    await this.certs.insert(cert);
-  }
-
-  public override async deleteCert(name: Name): Promise<void> {
-    await this.certs.erase(name);
-  }
-}
-
 export namespace KeyChain {
   export type KeyPair<Asym extends boolean = any> = KeyStore.KeyPair<Asym>;
 
-  /** {@link keyChain.getSigner} options. */
+  /** {@link KeyChain.getSigner} options. */
   export interface GetSignerOptions {
     /**
      * Whether to allow prefix match between name argument and subject name.
@@ -253,5 +212,108 @@ export namespace KeyChain {
       new KeyStore(new MemoryStoreProvider(), algoList),
       new CertStore(new MemoryStoreProvider()),
     );
+  }
+}
+
+/**
+ * KeyChain adapter that serializes function calls.
+ *
+ * @remarks
+ * Only one `s*` function would be invoked at a time. Do not invoke a non-`s*` function from
+ * within an `s*` function, otherwise it would cause a deadlock.
+ */
+export abstract class KeyChainSerialized extends KeyChain {
+  protected readonly mutex = throat(1);
+
+  public override listKeys(prefix: Name = new Name()): Promise<Name[]> {
+    return this.mutex(async () => this.sListKeys(prefix));
+  }
+
+  protected abstract sListKeys(prefix: Name): Promisable<Name[]>;
+
+  public override getKeyPair(name: Name): Promise<KeyChain.KeyPair> {
+    return this.mutex(async () => this.sGetKeyPair(name));
+  }
+
+  protected abstract sGetKeyPair(name: Name): Promisable<KeyChain.KeyPair>;
+
+  public override insertKey(name: Name, stored: KeyStore.StoredKey): Promise<void> {
+    return this.mutex(async () => this.sInsertKey(name, stored));
+  }
+
+  protected abstract sInsertKey(name: Name, stored: KeyStore.StoredKey): Promisable<void>;
+
+  public override deleteKey(name: Name): Promise<void> {
+    return this.mutex(async () => this.sDeleteKey(name));
+  }
+
+  protected abstract sDeleteKey(name: Name): Promisable<void>;
+
+  public override listCerts(prefix: Name = new Name()): Promise<Name[]> {
+    return this.mutex(async () => this.sListCerts(prefix));
+  }
+
+  protected abstract sListCerts(prefix: Name): Promisable<Name[]>;
+
+  public override getCert(name: Name): Promise<Certificate> {
+    return this.mutex(async () => this.sGetCert(name));
+  }
+
+  protected abstract sGetCert(name: Name): Promisable<Certificate>;
+
+  public override insertCert(cert: Certificate): Promise<void> {
+    return this.mutex(async () => this.sInsertCert(cert));
+  }
+
+  protected abstract sInsertCert(cert: Certificate): Promisable<void>;
+
+  public override deleteCert(name: Name): Promise<void> {
+    return this.mutex(async () => this.sDeleteCert(name));
+  }
+
+  protected abstract sDeleteCert(name: Name): Promisable<void>;
+}
+
+class KeyChainImpl extends KeyChainSerialized {
+  constructor(private readonly keys: KeyStore, private readonly certs: CertStore) {
+    super();
+  }
+
+  public override get needJwk() { return !this.keys.canSClone; }
+
+  protected override async sListKeys(prefix: Name): Promise<Name[]> {
+    return (await this.keys.list()).filter((n) => prefix.isPrefixOf(n));
+  }
+
+  protected override async sGetKeyPair(name: Name): Promise<KeyChain.KeyPair> {
+    return this.keys.get(name);
+  }
+
+  protected override async sInsertKey(name: Name, stored: KeyStore.StoredKey): Promise<void> {
+    await this.keys.insert(name, stored);
+  }
+
+  protected override async sDeleteKey(name: Name): Promise<void> {
+    for (const certName of await this.sListCerts(name)) {
+      await this.certs.erase(certName);
+    }
+    await this.keys.erase(name);
+  }
+
+  protected override async sListCerts(prefix: Name): Promise<Name[]> {
+    return (await this.certs.list()).filter((n) => prefix.isPrefixOf(n));
+  }
+
+  protected override async sGetCert(name: Name): Promise<Certificate> {
+    return this.certs.get(name);
+  }
+
+  protected override async sInsertCert(cert: Certificate): Promise<void> {
+    await this.keys.get(CertNaming.toKeyName(cert.name)); // ensure key exists
+    await this.certs.insert(cert);
+  }
+
+  protected override async sDeleteCert(name: Name): Promise<void> {
+    await this.certs.erase(name);
   }
 }

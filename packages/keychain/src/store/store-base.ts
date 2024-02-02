@@ -1,12 +1,12 @@
 import { Name } from "@ndn/packet";
 import { fromHex, toHex } from "@ndn/util";
-import throat from "throat";
+import type { Promisable } from "type-fest";
 
 /**
  * KV store provider where each key is a string.
  *
  * @remarks
- * Methods are called one at a time.
+ * Function calls are serialized. This does not have to be thread safe.
  */
 export interface StoreProvider<T> {
   /**
@@ -15,10 +15,17 @@ export interface StoreProvider<T> {
    */
   readonly canSClone: boolean;
 
-  list(): Promise<string[]>;
-  get(key: string): Promise<T>;
-  insert(key: string, value: T): Promise<void>;
-  erase(key: string): Promise<void>;
+  /** List keys. */
+  list(): Promisable<string[]>;
+
+  /** Retrieve value by key. */
+  get(key: string): Promisable<T>;
+
+  /** Insert key and value. */
+  insert(key: string, value: T): Promisable<void>;
+
+  /** Erase key. */
+  erase(key: string): Promisable<void>;
 }
 
 /** Memory based KV store provider. */
@@ -26,11 +33,11 @@ export class MemoryStoreProvider<T> implements StoreProvider<T> {
   public readonly canSClone: boolean = true;
   protected record: Record<string, T> = {};
 
-  public async list(): Promise<string[]> {
+  public list(): string[] {
     return Object.keys(this.record);
   }
 
-  public async get(key: string): Promise<T> {
+  public get(key: string): T {
     const value = this.record[key];
     if (value === undefined) {
       throw new Error(`key ${key} is missing`);
@@ -38,41 +45,44 @@ export class MemoryStoreProvider<T> implements StoreProvider<T> {
     return value;
   }
 
-  public async insert(key: string, value: T): Promise<void> {
+  public insert(key: string, value: T): void {
     this.record[key] = value;
   }
 
-  public async erase(key: string): Promise<void> {
+  public erase(key: string): void {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete this.record[key];
   }
 }
 
-/** KV store where each key is a Name. */
+/**
+ * KV store where each key is a Name.
+ *
+ * @remarks
+ * Function calls are serialized. This does not have to be thread safe.
+ */
 export abstract class StoreBase<T> {
-  private readonly mutex = throat(1);
-
   constructor(private readonly provider: StoreProvider<T>) {}
 
   public get canSClone() { return this.provider.canSClone; }
 
   /** List item names. */
   public async list(): Promise<Name[]> {
-    const keys = await this.mutex(() => this.provider.list());
+    const keys = await this.provider.list();
     return keys.map((k) => new Name(fromHex(k)));
   }
 
   /** Erase item by name. */
-  public erase(name: Name): Promise<void> {
-    return this.mutex(() => this.provider.erase(name.valueHex));
+  public async erase(name: Name): Promise<void> {
+    await this.provider.erase(name.valueHex);
   }
 
-  protected getValue(name: Name): Promise<T> {
-    return this.mutex(() => this.provider.get(name.valueHex));
+  protected async getValue(name: Name): Promise<T> {
+    return this.provider.get(name.valueHex);
   }
 
-  protected insertValue(name: Name, value: T): Promise<void> {
-    return this.mutex(() => this.provider.insert(name.valueHex, value));
+  protected async insertValue(name: Name, value: T): Promise<void> {
+    await this.provider.insert(name.valueHex, value);
   }
 
   protected bufferToStorable(input: Uint8Array | string): Uint8Array | string {

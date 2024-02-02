@@ -5,9 +5,8 @@ import type { CryptoAlgorithm, EncryptionAlgorithm, SigningAlgorithm } from "../
  * A slim list of signing algorithms.
  *
  * @remarks
- * This list currently contains {@link ECDSA}.
- *
  * The *slim* list contains only the most commonly used algorithms, to reduce bundle size.
+ * This list currently contains {@link ECDSA}.
  * If you need more algorithms, explicitly import them or use {@link SigningAlgorithmListFull}.
  */
 export const SigningAlgorithmListSlim: readonly SigningAlgorithm[] = [
@@ -18,9 +17,8 @@ export const SigningAlgorithmListSlim: readonly SigningAlgorithm[] = [
  * A slim list of encryption algorithms.
  *
  * @remarks
- * This list is currently empty.
- *
  * The *slim* list contains only the most commonly used algorithms, to reduce bundle size.
+ * This list is currently empty.
  * If you need more algorithms, explicitly import them or use {@link EncryptionAlgorithmListFull}.
  */
 export const EncryptionAlgorithmListSlim: readonly EncryptionAlgorithm[] = [
@@ -30,6 +28,7 @@ export const EncryptionAlgorithmListSlim: readonly EncryptionAlgorithm[] = [
  * A slim list of crypto algorithms.
  *
  * @remarks
+ * The *slim* list contains only the most commonly used algorithms, to reduce bundle size.
  * This list encompasses {@link SigningAlgorithmListSlim} and {@link EncryptionAlgorithmListSlim}.
  * If you need more algorithms, explicitly import them or use {@link CryptoAlgorithmListFull}.
  */

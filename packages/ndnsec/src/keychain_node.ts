@@ -1,9 +1,8 @@
-import { Certificate, CertNaming, type CryptoAlgorithm, ECDSA, KeyChain, KeyStore, RSA, RSAOAEP, ValidityPeriod } from "@ndn/keychain";
+import { Certificate, CertNaming, type CryptoAlgorithm, ECDSA, KeyChain, KeyChainSerialized, KeyStore, RSA, RSAOAEP, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, Name, NameMap } from "@ndn/packet";
 import { type Decodable, Decoder, Encoder } from "@ndn/tlv";
 import { crypto } from "@ndn/util";
 import { execa, execaSync } from "execa";
-import throat from "throat";
 
 import { SafeBag } from "./safe-bag";
 
@@ -14,7 +13,7 @@ const ALGO_LIST = [ECDSA, RSA, RSAOAEP];
 let ndnsecInstalled: boolean | undefined;
 
 /** Access ndn-cxx KeyChain. */
-export class NdnsecKeyChain extends KeyChain {
+export class NdnsecKeyChain extends KeyChainSerialized {
   /**
    * Whether current environment supports ndn-cxx KeyChain.
    * It checks whether `ndnsec` program is installed.
@@ -42,13 +41,12 @@ export class NdnsecKeyChain extends KeyChain {
   public override readonly needJwk = true;
   private readonly env: NodeJS.ProcessEnv = { NDN_NAME_ALT_URI: "0" };
   private readonly importOptions?: SafeBag.ImportOptions;
-  private readonly mutex = throat(1);
   private cached?: KeyChain;
   private readonly insertKeyLoader = new KeyStore.Loader(true, ALGO_LIST);
 
-  private async invokeNdnsec(argv: string[], input?: Uint8Array): Promise<{
+  private async invokeNdnsec(argv: readonly string[], input?: Uint8Array): Promise<{
     readonly lines: string[];
-    decode: <R>(d: Decodable<R>) => R;
+    decode<R>(d: Decodable<R>): R;
   }> {
     const { stdout } = await execa("ndnsec", argv, {
       input: input && Buffer.from(input).toString("base64"),
@@ -102,72 +100,56 @@ export class NdnsecKeyChain extends KeyChain {
     return (this.cached ??= await this.copyTo(KeyChain.createTemp(ALGO_LIST)));
   }
 
-  public override async listKeys(prefix = new Name()): Promise<Name[]> {
-    return this.mutex(async () => {
-      const keyChain = await this.load();
-      return keyChain.listKeys(prefix);
-    });
+  protected override async sListKeys(prefix: Name): Promise<Name[]> {
+    const keyChain = await this.load();
+    return keyChain.listKeys(prefix);
   }
 
-  public override async getKeyPair(name: Name): Promise<KeyChain.KeyPair> {
-    return this.mutex(async () => {
-      const keyChain = await this.load();
-      return keyChain.getKeyPair(name);
-    });
+  protected override async sGetKeyPair(name: Name): Promise<KeyChain.KeyPair> {
+    const keyChain = await this.load();
+    return keyChain.getKeyPair(name);
   }
 
-  public override async insertKey(name: Name, stored: KeyStore.StoredKey): Promise<void> {
-    return this.mutex(async () => {
-      const keyPair = await this.insertKeyLoader.loadKey(name, stored);
+  protected override async sInsertKey(name: Name, stored: KeyStore.StoredKey): Promise<void> {
+    const keyPair = await this.insertKeyLoader.loadKey(name, stored);
 
-      const selfSigned = await Certificate.issue({
-        publicKey: keyPair.publicKey,
-        validity: ValidityPeriod.MAX,
-        issuerPrivateKey: keyPair.signer,
-        issuerId: IMPORTING_ISSUER,
-      });
-      const pkcs8 = new Uint8Array(await crypto.subtle.exportKey(
-        "pkcs8", (keyPair.pvt as CryptoAlgorithm.PrivateKey).privateKey));
-
-      const safeBag = await SafeBag.create(selfSigned, pkcs8, PASSPHRASE);
-      await this.invokeNdnsec(["import", "-P", PASSPHRASE, "-i-"], Encoder.encode(safeBag));
-      delete this.cached;
+    const selfSigned = await Certificate.issue({
+      publicKey: keyPair.publicKey,
+      validity: ValidityPeriod.MAX,
+      issuerPrivateKey: keyPair.signer,
+      issuerId: IMPORTING_ISSUER,
     });
+    const pkcs8 = new Uint8Array(await crypto.subtle.exportKey(
+      "pkcs8", (keyPair.pvt as CryptoAlgorithm.PrivateKey).privateKey));
+
+    const safeBag = await SafeBag.create(selfSigned, pkcs8, PASSPHRASE);
+    await this.invokeNdnsec(["import", "-P", PASSPHRASE, "-i-"], Encoder.encode(safeBag));
+    delete this.cached;
   }
 
-  public override async deleteKey(name: Name): Promise<void> {
-    return this.mutex(async () => {
-      await this.invokeNdnsec(["delete", "-k", name.toString()]);
-      delete this.cached;
-    });
+  protected override async sDeleteKey(name: Name): Promise<void> {
+    await this.invokeNdnsec(["delete", "-k", name.toString()]);
+    delete this.cached;
   }
 
-  public override async listCerts(prefix = new Name()): Promise<Name[]> {
-    return this.mutex(async () => {
-      const keyChain = await this.load();
-      return keyChain.listCerts(prefix);
-    });
+  protected override async sListCerts(prefix: Name): Promise<Name[]> {
+    const keyChain = await this.load();
+    return keyChain.listCerts(prefix);
   }
 
-  public override async getCert(name: Name): Promise<Certificate> {
-    return this.mutex(async () => {
-      const keyChain = await this.load();
-      return keyChain.getCert(name);
-    });
+  protected override async sGetCert(name: Name): Promise<Certificate> {
+    const keyChain = await this.load();
+    return keyChain.getCert(name);
   }
 
-  public override async insertCert(cert: Certificate): Promise<void> {
-    return this.mutex(async () => {
-      await this.invokeNdnsec(["cert-install", "-K", "-f-"], Encoder.encode(cert.data));
-      delete this.cached;
-    });
+  protected override async sInsertCert(cert: Certificate): Promise<void> {
+    await this.invokeNdnsec(["cert-install", "-K", "-f-"], Encoder.encode(cert.data));
+    delete this.cached;
   }
 
-  public override async deleteCert(name: Name): Promise<void> {
-    return this.mutex(async () => {
-      await this.invokeNdnsec(["delete", "-c", name.toString()]);
-      delete this.cached;
-    });
+  protected override async sDeleteCert(name: Name): Promise<void> {
+    await this.invokeNdnsec(["delete", "-c", name.toString()]);
+    delete this.cached;
   }
 }
 

@@ -52,25 +52,25 @@ class FileStoreProvider<T> extends MemoryStoreProvider<T> implements StoreProvid
     }
   };
 
-  public override async list(): Promise<string[]> {
+  public override list(): string[] {
     this.load();
     return super.list();
   }
 
-  public override async get(key: string): Promise<T> {
+  public override get(key: string): T {
     this.load();
     return super.get(key);
   }
 
-  public override async insert(key: string, value: T): Promise<void> {
+  public override insert(key: string, value: T): void {
     this.load();
-    await super.insert(key, value);
+    super.insert(key, value);
     this.save();
   }
 
-  public override async erase(key: string): Promise<void> {
+  public override erase(key: string): void {
     this.load();
-    await super.erase(key);
+    super.erase(key);
     this.save();
   }
 }
