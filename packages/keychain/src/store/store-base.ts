@@ -4,6 +4,8 @@ import throat from "throat";
 
 /**
  * KV store provider where each key is a string.
+ *
+ * @remarks
  * Methods are called one at a time.
  */
 export interface StoreProvider<T> {

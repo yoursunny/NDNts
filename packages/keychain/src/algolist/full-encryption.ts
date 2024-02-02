@@ -3,7 +3,10 @@ import type { EncryptionAlgorithm } from "../key/mod";
 
 /**
  * A full list of encryption algorithms.
- * This list currently contains AES-CBC, AES-CTR, AES-GCM, and RSA-OAEP.
+ *
+ * @remarks
+ * This list currently contains {@link AESCBC}, {@link AESCTR}, {@link AESGCM},
+ * and {@link RSAOAEP}.
  */
 export const EncryptionAlgorithmListFull: readonly EncryptionAlgorithm[] = [
   AESCBC,

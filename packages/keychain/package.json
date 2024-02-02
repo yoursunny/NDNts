@@ -37,7 +37,8 @@
     "idb-keyval": "^6.2.1",
     "mnemonist": "^0.39.7",
     "throat": "^6.0.2",
-    "tslib": "^2.6.2"
+    "tslib": "^2.6.2",
+    "type-fest": "^4.10.2"
   },
   "devDependencies": {
     "@types/b64-lite": "^1.4.2",

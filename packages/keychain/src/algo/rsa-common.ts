@@ -5,10 +5,10 @@ import type { CryptoAlgorithm } from "../key/mod";
 import { assertSpkiAlgorithm } from "./impl-spki";
 import type { RSA } from "./rsa";
 
-export type RsaModulusLength = 2048 | 4096;
+export type RsaModulusLength = (typeof RsaModulusLength.Choices)[number];
 export namespace RsaModulusLength {
   export const Default: RsaModulusLength = 2048;
-  export const Choices: readonly RsaModulusLength[] = [2048, 4096];
+  export const Choices = [2048, 4096] as const;
 }
 
 export abstract class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenParams> {

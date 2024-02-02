@@ -4,9 +4,10 @@ import { assert } from "@ndn/util";
 /**
  * Initialization Vector checker.
  *
- * The .wrap() method creates an LLDecrypt.Key or LLDecrypt that checks the IV in each message
- * before and after decryption, and updates the internal state of this class. Typically, a
- * separate IvChecker instances should be used for each key.
+ * @remarks
+ * The `.wrap()` method creates an {@link LLDecrypt.Key} or {@link LLDecrypt} that checks the IV in
+ * each message before and after decryption, and updates the internal state of this class.
+ * Typically, a separate IvChecker instance should be used for each key.
  */
 export abstract class IvChecker {
   constructor(public readonly ivLength: number) {

@@ -4,12 +4,13 @@ import { assert } from "@ndn/util";
 /**
  * Initialization Vector generator.
  *
- * The .wrap() method creates an LLEncrypt.Key or LLEncrypt that generates an IV for each message
- * before encryption, and updates the internal state of this class after encryption. Typically, a
- * separate IVGen instance should be used for each key.
+ * @remarks
+ * The `.wrap()` method creates an {@link LLEncrypt.Key} or {@link LLEncrypt} that generates an
+ * IV for each message before encryption, and updates the internal state of this class after
+ * encryption. Typically, a separate IVGen instance should be used for each key.
  *
- * If a message passed for encryption already has an IV associated, it would bypass this class: in
- * that case, the IV is not checked and the internal state is not updated.
+ * If a message presented for encryption already has an IV associated, it would bypass this class.
+ * In that case, the IV is not checked and the internal state is not updated.
  */
 export abstract class IvGen {
   constructor(public readonly ivLength: number) {

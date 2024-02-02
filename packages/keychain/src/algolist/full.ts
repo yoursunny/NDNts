@@ -4,7 +4,9 @@ import { SigningAlgorithmListFull } from "./full-signing";
 
 /**
  * A full list of crypto algorithms.
- * This list encompasses SigningAlgorithmListFull and EncryptionAlgorithmListFull.
+ *
+ * @remarks
+ * This list encompasses {@link SigningAlgorithmListFull} and {@link EncryptionAlgorithmListFull}.
  */
 export const CryptoAlgorithmListFull: readonly CryptoAlgorithm[] = [
   ...SigningAlgorithmListFull,

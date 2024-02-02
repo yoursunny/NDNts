@@ -4,9 +4,9 @@ import { assert, crypto, toHex } from "@ndn/util";
  * Options for Initialization Vectors using fixed+random+counter structure.
  *
  * IVs following this construction method have three parts:
- * @li fixed bits, specified in options.
- * @li random bits, different for each key and in each session.
- * @li counter bits, monotonically increasing for each plaintext/ciphertext block.
+ * 1. fixed bits, specified in options.
+ * 2. random bits, different for each key and in each session.
+ * 3. counter bits, monotonically increasing for each plaintext/ciphertext block.
  */
 export interface CounterIvOptions {
   /** IV length in octets. */
@@ -14,15 +14,17 @@ export interface CounterIvOptions {
 
   /**
    * Number of fixed bits.
-   * @default 0
+   * @defaultValue 0
    */
   fixedBits?: number;
 
   /**
    * Fixed portion.
+   *
+   * @remarks
    * Required if fixedBits is positive.
    * This may be specified as a bigint or a Uint8Array.
-   * If it's a Uint8Array, it must have fixedBits bits.
+   * If it's a Uint8Array, it must have at least fixedBits bits.
    * The least significant bits are taken.
    */
   fixed?: bigint | Uint8Array;
@@ -42,17 +44,7 @@ export function parseCounterIvOptions({
   fixedBits = 0,
   fixed: fixedInput,
   counterBits,
-}: CounterIvOptions): {
-      ivBits: number;
-      fixedBits: number;
-      fixedMask: bigint;
-      fixed: bigint;
-      randomBits: number;
-      randomMask: bigint;
-      random: bigint;
-      counterMask: bigint;
-      maxCounter: bigint;
-    } {
+}: CounterIvOptions): parseCounterIvOptions.Result {
   assert(ivLength > 0);
   assert(fixedBits >= 0);
   assert(counterBits > 0);
@@ -106,6 +98,19 @@ export function parseCounterIvOptions({
     maxCounter,
   };
 }
+export namespace parseCounterIvOptions {
+  export interface Result {
+    ivBits: number;
+    fixedBits: number;
+    fixedMask: bigint;
+    fixed: bigint;
+    randomBits: number;
+    randomMask: bigint;
+    random: bigint;
+    counterMask: bigint;
+    maxCounter: bigint;
+  }
+}
 
 export function throwCounterIvErrorIf(cond: boolean): void {
   if (cond) {
@@ -114,7 +119,7 @@ export function throwCounterIvErrorIf(cond: boolean): void {
 }
 
 export class CounterIncrement {
-  constructor(blockSize: number, public readonly maxCounter: bigint) {
+  constructor(blockSize: number, private readonly maxCounter: bigint) {
     assert(blockSize > 0);
     this.blockSize = BigInt(blockSize);
   }

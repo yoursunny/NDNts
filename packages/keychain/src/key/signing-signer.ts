@@ -55,10 +55,19 @@ class NamedCryptoSigner<I> extends PlainCryptoSigner<I> implements NamedSigner {
   }
 }
 
-/** Create a plain signer from crypto key. */
+/**
+ * Create a plain signer from crypto key.
+ * @param algo - Signing algorithm.
+ * @param key - Private key or secret key, which must match `algo`.
+ */
 export function createSigner<I>(algo: SigningAlgorithm<I>, key: CryptoAlgorithm.PrivateSecretKey<I>): Signer;
 
-/** Create a named signer from crypto key. */
+/**
+ * Create a named signer from crypto key.
+ * @param name - Key name.
+ * @param algo - Signing algorithm.
+ * @param key - Private key or secret key, which must match `algo`.
+ */
 export function createSigner<I, Asym extends boolean>(name: Name, algo: SigningAlgorithm<I, Asym>, key: CryptoAlgorithm.PrivateSecretKey<I>): NamedSigner<Asym>;
 
 export function createSigner(arg1: any, arg2: any, arg3?: any): any {

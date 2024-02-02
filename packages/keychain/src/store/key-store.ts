@@ -71,7 +71,7 @@ export namespace KeyStore {
     }
   }
 
-  /** Stored key pair in JSON or structure clone format. */
+  /** Stored key pair in JSON or structuredClone-compatible format. */
   export interface StoredKey {
     algo: string;
     info: any;

@@ -9,9 +9,17 @@ import { ValidityPeriod } from "./validity-period";
 
 /**
  * NDN Certificate v2.
+ *
+ * @remarks
  * This type is immutable.
  */
 export class Certificate {
+  /**
+   * Construct Certificate from Data packet.
+   *
+   * @throws Error
+   * Thrown if the Data packet is not a certificate.
+   */
   public static fromData(data: Data): Certificate {
     const { name, contentType, sigInfo } = data;
     if (!CertNaming.isCertName(name)) {
@@ -30,17 +38,25 @@ export class Certificate {
 
   private constructor(public readonly data: Data, public readonly validity: ValidityPeriod) {}
 
+  /** Certificate name aka Data packet name. */
   public get name() { return this.data.name; }
 
+  /** KeyLocator name, if present. */
   public get issuer(): Name | undefined {
     return this.data.sigInfo.keyLocator?.name;
   }
 
+  /** Whether this is a self-signed certificate. */
   public get isSelfSigned(): boolean {
     return this.issuer?.isPrefixOf(this.name) ?? false;
   }
 
-  /** Ensure certificate is within validity period. */
+  /**
+   * Ensure certificate is within validity period.
+   *
+   * @throws Error
+   * Certificate has expired as of `now`.
+   */
   public checkValidity(now: ValidityPeriod.TimestampInput = Date.now()): void {
     if (!this.validity.includes(now)) {
       throw new Error(`certificate ${this.name} has expired`);
@@ -52,7 +68,10 @@ export class Certificate {
     return this.data.content;
   }
 
-  /** Import SPKI as public key. */
+  /**
+   * Import SPKI as public key.
+   * @param algoList - Algorithm list, such as {@link SigningAlgorithmListSlim}.
+   */
   public async importPublicKey<I, A extends CryptoAlgorithm<I>>(
       algoList: readonly A[],
   ): Promise<[A, CryptoAlgorithm.PublicKey<I>]> {
@@ -75,15 +94,23 @@ export class Certificate {
 }
 
 export namespace Certificate {
+  /** {@link Certificate.build} options. */
   export interface BuildOptions {
     /** Certificate name. */
     name: Name;
-    /** Certificate packet FreshnessPeriod, default is 1 hour. */
+
+    /**
+     * Certificate packet FreshnessPeriod.
+     * @defaultValue 1 hour
+     */
     freshness?: number;
+
     /** ValidityPeriod. */
     validity: ValidityPeriod;
+
     /** Public key in SubjectPublicKeyInfo (SPKI) binary format. */
     publicKeySpki: Uint8Array;
+
     /** Issuer signing key. */
     signer: Signer;
   }
@@ -105,15 +132,23 @@ export namespace Certificate {
     return Certificate.fromData(data);
   }
 
+  /** {@link Certificate.issue} options. */
   export interface IssueOptions {
-    /** Certificate packet FreshnessPeriod, default is 1 hour. */
+    /**
+     * Certificate packet FreshnessPeriod.
+     * @defaultValue 1 hour
+     */
     freshness?: number;
+
     /** ValidityPeriod. */
     validity: ValidityPeriod;
+
     /** IssuerId in certificate name. */
     issuerId: Component;
+
     /** Issuer signing key. */
     issuerPrivateKey: Signer;
+
     /** Public key to appear in certificate. */
     publicKey: PublicKey;
   }
@@ -128,13 +163,24 @@ export namespace Certificate {
     return build({ ...opts, name, publicKeySpki: spki, signer });
   }
 
+  /** {@link Certificate.selfSign} options. */
   export interface SelfSignOptions {
-    /** Certificate packet FreshnessPeriod, default is 1 hour. */
+    /**
+     * Certificate packet FreshnessPeriod.
+     * @defaultValue 1 hour
+     */
     freshness?: number;
-    /** ValidityPeriod, default is maximum validity. */
+
+    /**
+     * ValidityPeriod
+     * @defaultValue
+     * Maximum validity.
+     */
     validity?: ValidityPeriod;
+
     /** Private key corresponding to public key. */
     privateKey: NamedSigner;
+
     /** Public key to appear in certificate. */
     publicKey: PublicKey;
   }

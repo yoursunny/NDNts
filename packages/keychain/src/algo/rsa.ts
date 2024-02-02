@@ -5,7 +5,7 @@ import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
 import { RsaCommon, type RsaModulusLength } from "./rsa-common";
 
 /** Sha256WithRsa signing algorithm. */
-export const RSA: SigningAlgorithm<{}, true, RSA.GenParams> = new (class extends RsaCommon implements SigningAlgorithm<{}, true, RSA.GenParams> {
+export const RSA: SigningAlgorithm<{}, true, RSA.GenParams> = new class extends RsaCommon implements SigningAlgorithm<{}, true, RSA.GenParams> {
   constructor() {
     super("RSASSA-PKCS1-v1_5");
   }
@@ -27,7 +27,7 @@ export const RSA: SigningAlgorithm<{}, true, RSA.GenParams> = new (class extends
       Verifier.throwOnBadSig(ok);
     };
   }
-})();
+}();
 
 export namespace RSA {
   export interface GenParams {

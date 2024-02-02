@@ -9,21 +9,23 @@ const ivgens = new DefaultWeakMap<CryptoAlgorithm.SecretKey<AESCTR.Info>, IvGen>
     ivLength: AESCTR.ivLength,
     counterBits: counterLength,
     blockSize: AesBlockSize,
-  }));
+  }),
+);
 
 /**
  * AES-CTR encryption algorithm.
  *
+ * @remarks
  * Initialization Vectors must be 16 octets.
  * During encryption, if IV is unspecified, it is constructed with two parts:
- * @li a 64-bit random number, generated each time a private key instance is constructed;
- * @li a 64-bit counter starting from zero.
+ * 1. 64-bit random number, generated each time a private key instance is constructed.
+ * 2. 64-bit counter starting from zero.
  *
  * During decryption, quality of IV is not automatically checked.
- * Since the security of AES-CTR depends on having unique IVs, the application is recommended to
- * check IVs using CounterIvChecker type.
+ * Since the security of AES-CTR depends on having unique IVs, the application should check IV
+ * uniqueness with {@link CounterIvChecker}.
  */
-export const AESCTR: AesEncryption<AESCTR.Info, AESCTR.GenParams> = new (class extends AesCommon<AESCTR.Info, AESCTR.GenParams> {
+export const AESCTR: AesEncryption<AESCTR.Info, AESCTR.GenParams> = new class extends AesCommon<AESCTR.Info, AESCTR.GenParams> {
   protected override readonly name = "AES-CTR";
   public override readonly uuid = "0ec985f2-88c0-4dd9-8b69-2c41bd639809";
   public override readonly ivLength = 16;
@@ -42,13 +44,14 @@ export const AESCTR: AesEncryption<AESCTR.Info, AESCTR.GenParams> = new (class e
     delete params.iv;
     params.length = counterLength;
   }
-})();
+}();
 
 export namespace AESCTR {
   export interface Info {
     /**
      * Specify number of bits in IV to use as counter.
-     * This must be between 1 and 128. Default is 64.
+     * This must be between 1 and 128.
+     * @defaultValue 64
      */
     counterLength: number;
   }

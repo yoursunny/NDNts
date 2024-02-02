@@ -2,9 +2,9 @@ import type { LLEncrypt, Name } from "@ndn/packet";
 import { assert } from "@ndn/util";
 
 import { EncryptionAlgorithmListSlim } from "../algolist/mod";
-import type { Certificate, ValidityPeriod } from "../cert/mod";
+import type { Certificate } from "../cert/mod";
 import * as CertNaming from "../naming";
-import { ImportCertCached, isPublicSecretKey } from "./impl-import-cert";
+import { ImportCertCached, type ImportCertOptions, isPublicSecretKey } from "./impl-import-cert";
 import { type CryptoAlgorithm, type EncryptionAlgorithm, KeyKind, type NamedEncrypter } from "./types";
 
 class PlainCryptoEncrypter<I> {
@@ -39,14 +39,27 @@ class NamedCryptoEncrypter<I> extends PlainCryptoEncrypter<I> implements NamedEn
   }
 }
 
-/** Create a plain encrypter from crypto key. */
+/**
+ * Create a plain encrypter from crypto key.
+ * @param algo - Encryption algorithm.
+ * @param key - Public key or secret key, which must match `algo`.
+ */
 export function createEncrypter<I>(algo: EncryptionAlgorithm<I>, key: CryptoAlgorithm.PublicSecretKey<I>): LLEncrypt.Key;
 
-/** Create a named encrypter from crypto key. */
+/**
+ * Create a named encrypter from crypto key.
+ * @param name - Key name.
+ * @param algo - Encryption algorithm.
+ * @param key - Public key or secret key, which must match `algo`.
+ */
 export function createEncrypter<I, Asym extends boolean>(name: Name, algo: EncryptionAlgorithm<I, Asym>, key: CryptoAlgorithm.PublicSecretKey<I>): NamedEncrypter<Asym>;
 
-/** Create a named encrypter from certificate public key. */
-export function createEncrypter(cert: Certificate, opts?: createEncrypter.ImportCertOptions): Promise<NamedEncrypter.PublicKey>;
+/**
+ * Create a named encrypter from the public key in a certificate.
+ * @param cert - Certificate.
+ * @param opts - Certificate import options.
+ */
+export function createEncrypter(cert: Certificate, opts?: ImportCertOptions<EncryptionAlgorithm>): Promise<NamedEncrypter.PublicKey>;
 
 export function createEncrypter(arg1: any, arg2: any = {}, arg3?: any): any {
   if (arg3) {
@@ -55,31 +68,7 @@ export function createEncrypter(arg1: any, arg2: any = {}, arg3?: any): any {
   if (isPublicSecretKey(arg2)) {
     return new PlainCryptoEncrypter(arg1, arg2);
   }
-  return certEncrypters.importCert(arg1, arg2 as createEncrypter.ImportCertOptions);
+  return certEncrypters.importCert(arg1, arg2);
 }
 
 const certEncrypters = new ImportCertCached(NamedCryptoEncrypter, EncryptionAlgorithmListSlim);
-
-export namespace createEncrypter {
-  /** createEncrypter options when importing public key from a certificate. */
-  export interface ImportCertOptions {
-    /**
-     * List of recognized algorithms.
-     * Default is EncryptionAlgorithmListSlim.
-     * Use EncryptionAlgorithmListFull for all algorithms, at the cost of larger bundle size.
-     */
-    algoList?: readonly EncryptionAlgorithm[];
-
-    /**
-     * Whether to check certificate ValidityPeriod.
-     * Default is true, which throws an error if current timestamp is not within ValidityPeriod.
-     */
-    checkValidity?: boolean;
-
-    /**
-     * Current timestamp for checking ValidityPeriod.
-     * Default is Date.now().
-     */
-    now?: ValidityPeriod.TimestampInput;
-  }
-}

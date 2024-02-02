@@ -6,9 +6,9 @@ import type { KeyChain, KeyStore } from "../store/mod";
 import type { CryptoAlgorithm } from "./types";
 
 /**
- * Implementation detail of generateSigningKey and generateEncryptionKey.
- * @param defaultAlgo default algorithm, required if algorithm may be omitted in `a`.
- * @param a tuple of [keyChain?: KeyChain, keyName: NameLike, algo?: Algorithm, genParams?: I].
+ * Implementation detail of {@link generateSigningKey} and {@link generateEncryptionKey}.
+ * @param defaultAlgo - Default algorithm, required if algorithm may be omitted in `a`.
+ * @param a - Tuple of [keyChain?: KeyChain, keyName: NameLike, algo?: Algorithm, genParams?: I].
  */
 export async function generateKeyInternal<Algo extends CryptoAlgorithm>(
     defaultAlgo: Algo, a: unknown[],

@@ -3,7 +3,10 @@ import { assert, toHex } from "@ndn/util";
 import { IvChecker } from "./checker";
 import { CounterIncrement, type CounterIvOptions, parseCounterIvOptions, throwCounterIvErrorIf } from "./counter-common";
 
-/** Check IVs of fixed+random+counter structure to detect duplication. */
+/**
+ * Check Initialization Vectors of fixed+random+counter structure for duplication.
+ * @see {@link CounterIvOptions} for expected IV structure.
+ */
 export class CounterIvChecker extends IvChecker {
   constructor(opts: CounterIvChecker.Options) {
     super(opts.ivLength);
@@ -67,7 +70,7 @@ export namespace CounterIvChecker {
   export interface Options extends CounterIvOptions {
     /**
      * If true, all IVs must have the same bits in the random portion.
-     * @default false
+     * @defaultValue false
      */
     requireSameRandom?: boolean;
   }

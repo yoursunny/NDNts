@@ -6,7 +6,7 @@ import type { RSA } from "./rsa";
 import { RsaCommon } from "./rsa-common";
 
 /** RSA-OAEP encryption algorithm. */
-export const RSAOAEP: EncryptionAlgorithm<{}, true, RSA.GenParams> = new (class extends RsaCommon implements EncryptionAlgorithm<{}, true, RSA.GenParams> {
+export const RSAOAEP: EncryptionAlgorithm<{}, true, RSA.GenParams> = new class extends RsaCommon implements EncryptionAlgorithm<{}, true, RSA.GenParams> {
   constructor() {
     super("RSA-OAEP", "SHA-1");
   }
@@ -39,4 +39,4 @@ export const RSAOAEP: EncryptionAlgorithm<{}, true, RSA.GenParams> = new (class 
       return { plaintext };
     };
   }
-})();
+}();

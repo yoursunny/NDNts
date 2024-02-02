@@ -11,7 +11,7 @@ import { openStores } from "./stores_node";
 
 /** Storage of own private keys and certificates. */
 export abstract class KeyChain {
-  /** Return whether insertKey function expects JsonWebKey instead of CryptoKey. */
+  /** Return whether `.insertKey()` method expects JsonWebKey instead of CryptoKey. */
   abstract readonly needJwk: boolean;
 
   /** List keys, filtered by name prefix. */
@@ -22,7 +22,7 @@ export abstract class KeyChain {
 
   /**
    * Retrieve key by key name.
-   * @param typ "signer", "verifier", etc.
+   * @param typ - "signer", "verifier", etc.
    */
   public async getKey<K extends keyof KeyChain.KeyPair>(name: Name, typ: K): Promise<KeyChain.KeyPair[K]> {
     const keyPair = await this.getKeyPair(name);
@@ -41,7 +41,12 @@ export abstract class KeyChain {
   /** Retrieve certificate by cert name. */
   abstract getCert(name: Name): Promise<Certificate>;
 
-  /** Insert certificate; key must exist. */
+  /**
+   * Insert certificate.
+   *
+   * @remarks
+   * Corresponding key must exist.
+   */
   abstract insertCert(cert: Certificate): Promise<void>;
 
   /** Delete certificate. */
@@ -49,17 +54,21 @@ export abstract class KeyChain {
 
   /**
    * Create a signer from keys and certificates in the KeyChain.
-   * @param name subject name, key name, or certificate name.
+   * @param name - Subject name, key name, or certificate name.
    *
-   * @li If name is a certificate name, sign with the corresponding private key,
-   *     and use the specified certificate name as KeyLocator.
-   * @li If name is a key name, sign with the specified private key.
-   *     If a non-self-signed certificate exists for this key, use the certificate name as KeyLocator.
-   *     Otherwise, use the key name as KeyLocator.
-   * @li If name is neither certificate name nor key name, it is interpreted as a subject name.
-   *     A non-self-signed certificate of this subject name is preferred.
-   *     If such a certificate does not exist, use any key of this subject name.
-   * @li If prefixMatch is true, name can also be interpreted as a prefix of the subject name.
+   * @remarks
+   * If `name` is a certificate name, sign with the corresponding private key, and use the
+   * specified certificate name as KeyLocator.
+   *
+   * If `name` is a key name, sign with the specified private key. If a non-self-signed certificate
+   * exists for this key, use the certificate name as KeyLocator. Otherwise, use the key name as
+   * KeyLocator.
+   *
+   * If `name` is neither a certificate name nor a key name, it is interpreted as a subject name.
+   * A non-self-signed certificate of this subject name is preferred. If no such certificate
+   * exists, use any key of this subject name.
+   *
+   * If `prefixMatch` is true, `name` can also be interpreted as a prefix of the subject name.
    */
   public async getSigner(
       name: Name,
@@ -180,37 +189,46 @@ class KeyChainImpl extends KeyChain {
 export namespace KeyChain {
   export type KeyPair<Asym extends boolean = any> = KeyStore.KeyPair<Asym>;
 
-  /**
-   * keyChain.getSigner() options.
-   */
+  /** {@link keyChain.getSigner} options. */
   export interface GetSignerOptions {
     /**
-     * If false, name argument must equal subject name, key name, or certificate name.
-     * If true, name argument may be a prefix of subject name.
-     * Default is false.
+     * Whether to allow prefix match between name argument and subject name.
+     * @defaultValue false
+     *
+     * @remarks
+     * If `false`, `name` argument must equal subject name, key name, or certificate name.
+     * If `true`, `name` argument may be a prefix of subject name.
      */
     prefixMatch?: boolean;
 
     /**
-     * If a function, it is invoked when no matching key or certificate is found, and should
-     * either return a fallback Signer or reject the promise.
-     * If a Signer, it is used when no matching key or certificate is found.
+     * Fallback when no matching or certificate is found.
+     *
+     * @remarks
+     * If this is a function, it is invoked when no matching key or certificate is found. The
+     * function should either return a fallback Signer or reject the promise.
+     *
+     * If this is a Signer, it is used when no matching key or certificate is found.
      */
     fallback?: Signer | ((name: Name, keyChain: KeyChain, err?: Error) => Promise<Signer>);
 
     /**
-     * If false, KeyLocator is a certificate name when a non-self-signed certificate exists.
-     * If true, KeyLocator is the key name.
-     * Default is false.
+     * Whether to prefer key name in KeyLocator.
+     * @defaultValue false
+     *
+     * @remarks
+     * If `false`, KeyLocator is a certificate name when a non-self-signed certificate exists.
+     * If `true`, KeyLocator is the key name.
      */
     useKeyNameKeyLocator?: boolean;
   }
 
   /**
    * Open a persistent KeyChain.
-   * @param locator in Node.js, a filesystem directory; in browser, a database name.
-   * @param algoList list of recognized algorithms. Default is CryptoAlgorithmListSlim.
-   *                 Use CryptoAlgorithmListFull for all algorithms, at the cost of larger bundle size.
+   * @param locator - Filesystem directory in Node.js; database name in browser.
+   * @param algoList - List of recognized algorithms.
+   * Default is {@link CryptoAlgorithmListSlim}. Use {@link CryptoAlgorithmListFull} for all
+   * algorithms, at the cost of larger bundle size.
    */
   export function open(locator: string, algoList?: readonly CryptoAlgorithm[]): KeyChain;
 
@@ -226,8 +244,9 @@ export namespace KeyChain {
 
   /**
    * Create an in-memory ephemeral KeyChain.
-   * @param algoList list of recognized algorithms.
-   *                 Use CryptoAlgorithmListFull for all algorithms, at the cost of larger bundle size.
+   * @param algoList - List of recognized algorithms.
+   * Default is {@link CryptoAlgorithmListSlim}. Use {@link CryptoAlgorithmListFull} for all
+   * algorithms, at the cost of larger bundle size.
    */
   export function createTemp(algoList = CryptoAlgorithmListSlim): KeyChain {
     return new KeyChainImpl(

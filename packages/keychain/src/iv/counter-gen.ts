@@ -3,7 +3,10 @@ import { fromHex } from "@ndn/util";
 import { CounterIncrement, type CounterIvOptions, parseCounterIvOptions } from "./counter-common";
 import { IvGen } from "./gen";
 
-/** IV generator using fixed+random+counter structure. */
+/**
+ * Generate Initialization Vectors using fixed+random+counter structure.
+ * @see {@link CounterIvOptions} for expected IV structure.
+ */
 export class CounterIvGen extends IvGen {
   constructor(opts: CounterIvGen.Options) {
     super(opts.ivLength);

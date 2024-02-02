@@ -2,9 +2,9 @@ import { KeyLocator, LLVerify, type Name, Verifier } from "@ndn/packet";
 import { assert } from "@ndn/util";
 
 import { SigningAlgorithmListSlim } from "../algolist/mod";
-import type { Certificate, ValidityPeriod } from "../cert/mod";
+import type { Certificate } from "../cert/mod";
 import * as CertNaming from "../naming";
-import { ImportCertCached, isPublicSecretKey } from "./impl-import-cert";
+import { ImportCertCached, type ImportCertOptions, isPublicSecretKey } from "./impl-import-cert";
 import { type CryptoAlgorithm, KeyKind, type NamedVerifier, type SigningAlgorithm } from "./types";
 
 class PlainCryptoVerifier<I> implements Verifier {
@@ -54,14 +54,27 @@ class NamedCryptoVerifier<I> extends PlainCryptoVerifier<I> implements NamedVeri
   }
 }
 
-/** Create a plain verifier from crypto key. */
+/**
+ * Create a plain verifier from crypto key.
+ * @param algo - Signing algorithm.
+ * @param key - Public key or secret key, which must match `algo`.
+ */
 export function createVerifier<I>(algo: SigningAlgorithm<I>, key: CryptoAlgorithm.PublicSecretKey<I>): Verifier;
 
-/** Create a named verifier from crypto key. */
+/**
+ * Create a named verifier from crypto key.
+ * @param name - Key name.
+ * @param algo - Signing algorithm.
+ * @param key - Public key or secret key, which must match `algo`.
+ */
 export function createVerifier<I, Asym extends boolean>(name: Name, algo: SigningAlgorithm<I, Asym>, key: CryptoAlgorithm.PublicSecretKey<I>): NamedVerifier<Asym>;
 
-/** Create a named verifier from certificate public key. */
-export function createVerifier(cert: Certificate, opts?: createVerifier.ImportCertOptions): Promise<NamedVerifier.PublicKey>;
+/**
+ * Create a named verifier from the public key in a certificate.
+ * @param cert - Certificate.
+ * @param opts - Certificate import options.
+ */
+export function createVerifier(cert: Certificate, opts?: ImportCertOptions<SigningAlgorithm>): Promise<NamedVerifier.PublicKey>;
 
 export function createVerifier(arg1: any, arg2: any = {}, arg3?: any): any {
   if (arg3) {
@@ -70,31 +83,7 @@ export function createVerifier(arg1: any, arg2: any = {}, arg3?: any): any {
   if (isPublicSecretKey(arg2)) {
     return new PlainCryptoVerifier(arg1, arg2);
   }
-  return certVerifiers.importCert(arg1, arg2 as createVerifier.ImportCertOptions);
+  return certVerifiers.importCert(arg1, arg2);
 }
 
 const certVerifiers = new ImportCertCached(NamedCryptoVerifier, SigningAlgorithmListSlim);
-
-export namespace createVerifier {
-  /** createVerifier options when importing public key from a certificate. */
-  export interface ImportCertOptions {
-    /**
-     * List of recognized algorithms.
-     * Default is SigningAlgorithmListSlim.
-     * Use SigningAlgorithmListFull for all algorithms, at the cost of larger bundle size.
-     */
-    algoList?: readonly SigningAlgorithm[];
-
-    /**
-     * Whether to check certificate ValidityPeriod.
-     * Default is true, which throws an error if current timestamp is not within ValidityPeriod.
-     */
-    checkValidity?: boolean;
-
-    /**
-     * Current timestamp for checking ValidityPeriod.
-     * Default is Date.now().
-     */
-    now?: ValidityPeriod.TimestampInput;
-  }
-}

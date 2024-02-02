@@ -127,7 +127,10 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
 export namespace ECDSA {
   /** Key generation parameters. */
   export interface GenParams {
-    /** Pick EC curve. Default is P-256. */
+    /**
+     * EC curve.
+     * @defaultValue P-256
+     */
     curve?: EcCurve;
 
     /** Import PKCS#8 private key and SPKI public key instead of generating. */

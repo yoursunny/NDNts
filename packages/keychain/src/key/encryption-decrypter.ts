@@ -34,10 +34,19 @@ class NamedCryptoDecrypter<I> extends PlainCryptoDecrypter<I> implements NamedDe
   }
 }
 
-/** Create a plain decrypter from crypto key. */
+/**
+ * Create a plain decrypter from crypto key.
+ * @param algo - Encryption algorithm.
+ * @param key - Private key or secret key, which must match `algo`.
+ */
 export function createDecrypter<I>(algo: EncryptionAlgorithm<I>, key: CryptoAlgorithm.PrivateSecretKey<I>): LLDecrypt.Key;
 
-/** Create a named decrypter from crypto key. */
+/**
+ * Create a named decrypter from crypto key.
+ * @param name - Key name.
+ * @param algo - Encryption algorithm.
+ * @param key - Private key or secret key, which must match `algo`.
+ */
 export function createDecrypter<I, Asym extends boolean>(name: Name, algo: EncryptionAlgorithm<I, Asym>, key: CryptoAlgorithm.PrivateSecretKey<I>): NamedDecrypter<Asym>;
 
 export function createDecrypter(arg1: any, arg2: any, arg3?: any): any {

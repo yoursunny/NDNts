@@ -53,6 +53,7 @@ module.exports = {
       "/packages/*mgmt",
       "/packages/endpoint",
       "/packages/fw",
+      "/packages/keychain",
       "/packages/l3face",
       "/packages/lp",
       "/packages/naming-convention*",

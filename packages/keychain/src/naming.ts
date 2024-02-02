@@ -34,7 +34,10 @@ export function isKeyName(name: Name): boolean {
   return name.length >= 2 && name.get(-2)!.equals(KEY);
 }
 
-/** Parse a key name into fields. */
+/**
+ * Parse a key name into fields.
+ * @param name - Must be a key name.
+ */
 export function parseKeyName(name: Name): KeyNameFields {
   assert(isKeyName(name));
   return {
@@ -55,7 +58,9 @@ function getKeyNameImpl(name: Name): Name | undefined {
 
 /**
  * Get key name from key name or certificate name.
- * @throws input name is neither key name nor certificate name.
+ *
+ * @throws Error
+ * Thrown if `name` is neither a key name nor a certificate name.
  */
 export function toKeyName(name: Name): Name {
   const keyName = getKeyNameImpl(name);
@@ -67,8 +72,16 @@ export function toKeyName(name: Name): Name {
 
 /**
  * Create key name from subject name, key name, or certificate name.
- * @param name subject name, key name, or certificate name.
- * @param opts.keyId keyId component, used only if input name is subject name.
+ * @param name - Subject name, key name, or certificate name.
+ *
+ * @remarks
+ * If `name` is a subject name, it's concatenated with additional components to make a key name:
+ * - *KeyId* component is set to `.opts.keyId`.
+ *   If unset, it defaults to TimestampNameComponent of the current timestamp.
+ *
+ * If `name` is a key name, it is returned unchanged.
+ *
+ * If `name` is a certificate name, its key name portion is returned.
  */
 export function makeKeyName(name: Name, opts: Partial<Pick<KeyNameFields, "keyId">> = {}): Name {
   const keyName = getKeyNameImpl(name);
@@ -86,7 +99,10 @@ export function isCertName(name: Name): boolean {
   return name.length >= 4 && name.get(-4)!.equals(KEY);
 }
 
-/** Parse a certificate name into fields. */
+/**
+ * Parse a certificate name into fields.
+ * @param name - Must be a certificate name.
+ */
 export function parseCertName(name: Name): CertNameFields {
   assert(isCertName(name));
   return {
@@ -100,10 +116,22 @@ export function parseCertName(name: Name): CertNameFields {
 
 /**
  * Create certificate name from subject name, key name, or certificate name.
- * @param name subject name, key name, or certificate name.
- * @param opts.keyId keyId component, used only if input name is subject name.
- * @param opts.issuerId keyId, used only if input name is subject name or key name.
- * @param opts.version keyId, used only if input name is subject name or key name.
+ * @param name - Subject name, key name, or certificate name.
+ *
+ * @remarks
+ * If `name` is a subject name, it's concatenated with additional components to make a certificate name:
+ * - *KeyId* component is set to `.opts.keyId`.
+ *   If unset, it defaults to the current timestamp.
+ *
+ * If `name` is a key name, it's concatenated with additional components to make a certificate name:
+ * - *KeyId* component is set to `.opts.keyId`.
+ *   If unset, it defaults to TimestampNameComponent of the current timestamp.
+ * - *IssuerId* component is set to `.opts.issuerId`.
+ *   If unset, it defaults to "NDNts".
+ * - *Version* component is set to `.opts.version`.
+ *   If unset, it defaults to VersionNameComponent of the current timestamp in milliseconds.
+ *
+ * If `name` is a certificate name, it is returned unchanged.
  */
 export function makeCertName(name: Name, opts: Partial<Pick<CertNameFields, "keyId" | "issuerId" | "version">> = {}): Name {
   if (isCertName(name)) {

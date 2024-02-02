@@ -4,18 +4,20 @@ import { crypto } from "@ndn/util";
 import type { IvGen } from "../iv/mod";
 import type { CryptoAlgorithm, EncryptionAlgorithm } from "../key/mod";
 
+/** AES encryption algorithm. */
 export interface AesEncryption<I, G extends AesGenParams> extends EncryptionAlgorithm<I, false, G> {
   readonly ivLength: number;
   makeAesKeyGenParams(genParams: G): AesKeyGenParams;
 }
 
-export type AesKeyLength = 128 | 192 | 256;
+/** AES key length option. */
+export type AesKeyLength = (typeof AesKeyLength.Choices)[number];
 export namespace AesKeyLength {
   export const Default: AesKeyLength = 128;
-  export const Choices: readonly AesKeyLength[] = [128, 192, 256];
+  export const Choices = [128, 192, 256] as const;
 }
 
-/** Key generation parameters. */
+/** AES key generation parameters. */
 export interface AesGenParams {
   length?: AesKeyLength;
 
