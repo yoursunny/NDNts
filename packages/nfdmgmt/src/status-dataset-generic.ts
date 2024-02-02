@@ -2,33 +2,39 @@ import type { Component } from "@ndn/packet";
 import { discoverVersion, fetch } from "@ndn/segmented-object";
 import { type Decodable, Decoder } from "@ndn/tlv";
 
-import { CommonOptions, makeName } from "./common";
+import { CommonOptions, concatName } from "./common";
 
 export interface StatusDatasetOptions extends CommonOptions {
 }
 
+/** Dataset name, parameters, and item type. */
 export interface StatusDataset<R> extends Decodable<R> {
+  /** Dataset name, written in name URI format. */
   readonly datasetName: string;
+
+  /** Dataset parameters components. */
   readonly datasetParams?: readonly Component[];
 }
 
 /**
  * Retrieve a StatusDataset.
- * @template R item type.
- * @param dataset dataset name, parameters, and item type.
- * @param opts other options. Set .opts.prefix to target non-NFD producer.
- * @returns dataset items.
+ * @typeParam R - Item type.
+ * @param dataset - Dataset name, parameters, and item type.
+ * @param opts - Other options.
+ * To interact with non-NFD producer, `.opts.prefix` must be set.
+ * @returns Dataset items.
  */
 export async function list<R>(dataset: StatusDataset<R>, opts?: StatusDatasetOptions): Promise<R[]>;
 
 /**
  * Retrieve a StatusDataset.
- * @template R item type.
- * @param dataset dataset name.
- * @param params dataset parameters.
- * @param d item type.
- * @param opts other options. Set .opts.prefix to target non-NFD producer.
- * @returns dataset items.
+ * @typeParam R - Item type.
+ * @param dataset - Dataset name, written in name URI format.
+ * @param params - Dataset parameters components.
+ * @param d - Item type.
+ * @param opts - Other options.
+ * To interact with non-NFD producer, `.opts.prefix` must be set.
+ * @returns Dataset items.
  */
 export async function list<R>(dataset: string, params: readonly Component[], d: Decodable<R>, opts?: StatusDatasetOptions): Promise<R[]>;
 
@@ -43,7 +49,7 @@ export async function list<R>(arg1: string | StatusDataset<R>, arg2: any = {}, a
   }
 
   const { endpoint, prefix, verifier } = CommonOptions.applyDefaults(opts);
-  const name = makeName(prefix, datasetName, params);
+  const name = concatName(prefix, datasetName, params);
   const versioned = await discoverVersion(name, { endpoint, verifier });
   const payload = await fetch(versioned, { endpoint, verifier });
 

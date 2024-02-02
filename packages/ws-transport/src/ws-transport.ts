@@ -119,7 +119,7 @@ export namespace WsTransport {
   export interface Options {
     /**
      * Connect timeout (in milliseconds).
-     * @defaultValue 10 seconds
+     * @defaultValue 10000
      */
     connectTimeout?: number;
 
@@ -128,13 +128,15 @@ export namespace WsTransport {
 
     /**
      * Buffer amount (in bytes) to start TX throttling.
-     * @defaultValue 1 MiB
+     * @defaultValue
+     * 1 MiB
      */
     highWaterMark?: number;
 
     /**
      * Buffer amount (in bytes) to stop TX throttling.
-     * @defaultValue 16 KiB
+     * @defaultValue
+     * 16 KiB
      */
     lowWaterMark?: number;
   }

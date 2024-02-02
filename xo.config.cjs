@@ -50,6 +50,7 @@ module.exports = {
     ...makePackageOverrides(merge(js, ts), ""),
     ...makePackageOverrides(merge(js, ts, tsdoc),
       "/packages/*-transport",
+      "/packages/*mgmt",
       "/packages/endpoint",
       "/packages/fw",
       "/packages/l3face",

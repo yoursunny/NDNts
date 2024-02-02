@@ -25,9 +25,9 @@ class SignedInterest02 implements Signer.Signable {
 
 /**
  * Sign an Interest in Signed Interest 0.2 format.
- * @param interest input Interest without signed Interest specific components.
- * @param signer private key to sign the Interest.
- * @see https://docs.named-data.net/ndn-cxx/0.8.0/specs/signed-interest.html
+ * @param interest - Input Interest without signed Interest specific components.
+ * @param signer - Private key to sign the Interest.
+ * @see {@link https://docs.named-data.net/ndn-cxx/0.8.0/specs/signed-interest.html}
  */
 export async function signInterest02(
     interest: Interest,

@@ -4,13 +4,15 @@ import { randomJitter } from "@ndn/util";
 export interface RetxOptions {
   /**
    * Maximum number of retransmissions, excluding initial Interest.
-   * @defaultValue `0`, which disables retransmissions
+   * @defaultValue
+   * `0`, which disables retransmissions
    */
   limit?: number;
 
   /**
    * Initial retx interval
-   * @defaultValue 50% of InterestLifetime
+   * @defaultValue
+   * 50% of InterestLifetime
    */
   interval?: number;
 
@@ -34,7 +36,8 @@ export interface RetxOptions {
 
   /**
    * Maximum retx interval.
-   * @defaultValue 90% of InterestLifetime
+   * @defaultValue
+   * 90% of InterestLifetime
    */
   max?: number;
 }

@@ -6,7 +6,7 @@ export const localhopPrefix = new Name("/localhop/nfd");
 
 /**
  * Determine the NFD management prefix.
- * @param isLocal whether the client is connected to a NFD local face.
+ * @param isLocal - Whether the client is connected to a NFD local face.
  * @returns NFD management prefix.
  */
 export function getPrefix(isLocal = false) {
@@ -14,18 +14,23 @@ export function getPrefix(isLocal = false) {
 }
 
 export interface CommonOptions {
-  /** Endpoint for communication. */
+  /**
+   * Endpoint for communication.
+   * @defaultValue
+   * Endpoint on default logical forwarder.
+   */
   endpoint?: Endpoint;
 
   /**
    * NFD management prefix.
-   * @default getPrefix()
+   * @defaultValue `getPrefix()`
    */
   prefix?: Name;
 
   /**
    * Data verifier.
-   * Default is no verification.
+   * @defaultValue
+   * No verification.
    */
   verifier?: Verifier;
 }
@@ -40,6 +45,6 @@ export namespace CommonOptions {
   }
 }
 
-export function makeName(prefix: Name, subName: string, params: readonly Component[]): Name {
+export function concatName(prefix: Name, subName: string, params: readonly Component[]): Name {
   return new Name([...prefix.comps, ...subName.split("/"), ...params]);
 }

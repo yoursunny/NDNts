@@ -14,7 +14,8 @@ export type AddressFamily = 4 | 6;
 export interface OpenSocketOptions extends SocketBufferOptions {
   /**
    * IPv4 or IPv6.
-   * @defaultValue IPv4, unless hostname is a literal IPv6 address.
+   * @defaultValue
+   * IPv4, unless hostname is a literal IPv6 address.
    */
   family?: AddressFamily;
 

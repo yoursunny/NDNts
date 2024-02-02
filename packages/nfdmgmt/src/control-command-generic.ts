@@ -1,7 +1,7 @@
 import { Component, digestSigning, Interest, SignedInterestPolicy, type Signer, TT } from "@ndn/packet";
 import { Decoder, type Encodable, Encoder } from "@ndn/tlv";
 
-import { CommonOptions, makeName } from "./common";
+import { CommonOptions, concatName } from "./common";
 import { ControlResponse } from "./control-response";
 
 const defaultSIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce(), SignedInterestPolicy.Time());
@@ -9,23 +9,26 @@ const defaultSIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce(), Signed
 export interface ControlCommandOptions extends CommonOptions {
   /**
    * Command Interest signer.
-   * Default is digest signing.
+   * @defaultValue
+   * Digest signing.
    */
   signer?: Signer;
 
   /**
    * Signed Interest policy for the command Interest.
-   * Default is including SigNonce and SigTime in the signed Interest.
+   * @defaultValue
+   * Signed Interest shall contain SigNonce and SigTime.
    */
   signedInterestPolicy?: SignedInterestPolicy;
 }
 
 /**
  * Invoke generic ControlCommand and wait for response.
- * @param command command name.
- * @param params command parameters.
- * @param opts other options. Set .opts.prefix to target non-NFD producer.
- * @returns command response.
+ * @param command - Command name.
+ * @param params - Command parameters.
+ * @param opts - Other options.
+ * To interact with non-NFD producer, `.opts.prefix` must be set.
+ * @returns Command response.
  */
 export async function invokeGeneric(command: string, params: Encodable, opts: ControlCommandOptions = {}): Promise<ControlResponse> {
   const { endpoint, prefix, verifier } = CommonOptions.applyDefaults(opts);
@@ -34,7 +37,7 @@ export async function invokeGeneric(command: string, params: Encodable, opts: Co
     signedInterestPolicy = defaultSIP,
   } = opts;
 
-  const interest = new Interest(makeName(prefix, command, [new Component(TT.GenericNameComponent, Encoder.encode(params))]));
+  const interest = new Interest(concatName(prefix, command, [new Component(TT.GenericNameComponent, Encoder.encode(params))]));
   await signedInterestPolicy.makeSigner(signer).sign(interest);
 
   const data = await endpoint.consume(interest, {

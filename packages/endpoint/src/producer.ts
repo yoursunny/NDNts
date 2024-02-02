@@ -24,7 +24,8 @@ export type ProducerHandler = (interest: Interest, producer: Producer) => Promis
 export interface ProducerOptions {
   /**
    * Description for debugging purpose.
-   * @defaultValue "produce" + prefix.
+   * @defaultValue
+   * "produce" + prefix.
    */
   describe?: string;
 

@@ -23,29 +23,12 @@ const enum TT {
   // unit tests verify consistency of those TLV-TYPE numbers
 }
 
-type CommandOptions = Except<ControlCommandOptions, "endpoint" | "prefix">;
-type RouteOptions = Pick<ControlParameters.Fields, "origin" | "cost" | `flag${keyof typeof RouteFlags}`>;
-type Options = CommandOptions & RouteOptions & {
-  retry?: ReadvertiseDestination.RetryOptions;
-
-  /** How often to refresh prefix registration, false to disable. */
-  refreshInterval?: number | false;
-
-  /** Set to signer name to retrieve and serve certificate chain. */
-  preloadCertName?: Name;
-
-  /** Local KeyChain to collect preloaded certificates. */
-  preloadFromKeyChain?: KeyChain;
-
-  /** InterestLifetime for retrieving preloaded certificates. */
-  preloadInterestLifetime?: number;
-};
-
 interface State {
   refreshTimer?: NodeJS.Timeout | number;
 }
 
-class NfdPrefixReg extends ReadvertiseDestination<State> {
+/** Readvertise prefix announcements via NFD prefix registration protocol. */
+export class NfdPrefixReg extends ReadvertiseDestination<State> {
   private readonly commandOptions: Except<ControlCommandOptions, "endpoint">;
   private readonly routeElements: [origin: Encodable, cost: Encodable, flags: Encodable, expiry: Encodable];
   private readonly refreshInterval?: () => number;
@@ -54,7 +37,13 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
   private readonly preloadInterestLifetime: ReturnType<typeof Interest.Lifetime>;
   private readonly preloadCerts = new NameMap<Certificate>();
 
-  constructor(private readonly face: FwFace, opts: Options) {
+  /**
+   * Constructor.
+   *
+   * @remarks
+   * {@link enableNfdPrefixReg} is recommended.
+   */
+  constructor(private readonly face: FwFace, opts: NfdPrefixReg.Options) {
     super(opts.retry);
 
     this.commandOptions = {
@@ -193,12 +182,47 @@ class NfdPrefixReg extends ReadvertiseDestination<State> {
     }
   }
 }
+export namespace NfdPrefixReg {
+  /** {@link enableNfdPrefixReg} options. */
+  export type Options =
+  Except<ControlCommandOptions, "endpoint" | "prefix"> &
+  Pick<ControlParameters.Fields, "origin" | "cost" | `flag${keyof typeof RouteFlags}`> &
+  {
+    retry?: ReadvertiseDestination.RetryOptions;
+
+    /**
+     * How often to refresh prefix registration (in milliseconds).
+     * Set to `false` disables refreshing.
+     */
+    refreshInterval?: number | false;
+
+    /**
+     * Set to signer name to retrieve and serve certificate chain.
+     * If unset, no certificates will be served.
+     */
+    preloadCertName?: Name;
+
+    /**
+     * Local KeyChain to collect preloaded certificates.
+     * If unset, certificates will not be collected from a local KeyChain.
+     */
+    preloadFromKeyChain?: KeyChain;
+
+    /**
+     * InterestLifetime for retrieving preloaded certificates.
+     * @defaultValue 500
+     */
+    preloadInterestLifetime?: number;
+  };
+}
 
 /**
  * Enable prefix registration via NFD management protocol.
- * @param face face connected to NFD.
- * @param opts options.
+ * @param face - Face connected to NFD.
+ * @returns NFD prefix registration module.
  */
-export function enableNfdPrefixReg(face: FwFace, opts: Options = {}) {
-  new NfdPrefixReg(face, opts).enable(face.fw);
+export function enableNfdPrefixReg(face: FwFace, opts: NfdPrefixReg.Options = {}): NfdPrefixReg {
+  const reg = new NfdPrefixReg(face, opts);
+  reg.enable(face.fw);
+  return reg;
 }

@@ -29,8 +29,8 @@ const buildControlParameters = new StructBuilder("ControlParameters", TT.Control
 /** NFD Management ControlParameters struct. */
 export class ControlParameters extends buildControlParameters.baseClass<ControlParameters>() {
   /**
-   * Decode from ControlResponse body.
-   * @param response ControlResponse that contains ControlParameters.
+   * Decode from {@link ControlResponse} body.
+   * @param response - {@link ControlResponse} that contains ControlParameters.
    */
   public static decodeFromResponseBody(response: { body: Uint8Array }): ControlParameters {
     return Decoder.decode(response.body, ControlParameters);
@@ -51,8 +51,8 @@ export namespace ControlParameters {
 
 /**
  * Pick fields from ControlParameters.Fields.
- * R are required.
- * O are optional.
+ * @typeParam R - Required fields.
+ * @typeParam O - Optional fields.
  */
 type CP<R extends keyof ControlParameters.Fields, O extends keyof ControlParameters.Fields> =
   SetRequired<Pick<ControlParameters.Fields, R | O>, R>;
@@ -83,10 +83,10 @@ interface Commands {
 
 /**
  * Invoke NFD ControlCommand and wait for response.
- * @param command command module and verb.
- * @param params command parameters.
- * @param opts other options.
- * @returns command response.
+ * @param command - Command module and verb.
+ * @param params - Command parameters.
+ * @param opts - Other options.
+ * @returns Command response.
  */
 export async function invoke<C extends keyof Commands>(command: C, params: Commands[C], opts: ControlCommandOptions = {}): Promise<ControlResponse> {
   return invokeGeneric(command, new ControlParameters(params), opts);

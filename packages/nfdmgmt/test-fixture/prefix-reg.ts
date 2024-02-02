@@ -58,7 +58,7 @@ export class FakeNfd extends TcpServer {
   }
 
   /** Wait until at least n clients are connected, and enable PrefixRegServer on them. */
-  public readonly waitNFaces = async (n: number): Promise<FakeNfd.Face[]> => {
+  public async waitNFaces(n: number): Promise<FakeNfd.Face[]> {
     const socks = await this.waitNClients(n);
     return socks.map((sock) => {
       const tr = new StreamTransport(sock);
@@ -70,7 +70,7 @@ export class FakeNfd extends TcpServer {
         reg,
       };
     });
-  };
+  }
 }
 export namespace FakeNfd {
   export interface Face {

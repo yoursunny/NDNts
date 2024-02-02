@@ -62,7 +62,8 @@ export namespace Transport {
   export interface Attributes extends Record<string, unknown> {
     /**
      * Textual description.
-     * @defaultValue Automatically generated from constructor name.
+     * @defaultValue
+     * Automatically generated from constructor name.
      */
     describe?: string;
 

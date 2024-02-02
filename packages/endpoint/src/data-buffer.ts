@@ -62,7 +62,7 @@ export namespace DataStoreBuffer {
     /**
      * Data expiration time in milliseconds.
      * 0 means infinity.
-     * @defaultValue 60000ms
+     * @defaultValue 60000
      */
     ttl?: number;
 

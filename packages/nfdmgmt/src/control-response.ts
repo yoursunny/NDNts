@@ -23,9 +23,9 @@ export class ControlResponse {
 
   /**
    * Constructor.
-   * @param statusCode command status code.
-   * @param statusText command status text.
-   * @param body additional elements in the response.
+   * @param statusCode - Command status code.
+   * @param statusText - Command status text.
+   * @param body - Additional elements in the response.
    */
   constructor(public statusCode = 0, public statusText = "", body?: Encodable) {
     this.body_ = body;
@@ -35,8 +35,13 @@ export class ControlResponse {
 
   /**
    * Additional elements in the response.
-   * For most NFD control commands, this is ControlParameters, and can be decoded like:
-   *   ControlParameters.decodeFromResponseBody(response);
+   *
+   * @remarks
+   * For most NFD control commands, this is {@link ControlParameters}.
+   * It can be decoded with:
+   * ```ts
+   * ControlParameters.decodeFromResponseBody(response);
+   * ```
    */
   public get body(): Uint8Array {
     return ArrayBuffer.isView(this.body_) ? this.body_ : Encoder.encode(this.body_);
@@ -46,7 +51,7 @@ export class ControlResponse {
     this.body_ = value;
   }
 
-  public encodeTo(encoder: Encoder) {
+  public encodeTo(encoder: Encoder): void {
     encoder.prependTlv(
       TT.ControlResponse,
       [TT.StatusCode, NNI(this.statusCode)],

@@ -70,7 +70,7 @@ export namespace TcpTransport {
   export interface Options {
     /**
      * Connect timeout (in milliseconds).
-     * @defaultValue 10 seconds
+     * @defaultValue 10000
      */
     connectTimeout?: number;
 

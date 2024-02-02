@@ -8,7 +8,8 @@ import { makeRetxGenerator, type RetxPolicy } from "./retx";
 export interface ConsumerOptions {
   /**
    * Description for debugging purpose.
-   * @defaultValue "consume" + Interest name.
+   * @defaultValue
+   * "consume" + Interest name.
    */
   describe?: string;
 
@@ -17,19 +18,22 @@ export interface ConsumerOptions {
 
   /**
    * Modify Interest according to specified options.
-   * @defaultValue `undefined`, no modification.
+   * @defaultValue
+   * `undefined`, no modification.
    */
   modifyInterest?: Interest.Modify;
 
   /**
    * Retransmission policy.
-   * @defaultValue `undefined`, no retransmission.
+   * @defaultValue
+   * `undefined`, no retransmission.
    */
   retx?: RetxPolicy;
 
   /**
    * Data verifier.
-   * @defaultValue `undefined`, no verification.
+   * @defaultValue
+   * `undefined`, no verification.
    */
   verifier?: Verifier;
 }

@@ -164,37 +164,49 @@ export namespace openFace {
   export interface Options {
     /**
      * NDN-DPDK GraphQL server.
-     * Default is http://127.0.0.1:3030 .
+     * @defaultValue http://127.0.0.1:3030
      */
     gqlServer?: string;
+
     /**
      * IP address to reach local host from NDN-DPDK.
-     * Default is auto-detected from GraphQL HTTP client.
+     * @defaultValue
+     * Auto-detected from GraphQL HTTP client.
      */
     localHost?: string;
 
-    /** NDNts logical forwarder. */
+    /**
+     * NDNts logical forwarder.
+     * @defaultValue `Forwarder.getDefault()`
+     */
     fw?: Forwarder;
+
     /** NDNts face attributes. */
     attributes?: L3Face.Attributes;
-    /** Routes to be added on the created face. Default is ["/"]. */
+
+    /**
+     * Routes to be added on the created face.
+     * @defaultValue `["/"]`
+     */
     addRoutes?: readonly NameLike[];
 
     /**
      * Transport scheme.
-     * Default is "udp".
+     * @defaultValue "udp"
      */
     scheme?: keyof typeof openFaceScheme;
 
     /**
      * Face MTU.
-     * If scheme is "udp", default is 1400.
-     * If scheme is "memif", default is 2048, but ignored if .memif.dataroom is set.
+     * @defaultValue
+     * - For UDP, 1400.
+     * - For memif, `.memif.dataroom` or 2048.
      */
     mtu?: number;
 
     /** UDP socket options. */
     udp?: udp_helper.OpenSocketOptions;
+
     /** memif options. */
     memif?: MemifOptions;
   }
@@ -204,7 +216,7 @@ export namespace openFace {
     /**
      * Directory in which to place control socket.
      * If NDN-DPDK and NDNts are in containers, the same directory must be mounted in both containers.
-     * Default is /run/ndn .
+     * @defaultValue /run/ndn
      */
     socketPath?: string;
   }

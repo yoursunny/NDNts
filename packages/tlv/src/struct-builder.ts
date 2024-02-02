@@ -121,7 +121,8 @@ interface Options<
    * Prefix of bit property names.
    * Ignored if `.flagBits` is unspecified.
    *
-   * @defaultValue Same as primary field name.
+   * @defaultValue
+   * Same as primary field name.
    */
   flagPrefix?: FlagPrefix;
 
