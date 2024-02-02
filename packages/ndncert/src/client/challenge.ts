@@ -9,13 +9,13 @@ export interface ClientChallenge {
 
   /**
    * Create a message to select and start the challenge.
-   * @returns parameter key-value pairs to send to server in initial CHALLENGE request.
+   * @returns Parameter key-value pairs to send to server in initial CHALLENGE request.
    */
   start(context: ClientChallengeStartContext): Promise<ParameterKV>;
 
   /**
    * Create a message to continue the challenge.
-   * @returns parameter key-value pairs to send to server in continuing CHALLENGE request.
+   * @returns Parameter key-value pairs to send to server in continuing CHALLENGE request.
    */
   next(context: ClientChallengeContext): Promise<ParameterKV>;
 }

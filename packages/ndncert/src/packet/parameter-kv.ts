@@ -31,8 +31,8 @@ function finish(kv: ParameterKV) {
 
 /**
  * Define fields on EvDecoder to recognize pairs of ParameterKey and ParameterValue TLVs.
- * @param evd the EvDecoder of parent TLV.
- * @param order field order for both ParameterKey and ParameterValue.
+ * @param evd - EvDecoder of parent TLV.
+ * @param order - Field order for both ParameterKey and ParameterValue.
  */
 export function parseEvDecoder<R extends { parameters?: ParameterKV }>(evd: EvDecoder<R>, order: number): void {
   evd

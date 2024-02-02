@@ -10,7 +10,7 @@ import { retrieveCaProfile, type RetrieveCaProfileOptions } from "./retrieve-pro
 
 /**
  * client.conf format of NDNCERT C++ implementation.
- * https://github.com/named-data/ndncert/blob/48903c2f37a737c97dc51481d9a1a72e766990f7/client.conf.sample
+ * @see {@link https://github.com/named-data/ndncert/blob/48903c2f37a737c97dc51481d9a1a72e766990f7/client.conf.sample}
  */
 export interface ClientConf {
   "ca-list": ClientConf.CaProfile[];

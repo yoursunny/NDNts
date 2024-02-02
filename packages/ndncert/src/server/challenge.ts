@@ -31,6 +31,7 @@ export interface ServerChallengeContext<State = unknown> {
   /**
    * Server-side state of the challenge on a request session.
    *
+   * @remarks
    * For a newly selected challenge, this field is `undefined`.
    * The challenge module can store state information in this field and retrieve it when processing
    * subsequently CHALLENGE request packets.
@@ -42,19 +43,19 @@ export interface ServerChallengeContext<State = unknown> {
 export interface ServerChallengeResponse {
   /**
    * If true, challenge has succeeded and server will issue the certificate.
-   * @default false
+   * @defaultValue false
    */
   success?: boolean;
 
   /**
    * If true, this request counts as one failed try and decrements remaining tries.
-   * @default false
+   * @defaultValue false
    */
   decrementRetry?: boolean;
 
   /**
    * ChallengeStatus to convey to the client.
-   * @default "error"
+   * @defaultValue "error"
    */
   challengeStatus?: string;
 

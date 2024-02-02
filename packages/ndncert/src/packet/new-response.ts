@@ -53,7 +53,7 @@ export namespace NewResponse {
   }
 
   /** Options to construct NEW response packet. */
-  export type Options = Except<Fields, "ecdhPubRaw"> & {
+  export interface Options extends Except<Fields, "ecdhPubRaw"> {
     /** CA profile packet. */
     profile: CaProfile;
 
@@ -65,7 +65,7 @@ export namespace NewResponse {
 
     /** Signing key correspond to CA certificate. */
     signer: Signer;
-  };
+  }
 
   /** Construct NEW response packet. */
   export async function build({

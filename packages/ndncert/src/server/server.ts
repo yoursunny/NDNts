@@ -9,7 +9,11 @@ import { C, type CaProfile, ChallengeRequest, ChallengeResponse, ErrorCode, Erro
 import type { ServerChallenge, ServerChallengeContext } from "./challenge";
 
 export interface ServerOptions {
-  /** Endpoint for communication. */
+  /**
+   * Endpoint for communication.
+   * @defaultValue
+   * Endpoint on default logical forwarder.
+   */
   endpoint?: Endpoint;
 
   /** Repo for storing issued certificates. */
@@ -24,6 +28,7 @@ export interface ServerOptions {
   /** CA private key, must match the certificate in the CA profile. */
   signer: Signer;
 
+  /** PROBE command handler. */
   probe?: ServerOptions.ProbeHandler;
 
   /** Supported challenges. */

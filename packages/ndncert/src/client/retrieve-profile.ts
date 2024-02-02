@@ -6,16 +6,19 @@ import { retrieveMetadata } from "@ndn/rdr";
 
 import { C, CaProfile, ProbeResponse } from "../packet/mod";
 
+/** {@link retrieveCaProfile} options. */
 export interface RetrieveCaProfileOptions {
   /**
    * Endpoint for communication.
-   * Default is an Endpoint on default Forwarder with up to 4 retransmissions.
+   * @defaultValue
+   * Endpoint on default logical forwarder with up to 4 retransmissions.
    */
   endpoint?: Endpoint;
 
   /**
    * CA prefix.
-   * Default is using the subject name of CA certificate name.
+   * @defaultValue
+   * Using the subject name of CA certificate name.
    */
   caPrefix?: Name;
 

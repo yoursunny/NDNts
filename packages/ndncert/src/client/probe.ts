@@ -4,16 +4,19 @@ import type { Name } from "@ndn/packet";
 
 import { type CaProfile, ErrorMsg, type ParameterKV, ProbeRequest, ProbeResponse } from "../packet/mod";
 
+/** {@link requestProbe} options. */
 export interface ClientProbeOptions {
   /**
    * Endpoint for communication.
-   * Default is an Endpoint on default Forwarder with up to 4 retransmissions.
+   * @defaultValue
+   * Endpoint on default logical forwarder with up to 4 retransmissions.
    */
   endpoint?: Endpoint;
 
   /** CA profile. */
   profile: CaProfile;
 
+  /** PROBE parameters. */
   parameters: ParameterKV;
 }
 
@@ -40,8 +43,9 @@ export async function requestProbe({
 
 /**
  * Determine if a subject name is acceptable according to probe response.
- * @param probeResponse probe response from CA.
- * @param name subject name, key name, or certificate name. Only the subject name portion is considered.
+ * @param probeResponse - Probe response from CA.
+ * @param name - Subject name, key name, or certificate name.
+ * Only the subject name portion is considered.
  */
 export function matchProbe(probeResponse: ProbeResponse.Fields, name: Name): boolean {
   name = CertNaming.toSubjectName(name);

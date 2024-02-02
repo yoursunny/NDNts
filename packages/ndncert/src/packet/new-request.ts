@@ -15,7 +15,8 @@ const EVD = new EvDecoder<NewRequest.Fields>("NewRequest")
 export class NewRequest {
   /**
    * Decode NEW request from Interest packet.
-   * @param algoList list of recognized algorithms for certificate request.
+   * @param algoList - List of recognized algorithms for certificate request.
+   * Default is {@link SigningAlgorithmListSlim}.
    */
   public static fromInterest(
       interest: Interest,
@@ -90,11 +91,16 @@ export namespace NewRequest {
 
     /**
      * Desired ValidityPeriod.
+     *
+     * @remarks
      * This will be truncated to maximum validity permitted by the CA profile.
      */
     validity?: ValidityPeriod;
 
-    /** List of recognized algorithms for certificate request. */
+    /**
+     * List of recognized algorithms for certificate request.
+     * @defaultValue `SigningAlgorithmListSlim`
+     */
     algoList?: readonly SigningAlgorithm[];
   }
 

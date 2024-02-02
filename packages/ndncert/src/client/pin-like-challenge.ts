@@ -17,6 +17,6 @@ export abstract class ClientPinLikeChallenge implements ClientChallenge {
 }
 
 export namespace ClientPinLikeChallenge {
-  /** Callback to prompt the user to enter a pin code */
+  /** Callback to prompt the user to enter a pin code. */
   export type Prompt = (context: ClientChallengeContext) => Promise<string>;
 }

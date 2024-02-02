@@ -6,9 +6,13 @@ import { C } from "./an";
 
 /**
  * Verify packet name.
- * First parameter is an Interest or Data packet.
- * Second parameter is the CA profile.
- * Rest parameters match name components after "CA" component, `undefined` matches anything.
+ *
+ * @remarks
+ * Function parameters are:
+ * 1. Interest or Data packet.
+ * 2. CA profile.
+ * 3. Matchers for name components after "CA" component.
+ *    Each matcher is a component, a convention, or `undefined` to match anything.
  */
 export function checkName(
     { name }: { name: Name },
@@ -28,10 +32,10 @@ export function checkName(
 
 /**
  * Decode from Interest AppParameters.
- * @param interest source Interest.
- * @param evd fields decoder.
- * @param fn function to create result packet; fields will be assigned onto it.
- * @returns result packet.
+ * @param interest - Source Interest.
+ * @param evd - Fields decoder.
+ * @param fn - Function to create result packet; fields will be assigned onto it.
+ * @returns Result packet.
  */
 export async function fromInterest<T extends Readonly<Fields>, Fields extends {}>(
     interest: Interest,
@@ -45,10 +49,10 @@ export async function fromInterest<T extends Readonly<Fields>, Fields extends {}
 
 /**
  * Decode from Data Content.
- * @param data source Data.
- * @param evd fields decoder.
- * @param fn function to create result packet; fields will be assigned onto it.
- * @returns result packet.
+ * @param data - Source Data.
+ * @param evd - Fields decoder.
+ * @param fn - Function to create result packet; fields will be assigned onto it.
+ * @returns Result packet.
  */
 export async function fromData<T extends Readonly<Fields>, Fields extends {}>(
     data: Data,

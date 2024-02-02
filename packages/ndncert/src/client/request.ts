@@ -6,10 +6,12 @@ import * as crypto from "../crypto-common";
 import { type CaProfile, ChallengeRequest, ChallengeResponse, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
 import type { ClientChallenge } from "./challenge";
 
+/** {@link requestCertificate} options. */
 export interface ClientOptions {
   /**
    * Endpoint for communication.
-   * Default is an Endpoint on default Forwarder with up to 4 retransmissions.
+   * @defaultValue
+   * Endpoint on default logical forwarder with up to 4 retransmissions.
    */
   endpoint?: Endpoint;
 
@@ -21,7 +23,12 @@ export interface ClientOptions {
   /** Public key to request certificate for. */
   publicKey: NamedVerifier.PublicKey;
 
-  /** ValidityPeriod, will be truncated to the maximum allowed by CA profile. */
+  /**
+   * ValidityPeriod of the certificate request.
+   *
+   * @remarks
+   * This will be truncated to the maximum allowed by CA profile.
+   */
   validity?: ValidityPeriod;
 
   /** Challenges in preferred order. */

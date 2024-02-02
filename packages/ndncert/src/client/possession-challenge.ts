@@ -12,10 +12,10 @@ export class ClientPossessionChallenge implements ClientChallenge {
 
   /**
    * Constructor.
-   * @param cert existing certificate, typically issued by another CA.
-   * @param pvt private key corresponding to `cert`.
-   *            This is preferably a low-level signer, but can also accept a high-level signer
-   *            that unconditionally signs the input regardless of the packet name.
+   * @param cert - Existing certificate, typically issued by another CA.
+   * @param pvt -
+   * Private key corresponding to `cert`. This is preferably a low-level signer, but can also
+   * accept a high-level signer that unconditionally signs the input regardless of packet name.
    */
   constructor(private readonly cert: Certificate, pvt: LLSign | Signer) {
     if (typeof pvt === "function") {

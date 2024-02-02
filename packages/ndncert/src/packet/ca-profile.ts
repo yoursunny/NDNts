@@ -20,7 +20,8 @@ EVD.beforeObservers.push((t) => t.probeKeys = []);
 export class CaProfile {
   /**
    * Decode CA profile from Data packet.
-   * @param algoList list of recognized algorithms for CA certificate.
+   * @param algoList - List of recognized algorithms for CA certificate.
+   * Default is {@link SigningAlgorithmListSlim}.
    */
   public static fromData(data: Data, algoList = SigningAlgorithmListSlim): Promise<CaProfile> {
     return decode_common.fromData(data, EVD, async (f) => {
@@ -78,6 +79,8 @@ export namespace CaProfile {
   export interface Fields {
     /**
      * CA name prefix.
+     *
+     * @remarks
      * Typically, this should not have "CA" as its last component.
      */
     prefix: Name;
@@ -85,9 +88,7 @@ export namespace CaProfile {
     /** CA description. */
     info: string;
 
-    /**
-     * Property keys for PROBE command.
-     */
+    /** Property keys for PROBE command. */
     probeKeys: string[];
 
     /** Maximum ValidityPeriod for issued certificates, in milliseconds. */
@@ -98,22 +99,23 @@ export namespace CaProfile {
   }
 
   /** Options to construct CA profile packet. */
-  export type Options = Fields & {
+  export interface Options extends Fields {
     /** Signing key correspond to CA certificate. */
     signer: Signer;
 
     /**
      * Version number in the CA profile packet name.
-     * Default is current Unix timestamp in milliseconds.
+     * @defaultValue `Date.now()`
      */
     version?: number;
 
     /**
      * List of recognized algorithms for CA certificate.
      * This must contain the crypto algorithm used by the CA certificate.
+     * @defaultValue `SigningAlgorithmListSlim`
      */
     algoList?: readonly SigningAlgorithm[];
-  };
+  }
 
   /** Construct CA profile packet. */
   export async function build({

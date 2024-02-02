@@ -21,9 +21,9 @@ export abstract class ServerPinLikeChallenge<
 
   /**
    * Validate a new request, create State object, and deliver PIN to client if applicable.
-   * @param request the CHALLENGE request packet.
-   * @param context the challenge context, which contains the certificate request.
-   * @returns a State to continue the challenge, or a ServerChallengeResponse to fail the challenge.
+   * @param request - CHALLENGE request packet.
+   * @param context - Challenge context, which contains the certificate request.
+   * @returns State to continue the challenge, or ServerChallengeResponse to fail the challenge.
    */
   protected abstract start(request: ChallengeRequest, context: ServerChallengeContext<State>): Promise<State | ServerChallengeResponse>;
 

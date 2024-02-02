@@ -23,10 +23,11 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
 
   /**
    * Constructor.
-   * @param verifier a verifier to accept or reject an existing certificate presented by client.
-   *                 This may be a public key of the expected issuer or a trust schema validator.
-   * @param assignmentPolicy name assignment policy callback. Default permits all assignments.
-   * @param algoList list of recognized algorithms in client certificates.
+   * @param verifier - Verifier to accept or reject an existing certificate presented by client.
+   *                   This may be a public key of the expected issuer or a trust schema validator.
+   * @param assignmentPolicy - Name assignment policy callback. Default permits all assignments.
+   * @param algoList - List of recognized algorithms for client certificates.
+   * Default is {@link SigningAlgorithmListSlim}.
    */
   constructor(
       private readonly verifier: Verifier,

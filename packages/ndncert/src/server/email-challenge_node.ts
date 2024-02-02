@@ -105,6 +105,7 @@ export namespace ServerEmailChallenge {
   /**
    * Email template.
    *
+   * @remarks
    * In subject, text, and html fields, the following variables will be replaced:
    * - $caPrefix$
    * - $requestId$
@@ -112,7 +113,7 @@ export namespace ServerEmailChallenge {
    * - $keyName$
    * - $pin$
    *
-   * disableUrlAccess and disableFileAccess are set to true by default,
+   * `disableUrlAccess` and `disableFileAccess` are set to true by default,
    * but they may be overridden in the template object.
    */
   export type Template = OverrideProperties<SendMailOptions, {

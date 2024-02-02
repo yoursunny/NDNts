@@ -102,31 +102,32 @@ export namespace ClientEmailInboxImap {
   export interface ExtractOptions {
     /**
      * Whether to check To header contains requesting email address.
-     * @default true
+     * @defaultValue true
      */
     checkTo?: boolean;
 
     /**
      * Whether to extract PIN from email subject.
-     * @default true
+     * @defaultValue true
      */
     useSubject?: boolean;
 
     /**
      * Whether to extract PIN from email text.
-     * @default true
+     * @defaultValue true
      */
     useText?: boolean;
 
     /**
      * Whether to extract PIN from email HTML.
-     * @default false
+     * @defaultValue false
      */
     useHtml?: boolean;
 
     /**
      * Regular Expression to extract PIN.
-     * Default is any 6-digit token.
+     * @defaultValue
+     * Accepting any 6-digit token.
      */
     regex?: RegExp;
   }

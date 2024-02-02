@@ -67,7 +67,7 @@ export namespace ProbeResponse {
   }
 
   /** Options to construct PROBE response packet. */
-  export type Options = Partial<Fields> & {
+  export interface Options extends Partial<Fields> {
     /** CA profile packet. */
     profile: CaProfile;
 
@@ -76,7 +76,7 @@ export namespace ProbeResponse {
 
     /** Signing key correspond to CA certificate. */
     signer: Signer;
-  };
+  }
 
   /** Construct PROBE response packet. */
   export async function build({
@@ -107,7 +107,7 @@ export namespace ProbeResponse {
   }
 
   export function isCaCertFullName(name: Name): boolean {
-    return name.at(-1).is(ImplicitDigest) && CertNaming.isCertName(name.getPrefix(-1));
+    return CertNaming.isCertName(name.getPrefix(-1)) && name.get(-1)!.is(ImplicitDigest);
   }
 
   export function checkCaCertFullName(name: Name): void {

@@ -95,6 +95,8 @@ export namespace ChallengeResponse {
 
     /**
      * Issued certificate name.
+     *
+     * @remarks
      * This should end with an implicit digest component.
      */
     issuedCertName?: Name;
@@ -110,13 +112,13 @@ export namespace ChallengeResponse {
 
     /**
      * Request session encrypter.
-     * @see makeSessionKey
+     * @see {@link crypto.makeSessionKey}
      */
     sessionEncrypter: LLEncrypt.Key;
 
     /**
      * Request session local decrypter.
-     * @see makeSessionKey
+     * @see {@link crypto.makeSessionKey}
      */
     sessionLocalDecrypter: LLDecrypt.Key;
 

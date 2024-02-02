@@ -2,7 +2,7 @@ import type { NamedSigner, NamedVerifier } from "@ndn/keychain";
 import { Component, Interest, type LLDecrypt, type LLEncrypt, type SignedInterestPolicy } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
-import { type Promisable } from "type-fest";
+import type { Promisable } from "type-fest";
 
 import * as crypto from "../crypto-common";
 import { C, TT } from "./an";
@@ -68,8 +68,8 @@ export namespace ChallengeRequest {
   export interface Context extends ContextBase {
     /**
      * Callback to locate request session.
-     * @param requestId request session ID.
-     * @returns request session information, or undefined if not found.
+     * @param requestId - Request session ID.
+     * @returns Request session information, or `undefined` if not found.
      */
     lookupRequest(requestId: Uint8Array): Promisable<RequestInfo | undefined>;
   }
@@ -90,13 +90,13 @@ export namespace ChallengeRequest {
 
     /**
      * Request session encrypter.
-     * @see makeSessionKey
+     * @see {@link crypto.makeSessionKey}
      */
     sessionEncrypter: LLEncrypt.Key;
 
     /**
      * Request session local decrypter.
-     * @see makeSessionKey
+     * @see {@link crypto.makeSessionKey}
      */
     sessionLocalDecrypter: LLDecrypt.Key;
 

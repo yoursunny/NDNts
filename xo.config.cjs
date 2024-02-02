@@ -59,6 +59,7 @@ module.exports = {
       "/packages/lp",
       "/packages/naming-convention*",
       "/packages/ndn",
+      "/packages/ndncert",
       "/packages/ndnsec",
       "/packages/packet",
       "/packages/segmented-object",
