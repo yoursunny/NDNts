@@ -78,7 +78,7 @@ export class Fetcher extends TypedEventTarget<EventMap> {
 
   /**
    * Pause outgoing Interests, for backpressure from Data consumer.
-   * Return a function for resuming.
+   * @returns Function for resuming.
    */
   public pause() {
     return this.logic.pause();
@@ -144,15 +144,16 @@ export namespace Fetcher {
     /**
      * Inherit fetcher options from Endpoint consumer options.
      *
+     * @remarks
      * These options are inherited if the corresponding fetcher option is unset:
-     * @li fw
-     * @li modifyInterest
-     * @li signal
-     * @li verifier
+     * - `fw`
+     * - `modifyInterest`
+     * - `signal`
+     * - `verifier`
      *
      * Other options cannot be inherited, notably:
-     * @li describe
-     * @li retx
+     * - `describe`
+     * - `retx`
      */
     endpoint?: Endpoint;
 
@@ -164,12 +165,14 @@ export namespace Fetcher {
 
     /**
      * Choose a segment number naming convention.
-     * Default is Segment from @ndn/naming-convention2 package.
+     * @defaultValue `import("@ndn/naming-convention2").Segment`
      */
     segmentNumConvention?: SegmentConvention;
 
     /**
      * Modify Interest according to specified options.
+     *
+     * @remarks
      * This can also be used to witness Interests without modification.
      */
     modifyInterest?: Interest.Modify;
@@ -179,18 +182,24 @@ export namespace Fetcher {
 
     /**
      * InterestLifetime added to RTO.
-     * Default is 1000ms.
+     * @defaultValue 1000ms
+     *
+     * @remarks
      * Ignored if `lifetime` is set.
      */
     lifetimeAfterRto?: number;
 
     /**
      * List of acceptable ContentType values.
-     * Default is [0].
+     * @defaultValue `[0]`
      */
     acceptContentType?: readonly number[];
 
-    /** If specified, verify received Data. */
+    /**
+     * Data verifier.
+     * @defaultValue
+     * No verification.
+     */
     verifier?: Verifier;
   }
 

@@ -11,7 +11,7 @@ export namespace KeyKind {
   /** Pick "public" or "secret" based on whether the algorithm is asymmetric. */
   export type PublicSecret<Asym extends boolean> = If<Asym, "public", "secret">;
 }
-export const KeyKind = Symbol("@ndn/keychain!KeyKind");
+export const KeyKind = Symbol("@ndn/keychain#KeyKind");
 
 interface Key<K extends KeyKind> {
   readonly name: Name;

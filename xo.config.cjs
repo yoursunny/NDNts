@@ -61,6 +61,7 @@ module.exports = {
       "/packages/ndn",
       "/packages/ndnsec",
       "/packages/packet",
+      "/packages/segmented-object",
       "/packages/tlv",
       "/packages/util",
     ),

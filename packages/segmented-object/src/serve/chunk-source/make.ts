@@ -17,8 +17,9 @@ export function makeChunkSource(input: AnyIterable<Uint8Array> | NodeJS.Readable
 /**
  * Create a chunk source, auto detecting input type.
  *
- * Use of this function is discouraged as it pulls in ChunkSource implementations not needed by
- * your application. It's recommended to construct a ChunkSource implementation directly.
+ * @remarks
+ * Use of this function is discouraged as it pulls in `ChunkSource` subclasses not needed by
+ * your application. It's recommended to construct a `ChunkSource` subclass directly.
  */
 export function makeChunkSource(input: Uint8Array | Blob | NodeBlob | AnyIterable<Uint8Array> | NodeJS.ReadableStream, opts?: ChunkOptions) {
   if (input instanceof Uint8Array) {

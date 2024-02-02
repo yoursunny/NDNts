@@ -24,6 +24,7 @@ class FileHandleChunkSource extends KnownSizeChunkSource {
 /**
  * Generate chunks from a file.
  *
+ * @remarks
  * Warning: modifying the file while FileChunkSource is active may cause undefined behavior.
  */
 export class FileChunkSource implements ChunkSource {

@@ -2,7 +2,7 @@ import { CongestionAvoidance } from "./congestion-avoidance";
 
 /**
  * TCP CUBIC algorithm.
- * @see https://datatracker.ietf.org/doc/html/rfc8312
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc8312}
  */
 export class TcpCubic extends CongestionAvoidance {
   private readonly c: number;
@@ -71,11 +71,22 @@ export class TcpCubic extends CongestionAvoidance {
 
 export namespace TcpCubic {
   export interface Options {
-    /** Initial window. Default is 2. */
+    /**
+     * Initial congestion window.
+     * @defaultValue 2
+     */
     iw?: number;
-    /** CUBIC parameter C. Default is 0.4. */
+
+    /**
+     * CUBIC parameter C.
+     * @defaultValue 0.4
+     */
     c?: number;
-    /** CUBIC parameter beta_cubic. Default is 0.7. */
+
+    /**
+     * CUBIC parameter beta_cubic.
+     * @defaultValue 0.7
+     */
     betaCubic?: number;
   }
 }

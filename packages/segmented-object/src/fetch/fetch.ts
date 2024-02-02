@@ -76,17 +76,27 @@ class FetchResult implements fetch.Result {
   }
 }
 
-/** Fetch a segmented object. */
+/**
+ * Fetch a segmented object.
+ *
+ * @remarks
+ * This function does not perform version discovery. If the segmented object is versioned, `name`
+ * must include the version component. You can perform version discovery with
+ * {@link discoverVersion} function and pass its result to this function for fetching the
+ * versioned and segmented object.
+ */
 export function fetch(name: NameLike, opts: fetch.Options = {}): fetch.Result {
   return new FetchResult(Name.from(name), opts);
 }
 
 export namespace fetch {
-  export type Options = Fetcher.Options;
+  /** {@link fetch} options. */
+  export interface Options extends Fetcher.Options {}
 
   /**
-   * Return type of fetch() function.
+   * Return type of {@link fetch} function.
    *
+   * @remarks
    * Fetch output may be accessed in one of several formats:
    * - `await result` resolves to the reassembled object as Uint8Array.
    * - `for await (const packet of result)` iterates over Data packets in segment number order.

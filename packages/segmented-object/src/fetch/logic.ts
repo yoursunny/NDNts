@@ -101,7 +101,7 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
 
   /**
    * Pause outgoing Interests, for backpressure from Data consumer.
-   * Return a function for resuming.
+   * @returns Function for resuming.
    */
   public pause(): () => void {
     const defer = pDefer<void>();
@@ -183,7 +183,7 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
 
   /**
    * Notify a request has been satisfied.
-   * @param now reading of `this.now()` at packet arrival (e.g. before verification)
+   * @param now - Reading of `this.now()` at packet arrival (e.g. before verification).
    */
   public satisfy(segNum: number, now: number, hasCongestionMark: boolean) {
     const req = this.pending.get(segNum);
@@ -248,7 +248,9 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
 
   /**
    * Update final segment number (inclusive) when it becomes known.
-   * Increasing this above opts.segmentRange[1] or a previous value has no effect.
+   *
+   * @remarks
+   * Increasing this above `.opts.segmentRange[1]` or a previous value has no effect.
    */
   public setFinalSegNum(finalSegNum: number, estimated = false): void {
     if (finalSegNum >= this.finalSegNum) {
@@ -278,7 +280,9 @@ export namespace FetchLogic {
     ca?: CongestionAvoidance;
 
     /**
-     * Specify segment number range as [begin, end).
+     * Specify segment number range as `[begin, end)`.
+     *
+     * @remarks
      * The begin segment number is inclusive and the end segment number is exclusive.
      * If the begin segment number is greater than the final segment number, fetching will fail.
      * If the end segment number is undefined or greater than the final segment number,
@@ -288,6 +292,8 @@ export namespace FetchLogic {
 
     /**
      * Estimated final segment number (inclusive).
+     *
+     * @remarks
      * If specified, FetchLogic sends Interests up to this segment number initially as permitted
      * by congestion control, then sends further Interests in a stop-and-wait manner, unless a new
      * estimation or known finalSegNum is provided via setFinalSegNum() function.
@@ -296,7 +302,7 @@ export namespace FetchLogic {
 
     /**
      * Maximum number of retransmissions, excluding initial Interest.
-     * Default is 15.
+     * @defaultValue 15
      */
     retxLimit?: number;
   }

@@ -4,7 +4,11 @@ import { Interest, type Name } from "@ndn/packet";
 import { defaultSegmentConvention, defaultVersionConvention, type SegmentConvention, type VersionConvention } from "./convention";
 import type { fetch } from "./fetch/mod";
 
-/** Discover version with CanBePrefix. */
+/**
+ * Discover version with CanBePrefix.
+ * @param name - Name without version component.
+ * @returns Promise that resolves to versioned name annotated with identified conventions.
+ */
 export async function discoverVersion(name: Name, {
   endpoint = new Endpoint(),
   describe,
@@ -43,26 +47,32 @@ export async function discoverVersion(name: Name, {
 }
 
 export namespace discoverVersion {
-  export const ANY_SUFFIX_LEN = Symbol("discoverVersion.ANY_SUFFIX_LEN");
+  export const ANY_SUFFIX_LEN = Symbol("@ndn/segmented-object#discoverVersion.ANY_SUFFIX_LEN");
 
   export interface Options extends fetch.Options {
     /**
      * Choose a version naming convention.
-     * Default is Version from @ndn/naming-convention2 package.
+     * @defaultValue `import("@ndn/naming-convention2").Version`
      */
     versionConvention?: VersionConvention;
 
     /**
      * List of acceptable version+segment naming convention combinations.
-     * If this is specified and non-empty, it overrides versionConvention,segmentNumConvention.
+     *
+     * @remarks
+     * If this is specified and non-empty, it overrides `.versionConvention` and
+     * `.segmentNumConvention`.
      */
     conventions?: ReadonlyArray<[VersionConvention, SegmentConvention]>;
 
     /**
      * Expected number of suffix components, including Version and Segment.
+     * @defaultValue 2
+     *
+     * @remarks
      * Minimum and default are 2, i.e. Version and Segment components.
      * This can be a single number or an array of acceptable numbers.
-     * ANY_SUFFIX_LEN allows any suffix length.
+     * {@link ANY_SUFFIX_LEN} allows any suffix length.
      */
     expectedSuffixLen?: number | readonly number[] | typeof ANY_SUFFIX_LEN;
   }

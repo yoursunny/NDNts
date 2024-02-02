@@ -24,7 +24,7 @@ The producer functionality:
 
 * [X] takes input from `Uint8Array`.
 * [X] takes input from readable streams.
-* [X] takes input from files (filename in Node.js, `Blob` in browser).
+* [X] takes input from files (`Blob`; filename in Node.js only).
 * [X] generates segments of fixed size.
 * [ ] generates segments of available data as Interest arrives, to minimize delivery latency.
 * [X] responds to version discovery Interests with CanBePrefix.

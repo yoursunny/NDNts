@@ -12,6 +12,7 @@ export interface Server {
   /**
    * Process an Interest.
    *
+   * @remarks
    * The producer handler is already attached to the Endpoint and will react to incoming Interests.
    * It's usually unnecessary to call this function manually.
    */
@@ -23,15 +24,16 @@ export interface Server {
 
 /**
  * Start serving a segmented object.
- * @param prefixInput Data prefix excluding segment number.
- * @param source where to read segment payload chunks.
- * @param opts other options.
+ * @param prefix - Data prefix excluding segment number.
+ * @param source - Where to read segment payload chunks.
+ * @param opts - Other options.
  *
+ * @remarks
  * This function does not automatically add a version component to the name prefix.
- * If a version component is desired, use serveVersioned() function instead.
+ * If a version component is desired, use {@link serveVersioned} function instead.
  */
-export function serve(prefixInput: NameLike, source: ChunkSource, opts: serve.Options = {}): Server {
-  const prefix = Name.from(prefixInput);
+export function serve(prefix: NameLike, source: ChunkSource, opts: serve.Options = {}): Server {
+  prefix = Name.from(prefix);
   const { endpoint = new Endpoint() } = opts;
   const dp = DataProducer.create(source, prefix, opts);
   const ep = endpoint.produce(opts.producerPrefix ?? prefix,
@@ -52,24 +54,30 @@ export function serve(prefixInput: NameLike, source: ChunkSource, opts: serve.Op
 }
 
 export namespace serve {
-  export type Options = DataProducer.Options & {
-    /** Use specified Endpoint instead of default. */
+  export interface Options extends DataProducer.Options {
+    /**
+     * Endpoint for communication.
+     * @defaultValue
+     * Endpoint on default logical forwarder.
+     */
     endpoint?: Endpoint;
 
     /** FwFace description. */
     describe?: string;
 
     /**
-     * Producer name prefix, if differs from Data prefix.
+     * Producer name prefix, if it differs from Data prefix.
+     *
+     * @remarks
      * Specifying a shorter prefix enables name discovery.
      */
     producerPrefix?: Name;
 
     /**
-     * Prefix announcement.
-     * Default is same as producer name prefix or Data prefix.
-     * False disables announcement.
+     * Prefix announcement, or `false` to disable announcement.
+     * @defaultValue
+     * Announce the same name as producer name prefix or Data prefix.
      */
     announcement?: Endpoint.RouteAnnouncement;
-  };
+  }
 }

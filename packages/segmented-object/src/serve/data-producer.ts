@@ -8,14 +8,17 @@ import { getIterator } from "streaming-iterables";
 import { defaultSegmentConvention, type SegmentConvention } from "../convention";
 import type { Chunk, ChunkSource } from "./chunk-source/mod";
 
-/** Produce Data for requested segment. */
+/**
+ * Produce Data for requested segment.
+ * @see {@link DataProducer.create}
+ */
 export abstract class DataProducer {
   private readonly segmentNumConvention: SegmentConvention;
   private readonly contentType: ReturnType<typeof Data["ContentType"]>;
   private readonly freshnessPeriod: ReturnType<typeof Data["FreshnessPeriod"]>;
   private readonly signer: Signer;
 
-  constructor(protected readonly source: ChunkSource, protected readonly prefix: Name,
+  protected constructor(protected readonly source: ChunkSource, protected readonly prefix: Name,
       {
         segmentNumConvention = defaultSegmentConvention,
         contentType = 0,
@@ -186,31 +189,35 @@ export namespace DataProducer {
   export interface Options {
     /**
      * Choose a segment number naming convention.
-     * Default is Segment from @ndn/naming-convention2 package.
+     * @defaultValue `import("@ndn/naming-convention2").Segment`
      */
     segmentNumConvention?: SegmentConvention;
 
     /**
      * Data ContentType.
-     * @default 0
+     * @defaultValue 0
      */
     contentType?: number;
 
     /**
      * Data FreshnessPeriod (in milliseconds).
-     * @default 60000
+     * @defaultValue 60000
      */
     freshnessPeriod?: number;
 
     /**
      * A private key to sign Data.
-     * Default is SHA256 digest.
+     * @default
+     * SHA256 digest.
      */
     signer?: Signer;
 
     /**
      * How many chunks behind latest request to store in buffer.
-     * This is ignored if the ChunkSource supports getChunk() function.
+     * @defaultValue Infinity
+     *
+     * @remarks
+     * This is ignored if the ChunkSource supports `getChunk()` function.
      *
      * After processing an Interest requesting segment `i`, subsequent Interests requesting
      * segment before `i - bufferBehind` cannot be answered.
@@ -219,19 +226,18 @@ export namespace DataProducer {
      * at the cost of buffering many generated packets in memory.
      * A smaller number reduces memory usage, at the risk of not being able to answer some Interests,
      * which would become a problem in the presence of multiple consumers.
-     *
-     * @default Infinity
      */
     bufferBehind?: number;
 
     /**
      * How many chunks ahead of latest request to store in buffer.
-     * This is ignored if the ChunkSource supports getChunk() function.
+     * @defaultValue 16
+     *
+     * @remarks
+     * This is ignored if the ChunkSource supports `getChunk()` function.
      *
      * A larger number can reduce latency of fulfilling Interests if ChunkSource is slow.
      * A smaller number reduces memory usage.
-     *
-     * @default 16
      */
     bufferAhead?: number;
   }

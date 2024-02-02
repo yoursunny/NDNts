@@ -7,8 +7,13 @@ export class TokenLimiter {
 
   constructor(private capacity_ = 0) {}
 
+  /** How many callers are waiting for a token. */
   public get nWaiting() { return this.queue.size; }
+
+  /** How many tokens are currently taken. */
   public get nTaken() { return this.nTaken_; }
+
+  /** Capacity of the token bucket. */
   public get capacity() { return this.capacity_; }
 
   /** Change total number of tokens. */

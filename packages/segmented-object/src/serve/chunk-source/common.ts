@@ -14,14 +14,14 @@ export interface Chunk {
 export interface ChunkSource {
   /**
    * Generate chunks sequentially.
-   * @returns an AsyncIterable of chunks in order.
+   * @returns AsyncIterable of chunks in order.
    */
   listChunks(): AsyncIterable<Chunk>;
 
   /**
    * Generate a chunk on-demand.
-   * @param i chunk number, starting from zero.
-   * @returns a Promise that resolves to requested chunk, or undefined if out of range.
+   * @param i - Chunk number, starting from zero.
+   * @returns Promise that resolves to requested chunk, or undefined if out of range.
    */
   getChunk?(i: number): Promise<Chunk | undefined>;
 
@@ -75,13 +75,13 @@ export abstract class KnownSizeChunkSource implements ChunkSource {
 interface ChunkSizeRange {
   /**
    * Minimum chunk size.
-   * @default 64
+   * @defaultValue 64
    */
   minChunkSize?: number;
 
   /**
    * Maximum chunk size.
-   * @default 4096
+   * @defaultValue 4096
    */
   maxChunkSize?: number;
 }

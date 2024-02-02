@@ -56,13 +56,14 @@ function resize(min: number, max: number): (buf?: Uint8Array) => Iterable<Uint8A
  * This also accepts NodeJS stream.Readable, which is an AsyncIterable of Buffers.
  */
 export class IterableChunkSource implements ChunkSource {
-  constructor(input: AnyIterable<Uint8Array> | NodeJS.ReadableStream, opts: ChunkOptions = {}) {
-    this.input = input as AnyIterable<Uint8Array>;
+  constructor(
+      private readonly input: AnyIterable<Uint8Array> | NodeJS.ReadableStream,
+      opts: ChunkOptions = {},
+  ) {
     this.minSize = getMinChunkSize(opts);
     this.maxSize = getMaxChunkSize(opts);
   }
 
-  private readonly input: AnyIterable<Uint8Array>;
   private readonly minSize: number;
   private readonly maxSize: number;
 

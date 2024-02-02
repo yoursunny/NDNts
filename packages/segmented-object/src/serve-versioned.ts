@@ -3,43 +3,23 @@ import { Component, type ComponentLike, Name, type NameLike } from "@ndn/packet"
 import { defaultVersionConvention, type VersionConventionFromNumber } from "./convention";
 import { type ChunkSource, serve, type Server } from "./serve/mod";
 
-type GivenVersionOptions = {
-  /** Version number component. */
-  version: ComponentLike;
-};
-
-type MakeVersionOptions = {
-  /**
-   * Choose a version number naming convention.
-   * Default is Version from @ndn/naming-convention2 package.
-   */
-  versionConvention?: VersionConventionFromNumber;
-
-  /**
-   * Version number.
-   * Default is current Unix timestamp (milliseconds).
-   */
-  version?: number;
-};
-
 /**
  * Start serving a segmented object with support of CanBePrefix version discovery.
- * @param prefixInput Data prefix excluding version and segment components.
- * @param source where to read segment payload chunks.
- * @param opts other options.
+ * @param prefix - Data prefix excluding version and segment components.
+ * @param source - Where to read segment payload chunks.
+ * @param opts - Other options.
  */
-export function serveVersioned(prefixInput: NameLike, source: ChunkSource, opts: serveVersioned.Options = {}): Server {
-  let versionComp: Component;
-  let { version = Date.now(), producerPrefix } = opts;
-  if (typeof version === "number") {
-    const { versionConvention = defaultVersionConvention } = opts as MakeVersionOptions;
-    versionComp = versionConvention.create(version);
-  } else {
-    versionComp = Component.from(version);
-  }
+export function serveVersioned(
+    prefix: NameLike,
+    source: ChunkSource,
+    opts: serveVersioned.Options = {},
+): Server {
+  const { version = Date.now(), versionConvention = defaultVersionConvention } = opts;
+  const versionComp = typeof version === "number" ?
+    versionConvention.create(version) : Component.from(version);
 
-  const prefix = Name.from(prefixInput);
-  producerPrefix ??= prefix;
+  prefix = Name.from(prefix);
+  const { producerPrefix = prefix } = opts;
   return serve(prefix.append(versionComp), source, {
     ...opts,
     producerPrefix,
@@ -47,5 +27,20 @@ export function serveVersioned(prefixInput: NameLike, source: ChunkSource, opts:
 }
 
 export namespace serveVersioned {
-  export type Options = serve.Options & (GivenVersionOptions | MakeVersionOptions);
+  export interface Options extends serve.Options {
+    /**
+     * Version component or version number.
+     * @defaultValue `Date.now())`
+     */
+    version?: ComponentLike | number;
+
+    /**
+     * Choose a version number naming convention.
+     * @defaultValue `import("@ndn/naming-convention2").Version`
+     *
+     * @remarks
+     * If `.version` is a number, it's encoded with this convention.
+     */
+    versionConvention?: VersionConventionFromNumber;
+  }
 }

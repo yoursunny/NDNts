@@ -1,3 +1,7 @@
+/**
+ * Create a buffer of non-crypto-secure random data.
+ * @param size - Buffer size.
+ */
 export function makeObjectBody(size = 1024 * 1024): Buffer {
   const objectBody = Buffer.alloc(size);
   for (let i = 0; i < objectBody.length; ++i) {

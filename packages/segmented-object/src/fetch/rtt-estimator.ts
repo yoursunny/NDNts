@@ -18,7 +18,7 @@ const defaultParameters: Parameters = {
 
 /**
  * RTT estimator.
- * @see https://datatracker.ietf.org/doc/html/rfc6298
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc6298}
  */
 export class RttEstimator {
   private params: Parameters;
