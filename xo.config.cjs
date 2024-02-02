@@ -51,6 +51,7 @@ module.exports = {
     ...makePackageOverrides(merge(js, ts, tsdoc),
       "/packages/*-transport",
       "/packages/*mgmt",
+      "/packages/cli-common",
       "/packages/endpoint",
       "/packages/fw",
       "/packages/keychain",

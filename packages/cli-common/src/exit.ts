@@ -10,6 +10,7 @@ export function wtf(): void {
   wtfnode.resetLoggers();
 }
 
+/** A list of objects to be closed or disposed upon program exit. */
 export const exitClosers = new Closers();
 
 /** SIGINT (CTRL+C) handler. */

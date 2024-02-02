@@ -5,7 +5,7 @@ import * as env from "./env";
 
 let theKeyChain: KeyChain | undefined;
 
-/** Open the KeyChain specified by NDNTS_KEYCHAIN environ. */
+/** Open the KeyChain specified by `NDNTS_KEYCHAIN` environ. */
 export function openKeyChain(): KeyChain {
   if (!theKeyChain) {
     if (env.keychain) {
@@ -35,7 +35,7 @@ export async function getSignerImpl(prefix: Name): Promise<[signer: Signer, klNa
   return [signer, klName];
 }
 
-/** Get the KeyChain signer specified by NDNTS_KEY environ. */
+/** Get the KeyChain signer specified by `NDNTS_KEY` environ. */
 export async function getSigner(): Promise<Signer> {
   const [signer] = await getSignerImpl(env.key);
   return signer;
