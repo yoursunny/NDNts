@@ -1,6 +1,5 @@
 import type { NameLike } from "@ndn/packet";
 import { assert } from "@ndn/util";
-import { type IsEmptyObject } from "type-fest";
 
 import { ECDSA } from "../algo/mod";
 import type { KeyChain } from "../store/mod";
@@ -10,7 +9,7 @@ import { createVerifier } from "./signing-verifier";
 import { CryptoAlgorithm, type NamedSigner, type NamedVerifier, type SigningAlgorithm } from "./types";
 
 type SigningOptG<I, Asym extends boolean, G> =
-  IsEmptyObject<G> extends true ?
+  {} extends G ?
     [SigningAlgorithm<I, Asym, G>, G?] :
     [SigningAlgorithm<I, Asym, G>, G];
 
@@ -18,7 +17,7 @@ type SigningOptG<I, Asym extends boolean, G> =
  * Generate a pair of signer and verifier with the default ECDSA signing algorithm.
  * @param name - Key name (used as-is) or subject name (forming key name with random *KeyId*).
  */
-export async function generateSigningKey(
+export function generateSigningKey(
   name: NameLike,
 ): Promise<[NamedSigner.PrivateKey, NamedVerifier.PublicKey]>;
 
@@ -27,7 +26,7 @@ export async function generateSigningKey(
  * @param keyChain - Target KeyChain.
  * @param name - Key name (used as-is) or subject name (forming key name with random *KeyId*).
  */
-export async function generateSigningKey(
+export function generateSigningKey(
   keyChain: KeyChain,
   name: NameLike,
 ): Promise<[NamedSigner.PrivateKey, NamedVerifier.PublicKey]>;
@@ -37,7 +36,7 @@ export async function generateSigningKey(
  * @param name - Key name (used as-is) or subject name (forming key name with random *KeyId*).
  * @param a - Signing algorithm and key generation options.
  */
-export async function generateSigningKey<I, Asym extends boolean, G>(
+export function generateSigningKey<I, Asym extends boolean, G>(
   name: NameLike,
   ...a: SigningOptG<I, Asym, G>
 ): Promise<[NamedSigner<Asym>, NamedVerifier<Asym>]>;
@@ -48,7 +47,7 @@ export async function generateSigningKey<I, Asym extends boolean, G>(
  * @param name - Key name (used as-is) or subject name (forming key name with random *KeyId*).
  * @param a - Signing algorithm and key generation options.
  */
-export async function generateSigningKey<I, Asym extends boolean, G>(
+export function generateSigningKey<I, Asym extends boolean, G>(
   keyChain: KeyChain,
   name: NameLike,
   ...a: SigningOptG<I, Asym, G>

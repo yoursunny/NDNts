@@ -2,7 +2,7 @@ import { Certificate, CertNaming, type CryptoAlgorithm, ECDSA, KeyChain, KeyStor
 import { Component, Data, Name, NameMap } from "@ndn/packet";
 import { type Decodable, Decoder, Encoder } from "@ndn/tlv";
 import { crypto } from "@ndn/util";
-import { execa } from "execa";
+import { execa, execaSync } from "execa";
 import throat from "throat";
 
 import { SafeBag } from "./safe-bag";
@@ -11,8 +11,18 @@ const IMPORTING_ISSUER = Component.from("08c5a687-7be5-43ee-a966-2683fb339c1d");
 const PASSPHRASE = "PASSPHRASE";
 const ALGO_LIST = [ECDSA, RSA, RSAOAEP];
 
+let ndnsecInstalled: boolean | undefined;
+
 /** Access ndn-cxx KeyChain. */
 export class NdnsecKeyChain extends KeyChain {
+  /**
+   * Whether current environment supports ndn-cxx KeyChain.
+   * It checks whether `ndnsec` program is installed.
+   */
+  public static get supported(): boolean {
+    return (ndnsecInstalled ??= execaSync("ndnsec", ["version"], { reject: false }).exitCode === 0);
+  }
+
   constructor({
     pibLocator,
     tpmLocator,
@@ -89,8 +99,7 @@ export class NdnsecKeyChain extends KeyChain {
   }
 
   private async load() {
-    this.cached ??= await this.copyTo(KeyChain.createTemp(ALGO_LIST));
-    return this.cached;
+    return (this.cached ??= await this.copyTo(KeyChain.createTemp(ALGO_LIST)));
   }
 
   public override async listKeys(prefix = new Name()): Promise<Name[]> {
@@ -163,25 +172,32 @@ export class NdnsecKeyChain extends KeyChain {
 }
 
 export namespace NdnsecKeyChain {
+  /** {@link NdnsecKeyChain} constructor options. */
   export interface Options {
     /**
      * ndn-cxx PIB locator.
-     * This must be specified together with tpmLocator.
-     * @see https://docs.named-data.net/ndn-cxx/0.8.1/manpages/ndn-client.conf.html#key-management
+     *
+     * @remarks
+     * This must be specified together with `.tpmLocator`.
+     * @see {@link https://docs.named-data.net/ndn-cxx/0.8.1/manpages/ndn-client.conf.html#key-management}
      */
     pibLocator?: string;
 
     /**
      * ndn-cxx TPM locator.
-     * This must be specified together with pibLocator.
-     * @see https://docs.named-data.net/ndn-cxx/0.8.1/manpages/ndn-client.conf.html#key-management
+     *
+     * @remarks
+     * This must be specified together with `.pibLocator`.
+     * @see {@link https://docs.named-data.net/ndn-cxx/0.8.1/manpages/ndn-client.conf.html#key-management}
      */
     tpmLocator?: string;
 
     /**
      * HOME environment variable to pass to ndnsec command.
+     *
+     * @remarks
      * ndn-cxx will derive PIB locator and TPM locator from HOME environment variable.
-     * This is ignored when both pibLocator and tpmLocator are specified.
+     * This is ignored when both `.pibLocator` and `.tpmLocator` are specified.
      */
     home?: string;
 

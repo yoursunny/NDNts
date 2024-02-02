@@ -2,6 +2,7 @@ import { FwPacket } from "@ndn/fw";
 import { Data, Interest } from "@ndn/packet";
 import { delay } from "@ndn/util";
 import { abortableSource } from "abortable-iterator";
+import type { ReadonlyDeep } from "type-fest";
 import { expect } from "vitest";
 
 import { L3Face, type Transport } from "..";
@@ -15,9 +16,9 @@ export interface TestRecord {
 
 /**
  * Test a pair of transports.
- *
- * @remarks
- * Two transports should be paired: packets sent on one transport should be received on the other.
+ * @param transportA - First transport. Packets sent should be received on `transportB`.
+ * @param transportB - Second transport. Packets sent should be received on `transportA`.
+ * @returns A test record to be analyzed by {@link check}.
  */
 export async function execute<T extends Transport>(
     transportA: T, transportB: T,
@@ -67,13 +68,12 @@ export async function execute<T extends Transport>(
 
 /**
  * Check test records.
- * @param record - {@link execute} return value.
  * @param threshold - Minimum ratio of successful delivered.
  * 0.9 means 90% delivery, i.e. tolerate 10% loss.
  */
-export function check(record: TestRecord, threshold = 0.9) {
-  expect(record.namesA.length).toBeGreaterThanOrEqual(Math.ceil(COUNT * threshold));
-  expect(record.namesB.length).toBeGreaterThanOrEqual(Math.ceil(COUNT * threshold));
-  expect(record.namesA).toHaveLength(new Set(record.namesA).size);
-  expect(record.namesB).toHaveLength(new Set(record.namesB).size);
+export function check({ namesA, namesB }: ReadonlyDeep<TestRecord>, threshold = 0.9) {
+  expect(namesA.length).toBeGreaterThanOrEqual(Math.ceil(COUNT * threshold));
+  expect(namesB.length).toBeGreaterThanOrEqual(Math.ceil(COUNT * threshold));
+  expect(namesA).toHaveLength(new Set(namesA).size);
+  expect(namesB).toHaveLength(new Set(namesB).size);
 }

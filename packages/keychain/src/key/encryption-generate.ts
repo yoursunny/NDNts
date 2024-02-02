@@ -1,6 +1,5 @@
 import type { NameLike } from "@ndn/packet";
 import { assert } from "@ndn/util";
-import type { IsEmptyObject } from "type-fest";
 
 import type { KeyChain } from "../store/mod";
 import { createDecrypter } from "./encryption-decrypter";
@@ -9,7 +8,7 @@ import { generateKeyInternal } from "./impl-generate";
 import { CryptoAlgorithm, type EncryptionAlgorithm, type NamedDecrypter, type NamedEncrypter } from "./types";
 
 type EncryptionOptG<I, Asym extends boolean, G> =
-  IsEmptyObject<G> extends true ?
+  {} extends G ?
     [EncryptionAlgorithm<I, Asym, G>, G?] :
     [EncryptionAlgorithm<I, Asym, G>, G];
 
@@ -18,7 +17,7 @@ type EncryptionOptG<I, Asym extends boolean, G> =
  * @param name - Key name (used as-is) or subject name (forming key name with random *KeyId*).
  * @param a - Encryption algorithm and key generation options.
  */
-export async function generateEncryptionKey<I, Asym extends boolean, G>(
+export function generateEncryptionKey<I, Asym extends boolean, G>(
   name: NameLike,
   ...a: EncryptionOptG<I, Asym, G>
 ): Promise<[NamedEncrypter<Asym>, NamedDecrypter<Asym>]>;
@@ -29,7 +28,7 @@ export async function generateEncryptionKey<I, Asym extends boolean, G>(
  * @param name - Key name (used as-is) or subject name (forming key name with random *KeyId*).
  * @param a - Encryption algorithm and key generation options.
  */
-export async function generateEncryptionKey<I, Asym extends boolean, G>(
+export function generateEncryptionKey<I, Asym extends boolean, G>(
   keyChain: KeyChain,
   name: NameLike,
   ...a: EncryptionOptG<I, Asym, G>

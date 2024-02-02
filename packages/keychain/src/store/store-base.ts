@@ -11,7 +11,7 @@ import throat from "throat";
 export interface StoreProvider<T> {
   /**
    * Indicate whether the store provider supports the structured clone algorithm.
-   * If false, values must be serialized as JSON.
+   * If false, values must be JSON serializable.
    */
   readonly canSClone: boolean;
 

@@ -1,4 +1,5 @@
 import { Component, Name } from "@ndn/packet";
+import type { ReadonlyDeep } from "type-fest";
 import { expect } from "vitest";
 
 import { Certificate, ECDSA, generateSigningKey, type KeyChain, ValidityPeriod } from "..";
@@ -12,6 +13,11 @@ export interface TestRecord {
   certs4: string[];
 }
 
+/**
+ * Test a KeyChain for its certificate storage operations.
+ * @param keyChain - Target KeyChain.
+ * @returns A test record to be analyzed by {@link check}.
+ */
 export async function execute(keyChain: KeyChain): Promise<TestRecord> {
   const [issuerPrivateKey] = await generateSigningKey("/I", ECDSA, { curve: "P-384" });
   const [privateKey, publicKey] = await generateSigningKey(keyChain, "/K");
@@ -48,14 +54,15 @@ export async function execute(keyChain: KeyChain): Promise<TestRecord> {
   };
 }
 
-export function check(record: TestRecord) {
-  expect(record.certs0).toHaveLength(0);
-  expect(record.certs1).toHaveLength(1);
-  expect(record.certs2).toHaveLength(2);
-  expect(record.certs3).toHaveLength(1);
-  expect(record.certs4).toHaveLength(0);
+/** Check test records. */
+export function check({ key, certs0, certs1, certs2, certs3, certs4 }: ReadonlyDeep<TestRecord>) {
+  expect(certs0).toHaveLength(0);
+  expect(certs1).toHaveLength(1);
+  expect(certs2).toHaveLength(2);
+  expect(certs3).toHaveLength(1);
+  expect(certs4).toHaveLength(0);
 
-  expect(new Name(`${record.key}/self`).isPrefixOf(record.certs1[0]!)).toBeTruthy();
-  expect(new Name(`${record.key}/issuer`).isPrefixOf(record.certs3[0]!)).toBeTruthy();
-  expect(record.certs2).toEqual(expect.arrayContaining([...record.certs1, ...record.certs3]));
+  expect(new Name(`${key}/self`).isPrefixOf(certs1[0]!)).toBeTruthy();
+  expect(new Name(`${key}/issuer`).isPrefixOf(certs3[0]!)).toBeTruthy();
+  expect(certs2).toEqual(expect.arrayContaining([...certs1, ...certs3]));
 }

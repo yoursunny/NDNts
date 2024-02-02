@@ -1,4 +1,5 @@
 import { Name, SigType } from "@ndn/packet";
+import type { ReadonlyDeep } from "type-fest";
 import { expect } from "vitest";
 
 import { ECDSA, Ed25519, generateSigningKey, HMAC, type KeyChain, type NamedSigner, type NamedVerifier, RSA, type SigningAlgorithm } from "..";
@@ -27,6 +28,12 @@ export interface TestRecord {
   keys4: Array<"bad" | "" | keyof typeof algoRecord>;
 }
 
+/**
+ * Test a KeyChain for its key storage operations.
+ * @param keyChain - Target KeyChain.
+ * @param enabled - Which algorithms are supported by the KeyChain.
+ * @returns A test record to be analyzed by {@link check}.
+ */
 export async function execute(keyChain: KeyChain, enabled: Enable = {}): Promise<TestRecord> {
   const keys0 = (await keyChain.listKeys()).map(String);
 
@@ -75,7 +82,8 @@ export async function execute(keyChain: KeyChain, enabled: Enable = {}): Promise
   };
 }
 
-export function check(record: TestRecord, enabled: Enable = {}) {
+/** Check test records. */
+export function check({ keys0, keys1, keys2, keys3, keys4 }: ReadonlyDeep<TestRecord>, enabled: Enable = {}) {
   let nEnabled = 0;
   let nDisabled = 0;
   for (const algoName of Object.keys(algoRecord)) {
@@ -86,17 +94,17 @@ export function check(record: TestRecord, enabled: Enable = {}) {
     }
   }
 
-  expect(record.keys0).toHaveLength(0);
-  expect(record.keys1).toHaveLength(nEnabled * 8);
-  expect(record.keys2).toHaveLength(nEnabled * 8);
-  expect(record.keys3).toHaveLength(nEnabled * 6);
-  expect(record.keys4).toHaveLength((nEnabled + nDisabled) * 8);
+  expect(keys0).toHaveLength(0);
+  expect(keys1).toHaveLength(nEnabled * 8);
+  expect(keys2).toHaveLength(nEnabled * 8);
+  expect(keys3).toHaveLength(nEnabled * 6);
+  expect(keys4).toHaveLength((nEnabled + nDisabled) * 8);
 
-  expect(record.keys4.filter((v) => v === "ECDSA")).toHaveLength(enabled.ECDSA === false ? 0 : 6);
-  expect(record.keys4.filter((v) => v === "RSA")).toHaveLength(enabled.RSA === false ? 0 : 6);
-  expect(record.keys4.filter((v) => v === "HMAC")).toHaveLength(enabled.HMAC === false ? 0 : 6);
-  expect(record.keys4.filter((v) => v === "Ed25519")).toHaveLength(enabled.Ed25519 === false ? 0 : 6);
-  expect(record.keys4.filter((v) => v === "")).toHaveLength(nEnabled * 2 + nDisabled * 8);
+  expect(keys4.filter((v) => v === "ECDSA")).toHaveLength(enabled.ECDSA === false ? 0 : 6);
+  expect(keys4.filter((v) => v === "RSA")).toHaveLength(enabled.RSA === false ? 0 : 6);
+  expect(keys4.filter((v) => v === "HMAC")).toHaveLength(enabled.HMAC === false ? 0 : 6);
+  expect(keys4.filter((v) => v === "Ed25519")).toHaveLength(enabled.Ed25519 === false ? 0 : 6);
+  expect(keys4.filter((v) => v === "")).toHaveLength(nEnabled * 2 + nDisabled * 8);
 
-  expect(record.keys1).toEqual(record.keys2);
+  expect(keys1).toEqual(keys2);
 }

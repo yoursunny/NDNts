@@ -6,11 +6,13 @@ import { Decoder } from "@ndn/tlv";
 import { expect, test } from "vitest";
 
 import { SafeBag } from "..";
-import { SafeBagEC, SafeBagRSA } from "../test-fixture/safe-bag";
+import { SafeBagEC, SafeBagRSA, type SafeBagTestVector } from "../test-fixture/safe-bag";
 
-test.each([
-  SafeBagEC, SafeBagRSA,
-])("import %#", async ({ sigType, canRSAOAEP, certName, wire, passphrase }) => {
+test.each<[string, SafeBagTestVector]>([
+  ["EC", SafeBagEC],
+  ["RSA", SafeBagRSA],
+])("import %s", async (desc, { sigType, canRSAOAEP, certName, wire, passphrase }) => {
+  void desc;
   const safeBag = Decoder.decode(wire, SafeBag);
   const { certificate: cert } = safeBag;
   expect(cert.name).toEqualName(certName);

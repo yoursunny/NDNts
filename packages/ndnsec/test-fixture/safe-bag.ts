@@ -1,17 +1,28 @@
-import { SigType } from "@ndn/packet";
+import { type NameLike, SigType } from "@ndn/packet";
 import { fromHex } from "@ndn/util";
+
+/** SafeBag test vector. */
+export interface SafeBagTestVector {
+  sigType: number;
+  /** Whether the key is compatible with RSA-OAEP encryption algorithm. */
+  canRSAOAEP: boolean;
+  certName: NameLike;
+  wire: Uint8Array;
+  passphrase: string;
+}
 
 /**
  * Provide a test vector for a SafeBag containing an ECDSA key.
  *
+ * @remarks
  * This was created with ndn-cxx 0.7.1-39-g74cb28f6 using these commands:
- * @code
+ * ```bash
  * ndnsec key-gen -te /E >/dev/null
  * NDN_NAME_ALT_URI=0 ndnsec list -c
  * ndnsec export -i /E -P tS5VVFQES | base64 -d | xxd -u -p
- * @endcode
+ * ```
  */
-export const SafeBagEC = {
+export const SafeBagEC: SafeBagTestVector = {
   sigType: SigType.Sha256WithEcdsa,
   canRSAOAEP: false,
   certName: "/8=E/8=KEY/8=Ap%11%F9%1C%28%DA%DF/8=self/35=%00%00%01z%BA%9B%3C6",
@@ -41,14 +52,15 @@ export const SafeBagEC = {
 /**
  * Provide a test vector for a SafeBag containing an RSA key.
  *
+ * @remarks
  * This was created with ndn-cxx 0.7.1-39-g74cb28f6 using these commands:
- * @code
+ * ```bash
  * ndnsec key-gen -tr /R >/dev/null
  * NDN_NAME_ALT_URI=0 ndnsec list -c
  * ndnsec export -i /R -P dyJSpodm | base64 -d | xxd -u -p
- * @endcode
+ * ```
  */
-export const SafeBagRSA = {
+export const SafeBagRSA: SafeBagTestVector = {
   sigType: SigType.Sha256WithRsa,
   canRSAOAEP: true,
   certName: "/8=R/8=KEY/8=%84%C5%FF%F6d%DBm%CF/8=self/35=%00%00%01z%BA%96%8E%3A",
