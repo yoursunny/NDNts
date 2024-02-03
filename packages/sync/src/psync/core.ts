@@ -105,8 +105,8 @@ export class PSyncNode implements SyncNode<Name>, PSyncCore.PrefixSeqNum {
 
   /**
    * Change sequence number, for internal use.
-   * @param v new sequence number.
-   * @param triggerEvent whether to trigger onIncreaseSeqNum callback.
+   * @param v - New sequence number.
+   * @param triggerEvent - Whether to trigger `.onIncreaseSeqNum` callback.
    */
   public setSeqNum(v: number, triggerEvent = true): void {
     assert(Number.isSafeInteger(v));
@@ -137,7 +137,7 @@ export class PSyncNode implements SyncNode<Name>, PSyncCore.PrefixSeqNum {
     this.c.nodes.delete(this.prefix);
   }
 
-  /** Recompute `this.k` after changing sequence number. */
+  /** Recompute `.k` after changing sequence number. */
   private updateKey() {
     ({ hash: this.k } = this.c.joinPrefixSeqNum(this));
   }

@@ -202,11 +202,11 @@ export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscrib
 
   /**
    * Publish a packet.
-   * @param pub a Data packet. This does not need to be signed.
-   * @param cb a callback to get notified whether publication is confirmed,
-   *           i.e. its hash appears in a sync Interest from another participant.
-   * @returns a Promise that resolves when the publication is recorded.
-   *          It does not mean the publication has reached other participants.
+   * @param pub - Data packet. This does not need to be signed.
+   * @param cb - Callback to get notified whether publication is confirmed,
+   *             i.e. its hash appears in a sync Interest from another participant.
+   * @returns - Promise that resolves when the publication is recorded.
+   *            It does not mean the publication has reached other participants.
    */
   public async publish(pub: Data, cb?: SyncpsPubsub.PublishCallback): Promise<void> {
     if (this.closed) {
@@ -229,10 +229,7 @@ export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscrib
     }
   }
 
-  /**
-   * Subscribe to a topic.
-   * @param topic a name prefix.
-   */
+  /** Subscribe to a topic. */
   public subscribe(topic: Name): Subscription<Name, CustomEvent<Data>> {
     const { sub } = this.subs.subscribe(topic);
     return sub;
@@ -470,6 +467,7 @@ export namespace SyncpsPubsub {
   /**
    * Callback to determine if a publication is expired.
    *
+   * @remarks
    * The callback can return either:
    * - boolean to indicate whether the publication is expired.
    * - number, interpreted as Unix timestamp (milliseconds) of publication creation time.
@@ -488,19 +486,25 @@ export namespace SyncpsPubsub {
 
   /**
    * Callback to decide what publications to be included in a response.
-   * Argument contains unexpired publications only.
-   * It should return a priority list of publications to be included in the response.
+   * @param items - Unexpired publications.
+   * @returns A priority list of publications to be included in the response.
    */
   export type FilterPubsCallback = (items: FilterPubItem[]) => FilterPubItem[];
 
   export interface Options {
     /**
      * Algorithm parameters.
+     *
+     * @remarks
      * They must be the same on every peer.
      */
     p: Parameters;
 
-    /** Endpoint for communication. */
+    /**
+     * Endpoint for communication.
+     * @defaultValue
+     * Endpoint on default logical forwarder.
+     */
     endpoint?: Endpoint;
 
     /** Description for debugging purpose. */
@@ -511,69 +515,73 @@ export namespace SyncpsPubsub {
 
     /**
      * Sync Interest lifetime in milliseconds.
-     * @default 4000
+     * @defaultValue 4000
      */
     syncInterestLifetime?: number;
 
     /**
      * Advisory maximum size for publications included in a sync reply Data packet.
-     * @default 1300
+     * @defaultValue 1300
      */
     syncDataPubSize?: number;
 
     /**
      * Signer of sync reply Data packets.
-     * Default is digest signing.
+     * @defaultValue digestSigning
      */
     syncSigner?: Signer;
 
     /**
      * Verifier of sync reply Data packets.
-     * Default is no verification.
+     * @defaultValue no verification
      */
     syncVerifier?: Verifier;
 
     /**
      * Publication lifetime.
-     * @default 1000
+     * @defaultValue 1000
      */
     maxPubLifetime?: number;
 
     /**
      * Maximum clock skew, for calculating timers.
-     * @default 1000
+     * @defaultValue 1000
      */
     maxClockSkew?: number;
 
     /**
      * Callback to modify publication before it's signed.
-     * Default is appending a TimestampNameComponent to the name.
+     * @defaultValue appending a TimestampNameComponent to the name
      */
     modifyPublication?: ModifyPublicationCallback;
 
     /**
      * Callback to determine if a publication is expired.
-     * Default is interpreting the last component as TimestampNameComponent;
-     * if the last component is not a TimestampNameComponent, it is seen as expired.
+     *
+     * @defaultValue
+     * The last component is interpreted as TimestampNameComponent.
+     * If it is not a TimestampNameComponent, the publication is seen as expired.
      */
     isExpired?: IsExpiredCallback;
 
     /**
      * Callback to decide what publications to be included in a response.
-     * Default is: respond nothing if there's no own publication; otherwise,
-     * prioritize own publications over others, and prioritize later timestamp.
+     *
+     * @defaultValue
+     * - Respond nothing if there's no own publication.
+     * - Otherwise, prioritize own publications over others, and prioritize later timestamp.
      */
     filterPubs?: FilterPubsCallback;
 
     /**
      * Signer of publications.
-     * Default is digest signing.
+     * @defaultValue digestSigning
      */
     pubSigner?: Signer;
 
     /**
      * Verifier of publications.
-     * Default is no verification.
+     * @defaultValue no verification
      */
     pubVerifier?: Verifier;
   }

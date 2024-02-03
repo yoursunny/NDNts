@@ -68,6 +68,7 @@ module.exports = {
       "/packages/rdr",
       "/packages/repo*",
       "/packages/segmented-object",
+      "/packages/sync",
       "/packages/tlv",
       "/packages/util",
     ),

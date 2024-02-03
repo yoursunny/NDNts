@@ -8,7 +8,7 @@ import { TT } from "./an";
 export class SvStateVector {
   /**
    * Constructor.
-   * @param from copy from state vector or its JSON value.
+   * @param from - Copy from state vector or its JSON value.
    */
   constructor(from?: SvStateVector | Record<string, number>) {
     if (from instanceof SvStateVector) {
@@ -31,6 +31,8 @@ export class SvStateVector {
 
   /**
    * Set sequence number of a node.
+   *
+   * @remarks
    * Setting to zero removes the node.
    */
   public set(id: Name, seqNum: number): void {

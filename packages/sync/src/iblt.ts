@@ -166,6 +166,7 @@ export class IBLT {
   /**
    * Serialize the hashtable to a byte array.
    *
+   * @remarks
    * Each entry is serialized as 12 octets:
    * - count: int32
    * - keySum: uint32
@@ -180,7 +181,8 @@ export class IBLT {
 
   /**
    * Deserialize from a byte array.
-   * @throws input does not match parameters.
+   * @throws Error
+   * Thrown if input does not match parameters.
    */
   public deserialize(v: Uint8Array): void {
     this.ht.deserialize(v);
@@ -213,17 +215,22 @@ export namespace IBLT {
 
     /**
      * Hash function seed for KeyCheck field.
+     *
+     * @remarks
      * This must be greater than nHash.
      */
     checkSeed: number;
 
     /**
      * Number of hashtable entries.
+     *
+     * @remarks
      * This must be divisible by `nHash`.
      */
     nEntries: number;
   }
 
+  /** Normalized and validated parameters. */
   export class PreparedParameters implements Readonly<Parameters> {
     public static prepare(p: Parameters) {
       if (p instanceof PreparedParameters) {

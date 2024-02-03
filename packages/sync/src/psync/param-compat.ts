@@ -128,29 +128,36 @@ export namespace makePSyncCompatParam {
   export interface Options {
     /**
      * Whether to use little endian when converting uint32 key to Uint8Array.
+     * @defaultValue true
+     *
+     * @remarks
      * PSync C++ library behaves differently on big endian and little endian machines,
-     * https://github.com/named-data/PSync/blob/b60398c5fc216a1b577b9dbcf61d48a21cb409a4/PSync/detail/util.cpp#L126
+     * {@link https://github.com/named-data/PSync/blob/b60398c5fc216a1b577b9dbcf61d48a21cb409a4/PSync/detail/util.cpp#L126}
      * This must be set to match other peers.
-     * @default true
      */
     keyToBufferLittleEndian?: boolean;
 
     /**
      * Expected number of IBLT entries, i.e. expected number of updates in a sync cycle.
+     * @defaultValue 80
+     *
+     * @remarks
      * This is irrelevant to PartialSync consumer.
-     * @default 80
      */
     expectedEntries?: number;
 
     /**
      * Estimated number of subscriptions in PartialSync consumer.
-     * @default 16
+     * @defaultValue 16
      */
     expectedSubscriptions?: number;
 
     /**
      * Whether to use zlib compression on IBLT.
-     * Default is no compression. Use `PSyncZlib` to set zlib compression.
+     * @defaultValue no compression
+     *
+     * @remarks
+     * Use {@link PSyncZlib} to set zlib compression.
      *
      * In PSync C++ library, default for FullSync depends on whether zlib is available at compile
      * time, and default for PartialSync is no compression.
@@ -160,7 +167,10 @@ export namespace makePSyncCompatParam {
 
     /**
      * Whether to use zlib compression on Data payload.
-     * Default is no compression. Use `PSyncZlib` to set zlib compression.
+     * @defaultValue no compression
+     *
+     * @remarks
+     * Use {@link PSyncZlib} to set zlib compression.
      *
      * In PSync C++ library, default for FullSync depends on whether zlib is available at compile
      * time. For PartialSync, it is always no compression.

@@ -62,7 +62,9 @@ export class SvPublisher {
 
   /**
    * Stop publisher operations.
-   * This does not stop the SvSync instance or the DataStore.
+   *
+   * @remarks
+   * This does not stop the {@link SvSync} instance or the {@link SvPublisher.DataStore}.
    */
   public async close(): Promise<void> {
     this.outerProducer.close();
@@ -72,10 +74,10 @@ export class SvPublisher {
 
   /**
    * Publish application data.
-   * @param name application-specified inner name.
-   * @param payload application payload.
-   * @param entry MappingEntry for subscriber-side filtering.
-   *              This is required if subscribers are expecting a certain MappingEntry subclass.
+   * @param name - Application-specified inner name.
+   * @param payload - Application payload.
+   * @param entry - MappingEntry for subscriber-side filtering.
+   * This is required if subscribers are expecting a certain MappingEntry subclass.
    * @returns seqNum.
    */
   public async publish(name: NameLike, payload: Uint8Array, entry = new SvMappingEntry()): Promise<number> {
@@ -148,51 +150,61 @@ export class SvPublisher {
 }
 
 export namespace SvPublisher {
+  /* eslint-disable tsdoc/syntax -- tsdoc-missing-reference */
+  /**
+   * Data repository used by publisher.
+   *
+   * @remarks
+   * {@link \@ndn/repo!DataStore} satisfies the requirement.
+   * Other lightweight implementations may be possible.
+   */
+  /* eslint-enable tsdoc/syntax */
   export type DataStore = S.Get & S.Find & S.Insert;
 
   export interface Options {
-    /** Endpoint for communication. */
+    /**
+     * Endpoint for communication.
+     * @defaultValue
+     * Endpoint on default logical forwarder.
+     */
     endpoint?: Endpoint;
 
     /**
      * SvSync instance.
      *
-     * Multiple SvSubscribers and SvPublishers may reuse the same SvSync instance. However,
-     * publications from a SvPublisher cannot reach SvSubscribers on the same SvSync instance.
+     * @remarks
+     * Multiple {@link SvSubscriber}s and {@link SvPublisher}s may reuse the same SvSync instance.
+     * However, publications from a publisher cannot reach subscribers on the same SvSync instance.
      */
     sync: SvSync;
 
     /** Publisher node ID. */
     id: Name;
 
-    /**
-     * Data repository used for this publisher.
-     * DataStore type from @ndn/repo package satisfies the requirement.
-     * Other lightweight implementations may be possible.
-     */
+    /** Data repository used for this publisher. */
     store: DataStore;
 
     /**
      * Segment chunk size of inner Data packet.
-     * Default is 8000.
+     * @defaultValue 8000
      */
     chunkSize?: number;
 
     /**
      * Inner Data signer.
-     * Default is NullSigning.
+     * @defaultValue nullSigner
      */
     innerSigner?: Signer;
 
     /**
      * Outer Data signer.
-     * Default is NullSigning.
+     * @defaultValue nullSigner
      */
     outerSigner?: Signer;
 
     /**
      * Mapping Data signer.
-     * Default is NullSigning.
+     * @defaultValue nullSigner
      */
     mappingSigner?: Signer;
   }

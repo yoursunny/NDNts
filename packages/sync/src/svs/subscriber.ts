@@ -19,9 +19,9 @@ type EventMap = {
 
 /**
  * SVS-PS subscriber.
- *
- * MappingEntry is a subclass of SvMappingEntry.
- * If it is not SvMappingEntry base class, its constructor must be specified in Options.mappingEntryType.
+ * @typeParam MappingEntry - Subclass of SvMappingEntry.
+ * If it is not {@link SvMappingEntry} base class, its constructor must be specified in
+ * {@link SvSubscriber.Options.mappingEntryType}.
  */
 export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
   extends TypedEventTarget<EventMap>
@@ -89,7 +89,9 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
 
   /**
    * Stop subscriber operations.
-   * This does not stop the SvSync instance.
+   *
+   * @remarks
+   * This does not stop the {@link SvSync} instance.
    */
   public close(): void {
     this.abort.abort();
@@ -231,58 +233,66 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
 
 export namespace SvSubscriber {
   export interface Options {
-    /** Endpoint for communication. */
+    /**
+     * Endpoint for communication.
+     * @defaultValue
+     * Endpoint on default logical forwarder.
+     */
     endpoint?: Endpoint;
 
     /**
      * SvSync instance.
-     * See notes on SvPublisher.Options regarding reuse.
+     * @see {@link SvPublisher.Options.sync} regarding reuse
      */
     sync: SvSync;
 
     /**
      * Retransmission limit for Data retrieval.
-     * Default is 2.
+     * @defaultValue 2
      */
     retxLimit?: number;
 
     /**
-     * Maximum number of MappingEntry to retrieve in a single query.
-     * Default is 10.
-     * @see https://github.com/named-data/ndn-svs/blob/e39538ed1ddd789de9a34c242af47c3ba4f3583d/ndn-svs/svspubsub.cpp#L199
+     * Maximum quantity of MappingEntries to retrieve in a single query.
+     * @defaultValue 10.
+     * @see {@link https://github.com/named-data/ndn-svs/blob/e39538ed1ddd789de9a34c242af47c3ba4f3583d/ndn-svs/svspubsub.cpp#L199}
      */
     mappingBatch?: number;
 
     /**
      * MappingEntry constructor.
-     * Default is MappingEntry base type.
+     * @defaultValue `SvMappingEntry` base type
      */
     mappingEntryType?: SvMappingEntry.Constructor;
 
     /**
-     * When an update matches a SubscribePublisher, by default the MappingData is not retrieved.
-     * Since the filter functions in SubscribePrefixFilter depend on MappingEntry, they are not called, and
-     * each SubscribePrefixFilter is treated like a SubscribePrefix, which would receive the message if
-     * the topic prefix matches.
-     * Set this option to true forces the retrieval of MappingData and ensures filter functions are called.
+     * If true, force the retrieval of MappingData.
+     *
+     * @remarks
+     * When an update matches a {@link SubscribePublisher}, by default the MappingData is not
+     * retrieved. Since the filter functions in {@link SubscribePrefixFilter} depend on
+     * MappingEntry, they are not called, and each SubscribePrefixFilter is treated like a
+     * {@link SubscribePrefix}, which would receive the message if the topic prefix matches.
+     * Set this option to `true` forces the retrieval of MappingData and ensures filter functions
+     * are called.
      */
     mustFilterByMapping?: boolean;
 
     /**
      * Inner Data verifier.
-     * Default is no verification.
+     * @defaultValue no verification
      */
     innerVerifier?: Verifier;
 
     /**
      * Outer Data verifier.
-     * Default is no verification.
+     * @defaultValue no verification
      */
     outerVerifier?: Verifier;
 
     /**
      * Mapping Data verifier.
-     * Default is no verification.
+     * @defaultValue no verification
      */
     mappingVerifier?: Verifier;
   }
@@ -300,7 +310,7 @@ export namespace SvSubscriber {
 
     /**
      * Filter function to determine whether to retrieve a message based on MappingEntry.
-     * See limitations in Options.mustFilterByMapping.
+     * @see {@link Options.mustFilterByMapping} for limitations on when this may not be invoked.
      */
     filter(entry: MappingEntry): boolean;
   }

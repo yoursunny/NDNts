@@ -12,7 +12,7 @@ const TTSyncpsContent = 0x81;
 const SyncpsContentEVD = new EvDecoder<Data[]>("SyncpsContent")
   .add(TT.Data, (t, { decoder }) => t.push(decoder.decode(Data)), { repeat: true });
 
-/** Create algorithm parameters to be compatible with PSync C++ library. */
+/** Create algorithm parameters to be compatible with DNMP-v2 syncps library. */
 export function makeSyncpsCompatParam({
   keyToBufferLittleEndian = true,
   expectedEntries = 85,
@@ -44,16 +44,18 @@ export namespace makeSyncpsCompatParam {
   export interface Options {
     /**
      * Whether to use little endian when converting a uint32 key to a byte array.
+     * @defaultValue true
+     *
+     * @remarks
      * ndn-ind behaves differently on big endian and little endian machines,
-     * https://github.com/operantnetworks/ndn-ind/blob/dd934a7a5106cda6ea14675554427e12df1ce18f/src/lite/util/crypto-lite.cpp#L114
+     * {@link https://github.com/operantnetworks/ndn-ind/blob/dd934a7a5106cda6ea14675554427e12df1ce18f/src/lite/util/crypto-lite.cpp#L114}
      * This must be set to match other peers.
-     * @default true
      */
     keyToBufferLittleEndian?: boolean;
 
     /**
      * Expected number of IBLT entries, i.e. expected number of updates in a sync cycle.
-     * @default 85
+     * @defaultValue 85
      */
     expectedEntries?: number;
   }

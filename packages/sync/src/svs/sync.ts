@@ -1,6 +1,7 @@
 import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
 import { Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
 import { CustomEvent, randomJitter, trackEventListener } from "@ndn/util";
+import { type Promisable } from "type-fest";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "../types";
@@ -103,7 +104,9 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
 
   /**
    * Obtain a copy of own state vector.
-   * This may be used in initialStateVector to re-create an SvSync instance.
+   *
+   * @remarks
+   * This may be used as {@link SvSync.Options.initialStateVector} to re-create an SvSync instance.
    */
   public get currentStateVector(): SvStateVector {
     return new SvStateVector(this.own);
@@ -198,13 +201,19 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
 export namespace SvSync {
   /**
    * Timer settings.
+   *
+   * @remarks
    * ms: median interval in milliseconds.
    * jitter: ± percentage, in [0.0, 1.0) range.
    */
   export type Timer = [ms: number, jitter: number];
 
   export interface Options {
-    /** Endpoint for communication. */
+    /**
+     * Endpoint for communication.
+     * @defaultValue
+     * Endpoint on default logical forwarder.
+     */
     endpoint?: Endpoint;
 
     /** Description for debugging purpose. */
@@ -212,48 +221,52 @@ export namespace SvSync {
 
     /**
      * Initial state vector.
-     * Default is empty state vector.
+     * @defaultValue empty state vector
      */
     initialStateVector?: SvStateVector;
 
     /**
      * Application initialization function.
+     *
+     * @remarks
      * During initialization, it's possible to remove SyncNode or decrease seqNum.
-     * Calling .close() has no effect.
-     * Sync protocol starts running after the returned Promise is resolved.
+     * Calling `sync.close()` has no effect.
+     *
+     * Sync protocol starts running after the function has returned and the returned Promise
+     * is resolved.
      */
-    initialize?(sync: SvSync): Promise<void>;
+    initialize?(sync: SvSync): Promisable<void>;
 
     /** Sync group prefix. */
     syncPrefix: Name;
 
     /**
      * Sync Interest lifetime in milliseconds.
-     * @default 1000
+     * @defaultValue 1000
      */
     syncInterestLifetime?: number;
 
     /**
      * Sync Interest timer in steady state.
-     * Default is [30000ms, ±10%]
+     * @defaultValue `[30000ms, ±10%]`
      */
     steadyTimer?: Timer;
 
     /**
      * Sync Interest timer in suppression state.
-     * Default is [200ms, ±50%]
+     * @defaultValue `[200ms, ±50%]`
      */
     suppressionTimer?: Timer;
 
     /**
      * Sync Interest signer.
-     * Default is NullSigning.
+     * @defaultValue nullSigner
      */
     signer?: Signer;
 
     /**
      * Sync Interest verifier.
-     * Default is no verification.
+     * @defaultValue no verification
      */
     verifier?: Verifier;
   }

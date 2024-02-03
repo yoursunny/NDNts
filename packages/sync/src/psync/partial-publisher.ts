@@ -221,11 +221,17 @@ export namespace PSyncPartialPublisher {
   export interface Options {
     /**
      * Algorithm parameters.
+     *
+     * @remarks
      * They must match the subscriber parameters.
      */
     p: Parameters;
 
-    /** Endpoint for communication. */
+    /**
+     * Endpoint for communication.
+     * @defaultValue
+     * Endpoint on default logical forwarder.
+     */
     endpoint?: Endpoint;
 
     /** Description for debugging purpose. */
@@ -236,26 +242,26 @@ export namespace PSyncPartialPublisher {
 
     /**
      * FreshnessPeriod of hello reply Data packet.
-     * @default 1000
+     * @defaultValue 1000
      */
     helloReplyFreshness?: number;
 
     /**
      * FreshnessPeriod of sync reply Data packet.
-     * @default 1000
+     * @defaultValue 1000
      */
     syncReplyFreshness?: number;
 
     /**
      * Signer of sync reply Data packets.
-     * Default is digest signing.
+     * @defaultValue digestSigning
      */
     signer?: Signer;
 
     /**
      * How many sync reply segmented objects to keep in buffer.
-     * This must be positive.
-     * @default 32
+     * This must be a positive integer.
+     * @defaultValue 32
      */
     producerBufferLimit?: number;
   }

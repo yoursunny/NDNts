@@ -42,6 +42,7 @@
     "pako": "^2.1.0",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",
+    "type-fest": "^4.10.2",
     "typescript-event-target": "^1.1.0"
   },
   "devDependencies": {

@@ -23,24 +23,27 @@ export namespace SyncProtocol {
 
 /**
  * A sync protocol node.
+ * @typeParam ID - Node identifier type, typically number or Name.
  *
+ * @remarks
  * Each sync protocol participant may have zero or more nodes.
  */
 export interface SyncNode<ID = any> {
-  /**
-   * Node identifier.
-   * This is typically a number or a Name.
-   */
+  /** Node identifier. */
   readonly id: ID;
 
   /**
    * Current sequence number.
+   *
+   * @remarks
    * It can be increased, but cannot be decreased.
    */
   seqNum: number;
 
   /**
    * Remove this node from participating in the sync protocol.
+   *
+   * @remarks
    * This may or may not have effect, depending on the sync protocol.
    */
   remove(): void;
@@ -50,9 +53,9 @@ export interface SyncNode<ID = any> {
 export class SyncUpdate<ID = any> extends Event {
   /**
    * Constructor.
-   * @param node the node.
-   * @param loSeqNum low sequence number, inclusive.
-   * @param hiSeqNum high sequence number, inclusive.
+   * @param node - The node.
+   * @param loSeqNum - Low sequence number, inclusive.
+   * @param hiSeqNum - High sequence number, inclusive.
    */
   constructor(
       public readonly node: SyncNode<ID>,
@@ -69,7 +72,7 @@ export class SyncUpdate<ID = any> extends Event {
     return this.node.id;
   }
 
-  /** Number of new sequence numbers. */
+  /** Quantity of new sequence numbers. */
   public get count(): number {
     return this.hiSeqNum - this.loSeqNum + 1;
   }
@@ -89,6 +92,8 @@ export interface Subscriber<Topic = Name, Update extends Event = SyncUpdate<Topi
 
 /**
  * A subscription on a topic.
+ *
+ * @remarks
  * Listen to the 'update' event to receive updates on incoming publications matching the topic.
  */
 export interface Subscription<Topic = Name, Update extends Event = SyncUpdate<Topic>> extends TypedEventTarget<Subscription.EventMap<Update>> {
