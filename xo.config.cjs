@@ -49,9 +49,9 @@ module.exports = {
   overrides: [
     ...makePackageOverrides(merge(js, ts, tsdoc), ""),
     ...makePackageOverrides(merge(js, ts, tsdoc, web),
-      "/packages/quic-transport",
-      "/packages/web-bluetooth-transport",
-      "/packages/ws-transport",
+      "/pkg/quic-transport",
+      "/pkg/web-bluetooth-transport",
+      "/pkg/ws-transport",
     ),
     {
       files: [

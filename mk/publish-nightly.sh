@@ -9,7 +9,7 @@ mkdir -p mk/nightly-output/
 
 git add .
 VERSION=$(git show -s --format='%ct %H' | gawk '{ printf "0.0.%s-nightly-%s", strftime("%Y%m%d", $1, 1), substr($2, 1, 7) }')
-corepack pnpm m --filter='./packages/**' --workspace-concurrency=1 exec \
+corepack pnpm m --filter='./pkg/**' --workspace-concurrency=1 exec \
   bash -c 'node '$ROOTDIR'/mk/edit-packagejson.mjs VCDN '$VERSION' &&
            mv $(corepack pnpm pack .) '$ROOTDIR'/mk/nightly-output/$(basename $(pwd)).tgz'
 git checkout -- .

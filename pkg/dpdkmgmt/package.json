@@ -17,7 +17,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/dpdkmgmt"
+    "directory": "pkg/dpdkmgmt"
   },
   "publishConfig": {
     "main": "lib/mod_node.js",

@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"/..
 ROOTDIR=$(pwd)
 
-corepack pnpm -r --filter='./packages/**' exec -- bash -c "node ${ROOTDIR}/mk/make-pkg-tsconfig.mjs"
+corepack pnpm -r --filter='./pkg/**' exec -- bash -c "node ${ROOTDIR}/mk/make-pkg-tsconfig.mjs"
 node mk/make-solution-tsconfig.mjs
 
 (

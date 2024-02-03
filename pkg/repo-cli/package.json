@@ -20,7 +20,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/repo-cli"
+    "directory": "pkg/repo-cli"
   },
   "dependencies": {
     "@ndn/cli-common": "workspace:*",

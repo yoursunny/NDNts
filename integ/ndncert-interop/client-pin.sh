@@ -8,7 +8,7 @@ msg() {
   echo -e "\e[0m"
 }
 
-KCCLI="bash $(pwd)/packages/keychain-cli/ndnts-keychain.sh"
+KCCLI="bash $(pwd)/pkg/keychain-cli/ndnts-keychain.sh"
 
 DIR=/tmp/$(openssl rand -hex 8)
 [[ -d $DIR ]] && rm -rf $DIR

@@ -19,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/autoconfig"
+    "directory": "pkg/autoconfig"
   },
   "publishConfig": {
     "main": "lib/mod_node.js",

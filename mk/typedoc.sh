@@ -7,7 +7,7 @@ if [[ -n ${GTAGID:-} ]]; then
   GTAG="--gaID $GTAGID"
 fi
 
-ENTRYPOINTS='packages/*'
+ENTRYPOINTS='pkg/*'
 if [[ $# -gt 0 ]]; then
   ENTRYPOINTS=''
 fi

@@ -19,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/nfdmgmt"
+    "directory": "pkg/nfdmgmt"
   },
   "publishConfig": {
     "main": "lib/mod_node.js",

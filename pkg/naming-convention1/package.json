@@ -19,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/naming-convention1"
+    "directory": "pkg/naming-convention1"
   },
   "publishConfig": {
     "main": "lib/mod_node.js",

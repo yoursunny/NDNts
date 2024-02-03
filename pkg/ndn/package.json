@@ -19,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/ndn"
+    "directory": "pkg/ndn"
   },
   "publishConfig": {
     "main": "lib/mod_node.js",

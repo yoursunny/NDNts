@@ -4,7 +4,7 @@ import { defineConfig } from "vitest/config";
 const coverage: CoverageOptions<"v8"> = {
   provider: "v8",
   reporter: process.env.CI ? "lcovonly" : ["html", "text-summary"],
-  include: ["packages/**/src/**/*.ts"],
+  include: ["pkg/**/src/**/*.ts"],
   all: false,
 };
 
@@ -21,7 +21,7 @@ export default defineConfig({
       interopDefault: true,
     },
     include: [
-      "packages/**/tests/**/*.t.ts",
+      "pkg/**/tests/**/*.t.ts",
     ],
     teardownTimeout: 30000,
     watch: false,

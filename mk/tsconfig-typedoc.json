@@ -1,15 +1,15 @@
 {
   "extends": "./tsconfig-base.json",
   "compilerOptions": {
-    "rootDir": "../packages",
+    "rootDir": "../pkg",
     "baseUrl": "..",
     "paths": {
-      "@ndn/*": ["./packages/*"],
-      "ndn": ["./packages/ndn"]
+      "@ndn/*": ["./pkg/*"],
+      "ndn": ["./pkg/ndn"]
     }
   },
   "include": [
-    "../packages/*/src/**/*"
+    "../pkg/*/src/**/*"
   ],
   "typedocOptions": {
     "entryPointStrategy": "packages",

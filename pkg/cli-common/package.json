@@ -17,7 +17,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "packages/cli-common"
+    "directory": "pkg/cli-common"
   },
   "publishConfig": {
     "main": "lib/mod_node.js",

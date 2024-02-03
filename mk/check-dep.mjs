@@ -31,7 +31,7 @@ if (!satisfies(doc.lockfileVersion, "^6.0.0")) {
 
 let nWarnings = 0;
 for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entries(doc.importers)) {
-  if (!folder.startsWith("packages/")) {
+  if (!folder.startsWith("pkg/")) {
     continue;
   }
   const unusedP = new Set(Object.keys(dependencies).filter((dep) => !ignoredUnused.has(dep)));
