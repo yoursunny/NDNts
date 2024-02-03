@@ -44,7 +44,7 @@ for (const tt of [TT.Atime, TT.Btime, TT.Ctime, TT.Mtime]) {
   });
 }
 
-/** ndn6-file-server metadata. */
+/** ndn6-file-server file/directory metadata. */
 @Metadata.extend
 export class FileMetadata extends Metadata implements Extensible {
   public readonly [Extensible.TAG] = EXTENSIONS;

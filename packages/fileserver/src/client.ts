@@ -7,6 +7,7 @@ import map from "obliterator/map.js";
 import { type DirEntry, parseDirectoryListing } from "./ls";
 import { FileMetadata } from "./metadata";
 
+/** {@link Client} options. */
 export interface ClientOptions extends retrieveMetadata.Options, fetch.Options {
 }
 
@@ -19,14 +20,14 @@ export class Client {
 
   /**
    * Retrieve metadata of given relative path.
-   * @param relPath file/directory path relative to the mountpoint.
+   * @param relPath - File or directory path underneath the mount point.
    */
   public stat(relPath: string): Promise<FileMetadata>;
 
   /**
    * Retrieve metadata of given relative path and directory entry.
-   * @param parentRelPath parent directory path relative to the mountpoint.
-   * @param de child directory entry.
+   * @param parentRelPath - Parent directory path underneath the mount point.
+   * @param de - Child directory entry.
    */
   public stat(parentRelPath: string, de: DirEntry): Promise<FileMetadata>;
 
@@ -44,7 +45,7 @@ export class Client {
 
   /**
    * List directory.
-   * @param m metadata of a directory.
+   * @param m - Metadata of a directory.
    */
   public async *readdir(m: FileMetadata): AsyncIterable<DirEntry> {
     assert(m.isDir, "not a directory");
@@ -54,7 +55,7 @@ export class Client {
 
   /**
    * Retrieve entire contents of a file.
-   * @param m metadata of a file.
+   * @param m - Metadata of a file.
    */
   public readFile(m: FileMetadata): fetch.Result {
     assert(m.isFile, "not a file");
@@ -66,11 +67,11 @@ export class Client {
 
   /**
    * Retrieve part of a file into a buffer.
-   * @param m metadata of a file.
-   * @param buffer the buffer that file contents will be written into.
-   * @param offset the offset within the buffer where writing will start.
-   * @param length the number of bytes to retrieve.
-   * @param position where to begin reading from the file.
+   * @param m - Metadata of a file.
+   * @param buffer - The buffer that file contents will be written into.
+   * @param offset - The offset within the buffer where writing will start.
+   * @param length - The number of bytes to retrieve.
+   * @param position - Where to begin reading from the file.
    */
   public async readFileInto(m: FileMetadata, buffer: Uint8Array, offset: number, length: number, position: number): Promise<void> {
     assert(m.isFile, "not a file");

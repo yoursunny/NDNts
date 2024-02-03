@@ -19,8 +19,8 @@ beforeAll(async () => {
 
 /**
  * Navigate to test case page.
- * @param importMetaUrl import.meta.url of calling test case.
- * @param delayDuration how long to wait after navigation.
+ * @param importMetaUrl - `import.meta.url` of calling test case.
+ * @param delayDuration - How long (in milliseconds) to wait after navigation.
  */
 export async function navigateToPage(importMetaUrl: string, delayDuration = 500) {
   const dir = path.basename(path.dirname(fileURLToPath(importMetaUrl)));

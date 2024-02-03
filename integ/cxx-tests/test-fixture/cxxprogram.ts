@@ -12,9 +12,9 @@ function compile(dir: string) {
 
 /**
  * Compile and invoke the C++ program in test case directory.
- * @param importMetaUrl import.meta.url of calling test case.
- * @param args arguments to the compiled program.
- * @param opts execa options.
+ * @param importMetaUrl - `import.meta.url` of calling test case.
+ * @param args - Arguments to the compiled program.
+ * @param opts - execa options.
  */
 export function execute(importMetaUrl: string, args: readonly string[] = [],
     opts: ExecaOptions = {}): ExecaChildProcess {

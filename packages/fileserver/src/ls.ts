@@ -2,6 +2,7 @@ import { fromUtf8, toUtf8 } from "@ndn/util";
 
 const slash = "/".codePointAt(0);
 
+/** Directory listing entry. */
 export interface DirEntry {
   name: string;
   isDir: boolean;

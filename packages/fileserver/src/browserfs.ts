@@ -9,6 +9,8 @@ import { type FileMetadata } from "./metadata";
 
 /**
  * ndn6-file-server client wrapped as BrowserFS backend.
+ *
+ * @remarks
  * This backend only supports async operations.
  */
 export class NDNFileSystem extends BaseFileSystem {

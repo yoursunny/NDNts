@@ -47,31 +47,7 @@ const tsdoc = {
 module.exports = {
   ...js,
   overrides: [
-    ...makePackageOverrides(merge(js, ts), ""),
-    ...makePackageOverrides(merge(js, ts, tsdoc),
-      "/packages/*mgmt",
-      "/packages/autoconfig",
-      "/packages/cat",
-      "/packages/cli-common",
-      "/packages/endpoint",
-      "/packages/fw",
-      "/packages/keychain*",
-      "/packages/l3face",
-      "/packages/lp",
-      "/packages/nac",
-      "/packages/naming-convention*",
-      "/packages/ndn",
-      "/packages/ndncert",
-      "/packages/ndnsec",
-      "/packages/node-transport",
-      "/packages/packet",
-      "/packages/rdr",
-      "/packages/repo*",
-      "/packages/segmented-object",
-      "/packages/sync",
-      "/packages/tlv",
-      "/packages/util",
-    ),
+    ...makePackageOverrides(merge(js, ts, tsdoc), ""),
     ...makePackageOverrides(merge(js, ts, tsdoc, web),
       "/packages/quic-transport",
       "/packages/web-bluetooth-transport",
@@ -81,13 +57,13 @@ module.exports = {
       files: [
         "**/integ/browser-tests/**/*.{ts,cts,mts}",
       ],
-      ...merge(js, ts, web, pptr),
+      ...merge(js, ts, tsdoc, web, pptr),
     },
     {
       files: [
         "**/README.md.ts",
       ],
-      ...merge(js, ts, literate, {
+      ...merge(js, ts, tsdoc, literate, {
         rules: {
           "unicorn/no-process-exit": "off",
         },
