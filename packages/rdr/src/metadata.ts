@@ -2,7 +2,7 @@ import { Keyword } from "@ndn/naming-convention2";
 import { type Component, Name, TT } from "@ndn/packet";
 import { type Decodable, type Decoder, type EncodableObj, type Encoder, EvDecoder, Extensible } from "@ndn/tlv";
 
-/** 32=metadata component. */
+/** `32=metadata` component. */
 export const MetadataKeyword: Component = Keyword.create("metadata");
 
 function makeEvd<M extends Metadata>(title: string) {
@@ -13,11 +13,11 @@ function makeEvd<M extends Metadata>(title: string) {
 
 const EVD = makeEvd<Metadata>("Metadata");
 
-/** RDR metadata packet content. */
+/** Metadata packet content. */
 export class Metadata implements EncodableObj {
   /**
    * Constructor.
-   * @param name versioned name.
+   * @param name - Versioned name.
    */
   constructor(public name = new Name()) {}
 
@@ -35,7 +35,7 @@ export namespace Metadata {
     new(name?: Name): M;
   }
 
-  /** Class decorator on an extensible Metadata subclass. */
+  /** Class decorator on an extensible {@link Metadata} subclass. */
   export function extend<M extends Metadata & Extensible>(
       ctor: new() => M,
       ctx?: ClassDecoratorContext,

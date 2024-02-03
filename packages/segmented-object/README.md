@@ -8,7 +8,7 @@ This package implements functions to publish and retrieve segmented objects.
 The consumer functionality:
 
 * [X] supports version discovery via CanBePrefix.
-* [X] supports version discovery via RDR protocol (in `@ndn/rdr` package).
+* [X] supports version discovery by requesting metadata (in `@ndn/rdr` package).
 * [ ] supports manifest.
 * [X] allows specifying segment range.
 * [X] supports segment numbers.
@@ -24,11 +24,11 @@ The producer functionality:
 
 * [X] takes input from `Uint8Array`.
 * [X] takes input from readable streams.
-* [X] takes input from files (`Blob`; filename in Node.js only).
+* [X] takes input from files (`Blob` in browser and Node.js, filename in Node.js).
 * [X] generates segments of fixed size.
 * [ ] generates segments of available data as Interest arrives, to minimize delivery latency.
 * [X] responds to version discovery Interests with CanBePrefix.
-* [X] responds to RDR protocol (in `@ndn/rdr` package).
+* [X] responds to metadata requests (in `@ndn/rdr` package).
 * [ ] generates manifest.
 * [X] supports segment numbers.
 * [ ] supports byte offsets.

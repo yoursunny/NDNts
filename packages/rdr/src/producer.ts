@@ -10,7 +10,7 @@ function makeName({ name }: Metadata, prefix?: NameLike): Name {
   return prefix.append(MetadataKeyword, Version.create(Date.now()), Segment.create(0));
 }
 
-/** Make RDR metadata packet. */
+/** Make metadata packet. */
 export async function makeMetadataPacket(m: Metadata, {
   prefix,
   freshnessPeriod = 1,
@@ -27,34 +27,33 @@ export async function makeMetadataPacket(m: Metadata, {
 export namespace makeMetadataPacket {
   export interface Options {
     /**
-     * RDR metadata packet prefix.
+     * Metadata packet prefix.
+     * @defaultValue `metadata.name.getPrefix(-1)`
      *
-     * This should not contain 32=metadata.
-     *
-     * @default metadata.name.getPrefix(-1)
+     * This should not contain `32=metadata` component.
      */
     prefix?: NameLike;
 
     /**
      * FreshnessPeriod.
-     * @default 1
+     * @defaultValue 1
      */
     freshnessPeriod?: number;
 
     /**
-     * Signing key.
-     * @default noopSigning
+     * Data signer.
+     * @defaultValue noopSigning
      */
     signer?: Signer;
   }
 }
 
-/** Determine if an Interest is an RDR discovery Interest. */
+/** Determine if an Interest is a discovery Interest. */
 export function isDiscoveryInterest({ name, canBePrefix, mustBeFresh }: Interest): boolean {
   return !!name.get(-1)?.equals(MetadataKeyword) && canBePrefix && mustBeFresh;
 }
 
-/** Serve RDR metadata packet in a producer. */
+/** Serve metadata packet in a producer. */
 export function serveMetadata(m: Metadata | (() => Metadata), opts: serveMetadata.Options = {}): Producer {
   const {
     prefix: prefixInput,
@@ -78,7 +77,11 @@ export function serveMetadata(m: Metadata | (() => Metadata), opts: serveMetadat
 }
 export namespace serveMetadata {
   export interface Options extends makeMetadataPacket.Options {
-    /** Endpoint for communication. */
+    /**
+     * Endpoint for communication.
+     * @defaultValue
+     * Endpoint on default logical forwarder.
+     */
     endpoint?: Endpoint;
 
     /** Prefix to announce from producer. */

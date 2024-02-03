@@ -28,8 +28,8 @@ export async function inputCertBase64(filename?: string): Promise<Certificate> {
 
 /**
  * Read or retrieve CA profile from file or name.
- * @param filename filename or NDN name.
- * @param strict if true, must be a binary file; otherwise, retrieval is allowed.
+ * @param filename - Filename or NDN name.
+ * @param strict - If true, must be a binary file; otherwise, retrieval is allowed.
  */
 export async function inputCaProfile(filename: string, strict = false): Promise<CaProfile> {
   if (!strict) {
@@ -63,12 +63,12 @@ async function inputCaProfileFromClientConf(content: Uint8Array): Promise<CaProf
   return importClientConf(conf);
 }
 
-/** yargs .pp (probe parameter) option definition. */
+/** yargs `.pp` (probe parameter) option definition. */
 export type PPOption = string | string[];
 export namespace PPOption {
   /**
-   * Define .pp option with `.option("pp", PPOption.def)`.
-   * It's compatible with promptProbeParameters `known` parameter.
+   * Define `.pp` option with `.option("pp", PPOption.def)`.
+   * It's compatible with {@link promptProbeParameters} `known` parameter.
    */
   export const def = {
     desc: "PROBE parameter key value pair",
@@ -80,10 +80,13 @@ export namespace PPOption {
 
 /**
  * Prompt for PROBE parameters.
- * @param profile CA profile.
- * @param known alternated key value pairs, such as `["email", "someone@contoso.com"]`.
+ * @param profile - CA profile.
+ * @param known - Alternated key value pairs, such as `["email", "someone@contoso.com"]`.
  */
-export async function promptProbeParameters(profile: CaProfile, known: readonly string[]): Promise<ParameterKV> {
+export async function promptProbeParameters(
+    profile: CaProfile,
+    known: readonly string[],
+): Promise<ParameterKV> {
   const questions: prompts.PromptObject[] = [];
   for (const key of profile.probeKeys) {
     questions.push({

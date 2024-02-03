@@ -1,12 +1,13 @@
 import { Endpoint, type RetxPolicy } from "@ndn/endpoint";
 import { Interest, Name, type NameLike, type Verifier } from "@ndn/packet";
-import { type Decodable, Decoder } from "@ndn/tlv";
+import { Decoder } from "@ndn/tlv";
 
 import { Metadata, MetadataKeyword } from "./metadata";
 
 /**
- * Make RDR discovery Interest.
- * @param prefix prefix of RDR metadata packet; 32=metadata component is optional.
+ * Make discovery Interest.
+ * @param prefix - Metadata packet prefix.
+ * `32=metadata` component is optional; it will be appended automatically if absent.
  */
 export function makeDiscoveryInterest(prefix: NameLike): Interest {
   let name = Name.from(prefix);
@@ -16,14 +17,26 @@ export function makeDiscoveryInterest(prefix: NameLike): Interest {
   return new Interest(name, Interest.CanBePrefix, Interest.MustBeFresh);
 }
 
-/** Retrieve RDR metadata packet. */
+/**
+ * Retrieve metadata packet of subclass type.
+ * @param prefix - Metadata packet prefix.
+ * @param opts - Other options.
+ * @returns Metadata packet.
+ */
 export async function retrieveMetadata(prefix: NameLike, opts?: retrieveMetadata.Options): Promise<Metadata>;
 
-/** Retrieve RDR metadata packet. */
-export async function retrieveMetadata<C extends typeof Metadata>(prefix: NameLike, ctor: C, opts?: retrieveMetadata.Options): Promise<InstanceType<C>>;
+/**
+ * Retrieve metadata packet of subclass type.
+ * @typeParam C - Metadata subclass type.
+ * @param prefix - Metadata packet prefix.
+ * @param ctor - Metadata subclass constructor.
+ * @param opts - Other options.
+ * @returns Metadata packet of type C.
+ */
+export async function retrieveMetadata<C extends Metadata.Constructor>(prefix: NameLike, ctor: C, opts?: retrieveMetadata.Options): Promise<InstanceType<C>>;
 
 export async function retrieveMetadata(prefix: NameLike, arg2: any = {}, opts: retrieveMetadata.Options = {}) {
-  let ctor: Decodable<Metadata> = Metadata;
+  let ctor: Metadata.Constructor = Metadata;
   if (typeof arg2 === "function") {
     ctor = arg2;
   } else {
@@ -48,7 +61,11 @@ export async function retrieveMetadata(prefix: NameLike, arg2: any = {}, opts: r
 
 export namespace retrieveMetadata {
   export interface Options {
-    /** Endpoint for communication. */
+    /**
+     * Endpoint for communication.
+     * @defaultValue
+     * Endpoint on default logical forwarder.
+     */
     endpoint?: Endpoint;
 
     /** Interest retransmission policy. */
@@ -57,7 +74,11 @@ export namespace retrieveMetadata {
     /** Abort signal to cancel retrieval. */
     signal?: AbortSignal;
 
-    /** Data verifier. Default is no verify. */
+    /**
+     * Data verifier.
+     * @defaultValue
+     * No verification.
+     */
     verifier?: Verifier;
   }
 }
