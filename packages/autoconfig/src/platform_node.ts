@@ -2,14 +2,9 @@ import os from "node:os";
 
 import type { FwFace } from "@ndn/fw";
 import { splitHostPort, TcpTransport, UdpTransport } from "@ndn/node-transport";
-import nodeFetch from "node-fetch";
 
 import type { PlatformFchDefaults } from "./fch";
 import type { ConnectRouterOptions } from "./router";
-
-export function fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
-  return nodeFetch(input as any, init as any) as any;
-}
 
 function hasAddressFamily(want: os.NetworkInterfaceInfo["family"]): boolean {
   return Object.values(os.networkInterfaces()).some(

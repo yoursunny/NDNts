@@ -34,14 +34,12 @@
     "@ndn/ws-transport": "workspace:*",
     "default-gateway": "^7.2.2",
     "hirestime": "^7.0.3",
-    "node-fetch": "^3.3.2",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@ndn/util": "workspace:*",
     "@types/default-gateway": "^7.2.2",
     "@types/koa": "^2.14.0",
-    "@types/node-fetch": "^2.6.11",
     "koa": "^2.15.0",
     "type-fest": "^4.10.2"
   }

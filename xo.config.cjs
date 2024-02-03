@@ -50,6 +50,7 @@ module.exports = {
     ...makePackageOverrides(merge(js, ts), ""),
     ...makePackageOverrides(merge(js, ts, tsdoc),
       "/packages/*mgmt",
+      "/packages/autoconfig",
       "/packages/cli-common",
       "/packages/endpoint",
       "/packages/fw",

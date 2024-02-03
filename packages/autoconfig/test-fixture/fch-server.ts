@@ -11,7 +11,7 @@ type Handler = (params: URLSearchParams, ctx: Koa.Context) => Promisable<unknown
 export class FchServer implements AsyncDisposable {
   /**
    * Create NDN-FCH server.
-   * @param handle "GET /" request handler.
+   * @param handle - "GET /" request handler.
    */
   public static async create(handle: Handler): Promise<FchServer> {
     const s = new FchServer(handle);
@@ -31,6 +31,7 @@ export class FchServer implements AsyncDisposable {
     this.server = this.app.listen();
   }
 
+  /** HTTP server root URI. */
   public get uri(): string {
     const addr = this.server.address() as AddressInfo;
     return `http://localhost:${addr.port}`;

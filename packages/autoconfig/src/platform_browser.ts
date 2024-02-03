@@ -4,8 +4,6 @@ import { WsTransport } from "@ndn/ws-transport";
 import type { PlatformFchDefaults } from "./fch";
 import type { ConnectRouterOptions } from "./router";
 
-export const fetch = globalThis.fetch;
-
 export const FCH_DEFAULTS: PlatformFchDefaults = {
   transports({ H3Transport } = {}) {
     const list = ["wss"];

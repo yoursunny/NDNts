@@ -4,23 +4,30 @@ import { fchQuery, type FchRequest } from "./fch";
 import { FCH_DEFAULTS, getDefaultGateway } from "./platform_node";
 import { type ConnectRouterOptions, type ConnectRouterResult, connectToRouter } from "./router";
 
+/** {@link connectToNetwork} options. */
 export interface ConnectNetworkOptions extends ConnectRouterOptions {
   /**
-   * FCH request.
-   *
-   * Default is requesting 4 routers.
-   * Pass false to disable FCH.
+   * FCH request, or `false` to disable FCH query.
+   * @defaultValue `{ count: 4 }`
    */
   fch?: FchRequest | false;
 
   /**
    * Whether to try HTTP/3 before all other options.
-   * Default is false.
+   * @defaultValue false
+   *
+   * @remarks
    * Ignored if H3Transport is not enabled or supported.
    */
   preferH3?: boolean;
 
-  /** Consider default IPv4 gateway as a candidate. */
+  /**
+   * Whether to consider default IPv4 gateway as a candidate.
+   * @defaultValue true
+   *
+   * @remarks
+   * This option has no effect if IPv4 gateway cannot be determined, e.g. in browser.
+   */
   tryDefaultGateway?: boolean;
 
   /** Fallback routers, used if FCH and default gateway are both unavailable. */
@@ -29,7 +36,7 @@ export interface ConnectNetworkOptions extends ConnectRouterOptions {
   /**
    * Number of faces to keep; others are closed.
    * Faces are ranked by shortest testConnection duration.
-   * Default is 1.
+   * @defaultValue 1
    */
   fastest?: number;
 }

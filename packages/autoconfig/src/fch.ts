@@ -1,6 +1,6 @@
 import { Name } from "@ndn/packet";
 
-import { FCH_DEFAULTS, fetch } from "./platform_node";
+import { FCH_DEFAULTS } from "./platform_node";
 import type { ConnectRouterOptions } from "./router";
 
 export interface PlatformFchDefaults {
@@ -11,32 +11,47 @@ export interface PlatformFchDefaults {
 
 /** FCH service request. */
 export interface FchRequest {
-  /** FCH service URI. */
+  /**
+   * FCH service URI.
+   * @defaultValue https://fch.ndn.today
+   */
   server?: string;
 
   /**
    * Transport protocol, such as "udp".
-   * Ignored if `transports` is specified.
+   *
+   * @remarks
+   * Ignored if `.transports` is specified.
    */
   transport?: string;
 
   /**
    * Number of routers.
+   *
+   * @remarks
    * Ignored if `transports` is a Record.
    */
   count?: number;
 
   /**
    * Transport protocols.
+   *
+   * @remarks
    * If this is an array of transport protocols, the quantity of each is specified by `count`.
    * If this is a Record, each key is a transport protocol and each value is the quantity.
    */
   transports?: readonly string[] | Record<string, number>;
 
-  /** IPv4 allowed? */
+  /**
+   * IPv4 allowed?
+   * @defaultValue auto detect
+   */
   ipv4?: boolean;
 
-  /** IPv6 allowed? */
+  /**
+   * IPv6 allowed?
+   * @defaultValue auto detect
+   */
   ipv6?: boolean;
 
   /** Client geolocation. */
@@ -73,7 +88,7 @@ export async function fchQuery(req: FchRequest = {}): Promise<FchResponse> {
     network,
     signal,
   } = req;
-  const hQuery = async (tcs: TransportCount[], accept: string): Promise<Response> => {
+  const hQuery = async (tcs: readonly TransportCount[], accept: string): Promise<Response> => {
     const uri = new URL(server);
     const search = uri.searchParams;
     for (const [transport, count] of tcs) {
