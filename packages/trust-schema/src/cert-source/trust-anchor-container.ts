@@ -10,7 +10,7 @@ export class TrustAnchorContainer implements CertSource {
 
   /**
    * Constructor.
-   * @param certs trust anchors.
+   * @param certs - Trust anchors.
    */
   constructor(certs: readonly Certificate[] = []) {
     for (const cert of certs) {

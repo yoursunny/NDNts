@@ -74,10 +74,10 @@ export function scan(tokens: Iterable<T.Token>): Unit[] {
 
 /**
  * Split by operator.
- * @param sep separator operator type.
- * @param sequence a sequence of units.
- * @param skipEmpty if true, empty sub sequences are skipped.
- * @returns sub sequences.
+ * @param sep - Separator operator type.
+ * @param sequence - A sequence of units.
+ * @param skipEmpty - Of true, empty sub sequences are skipped.
+ * @returns Sub sequences.
  */
 export function split(sep: typeof T.Operator, sequence: readonly Unit[], skipEmpty = false): Unit[][] {
   const result: Unit[][] = [];

@@ -16,7 +16,6 @@ export class TrustSchemaSigner extends PolicySigner implements Signer {
     this.policy = schema.policy;
   }
 
-  /** Locate an existing signer. */
   public override async findSigner(name: Name): Promise<Signer> {
     for (const certName of await this.keyChain.listCerts()) {
       if (this.policy.canSign(name, certName)) {

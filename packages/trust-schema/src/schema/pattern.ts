@@ -27,9 +27,9 @@ export namespace VarsLike {
 class MatchState {
   /**
    * Constructor.
-   * @param name input name.
-   * @param pos  position of first unconsumed component.
-   * @param vars recognized variables.
+   * @param name - Input name.
+   * @param pos - Position of first unconsumed component.
+   * @param vars - Recognized variables.
    */
   constructor(
       public readonly name: Name,
@@ -52,8 +52,8 @@ class MatchState {
 
   /**
    * Clone the state while consuming part of the name.
-   * @param incrementPos how many components are consumed.
-   * @param varsL updated variables.
+   * @param incrementPos - How many components are consumed.
+   * @param varsL - Updated variables.
    */
   public extend(incrementPos: number, ...varsL: Array<Iterable<readonly [string, Name]>>): MatchState {
     const { vars } = this;
@@ -88,9 +88,8 @@ export abstract class Pattern {
 
   /**
    * Determine whether a name matches the structure of this pattern.
-   *
-   * @param name input name.
-   * @returns an iterable of extracted fields in possible interpretations.
+   * @param name - Input name.
+   * @returns - Iterable of extracted fields in possible interpretations.
    */
   public *match(name: Name): Iterable<Vars> {
     const initial = new MatchState(name);
@@ -107,15 +106,14 @@ export abstract class Pattern {
 
   /**
    * Recognize part of the input name.
-   * @returns iterable of potential matches.
+   * @returns Iterable of potential matches.
    */
   protected abstract matchState(state: MatchState): Iterable<MatchState>;
 
   /**
    * Build names following the structure of this pattern.
-   *
-   * @param varsL sets of variables to be replaced into the name.
-   * @returns an iterable of possible names.
+   * @param varsL - Sets of variables to be replaced into the name.
+   * @returns Iterable of possible names.
    */
   public *build(...varsL: VarsLike[]): Iterable<Name> {
     const varsM = new Map<string, Name>();
@@ -133,7 +131,7 @@ export abstract class Pattern {
 
   /**
    * Build part of an output name.
-   * @returns iterable of potential constructions.
+   * @returns Iterable of potential constructions.
    */
   protected static buildState(p: Pattern, state: BuildState): Iterable<BuildState> {
     return p.buildState(state);
@@ -165,16 +163,17 @@ export class ConstPattern extends Pattern {
 /**
  * Match or construct a variable name portion.
  *
- * When matching a name, this pattern extracts a number of name components,
- * and saves the sub-name in variables object in match() return value.
+ * @remarks
+ * When matching a name, this pattern extracts a number of name components, and saves the sub-name
+ * in variables object in {@link VariablePattern.match} return value.
  *
- * When building a name, this pattern succeeds if the variable is present
- * in build() function argument.
+ * When building a name, this pattern succeeds if the variable is present in
+ * {@link VariablePattern.build} function argument.
  */
 export class VariablePattern extends Pattern {
   /**
    * Constructor
-   * @param id variable name.
+   * @param id - Variable name.
    */
   constructor(
       public readonly id: string,
@@ -259,23 +258,25 @@ export namespace VariablePattern {
   export interface Options {
     /**
      * Minimum number of components.
-     * Default is 1.
+     * @defaultValue 1
      */
     minComps?: number;
 
     /**
      * Maximum number of components.
-     * Default is 1.
+     * @defaultValue 1
      */
     maxComps?: number;
 
     /**
      * An overlay pattern that the name part must satisfy.
-     * This effectively makes this variable an alias of the inner pattern.
      *
-     * When building a name, if the variable of this pattern is present in build() function
-     * argument, it is checked that the inner pattern matches the name and its interpretation is
-     * consistent with other variables that are present.
+     * @remarks
+     * Setting this option effectively makes this variable an alias of the inner pattern.
+     *
+     * When building a name, if the variable of this pattern is present in
+     * {@link VariablePattern.build} function argument, it is checked that the inner pattern
+     * matches the name and its interpretation is consistent with other variables that are present.
      * Otherwise, the inner pattern is used to build the name.
      */
     inner?: Pattern;
@@ -299,17 +300,20 @@ export namespace VariablePattern {
   }
 }
 
+/* eslint-disable tsdoc/syntax -- tsdoc-missing-reference */
 /**
  * Match or construct a KeyLocator or certificate name.
  *
- * To match a KeyLocator or certificate name, use a ConcatPattern that contains
- * patterns to match the subject name, followed by a CertNamePattern at last.
+ * @remarks
+ * To match a KeyLocator or certificate name, use a {@link ConcatPattern} that contains
+ * patterns to match the subject name, followed by a {@link CertNamePattern} at last.
  * The captured variable contains the whole KeyLocator or certificate name that can
- * be further recognized by CertNaming.parseKeyName() and CertNaming.parseCertName().
+ * be further recognized by {@link CertNaming.parseKeyName} and {@link CertNaming.parseCertName}.
  *
- * Using the same ConcatPattern, the constructed name would be the subject name.
- * It can be passed to keyChain.getSigner() to find a key/certificate.
+ * Using the same {@link ConcatPattern}, the constructed name would be the subject name.
+ * It can be passed to {@link \@ndn/keychain!KeyChain.getSigner} to find a key/certificate.
  */
+/* eslint-enable tsdoc/syntax */
 export class CertNamePattern extends Pattern {
   protected override *matchState(state: MatchState): Iterable<MatchState> {
     if ([2, 4].includes(state.tailLength) &&
@@ -376,6 +380,7 @@ export class ConcatPattern extends Pattern {
 /**
  * Specify several alternate patterns in "OR" relation.
  *
+ * @remarks
  * When matching a name, the first successful match is returned.
  *
  * When building a name, the first choice that does not have missing variable is returned.

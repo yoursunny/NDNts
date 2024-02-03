@@ -3,10 +3,10 @@ import type { Name } from "@ndn/packet";
 
 import { AlternatePattern, Pattern, VariablePattern, type Vars } from "../pattern";
 
-/** A filter that matches Timestamp convention. */
+/** A filter that matches {@link Timestamp} convention. */
 export const timestamp = new VariablePattern.ConventionFilter(Timestamp);
 
-/** A filter that matches SequenceNum convention. */
+/** A filter that matches {@link SequenceNum} convention. */
 export const seq = new VariablePattern.ConventionFilter(SequenceNum);
 
 /** A filter from a component constraint term. */
@@ -51,8 +51,7 @@ export function simplify(filter: VariablePattern.Filter): VariablePattern.Filter
 
 /**
  * Simplify a filter.
- * If allow set is specified, terms not in allow set are deleted.
- * If deny set is specified, terms in deny set are deleted.
+ * @param allow  - Allow set. Terms not in allow set are deleted.
  */
 export function simplify(filter: VariablePattern.Filter, allow: ReadonlySet<string> | undefined): VariablePattern.Filter | undefined;
 
@@ -77,9 +76,11 @@ export function simplify(filter: VariablePattern.Filter, allow?: ReadonlySet<str
 }
 
 /**
- * Reduce a component constraint term as a Pattern if possible.
- * true means there's no restriction for the term.
- * false means the restriction cannot be translated to a Pattern.
+ * Reduce a component constraint term as a {@link Pattern} if possible.
+ * @returns
+ * - `true`: there's no restriction for the term.
+ * - `false`: the restriction cannot be translated to a Pattern.
+ * - Pattern: translated pattern.
  */
 export function reduceTerm(filter: VariablePattern.Filter, id: string): Pattern | boolean {
   if (filter instanceof ConstraintTerm) {

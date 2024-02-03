@@ -14,6 +14,7 @@ export abstract class PolicyVerifier<Context = unknown> implements Verifier {
     this.algoList = opts.algoList ?? SigningAlgorithmListSlim;
   }
 
+  /** Verify a packet. */
   public async verify(pkt: Verifier.Verifiable, now = Date.now()): Promise<void> {
     let lastPkt = pkt;
     const chain: Certificate[] = [];
@@ -56,18 +57,23 @@ export abstract class PolicyVerifier<Context = unknown> implements Verifier {
 
   /**
    * Check policy on KeyLocator name, before certificate retrieval.
-   * @param pkt packet carrying KeyLocator.
-   * @param klName KeyLocator name.
-   * @throws violating policy.
-   * @returns arbitrary value to be passed to checkCertPolicy.
+   * @param pkt - Packet carrying KeyLocator.
+   * @param klName - KeyLocator name.
+   * @returns arbitrary value to be passed to {@link PolicyVerifier.checkCertPolicy}.
+   *
+   * @throws Error
+   * Thrown if policy is violated.
    */
   protected abstract checkKeyLocatorPolicy(pkt: Verifier.Verifiable, klName: Name): Context;
 
   /**
    * Check policy on certificate name.
-   * @param pkt packet carrying KeyLocator that triggered certificate retrieval.
-   * @param cert retrieved certificate.
-   * @param ctx return value of checkKeyLocatorPolicy.
+   * @param pkt - Packet carrying KeyLocator that triggered certificate retrieval.
+   * @param cert - Retrieved certificate.
+   * @param ctx - Return value of {@link PolicyVerifier.checkKeyLocatorPolicy}.
+   *
+   * @throws Error
+   * Thrown if policy is violated.
    */
   protected abstract checkCertPolicy(pkt: Verifier.Verifiable, cert: Certificate, ctx: Context): void;
 
@@ -88,7 +94,10 @@ export abstract class PolicyVerifier<Context = unknown> implements Verifier {
 
 export namespace PolicyVerifier {
   export interface Options extends CertSources.Options {
-    /** List of recognized algorithms in certificates. */
+    /**
+     * List of recognized algorithms in certificates.
+     * @defaultValue SigningAlgorithmListSlim
+     */
     algoList?: readonly SigningAlgorithm[];
   }
 }

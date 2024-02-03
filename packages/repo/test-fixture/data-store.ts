@@ -1,4 +1,5 @@
 import type { Data } from "@ndn/packet";
+import { delay } from "@ndn/util";
 import memdown from "memdown";
 
 import { DataStore, PrefixRegShorter, RepoProducer } from "..";
@@ -30,6 +31,7 @@ export async function makeRepoProducer(
     reg: PrefixRegShorter(0),
     ...opts,
   });
+  await delay(10); // allow prefix registrations to take effect
   return {
     store,
     producer,

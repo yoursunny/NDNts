@@ -70,8 +70,8 @@ function collectVariables(pattern: Pattern, ids = new Set<string>()): typeof ids
 class CompilePatternCtx {
   /**
    * Constructor.
-   * @param parentDefs parent definition IDs, for detecting cyclic dependencies.
-   * @param filter constraints and replacements.
+   * @param parentDefs - Parent definition IDs, for detecting cyclic dependencies.
+   * @param filter - Constraints and replacements.
    */
   constructor(
       public readonly parentDefs: readonly string[],
@@ -89,7 +89,7 @@ class CompilePatternCtx {
 
   /**
    * Add a constraint.
-   * @param f filter that represents the constraint.
+   * @param f - Filter that represents the constraint.
    */
   public andFilter(f: VariablePattern.Filter): CompilePatternCtx {
     const combineF = this.filter ? F.simplify(new F.And([this.filter, f])) : f;

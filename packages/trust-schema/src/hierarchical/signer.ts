@@ -11,6 +11,8 @@ export class HierarchicalSigner extends PolicySigner implements Signer {
 
   /**
    * Locate an existing signer among available certificates in the KeyChain.
+   *
+   * @remarks
    * The certificate's subject name shall be a prefix of the packet name.
    * Longer certificate names are preferred.
    */

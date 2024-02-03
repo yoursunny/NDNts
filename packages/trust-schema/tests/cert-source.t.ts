@@ -133,7 +133,7 @@ describe("CertFetcher", () => {
   test("negative", async () => {
     let found = await findIn(fetcher0, pubA);
     expect(found).toHaveLength(0);
-    expect(consumeFn).toHaveBeenCalledTimes(1); // retx is handled within endpoint.consume()
+    expect(consumeFn).toHaveBeenCalledTimes(1);
 
     found = await findIn(fetcher1, pubA);
     expect(found).toHaveLength(0);

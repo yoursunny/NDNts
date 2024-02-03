@@ -4,8 +4,8 @@ import { Component } from "@ndn/packet";
 export class Position {
   /**
    * Constructor
-   * @param line 0-based line number.
-   * @param column 0-based column number.
+   * @param line - 0-based line number.
+   * @param column - 0-based column number.
    */
   constructor(line?: number, column?: number) {
     this.line = typeof line === "number" ? 1 + line : undefined;

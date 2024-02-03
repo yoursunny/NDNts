@@ -35,7 +35,10 @@ export class CertSources implements CertSource {
   }
 
   /**
-   * Find certificates by certificate name or key name, from sources in this order:
+   * Find certificates by certificate name or key name.
+   *
+   * @remarks
+   * Searching from sources in this order:
    * - trust anchors
    * - local KeyChain
    * - network retrieval

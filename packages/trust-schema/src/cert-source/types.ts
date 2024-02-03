@@ -5,8 +5,8 @@ import type { Name } from "@ndn/packet";
 export interface CertSource {
   /**
    * Find certificates by KeyLocator name.
-   * @param keyLocator certificate name or key name.
-   * @returns matched certificate(s).
+   * @param keyLocator - Certificate name or key name.
+   * @returns Matched certificate(s).
    */
   findCerts(keyLocator: Name): AsyncIterable<Certificate>;
 }

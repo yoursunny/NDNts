@@ -20,7 +20,7 @@ class Cache {
     positiveTtl = 3600_000,
     negativeTtl = 10_000,
     cacheCleanupInterval = 300_000,
-  }: CacheOptions) {
+  }: CertFetcher.CacheOptions) {
     this.positiveTtl = positiveTtl;
     this.negativeTtl = negativeTtl;
     this.cleanupInterval = cacheCleanupInterval;
@@ -67,38 +67,15 @@ class Cache {
   }
 }
 
-interface CacheOptions {
-  /**
-   * Cache lifetime for successful retrieval, in milliseconds.
-   * During this period, return the same certificate instead of re-fetching.
-   * @default 1-hour
-   */
-  positiveTtl?: number;
-
-  /**
-   * Cache lifetime for unsuccessful retrieval, in milliseconds.
-   * During this period, report the certificate as un-retrievable instead of re-fetching.
-   * @default 10-seconds
-   */
-  negativeTtl?: number;
-
-  /**
-   * Cache cleanup interval, in milliseconds.
-   * This determines how often expired cache entries are deleted.
-   * @default 5-minutes
-   */
-  cacheCleanupInterval?: number;
-}
-
 const endpointCache = new WeakMap<Endpoint, Cache>();
 
 /** Fetch certificates from network. */
 export class CertFetcher implements CertSource {
   constructor(opts: CertFetcher.Options) {
     const {
-      endpoint = new Endpoint(),
+      endpoint = new Endpoint({ retx: 2 }),
       interestLifetime,
-      retx = 2,
+      retx, // eslint-disable-line etc/no-deprecated
     } = opts;
     this.endpoint = endpoint;
     this.consumerOpts = {
@@ -157,11 +134,43 @@ export class CertFetcher implements CertSource {
 }
 
 export namespace CertFetcher {
+  export interface CacheOptions {
+    /**
+     * Cache lifetime for successful retrieval, in milliseconds.
+     * @defaultValue 1 hour
+     *
+     * @remarks
+     * During this period, return the same certificate instead of re-fetching.
+     */
+    positiveTtl?: number;
+
+    /**
+     * Cache lifetime for unsuccessful retrieval, in milliseconds.
+     * @defaultValue 10 seconds
+     *
+     * @remarks
+     * During this period, report the certificate as un-retrievable instead of re-fetching.
+     */
+    negativeTtl?: number;
+
+    /**
+     * Cache cleanup interval, in milliseconds.
+     * @defaultValue 5 minutes
+     *
+     * @remarks
+     * This determines how often expired cache entries are deleted.
+     */
+    cacheCleanupInterval?: number;
+  }
+
   export interface Options extends CacheOptions {
     /**
-     * Endpoint for certificate retrieval.
+     * Endpoint for communication.
+     * @defaultValue
+     * Endpoint on default logical forwarder with up to 2 retransmissions.
      *
-     * CertFetchers on the same Endpoint share the same cache instance.
+     * @remarks
+     * {@link CertFetcher}s on the same Endpoint share the same cache instance.
      * Cache options are determined when it's first created.
      */
     endpoint?: Endpoint;
@@ -169,7 +178,10 @@ export namespace CertFetcher {
     /** InterestLifetime for certificate retrieval. */
     interestLifetime?: number;
 
-    /** RetxPolicy for certificate retrieval. */
+    /**
+     * RetxPolicy for certificate retrieval.
+     * @deprecated Pass to `.endpoint` constructor.
+     */
     retx?: RetxPolicy;
   }
 }
