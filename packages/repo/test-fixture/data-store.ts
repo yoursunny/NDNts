@@ -3,21 +3,25 @@ import memdown from "memdown";
 
 import { DataStore, PrefixRegShorter, RepoProducer } from "..";
 
-export async function makeDataStore(...pkts: Data[]): Promise<DataStore> {
+/** Create in-memory DataStore populated with packets. */
+export async function makeDataStore(...pkts: readonly Data[]): Promise<DataStore> {
   const store = new DataStore(memdown());
   await store.insert(...pkts);
   return store;
 }
 
+/** Create RepoProducer backed by in-memory DataStore. */
 export function makeRepoProducer(opts?: RepoProducer.Options): Promise<makeRepoProducer.Result>;
-export function makeRepoProducer(data: Data[], opts?: RepoProducer.Options): Promise<makeRepoProducer.Result>;
+
+/** Create RepoProducer backed by in-memory DataStore populated with packets. */
+export function makeRepoProducer(pkts: readonly Data[], opts?: RepoProducer.Options): Promise<makeRepoProducer.Result>;
 
 export async function makeRepoProducer(
-    arg1: RepoProducer.Options | Data[] = [],
+    arg1: RepoProducer.Options | readonly Data[] = [],
     arg2: RepoProducer.Options = {},
 ) {
-  const [data, opts] = Array.isArray(arg1) ? [arg1, arg2] : [[], arg1];
-  const store = await makeDataStore(...data);
+  const [pkts, opts] = Array.isArray(arg1) ? [arg1, arg2] : [[], arg1];
+  const store = await makeDataStore(...pkts);
   const producer = RepoProducer.create(store, {
     describe: "RepoProducer test-fixture",
     reg: PrefixRegShorter(0),

@@ -6,9 +6,10 @@ import type { PrefixRegController } from "./types";
 /**
  * Register prefixes after stripping last few components matching a predicate.
  *
- * Warning: this may misbehave when expireTime option is being used.
+ * @remarks
+ * Warning: this may misbehave when {@link DataStore.InsertOptions.expireTime} is being used.
  */
-export function PrefixRegStrip(...predicates: PrefixRegStrip.ComponentPredicate[]): PrefixRegController {
+export function PrefixRegStrip(...predicates: readonly PrefixRegStrip.ComponentPredicate[]): PrefixRegController {
   const preds = predicates.map((pred) => {
     if (typeof pred === "function") {
       return pred;

@@ -149,8 +149,8 @@ export namespace PrpsPublisher {
 
   /**
    * A callback function to generate publication packet.
-   * @param name expected Data name.
-   * @param topic topic name.
+   * @param name - Expected Data name.
+   * @param topic - Topic name.
    * @returns either a Data that is already signed, or an Encodable object to use as publication body.
    */
   export type PublicationCallback = (name: Name, topic: Name) => Promise<Data | Encodable>;

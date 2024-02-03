@@ -3,21 +3,28 @@ import { batch, consume, pipeline, transform } from "streaming-iterables";
 
 import type * as S from "./data-store";
 
+/** {@link copy} options. */
 export interface CopyOptions {
-  /** Number of packets per transaction. Default is 64. */
+  /**
+   * Number of packets per transaction.
+   * @defaultValue 64
+   */
   batch?: number;
 
-  /** Maximum parallel transactions. Default is 1. */
+  /**
+   * Maximum parallel transactions.
+   * @defaultValue 1
+   */
   parallel?: number;
 }
 
 /**
  * Copy Data packets from source DataStore to destination DataStore.
- * @param src source DataStore.
- * @param prefix name prefix to select Data packets.
- * @param dst destination DataStore.
- * @param opts insert options and copy batching options.
- * @returns number of Data packets copied.
+ * @param src - Source DataStore.
+ * @param prefix - Filter Data packets by name prefix.
+ * @param dst - Destination DataStore.
+ * @param opts - Insert options and copy batching options.
+ * @returns Number of Data packets copied.
  */
 export async function copy<InsertOptions extends {} = never>(src: S.ListData, prefix: Name,
   dst: S.Insert<InsertOptions>, opts?: CopyOptions & InsertOptions): Promise<number>;

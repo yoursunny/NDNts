@@ -5,11 +5,12 @@ import type { AbstractIterator, AbstractLevelDOWN } from "abstract-leveldown";
 import EncodingDown from "encoding-down";
 import levelup, { type LevelUp, type LevelUpChain } from "levelup";
 
-export interface Record {
+import type { DataStore } from "./data-store";
+
+export interface Record extends Readonly<DataStore.InsertOptions> {
   readonly data: Data;
   readonly name: Name;
   readonly insertTime: number;
-  readonly expireTime?: number;
 }
 
 export type Db = LevelUp<EncodingDown<Name, Record>, AbstractIterator<Name, Record>>;

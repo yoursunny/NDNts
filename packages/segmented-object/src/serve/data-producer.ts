@@ -189,7 +189,7 @@ export namespace DataProducer {
   export interface Options {
     /**
      * Choose a segment number naming convention.
-     * @defaultValue `import("@ndn/naming-convention2").Segment`
+     * @defaultValue `Segment3`
      */
     segmentNumConvention?: SegmentConvention;
 
@@ -206,9 +206,8 @@ export namespace DataProducer {
     freshnessPeriod?: number;
 
     /**
-     * A private key to sign Data.
-     * @default
-     * SHA256 digest.
+     * Data signer.
+     * @defaultValue digestSigning
      */
     signer?: Signer;
 

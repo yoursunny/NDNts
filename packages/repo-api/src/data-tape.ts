@@ -18,13 +18,19 @@ import { makeOpenFileStreamFunction } from "./data-tape-file_node";
 export class DataTape implements DataTape.Reader, DataTape.Writer {
   /**
    * Constructor.
-   * @param stream a readable/writable stream, a function to (re)open the stream, or a filename.
+   * @param stream - Stream or how to open the stream.
    *
-   * DataTape.Reader methods are available only if the stream is readable.
-   * DataTape.Writer methods are available only if the stream is writable.
+   * @remarks
+   * `stream` could be:
+   * - a readable/writable stream;
+   * - a function to (re)open the stream;
+   * - a filename.
    *
-   * If stream is a stream instance, it allows either one read or multiple writes.
-   * If stream is an opener function or filename, it allows multiple reads and writes.
+   * {@link DataTape.Reader} methods are available only if the stream is readable.
+   * {@link DataTape.Writer} methods are available only if the stream is writable.
+   *
+   * If `stream` is a stream instance, it allows either one read or multiple writes.
+   * If `stream` is an opener function or filename, it allows multiple reads and writes.
    * Function calls must be sequenced because this type is non-thread-safe.
    */
   constructor(stream: NodeJS.ReadableStream | NodeJS.WritableStream | DataTape.OpenStream | string) {
@@ -149,9 +155,9 @@ export namespace DataTape {
   /** Function to open a stream for use by DataTape. */
   export type OpenStream = (mode: StreamMode) => NodeJS.ReadableStream | NodeJS.WritableStream;
 
-  /** Interface of DataTape read operations. */
+  /** Interface of {@link DataTape} read operations. */
   export type Reader = S.Close & S.ListNames & S.ListData & S.Get & S.Find;
 
-  /** Interface of DataTape write operations. */
+  /** Interface of {@link DataTape} write operations. */
   export type Writer = S.Close & S.Insert;
 }

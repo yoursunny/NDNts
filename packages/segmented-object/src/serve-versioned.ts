@@ -36,7 +36,7 @@ export namespace serveVersioned {
 
     /**
      * Choose a version number naming convention.
-     * @defaultValue `import("@ndn/naming-convention2").Version`
+     * @defaultValue `Version3`
      *
      * @remarks
      * If `.version` is a number, it's encoded with this convention.

@@ -52,7 +52,7 @@ export namespace discoverVersion {
   export interface Options extends fetch.Options {
     /**
      * Choose a version naming convention.
-     * @defaultValue `import("@ndn/naming-convention2").Version`
+     * @defaultValue `Version3`
      */
     versionConvention?: VersionConvention;
 

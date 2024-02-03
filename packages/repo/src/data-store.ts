@@ -16,18 +16,18 @@ type EventMap = {
   delete: DataStore.RecordEvent;
 };
 
-const kMaybeHaveEventListener = Symbol("DataStore.maybeHaveEventListener");
+const kMaybeHaveEventListener = Symbol("@ndn/repo#DataStore.maybeHaveEventListener");
 
 /** Data packet storage based on LevelDB or other abstract-leveldown store. */
 export class DataStore extends TypedEventTarget<EventMap>
-  implements S.Close, S.ListNames, S.ListData, S.Get, S.Find, S.Insert<InsertOptions>, S.Delete {
+  implements S.Close, S.ListNames, S.ListData, S.Get, S.Find, S.Insert<DataStore.InsertOptions>, S.Delete {
   private readonly db: Db;
   public readonly mutex = throat(1);
   public readonly [kMaybeHaveEventListener] = trackEventListener(this);
 
   /**
    * Constructor.
-   * @param db an abstract-leveldown compatible store. It must support Buffer as keys.
+   * @param db - An abstract-leveldown compatible store that supports Buffer as keys.
    */
   constructor(db: AbstractLevelDOWN) {
     super();
@@ -102,9 +102,12 @@ export class DataStore extends TypedEventTarget<EventMap>
     return new Transaction(this.db, this);
   }
 
-  /** Insert one or more Data packets. */
-  public async insert(...args: S.Insert.Args<InsertOptions>): Promise<void> {
-    const { opts, pkts } = S.Insert.parseArgs<InsertOptions>(args);
+  /**
+   * Insert one or more Data packets.
+   * @see {@link Transaction.insert}
+   */
+  public async insert(...args: S.Insert.Args<DataStore.InsertOptions>): Promise<void> {
+    const { opts, pkts } = S.Insert.parseArgs<DataStore.InsertOptions>(args);
     const tx = this.tx();
     for await (const pkt of pkts) {
       tx.insert(pkt, opts);
@@ -112,8 +115,11 @@ export class DataStore extends TypedEventTarget<EventMap>
     return tx.commit();
   }
 
-  /** Delete Data packets with given names. */
-  public delete(...names: Name[]): Promise<void> {
+  /**
+   * Delete Data packets with given names.
+   * @see {@link Transaction.delete}
+   */
+  public delete(...names: readonly Name[]): Promise<void> {
     const tx = this.tx();
     for (const name of names) {
       tx.delete(name);
@@ -132,6 +138,11 @@ export class DataStore extends TypedEventTarget<EventMap>
   }
 }
 export namespace DataStore {
+  /** {@link DataStore.insert} options. */
+  export interface InsertOptions {
+    expireTime?: number;
+  }
+
   /** Packet record event. */
   export class RecordEvent extends Event {
     constructor(type: string, public readonly name: Name) {
@@ -139,8 +150,6 @@ export namespace DataStore {
     }
   }
 }
-
-type InsertOptions = Pick<DbRecord, "expireTime">;
 
 /** DataStore update transaction. */
 export class Transaction {
@@ -157,7 +166,7 @@ export class Transaction {
   }
 
   /** Insert a Data packet. */
-  public insert(data: Data, opts: InsertOptions = {}): this {
+  public insert(data: Data, opts: DataStore.InsertOptions = {}): this {
     const { name } = data;
     this.chain.put(name, {
       ...opts,

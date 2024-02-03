@@ -39,7 +39,16 @@ export async function respondRdr(interest: Interest, store: S.ListNames, {
 
 export namespace respondRdr {
   export interface Options {
+    /**
+     * Version naming convention.
+     * @defaultValue `Version3`
+     */
     versionConvention?: NamingConvention<any, number>;
+
+    /**
+     * Data signer.
+     * @defaultValue digestSigning
+     */
     signer?: Signer;
   }
 }

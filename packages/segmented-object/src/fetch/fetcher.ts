@@ -165,7 +165,7 @@ export namespace Fetcher {
 
     /**
      * Choose a segment number naming convention.
-     * @defaultValue `import("@ndn/naming-convention2").Segment`
+     * @defaultValue `Segment3`
      */
     segmentNumConvention?: SegmentConvention;
 

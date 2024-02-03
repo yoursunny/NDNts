@@ -24,9 +24,9 @@ export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S
 
   /**
    * Constructor.
-   * @param face bulk insertion target.
-   *             RX side is ignored.
-   *             Data packets are sent to its TX side, errors raise 'error' event.
+   * @param face - Bulk insertion target.
+   * RX side is ignored.
+   * Data packets are sent to its TX side; errors raise `error` event.
    */
   constructor(face: L3Face) {
     super();
@@ -40,7 +40,9 @@ export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S
 
   /**
    * Finish insertion and close the target.
-   * .insert() cannot be called after this.
+   *
+   * @remarks
+   * `.insert()` cannot be called after this.
    */
   public async close(): Promise<void> {
     this.queue.end();
@@ -49,8 +51,7 @@ export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S
 
   /**
    * Send packets to the target.
-   *
-   * A resolved Promise means the packets are scheduled for transmission.
+   * @returns Promise that resolves when the packets are scheduled for transmission.
    * It does not imply the target has received or accepted these packets.
    */
   public async insert(...args: S.Insert.Args<{}>): Promise<void> {

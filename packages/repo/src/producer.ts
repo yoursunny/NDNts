@@ -5,7 +5,7 @@ import type { Closer } from "@ndn/util";
 import type { DataStore } from "./data-store";
 import { type PrefixRegController, PrefixRegStrip } from "./prefix-reg/mod";
 
-/** Make packets in DataStore available for retrieval. */
+/** Make packets in {@link DataStore} available for retrieval. */
 export class Producer {
   public static create(store: DataStore, {
     endpoint = new Endpoint(),
@@ -30,7 +30,11 @@ export class Producer {
     this.reg = reg(store, this.prod.face);
   }
 
-  public close() {
+  /**
+   * Close the producer and prefix registration controller.
+   * This does not close the DataStore.
+   */
+  public close(): void {
     this.reg.close();
     this.prod.close();
   }
@@ -42,10 +46,29 @@ export class Producer {
 }
 
 export namespace Producer {
+  /** {@link Producer.create} options. */
   export interface Options {
+    /**
+     * Endpoint for communication.
+     * @defaultValue
+     * Endpoint on default logical forwarder.
+     */
     endpoint?: Endpoint;
+
+    /**
+     * Description for debugging purpose.
+     * @defaultValue "repo"
+     */
     describe?: string;
+
+    /** Interest handler function for when Data is not found in repo. */
     fallback?: FallbackHandler;
+
+    /**
+     * Prefix registration controller.
+     * @defaultValue
+     * Register each Data prefix with non-generic components stripped.
+     */
     reg?: PrefixRegController;
   }
 
