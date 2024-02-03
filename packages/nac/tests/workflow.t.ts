@@ -5,7 +5,7 @@ import { Certificate, generateEncryptionKey, generateSigningKey, RSAOAEP, Validi
 import { Component, Data, Name, type Verifier } from "@ndn/packet";
 import { PrefixRegStatic } from "@ndn/repo";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
-import { crypto } from "@ndn/util";
+import { Closers, crypto } from "@ndn/util";
 import { afterEach, expect, test } from "vitest";
 
 import { AccessManager, Consumer, Producer } from "..";
@@ -13,19 +13,22 @@ import { AccessManager, Consumer, Producer } from "..";
 afterEach(Endpoint.deleteDefaultForwarder);
 
 test("simple", async () => {
+  using closers = new Closers();
   const [rootSigner, rootVerifier] = await generateSigningKey("/root");
 
+  const amName = new Name("/access/manager");
   const amE = new Endpoint();
-  const { store: amStore, close: amClose } = await makeRepoProducer([], {
+  const amR = await makeRepoProducer({
     endpoint: amE,
-    reg: PrefixRegStatic(new Name("/access/manager")),
+    reg: PrefixRegStatic(amName),
   });
-  const [amSigner, amVerifier] = await generateSigningKey("/access/manager");
-  const [amOwnKdkEncrypter, amOwnKdkDecrypter] = await generateEncryptionKey("/access/manager/kdk-encrypt", RSAOAEP);
+  closers.push(amR);
+  const [amSigner, amVerifier] = await generateSigningKey(amName);
+  const [amOwnKdkEncrypter, amOwnKdkDecrypter] = await generateEncryptionKey(amName.append("kdk-encrypt"), RSAOAEP);
   const am = AccessManager.create({
     endpoint: amE,
-    dataStore: amStore,
-    prefix: new Name("/access/manager"),
+    dataStore: amR.store,
+    prefix: amName,
     keys: {
       signer: amSigner,
       memberVerifier: rootVerifier,
@@ -37,18 +40,19 @@ test("simple", async () => {
 
   const kekH = await am.createKek(new Name("/data/part1"));
   const kek = kekH.kek;
-  await expect(am.lookupKek(new Name("/data/part2"))).rejects.toThrow();
+  await expect(am.lookupKek(new Name("/data/part2"))).rejects.toThrow(/KEK not found/);
   const kekHlookup = await am.lookupKek(new Name("/data/part1"));
   expect(kekHlookup.kek).toHaveName(kek.name);
 
   const pE = new Endpoint();
-  const { store: pStore, close: pClose } = await makeRepoProducer([], {
+  const pR = await makeRepoProducer({
     endpoint: pE,
     reg: PrefixRegStatic(new Name("/producer/ck-prefix")),
   });
+  closers.push(pR);
   const [pSigner, pVerifier] = await generateSigningKey("/producer");
   const p = Producer.create({
-    dataStore: pStore,
+    dataStore: pR.store,
     ckPrefix: new Name("/producer/ck-prefix"),
     signer: pSigner,
   });
@@ -60,11 +64,10 @@ test("simple", async () => {
     await pEncrypter.encrypt(data);
     return data;
   }, { dataSigner: pSigner });
+  closers.push(pP);
 
-  const cE = new Endpoint();
-  const { store: cStore, close: cClose } = await makeRepoProducer([], {
-    endpoint: cE,
-    reg: PrefixRegStatic(new Name("/consumer")),
+  const cE = new Endpoint({
+    modifyInterest: { lifetime: 100 }, // allow failed CK retrieval timeout faster
   });
   const [cEncrypter, cDecrypter] = await generateEncryptionKey("/consumer", RSAOAEP);
   const cCert = await Certificate.issue({
@@ -73,12 +76,17 @@ test("simple", async () => {
     issuerPrivateKey: rootSigner,
     publicKey: cEncrypter,
   });
-  await cStore.insert(cCert.data);
+  const cR = await makeRepoProducer([cCert.data], {
+    endpoint: cE,
+    reg: PrefixRegStatic(new Name("/consumer")),
+  });
+  closers.push(cR);
+
   const c = Consumer.create({
     endpoint: cE,
     verifier: {
-      async verify(pkt: Verifier.Verifiable) {
-        if (new Name("/access/manager").isPrefixOf(pkt.name)) {
+      verify(pkt: Verifier.Verifiable) {
+        if (amName.isPrefixOf(pkt.name)) {
           return amVerifier.verify(pkt);
         }
         return pVerifier.verify(pkt);
@@ -88,14 +96,9 @@ test("simple", async () => {
   });
   const appData = await cE.consume("/data/part1/packet0", { verifier: pVerifier });
   expect(appData.content).not.toEqualUint8Array(appContent);
-  await expect(c.decrypt(appData)).rejects.toThrow();
+  await expect(c.decrypt(appData)).rejects.toThrow(/expire/);
 
   await kekH.grant(cCert.name);
   await c.decrypt(appData);
   expect(appData.content).toEqualUint8Array(appContent);
-
-  pP.close();
-  cClose();
-  pClose();
-  amClose();
 }, 10000);

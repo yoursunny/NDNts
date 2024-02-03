@@ -12,6 +12,7 @@ const EVD = new EvDecoder<EncryptedContent>("EncryptedContent", TT.EncryptedCont
 /**
  * NAC encrypted content.
  *
+ * @remarks
  * This is only applicable for application data, encrypted by AES-CBC.
  * Do not use this type for KDK and CK packets.
  */

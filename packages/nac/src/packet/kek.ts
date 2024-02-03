@@ -41,7 +41,7 @@ export function parseNameInternal(name: Name, keyword2: Component, type = "KEK")
     throw new Error(`bad ${type} name`);
   }
   return {
-    prefix: name.slice(0, pos1),
+    prefix: name.getPrefix(pos1),
     subset: name.slice(pos1 + 1, pos2),
     keyId: name.at(pos2 + 1),
   };

@@ -52,6 +52,8 @@ export namespace ContentKey {
 
   /**
    * Parse content key locator name.
+   *
+   * @remarks
    * In an encrypted application packet, it appears in EncryptedPayload.Name field.
    */
   export function parseLocator(name: Name): LocatorParts {

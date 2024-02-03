@@ -17,10 +17,13 @@ export function makeRepoProducer(opts?: RepoProducer.Options): Promise<makeRepoP
 export function makeRepoProducer(pkts: readonly Data[], opts?: RepoProducer.Options): Promise<makeRepoProducer.Result>;
 
 export async function makeRepoProducer(
-    arg1: RepoProducer.Options | readonly Data[] = [],
-    arg2: RepoProducer.Options = {},
+    pkts: RepoProducer.Options | readonly Data[] = [],
+    opts: RepoProducer.Options = {},
 ) {
-  const [pkts, opts] = Array.isArray(arg1) ? [arg1, arg2] : [[], arg1];
+  if (!Array.isArray(pkts)) {
+    opts = pkts as RepoProducer.Options;
+    pkts = [];
+  }
   const store = await makeDataStore(...pkts);
   const producer = RepoProducer.create(store, {
     describe: "RepoProducer test-fixture",

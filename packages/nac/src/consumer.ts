@@ -1,4 +1,4 @@
-import { Endpoint } from "@ndn/endpoint";
+import { type ConsumerOptions, Endpoint } from "@ndn/endpoint";
 import { AESCBC, createDecrypter, type NamedDecrypter, RSAOAEP } from "@ndn/keychain";
 import { type Data, type Decrypter, Interest, type Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
@@ -26,17 +26,18 @@ export class Consumer implements Decrypter {
   ) {}
 
   public async decrypt(data: Data): Promise<void> {
+    const consumeOpts: ConsumerOptions = {
+      describe: `NAC-Consumer(${this.memberDecrypter.name})`,
+      verifier: this.verifier,
+    };
+
     const enc = Decoder.decode(data.content, EncryptedContent);
     ContentKey.parseLocator(enc.name);
-    const ckData = await this.endpoint.consume(
-      new Interest(enc.name, Interest.CanBePrefix),
-      { verifier: this.verifier });
+    const ckData = await this.endpoint.consume(new Interest(enc.name, Interest.CanBePrefix), consumeOpts);
     const ck = await ContentKey.fromData(ckData);
 
     const kdkName = KeyDecryptionKey.makeName({ ...ck, memberKeyName: this.memberDecrypter.name });
-    const kdkData = await this.endpoint.consume(
-      new Interest(kdkName, Interest.MustBeFresh),
-      { verifier: this.verifier });
+    const kdkData = await this.endpoint.consume(new Interest(kdkName, Interest.MustBeFresh), consumeOpts);
     const kdk = await KeyDecryptionKey.fromData(kdkData);
 
     const kdkDecrypter = createDecrypter(RSAOAEP, await kdk.loadKeyPair(this.memberDecrypter));
@@ -47,17 +48,19 @@ export class Consumer implements Decrypter {
 }
 
 export namespace Consumer {
+  /** {@link Consumer.create} options. */
   export interface Options {
     /**
      * Endpoint for communication.
-     * Default is an Endpoint on the default forwarder with 2 retransmissions.
+     * @defaultValue
+     * Endpoint on default logical forwarder with up to 2 retransmissions.
      */
     endpoint?: Endpoint;
 
     /** Verifier for KDK and CK. */
     verifier: Verifier;
 
-    /** RSA-OAEP private keys for decrypting KDK. */
+    /** RSA-OAEP private key for decrypting KDK. */
     memberDecrypter: NamedDecrypter;
   }
 }

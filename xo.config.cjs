@@ -56,6 +56,7 @@ module.exports = {
       "/packages/keychain",
       "/packages/l3face",
       "/packages/lp",
+      "/packages/nac",
       "/packages/naming-convention*",
       "/packages/ndn",
       "/packages/ndncert",

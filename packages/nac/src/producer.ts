@@ -26,7 +26,7 @@ export class Producer {
       private readonly signer: Signer,
   ) {}
 
-  private readonly keys = new DefaultWeakMap<KeyEncryptionKey, Promise<[ContentKey, LLEncrypt.Key]>>(async (kek: KeyEncryptionKey): Promise<[ContentKey, LLEncrypt.Key]> => {
+  private readonly keys = new DefaultWeakMap<KeyEncryptionKey, Promise<[ContentKey, LLEncrypt.Key]>>(async (kek) => {
     const key = await AESCBC.cryptoGenerate({}, true);
     const ck = await ContentKey.build({
       kek,
@@ -39,6 +39,10 @@ export class Producer {
     return [ck, llEncrypter];
   });
 
+  /**
+   * Create an encrypter for application data.
+   * CK will be generated if necessary.
+   */
   public async createEncrypter(kek: KeyEncryptionKey): Promise<Encrypter> {
     const [ck, llEncrypter] = await this.keys.get(kek);
     return {
@@ -56,8 +60,9 @@ export namespace Producer {
   export interface DataStore extends S.Insert {
   }
 
+  /** {@link Producer.create} options. */
   export interface Options {
-    /** Store for publishing CK packets. */
+    /** Repo for publishing CK packets. */
     dataStore: DataStore;
 
     /** Content key prefix. */
