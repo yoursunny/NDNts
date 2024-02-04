@@ -29,7 +29,6 @@
     "@ndn/fw": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
-    "it-pushable": "^3.2.3",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2"
   },

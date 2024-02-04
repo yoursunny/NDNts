@@ -1,6 +1,6 @@
 import { CancelInterest, type Forwarder, FwPacket } from "@ndn/fw";
 import { Data, Interest, type Verifier } from "@ndn/packet";
-import { pushable } from "it-pushable";
+import { pushable } from "@ndn/util";
 
 import { makeRetxGenerator, type RetxPolicy } from "./retx";
 
@@ -67,7 +67,7 @@ export function makeConsumer(
   const retxGen = makeRetxGenerator(retx)(interest.lifetime)[Symbol.iterator]();
 
   const promise = new Promise<Data>((resolve, reject) => {
-    const rx = pushable<FwPacket>({ objectMode: true });
+    const rx = pushable<FwPacket>();
 
     let timer: NodeJS.Timeout | number | undefined;
     const cancelRetx = () => {
@@ -112,7 +112,7 @@ export function makeConsumer(
         }
         cancelRetx();
         signal?.removeEventListener("abort", onAbort);
-        rx.end();
+        rx.stop();
       },
     },
     {

@@ -1,5 +1,39 @@
+import EventIterator from "event-iterator";
 import assert from "minimalistic-assert";
 import type { AnyIterable } from "streaming-iterables";
+
+/** An iterable that you can push values into. */
+export interface Pushable<T> extends AsyncIterable<T> {
+  /** Push a value. */
+  push(value: T): void;
+
+  /** End the iterable normally. */
+  stop(): void;
+
+  /** End the iterable abnormally. */
+  fail(err: Error): void;
+}
+
+/**
+ * Create an iterable that you can push values into.
+ * @typeParam T - Value type.
+ * @returns AsyncIterable with push method.
+ *
+ * @remarks
+ * Inspired by {@link https://www.npmjs.com/package/it-pushable | it-pushable} but implemented on
+ * top of {@link https://www.npmjs.com/package/event-iterator | event-iterator} library.
+ */
+export function pushable<T>(): Pushable<T> {
+  let q!: Parameters<ConstructorParameters<typeof EventIterator<T>>[0]>[0];
+  const ei = new EventIterator<T>((queue) => { q = queue; });
+  const it = ei[Symbol.asyncIterator]();
+  return {
+    [Symbol.asyncIterator]: () => it,
+    push: q.push,
+    stop: q.stop,
+    fail: q.fail,
+  };
+}
 
 /**
  * Yield all values from an iterable but catch any error.

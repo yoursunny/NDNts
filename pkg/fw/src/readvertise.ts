@@ -1,5 +1,5 @@
 import { type Name, NameMap, NameMultiMap } from "@ndn/packet";
-import { pushable } from "it-pushable";
+import { pushable } from "@ndn/util";
 import * as retry from "retry";
 
 import type { FaceImpl } from "./face";
@@ -62,7 +62,7 @@ export class Readvertise {
 export abstract class ReadvertiseDestination<State extends {} = {}> {
   private readvertise?: Readvertise;
   protected readonly table = new NameMap<ReadvertiseDestination.Record<State>>();
-  protected readonly queue = pushable<Name>({ objectMode: true });
+  protected readonly queue = pushable<Name>();
   protected closed = false;
 
   constructor(private readonly retryOptions: ReadvertiseDestination.RetryOptions = {
@@ -95,7 +95,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
       this.queue.push(name);
       record.status = ReadvertiseDestination.Status.WITHDRAWING;
     }
-    this.queue.end();
+    this.queue.stop();
     this.closed = true;
   }
 

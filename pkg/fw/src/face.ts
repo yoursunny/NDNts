@@ -1,6 +1,5 @@
 import { Data, Interest, Nack, Name, type NameLike, NameMultiSet } from "@ndn/packet";
-import { safeIter } from "@ndn/util";
-import { pushable } from "it-pushable";
+import { pushable, safeIter } from "@ndn/util";
 import { filter, pipeline, tap } from "streaming-iterables";
 import { TypedEventTarget } from "typescript-event-target";
 
@@ -165,7 +164,7 @@ export class FaceImpl extends TypedEventTarget<EventMap> implements FwFace {
   private readonly routes = new NameMultiSet();
   private readonly announcements = new NameMultiSet();
   public running = true;
-  private readonly txQueue = pushable<FwPacket>({ objectMode: true });
+  private readonly txQueue = pushable<FwPacket>();
 
   constructor(
       public readonly fw: ForwarderImpl,
@@ -211,7 +210,7 @@ export class FaceImpl extends TypedEventTarget<EventMap> implements FwFace {
       this.fw.readvertise.removeAnnouncement(this, name);
     }
 
-    this.txQueue.end(new Error("close"));
+    this.txQueue.fail(new Error("close"));
     this.dispatchTypedEvent("close", new Event("close"));
     this.fw.dispatchTypedEvent("facerm", new Forwarder.FaceEvent("facerm", this));
   }

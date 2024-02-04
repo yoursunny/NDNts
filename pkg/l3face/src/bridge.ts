@@ -1,8 +1,7 @@
 import { Forwarder, type FwFace } from "@ndn/fw";
 import type { NameLike } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
-import { assert, Closers, delay, randomJitter } from "@ndn/util";
-import { pushable } from "it-pushable";
+import { assert, Closers, delay, pushable, randomJitter } from "@ndn/util";
 import { filter, map, pipeline, transform } from "streaming-iterables";
 
 import { L3Face } from "./l3face";
@@ -11,7 +10,7 @@ import { Transport } from "./transport";
 class BridgeTransport extends Transport {
   public override readonly rx: Transport.RxIterable;
   public bridgePeer?: BridgeTransport;
-  private readonly bridgeRx = pushable<Uint8Array>({ objectMode: true });
+  private readonly bridgeRx = pushable<Uint8Array>();
 
   constructor(bridgeName: string, relay: Bridge.RelayFunc, private readonly closePromise: Promise<void>) {
     super({ describe: `BRIDGE(${bridgeName})` });

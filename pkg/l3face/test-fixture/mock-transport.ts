@@ -1,12 +1,12 @@
 import { Decoder, type Encodable, Encoder } from "@ndn/tlv";
+import { pushable } from "@ndn/util";
 import { abortableSource, AbortError as IteratorAbortError } from "abortable-iterator";
-import { pushable } from "it-pushable";
 
 import { Transport } from "..";
 
 /** Mock transport that records outgoing packets and allows injecting incoming packets */
 export class MockTransport extends Transport {
-  public override readonly rx = pushable<Decoder.Tlv>({ objectMode: true });
+  public override readonly rx = pushable<Decoder.Tlv>();
   /** Packets transmitted by the transport. */
   public sent: Uint8Array[] = [];
   private readonly closing = new AbortController();
@@ -25,7 +25,11 @@ export class MockTransport extends Transport {
   }
 
   public close(err?: Error): void {
-    this.rx.end(err);
+    if (err) {
+      this.rx.fail(err);
+    } else {
+      this.rx.stop();
+    }
     this.closing.abort();
   }
 

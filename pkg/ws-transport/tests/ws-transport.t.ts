@@ -1,7 +1,6 @@
 import * as TestReopen from "@ndn/l3face/test-fixture/reopen";
 import * as TestTransport from "@ndn/l3face/test-fixture/transport";
-import { Closers, delay } from "@ndn/util";
-import { pushable } from "it-pushable";
+import { Closers, delay, pushable } from "@ndn/util";
 import { pEvent } from "p-event";
 import { beforeEach, expect, test, vi } from "vitest";
 import { WebSocket as WsWebSocket } from "ws";
@@ -61,7 +60,7 @@ test("TX throttle", async () => {
   const serverRx = vi.fn<[Uint8Array], void>();
   sws.on("message", serverRx);
 
-  const clientTx = pushable<Uint8Array>({ objectMode: true });
+  const clientTx = pushable<Uint8Array>();
   await Promise.all([
     transport.tx(clientTx),
     (async () => {
@@ -88,7 +87,7 @@ test("TX throttle", async () => {
       await delay(100);
       expect(serverRx).toHaveBeenCalledTimes(4);
 
-      clientTx.end();
+      clientTx.stop();
     })(),
   ]);
 });

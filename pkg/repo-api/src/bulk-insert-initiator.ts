@@ -1,7 +1,6 @@
 import type { L3Face } from "@ndn/l3face";
 import type { Data } from "@ndn/packet";
-import { CustomEvent } from "@ndn/util";
-import { pushable } from "it-pushable";
+import { CustomEvent, pushable } from "@ndn/util";
 import pDefer, { type DeferredPromise } from "p-defer";
 import { consume, map } from "streaming-iterables";
 import { TypedEventTarget } from "typescript-event-target";
@@ -19,7 +18,7 @@ type EventMap = {
 
 /** Send packets to a bulk insertion target. */
 export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S.Close, S.Insert {
-  private readonly queue = pushable<Burst>({ objectMode: true });
+  private readonly queue = pushable<Burst>();
   private readonly faceTx: Promise<void>;
 
   /**
@@ -45,7 +44,7 @@ export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S
    * `.insert()` cannot be called after this.
    */
   public async close(): Promise<void> {
-    this.queue.end();
+    this.queue.stop();
     await this.faceTx;
   }
 

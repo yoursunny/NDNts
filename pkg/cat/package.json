@@ -31,7 +31,6 @@
     "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@ndn/util": "workspace:*",
-    "it-pushable": "^3.2.3",
     "stdout-stream": "^2.0.0",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",

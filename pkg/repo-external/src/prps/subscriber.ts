@@ -1,7 +1,7 @@
 import { Endpoint, type Producer, type ProducerHandler, type RetxPolicy } from "@ndn/endpoint";
 import { Component, Data, digestSigning, FwHint, Interest, type Name, type Signer, type Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
-import { pushable } from "it-pushable";
+import { pushable } from "@ndn/util";
 
 import { MsgSuffix, NotifyParams, NotifySuffix } from "./packet";
 
@@ -57,7 +57,7 @@ class Subscription implements PrpsSubscriber.Subscription {
 
   public close(): void {
     this.notifyProducer.close();
-    this.messages.end();
+    this.messages.stop();
   }
 
   public [Symbol.asyncIterator]() {
@@ -66,7 +66,7 @@ class Subscription implements PrpsSubscriber.Subscription {
 
   private notifyPrefix: Name;
   private notifyProducer: Producer;
-  private messages = pushable<Data>({ objectMode: true });
+  private readonly messages = pushable<Data>();
 
   private handleNotifyInterest: ProducerHandler = async (interest) => {
     if (interest.name.length !== this.notifyPrefix.length + 1 || !interest.appParameters) {

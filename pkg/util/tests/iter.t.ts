@@ -1,17 +1,16 @@
-import { pushable } from "it-pushable";
 import { collect } from "streaming-iterables";
 import { expect, test, vi } from "vitest";
 
-import { delay, evict, flatMapOnce, safeIter } from "..";
+import { delay, evict, flatMapOnce, pushable, safeIter } from "..";
 
 test("safeIter ignore", async () => {
-  const it = pushable<number>({ objectMode: true });
+  const it = pushable<number>();
   const collector = collect(safeIter(it));
 
   it.push(1);
   it.push(2);
   await delay(10);
-  it.end(new Error("X"));
+  it.fail(new Error("X"));
   it.push(3);
 
   const a = await collector;
@@ -19,14 +18,14 @@ test("safeIter ignore", async () => {
 });
 
 test("safeIter catch", async () => {
-  const it = pushable<number>({ objectMode: true });
+  const it = pushable<number>();
   const onError = vi.fn<[unknown], undefined>();
   const collector = collect(safeIter(it, onError));
 
   it.push(1);
   it.push(2);
   await delay(10);
-  it.end(new Error("X"));
+  it.fail(new Error("X"));
   it.push(3);
 
   const a = await collector;
@@ -35,12 +34,12 @@ test("safeIter catch", async () => {
 });
 
 test("flatMapOnce", async () => {
-  const it = pushable<number>({ objectMode: true });
+  const it = pushable<number>();
   it.push(1);
   it.push(2);
   it.push(3);
   it.push(4);
-  it.end();
+  it.stop();
 
   const a = await collect(flatMapOnce((n): Array<number | number[]> => {
     if (n % 2 === 0) {

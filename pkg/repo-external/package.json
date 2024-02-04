@@ -33,7 +33,6 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "it-keepalive": "^1.2.0",
-    "it-pushable": "^3.2.3",
     "p-defer": "^4.0.0",
     "streaming-iterables": "^8.0.1",
     "throat": "^6.0.2",

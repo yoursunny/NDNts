@@ -1,5 +1,4 @@
-import { assert, MultiMap } from "@ndn/util";
-import { pushable } from "it-pushable";
+import { assert, MultiMap, pushable } from "@ndn/util";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
 import type { FaceImpl, FwFace } from "./face";
@@ -27,7 +26,7 @@ class TapRxController {
   private facerm = (evt: Forwarder.FaceEvent) => {
     const dst = this.taps.list(evt.face);
     for (const { rx } of dst) {
-      rx.end();
+      rx.stop();
     }
     this.detachIfIdle();
   };
@@ -74,7 +73,7 @@ export class TapFace implements FwFace.RxTx {
 
   private readonly ctrl: TapRxController;
 
-  public readonly rx = pushable<FwPacket>({ objectMode: true });
+  public readonly rx = pushable<FwPacket>();
 
   public async tx(iterable: AsyncIterable<FwPacket>) {
     for await (const pkt of iterable) {

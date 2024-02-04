@@ -30,6 +30,7 @@
   "dependencies": {
     "@shigen/polyfill-symbol-dispose": "^1.0.1",
     "@types/minimalistic-assert": "^1.0.3",
+    "event-iterator": "^2.0.0",
     "minimalistic-assert": "^1.0.1",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2"
@@ -37,7 +38,6 @@
   "devDependencies": {
     "@types/tmp": "^0.2.6",
     "@types/write": "^2.0.4",
-    "it-pushable": "^3.2.3",
     "tmp": "^0.2.1",
     "write": "^2.0.0"
   },

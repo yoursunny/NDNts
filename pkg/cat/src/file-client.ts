@@ -3,8 +3,7 @@ import path from "node:path/posix";
 
 import { Client } from "@ndn/fileserver";
 import { Name } from "@ndn/packet";
-import { assert, console } from "@ndn/util";
-import { pushable } from "it-pushable";
+import { assert, console, pushable } from "@ndn/util";
 import { consume, parallelMap } from "streaming-iterables";
 import type { CommandModule } from "yargs";
 
@@ -64,7 +63,7 @@ class Downloader {
 
   private client!: Client;
   private readonly local: string;
-  private readonly queue = pushable<Job>({ objectMode: true });
+  private readonly queue = pushable<Job>();
   private nProcessing = 0;
   private nQueued = 0;
 
@@ -98,11 +97,11 @@ class Downloader {
         }
       }
     } catch (err: unknown) {
-      this.queue.end(new Error(`download ${kind} ./${path.relative(this.local, local)} error: ${err}`));
+      this.queue.fail(new Error(`download ${kind} ./${path.relative(this.local, local)} error: ${err}`));
     } finally {
       --this.nProcessing;
       if (this.nProcessing === 0 && this.nQueued === 0) {
-        this.queue.end();
+        this.queue.stop();
       }
     }
   };

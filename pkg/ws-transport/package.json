@@ -35,8 +35,7 @@
     "ws": "^8.16.0"
   },
   "devDependencies": {
-    "@ndn/node-transport": "workspace:*",
-    "it-pushable": "^3.2.3"
+    "@ndn/node-transport": "workspace:*"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"

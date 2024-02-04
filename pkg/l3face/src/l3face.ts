@@ -1,9 +1,8 @@
 import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { LpService } from "@ndn/lp";
 import { Interest, type NameLike } from "@ndn/packet";
-import { asDataView, CustomEvent } from "@ndn/util";
+import { asDataView, CustomEvent, pushable } from "@ndn/util";
 import { abortableSource, AbortError as IteratorAbortError } from "abortable-iterator";
-import { pushable } from "it-pushable";
 import * as retry from "retry";
 import { consume, filter, map, pipeline } from "streaming-iterables";
 import type { Promisable } from "type-fest";
@@ -97,7 +96,7 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
 
   private state_: L3Face.State = L3Face.State.UP;
   private lastError?: unknown;
-  private readonly rxSources = pushable<Transport["rx"]>({ objectMode: true });
+  private readonly rxSources = pushable<Transport["rx"]>();
   private reopenRetry?: retry.RetryOperation;
 
   private async *makeRx(): AsyncIterable<FwPacket> {
@@ -203,7 +202,7 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
       }
     }
     this.reopenRetry?.stop();
-    this.rxSources.end();
+    this.rxSources.stop();
   };
 
   private reopenTransport(): void {
