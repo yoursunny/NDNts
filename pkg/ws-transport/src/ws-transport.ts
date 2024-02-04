@@ -1,5 +1,6 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 import EventIterator from "event-iterator";
+import { pEvent } from "p-event";
 import type { WebSocket as WsWebSocket } from "ws";
 
 import { changeBinaryType, extractMessage, makeWebSocket } from "./ws_node";
@@ -11,39 +12,20 @@ export class WsTransport extends Transport {
    * @param uri - Server URI or existing WebSocket instance.
    * @see {@link WsTransport.createFace}
    */
-  public static connect(uri: string | WebSocket | WsWebSocket, opts: WsTransport.Options = {}): Promise<WsTransport> {
-    const { connectTimeout = 10000, signal } = opts;
-    return new Promise<WsTransport>((resolve, reject) => {
-      const sock = typeof uri === "string" ? makeWebSocket(uri) : uri as unknown as WebSocket;
-      if (sock.readyState === sock.OPEN) {
-        resolve(new WsTransport(sock, opts));
-        return;
+  public static async connect(
+      uri: string | WebSocket | WsWebSocket,
+      opts: WsTransport.Options = {},
+  ): Promise<WsTransport> {
+    const sock = typeof uri === "string" ? makeWebSocket(uri) : uri as unknown as WebSocket;
+    if (sock.readyState !== sock.OPEN) {
+      try {
+        await pEvent(sock, "open", { timeout: opts.connectTimeout ?? 10000 });
+      } catch (err: unknown) {
+        sock.close(1002);
+        throw err;
       }
-
-      let timeout: NodeJS.Timeout | undefined; // eslint-disable-line prefer-const
-      const fail = (err?: Error) => {
-        clearTimeout(timeout);
-        sock.close();
-        reject(err);
-      };
-      timeout = setTimeout(() => fail(new Error("connectTimeout")), connectTimeout);
-
-      const onabort = () => fail(new Error("abort"));
-      signal?.addEventListener("abort", onabort);
-
-      const onerror = (evt: Event) => {
-        sock.close();
-        reject(evt.type === "error" ? (evt as ErrorEvent).error : new Error(`${evt}`));
-      };
-      sock.addEventListener("error", onerror, { once: true });
-
-      sock.addEventListener("open", () => {
-        clearTimeout(timeout);
-        sock.removeEventListener("error", onerror);
-        signal?.removeEventListener("abort", onabort);
-        resolve(new WsTransport(sock, opts));
-      });
-    });
+    }
+    return new WsTransport(sock, opts);
   }
 
   private constructor(private readonly sock: WebSocket, private readonly opts: WsTransport.Options) {
@@ -105,7 +87,7 @@ export class WsTransport extends Transport {
   }
 
   public close(): void {
-    this.sock.close();
+    this.sock.close(1000);
   }
 
   /** Reopen the transport by connecting again with the same options. */
@@ -123,20 +105,15 @@ export namespace WsTransport {
      */
     connectTimeout?: number;
 
-    /** AbortSignal that allows canceling connection attempt via AbortController. */
-    signal?: AbortSignal;
-
     /**
      * Buffer amount (in bytes) to start TX throttling.
-     * @defaultValue
-     * 1 MiB
+     * @defaultValue 1 MiB
      */
     highWaterMark?: number;
 
     /**
      * Buffer amount (in bytes) to stop TX throttling.
-     * @defaultValue
-     * 16 KiB
+     * @defaultValue 16 KiB
      */
     lowWaterMark?: number;
   }

@@ -30,13 +30,13 @@
     "@ndn/util": "workspace:*",
     "@types/ws": "^8.5.10",
     "event-iterator": "^2.0.0",
+    "p-event": "^6.0.0",
     "tslib": "^2.6.2",
     "ws": "^8.16.0"
   },
   "devDependencies": {
     "@ndn/node-transport": "workspace:*",
-    "it-pushable": "^3.2.3",
-    "p-event": "^6.0.0"
+    "it-pushable": "^3.2.3"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
