@@ -14,7 +14,7 @@ import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, consume } from "streaming-iterables";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { BlobChunkSource, BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, makeChunkSource, serve, StreamChunkSource } from "..";
+import { BlobChunkSource, BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, serve, StreamChunkSource } from "..";
 import { makeObjectBody } from "../test-fixture/object-body";
 
 const fwOpts: Forwarder.Options = { dataNoTokenMatch: false };
@@ -35,7 +35,7 @@ async function* generateChunksSlowly() {
 }
 
 test("buffer to buffer", async () => {
-  const chunkSource = makeChunkSource(objectBody);
+  const chunkSource = new BufferChunkSource(objectBody);
   expect(chunkSource).toBeInstanceOf(BufferChunkSource);
   const server = serve("/R", chunkSource);
   closers.push(server);
@@ -47,7 +47,7 @@ test("buffer to buffer", async () => {
 });
 
 test("blob to chunks", async () => {
-  const chunkSource = makeChunkSource(new Blob([objectBody]));
+  const chunkSource = new BlobChunkSource(new Blob([objectBody]));
   expect(chunkSource).toBeInstanceOf(BlobChunkSource);
   const server = serve("/R", chunkSource);
   closers.push(server);
@@ -60,7 +60,7 @@ test("blob to chunks", async () => {
 
 test("stream to stream", async () => {
   const src = new BufferReadableMock([objectBody]);
-  const chunkSource = makeChunkSource(src);
+  const chunkSource = new StreamChunkSource(src);
   expect(chunkSource).toBeInstanceOf(StreamChunkSource);
   const server = serve("/R", chunkSource);
   closers.push(server);
@@ -89,7 +89,7 @@ describe("file source", () => {
 });
 
 test("iterable to unordered", async () => {
-  const chunkSource = makeChunkSource((async function*() {
+  const chunkSource = new IterableChunkSource((async function*() {
     const yieldSizes = [5000, 7000, 20000];
     let i = -1;
     for (let offset = 0; offset < objectBody.length;) {
@@ -119,7 +119,7 @@ test("iterable to unordered", async () => {
 });
 
 test("ranged", async () => {
-  const chunkSource = makeChunkSource(objectBody, { chunkSize: 1024 }); // 1024 segments
+  const chunkSource = new BufferChunkSource(objectBody, { chunkSize: 1024 }); // 1024 segments
   expect(chunkSource).toBeInstanceOf(BufferChunkSource);
   const server = serve(new Name("/R"), chunkSource);
   closers.push(server);

@@ -8,19 +8,27 @@ import { BufferChunkSource } from "./buffer";
 import type { ChunkOptions } from "./common";
 import { IterableChunkSource } from "./iterable";
 
+/**
+ * Create a {@link BufferChunkSource}.
+ * @deprecated Use of this function is discouraged because it pulls in `ChunkSource` subclasses
+ * not needed by your application. Instead, construct {@link BufferChunkSource} directly.
+ */
 export function makeChunkSource(input: Uint8Array, opts?: ChunkOptions): BufferChunkSource;
 
+/**
+ * Create a {@link BlobChunkSource}.
+ * @deprecated Use of this function is discouraged because it pulls in `ChunkSource` subclasses
+ * not needed by your application. Instead, construct {@link BlobChunkSource} directly.
+ */
 export function makeChunkSource(input: Blob | NodeBlob, opts?: ChunkOptions): BlobChunkSource;
 
+/**
+ * Create a {@link IterableChunkSource}.
+ * @deprecated Use of this function is discouraged because it pulls in `ChunkSource` subclasses
+ * not needed by your application. Instead, construct {@link IterableChunkSource} directly.
+ */
 export function makeChunkSource(input: AnyIterable<Uint8Array> | NodeJS.ReadableStream, opts?: ChunkOptions): IterableChunkSource;
 
-/**
- * Create a chunk source, auto detecting input type.
- *
- * @remarks
- * Use of this function is discouraged as it pulls in `ChunkSource` subclasses not needed by
- * your application. It's recommended to construct a `ChunkSource` subclass directly.
- */
 export function makeChunkSource(input: Uint8Array | Blob | NodeBlob | AnyIterable<Uint8Array> | NodeJS.ReadableStream, opts?: ChunkOptions) {
   if (input instanceof Uint8Array) {
     return new BufferChunkSource(input, opts);
