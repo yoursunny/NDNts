@@ -1,6 +1,7 @@
 import { Endpoint, type Producer } from "@ndn/endpoint";
 import { Timestamp } from "@ndn/naming-convention2";
 import { type Component, Data, digestSigning, Interest, lpm, type Name, type Signer, type Verifier } from "@ndn/packet";
+import { type Subscriber, type Subscription, SubscriptionTable } from "@ndn/sync-api";
 import { CustomEvent, KeyMap, toHex, trackEventListener } from "@ndn/util";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import filter from "obliterator/filter.js";
@@ -8,9 +9,7 @@ import take from "obliterator/take.js";
 import pDefer, { type DeferredPromise } from "p-defer";
 import { TypedEventTarget } from "typescript-event-target";
 
-import { SubscriptionTable } from "../detail/subscription-table";
 import { IBLT } from "../iblt";
-import type { Subscriber, Subscription } from "../types";
 import { SyncpsCodec } from "./codec";
 
 interface PublicationEntry {

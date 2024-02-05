@@ -1,8 +1,8 @@
 import { type Name, NameMap } from "@ndn/packet";
+import type { SyncNode } from "@ndn/sync-api";
 import { assert } from "@ndn/util";
 
 import { IBLT } from "../iblt";
-import type { SyncNode } from "../types";
 
 export class PSyncCore {
   constructor(p: PSyncCore.Parameters) {

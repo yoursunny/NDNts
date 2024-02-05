@@ -1,7 +1,7 @@
 import { type Name, NameMultiMap } from "@ndn/packet";
 import { TypedEventTarget } from "typescript-event-target";
 
-import type { Subscription } from "../types";
+import type { Subscription } from "./pubsub";
 
 class Sub<Update extends Event> extends TypedEventTarget<Subscription.EventMap<any>> implements Subscription<Name, Update> {
   constructor(
@@ -12,9 +12,22 @@ class Sub<Update extends Event> extends TypedEventTarget<Subscription.EventMap<a
   }
 }
 
+/**
+ * Track subscriptions in a pubsub protocol.
+ * This is primarily useful to pubsub protocol implementors.
+ */
 export class SubscriptionTable<Update extends Event> extends NameMultiMap<Subscription<Name, Update>> {
+  /** Callback when the last subscriber of a topic is removed. */
   public handleRemoveTopic?: (topic: Name, objKey: object) => void;
 
+  /**
+   * Subscribe to a topic.
+   * @param topic - Topic name.
+   * @returns
+   * - `sub`: Subscription object.
+   * - `objKey`: WeakMap-compatible key associated with the topic, only provided in the first
+   *   subscription.
+   */
   public subscribe(topic: Name): { sub: Subscription<Name, Update>; objKey?: object } {
     const sub: Sub<Update> = new Sub<Update>(topic, () => this.unsubscribe(topic, sub));
     let objKey: object | undefined;
@@ -31,6 +44,12 @@ export class SubscriptionTable<Update extends Event> extends NameMultiMap<Subscr
     }
   }
 
+  /**
+   * Deliver an update to a set of subscriptions.
+   *
+   * @remarks
+   * The caller should ensure the update matches the subscription topic name.
+   */
   public update(set: Iterable<Subscription<Name, Update>>, update: Update): void {
     for (const sub of set) {
       sub.dispatchTypedEvent("update", update);

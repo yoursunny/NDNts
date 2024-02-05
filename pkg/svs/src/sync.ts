@@ -1,10 +1,10 @@
 import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
 import { Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
+import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { CustomEvent, randomJitter, trackEventListener } from "@ndn/util";
 import { type Promisable } from "type-fest";
 import { TypedEventTarget } from "typescript-event-target";
 
-import { type SyncNode, type SyncProtocol, SyncUpdate } from "../types";
 import { SvStateVector } from "./state-vector";
 
 interface DebugEntry {

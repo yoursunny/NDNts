@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/sync",
+  "name": "@ndn/sync-api",
   "version": "0.0.20240113",
-  "description": "NDNts: Dataset Synchronization and PubSub Protocols",
+  "description": "NDNts: Dataset Synchronization and PubSub API",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -19,15 +19,16 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "pkg/sync"
+    "directory": "pkg/sync-api"
   },
   "publishConfig": {
     "main": "lib/mod_node.js",
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/psync": "workspace:*",
-    "@ndn/svs": "workspace:*",
-    "tslib": "^2.6.2"
+    "@ndn/packet": "workspace:*",
+    "@ndn/util": "workspace:*",
+    "tslib": "^2.6.2",
+    "typescript-event-target": "^1.1.0"
   }
 }

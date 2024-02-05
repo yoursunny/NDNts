@@ -1,0 +1,52 @@
+{
+  "name": "@ndn/psync",
+  "version": "0.0.0",
+  "description": "NDNts: Dataset Synchronization and PubSub Protocols",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "main": "src/mod.ts",
+  "module": "lib/mod_browser.js",
+  "sideEffects": false,
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "pkg/psync"
+  },
+  "publishConfig": {
+    "main": "lib/mod_node.js",
+    "types": "lib/mod.d.ts"
+  },
+  "dependencies": {
+    "@ndn/endpoint": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "@ndn/segmented-object": "workspace:*",
+    "@ndn/sync-api": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
+    "@yoursunny/psync-bloom": "github:yoursunny/PSyncBloom-wasm#build",
+    "applymixins": "^1.1.0",
+    "mnemonist": "^0.39.7",
+    "murmurhash3js-revisited": "^3.0.0",
+    "obliterator": "^2.0.4",
+    "p-defer": "^4.0.0",
+    "pako": "^2.1.0",
+    "tslib": "^2.6.2",
+    "typescript-event-target": "^1.1.0"
+  },
+  "devDependencies": {
+    "@ndn/fw": "workspace:*",
+    "@ndn/l3face": "workspace:*",
+    "@types/murmurhash3js-revisited": "^3.0.3",
+    "@types/pako": "^2.0.3"
+  }
+}

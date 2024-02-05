@@ -3,10 +3,10 @@ import { GenericNumber } from "@ndn/naming-convention2";
 import { Data, Name, type NameLike, nullSigner, type Signer } from "@ndn/packet";
 import type { DataStore as S } from "@ndn/repo-api";
 import { BufferChunkSource, type ChunkOptions, DataProducer } from "@ndn/segmented-object";
+import type { SyncNode } from "@ndn/sync-api";
 import { Encoder } from "@ndn/tlv";
 import { collect, map } from "streaming-iterables";
 
-import type { SyncNode } from "../types";
 import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
 import { SvMappingEntry } from "./mapping-entry";
 import type { SvSync } from "./sync";

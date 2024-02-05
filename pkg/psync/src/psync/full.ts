@@ -1,12 +1,12 @@
 import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
 import type { Component, Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
+import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { CustomEvent, KeyMap, toHex, trackEventListener } from "@ndn/util";
 import pDefer, { type DeferredPromise } from "p-defer";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { computeInterval, type IntervalFunc, type IntervalRange } from "../detail/interval";
 import type { IBLT } from "../iblt";
-import { type SyncNode, type SyncProtocol, SyncUpdate } from "../types";
 import { PSyncCodec } from "./codec";
 import { PSyncCore, type PSyncNode } from "./core";
 import { PSyncStateFetcher } from "./state-fetcher";

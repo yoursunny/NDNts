@@ -1,7 +1,7 @@
 import { Endpoint } from "@ndn/endpoint";
 import { FakeNfd } from "@ndn/nfdmgmt/test-fixture/prefix-reg";
 import { Name } from "@ndn/packet";
-import { makePSyncCompatParam, PSyncFull, type SyncUpdate } from "@ndn/sync";
+import { makePSyncCompatParam, PSyncFull, type SyncUpdate } from "@ndn/psync";
 import { Closers, delay } from "@ndn/util";
 import { afterEach, expect, test, vi } from "vitest";
 

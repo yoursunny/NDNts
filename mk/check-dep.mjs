@@ -11,7 +11,7 @@ import yaml from "js-yaml";
 async function* listImports(filename) {
   const lines = (await fs.readFile(filename, "utf8")).split("\n");
   for (const line of lines) {
-    const m = /import(?:\(|(?: .* from)? )"([^.@][^":/]*|@[^":/]*\/[^":/]*)[^":]*"[;)]/.exec(line);
+    const m = /(?:import|export)(?:\(|(?: .* from)? )"([^.@][^":/]*|@[^":/]*\/[^":/]*)[^":]*"[;)]/.exec(line);
     if (!m) {
       continue;
     }

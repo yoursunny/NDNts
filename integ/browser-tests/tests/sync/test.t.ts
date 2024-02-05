@@ -2,7 +2,7 @@ import "./api";
 import "@ndn/packet/test-fixture/expect";
 
 import { Name } from "@ndn/packet";
-import { makePSyncCompatParam, PSyncPartialPublisher } from "@ndn/sync";
+import { makePSyncCompatParam, PSyncPartialPublisher } from "@ndn/psync";
 import { Closers, delay } from "@ndn/util";
 import { WsTransport } from "@ndn/ws-transport";
 import { WsServer } from "@ndn/ws-transport/test-fixture/ws-server";

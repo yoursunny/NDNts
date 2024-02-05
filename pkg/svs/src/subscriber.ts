@@ -2,13 +2,12 @@ import { type ConsumerOptions, Endpoint } from "@ndn/endpoint";
 import { GenericNumber, Segment } from "@ndn/naming-convention2";
 import { Data, Interest, lpm, Name, noopSigning, TT as l3TT, type Verifier } from "@ndn/packet";
 import { fetch } from "@ndn/segmented-object";
+import { type Subscriber, type Subscription, SubscriptionTable, type SyncUpdate } from "@ndn/sync-api";
 import { Decoder, EvDecoder } from "@ndn/tlv";
 import { assert, concatBuffers, CustomEvent } from "@ndn/util";
 import { batch, consume, pipeline, transform } from "streaming-iterables";
 import { TypedEventTarget } from "typescript-event-target";
 
-import { SubscriptionTable } from "../detail/subscription-table";
-import type { Subscriber, Subscription, SyncUpdate } from "../types";
 import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
 import { SvMappingEntry } from "./mapping-entry";
 import type { SvSync } from "./sync";

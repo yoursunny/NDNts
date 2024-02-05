@@ -1,6 +1,6 @@
 import type { FwFace } from "@ndn/fw";
 import { Name } from "@ndn/packet";
-import { makePSyncCompatParam, PSyncPartialSubscriber, type SyncUpdate } from "@ndn/sync";
+import { makePSyncCompatParam, PSyncPartialSubscriber, type SyncUpdate } from "@ndn/psync";
 import { WsTransport } from "@ndn/ws-transport";
 
 import type { UpdateRecord } from "./api";

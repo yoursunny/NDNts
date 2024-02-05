@@ -1,13 +1,12 @@
 import { Endpoint } from "@ndn/endpoint";
 import type { Component, Name, Verifier } from "@ndn/packet";
+import { type Subscriber, type Subscription, SubscriptionTable, SyncUpdate } from "@ndn/sync-api";
 import { CustomEvent } from "@ndn/util";
 import { BloomFilter, type Parameters as BloomParameters } from "@yoursunny/psync-bloom";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { computeInterval, type IntervalFunc } from "../detail/interval";
-import { SubscriptionTable } from "../detail/subscription-table";
 import { IBLT } from "../iblt";
-import { type Subscriber, type Subscription, SyncUpdate } from "../types";
 import { PSyncCodec } from "./codec";
 import type { PSyncCore } from "./core";
 import { PSyncStateFetcher } from "./state-fetcher";
@@ -100,7 +99,7 @@ export class PSyncPartialSubscriber extends TypedEventTarget<EventMap>
     return sub;
   }
 
-  private handleRemoveTopic = (topic: Name, objKey: object): void => {
+  private readonly handleRemoveTopic = (topic: Name, objKey: object): void => {
     void topic;
     if (!this.prevSeqNums.delete(objKey)) {
       return;
@@ -120,7 +119,7 @@ export class PSyncPartialSubscriber extends TypedEventTarget<EventMap>
     this.cTimer = setTimeout(this.sendInterest, after);
   }
 
-  private sendInterest = async (): Promise<void> => {
+  private readonly sendInterest = async (): Promise<void> => {
     if (this.closed) {
       return;
     }

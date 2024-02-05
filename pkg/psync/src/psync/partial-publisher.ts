@@ -1,13 +1,13 @@
 import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
 import { Data, type Interest, type Name, NameMap, type Signer } from "@ndn/packet";
+import type { SyncNode, SyncProtocol } from "@ndn/sync-api";
 import { CustomEvent, trackEventListener } from "@ndn/util";
 import { BloomFilter } from "@yoursunny/psync-bloom";
 import pDefer, { type DeferredPromise } from "p-defer";
 import { TypedEventTarget } from "typescript-event-target";
 
 import type { IBLT } from "../iblt";
-import type { SyncNode, SyncProtocol } from "../types";
 import { PSyncCodec } from "./codec";
 import { PSyncCore, type PSyncNode } from "./core";
 import { PSyncStateProducerBuffer } from "./state-producer-buffer";
