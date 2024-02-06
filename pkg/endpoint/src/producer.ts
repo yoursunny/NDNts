@@ -97,7 +97,7 @@ export interface ProducerOptions {
 }
 
 /** A running producer. */
-export interface Producer {
+export interface Producer extends Disposable {
   /**
    * Prefix specified in {@link Endpoint.produce} call.
    * Additional prefixes can be added via `.face.addRoute()`.
@@ -214,6 +214,10 @@ export class ProducerImpl implements Producer {
     this.face.close();
     this.signal?.removeEventListener("abort", this.close);
   };
+
+  public [Symbol.dispose](): void {
+    this.close();
+  }
 }
 
 export async function signUnsignedData(data: Data, dataSigner: Signer | undefined) {

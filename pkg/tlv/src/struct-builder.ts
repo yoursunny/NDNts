@@ -1,4 +1,4 @@
-import { assert, toUtf8 } from "@ndn/util";
+import { assert, toHex, toUtf8 } from "@ndn/util";
 import type { Constructor, IfNever, Simplify } from "type-fest";
 
 import { type Decodable, Decoder } from "./decoder";
@@ -94,6 +94,20 @@ export const StructFieldText: StructFieldType<string> = {
   newValue: () => "",
   encode: toUtf8,
   decode: ({ text }) => text,
+};
+
+/**
+ * StructBuilder field type of raw bytes.
+ *
+ * @remarks
+ * The field is defined as Uint8Array.
+ * If the field is required, it is initialized as an empty Uint8Array.
+ */
+export const StructFieldBytes: StructFieldType<Uint8Array> = {
+  newValue: () => new Uint8Array(),
+  encode: (value) => value,
+  decode: ({ value }) => value,
+  asString: (value) => toHex(value),
 };
 
 /** StructBuilder field options. */

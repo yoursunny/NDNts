@@ -1,11 +1,11 @@
 import { Endpoint, type Producer, type ProducerHandler, type RetxPolicy } from "@ndn/endpoint";
-import { Component, Data, digestSigning, FwHint, Interest, type Name, type Signer, type Verifier } from "@ndn/packet";
+import { Data, digestSigning, Interest, type Name, type Signer, type Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 import { pushable } from "@ndn/util";
 
-import { MsgSuffix, NotifyParams, NotifySuffix } from "./packet";
+import { NotifyAppParam, NotifySuffix } from "./packet";
 
-/** PyRepo PubSub protocol subscriber. */
+/** ndn-python-repo PubSub protocol subscriber. */
 export class PrpsSubscriber {
   constructor({
     endpoint = new Endpoint(),
@@ -68,24 +68,21 @@ class Subscription implements PrpsSubscriber.Subscription {
   private notifyProducer: Producer;
   private readonly messages = pushable<Data>();
 
-  private handleNotifyInterest: ProducerHandler = async (interest) => {
-    if (interest.name.length !== this.notifyPrefix.length + 1 || !interest.appParameters) {
+  private readonly handleNotifyInterest: ProducerHandler = async (interest) => {
+    if (interest.name.length <= this.notifyPrefix.length || !interest.appParameters) {
       return undefined;
     }
 
-    const { publisher, nonce, publisherFwHint } = Decoder.decode(interest.appParameters, NotifyParams);
-    const messageInterest = new Interest(publisher.append(
-      MsgSuffix, ...this.topic.comps, new Component(undefined, nonce)));
-    if (publisherFwHint) {
-      messageInterest.fwHint = new FwHint(publisherFwHint);
-    }
-    messageInterest.lifetime = this.msgInterestLifetime;
-    const messageData = await this.endpoint.consume(messageInterest, {
-      describe: `prps-msg(${this.topic} ${publisher})`,
+    const notifyParam = Decoder.decode(interest.appParameters, NotifyAppParam);
+    const msgInterest = notifyParam.makeMsgInterest(this.topic);
+    msgInterest.lifetime = this.msgInterestLifetime;
+
+    const msgData = await this.endpoint.consume(msgInterest, {
+      describe: `prps-msg(${this.topic} ${notifyParam.publisher})`,
       retx: this.msgRetx,
       verifier: this.pubVerifier,
     });
-    this.messages.push(messageData);
+    this.messages.push(msgData);
 
     return new Data(interest.name);
   };
@@ -93,7 +90,11 @@ class Subscription implements PrpsSubscriber.Subscription {
 
 export namespace PrpsSubscriber {
   export interface Options {
-    /** Endpoint for communication. */
+    /**
+     * Endpoint for communication.
+     * @defaultValue
+     * Endpoint on default logical forwarder.
+     */
     endpoint?: Endpoint;
 
     /** InterestLifetime of msg Interests. */
@@ -101,22 +102,28 @@ export namespace PrpsSubscriber {
 
     /**
      * Retransmission policy of msg Interests.
-     * Default is 2 retransmissions.
+     * @defaultValue 2 retransmissions
      */
     msgRetx?: RetxPolicy;
 
     /**
      * Verifier for publications.
-     * Default is no verification.
+     * @defaultValue no verification
      */
     pubVerifier?: Verifier;
 
-    /** Set to false to disable prefix announcements for receiving notify Interests. */
+    /**
+     * Set to false to disable prefix announcements for receiving notify Interests.
+     *
+     * @remarks
+     * This should be set only if the application already has a prefix announcement that covers
+     * the `topic` of each subscription.
+     */
     subAnnouncement?: false;
 
     /**
      * Key to sign notify Data.
-     * Default is digest signing.
+     * @defaultValue `digestSigning`
      */
     subSigner?: Signer;
   }

@@ -192,10 +192,16 @@ export namespace EvDecoder {
   export type IsCritical = (tt: number) => boolean;
 
   /**
-   * IsCritical callback that always returns false.
-   * This means unrecognized or out-of-order TLV elements are ignored.
+   * IsCritical callback that always returns `false`.
+   * Any unrecognized or out-of-order TLV elements would be ignored.
    */
   export const neverCritical: IsCritical = () => false;
+
+  /**
+   * IsCritical callback that always returns `true`.
+   * Any unrecognized or out-of-order TLV elements would cause an error.
+   */
+  export const alwaysCritical: IsCritical = () => true;
 
   /**
    * Callback before or after decoding TLV-VALUE.

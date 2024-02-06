@@ -1,12 +1,21 @@
 import { Endpoint, type Producer, type ProducerHandler, type RetxPolicy } from "@ndn/endpoint";
 import { SequenceNum } from "@ndn/naming-convention2";
-import { Component, Data, digestSigning, Interest, Name, NameMap, type Signer } from "@ndn/packet";
+import { Component, Data, digestSigning, Interest, Name, NameMap, SignedInterestPolicy, type Signer } from "@ndn/packet";
 import { type Encodable, Encoder } from "@ndn/tlv";
-import { asDataView } from "@ndn/util";
+import { crypto } from "@ndn/util";
 
-import { MsgSuffix, NotifyParams, NotifySuffix } from "./packet";
+import { MsgSuffix, NotifyAppParam, NotifySuffix } from "./packet";
 
-/** PyRepo PubSub protocol publisher. */
+type Item = Encodable | PrpsPublisher.PublicationCallback;
+
+interface Pending {
+  topic: Name;
+  item: Item;
+}
+
+const notifySIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce());
+
+/** ndn-python-repo PubSub protocol publisher. */
 export class PrpsPublisher {
   constructor({
     endpoint = new Endpoint(),
@@ -23,8 +32,7 @@ export class PrpsPublisher {
     this.pubSigner = pubSigner;
     this.notifyInterestLifetime = notifyInterestLifetime;
     this.notifyRetx = notifyRetx;
-    this.messagePrefix = pubPrefix.append(MsgSuffix);
-    this.messageProducer = this.endpoint.produce(this.messagePrefix, this.handleMessageInterest, {
+    this.msgProducer = this.endpoint.produce(pubPrefix.append(MsgSuffix), this.handleMsgInterest, {
       describe: `prps-pub(${pubPrefix})`,
       announcement: pubAnnouncement ?? pubFwHint ?? pubPrefix,
     });
@@ -36,36 +44,36 @@ export class PrpsPublisher {
   private readonly pubSigner: Signer;
   private readonly notifyInterestLifetime: number;
   private readonly notifyRetx: RetxPolicy;
-  private readonly messagePrefix: Name;
-  private readonly messageProducer: Producer;
+  private readonly msgProducer: Producer;
   private readonly pendings = new NameMap<Pending>();
 
   public close(): void {
-    this.messageProducer.close();
+    this.msgProducer.close();
   }
 
   public async publish(topic: Name, item: Item): Promise<void> {
-    const notifyNonce = new Uint8Array(4);
-    const notifyNonceDataView = asDataView(notifyNonce);
+    const notifyNonce = new Uint8Array(8);
     let key: Name;
     do {
-      notifyNonceDataView.setUint32(0, Math.random() * 0xFFFFFFFF);
-      key = this.messagePrefix.append(...topic.comps, new Component(undefined, notifyNonce));
+      crypto.getRandomValues(notifyNonce);
+      key = this.pubPrefix.append(MsgSuffix, ...topic.comps, new Component(undefined, notifyNonce));
     } while (this.pendings.has(key));
 
-    this.pendings.set(key, {
-      topic,
-      item,
-    });
+    this.pendings.set(key, { topic, item });
+
+    const notifyParam = new NotifyAppParam();
+    notifyParam.publisher = this.pubPrefix;
+    notifyParam.nonce = notifyNonce;
+    notifyParam.publisherFwHint = this.pubFwHint;
+    const notifyInterest = new Interest();
+    notifyInterest.name = topic.append(NotifySuffix);
+    notifyInterest.lifetime = this.notifyInterestLifetime;
+    notifyInterest.appParameters = Encoder.encode(notifyParam);
+    notifySIP.update(notifyInterest, this);
+    await digestSigning.sign(notifyInterest);
 
     try {
-      const notify = new Interest();
-      notify.name = topic.append(NotifySuffix);
-      notify.lifetime = this.notifyInterestLifetime;
-      notify.appParameters = Encoder.encode(
-        new NotifyParams(this.pubPrefix, notifyNonce, this.pubFwHint));
-      await notify.updateParamsDigest();
-      await this.endpoint.consume(notify, {
+      await this.endpoint.consume(notifyInterest, {
         describe: `prps-notify(${this.pubPrefix} ${topic})`,
         retx: this.notifyRetx,
       });
@@ -74,7 +82,7 @@ export class PrpsPublisher {
     }
   }
 
-  private handleMessageInterest: ProducerHandler = async (interest) => {
+  private readonly handleMsgInterest: ProducerHandler = async (interest) => {
     const pending = this.pendings.get(interest.name);
     if (!pending) {
       return undefined;
@@ -102,21 +110,18 @@ export class PrpsPublisher {
   };
 }
 
-type Item = Encodable | PrpsPublisher.PublicationCallback;
-
-interface Pending {
-  topic: Name;
-  item: Item;
-}
-
 export namespace PrpsPublisher {
   export interface Options {
-    /** Endpoint for communication. */
+    /**
+     * Endpoint for communication.
+     * @defaultValue
+     * Endpoint on default logical forwarder.
+     */
     endpoint?: Endpoint;
 
     /**
      * Name prefix of the local application.
-     * Default is a random local name that only works when the subscriber is on local machine.
+     * @defaultValue "/localhost" + random-suffix
      */
     pubPrefix?: Name;
 
@@ -125,14 +130,16 @@ export namespace PrpsPublisher {
 
     /**
      * Prefix announcement to receive msg Interests.
-     * Default is pubFwHint, or pubPrefix.
+     * @defaultValue `.pubFwHint ?? .pubPrefix`
      */
     pubAnnouncement?: Name | false;
 
     /**
      * Key to sign publications.
+     * @defaultValue `digestSigning`
+     *
+     * @remarks
      * This key should be trusted to sign objects under pubPrefix.
-     * Default is digest signing.
      * This may overridden on a per-publication basis by PublicationCallback returning Data.
      */
     pubSigner?: Signer;
@@ -142,7 +149,7 @@ export namespace PrpsPublisher {
 
     /**
      * Retransmission policy of notify Interests.
-     * Default is 2 retransmissions.
+     * @defaultValue 2 retransmissions
      */
     notifyRetx?: RetxPolicy;
   }
@@ -151,7 +158,7 @@ export namespace PrpsPublisher {
    * A callback function to generate publication packet.
    * @param name - Expected Data name.
    * @param topic - Topic name.
-   * @returns either a Data that is already signed, or an Encodable object to use as publication body.
+   * @returns Either a Data that is already signed, or an Encodable to use as publication body.
    */
   export type PublicationCallback = (name: Name, topic: Name) => Promise<Data | Encodable>;
 }

@@ -8,12 +8,30 @@ import throat from "throat";
 
 import { PyRepoClient } from "./client";
 
-/** A DataStore implementation using ndn-python-repo. */
+/**
+ * A DataStore implementation using ndn-python-repo.
+ *
+ * @remarks
+ * This DataStore is write-only. It can insert and delete data in ndn-python-repo.
+ *
+ * This DataStore does not have methods to read data. To read data in ndn-python-repo, send an
+ * Interest to the network, and then ndn-python-repo is supposed to reply.
+ */
 export class PyRepoStore implements S.Close, S.Insert, S.Delete {
-  /** Construct with new PyRepoClient. */
+  /**
+   * Construct with new {@link PyRepoClient}.
+   *
+   * @remarks
+   * The internal client will be closed when this store is closed.
+   */
   constructor(opts: PyRepoStore.Options);
 
-  /** Construct with existing PyRepoClient. */
+  /**
+   * Construct with existing {@link PyRepoClient}.
+   *
+   * @remarks
+   * The passed `client` will not be closed when this store is closed.
+   */
   constructor(client: PyRepoClient, opts?: PyRepoStore.StoreOptions);
 
   constructor(arg1: PyRepoClient | PyRepoStore.Options, arg2: PyRepoStore.StoreOptions = {}) {
@@ -36,7 +54,7 @@ export class PyRepoStore implements S.Close, S.Insert, S.Delete {
   private readonly throttle: ReturnType<typeof throat>;
   private readonly endpoint: Endpoint;
 
-  /** Close the PyRepoClient only if it is created by this store. */
+  /** Close the {@link PyRepoClient} only if it is created by this store. */
   public async close(): Promise<void> {
     if (this.ownsClient) {
       this.client.close();
@@ -52,22 +70,20 @@ export class PyRepoStore implements S.Close, S.Insert, S.Delete {
       transform(Infinity, (data) => this.throttle(async () => {
         const answered = pDefer();
         const timeout = setTimeout(() => answered.reject(new Error("no incoming Interest")), 5000);
-        const producer = this.endpoint.produce(data.name, async () => {
+        using producer = this.endpoint.produce(data.name, async () => {
           clearTimeout(timeout);
-          setTimeout(() => answered.resolve(), 100);
+          answered.resolve();
           return data;
         }, {
           describe: `pyrepo-insert(${data.name})`,
           announcement: false,
         });
-        await delay(100);
+        void producer;
 
-        try {
-          await this.client.insert(data.name);
-          await answered.promise;
-        } finally {
-          producer.close();
-        }
+        await delay(100); // pre-command delay for prefix registration
+        await this.client.insert(data.name);
+        await answered.promise;
+        await delay(100); // post-command delay for Data retransmissions
       })),
       consume,
     );
@@ -83,7 +99,10 @@ export class PyRepoStore implements S.Close, S.Insert, S.Delete {
 
 export namespace PyRepoStore {
   export interface StoreOptions {
-    /** Maximum number of parallel insertions. Default is 16. */
+    /**
+     * Maximum number of parallel operations.
+     * @defaultValue 16
+     */
     parallel?: number;
   }
 

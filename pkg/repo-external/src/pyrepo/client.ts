@@ -1,11 +1,12 @@
 import { Endpoint } from "@ndn/endpoint";
-import { Component, type Data, type Name } from "@ndn/packet";
-import { Decoder } from "@ndn/tlv";
-import { asDataView, toHex } from "@ndn/util";
-import itKeepAlive from "it-keepalive";
+import { digestSigning, Interest, type Name, SignedInterestPolicy } from "@ndn/packet";
+import { Decoder, Encoder } from "@ndn/tlv";
+import { delay, sha256, toHex } from "@ndn/util";
 
-import { PrpsPublisher, PrpsSubscriber } from "../prps/mod";
-import { CheckVerb, CommandParameter, CommandResponse, DeleteVerb, InsertVerb } from "./packet";
+import { PrpsPublisher } from "../prps/mod";
+import { CommandParam, CommandRes, DeleteVerb, InsertVerb, ObjectParam, StatQuery, type Verb } from "./packet";
+
+const checkSIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce());
 
 /** Client to interact with ndn-python-repo. */
 export class PyRepoClient {
@@ -14,108 +15,104 @@ export class PyRepoClient {
     this.repoPrefix = opts.repoPrefix;
     this.progressTimeout = opts.progressTimeout ?? 10000;
     this.publisher = new PrpsPublisher(opts);
-    this.subscriber = new PrpsSubscriber({
-      subAnnouncement: false,
-      ...opts,
-    });
-    this.endpoint.fw.nodeNames.push(this.publisher.pubPrefix);
+    this.fwHint = this.publisher.pubFwHint ?? this.publisher.pubPrefix;
+    this.endpoint.fw.nodeNames.push(this.fwHint);
   }
 
   public readonly endpoint: Endpoint;
   public readonly repoPrefix: Name;
   private readonly progressTimeout: number;
   private readonly publisher: PrpsPublisher;
-  private readonly subscriber: PrpsSubscriber;
-  private readonly ongoing = new Map<string, PrpsSubscriber.Subscription>();
+  private readonly fwHint: Name;
 
   public close(): void {
-    const nodeNameIndex = this.endpoint.fw.nodeNames.findIndex((nodeName) => nodeName.equals(this.publisher.pubPrefix));
+    const nodeNameIndex = this.endpoint.fw.nodeNames.findIndex((nodeName) => nodeName.equals(this.fwHint));
     if (nodeNameIndex >= 0) {
       this.endpoint.fw.nodeNames.splice(nodeNameIndex, 1);
     }
 
     this.publisher.close();
-    for (const sub of this.ongoing.values()) {
-      sub.close();
-    }
   }
 
   public async insert(name: Name): Promise<void> {
-    return this.execute(InsertVerb, new CommandParameter(name));
+    return this.execute(InsertVerb, [this.makeObjectParam(name)]);
   }
 
   public async insertRange(name: Name, start: number, end = Infinity): Promise<void> {
-    return this.execute(InsertVerb, new CommandParameter(
-      name,
-      start,
-      Number.isFinite(end) ? end : undefined,
-    ));
+    return this.execute(InsertVerb, [this.makeObjectParam(name, start, end)]);
   }
 
   public async delete(name: Name): Promise<void> {
-    return this.execute(DeleteVerb, new CommandParameter(name));
+    return this.execute(DeleteVerb, [this.makeObjectParam(name)]);
   }
 
   public async deleteRange(name: Name, start: number, end = Infinity): Promise<void> {
-    return this.execute(DeleteVerb, new CommandParameter(
-      name,
-      start,
-      Number.isFinite(end) ? end : undefined,
-    ));
+    return this.execute(DeleteVerb, [this.makeObjectParam(name, start, end)]);
   }
 
-  private async execute(verb: Component, parameter: CommandParameter): Promise<void> {
-    const id = new Uint8Array(4);
-    const idDataView = asDataView(id);
-    let key: string;
-    do {
-      idDataView.setUint32(0, Math.random() * 0xFFFFFFFF);
-      key = toHex(id);
-    } while (this.ongoing.has(key));
-    parameter.processId = id;
-    parameter.checkPrefix = this.publisher.pubPrefix;
-    parameter.fwHint = this.publisher.pubPrefix;
-
-    const checkTopic = parameter.checkPrefix.append(CheckVerb, new Component(undefined, id));
-    const sub = this.subscriber.subscribe(checkTopic);
-    this.ongoing.set(key, sub);
-    try {
-      const commandTopic = this.repoPrefix.append(verb);
-      await this.publisher.publish(commandTopic, parameter);
-
-      const subAlive = itKeepAlive<Data | false>(
-        () => false,
-        { timeout: this.progressTimeout },
-      )(sub);
-
-      for await (const data of subAlive) {
-        if (data === false) {
-          throw new Error("command timeout");
-        }
-        const response = Decoder.decode(data.content, CommandResponse);
-        if (response.statusCode === 200) {
-          break;
-        }
-      }
-    } finally {
-      sub.close();
-      this.ongoing.delete(key);
+  private makeObjectParam(name: Name, start?: number, end?: number): ObjectParam {
+    const p = new ObjectParam();
+    p.name = name;
+    if (start !== undefined) {
+      p.startBlockId = start;
     }
+    if (Number.isFinite(end)) {
+      p.endBlockId = end;
+    }
+    p.fwHint = this.fwHint;
+    return p;
+  }
+
+  private async execute(verb: Verb, objectParams: readonly ObjectParam[]): Promise<void> {
+    const p = new CommandParam();
+    p.objectParams.push(...objectParams);
+    const request = Encoder.encode(p);
+    const requestDigest = await sha256(request);
+    const requestDigestHex = toHex(requestDigest);
+
+    await this.publisher.publish(this.repoPrefix.append(verb.action), request);
+    const checkParam = new StatQuery();
+    checkParam.requestDigest = requestDigest;
+
+    const t0 = Date.now();
+    while (Date.now() < t0 + this.progressTimeout) {
+      const checkInterest = new Interest();
+      checkInterest.name = this.repoPrefix.append(verb.check);
+      checkInterest.appParameters = Encoder.encode(checkParam);
+      checkSIP.update(checkInterest, this);
+      await digestSigning.sign(checkInterest);
+
+      const checkData = await this.endpoint.consume(checkInterest, {
+        describe: `pyrepo-check(${this.repoPrefix} ${requestDigestHex})`,
+      });
+
+      const res = Decoder.decode(checkData.content, CommandRes);
+      if (res.statusCode >= 400) {
+        throw new Error(`RepoCommandRes ${res.statusCode}`);
+      }
+      if (res.statusCode === 200) {
+        return;
+      }
+      await delay(1000);
+    }
+    throw new Error("command timeout");
   }
 }
 
 export namespace PyRepoClient {
-  export interface Options extends PrpsPublisher.Options, PrpsSubscriber.Options {
+  export interface Options extends PrpsPublisher.Options {
     /**
      * Name prefix of the repo instance.
-     * This corresponds to ndn-python-repo.conf repo_config.repo_name key.
+     *
+     * @remarks
+     * This corresponds to **ndn-python-repo.conf** `.repo_config.repo_name` key.
      */
     repoPrefix: Name;
 
     /**
      * Progress update timeout in milliseconds.
      * If no progress update is received for this period of time, the command is deemed failed.
-     * Default is 10 seconds.
+     * @defaultValue 10 seconds
      */
     progressTimeout?: number;
   }

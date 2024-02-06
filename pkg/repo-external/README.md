@@ -3,19 +3,31 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package allows inserting and deleting Data in [ndn-python-repo](https://github.com/UCLA-IRL/ndn-python-repo).
-`PyRepoClient` type is a client for [ndn-python-repo protocol](https://github.com/UCLA-IRL/ndn-python-repo/tree/v0.2a5/docs/src/specification).
+`PyRepoClient` type is a client for [ndn-python-repo protocol](https://github.com/UCLA-IRL/ndn-python-repo/tree/dda1dce135a952498a2a79d3cddf9c3ee33399d0/docs/src/specification).
 `PyRepoStore` type implements a subset of `DataStore` interfaces defined in `@ndn/repo-api` package.
 
-This implementation is compatible with ndn-python-repo version 0.2a5.
-Newer versions of ndn-python-repo are not supported due to [ndn-python-repo issue #60](https://github.com/UCLA-IRL/ndn-python-repo/issues/60).
-To install the specified version, run:
+This implementation is compatible with ndn-python-repo `dda1dce1` (2024-02-04).
+To install and start the specified version, run:
 
 ```bash
-pip install ndn-python-repo==0.2a5 python-ndn==0.2b2.post1
+# create Python virtual environment
+python3 -m venv pyrepo-venv
+cd pyrepo-venv
+source ./bin/activate
+
+# install ndn-python-repo
+pip install git+https://github.com/UCLA-IRL/ndn-python-repo@dda1dce135a952498a2a79d3cddf9c3ee33399d0
+
+# run ndn-python-repo
+export NDN_CLIENT_TRANSPORT=unix:///run/nfd/nfd.sock
+ndn-python-repo
 ```
 
-As tested on 2023-02-16, this version of ndn-python-repo is no longer compatible with the latest NFD and NDNts.
-This is caused by changes in Interest ForwardingHint encoding.
+Current implementation is unoptimized.
+In particular, each insertion/deletion command is individually sent to the repo.
+Neither segmented nor bundled operation would be used.
+
+There are not tests, other than the demo below.
 
 ```ts
 import { PyRepoStore } from "@ndn/repo-external";
@@ -44,7 +56,7 @@ const store = new PyRepoStore({
 });
 
 const packets: Data[] = [];
-for (let i = 0; i < 1; ++i) {
+for (let i = 0; i < 100; ++i) {
   const data = new Data(dataPrefix.append(`${i}`));
   data.freshnessPeriod = 1;
   await digestSigning.sign(data);

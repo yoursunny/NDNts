@@ -2,7 +2,7 @@ import "../test-fixture/expect";
 
 import { expect, test } from "vitest";
 
-import { Decoder, Encoder, StructBuilder, StructFieldEnum, StructFieldNNI, StructFieldNNIBig, StructFieldText, StructFieldType } from "..";
+import { Decoder, Encoder, StructBuilder, StructFieldBytes, StructFieldEnum, StructFieldNNI, StructFieldNNIBig, StructFieldText, StructFieldType } from "..";
 
 test("basic", () => {
   const b = new StructBuilder("MyType", 0x40)
@@ -251,7 +251,8 @@ test("types", () => {
     .add(0x41, "a41", StructFieldNNI, { required: true })
     .add(0x42, "a42", StructFieldNNIBig, { required: true })
     .add(0x43, "a43", StructFieldEnum<MyEnum>(MyEnum), { required: true })
-    .add(0x44, "a44", StructFieldText, { required: true });
+    .add(0x44, "a44", StructFieldText, { required: true })
+    .add(0x45, "a45", StructFieldBytes, { required: true });
   class MyType extends b.baseClass<MyType>() {}
   b.subclass = MyType;
 
@@ -266,18 +267,21 @@ test("types", () => {
     "a42=0",
     "a43=0(unknown)",
     "a44=",
+    "a45=",
   ].join(" "));
 
   myObj.a41 = 0xAA41;
   myObj.a42 = 0xAA42n;
   myObj.a43 = MyEnum.Q;
   myObj.a44 = "AA44";
+  myObj.a45 = Uint8Array.of(0xAA, 0x45);
   expect(myObj.toString()).toBe([
     "MyType",
     `a41=${0xAA41}`,
     `a42=${0xAA42n}`,
     "a43=2(Q)",
     "a44=AA44",
+    "a45=AA45",
   ].join(" "));
 
   expect(myObj).toEncodeAs(
@@ -296,6 +300,10 @@ test("types", () => {
     ({ type, text }) => {
       expect(type).toBe(0x44);
       expect(text).toBe("AA44");
+    },
+    ({ type, value }) => {
+      expect(type).toBe(0x45);
+      expect(value).toEqualUint8Array([0xAA, 0x45]);
     },
   );
 });

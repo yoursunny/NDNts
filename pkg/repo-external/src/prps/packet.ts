@@ -1,35 +1,28 @@
-import { Component, Name, TT as l3TT } from "@ndn/packet";
-import { type Decoder, Encoder, EvDecoder } from "@ndn/tlv";
+import { Component, FwHint, Interest, type Name, StructFieldName, StructFieldNameNested, TT as l3TT } from "@ndn/packet";
+import { EvDecoder, StructBuilder, StructFieldBytes } from "@ndn/tlv";
 
 export const MsgSuffix = Component.from("msg");
 export const NotifySuffix = Component.from("notify");
 
-const TT = {
-  NotifyNonce: 0x80,
-  PublisherFwHint: 0xD3,
-} as const;
+const enum TT {
+  NotifyNonce = 0x80,
+  PublisherFwHint = 0xD3,
+}
 
-const EVD = new EvDecoder<NotifyParams>("NotifyParams")
-  .add(l3TT.Name, (t, { decoder }) => t.publisher = decoder.decode(Name))
-  .add(TT.NotifyNonce, (t, { value }) => t.nonce = value)
-  .add(TT.PublisherFwHint, (t, { vd }) => t.publisherFwHint = vd.decode(Name));
-
-export class NotifyParams {
-  public static decodeFrom(decoder: Decoder): NotifyParams {
-    return EVD.decodeValue(new NotifyParams(new Name(), new Uint8Array()), decoder);
-  }
-
-  constructor(
-      public publisher: Name,
-      public nonce: Uint8Array,
-      public publisherFwHint?: Name,
-  ) {}
-
-  public encodeTo(encoder: Encoder) {
-    encoder.prependValue(
-      this.publisher,
-      [TT.NotifyNonce, this.nonce],
-      [TT.PublisherFwHint, Encoder.OmitEmpty, this.publisherFwHint],
-    );
+const buildNotifyAppParam = new StructBuilder("NotifyAppParam")
+  .add(l3TT.Name, "publisher", StructFieldName, { required: true })
+  .add(TT.NotifyNonce, "nonce", StructFieldBytes, { required: true })
+  .add(TT.PublisherFwHint, "publisherFwHint", StructFieldNameNested)
+  .setIsCritical(EvDecoder.alwaysCritical);
+/** ndn-python-repo PubSub NotifyAppParam struct. */
+export class NotifyAppParam extends buildNotifyAppParam.baseClass<NotifyAppParam>() {
+  /** Create a message Interest from enclosed publisher information. */
+  public makeMsgInterest(topic: Name): Interest {
+    const interest = new Interest();
+    interest.name = this.publisher.append(
+      MsgSuffix, ...topic.comps, new Component(undefined, this.nonce));
+    interest.fwHint = this.publisherFwHint && new FwHint(this.publisherFwHint);
+    return interest;
   }
 }
+buildNotifyAppParam.subclass = NotifyAppParam;
