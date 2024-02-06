@@ -1,6 +1,6 @@
 import { exitClosers, openUplinks } from "@ndn/cli-common";
 import { Data, Name } from "@ndn/packet";
-import { makeSyncpsCompatParam, SyncpsPubsub } from "@ndn/sync";
+import { makeSyncpsCompatParam, SyncpsPubsub } from "@ndn/psync";
 import { console } from "@ndn/util";
 
 const syncPrefix = new Name("/syncps-interop");

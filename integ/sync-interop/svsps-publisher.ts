@@ -2,7 +2,7 @@ import { exitClosers } from "@ndn/cli-common";
 import { Timestamp } from "@ndn/naming-convention2";
 import { digestSigning, Name } from "@ndn/packet";
 import { DataStore } from "@ndn/repo";
-import { SvPublisher } from "@ndn/sync";
+import { SvPublisher } from "@ndn/svs";
 import { console, crypto, toHex, toUtf8 } from "@ndn/util";
 import memdown from "memdown";
 

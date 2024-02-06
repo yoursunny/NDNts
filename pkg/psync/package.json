@@ -35,7 +35,7 @@
     "@ndn/util": "workspace:*",
     "@yoursunny/psync-bloom": "github:yoursunny/PSyncBloom-wasm#build",
     "applymixins": "^1.1.0",
-    "mnemonist": "^0.39.7",
+    "mnemonist": "^0.39.8",
     "murmurhash3js-revisited": "^3.0.0",
     "obliterator": "^2.0.4",
     "p-defer": "^4.0.0",

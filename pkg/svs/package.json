@@ -45,6 +45,6 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/repo": "workspace:*",
     "memdown": "^6.1.1",
-    "mnemonist": "^0.39.7"
+    "mnemonist": "^0.39.8"
   }
 }

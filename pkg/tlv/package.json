@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@ndn/util": "workspace:*",
-    "mnemonist": "^0.39.7",
+    "mnemonist": "^0.39.8",
     "tslib": "^2.6.2",
     "type-fest": "^4.10.2"
   }

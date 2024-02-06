@@ -39,8 +39,8 @@ export interface ProducerOptions {
    *
    * @remarks
    * If all nexthops of a FIB entry are set to non-capture, FIB lookup may continue onto nexthops
-   * on FIB entries with shorter prefixes. One use case is in `@ndn/sync` package, where both local
-   * and remote sync participants want to receive each other's Interests.
+   * on FIB entries with shorter prefixes. One use case is in dataset synchronization protocols,
+   * where both local and remote sync participants want to receive each other's Interests.
    */
   routeCapture?: boolean;
 

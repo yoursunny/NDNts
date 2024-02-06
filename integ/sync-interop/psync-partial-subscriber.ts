@@ -1,6 +1,6 @@
 import { exitClosers, openUplinks } from "@ndn/cli-common";
 import { Name } from "@ndn/packet";
-import { makePSyncCompatParam, PSyncPartialSubscriber, PSyncZlib, type Subscription } from "@ndn/sync";
+import { makePSyncCompatParam, PSyncPartialSubscriber, PSyncZlib, type Subscription } from "@ndn/psync";
 import { console } from "@ndn/util";
 
 const syncPrefix = new Name("/psync-interop");

@@ -1,7 +1,7 @@
 import { exitClosers, openUplinks } from "@ndn/cli-common";
 import { createSigner, createVerifier, HMAC } from "@ndn/keychain";
 import { Name } from "@ndn/packet";
-import { SvSync } from "@ndn/sync";
+import { SvSync } from "@ndn/svs";
 
 export const syncPrefix = new Name("/ndn/svs");
 export const myID = new Name(`/${process.pid}-${Date.now()}`);

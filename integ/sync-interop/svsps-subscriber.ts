@@ -1,6 +1,6 @@
 import { exitClosers } from "@ndn/cli-common";
 import { digestSigning, Name } from "@ndn/packet";
-import { SvSubscriber } from "@ndn/sync";
+import { SvSubscriber } from "@ndn/svs";
 import { console, fromUtf8 } from "@ndn/util";
 
 import { openSvSync } from "./svs-common";

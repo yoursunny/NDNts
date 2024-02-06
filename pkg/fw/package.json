@@ -30,7 +30,7 @@
     "@ndn/util": "workspace:*",
     "@types/retry": "^0.12.5",
     "hirestime": "^7.0.3",
-    "mnemonist": "^0.39.7",
+    "mnemonist": "^0.39.8",
     "retry": "^0.13.1",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",

@@ -1,4 +1,4 @@
-# `@ndn/sync` Interoperability Test
+# `@ndn/psync` and `@ndn/svs` Interoperability Test
 
 ## PSync
 
