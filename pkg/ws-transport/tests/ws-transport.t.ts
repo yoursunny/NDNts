@@ -94,7 +94,7 @@ test("TX throttle", async () => {
 
 test("connect error", async () => {
   const { uri } = server;
-  await server[Symbol.asyncDispose](); // eslint-disable-line no-use-extend-native/no-use-extend-native
+  await server[Symbol.asyncDispose]();
   await expect(WsTransport.connect(uri, { connectTimeout: 500 })).rejects.toThrow();
 });
 

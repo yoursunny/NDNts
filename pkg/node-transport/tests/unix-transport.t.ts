@@ -29,7 +29,7 @@ test("pair", async () => {
 
 test("connect error", async () => {
   const path = server.path;
-  await server[Symbol.asyncDispose](); // eslint-disable-line no-use-extend-native/no-use-extend-native
+  await server[Symbol.asyncDispose]();
   await expect(UnixTransport.connect(path)).rejects.toThrow();
 });
 

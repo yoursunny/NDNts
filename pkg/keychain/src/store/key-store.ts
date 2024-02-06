@@ -24,7 +24,7 @@ export class KeyStore extends StoreBase<KeyStore.StoredKey> {
       throw new Error(`unknown algorithm uuid ${stored.algo}`);
     }
 
-    if (stored.publicKeySpki) {
+    if (stored.publicKeySpki !== undefined) {
       stored.publicKeySpki = this.bufferToStorable(stored.publicKeySpki);
     }
     await this.insertValue(name, stored);

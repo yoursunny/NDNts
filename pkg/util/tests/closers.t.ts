@@ -1,7 +1,3 @@
-/* eslint-disable no-use-extend-native/no-use-extend-native --
- * Symbol.dispose and Symbol.asyncDispose are polyfilled
-**/
-
 import { expect, test, vi } from "vitest";
 
 import { Closers, delay } from "..";

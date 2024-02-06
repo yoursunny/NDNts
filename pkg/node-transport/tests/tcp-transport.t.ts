@@ -30,7 +30,7 @@ test("pair", async () => {
 
 test("connect error", async () => {
   const port = server.port;
-  await server[Symbol.asyncDispose](); // eslint-disable-line no-use-extend-native/no-use-extend-native
+  await server[Symbol.asyncDispose]();
   await Promise.all([
     expect(TcpTransport.connect("localhost", port, { connectTimeout: 500 })).rejects.toThrow(),
     expect(TcpTransport.connect({ port, connectTimeout: 500 })).rejects.toThrow(),

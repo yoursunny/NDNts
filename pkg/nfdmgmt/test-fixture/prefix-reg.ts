@@ -54,7 +54,7 @@ export class FakeNfd extends TcpServer {
 
   public override [Symbol.asyncDispose]() {
     this.fw.close();
-    return super[Symbol.asyncDispose](); // eslint-disable-line no-use-extend-native/no-use-extend-native
+    return super[Symbol.asyncDispose]();
   }
 
   /** Wait until at least n clients are connected, and enable PrefixRegServer on them. */

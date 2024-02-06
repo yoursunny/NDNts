@@ -45,6 +45,7 @@ export interface Forwarder extends TypedEventTarget<EventMap> {
   close(): void;
 }
 export namespace Forwarder {
+  /** {@link Forwarder.create} options. */
   export interface Options {
     /** Whether to try matching Data without PIT token. */
     dataNoTokenMatch?: boolean;
@@ -54,27 +55,25 @@ export namespace Forwarder {
     dataNoTokenMatch: true,
   };
 
-  /** Create a new forwarding plane. */
+  /** Create a new logical forwarder. */
   export function create(options?: Options): Forwarder {
     return new ForwarderImpl({ ...DefaultOptions, ...options });
   }
 
   let defaultInstance: Forwarder | undefined;
 
-  /** Access the default forwarding plane instance. */
+  /** Access the default logical forwarder instance. */
   export function getDefault(): Forwarder {
-    if (!defaultInstance) {
-      defaultInstance = Forwarder.create();
-    }
+    defaultInstance ??= create();
     return defaultInstance;
   }
 
-  /** Replace the default forwarding plane instance. */
+  /** Replace the default logical forwarder instance. */
   export function replaceDefault(fw?: Forwarder): void {
     defaultInstance = fw;
   }
 
-  /** Close and delete default instance (mainly for unit testing). */
+  /** Close and delete the default logical forwarder instance (mainly for unit testing). */
   export function deleteDefault() {
     defaultInstance?.close();
     defaultInstance = undefined;
