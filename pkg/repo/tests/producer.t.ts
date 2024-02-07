@@ -37,41 +37,45 @@ function* listAnnounced(): Iterable<Name> {
 
 test("simple", async () => {
   await insertData("/A/1", "/A/2", "/A/3", "/B/4");
-  const producer = RepoProducer.create(store, {
-    reg: PrefixRegStatic(new Name("/A"), new Name("/B")),
-  });
-  await delay(50);
-  expect(listAnnounced()).toEqualNames(["/A", "/B"]);
 
-  const endpoint = new Endpoint();
-  await Promise.all([
-    expect(endpoint.consume(new Interest("/A/0", Interest.Lifetime(100)))).rejects.toThrow(),
-    expect(endpoint.consume("/A/1")).resolves.toHaveName("/A/1"),
-    expect(endpoint.consume(new Interest("/B", Interest.CanBePrefix))).resolves.toHaveName("/B/4"),
-  ]);
+  {
+    using producer = RepoProducer.create(store, {
+      reg: PrefixRegStatic(new Name("/A"), new Name("/B")),
+    });
+    await delay(50);
+    expect(listAnnounced()).toEqualNames(["/A", "/B"]);
 
-  producer.close();
+    const endpoint = new Endpoint();
+    await Promise.all([
+      expect(endpoint.consume(new Interest("/A/0", Interest.Lifetime(100)))).rejects.toThrow(),
+      expect(endpoint.consume("/A/1")).resolves.toHaveName("/A/1"),
+      expect(endpoint.consume(new Interest("/B", Interest.CanBePrefix))).resolves.toHaveName("/B/4"),
+    ]);
+  }
+
   await delay(50);
   expect(listAnnounced()).toEqualNames([]);
 });
 
 test("prefixreg shorter", async () => {
   await insertData("/A/B/1", "/A/B/2", "/C/D/3");
-  const producer = RepoProducer.create(store, {
-    reg: PrefixRegShorter(1),
-  });
-  await delay(50);
-  expect(listAnnounced()).toEqualNames(["/A/B", "/C/D"]);
 
-  await insertData("/C/D/4", "/E/F/1");
-  await delay(50);
-  expect(listAnnounced()).toEqualNames(["/A/B", "/C/D", "/E/F"]);
+  {
+    using producer = RepoProducer.create(store, {
+      reg: PrefixRegShorter(1),
+    });
+    await delay(50);
+    expect(listAnnounced()).toEqualNames(["/A/B", "/C/D"]);
 
-  await store.delete(new Name("/C/D/3"), new Name("/C/D/4"));
-  await delay(50);
-  expect(listAnnounced()).toEqualNames(["/A/B", "/E/F"]);
+    await insertData("/C/D/4", "/E/F/1");
+    await delay(50);
+    expect(listAnnounced()).toEqualNames(["/A/B", "/C/D", "/E/F"]);
 
-  producer.close();
+    await store.delete(new Name("/C/D/3"), new Name("/C/D/4"));
+    await delay(50);
+    expect(listAnnounced()).toEqualNames(["/A/B", "/E/F"]);
+  }
+
   await delay(50);
   expect(listAnnounced()).toEqualNames([]);
 });
@@ -82,11 +86,13 @@ test("prefixreg strip non-generic", async () => {
     new Name("/B").append(Version, 1).append(Segment, 0),
     "/J/K",
   );
-  const producer = RepoProducer.create(store);
-  await delay(50);
-  expect(listAnnounced()).toEqualNames(["/A", "/B", "/J/K"]);
 
-  producer.close();
+  {
+    using producer = RepoProducer.create(store);
+    await delay(50);
+    expect(listAnnounced()).toEqualNames(["/A", "/B", "/J/K"]);
+  }
+
   await delay(50);
   expect(listAnnounced()).toEqualNames([]);
 });
@@ -97,17 +103,19 @@ test("prefixreg strip custom", async () => {
     new Name("/B").append(Version, 1).append(SequenceNum, 4),
     "/8=J/8=K/8=L",
   );
-  const producer = RepoProducer.create(store, {
-    reg: PrefixRegStrip(Segment, "K", Component.from("L")),
-  });
-  await delay(50);
-  expect(listAnnounced()).toEqualNames([
-    new Name("/A").append(Version, 1),
-    new Name("/B").append(Version, 1).append(SequenceNum, 4),
-    "/J",
-  ]);
 
-  producer.close();
+  {
+    using producer = RepoProducer.create(store, {
+      reg: PrefixRegStrip(Segment, "K", Component.from("L")),
+    });
+    await delay(50);
+    expect(listAnnounced()).toEqualNames([
+      new Name("/A").append(Version, 1),
+      new Name("/B").append(Version, 1).append(SequenceNum, 4),
+      "/J",
+    ]);
+  }
+
   await delay(50);
   expect(listAnnounced()).toEqualNames([]);
 });
@@ -120,13 +128,12 @@ test("respondRdr", async () => {
     new Name("/A/2").append(Version, 8),
     new Name("/A").append(Version, 4),
   );
-  const producer = RepoProducer.create(store, {
+
+  using producer = RepoProducer.create(store, {
     reg: PrefixRegStatic(new Name("/A")),
     fallback: respondRdr(),
   });
 
   const metadata = await retrieveMetadata("/A");
   expect(metadata.name).toEqualName(new Name("/A").append(Version, 6));
-
-  producer.close();
 });

@@ -26,7 +26,11 @@ It implements most of `DataStore` interfaces defined in `@ndn/repo-api` package,
 // DataStore constructor accepts an abstract-leveldown instance.
 // For in-memory storage, use 'memdown'.
 // For persistent storage, use 'leveldown' in Node.js or 'level-js' in browsers.
-const store = new DataStore(memdown());
+//
+// DataStore type implements AsyncDisposable interface. With `await using` keyword, the DataStore
+// is closed when the variable goes out of scope. Alternatively, you can invoke
+// `await store[Symbol.asyncDispose]()` explicitly.
+await using store = new DataStore(memdown());
 
 // Insert Data packets.
 await store.insert(new Data("/A/0"));
@@ -69,9 +73,14 @@ assert.equal(rA3, undefined);
 // See test cases for more options.
 // These registrations stay with NDNts forwarding plane. Typically you'll want a package such as
 // @ndn/nfdmgmt to propagate them to the uplink(s).
-const p = RepoProducer.create(store, { reg: PrefixRegShorter(1) });
-
-// Close the RepoProducer and the DataStore.
-p.close();
-await store.close();
+//
+//
+// RepoProducer type implements Disposable interface. With `using` keyword, the RepoProducer
+// is closed when the variable goes out of scope. Alternatively, you can invoke
+// `repoProducer[Symbol.dispose]()` explicitly.
+//
+// DataStore and RepoProducer are independent. Closing the RepoProducer does not close the
+// DataStore. Closing the DataStore does not close the RepoProducer, but RepoProducer could
+// misbehave if it's attached to a closed DataStore.
+using repoProducer = RepoProducer.create(store, { reg: PrefixRegShorter(1) });
 ```

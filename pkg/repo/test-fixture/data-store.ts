@@ -1,5 +1,5 @@
 import type { Data } from "@ndn/packet";
-import { delay } from "@ndn/util";
+import { Closers, delay } from "@ndn/util";
 import memdown from "memdown";
 
 import { DataStore, PrefixRegShorter, RepoProducer } from "..";
@@ -31,16 +31,12 @@ export async function makeRepoProducer(
     reg: PrefixRegShorter(0),
     ...opts,
   });
+  const closers = new Closers(store, producer);
   await delay(10); // allow prefix registrations to take effect
   return {
     store,
     producer,
-    async close() {
-      try {
-        await store.close();
-        producer.close();
-      } catch {}
-    },
+    close: closers.close,
   };
 }
 

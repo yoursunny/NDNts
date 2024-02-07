@@ -1,4 +1,4 @@
-import { Endpoint, type Producer as EpProducer, type ProducerHandler } from "@ndn/endpoint";
+import { Endpoint, type Producer as EndpointProducer, type ProducerHandler } from "@ndn/endpoint";
 import type { Data, Interest } from "@ndn/packet";
 import type { Closer } from "@ndn/util";
 
@@ -6,25 +6,26 @@ import type { DataStore } from "./data-store";
 import { type PrefixRegController, PrefixRegStrip } from "./prefix-reg/mod";
 
 /** Make packets in {@link DataStore} available for retrieval. */
-export class Producer {
+export class RepoProducer implements Disposable {
   public static create(store: DataStore, {
     endpoint = new Endpoint(),
     describe = "repo",
     fallback = async () => undefined,
     reg = PrefixRegStrip(PrefixRegStrip.stripNonGeneric),
-  }: Producer.Options = {}) {
-    return new Producer(store, endpoint, describe, fallback, reg);
+  }: RepoProducer.Options = {}) {
+    return new RepoProducer(store, endpoint, describe, fallback, reg);
   }
 
-  private readonly prod: EpProducer;
+  private readonly prod: EndpointProducer;
   private readonly reg: Closer;
 
   private constructor(
       private readonly store: DataStore,
       endpoint: Endpoint,
       describe: string,
-      private readonly fallback: Producer.FallbackHandler,
-      reg: PrefixRegController) {
+      private readonly fallback: RepoProducer.FallbackHandler,
+      reg: PrefixRegController,
+  ) {
     this.prod = endpoint.produce(undefined, this.processInterest, { describe });
     this.fallback = fallback;
     this.reg = reg(store, this.prod.face);
@@ -34,7 +35,7 @@ export class Producer {
    * Close the producer and prefix registration controller.
    * This does not close the DataStore.
    */
-  public close(): void {
+  public [Symbol.dispose](): void {
     this.reg.close();
     this.prod.close();
   }
@@ -45,8 +46,8 @@ export class Producer {
   };
 }
 
-export namespace Producer {
-  /** {@link Producer.create} options. */
+export namespace RepoProducer {
+  /** {@link RepoProducer.create} options. */
   export interface Options {
     /**
      * Endpoint for communication.
@@ -72,5 +73,5 @@ export namespace Producer {
     reg?: PrefixRegController;
   }
 
-  export type FallbackHandler = (interest: Interest, producer: Producer, store: DataStore) => Promise<Data | undefined>;
+  export type FallbackHandler = (interest: Interest, producer: RepoProducer, store: DataStore) => Promise<Data | undefined>;
 }
