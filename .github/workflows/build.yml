@@ -21,7 +21,6 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - run: corepack pnpm build
-      - run: corepack pnpm literate
       - run: corepack pnpm lint
     timeout-minutes: 30
   unittest:
@@ -58,7 +57,7 @@ jobs:
         env:
           NODE_OPTIONS: --experimental-websocket
         if: ${{ matrix.node == 20 }}
-      - uses: coverallsapp/github-action@master
+      - uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
         if: ${{ matrix.node == 20 }}
