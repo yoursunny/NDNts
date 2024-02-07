@@ -11,13 +11,9 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { DataStore } from "..";
 import { makeDataStore } from "../test-fixture/data-store";
 
-let store: DataStore;
-beforeEach(async () => {
-  store = await makeDataStore();
-  return async () => { await store.close(); };
-});
-
 test("insert get delete", async () => {
+  await using store = await makeDataStore();
+
   await store.insert(new Data("/A/1"), new Data("/A/2"));
   await expect(store.get(new Name("/A/0"))).resolves.toBeUndefined();
   await expect(store.get(new Name("/A/1"))).resolves.toHaveName("/A/1");
@@ -36,6 +32,8 @@ describe("segmented object", () => {
   afterEach(Endpoint.deleteDefaultForwarder);
 
   test("insert", async () => {
+    await using store = await makeDataStore();
+
     const body = makeObjectBody(500 * 25);
     const producer = serve("/S", new BufferChunkSource(body, { chunkSize: 500 }));
     await store.insert(fetch("/S"));
@@ -45,6 +43,8 @@ describe("segmented object", () => {
 });
 
 test("list find expire", async () => {
+  await using store = await makeDataStore();
+
   const expireTime = Date.now() + 600;
   await Promise.all([
     store.insert(new Data("/A/1")),
@@ -76,6 +76,8 @@ test("list find expire", async () => {
 });
 
 test("events", async () => {
+  await using store = await makeDataStore();
+
   const onInsert = vi.fn<[DataStore.RecordEvent], void>();
   const onDelete = vi.fn<[DataStore.RecordEvent], void>();
   store.addEventListener("insert", onInsert);

@@ -1,5 +1,7 @@
 import "./polyfill_node";
 
+import type { Promisable } from "type-fest";
+
 export interface Closer {
   close(): void;
 }
@@ -15,15 +17,9 @@ export class Closers extends Array<Closer | Disposable | AsyncDisposable> implem
    * asyncDispose method is called but not awaited.
    * This array is cleared and can be reused.
    */
-  public close = () => {
+  public readonly close = () => {
     for (let i = this.length - 1; i >= 0; --i) {
-      const c: any = this[i]!;
-      for (const key of ["close", Symbol.dispose, Symbol.asyncDispose] as const) {
-        if (typeof c[key] === "function") {
-          c[key]();
-          break;
-        }
-      }
+      void Closers.close(this[i]);
     }
     this.splice(0, Infinity);
   };
@@ -43,5 +39,28 @@ export class Closers extends Array<Closer | Disposable | AsyncDisposable> implem
     return new Promise<void>((resolve) => {
       this.push({ close: () => resolve() });
     });
+  }
+}
+
+export namespace Closers {
+  /** Close or dispose an object. */
+  export function close(c: any): Promisable<void> {
+    for (const key of ["close", Symbol.dispose, Symbol.asyncDispose] as const) {
+      if (typeof c[key] === "function") {
+        return c[key]();
+      }
+    }
+  }
+
+  /** Convert a closable object to AsyncDisposable. */
+  export function asAsyncDisposable(c: Closer | Disposable | AsyncDisposable): AsyncDisposable {
+    if (typeof (c as any)[Symbol.asyncDispose] === "function") {
+      return c as AsyncDisposable;
+    }
+    return {
+      async [Symbol.asyncDispose]() {
+        await close(c);
+      },
+    };
   }
 }

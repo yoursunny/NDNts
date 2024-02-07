@@ -20,7 +20,7 @@ beforeEach(async () => {
   fw.addEventListener("annadd", ({ name }) => { announced.add(name); });
   fw.addEventListener("annrm", ({ name }) => { announced.remove(name); });
   return async () => {
-    await store.close();
+    await store[Symbol.asyncDispose]();
     Forwarder.deleteDefault();
   };
 });

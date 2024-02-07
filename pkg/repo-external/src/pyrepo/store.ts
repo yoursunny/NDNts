@@ -17,7 +17,7 @@ import { PyRepoClient } from "./client";
  * This DataStore does not have methods to read data. To read data in ndn-python-repo, send an
  * Interest to the network, and then ndn-python-repo is supposed to reply.
  */
-export class PyRepoStore implements S.Close, S.Insert, S.Delete {
+export class PyRepoStore implements Disposable, S.Insert, S.Delete {
   /**
    * Construct with new {@link PyRepoClient}.
    *
@@ -55,7 +55,7 @@ export class PyRepoStore implements S.Close, S.Insert, S.Delete {
   private readonly endpoint: Endpoint;
 
   /** Close the {@link PyRepoClient} only if it is created by this store. */
-  public async close(): Promise<void> {
+  public [Symbol.dispose](): void {
     if (this.ownsClient) {
       this.client.close();
     }

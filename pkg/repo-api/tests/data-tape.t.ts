@@ -5,7 +5,7 @@ import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
 import { BufferBreaker } from "@ndn/node-transport/test-fixture/buffer-breaker";
 import { Data, Interest, Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
-import { delay } from "@ndn/util";
+import { Closers, delay, randomJitter } from "@ndn/util";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect } from "streaming-iterables";
 import { dirSync as tmpDir } from "tmp";
@@ -98,9 +98,8 @@ async function testBulkInsertTarget(
   await bi.accept(makeDataTapeReadStream("read"));
   expect(storeInsert).toHaveBeenCalledTimes(16);
 
-  await tape.close();
+  await Closers.close(tape);
   const readback = new DataTape(new BufferReadableMock(retrieve()));
-  // XXX 2023-11-23 this is failing on Node 21.2 but passing on Node 21.1
   await expect(collect(readback.listData())).resolves.toHaveLength(500);
 }
 
@@ -121,8 +120,9 @@ test("BulkInsertInitiator", async () => {
     expect(evt.detail).toBeUndefined();
   });
   let n = 0;
+  const interval = randomJitter(0.5, 10);
   for (let i = 0; i < 10; ++i) {
-    await delay(Math.random() * 20);
+    await delay(interval());
     const pkts: Data[] = [];
     const count = Math.trunc(Math.random() * 64);
     for (let j = 0; j < count; ++j) {
@@ -130,6 +130,6 @@ test("BulkInsertInitiator", async () => {
     }
     await bi.insert(...pkts);
   }
-  await bi.close();
+  await Closers.close(bi);
   expect(transport.sent).toHaveLength(n);
 });

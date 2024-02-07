@@ -25,7 +25,7 @@ export class PrpsPublisher {
     pubSigner = digestSigning,
     notifyInterestLifetime = Interest.DefaultLifetime,
     notifyRetx = 2,
-  }: PrpsPublisher.Options) {
+  }: PrpsPublisher.Options = {}) {
     this.endpoint = endpoint;
     this.pubPrefix = pubPrefix;
     this.pubFwHint = pubFwHint;

@@ -74,3 +74,30 @@ test("disposable", () => {
   expect(c1[Symbol.asyncDispose]).not.toHaveBeenCalled();
   expect(c2[Symbol.asyncDispose]).toHaveBeenCalledOnce();
 });
+
+test("asAsyncDisposable", async () => {
+  const c0 = {
+    close: vi.fn<[], void>(),
+  };
+  {
+    await using d0 = Closers.asAsyncDisposable(c0);
+  }
+  expect(c0.close).toHaveBeenCalledOnce();
+
+  const c1 = {
+    [Symbol.dispose]: vi.fn<[], void>(),
+  };
+  {
+    await using d1 = Closers.asAsyncDisposable(c1);
+  }
+  expect(c1[Symbol.dispose]).toHaveBeenCalledOnce();
+
+  const c2 = {
+    [Symbol.asyncDispose]: vi.fn<[], Promise<void>>().mockResolvedValue(),
+  };
+  {
+    await using d2 = Closers.asAsyncDisposable(c2);
+    expect(d2).toBe(c2);
+  }
+  expect(c2[Symbol.asyncDispose]).toHaveBeenCalledOnce();
+});

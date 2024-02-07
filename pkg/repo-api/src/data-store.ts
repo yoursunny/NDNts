@@ -1,12 +1,6 @@
 import { Data, type Interest, type Name } from "@ndn/packet";
 import type { AnyIterable } from "streaming-iterables";
 
-/** DataStore interface, close method. */
-export interface Close {
-  /** Close the store. */
-  close(): Promise<void>;
-}
-
 /** DataStore interface, listNames method. */
 export interface ListNames {
   /** List Data names, optionally filtered by name prefix. */

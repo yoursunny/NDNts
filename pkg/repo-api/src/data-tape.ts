@@ -138,13 +138,13 @@ export class DataTape implements DataTape.Reader, DataTape.Writer {
     return this.findFirst((data) => data.canSatisfy(interest));
   }
 
-  public close(): Promise<void> {
-    return this.closeCurrentWriter();
-  }
-
   public insert(...args: S.Insert.Args<{}>): Promise<void> {
     const { pkts } = S.Insert.parseArgs<{}>(args);
     return this.useWriter((write) => write(pkts));
+  }
+
+  public [Symbol.asyncDispose](): Promise<void> {
+    return this.closeCurrentWriter();
   }
 }
 
@@ -156,8 +156,8 @@ export namespace DataTape {
   export type OpenStream = (mode: StreamMode) => NodeJS.ReadableStream | NodeJS.WritableStream;
 
   /** Interface of {@link DataTape} read operations. */
-  export type Reader = S.Close & S.ListNames & S.ListData & S.Get & S.Find;
+  export type Reader = S.ListNames & S.ListData & S.Get & S.Find & AsyncDisposable;
 
   /** Interface of {@link DataTape} write operations. */
-  export type Writer = S.Close & S.Insert;
+  export type Writer = S.Insert & AsyncDisposable;
 }

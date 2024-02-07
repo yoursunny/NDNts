@@ -20,7 +20,7 @@ const kMaybeHaveEventListener = Symbol("@ndn/repo#DataStore.maybeHaveEventListen
 
 /** Data packet storage based on LevelDB or other abstract-leveldown store. */
 export class DataStore extends TypedEventTarget<EventMap>
-  implements S.Close, S.ListNames, S.ListData, S.Get, S.Find, S.Insert<DataStore.InsertOptions>, S.Delete {
+  implements AsyncDisposable, S.ListNames, S.ListData, S.Get, S.Find, S.Insert<DataStore.InsertOptions>, S.Delete {
   private readonly db: Db;
   public readonly mutex = throat(1);
   public readonly [kMaybeHaveEventListener] = trackEventListener(this);
@@ -35,7 +35,7 @@ export class DataStore extends TypedEventTarget<EventMap>
   }
 
   /** Close the store. */
-  public close(): Promise<void> {
+  public [Symbol.asyncDispose](): Promise<void> {
     return this.db.close();
   }
 

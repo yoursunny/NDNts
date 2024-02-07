@@ -33,7 +33,8 @@
     "event-iterator": "^2.0.0",
     "minimalistic-assert": "^1.0.1",
     "streaming-iterables": "^8.0.1",
-    "tslib": "^2.6.2"
+    "tslib": "^2.6.2",
+    "type-fest": "^4.10.2"
   },
   "devDependencies": {
     "@types/tmp": "^0.2.6",

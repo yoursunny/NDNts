@@ -37,6 +37,7 @@ import { L3Face } from "@ndn/l3face";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { UnixTransport } from "@ndn/node-transport";
 import { Data, digestSigning, Name } from "@ndn/packet";
+import { Closers } from "@ndn/util";
 
 const repoPrefix = process.env.DEMO_PYREPO_PREFIX;
 if (!repoPrefix) {
@@ -49,9 +50,10 @@ if (!repoPrefix) {
 const dataPrefix = new Name(`/NDNts-repo-external/${Math.trunc(Math.random() * 1e8)}`);
 
 const face = await UnixTransport.createFace({}, process.env.DEMO_NFD_UNIX ?? "/run/nfd/nfd.sock");
+await using faceDispose = Closers.asAsyncDisposable(face);
 enableNfdPrefixReg(face);
 
-const store = new PyRepoStore({
+await using store = new PyRepoStore({
   repoPrefix: new Name(repoPrefix),
 });
 
@@ -67,7 +69,6 @@ console.log(`Inserting ${packets.length} packets under ${dataPrefix} to ${repoPr
 try {
   await store.insert(...packets);
 } finally {
-  await store.close();
   face.close();
 }
 ```

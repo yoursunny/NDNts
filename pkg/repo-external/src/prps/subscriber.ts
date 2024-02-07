@@ -14,7 +14,7 @@ export class PrpsSubscriber {
     pubVerifier,
     subAnnouncement,
     subSigner = digestSigning,
-  }: PrpsSubscriber.Options) {
+  }: PrpsSubscriber.Options = {}) {
     this.endpoint = endpoint;
     this.msgInterestLifetime = msgInterestLifetime;
     this.msgRetx = msgRetx;
@@ -35,6 +35,54 @@ export class PrpsSubscriber {
       this.msgInterestLifetime, this.msgRetx, this.pubVerifier,
       this.subAnnouncement, this.subSigner);
   }
+}
+
+export namespace PrpsSubscriber {
+  export interface Options {
+    /**
+     * Endpoint for communication.
+     * @defaultValue
+     * Endpoint on default logical forwarder.
+     */
+    endpoint?: Endpoint;
+
+    /** InterestLifetime of msg Interests. */
+    msgInterestLifetime?: number;
+
+    /**
+     * Retransmission policy of msg Interests.
+     * @defaultValue 2 retransmissions
+     */
+    msgRetx?: RetxPolicy;
+
+    /**
+     * Verifier for publications.
+     * @defaultValue no verification
+     */
+    pubVerifier?: Verifier;
+
+    /**
+     * Set to false to disable prefix announcements for receiving notify Interests.
+     *
+     * @remarks
+     * This should be set only if the application already has a prefix announcement that covers
+     * the `topic` of each subscription.
+     */
+    subAnnouncement?: false;
+
+    /**
+     * Key to sign notify Data.
+     * @defaultValue `digestSigning`
+     */
+    subSigner?: Signer;
+  }
+
+  export type Subscription = AsyncIterable<Data> & {
+    readonly topic: Name;
+
+    /** Unsubscribe. */
+    close(): void;
+  };
 }
 
 class Subscription implements PrpsSubscriber.Subscription {
@@ -85,53 +133,5 @@ class Subscription implements PrpsSubscriber.Subscription {
     this.messages.push(msgData);
 
     return new Data(interest.name);
-  };
-}
-
-export namespace PrpsSubscriber {
-  export interface Options {
-    /**
-     * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder.
-     */
-    endpoint?: Endpoint;
-
-    /** InterestLifetime of msg Interests. */
-    msgInterestLifetime?: number;
-
-    /**
-     * Retransmission policy of msg Interests.
-     * @defaultValue 2 retransmissions
-     */
-    msgRetx?: RetxPolicy;
-
-    /**
-     * Verifier for publications.
-     * @defaultValue no verification
-     */
-    pubVerifier?: Verifier;
-
-    /**
-     * Set to false to disable prefix announcements for receiving notify Interests.
-     *
-     * @remarks
-     * This should be set only if the application already has a prefix announcement that covers
-     * the `topic` of each subscription.
-     */
-    subAnnouncement?: false;
-
-    /**
-     * Key to sign notify Data.
-     * @defaultValue `digestSigning`
-     */
-    subSigner?: Signer;
-  }
-
-  export type Subscription = AsyncIterable<Data> & {
-    readonly topic: Name;
-
-    /** Unsubscribe. */
-    close(): void;
   };
 }

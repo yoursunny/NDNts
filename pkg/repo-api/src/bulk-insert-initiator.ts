@@ -17,7 +17,7 @@ type EventMap = {
 };
 
 /** Send packets to a bulk insertion target. */
-export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S.Close, S.Insert {
+export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S.Insert, AsyncDisposable {
   private readonly queue = pushable<Burst>();
   private readonly faceTx: Promise<void>;
 
@@ -43,7 +43,7 @@ export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S
    * @remarks
    * `.insert()` cannot be called after this.
    */
-  public async close(): Promise<void> {
+  public async [Symbol.asyncDispose](): Promise<void> {
     this.queue.stop();
     await this.faceTx;
   }

@@ -10,5 +10,8 @@ export * from "./respond-rdr";
  * @remarks
  * Each DataStore implementation may support a subset of DataStore API. The supported methods
  * are expressed as a union of these interfaces.
+ *
+ * There isn't a `.close()` method. A DataStore may implement `Disposable` or `AsyncDisposable`
+ * if it should be explicitly closed.
  */
 export * as DataStore from "./data-store";
