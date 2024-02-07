@@ -3,6 +3,7 @@ import type { NameLike } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 import { assert, Closers, delay, pushable, randomJitter } from "@ndn/util";
 import { filter, map, pipeline, transform } from "streaming-iterables";
+import { type Except } from "type-fest";
 
 import { L3Face } from "./l3face";
 import { Transport } from "./transport";
@@ -224,4 +225,35 @@ export namespace Bridge {
   } & {
     [k in `face${A | B}`]: FwFace;
   };
+
+  /** {@link star} options, where each edge/leaf can have different options. */
+  export type StarEdgeOptions = Except<CreateOptions, "fwA">;
+
+  /** {@link star} options, where every edge/leaf has the same options. */
+  export type StarOptions = Except<StarEdgeOptions, "fwB"> & {
+    /** Number of leaf nodes. */
+    leaves: number;
+  };
+
+  /**
+   * Create a star topology made with bridges.
+   * @param opts - Per-leaf options.
+   * @param fwA - Center logical forwarder node.
+   *
+   * @remarks
+   * The star topology consists of `fwA` as the center node, and `fwB`s from each of `opts` as
+   * leaf nodes. A-to-B goes toward the leaf; B-to-A goes toward the center.
+   */
+  export function star(opts: StarOptions | readonly StarEdgeOptions[], fwA = Forwarder.create()): Bridge[] {
+    if (!Array.isArray(opts)) {
+      const a = Array.from<StarEdgeOptions>({ length: (opts as StarOptions).leaves });
+      a.fill(opts as StarOptions);
+      opts = a;
+    }
+    return opts.map((opt, i) => Bridge.create({
+      fwA,
+      bridgeName: `star[${i}]`,
+      ...opt,
+    }));
+  }
 }

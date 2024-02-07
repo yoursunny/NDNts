@@ -77,11 +77,8 @@ export namespace PrpsSubscriber {
     subSigner?: Signer;
   }
 
-  export type Subscription = AsyncIterable<Data> & {
+  export type Subscription = AsyncIterable<Data> & Disposable & {
     readonly topic: Name;
-
-    /** Unsubscribe. */
-    close(): void;
   };
 }
 
@@ -103,7 +100,7 @@ class Subscription implements PrpsSubscriber.Subscription {
     });
   }
 
-  public close(): void {
+  public [Symbol.dispose](): void {
     this.notifyProducer.close();
     this.messages.stop();
   }
@@ -112,8 +109,8 @@ class Subscription implements PrpsSubscriber.Subscription {
     return this.messages[Symbol.asyncIterator]();
   }
 
-  private notifyPrefix: Name;
-  private notifyProducer: Producer;
+  private readonly notifyPrefix: Name;
+  private readonly notifyProducer: Producer;
   private readonly messages = pushable<Data>();
 
   private readonly handleNotifyInterest: ProducerHandler = async (interest) => {

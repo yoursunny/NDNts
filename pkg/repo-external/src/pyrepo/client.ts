@@ -9,7 +9,7 @@ import { CommandParam, CommandRes, DeleteVerb, InsertVerb, ObjectParam, StatQuer
 const checkSIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce());
 
 /** Client to interact with ndn-python-repo. */
-export class PyRepoClient {
+export class PyRepoClient implements Disposable {
   constructor(opts: PyRepoClient.Options) {
     this.endpoint = opts.endpoint ?? new Endpoint();
     this.repoPrefix = opts.repoPrefix;
@@ -25,13 +25,13 @@ export class PyRepoClient {
   private readonly publisher: PrpsPublisher;
   private readonly fwHint: Name;
 
-  public close(): void {
+  public [Symbol.dispose](): void {
     const nodeNameIndex = this.endpoint.fw.nodeNames.findIndex((nodeName) => nodeName.equals(this.fwHint));
     if (nodeNameIndex >= 0) {
       this.endpoint.fw.nodeNames.splice(nodeNameIndex, 1);
     }
 
-    this.publisher.close();
+    this.publisher[Symbol.dispose]();
   }
 
   public async insert(name: Name): Promise<void> {

@@ -57,7 +57,7 @@ export class PyRepoStore implements Disposable, S.Insert, S.Delete {
   /** Close the {@link PyRepoClient} only if it is created by this store. */
   public [Symbol.dispose](): void {
     if (this.ownsClient) {
-      this.client.close();
+      this.client[Symbol.dispose]();
     }
   }
 

@@ -62,26 +62,21 @@ class Fixture {
   constructor(n: number, loss = 0) {
     assert(n >= 2);
 
-    const opts: PSyncFull.Options = {
-      p: paramCompat,
-      syncPrefix: new Name("/psync-test"),
-      syncInterestLifetime: 100,
-      syncInterestInterval: [110, 150],
-    };
-    this.syncs.push(new PSyncFull({ ...opts }));
+    const star = Bridge.star({
+      leaves: n - 1,
+      relayAB: { loss, delay: 3, jitter: 0.6 },
+      relayBA: { delay: 3, jitter: 0.6 },
+    }, Forwarder.getDefault());
+    closers.push(...star);
 
-    for (let i = 1; i < n; ++i) {
-      const bridge = Bridge.create({
-        fwA: Forwarder.getDefault(),
-        relayAB: { loss, delay: 3, jitter: 0.6 },
-        relayBA: { delay: 3, jitter: 0.6 },
-      });
-
+    for (const bridge of [undefined, ...star]) {
       this.syncs.push(new PSyncFull({
-        ...opts,
-        endpoint: new Endpoint({ fw: bridge.fwB }),
+        endpoint: bridge && new Endpoint({ fw: bridge.fwB }),
+        p: paramCompat,
+        syncPrefix: new Name("/psync-test"),
+        syncInterestLifetime: 100,
+        syncInterestInterval: [110, 150],
       }));
-      closers.push(bridge);
     }
     closers.push(...this.syncs);
 

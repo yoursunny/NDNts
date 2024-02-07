@@ -16,7 +16,7 @@ interface Pending {
 const notifySIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce());
 
 /** ndn-python-repo PubSub protocol publisher. */
-export class PrpsPublisher {
+export class PrpsPublisher implements Disposable {
   constructor({
     endpoint = new Endpoint(),
     pubPrefix = new Name("/localhost").append(SequenceNum, 0xFFFFFFFF * Math.random()),
@@ -47,10 +47,16 @@ export class PrpsPublisher {
   private readonly msgProducer: Producer;
   private readonly pendings = new NameMap<Pending>();
 
-  public close(): void {
+  public [Symbol.dispose](): void {
     this.msgProducer.close();
   }
 
+  /**
+   * Publish an item.
+   * @param topic - Topic name.
+   * @param item - An Encodable to be published, or a function to generate one.
+   * @returns Promise that resolves when the publication has reached a subscriber.
+   */
   public async publish(topic: Name, item: Item): Promise<void> {
     const notifyNonce = new Uint8Array(8);
     let key: Name;
