@@ -1,4 +1,4 @@
-import { Endpoint, type Producer, type ProducerHandler, type RetxPolicy } from "@ndn/endpoint";
+import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
 import { SequenceNum } from "@ndn/naming-convention2";
 import { Component, Data, digestSigning, Interest, Name, NameMap, SignedInterestPolicy, type Signer } from "@ndn/packet";
 import { type Encodable, Encoder } from "@ndn/tlv";
@@ -18,20 +18,18 @@ const notifySIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce());
 /** ndn-python-repo PubSub protocol publisher. */
 export class PrpsPublisher implements Disposable {
   constructor({
-    endpoint = new Endpoint(),
+    endpoint = new Endpoint({ retx: 2 }),
     pubPrefix = new Name("/localhost").append(SequenceNum, 0xFFFFFFFF * Math.random()),
     pubFwHint,
     pubAnnouncement,
     pubSigner = digestSigning,
     notifyInterestLifetime = Interest.DefaultLifetime,
-    notifyRetx = 2,
   }: PrpsPublisher.Options = {}) {
     this.endpoint = endpoint;
     this.pubPrefix = pubPrefix;
     this.pubFwHint = pubFwHint;
     this.pubSigner = pubSigner;
     this.notifyInterestLifetime = notifyInterestLifetime;
-    this.notifyRetx = notifyRetx;
     this.msgProducer = this.endpoint.produce(pubPrefix.append(MsgSuffix), this.handleMsgInterest, {
       describe: `prps-pub(${pubPrefix})`,
       announcement: pubAnnouncement ?? pubFwHint ?? pubPrefix,
@@ -43,7 +41,6 @@ export class PrpsPublisher implements Disposable {
   public readonly pubFwHint?: Name;
   private readonly pubSigner: Signer;
   private readonly notifyInterestLifetime: number;
-  private readonly notifyRetx: RetxPolicy;
   private readonly msgProducer: Producer;
   private readonly pendings = new NameMap<Pending>();
 
@@ -81,7 +78,6 @@ export class PrpsPublisher implements Disposable {
     try {
       await this.endpoint.consume(notifyInterest, {
         describe: `prps-notify(${this.pubPrefix} ${topic})`,
-        retx: this.notifyRetx,
       });
     } finally {
       this.pendings.delete(key);
@@ -121,7 +117,7 @@ export namespace PrpsPublisher {
     /**
      * Endpoint for communication.
      * @defaultValue
-     * Endpoint on default logical forwarder.
+     * Endpoint on default logical forwarder with up to 2 retransmissions.
      */
     endpoint?: Endpoint;
 
@@ -152,12 +148,6 @@ export namespace PrpsPublisher {
 
     /** InterestLifetime of notify Interests. */
     notifyInterestLifetime?: number;
-
-    /**
-     * Retransmission policy of notify Interests.
-     * @defaultValue 2 retransmissions
-     */
-    notifyRetx?: RetxPolicy;
   }
 
   /**

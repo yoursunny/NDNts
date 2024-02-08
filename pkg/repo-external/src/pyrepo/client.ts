@@ -1,7 +1,7 @@
-import { Endpoint } from "@ndn/endpoint";
+import { type Endpoint } from "@ndn/endpoint";
 import { digestSigning, Interest, type Name, SignedInterestPolicy } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
-import { delay, sha256, toHex } from "@ndn/util";
+import { delay, randomJitter, sha256, toHex } from "@ndn/util";
 
 import { PrpsPublisher } from "../prps/mod";
 import { CommandParam, CommandRes, DeleteVerb, InsertVerb, ObjectParam, StatQuery, type Verb } from "./packet";
@@ -11,19 +11,23 @@ const checkSIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce());
 /** Client to interact with ndn-python-repo. */
 export class PyRepoClient implements Disposable {
   constructor(opts: PyRepoClient.Options) {
-    this.endpoint = opts.endpoint ?? new Endpoint();
     this.repoPrefix = opts.repoPrefix;
-    this.progressTimeout = opts.progressTimeout ?? 10000;
     this.publisher = new PrpsPublisher(opts);
+
+    this.endpoint = this.publisher.endpoint;
     this.fwHint = this.publisher.pubFwHint ?? this.publisher.pubPrefix;
     this.endpoint.fw.nodeNames.push(this.fwHint);
+
+    this.commandTimeout = opts.commandTimeout ?? 60000;
+    this.checkInterval = randomJitter(0.1, opts.checkInterval ?? 1000);
   }
 
   public readonly endpoint: Endpoint;
   public readonly repoPrefix: Name;
-  private readonly progressTimeout: number;
   private readonly publisher: PrpsPublisher;
   private readonly fwHint: Name;
+  private readonly commandTimeout: number;
+  private readonly checkInterval: () => number;
 
   public [Symbol.dispose](): void {
     const nodeNameIndex = this.endpoint.fw.nodeNames.findIndex((nodeName) => nodeName.equals(this.fwHint));
@@ -74,8 +78,10 @@ export class PyRepoClient implements Disposable {
     const checkParam = new StatQuery();
     checkParam.requestDigest = requestDigest;
 
-    const t0 = Date.now();
-    while (Date.now() < t0 + this.progressTimeout) {
+    const deadline = Date.now() + this.commandTimeout;
+    while (Date.now() < deadline) {
+      await delay(this.checkInterval());
+
       const checkInterest = new Interest();
       checkInterest.name = this.repoPrefix.append(verb.check);
       checkInterest.appParameters = Encoder.encode(checkParam);
@@ -93,7 +99,6 @@ export class PyRepoClient implements Disposable {
       if (res.statusCode === 200) {
         return;
       }
-      await delay(1000);
     }
     throw new Error("command timeout");
   }
@@ -110,10 +115,15 @@ export namespace PyRepoClient {
     repoPrefix: Name;
 
     /**
-     * Progress update timeout in milliseconds.
-     * If no progress update is received for this period of time, the command is deemed failed.
-     * @defaultValue 10 seconds
+     * Maximum duration of each command in milliseconds.
+     * @defaultValue 60 seconds
      */
-    progressTimeout?: number;
+    commandTimeout?: number;
+
+    /**
+     * How often to check command progress in milliseconds.
+     * @defaultValue 1 second
+     */
+    checkInterval?: number;
   }
 }

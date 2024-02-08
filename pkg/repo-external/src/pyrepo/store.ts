@@ -18,19 +18,14 @@ import { PyRepoClient } from "./client";
  * Interest to the network, and then ndn-python-repo is supposed to reply.
  */
 export class PyRepoStore implements Disposable, S.Insert, S.Delete {
-  /**
-   * Construct with new {@link PyRepoClient}.
-   *
-   * @remarks
-   * The internal client will be closed when this store is closed.
-   */
+  /** Construct with internal {@link PyRepoClient}. */
   constructor(opts: PyRepoStore.Options);
 
   /**
    * Construct with existing {@link PyRepoClient}.
    *
    * @remarks
-   * The passed `client` will not be closed when this store is closed.
+   * The passed `client` will not be disposed when this store is disposed.
    */
   constructor(client: PyRepoClient, opts?: PyRepoStore.StoreOptions);
 
@@ -54,7 +49,6 @@ export class PyRepoStore implements Disposable, S.Insert, S.Delete {
   private readonly throttle: ReturnType<typeof throat>;
   private readonly endpoint: Endpoint;
 
-  /** Close the {@link PyRepoClient} only if it is created by this store. */
   public [Symbol.dispose](): void {
     if (this.ownsClient) {
       this.client[Symbol.dispose]();

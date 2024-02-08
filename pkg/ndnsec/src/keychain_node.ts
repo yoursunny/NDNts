@@ -16,6 +16,8 @@ let ndnsecInstalled: boolean | undefined;
 export class NdnsecKeyChain extends KeyChainSerialized {
   /**
    * Whether current environment supports ndn-cxx KeyChain.
+   *
+   * @remarks
    * It checks whether `ndnsec` program is installed.
    */
   public static get supported(): boolean {

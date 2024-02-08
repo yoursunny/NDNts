@@ -24,9 +24,8 @@ test("simple", async () => {
     msgInterestLifetime: 200,
   });
   using pub = new PrpsPublisher({
-    endpoint: new Endpoint({ fw: star[2]!.fwB }),
+    endpoint: new Endpoint({ fw: star[2]!.fwB, retx: 1 }),
     notifyInterestLifetime: 1000,
-    notifyRetx: 1,
   });
 
   const topicA = new Name("/prps-demo/A");
@@ -37,7 +36,7 @@ test("simple", async () => {
   const pubExpectedResults: Array<PromiseSettledResult<void>["status"]> = [];
   for (let i = 0; i < 100; ++i) {
     const rem = i % 5;
-    pubPromises.push(pub.publish(pubTopicMap[rem], Uint8Array.of(0xDD, i)));
+    pubPromises.push(pub.publish(pubTopicMap[rem]!, Uint8Array.of(0xDD, i)));
     pubExpectedResults.push(rem === 4 ? "rejected" : "fulfilled");
   }
 
@@ -47,7 +46,7 @@ test("simple", async () => {
   const mapDataIndex = map((data: Data): number => {
     expect(data.content).toHaveLength(2);
     expect(data.content[0]).toBe(0xDD);
-    return data.content[1];
+    return data.content[1]!;
   });
   const [
     data0A,

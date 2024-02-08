@@ -11,7 +11,7 @@ import { ControlParameters, ControlResponse } from "..";
 
 /** React to NFD prefix registration commands on a FwFace. */
 export class PrefixRegServer {
-  constructor(private readonly face: FwFace, private readonly faceId = 1) {
+  constructor(private readonly face: FwFace, public readonly faceId = 1) {
     this.tap = TapFace.create(face);
     this.mgmt = new Endpoint({ fw: this.tap.fw }).produce("/localhost/nfd/rib", this.handleCommand);
   }
@@ -50,7 +50,15 @@ export class PrefixRegServer {
 
 /** TCP server that accepts NFD prefix registration commands. */
 export class FakeNfd extends TcpServer {
-  public readonly fw = Forwarder.create();
+  /**
+   * Constructor.
+   * @param fw - Logical forwarder to attach accepted client faces.
+   */
+  constructor(
+      public readonly fw = Forwarder.create(),
+  ) {
+    super();
+  }
 
   public override [Symbol.asyncDispose]() {
     this.fw.close();
@@ -58,12 +66,12 @@ export class FakeNfd extends TcpServer {
   }
 
   /** Wait until at least n clients are connected, and enable PrefixRegServer on them. */
-  public async waitNFaces(n: number): Promise<FakeNfd.Face[]> {
+  public async waitNFaces(n: number, firstFaceId = 7000): Promise<FakeNfd.Face[]> {
     const socks = await this.waitNClients(n);
-    return socks.map((sock) => {
+    return socks.map((sock, i) => {
       const tr = new StreamTransport(sock);
       const face = this.fw.addFace(new L3Face(tr));
-      const reg = new PrefixRegServer(face);
+      const reg = new PrefixRegServer(face, firstFaceId + i);
       return {
         sock,
         face,

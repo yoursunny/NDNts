@@ -27,8 +27,6 @@ Current implementation is unoptimized.
 In particular, each insertion/deletion command is individually sent to the repo.
 Neither segmented nor bundled operation would be used.
 
-There are not tests, other than the demo below.
-
 ```ts
 import { PyRepoStore } from "@ndn/repo-external";
 

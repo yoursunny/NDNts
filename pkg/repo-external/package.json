@@ -38,6 +38,13 @@
     "tslib": "^2.6.2"
   },
   "devDependencies": {
-    "@ndn/l3face": "workspace:^"
+    "@ndn/fw": "workspace:^",
+    "@ndn/keychain": "workspace:^",
+    "@ndn/l3face": "workspace:^",
+    "@ndn/ndnsec": "workspace:^",
+    "@ndn/nfdmgmt": "workspace:^",
+    "@types/netmask": "^2.0.5",
+    "execa": "^8.0.1",
+    "netmask": "^2.0.2"
   }
 }
