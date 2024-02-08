@@ -1,10 +1,9 @@
 import type { Endpoint } from "@ndn/endpoint";
 import type { Name } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
-import { delay } from "@ndn/util";
+import { Closers, delay } from "@ndn/util";
 import pDefer from "p-defer";
-import { consume, pipeline, transform } from "streaming-iterables";
-import throat from "throat";
+import { collect } from "streaming-iterables";
 
 import { PyRepoClient } from "./client";
 
@@ -40,14 +39,18 @@ export class PyRepoStore implements Disposable, S.Insert, S.Delete {
       this.ownsClient = true;
       opts = arg1;
     }
-    this.throttle = throat(opts.parallel ?? 16);
     this.endpoint = this.client.endpoint;
+    this.preCommandDelay = opts.preCommandDelay ?? 100;
+    this.incomingInterestTimeout = opts.incomingInterestTimeout ?? 5000;
+    this.postRetrievalDelay = opts.postRetrievalDelay ?? 100;
   }
 
   public readonly client: PyRepoClient;
   private readonly ownsClient: boolean;
-  private readonly throttle: ReturnType<typeof throat>;
   private readonly endpoint: Endpoint;
+  private readonly preCommandDelay: number;
+  private readonly incomingInterestTimeout: number;
+  private readonly postRetrievalDelay: number;
 
   public [Symbol.dispose](): void {
     if (this.ownsClient) {
@@ -57,47 +60,56 @@ export class PyRepoStore implements Disposable, S.Insert, S.Delete {
 
   /** Insert some Data packets. */
   public async insert(...args: S.Insert.Args<{}>): Promise<void> {
-    // TODO use client.insertRange where applicable
-    const { pkts } = S.Insert.parseArgs<{}>(args);
-    return pipeline(
-      () => pkts,
-      transform(Infinity, (data) => this.throttle(async () => {
-        const answered = pDefer();
-        const timeout = setTimeout(() => answered.reject(new Error("no incoming Interest")), 5000);
-        using producer = this.endpoint.produce(data.name, async () => {
-          clearTimeout(timeout);
-          answered.resolve();
-          return data;
-        }, {
-          describe: `pyrepo-insert(${data.name})`,
-          announcement: false,
-        });
-        void producer;
+    const pkts = await collect(S.Insert.parseArgs<{}>(args).pkts);
 
-        await delay(100); // pre-command delay for prefix registration
-        await this.client.insert(data.name);
-        await answered.promise;
-        await delay(100); // post-command delay for Data retransmissions
-      })),
-      consume,
+    const retrieved = new Set<number>();
+    const answered = pDefer<void>();
+    const timeout = setTimeout(
+      () => answered.reject(new Error("no incoming Interest")),
+      this.incomingInterestTimeout,
     );
+    const producers = pkts.map((data, i) => this.endpoint.produce(data.name, async () => {
+      retrieved.add(i);
+      if (retrieved.size === pkts.length) {
+        clearTimeout(timeout);
+        answered.resolve();
+      }
+      return data;
+    }));
+    using closers = new Closers();
+    closers.push(...producers);
+
+    await delay(this.preCommandDelay);
+    await this.client.insert(pkts.map(({ name }) => ({ name })));
+    await answered.promise;
+    await delay(this.postRetrievalDelay);
   }
 
   /** Delete some Data packets. */
   public async delete(...names: Name[]): Promise<void> {
-    await Promise.all(names.map((name) => this.throttle(async () => {
-      await this.client.delete(name);
-    })));
+    await this.client.delete(names.map((name) => ({ name })));
   }
 }
 
 export namespace PyRepoStore {
   export interface StoreOptions {
     /**
-     * Maximum number of parallel operations.
-     * @defaultValue 16
+     * How long to allow for prefix announcement before sending command, in milliseconds.
+     * @defaultValue 100
      */
-    parallel?: number;
+    preCommandDelay?: number;
+
+    /**
+     * How long to wait for incoming Interest during insertion, in milliseconds.
+     * @defaultValue 5000
+     */
+    incomingInterestTimeout?: number;
+
+    /**
+     * How long to allow for retransmissions after finishing command, in milliseconds.
+     * @defaultValue 100
+     */
+    postRetrievalDelay?: number;
   }
 
   export interface Options extends PyRepoClient.Options, StoreOptions {

@@ -25,8 +25,9 @@ export interface Pushable<T> extends AsyncIterable<T> {
  */
 export function pushable<T>(): Pushable<T> {
   let q!: Parameters<ConstructorParameters<typeof EventIterator<T>>[0]>[0];
-  const ei = new EventIterator<T>((queue) => { q = queue; });
+  const ei = new EventIterator<T>((queue) => { q = queue; }, { highWaterMark: Infinity });
   const it = ei[Symbol.asyncIterator]();
+  assert(!!q);
   return {
     [Symbol.asyncIterator]: () => it,
     push: q.push,

@@ -3,9 +3,6 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package allows inserting and deleting Data in [ndn-python-repo](https://github.com/UCLA-IRL/ndn-python-repo).
-`PyRepoClient` type is a client for [ndn-python-repo protocol](https://github.com/UCLA-IRL/ndn-python-repo/tree/dda1dce135a952498a2a79d3cddf9c3ee33399d0/docs/src/specification).
-`PyRepoStore` type implements a subset of `DataStore` interfaces defined in `@ndn/repo-api` package.
-
 This implementation is compatible with ndn-python-repo `dda1dce1` (2024-02-04).
 To install and start the specified version, run:
 
@@ -23,9 +20,8 @@ export NDN_CLIENT_TRANSPORT=unix:///run/nfd/nfd.sock
 ndn-python-repo
 ```
 
-Current implementation is unoptimized.
-In particular, each insertion/deletion command is individually sent to the repo.
-Neither segmented nor bundled operation would be used.
+`PyRepoClient` type is a client for [ndn-python-repo protocol](https://github.com/UCLA-IRL/ndn-python-repo/tree/dda1dce135a952498a2a79d3cddf9c3ee33399d0/docs/src/specification).
+`PyRepoStore` type implements a write-only subset of `DataStore` interfaces as defined in `@ndn/repo-api` package.
 
 ```ts
 import { PyRepoStore } from "@ndn/repo-external";
