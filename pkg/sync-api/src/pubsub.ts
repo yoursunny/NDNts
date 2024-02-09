@@ -5,7 +5,7 @@ import type { SyncUpdate } from "./sync";
 
 /** A pubsub protocol subscriber. */
 export interface Subscriber<Topic = Name, Update extends Event = SyncUpdate<Topic>, SubscribeInfo = Topic> {
-  subscribe(topic: SubscribeInfo): Subscription<Topic, Update>;
+  subscribe: (topic: SubscribeInfo) => Subscription<Topic, Update>;
 }
 
 /**
@@ -19,7 +19,7 @@ export interface Subscription<Topic = Name, Update extends Event = SyncUpdate<To
   readonly topic: Topic;
 
   /** Unsubscribe. */
-  remove(): void;
+  remove: () => void;
 }
 
 export namespace Subscription {

@@ -108,13 +108,13 @@ export namespace fetch {
    */
   export interface Result extends PromiseLike<Uint8Array>, AsyncIterable<Data> {
     /** Iterate over Data packets as they arrive, not sorted in segment number order. */
-    unordered(): AsyncIterable<Data & { readonly segNum: number }>;
+    unordered: () => AsyncIterable<Data & { readonly segNum: number }>;
 
     /** Iterate over payload chunks in segment number order. */
-    chunks(): AsyncIterable<Uint8Array>;
+    chunks: () => AsyncIterable<Uint8Array>;
 
     /** Write all chunks to the destination stream. */
-    pipe(dest: WritableStreamish): Promise<void>;
+    pipe: (dest: WritableStreamish) => Promise<void>;
 
     /** Number of segments retrieved so far. */
     readonly count: number;

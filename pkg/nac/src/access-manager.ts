@@ -165,6 +165,6 @@ export namespace AccessManager {
      * If passing a key name or certificate name, the retrieved certificate will be verified by
      * {@link Keys.memberVerifier}.
      */
-    grant(member: NamedEncrypter.PublicKey | Certificate | Name): Promise<KeyDecryptionKey>;
+    grant: (member: NamedEncrypter.PublicKey | Certificate | Name) => Promise<KeyDecryptionKey>;
   }
 }

@@ -32,7 +32,7 @@ export interface NamedSigner<Asym extends boolean = any> extends Key<KeyKind.Pri
   readonly sigType: number;
 
   /** Create a Signer that signs with this private key but a different KeyLocator. */
-  withKeyLocator(keyLocator: KeyLocator.CtorArg): Signer;
+  withKeyLocator: (keyLocator: KeyLocator.CtorArg) => Signer;
 }
 export namespace NamedSigner {
   /** Named private key signer. */
@@ -108,7 +108,7 @@ export interface CryptoAlgorithm<I = any, Asym extends boolean = any, G = any> {
    * JWK. This could be supported by passing the serialized key as part of `params`, and then
    * perform the importing operation in this method instead of generating a new key.
    */
-  cryptoGenerate(params: G, extractable: boolean): Promise<
+  cryptoGenerate: (params: G, extractable: boolean) => Promise<
   If<Asym, CryptoAlgorithm.GeneratedKeyPair<I>, CryptoAlgorithm.GeneratedSecretKey<I>, never>>;
 
   /**
@@ -117,7 +117,7 @@ export interface CryptoAlgorithm<I = any, Asym extends boolean = any, G = any> {
    * @remarks
    * This should only appear on asymmetric algorithm.
    */
-  importSpki?(spki: Uint8Array, der: asn1.ElementBuffer): Promise<CryptoAlgorithm.PublicKey<I>>;
+  importSpki?: (spki: Uint8Array, der: asn1.ElementBuffer) => Promise<CryptoAlgorithm.PublicKey<I>>;
 }
 
 export namespace CryptoAlgorithm {

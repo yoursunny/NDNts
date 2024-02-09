@@ -235,7 +235,7 @@ export namespace SvSync {
      * Sync protocol starts running after the function has returned and the returned Promise
      * is resolved.
      */
-    initialize?(sync: SvSync): Promisable<void>;
+    initialize?: (sync: SvSync) => Promisable<void>;
 
     /** Sync group prefix. */
     syncPrefix: Name;

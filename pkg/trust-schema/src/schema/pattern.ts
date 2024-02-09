@@ -287,7 +287,7 @@ export namespace VariablePattern {
 
   /** Function to determine whether a name part is acceptable. */
   export interface Filter {
-    accept(name: Name, vars: Vars): boolean;
+    accept: (name: Name, vars: Vars) => boolean;
   }
 
   /** Create a filter that accepts a name component if it satisfies a convention. */

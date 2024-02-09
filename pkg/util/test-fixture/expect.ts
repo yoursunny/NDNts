@@ -29,7 +29,7 @@ expect.extend({
 declare global {
   namespace jest {
     interface Matchers<R, T> {
-      toEqualUint8Array(expected: Uint8ArrayExpect): R;
+      toEqualUint8Array: (expected: Uint8ArrayExpect) => R;
     }
   }
 }

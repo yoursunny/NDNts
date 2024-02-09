@@ -2,7 +2,7 @@ import { asDataView, assert } from "@ndn/util";
 
 /** An object that knows how to prepend itself to an Encoder. */
 export interface EncodableObj {
-  encodeTo(encoder: Encoder): void;
+  encodeTo: (encoder: Encoder) => void;
 }
 
 /**

@@ -11,7 +11,7 @@ import { NNI } from "./nni";
  * of R implements this interface.
  */
 export interface Decodable<R> {
-  decodeFrom(decoder: Decoder): R;
+  decodeFrom: (decoder: Decoder) => R;
 }
 
 class DecodedTlv implements Decoder.Tlv {

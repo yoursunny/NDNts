@@ -83,7 +83,7 @@ export class SigInfo {
 
 const ctorAssign = Symbol("@ndn/packet#SigInfo.ctorAssign");
 interface CtorTag {
-  [ctorAssign](si: SigInfo): void;
+  [ctorAssign]: (si: SigInfo) => void;
 }
 
 export namespace SigInfo {

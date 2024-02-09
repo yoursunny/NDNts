@@ -76,19 +76,21 @@ declare global {
   namespace jest {
     interface Matchers<R, T> {
       /** Assert that the actual value is a Component that equals `comp`. */
-      toEqualComponent(comp: ComponentLike): R;
+      toEqualComponent: (comp: ComponentLike) => R;
 
       /** Assert that the actual value is a Name that equals `name`. */
-      toEqualName(name: NameLike): R;
+      toEqualName: (name: NameLike) => R;
 
       /** Assert that the actual value has a `.name` property that equals `name`. */
-      toHaveName(name: NameLike): R;
+      toHaveName: (name: NameLike) => R;
 
       /**
        * Assert that the actual value is an Iterable<Name> that equals `names`.
+       *
+       * @remarks
        * Ordering is ignored when comparing two collections.
        */
-      toEqualNames(names: Iterable<NameLike>): R;
+      toEqualNames: (names: Iterable<NameLike>) => R;
     }
   }
 }

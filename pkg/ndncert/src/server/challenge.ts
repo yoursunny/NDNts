@@ -14,7 +14,7 @@ export interface ServerChallenge<State = any> {
   readonly retryLimit: number;
 
   /** Process selection or continuation of the challenge. */
-  process(request: ChallengeRequest, context: ServerChallengeContext<State>): Promise<ServerChallengeResponse>;
+  process: (request: ChallengeRequest, context: ServerChallengeContext<State>) => Promise<ServerChallengeResponse>;
 }
 
 /** Contextual information for challenge processing. */

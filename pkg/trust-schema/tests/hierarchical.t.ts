@@ -119,9 +119,9 @@ hPolicy.addRule("packet", "signer");
 
 interface Row {
   summary: string;
-  makeSigner(ctx: IContext): Signer;
+  makeSigner: (ctx: IContext) => Signer;
   signerMustLpm?: boolean;
-  makeVerifier(ctx: IContext): Verifier;
+  makeVerifier: (ctx: IContext) => Verifier;
   enableProducer?: boolean;
 }
 

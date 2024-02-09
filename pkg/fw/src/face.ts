@@ -22,12 +22,12 @@ export interface FwFace extends TypedEventTarget<EventMap> {
   readonly running: boolean;
 
   /** Shutdown the face. */
-  close(): void;
+  close: () => void;
 
-  toString(): string;
+  toString: () => string;
 
   /** Determine if a route is present on the face. */
-  hasRoute(name: NameLike): boolean;
+  hasRoute: (name: NameLike) => boolean;
 
   /**
    * Add a route toward the face.
@@ -39,10 +39,10 @@ export interface FwFace extends TypedEventTarget<EventMap> {
    * to this face. Unless `announcement` is set to `false`, this also invokes
    * {@link addAnnouncement} to readvertise the name prefix to remote forwarders.
    */
-  addRoute(name: NameLike, announcement?: FwFace.RouteAnnouncement): void;
+  addRoute: (name: NameLike, announcement?: FwFace.RouteAnnouncement) => void;
 
   /** Remove a route toward the face. */
-  removeRoute(name: NameLike, announcement?: FwFace.RouteAnnouncement): void;
+  removeRoute: (name: NameLike, announcement?: FwFace.RouteAnnouncement) => void;
 
   /**
    * Add a prefix announcement associated with the face.
@@ -58,10 +58,10 @@ export interface FwFace extends TypedEventTarget<EventMap> {
    *
    * This function has no effect if `FwFace.Attributes.advertiseFrom` is set to `false`.
    */
-  addAnnouncement(name: NameLike): void;
+  addAnnouncement: (name: NameLike) => void;
 
   /** Remove a prefix announcement associated with the face. */
-  removeAnnouncement(name: NameLike): void;
+  removeAnnouncement: (name: NameLike) => void;
 }
 
 export namespace FwFace {
@@ -112,8 +112,16 @@ export namespace FwFace {
   export interface RxTxBase {
     readonly attributes?: Attributes;
 
-    addEventListener?<K extends keyof RxTxEventMap>(type: K, listener: (ev: RxTxEventMap[K]) => any, options?: AddEventListenerOptions): void;
-    removeEventListener?<K extends keyof RxTxEventMap>(type: K, listener: (ev: RxTxEventMap[K]) => any, options?: EventListenerOptions): void;
+    addEventListener?: <K extends keyof RxTxEventMap>(
+      type: K,
+      listener: (ev: RxTxEventMap[K]) => any,
+      options?: AddEventListenerOptions,
+    ) => void;
+    removeEventListener?: <K extends keyof RxTxEventMap>(
+      type: K,
+      listener: (ev: RxTxEventMap[K]) => any,
+      options?: EventListenerOptions,
+    ) => void;
   }
 
   /** A logical face with separate RX and TX packet streams. */
@@ -121,7 +129,7 @@ export namespace FwFace {
     /** RX packet stream received by the logical forwarder. */
     rx: AsyncIterable<FwPacket>;
     /** Function to accept TX packet stream sent by the logical forwarder. */
-    tx(iterable: AsyncIterable<FwPacket>): void;
+    tx: (iterable: AsyncIterable<FwPacket>) => void;
   }
 
   /** A logical face with duplex RX and TX packet streams. */
@@ -131,7 +139,7 @@ export namespace FwFace {
      * @param iterable - TX packet stream sent by the logical forwarder.
      * @returns RX packet stream received by the logical forwarder.
      */
-    duplex(iterable: AsyncIterable<FwPacket>): AsyncIterable<FwPacket>;
+    duplex: (iterable: AsyncIterable<FwPacket>) => AsyncIterable<FwPacket>;
   }
 }
 

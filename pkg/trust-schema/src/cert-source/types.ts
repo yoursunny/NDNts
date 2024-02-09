@@ -8,5 +8,5 @@ export interface CertSource {
    * @param keyLocator - Certificate name or key name.
    * @returns Matched certificate(s).
    */
-  findCerts(keyLocator: Name): AsyncIterable<Certificate>;
+  findCerts: (keyLocator: Name) => AsyncIterable<Certificate>;
 }

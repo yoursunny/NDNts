@@ -4,13 +4,13 @@ import type { TypedEventTarget } from "typescript-event-target";
 /** A sync protocol participant. */
 export interface SyncProtocol<ID = any> extends TypedEventTarget<SyncProtocol.EventMap<ID>> {
   /** Stop the protocol operation. */
-  close(): void;
+  close: () => void;
 
   /** Retrieve a node. */
-  get(id: ID): SyncNode<ID> | undefined;
+  get: (id: ID) => SyncNode<ID> | undefined;
 
   /** Retrieve or create a node. */
-  add(id: ID): SyncNode<ID>;
+  add: (id: ID) => SyncNode<ID>;
 }
 
 export namespace SyncProtocol {
@@ -45,7 +45,7 @@ export interface SyncNode<ID = any> {
    * @remarks
    * This may or may not have effect, depending on the sync protocol.
    */
-  remove(): void;
+  remove: () => void;
 }
 
 /** A received update regarding a node. */

@@ -15,11 +15,11 @@
   },
   "packageManager": "pnpm@8.15.1+sha256.245fe901f8e7fa8782d7f17d32b6a83995e2ae03984cb5b62b8949bfdc27c7b5",
   "devDependencies": {
-    "@types/node": "^20.11.16",
+    "@types/node": "^20.11.17",
     "@types/wtfnode": "^0.7.3",
     "@typescript/lib-dom": "npm:@types/web@0.0.138",
     "@vitest/coverage-v8": "^1.2.2",
-    "@yoursunny/xo-config": "0.57.0",
+    "@yoursunny/xo-config": "0.57.1",
     "codedown": "^3.1.0",
     "tslib": "^2.6.2",
     "typedoc": "^0.25.7",

@@ -5,7 +5,7 @@ import type { FwFace } from "./face";
 import { Forwarder } from "./forwarder";
 import type { FwPacket } from "./packet";
 
-/** Print trace logs from Forwarder events. */
+/** Print trace logs from {@link Forwarder} events. */
 export class FwTracer {
   public static enable(opts: FwTracer.Options = {}): FwTracer {
     return new FwTracer(opts);
@@ -14,7 +14,7 @@ export class FwTracer {
   private readonly output: FwTracer.Output;
   private readonly fw: Forwarder;
 
-  constructor({
+  private constructor({
     output = console,
     fw = Forwarder.getDefault(),
     face = true,
@@ -114,13 +114,13 @@ function interestToString({ name, canBePrefix, mustBeFresh }: Interest): string 
 
 export namespace FwTracer {
   export interface Output {
-    log(str: string): void;
+    log: (str: string) => void;
   }
 
   export interface Options {
     /**
      * Where to write log entries.
-     * Default is stderr in Node and developer console in browser.
+     * @defaultValue `console`
      */
     output?: Output;
 

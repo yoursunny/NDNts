@@ -48,7 +48,7 @@ export interface Bridge extends Disposable {
   readonly faceB: FwFace;
 
   /** Change fw* and face* property names. */
-  rename<A extends string, B extends string>(A: A, B: B): Bridge.Renamed<A, B>;
+  rename: <A extends string, B extends string>(A: A, B: B) => Bridge.Renamed<A, B>;
 }
 
 function makeRelayFunc(relay: Bridge.Relay): Bridge.RelayFunc {

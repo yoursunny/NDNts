@@ -71,7 +71,7 @@ export namespace ChallengeRequest {
      * @param requestId - Request session ID.
      * @returns Request session information, or `undefined` if not found.
      */
-    lookupRequest(requestId: Uint8Array): Promisable<RequestInfo | undefined>;
+    lookupRequest: (requestId: Uint8Array) => Promisable<RequestInfo | undefined>;
   }
 
   /** Fields of CHALLENGE request packet. */

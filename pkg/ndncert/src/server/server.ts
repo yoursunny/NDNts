@@ -42,7 +42,7 @@ export namespace ServerOptions {
 }
 
 interface RepoDataStore {
-  insert(data: Data): Promise<void>;
+  insert: (data: Data) => Promise<void>;
 }
 
 /** NDNCERT server. */

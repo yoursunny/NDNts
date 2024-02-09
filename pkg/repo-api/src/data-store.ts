@@ -4,25 +4,25 @@ import type { AnyIterable } from "streaming-iterables";
 /** DataStore interface, listNames method. */
 export interface ListNames {
   /** List Data names, optionally filtered by name prefix. */
-  listNames(prefix?: Name): AsyncIterable<Name>;
+  listNames: (prefix?: Name) => AsyncIterable<Name>;
 }
 
 /** DataStore interface, listData method. */
 export interface ListData {
   /** List Data packets, optionally filtered by name prefix. */
-  listData(prefix?: Name): AsyncIterable<Data>;
+  listData: (prefix?: Name) => AsyncIterable<Data>;
 }
 
 /** DataStore interface, get method. */
 export interface Get {
   /** Retrieve Data by exact name. */
-  get(name: Name): Promise<Data | undefined>;
+  get: (name: Name) => Promise<Data | undefined>;
 }
 
 /** DataStore interface, find method. */
 export interface Find {
   /** Find Data that satisfies Interest. */
-  find(interest: Interest): Promise<Data | undefined>;
+  find: (interest: Interest) => Promise<Data | undefined>;
 }
 
 /** DataStore interface, insert method. */
@@ -35,7 +35,7 @@ export interface Insert<Options extends {} = {}> {
    * - an optional Options object
    * - zero or more Data, Iterable<Data>, or AsyncIterable<Data>
    */
-  insert(...args: Insert.Args<Options>): Promise<void>;
+  insert: (...args: Insert.Args<Options>) => Promise<void>;
 }
 export namespace Insert {
   export type Args<O extends {}> = [...(object extends O ? [O] | [] : []), ...ReadonlyArray<Data | AnyIterable<Data>>];
@@ -83,5 +83,5 @@ export namespace Insert {
 /** DataStore interface, delete method. */
 export interface Delete {
   /** Delete Data packets with given names. */
-  delete(...names: readonly Name[]): Promise<void>;
+  delete: (...names: readonly Name[]) => Promise<void>;
 }

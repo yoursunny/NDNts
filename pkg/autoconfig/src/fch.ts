@@ -4,7 +4,7 @@ import { FCH_DEFAULTS } from "./platform_node";
 import type { ConnectRouterOptions } from "./router";
 
 export interface PlatformFchDefaults {
-  transports(opts?: ConnectRouterOptions): string[];
+  transports: (opts?: ConnectRouterOptions) => string[];
   readonly hasIPv4?: boolean;
   readonly hasIPv6?: boolean;
 }

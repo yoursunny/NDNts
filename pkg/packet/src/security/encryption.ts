@@ -58,7 +58,7 @@ export interface Encrypter<T = Data> {
    * Encrypt a packet.
    * The packet is modified in-place.
    */
-  encrypt(pkt: T): Promise<void>;
+  encrypt: (pkt: T) => Promise<void>;
 }
 
 /**
@@ -72,7 +72,7 @@ export interface Decrypter<T = Data> {
    * Decrypt a packet.
    * The packet is modified in-place.
    */
-  decrypt(pkt: T): Promise<void>;
+  decrypt: (pkt: T) => Promise<void>;
 }
 
 /** Encrypter and decrypter that do nothing. */

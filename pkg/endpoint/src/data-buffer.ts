@@ -5,13 +5,13 @@ import { signUnsignedData } from "./producer";
 
 /** Outgoing Data buffer for producer. */
 export interface DataBuffer {
-  find(interest: Interest): Promise<Data | undefined>;
-  insert(...pkts: readonly Data[]): Promise<void>;
+  find: (interest: Interest) => Promise<Data | undefined>;
+  insert: (...pkts: readonly Data[]) => Promise<void>;
 }
 
 interface DataStore {
-  find(interest: Interest): Promise<Data | undefined>;
-  insert(opts: { expireTime?: number }, ...pkts: readonly Data[]): Promise<void>;
+  find: (interest: Interest) => Promise<Data | undefined>;
+  insert: (opts: { expireTime?: number }, ...pkts: readonly Data[]) => Promise<void>;
 }
 
 /** DataBuffer implementation based on `DataStore` from `@ndn/repo` package. */

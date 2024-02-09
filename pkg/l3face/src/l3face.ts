@@ -303,7 +303,7 @@ export namespace L3Face {
      * @remarks
      * This can be useful for reading counters or listening to events on these objects.
      */
-    callback?(transport: Transport, l3face: L3Face, fwFace: FwFace): void;
+    callback?: (transport: Transport, l3face: L3Face, fwFace: FwFace) => void;
   }
 
   export type CreateFaceFunc<

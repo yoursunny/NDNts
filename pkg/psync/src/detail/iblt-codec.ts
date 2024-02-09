@@ -3,8 +3,8 @@ import { Component } from "@ndn/packet";
 import { IBLT } from "../iblt";
 
 export interface Compression {
-  compress(input: Uint8Array): Uint8Array;
-  decompress(compressed: Uint8Array): Uint8Array;
+  compress: (input: Uint8Array) => Uint8Array;
+  decompress: (compressed: Uint8Array) => Uint8Array;
 }
 
 export class IbltCodec {

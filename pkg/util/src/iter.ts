@@ -5,13 +5,13 @@ import type { AnyIterable } from "streaming-iterables";
 /** An iterable that you can push values into. */
 export interface Pushable<T> extends AsyncIterable<T> {
   /** Push a value. */
-  push(value: T): void;
+  push: (value: T) => void;
 
   /** End the iterable normally. */
-  stop(): void;
+  stop: () => void;
 
   /** End the iterable abnormally. */
-  fail(err: Error): void;
+  fail: (err: Error) => void;
 }
 
 /**

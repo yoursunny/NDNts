@@ -36,13 +36,13 @@ export interface Forwarder extends TypedEventTarget<EventMap> {
   readonly faces: ReadonlySet<FwFace>;
 
   /** Add a logical face to the logical forwarder. */
-  addFace(face: FwFace.RxTx | FwFace.RxTxDuplex, attributes?: FwFace.Attributes): FwFace;
+  addFace: (face: FwFace.RxTx | FwFace.RxTxDuplex, attributes?: FwFace.Attributes) => FwFace;
 
   /**
    * Cancel timers and other I/O resources.
    * This instance should not be used after this operation.
    */
-  close(): void;
+  close: () => void;
 }
 export namespace Forwarder {
   /** {@link Forwarder.create} options. */

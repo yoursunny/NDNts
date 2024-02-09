@@ -11,10 +11,10 @@ import { NNI } from "./nni";
  * @typeParam T - Value type.
  */
 export interface StructFieldType<T> {
-  newValue(this: void): T;
-  encode(this: void, value: T): Encodable;
-  decode(this: void, tlv: Decoder.Tlv): T;
-  asString?(this: void, value: T): string;
+  newValue: (this: void) => T;
+  encode: (this: void, value: T) => Encodable;
+  decode: (this: void, tlv: Decoder.Tlv) => T;
+  asString?: (this: void, value: T) => string;
 }
 export namespace StructFieldType {
   export function wrap<T extends EncodableObj>(F: Constructor<T> & Decodable<T>, overrides: Partial<StructFieldType<T>> = {}): StructFieldType<T> {
@@ -78,7 +78,7 @@ export const StructFieldNNIBig: StructFieldType<bigint> = {
 export function StructFieldEnum<E extends number>(Enum: Record<number, string>): StructFieldType<E> {
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return {
-    ...StructFieldNNI,
+    ...(StructFieldNNI as any),
     asString: (value) => `${value}(${Enum[value] ?? "unknown"})`,
   } as StructFieldType<E>;
 }
@@ -150,9 +150,9 @@ interface Options<
 interface Field<T> extends Required<EvDecoder.RuleOptions> {
   readonly tt: number;
   readonly key: string;
-  newValue(): T;
-  encode(v: T): Iterable<Encodable>;
-  asString(v: T): Iterable<string>;
+  newValue: () => T;
+  encode: (v: T) => Iterable<Encodable>;
+  asString: (v: T) => Iterable<string>;
 }
 
 interface FlagBitDesc {

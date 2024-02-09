@@ -18,7 +18,7 @@ import { Name } from "./name";
  * mistakenly interpreted with that convention.
  */
 export class AltUriConverter {
-  constructor(public readonly conventions: ReadonlyArray<NamingConvention<unknown> & NamingConvention.WithAltUri>) {}
+  constructor(public readonly conventions: ReadonlyArray<NamingConvention<any> & NamingConvention.WithAltUri>) {}
 
   /** Print component in alternate URI syntax */
   public readonly ofComponent = (comp: Component) => {

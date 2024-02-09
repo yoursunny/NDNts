@@ -311,7 +311,7 @@ export namespace SvSubscriber {
      * Filter function to determine whether to retrieve a message based on MappingEntry.
      * @see {@link Options.mustFilterByMapping} for limitations on when this may not be invoked.
      */
-    filter(entry: MappingEntry): boolean;
+    filter: (entry: MappingEntry) => boolean;
   }
 
   /** Subscribe to messages from the specified publisher. */

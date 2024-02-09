@@ -16,14 +16,14 @@ export interface TestServer<Server, Client> extends AsyncDisposable {
   readonly clients: ReadonlySet<Client>;
 
   /** Start listening. */
-  open(): Promise<this>;
+  open: () => Promise<this>;
 
   /**
    * Wait until at least n clients are connected.
    * @param n - Minimum required clients quantity.
    * @returns Exactly n clients.
    */
-  waitNClients(n: number): Promise<Client[]>;
+  waitNClients: (n: number) => Promise<Client[]>;
 }
 
 export abstract class NetServerBase<Server extends EventEmitter, Client> implements TestServer<Server, Client> {

@@ -72,7 +72,7 @@ export namespace PSyncCore {
     threshold: number;
 
     /** Encode prefix and sequence number to byte array. */
-    joinPrefixSeqNum(ps: PrefixSeqNum): PrefixSeqNumEncoded;
+    joinPrefixSeqNum: (ps: PrefixSeqNum) => PrefixSeqNumEncoded;
   }
 }
 

@@ -3,7 +3,7 @@ import "./polyfill_node";
 import type { Promisable } from "type-fest";
 
 export interface Closer {
-  close(): void;
+  close: () => void;
 }
 
 /** A list of objects that can be closed or disposed. */

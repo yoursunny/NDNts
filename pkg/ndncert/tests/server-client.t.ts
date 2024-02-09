@@ -13,7 +13,7 @@ import { CaProfile, type ClientChallenge, type ClientChallengeContext, ClientEma
 
 interface Row {
   summary: string;
-  makeChallengeLists(): Promise<[ServerChallenge[], ClientChallenge[]]>;
+  makeChallengeLists: () => Promise<[ServerChallenge[], ClientChallenge[]]>;
   clientShouldFail?: boolean;
 }
 

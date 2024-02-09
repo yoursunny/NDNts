@@ -16,16 +16,16 @@ export interface StoreProvider<T> {
   readonly canSClone: boolean;
 
   /** List keys. */
-  list(): Promisable<string[]>;
+  list: () => Promisable<string[]>;
 
   /** Retrieve value by key. */
-  get(key: string): Promisable<T>;
+  get: (key: string) => Promisable<T>;
 
   /** Insert key and value. */
-  insert(key: string, value: T): Promisable<void>;
+  insert: (key: string, value: T) => Promisable<void>;
 
   /** Erase key. */
-  erase(key: string): Promisable<void>;
+  erase: (key: string) => Promisable<void>;
 }
 
 /** Memory based KV store provider. */

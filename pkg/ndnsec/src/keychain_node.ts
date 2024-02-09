@@ -48,7 +48,7 @@ export class NdnsecKeyChain extends KeyChainSerialized {
 
   private async invokeNdnsec(argv: readonly string[], input?: Uint8Array): Promise<{
     readonly lines: string[];
-    decode<R>(d: Decodable<R>): R;
+    decode: <R>(d: Decodable<R>) => R;
   }> {
     const { stdout } = await execa("ndnsec", argv, {
       input: input && Buffer.from(input).toString("base64"),

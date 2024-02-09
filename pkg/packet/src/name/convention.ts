@@ -7,26 +7,26 @@ import type { Component } from "./component";
  */
 export interface NamingConvention<A, R = A> {
   /** Determine if a component follows this naming convention. */
-  match(comp: Component): boolean;
+  match: (comp: Component) => boolean;
 
   /** Create a component from input value following this naming convention. */
-  create(v: A): Component;
+  create: (v: A) => Component;
 
   /** Parse value of a matched component. */
-  parse(comp: Component): R;
+  parse: (comp: Component) => R;
 }
 
 export namespace NamingConvention {
   /** A naming convention that supports alternate/pretty URI. */
   export interface WithAltUri {
     /** Convert to alternate URI. */
-    toAltUri(comp: Component): string;
+    toAltUri: (comp: Component) => string;
 
     /**
      * Parse from alternate URI.
      * @returns Component, or `undefined` if it cannot be parsed.
      */
-    fromAltUri(input: string): Component | undefined;
+    fromAltUri: (input: string) => Component | undefined;
   }
 
   /** Determine whether an object implements `NamingConvention` interface. */

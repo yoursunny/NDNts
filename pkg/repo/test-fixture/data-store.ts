@@ -44,6 +44,6 @@ export namespace makeRepoProducer {
   export interface Result {
     store: DataStore;
     producer: RepoProducer;
-    close(): void;
+    close: () => void;
   }
 }
