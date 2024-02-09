@@ -71,7 +71,7 @@ assert.equal(rA3, undefined);
 // PrefixRegStatic(new Name("/A"), new Name("/B")) registers a fixed set of prefixes.
 // PrefixRegShorter(1) registers prefixes that are 1-component shorter than each Data name.
 // See test cases for more options.
-// These registrations stay with NDNts forwarding plane. Typically you'll want a package such as
+// These registrations stay with NDNts logical forwarder. Typically you'll want a package such as
 // @ndn/nfdmgmt to propagate them to the uplink(s).
 //
 //

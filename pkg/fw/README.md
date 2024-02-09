@@ -19,7 +19,7 @@ Creating a `FwFace` for application logic is a cheap operation: if you need to r
 A *packet* transmitted or received on an `FwFace` is typically an Interest or a Data.
 From application logic, it is possible to associate arbitrary metadata, called a *token*, on an outgoing Interest, and receive them back on the corresponding Data.
 You can also send a `CancelInterest` command to cancel a pending Interest, and receive a `RejectInterest` notice when the Interest is canceled or has expired.
-Obviously, these tokens and commands are not encodable, so they are only available for communication between application logic and the forwarding plane, but cannot appear beyond the NDNts application.
+Obviously, these tokens and commands are not encodable, so they are only available for communication between application logic and the logical forwarder, but cannot appear beyond the NDNts application.
 
 ## Forwarding Behavior
 

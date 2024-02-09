@@ -1,7 +1,7 @@
 {
   "name": "@ndn/fw",
   "version": "0.0.20240113",
-  "description": "NDNts: Forwarding Plane",
+  "description": "NDNts: Logical Forwarder",
   "keywords": [
     "NDN",
     "Named Data Networking"
