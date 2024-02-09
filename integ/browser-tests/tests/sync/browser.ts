@@ -1,12 +1,12 @@
 import type { FwFace } from "@ndn/fw";
 import { Name } from "@ndn/packet";
-import { makePSyncCompatParam, PSyncPartialSubscriber, type SyncUpdate } from "@ndn/psync";
+import { makePSyncCompatParam, PartialSubscriber, type SyncUpdate } from "@ndn/psync";
 import { WsTransport } from "@ndn/ws-transport";
 
 import type { UpdateRecord } from "./api";
 
 let face: FwFace;
-let sub: PSyncPartialSubscriber;
+let sub: PartialSubscriber;
 let updates: UpdateRecord[];
 
 function saveUpdate(update: SyncUpdate<unknown>): void {
@@ -17,7 +17,7 @@ function saveUpdate(update: SyncUpdate<unknown>): void {
 
 window.startPSyncPartial = async (uri) => {
   face = await WsTransport.createFace({}, uri);
-  sub = new PSyncPartialSubscriber({
+  sub = new PartialSubscriber({
     p: makePSyncCompatParam(),
     syncPrefix: new Name("/psync-test"),
     syncInterestLifetime: 100,

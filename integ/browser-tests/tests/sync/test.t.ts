@@ -2,7 +2,7 @@ import "./api";
 import "@ndn/packet/test-fixture/expect";
 
 import { Name } from "@ndn/packet";
-import { makePSyncCompatParam, PSyncPartialPublisher } from "@ndn/psync";
+import { makePSyncCompatParam, PartialPublisher } from "@ndn/psync";
 import { Closers, delay } from "@ndn/util";
 import { WsTransport } from "@ndn/ws-transport";
 import { WsServer } from "@ndn/ws-transport/test-fixture/ws-server";
@@ -21,7 +21,7 @@ beforeEach(async () => {
 });
 
 test("PSyncPartial", async () => {
-  const pub = new PSyncPartialPublisher({
+  const pub = new PartialPublisher({
     p: makePSyncCompatParam(),
     syncPrefix: new Name("/psync-test"),
   });

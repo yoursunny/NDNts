@@ -1,7 +1,7 @@
 import { Endpoint } from "@ndn/endpoint";
 import { FakeNfd } from "@ndn/nfdmgmt/test-fixture/prefix-reg";
 import { Name } from "@ndn/packet";
-import { makePSyncCompatParam, PSyncFull, type SyncUpdate } from "@ndn/psync";
+import { FullSync, makePSyncCompatParam, type SyncUpdate } from "@ndn/psync";
 import { Closers, delay } from "@ndn/util";
 import { afterEach, expect, test, vi } from "vitest";
 
@@ -21,7 +21,7 @@ test("simple", async () => {
   const p = execute(import.meta.url, [`${nfd.port}`, `${syncPrefix}`, `${userA}`]);
   await nfd.waitNFaces(1);
 
-  const sync = new PSyncFull({
+  const sync = new FullSync({
     endpoint: new Endpoint({ fw: nfd.fw }),
     p: makePSyncCompatParam({
       expectedEntries: 30,

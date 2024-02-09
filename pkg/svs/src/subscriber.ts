@@ -9,7 +9,7 @@ import { batch, consume, pipeline, transform } from "streaming-iterables";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
-import { SvMappingEntry } from "./mapping-entry";
+import { MappingEntry } from "./mapping-entry";
 import type { SvSync } from "./sync";
 
 type EventMap = {
@@ -18,19 +18,19 @@ type EventMap = {
 
 /**
  * SVS-PS subscriber.
- * @typeParam MappingEntry - Subclass of SvMappingEntry.
- * If it is not {@link SvMappingEntry} base class, its constructor must be specified in
+ * @typeParam ME - Subclass of MappingEntry.
+ * If it is not {@link MappingEntry} base class, its constructor must be specified in
  * {@link SvSubscriber.Options.mappingEntryType}.
  */
-export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
+export class SvSubscriber<ME extends MappingEntry = MappingEntry>
   extends TypedEventTarget<EventMap>
-  implements Subscriber<Name, SvSubscriber.Update, SvSubscriber.SubscribeInfo<MappingEntry>> {
+  implements Subscriber<Name, SvSubscriber.Update, SvSubscriber.SubscribeInfo<ME>> {
   constructor({
     endpoint = new Endpoint(),
     sync,
     retxLimit = 2,
     mappingBatch = 10,
-    mappingEntryType = SvMappingEntry,
+    mappingEntryType = MappingEntry,
     mustFilterByMapping = false,
     innerVerifier = noopSigning,
     outerVerifier = noopSigning,
@@ -40,7 +40,7 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
     this.endpoint = endpoint;
     this.syncPrefix = sync.syncPrefix;
     this.mappingBatch = mappingBatch;
-    this.mappingEVD = makeMappingEVD<MappingEntry>(mappingEntryType as SvMappingEntry.Constructor<MappingEntry>);
+    this.mappingEVD = makeMappingEVD<ME>(mappingEntryType as MappingEntry.Constructor<ME>);
     this.mustFilterByMapping = mustFilterByMapping;
     this.innerVerifier = innerVerifier;
     this.outerFetchOpts = {
@@ -70,10 +70,10 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
   private readonly endpoint: Endpoint;
   private readonly syncPrefix: Name;
   private readonly nameSubs = new SubscriptionTable<SvSubscriber.Update>();
-  private readonly nameFilters = new WeakMap<Subscription<Name, SvSubscriber.Update>, (entry: MappingEntry) => boolean>();
+  private readonly nameFilters = new WeakMap<Subscription<Name, SvSubscriber.Update>, (entry: ME) => boolean>();
   private readonly publisherSubs = new SubscriptionTable<SvSubscriber.Update>();
   private readonly mappingBatch: number;
-  private readonly mappingEVD: EvDecoder<Mapping<MappingEntry>>;
+  private readonly mappingEVD: EvDecoder<Mapping<ME>>;
   private readonly mustFilterByMapping: boolean;
   private readonly innerVerifier: Verifier;
   private readonly outerFetchOpts: fetch.Options;
@@ -97,14 +97,14 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
   }
 
   /** Subscribe to either a topic prefix or a publisher node ID. */
-  public subscribe(topic: SvSubscriber.SubscribeInfo<MappingEntry>): Subscription<Name, SvSubscriber.Update> {
+  public subscribe(topic: SvSubscriber.SubscribeInfo<ME>): Subscription<Name, SvSubscriber.Update> {
     if ((topic as SvSubscriber.SubscribePublisher).publisher instanceof Name) {
       return this.publisherSubs.subscribe((topic as SvSubscriber.SubscribePublisher).publisher).sub;
     }
     if (topic instanceof Name) {
       return this.nameSubs.subscribe(topic).sub;
     }
-    topic = topic as SvSubscriber.SubscribePrefixFilter<MappingEntry>;
+    topic = topic as SvSubscriber.SubscribePrefixFilter<ME>;
     const { sub } = this.nameSubs.subscribe(topic.prefix);
     this.nameFilters.set(sub, topic.filter);
     return sub;
@@ -112,7 +112,7 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
 
   private readonly handleSyncUpdate = async (update: SyncUpdate<Name>) => {
     const publisherSubs = this.publisherSubs.list(update.id);
-    let mapping: Mapping<MappingEntry> | undefined;
+    let mapping: Mapping<ME> | undefined;
     if (this.nameSubs.dimension !== 0 && (publisherSubs.size === 0 || this.mustFilterByMapping)) {
       mapping = await this.retrieveMapping(update);
     }
@@ -129,8 +129,8 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
     );
   };
 
-  private async retrieveMapping(update: SyncUpdate<Name>): Promise<Mapping<MappingEntry>> {
-    const m = new Map<number, MappingEntry>();
+  private async retrieveMapping(update: SyncUpdate<Name>): Promise<Mapping<ME>> {
+    const m = new Map<number, ME>();
     await pipeline(
       () => update.seqNums(),
       batch(this.mappingBatch),
@@ -153,7 +153,7 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
     return m;
   }
 
-  private async dispatchUpdate(publisher: Name, publisherSubs: SubSet, seqNum: number, mapping?: Mapping<MappingEntry>): Promise<void> {
+  private async dispatchUpdate(publisher: Name, publisherSubs: SubSet, seqNum: number, mapping?: Mapping<ME>): Promise<void> {
     let name: Name | undefined;
     let nameSubs: Sub[] | undefined;
     if (publisherSubs.size === 0 && mapping) {
@@ -194,7 +194,7 @@ export class SvSubscriber<MappingEntry extends SvMappingEntry = SvMappingEntry>
     this.nameSubs.update(nameSubs!, update);
   }
 
-  private listNameSubs(name: Name, entry?: MappingEntry): Sub[] {
+  private listNameSubs(name: Name, entry?: ME): Sub[] {
     const subs: Sub[] = [];
     for (const set of lpm<SubSet>(name, (prefixHex) => this.nameSubs.list(prefixHex))) {
       if (entry) {
@@ -260,9 +260,9 @@ export namespace SvSubscriber {
 
     /**
      * MappingEntry constructor.
-     * @defaultValue `SvMappingEntry` base type
+     * @defaultValue `MappingEntry` base type
      */
-    mappingEntryType?: SvMappingEntry.Constructor;
+    mappingEntryType?: MappingEntry.Constructor;
 
     /**
      * If true, force the retrieval of MappingData.
@@ -297,13 +297,13 @@ export namespace SvSubscriber {
   }
 
   /** Subscribe parameters. */
-  export type SubscribeInfo<MappingEntry extends SvMappingEntry> = SubscribePrefix | SubscribePrefixFilter<MappingEntry> | SubscribePublisher;
+  export type SubscribeInfo<ME extends MappingEntry> = SubscribePrefix | SubscribePrefixFilter<ME> | SubscribePublisher;
 
   /** Subscribe to messages udner a name prefix. */
   export type SubscribePrefix = Name;
 
   /** Subscribe to messages under a name prefix that passes a filter. */
-  export interface SubscribePrefixFilter<MappingEntry extends SvMappingEntry> {
+  export interface SubscribePrefixFilter<ME extends MappingEntry> {
     /** Topic prefix. */
     prefix: Name;
 
@@ -311,7 +311,7 @@ export namespace SvSubscriber {
      * Filter function to determine whether to retrieve a message based on MappingEntry.
      * @see {@link Options.mustFilterByMapping} for limitations on when this may not be invoked.
      */
-    filter: (entry: MappingEntry) => boolean;
+    filter: (entry: ME) => boolean;
   }
 
   /** Subscribe to messages from the specified publisher. */
@@ -332,9 +332,9 @@ export namespace SvSubscriber {
   }
 }
 
-type Mapping<M extends SvMappingEntry> = Map<number, M>;
+type Mapping<M extends MappingEntry> = Map<number, M>;
 
-function makeMappingEVD<M extends SvMappingEntry>(ctor: SvMappingEntry.Constructor<M>): EvDecoder<Mapping<M>> {
+function makeMappingEVD<M extends MappingEntry>(ctor: MappingEntry.Constructor<M>): EvDecoder<Mapping<M>> {
   return new EvDecoder<Mapping<M>>("MappingData", TT.MappingData)
     .add(l3TT.Name, () => undefined)
     .add(TT.MappingEntry, (map, { vd }) => {

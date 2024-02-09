@@ -9,7 +9,7 @@ import { Closers } from "@ndn/util";
 import { collect, map } from "streaming-iterables";
 
 import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
-import { SvMappingEntry } from "./mapping-entry";
+import { MappingEntry } from "./mapping-entry";
 import type { SvSync } from "./sync";
 
 /** SVS-PS publisher. */
@@ -81,7 +81,7 @@ export class SvPublisher {
    * This is required if subscribers are expecting a certain MappingEntry subclass.
    * @returns seqNum.
    */
-  public async publish(name: NameLike, payload: Uint8Array, entry = new SvMappingEntry()): Promise<number> {
+  public async publish(name: NameLike, payload: Uint8Array, entry = new MappingEntry()): Promise<number> {
     name = Name.from(name);
     const inner = await collect(DataProducer.listData(
       new BufferChunkSource(payload, this.chunkOptions),

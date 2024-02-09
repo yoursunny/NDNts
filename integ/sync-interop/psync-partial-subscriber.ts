@@ -1,13 +1,13 @@
 import { exitClosers, openUplinks } from "@ndn/cli-common";
 import { Name } from "@ndn/packet";
-import { makePSyncCompatParam, PSyncPartialSubscriber, PSyncZlib, type Subscription } from "@ndn/psync";
+import { makePSyncCompatParam, PartialSubscriber, PSyncZlib, type Subscription } from "@ndn/psync";
 import { console } from "@ndn/util";
 
 const syncPrefix = new Name("/psync-interop");
 
 await openUplinks();
 
-const sync = new PSyncPartialSubscriber({
+const sync = new PartialSubscriber({
   p: makePSyncCompatParam({
     ibltCompression: PSyncZlib,
   }),

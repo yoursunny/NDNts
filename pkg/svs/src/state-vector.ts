@@ -5,13 +5,13 @@ import { fromHex } from "@ndn/util";
 import { TT } from "./an";
 
 /** SVS state vector. */
-export class SvStateVector {
+export class StateVector {
   /**
    * Constructor.
    * @param from - Copy from state vector or its JSON value.
    */
-  constructor(from?: SvStateVector | Record<string, number>) {
-    if (from instanceof SvStateVector) {
+  constructor(from?: StateVector | Record<string, number>) {
+    if (from instanceof StateVector) {
       for (const [id, seqNum] of from) {
         this.m.set(id, seqNum);
       }
@@ -49,7 +49,7 @@ export class SvStateVector {
     return this.m[Symbol.iterator]();
   }
 
-  private *iterOlderThan(other: SvStateVector): Iterable<SvStateVector.DiffEntry> {
+  private *iterOlderThan(other: StateVector): Iterable<StateVector.DiffEntry> {
     for (const [id, otherSeqNum] of other) {
       const thisSeqNum = this.get(id);
       if (thisSeqNum < otherSeqNum) {
@@ -63,17 +63,18 @@ export class SvStateVector {
   }
 
   /** List nodes with older sequence number in this state vector than other. */
-  public listOlderThan(other: SvStateVector): SvStateVector.DiffEntry[] {
+  public listOlderThan(other: StateVector): StateVector.DiffEntry[] {
     return Array.from(this.iterOlderThan(other));
   }
 
   /** Update this state vector to have newer sequence numbers between this and other. */
-  public mergeFrom(other: SvStateVector): void {
+  public mergeFrom(other: StateVector): void {
     for (const { id, hiSeqNum } of this.iterOlderThan(other)) {
       this.set(id, hiSeqNum);
     }
   }
 
+  /** Serialize as JSON. */
   public toJSON(): Record<string, number> {
     const o: Record<string, number> = {};
     for (const [id, seqNum] of this) {
@@ -100,8 +101,8 @@ export class SvStateVector {
   }
 
   /** Decode TLV-VALUE of name component. */
-  public static decodeFrom(decoder: Decoder): SvStateVector {
-    const vv = new SvStateVector();
+  public static decodeFrom(decoder: Decoder): StateVector {
+    const vv = new StateVector();
     while (!decoder.eof) {
       const { type: entryT, vd: d1 } = decoder.read();
       const id = d1.decode(Name);
@@ -115,15 +116,15 @@ export class SvStateVector {
   }
 
   /** Decode from name component. */
-  public static fromComponent(comp: Component): SvStateVector {
+  public static fromComponent(comp: Component): StateVector {
     if (comp.type !== TT.StateVector) {
       throw new Error("unexpected NameComponent TLV-TYPE");
     }
-    return SvStateVector.decodeFrom(new Decoder(comp.value));
+    return StateVector.decodeFrom(new Decoder(comp.value));
   }
 }
 
-export namespace SvStateVector {
+export namespace StateVector {
   /** TLV-TYPE of name component. */
   export const NameComponentType = TT.StateVector;
 

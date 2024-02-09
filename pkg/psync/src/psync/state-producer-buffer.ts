@@ -6,7 +6,7 @@ import { assert } from "@ndn/util";
 import type { PSyncCodec } from "./codec";
 import type { PSyncCore } from "./core";
 
-export class PSyncStateProducerBuffer {
+export class StateProducerBuffer {
   constructor(
       private readonly endpoint: Endpoint,
       private readonly describe: string,

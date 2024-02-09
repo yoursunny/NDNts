@@ -5,7 +5,7 @@ import { CustomEvent, randomJitter, trackEventListener } from "@ndn/util";
 import { type Promisable } from "type-fest";
 import { TypedEventTarget } from "typescript-event-target";
 
-import { SvStateVector } from "./state-vector";
+import { StateVector } from "./state-vector";
 
 interface DebugEntry {
   action: string;
@@ -26,7 +26,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
   public static async create({
     endpoint = new Endpoint(),
     describe,
-    initialStateVector = new SvStateVector(),
+    initialStateVector = new StateVector(),
     initialize,
     syncPrefix,
     syncInterestLifetime = 1000,
@@ -50,7 +50,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
   private constructor(
       private readonly endpoint: Endpoint,
       public readonly describe: string,
-      private readonly own: SvStateVector,
+      private readonly own: StateVector,
       public readonly syncPrefix: Name,
       private readonly syncInterestLifetime: number,
       private readonly steadyTimer: () => number,
@@ -68,12 +68,12 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
    * In steady state, undefined.
    * In suppression state, aggregated state vector of incoming sync Interests.
    */
-  private aggregated?: SvStateVector;
+  private aggregated?: StateVector;
 
   /** Sync Interest timer. */
   private timer!: NodeJS.Timeout | number;
 
-  private debug(action: string, entry: Partial<DebugEntry> = {}, recv?: SvStateVector): void {
+  private debug(action: string, entry: Partial<DebugEntry> = {}, recv?: StateVector): void {
     if (!this.maybeHaveEventListener.debug) {
       return;
     }
@@ -108,8 +108,8 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
    * @remarks
    * This may be used as {@link SvSync.Options.initialStateVector} to re-create an SvSync instance.
    */
-  public get currentStateVector(): SvStateVector {
-    return new SvStateVector(this.own);
+  public get currentStateVector(): StateVector {
+    return new StateVector(this.own);
   }
 
   private readonly nodeOp = (id: Name, n: number | undefined): number => {
@@ -127,7 +127,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
 
   private readonly handleSyncInterest: ProducerHandler = async (interest) => {
     await this.verifier?.verify(interest);
-    const recv = SvStateVector.fromComponent(interest.name.at(this.syncPrefix.length));
+    const recv = StateVector.fromComponent(interest.name.at(this.syncPrefix.length));
 
     const ourOlder = this.own.listOlderThan(recv);
     const ourNewer = recv.listOlderThan(this.own);
@@ -223,7 +223,7 @@ export namespace SvSync {
      * Initial state vector.
      * @defaultValue empty state vector
      */
-    initialStateVector?: SvStateVector;
+    initialStateVector?: StateVector;
 
     /**
      * Application initialization function.

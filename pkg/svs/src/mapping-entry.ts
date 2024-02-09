@@ -4,21 +4,21 @@ import { type Decodable, type Decoder, type Encodable, type EncodableObj, type E
 
 import { TT } from "./an";
 
-function makeEvd<M extends SvMappingEntry>(title: string) {
+function makeEvd<M extends MappingEntry>(title: string) {
   return new EvDecoder<M>(title)
     .add(TT.SeqNo, (t, { nni }) => t.seqNum = nni, { order: 1, required: true })
     .add(l3TT.Name, (t, { value }) => t.name = new Name(value), { order: 2, required: true });
 }
 
-const EVD = makeEvd<SvMappingEntry>("SvMappingEntry");
+const EVD = makeEvd<MappingEntry>("MappingEntry");
 
 /** SVS-PS MappingEntry element. */
-export class SvMappingEntry implements EncodableObj {
+export class MappingEntry implements EncodableObj {
   public seqNum = 0;
   public name = new Name();
 
-  public static decodeFrom(decoder: Decoder): SvMappingEntry {
-    return EVD.decodeValue(new SvMappingEntry(), decoder);
+  public static decodeFrom(decoder: Decoder): MappingEntry {
+    return EVD.decodeValue(new MappingEntry(), decoder);
   }
 
   public encodeTo(encoder: Encoder): void {
@@ -34,13 +34,13 @@ export class SvMappingEntry implements EncodableObj {
   }
 }
 
-export namespace SvMappingEntry {
-  export interface Constructor<M extends SvMappingEntry = SvMappingEntry> extends Decodable<M> {
+export namespace MappingEntry {
+  export interface Constructor<M extends MappingEntry = MappingEntry> extends Decodable<M> {
     new(): M;
   }
 
   /** Class decorator on an extensible MappingEntry subclass. */
-  export function extend<M extends SvMappingEntry & Extensible>(
+  export function extend<M extends MappingEntry & Extensible>(
       ctor: new() => M,
       ctx?: ClassDecoratorContext,
   ): void {
@@ -74,8 +74,8 @@ timedExtensions.registerExtension<Date>({
 });
 
 /** SVS-PS MappingEntry with Timestamp element. */
-@SvMappingEntry.extend
-export class SvTimedMappingEntry extends SvMappingEntry implements Extensible {
+@MappingEntry.extend
+export class TimedMappingEntry extends MappingEntry implements Extensible {
   constructor() {
     super();
     this.timestamp = new Date();
@@ -84,6 +84,6 @@ export class SvTimedMappingEntry extends SvMappingEntry implements Extensible {
   public readonly [Extensible.TAG] = timedExtensions;
   public declare timestamp: Date | undefined;
 }
-Extensible.defineGettersSetters(SvTimedMappingEntry, {
+Extensible.defineGettersSetters(TimedMappingEntry, {
   timestamp: Timestamp.type,
 });

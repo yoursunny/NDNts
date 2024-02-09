@@ -9,8 +9,8 @@ import { computeInterval, type IntervalFunc, type IntervalRange } from "../detai
 import type { IBLT } from "../iblt";
 import { PSyncCodec } from "./codec";
 import { PSyncCore, type PSyncNode } from "./core";
-import { PSyncStateFetcher } from "./state-fetcher";
-import { PSyncStateProducerBuffer } from "./state-producer-buffer";
+import { StateFetcher } from "./state-fetcher";
+import { StateProducerBuffer } from "./state-producer-buffer";
 
 interface PendingInterest {
   interest: Interest;
@@ -31,7 +31,7 @@ type EventMap = SyncProtocol.EventMap<Name> & {
 };
 
 /** PSync - FullSync participant. */
-export class PSyncFull extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
+export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
   constructor({
     p,
     endpoint = new Endpoint(),
@@ -43,17 +43,17 @@ export class PSyncFull extends TypedEventTarget<EventMap> implements SyncProtoco
     syncInterestLifetime = 1000,
     syncInterestInterval,
     verifier,
-  }: PSyncFull.Options) {
+  }: FullSync.Options) {
     super();
     this.endpoint = endpoint;
-    this.describe = describe ?? `PSyncFull(${syncPrefix})`;
+    this.describe = describe ?? `FullSync(${syncPrefix})`;
     this.syncPrefix = syncPrefix;
     this.c = new PSyncCore(p);
     this.c.onIncreaseSeqNum = this.handleIncreaseSeqNum;
     this.codec = new PSyncCodec(p, this.c.ibltParams);
 
     this.pFreshness = syncReplyFreshness;
-    this.pBuffer = new PSyncStateProducerBuffer(this.endpoint, this.describe, this.codec,
+    this.pBuffer = new StateProducerBuffer(this.endpoint, this.describe, this.codec,
       signer, producerBufferLimit);
     this.pProducer = endpoint.produce(syncPrefix, this.handleSyncInterest, {
       describe: `${this.describe}[p]`,
@@ -61,7 +61,7 @@ export class PSyncFull extends TypedEventTarget<EventMap> implements SyncProtoco
       concurrency: Infinity,
     });
 
-    this.cFetcher = new PSyncStateFetcher(endpoint, this.describe, this.codec, syncInterestLifetime, verifier);
+    this.cFetcher = new StateFetcher(endpoint, this.describe, this.codec, syncInterestLifetime, verifier);
     this.cInterval = computeInterval(syncInterestInterval, syncInterestLifetime);
     this.scheduleSyncInterest(0);
   }
@@ -75,11 +75,11 @@ export class PSyncFull extends TypedEventTarget<EventMap> implements SyncProtoco
   private closed = false;
 
   private readonly pFreshness: number;
-  private readonly pBuffer: PSyncStateProducerBuffer;
+  private readonly pBuffer: StateProducerBuffer;
   private readonly pProducer: Producer;
   private readonly pPendings = new KeyMap<Component, PendingInterest, string>((c) => toHex(c.value));
 
-  private readonly cFetcher: PSyncStateFetcher;
+  private readonly cFetcher: StateFetcher;
   private readonly cInterval: IntervalFunc;
   private cTimer!: NodeJS.Timeout | number;
   private cAbort?: AbortController;
@@ -128,7 +128,7 @@ export class PSyncFull extends TypedEventTarget<EventMap> implements SyncProtoco
 
   private handleSyncInterest: ProducerHandler = async (interest) => {
     if (interest.name.length !== this.syncPrefix.length + 1) {
-      // segment Interest should be satisfied by PSyncStateProducerBuffer
+      // segment Interest should be satisfied by StateProducerBuffer
       return undefined;
     }
 
@@ -257,7 +257,7 @@ export class PSyncFull extends TypedEventTarget<EventMap> implements SyncProtoco
   };
 }
 
-export namespace PSyncFull {
+export namespace FullSync {
   export interface Parameters extends PSyncCore.Parameters, PSyncCodec.Parameters {
   }
 

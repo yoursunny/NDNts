@@ -28,6 +28,6 @@
   "dependencies": {
     "@ndn/psync": "workspace:*",
     "@ndn/svs": "workspace:*",
-    "tslib": "^2.6.2"
+    "@ndn/sync-api": "workspace:^"
   }
 }

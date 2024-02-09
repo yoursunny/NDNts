@@ -10,7 +10,7 @@ import { TypedEventTarget } from "typescript-event-target";
 import type { IBLT } from "../iblt";
 import { PSyncCodec } from "./codec";
 import { PSyncCore, type PSyncNode } from "./core";
-import { PSyncStateProducerBuffer } from "./state-producer-buffer";
+import { StateProducerBuffer } from "./state-producer-buffer";
 
 interface PendingInterest {
   interest: Interest;
@@ -30,7 +30,7 @@ type EventMap = SyncProtocol.EventMap<Name> & {
 };
 
 /** PSync - PartialSync publisher. */
-export class PSyncPartialPublisher extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
+export class PartialPublisher extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
   constructor({
     p,
     endpoint = new Endpoint(),
@@ -40,16 +40,16 @@ export class PSyncPartialPublisher extends TypedEventTarget<EventMap> implements
     syncReplyFreshness = 1000,
     signer,
     producerBufferLimit = 32,
-  }: PSyncPartialPublisher.Options) {
+  }: PartialPublisher.Options) {
     super();
     this.endpoint = endpoint;
-    this.describe = describe ?? `PSyncPartialPublisher(${syncPrefix})`;
+    this.describe = describe ?? `PartialPublisher(${syncPrefix})`;
     this.syncPrefix = syncPrefix;
     this.c = new PSyncCore(p);
     this.c.onIncreaseSeqNum = this.handleIncreaseSeqNum;
     this.codec = new PSyncCodec(p, this.c.ibltParams);
 
-    this.pBuffer = new PSyncStateProducerBuffer(this.endpoint, this.describe, this.codec,
+    this.pBuffer = new StateProducerBuffer(this.endpoint, this.describe, this.codec,
       signer, producerBufferLimit);
     this.hFreshness = helloReplyFreshness;
     this.hProducer = endpoint.produce(syncPrefix.append("hello"), this.handleHelloInterest, {
@@ -73,7 +73,7 @@ export class PSyncPartialPublisher extends TypedEventTarget<EventMap> implements
   private readonly codec: PSyncCodec;
   private closed = false;
 
-  private readonly pBuffer: PSyncStateProducerBuffer;
+  private readonly pBuffer: StateProducerBuffer;
   private readonly hFreshness: number;
   private readonly hProducer: Producer;
   private readonly sFreshness: number;
@@ -115,7 +115,7 @@ export class PSyncPartialPublisher extends TypedEventTarget<EventMap> implements
 
   private handleHelloInterest: ProducerHandler = async (interest) => {
     if (interest.name.length !== this.syncPrefix.length + 1) {
-      // segment Interest should be satisfied by PSyncStateProducerBuffer
+      // segment Interest should be satisfied by StateProducerBuffer
       return undefined;
     }
 
@@ -125,7 +125,7 @@ export class PSyncPartialPublisher extends TypedEventTarget<EventMap> implements
 
   private handleSyncInterest: ProducerHandler = async (interest) => {
     if (interest.name.length !== this.syncPrefix.length + 1 + this.codec.encodeBloomLength + 1) {
-      // segment Interest should be satisfied by PSyncStateProducerBuffer
+      // segment Interest should be satisfied by StateProducerBuffer
       return undefined;
     }
 
@@ -139,7 +139,7 @@ export class PSyncPartialPublisher extends TypedEventTarget<EventMap> implements
 
     const { success, positive, total } = this.c.iblt.diff(recvIblt);
     if (!success) {
-      // TODO publish ContentType=Nack via PSyncStateProducerBuffer
+      // TODO publish ContentType=Nack via StateProducerBuffer
       const ibltComp = this.codec.iblt2comp(this.c.iblt);
       const name = interest.name.append(ibltComp, Segment.create(0));
       return new Data(name, Data.ContentType(0x03), Data.FreshnessPeriod(this.sFreshness), Data.FinalBlock);
@@ -214,7 +214,7 @@ export class PSyncPartialPublisher extends TypedEventTarget<EventMap> implements
   }
 }
 
-export namespace PSyncPartialPublisher {
+export namespace PartialPublisher {
   export interface Parameters extends PSyncCore.Parameters, PSyncCodec.Parameters {
   }
 

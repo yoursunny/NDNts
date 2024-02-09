@@ -1,6 +1,6 @@
 import { exitClosers, openUplinks } from "@ndn/cli-common";
 import { Name } from "@ndn/packet";
-import { makePSyncCompatParam, PSyncPartialPublisher, PSyncZlib, type SyncNode } from "@ndn/psync";
+import { makePSyncCompatParam, PartialPublisher, PSyncZlib, type SyncNode } from "@ndn/psync";
 import { console } from "@ndn/util";
 
 const syncPrefix = new Name("/psync-interop");
@@ -8,7 +8,7 @@ const ownPrefix = new Name(`/psync-NDNts/${Date.now()}`);
 
 await openUplinks();
 
-const sync = new PSyncPartialPublisher({
+const sync = new PartialPublisher({
   p: makePSyncCompatParam({
     ibltCompression: PSyncZlib,
   }),

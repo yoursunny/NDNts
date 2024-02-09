@@ -6,9 +6,9 @@ import murmurHash3 from "murmurhash3js-revisited";
 import type { IBLT } from "../iblt";
 import type { PSyncCodec } from "./codec";
 import type { PSyncCore } from "./core";
-import type { PSyncFull } from "./full";
-import type { PSyncPartialPublisher } from "./partial-publisher";
-import type { PSyncPartialSubscriber } from "./partial-subscriber";
+import type { FullSync } from "./full";
+import type { PartialPublisher } from "./partial-publisher";
+import type { PartialSubscriber } from "./partial-subscriber";
 
 export function hash(seed: number, input: Uint8Array): number {
   return murmurHash3.x86.hash32(input, seed);
@@ -74,7 +74,7 @@ export function makePSyncCompatParam({
   expectedSubscriptions = 16,
   ibltCompression = noCompression,
   contentCompression = noCompression,
-}: makePSyncCompatParam.Options = {}): PSyncFull.Parameters & PSyncPartialPublisher.Parameters & PSyncPartialSubscriber.Parameters {
+}: makePSyncCompatParam.Options = {}): FullSync.Parameters & PartialPublisher.Parameters & PartialSubscriber.Parameters {
   return {
     iblt: makeIbltParams(expectedEntries, keyToBufferLittleEndian),
     threshold: Math.trunc(expectedEntries / 2),

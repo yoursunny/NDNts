@@ -9,7 +9,7 @@ import { computeInterval, type IntervalFunc } from "../detail/interval";
 import { IBLT } from "../iblt";
 import { PSyncCodec } from "./codec";
 import type { PSyncCore } from "./core";
-import { PSyncStateFetcher } from "./state-fetcher";
+import { StateFetcher } from "./state-fetcher";
 
 type Sub = Subscription<Name, SyncUpdate<Name>>;
 type Update = SyncUpdate<Name>;
@@ -20,12 +20,12 @@ interface DebugEntry {
 
 type EventMap = {
   debug: CustomEvent<DebugEntry>;
-  state: PSyncPartialSubscriber.StateEvent;
+  state: PartialSubscriber.StateEvent;
 };
 
 /** PSync - PartialSync subscriber. */
-export class PSyncPartialSubscriber extends TypedEventTarget<EventMap>
-  implements Subscriber<Name, Update, PSyncPartialSubscriber.TopicInfo> {
+export class PartialSubscriber extends TypedEventTarget<EventMap>
+  implements Subscriber<Name, Update, PartialSubscriber.TopicInfo> {
   constructor({
     p,
     endpoint = new Endpoint(),
@@ -34,9 +34,9 @@ export class PSyncPartialSubscriber extends TypedEventTarget<EventMap>
     syncInterestLifetime = 1000,
     syncInterestInterval,
     verifier,
-  }: PSyncPartialSubscriber.Options) {
+  }: PartialSubscriber.Options) {
     super();
-    this.describe = describe ?? `PSyncPartialSubscriber(${syncPrefix})`;
+    this.describe = describe ?? `PartialSubscriber(${syncPrefix})`;
     this.helloPrefix = syncPrefix.append("hello");
     this.syncPrefix = syncPrefix.append("sync");
     this.codec = new PSyncCodec(p, IBLT.PreparedParameters.prepare(p.iblt));
@@ -44,7 +44,7 @@ export class PSyncPartialSubscriber extends TypedEventTarget<EventMap>
 
     this.subs.handleRemoveTopic = this.handleRemoveTopic;
 
-    this.cFetcher = new PSyncStateFetcher(endpoint, this.describe, this.codec, syncInterestLifetime, verifier);
+    this.cFetcher = new StateFetcher(endpoint, this.describe, this.codec, syncInterestLifetime, verifier);
     this.cInterval = computeInterval(syncInterestInterval, syncInterestLifetime);
 
     void (async () => {
@@ -57,7 +57,7 @@ export class PSyncPartialSubscriber extends TypedEventTarget<EventMap>
   private readonly helloPrefix: Name;
   private readonly syncPrefix: Name;
   private readonly codec: PSyncCodec;
-  private readonly encodeBloom: PSyncPartialSubscriber.Parameters["encodeBloom"];
+  private readonly encodeBloom: PartialSubscriber.Parameters["encodeBloom"];
   private closed = false;
 
   private readonly subs = new SubscriptionTable<Update>();
@@ -65,7 +65,7 @@ export class PSyncPartialSubscriber extends TypedEventTarget<EventMap>
   private bloom!: BloomFilter;
   private ibltComp?: Component;
 
-  private readonly cFetcher: PSyncStateFetcher;
+  private readonly cFetcher: StateFetcher;
   private readonly cInterval: IntervalFunc;
   private cTimer!: NodeJS.Timeout | number;
   private cAbort?: AbortController;
@@ -90,7 +90,7 @@ export class PSyncPartialSubscriber extends TypedEventTarget<EventMap>
     clearTimeout(this.cTimer);
   }
 
-  public subscribe(topic: PSyncPartialSubscriber.TopicInfo): Sub {
+  public subscribe(topic: PartialSubscriber.TopicInfo): Sub {
     const { sub, objKey } = this.subs.subscribe(topic.prefix);
     if (objKey) {
       this.prevSeqNums.set(objKey, topic.seqNum);
@@ -153,7 +153,7 @@ export class PSyncPartialSubscriber extends TypedEventTarget<EventMap>
 
     this.debug("h-response");
     this.handleState(state);
-    this.dispatchTypedEvent("state", new PSyncPartialSubscriber.StateEvent("state", state));
+    this.dispatchTypedEvent("state", new PartialSubscriber.StateEvent("state", state));
   }
 
   private async sendSyncInterest(abort: AbortController): Promise<void> {
@@ -204,7 +204,7 @@ export class PSyncPartialSubscriber extends TypedEventTarget<EventMap>
   }
 }
 
-export namespace PSyncPartialSubscriber {
+export namespace PartialSubscriber {
   export interface Parameters extends PSyncCore.Parameters, PSyncCodec.Parameters {
     bloom: BloomParameters;
   }

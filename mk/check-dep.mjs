@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import fs from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import { isBuiltin } from "node:module";
 import path from "node:path";
 
@@ -8,8 +8,8 @@ import fsWalk from "@nodelib/fs.walk";
 import { satisfies } from "compare-versions";
 import yaml from "js-yaml";
 
-async function* listImports(filename) {
-  const lines = (await fs.readFile(filename, "utf8")).split("\n");
+function* listImports(filename) {
+  const lines = readFileSync(filename, "utf8").split("\n");
   for (const line of lines) {
     const m = /(?:import|export)(?:\(|(?: .* from)? )"([^.@][^":/]*|@[^":/]*\/[^":/]*)[^":]*"[;)]/.exec(line);
     if (!m) {
@@ -19,29 +19,33 @@ async function* listImports(filename) {
   }
 }
 
+const ignoredFolder = new Set([
+  "pkg/sync", // multi-line re-export, not handled by this script
+]);
 const ignoredMissing = new Set(["memif"]);
 const ignoredUnused = new Set(["@types/web-bluetooth", "graphql", "tslib"]);
 const ignoredTypes = new Set(["yargs"]);
 
 /** @type {import("@pnpm/lockfile-types").Lockfile} */
-const doc = yaml.load(await fs.readFile("pnpm-lock.yaml"));
+const doc = yaml.load(readFileSync("pnpm-lock.yaml", "utf8"));
 if (!satisfies(doc.lockfileVersion, "^6.0.0")) {
   throw new Error("lockfileVersion not supported");
 }
 
 let nWarnings = 0;
 for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entries(doc.importers)) {
-  if (!folder.startsWith("pkg/")) {
+  if (!folder.startsWith("pkg/") || ignoredFolder.has(folder)) {
     continue;
   }
   const unusedP = new Set(Object.keys(dependencies).filter((dep) => !ignoredUnused.has(dep)));
   const unusedD = new Set(Object.keys(devDependencies).filter((dep) => !ignoredUnused.has(dep)));
 
-  const jsFiles = fsWalk.walkSync(path.join(folder, "lib"), {
+  const libFolder = path.join(folder, "lib");
+  const jsFiles = fsWalk.walkSync(libFolder, {
     entryFilter: ({ dirent, name }) => dirent.isFile() && !name.endsWith(".d.ts"),
   });
   for (const { path: filename } of jsFiles) {
-    for await (const dep of listImports(filename)) {
+    for (const dep of listImports(filename)) {
       unusedP.delete(dep);
       if (!dependencies[dep] && !isBuiltin(dep) && !ignoredMissing.has(dep)) {
         process.stdout.write(`P+\t${filename}\t${dep}\n`);
@@ -50,11 +54,11 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
     }
   }
 
-  const declarations = fsWalk.walkSync(path.join(folder, "lib"), {
+  const declarations = fsWalk.walkSync(libFolder, {
     entryFilter: ({ dirent, name }) => dirent.isFile() && name.endsWith(".d.ts"),
   });
   for (const { path: filename } of declarations) {
-    for await (const imp of listImports(filename)) {
+    for (const imp of listImports(filename)) {
       unusedP.delete(imp);
       const dep = `@types/${imp}`;
       unusedP.delete(dep);
@@ -70,7 +74,7 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
     entryFilter: ({ dirent, name }) => dirent.isFile() && name.endsWith(".ts"),
   });
   for (const { path: filename } of tsFiles) {
-    for await (const imp of listImports(filename)) {
+    for (const imp of listImports(filename)) {
       unusedD.delete(imp);
       unusedD.delete(`@types/${imp}`);
     }

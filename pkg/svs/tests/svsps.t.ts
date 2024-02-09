@@ -8,7 +8,7 @@ import { Closers, console, crypto, delay } from "@ndn/util";
 import memdown from "memdown";
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
 
-import { type Subscription, type SvMappingEntry, SvPublisher, SvSubscriber, SvSync, SvTimedMappingEntry } from "..";
+import { type MappingEntry, type Subscription, SvPublisher, SvSubscriber, SvSync, TimedMappingEntry } from "..";
 
 let syncOpts: SvSync.Options;
 let pubOpts: Partial<SvPublisher.Options>;
@@ -60,7 +60,7 @@ async function publishCheck(
     publisher: SvPublisher,
     name: NameLike,
     payloadLength: number,
-    entry: SvMappingEntry | undefined,
+    entry: MappingEntry | undefined,
     expectReceive: readonly Sub[],
     expectNotReceive: readonly Sub[],
 ) {
@@ -156,36 +156,36 @@ test("timed", async () => {
   const pubQ = new SvPublisher({ ...pubOpts, sync: syncA, id: new Name("/Q"), store: repoA });
   closers.push(pubP, pubQ);
 
-  const sub0 = new SvSubscriber<SvTimedMappingEntry>({
+  const sub0 = new SvSubscriber<TimedMappingEntry>({
     ...subOpts,
     sync: syncB,
-    mappingEntryType: SvTimedMappingEntry,
+    mappingEntryType: TimedMappingEntry,
   });
-  const sub1 = new SvSubscriber<SvTimedMappingEntry>({
+  const sub1 = new SvSubscriber<TimedMappingEntry>({
     ...subOpts,
     sync: syncB,
-    mappingEntryType: SvTimedMappingEntry,
+    mappingEntryType: TimedMappingEntry,
     mustFilterByMapping: true,
   });
   closers.push(sub0, sub1);
   enableDebug({ sub0, sub1 });
 
   const timeBound = Date.now() - 300000;
-  const filterFunc = (entry: SvTimedMappingEntry) => entry.timestamp ? entry.timestamp.getTime() > timeBound : false;
+  const filterFunc = (entry: TimedMappingEntry) => entry.timestamp ? entry.timestamp.getTime() > timeBound : false;
   const makeOldEntry = () => {
-    const entry = new SvTimedMappingEntry();
+    const entry = new TimedMappingEntry();
     entry.timestamp = new Date(timeBound - 3600000 * Math.random());
     return entry;
   };
-  const makeNewEntry = () => new SvTimedMappingEntry();
+  const makeNewEntry = () => new TimedMappingEntry();
 
   const sub0P = sub0.subscribe({ publisher: new Name("/P") });
   const sub0N = sub0.subscribe(new Name("/N"));
-  const filter0F = vi.fn<[SvTimedMappingEntry], boolean>().mockImplementation(filterFunc);
+  const filter0F = vi.fn<[TimedMappingEntry], boolean>().mockImplementation(filterFunc);
   const sub0F = sub0.subscribe({ prefix: new Name("/N"), filter: filter0F });
   const sub1P = sub1.subscribe({ publisher: new Name("/P") });
   const sub1N = sub1.subscribe(new Name("/N"));
-  const filter1F = vi.fn<[SvTimedMappingEntry], boolean>().mockImplementation(filterFunc);
+  const filter1F = vi.fn<[TimedMappingEntry], boolean>().mockImplementation(filterFunc);
   const sub1F = sub1.subscribe({ prefix: new Name("/N"), filter: filter1F });
 
   await publishCheck(pubP, "/H/0", 1000, makeOldEntry(), [sub0P, sub1P], [sub0N, sub0F, sub1N, sub1F]);

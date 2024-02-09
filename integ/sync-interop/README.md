@@ -27,7 +27,7 @@ for F in examples/*.cpp; do
 done
 ```
 
-Test `PSyncFull`:
+Test `FullSync`:
 
 ```bash
 # in NDNts directory
@@ -38,7 +38,7 @@ export NDN_LOG=examples.FullSyncApp=INFO
 LD_LIBRARY_PATH=build ./build/examples/psync-full-sync /psync-interop /psync-memphis/${RANDOM} 10 1000
 ```
 
-Test `PSyncPartialPublisher`:
+Test `PartialPublisher`:
 
 ```bash
 # in NDNts directory
@@ -49,7 +49,7 @@ export NDN_LOG=examples.PartialSyncConsumerApp=INFO
 LD_LIBRARY_PATH=build ./build/examples/psync-consumer /psync-interop 5
 ```
 
-Test `PSyncPartialSubscriber`:
+Test `PartialSubscriber`:
 
 ```bash
 # in PSync directory

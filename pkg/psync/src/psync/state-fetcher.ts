@@ -10,7 +10,7 @@ interface Result {
   state: PSyncCore.State;
 }
 
-export class PSyncStateFetcher {
+export class StateFetcher {
   constructor(
       private readonly endpoint: Endpoint,
       private readonly describe: string,

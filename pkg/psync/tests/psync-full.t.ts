@@ -8,7 +8,7 @@ import { assert, Closers, delay, toHex } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
 import { afterEach, beforeEach, describe, expect, type Mock, test, vi } from "vitest";
 
-import { type IBLT, makePSyncCompatParam, PSyncFull, type SyncNode, type SyncUpdate } from "..";
+import { FullSync, type IBLT, makePSyncCompatParam, type SyncNode, type SyncUpdate } from "..";
 
 class DebugPrinter {
   public static enabled = process.env.NDNTS_SYNC_DEBUG === "1";
@@ -28,7 +28,7 @@ class DebugPrinter {
     return `${state.map(({ prefix, seqNum }) => `${prefix}:${seqNum}`).join(",")}`;
   }
 
-  public start(title: string, sync: PSyncFull): void {
+  public start(title: string, sync: FullSync): void {
     if (!DebugPrinter.enabled) {
       return;
     }
@@ -70,7 +70,7 @@ class Fixture {
     closers.push(...star);
 
     for (const bridge of [undefined, ...star]) {
-      this.syncs.push(new PSyncFull({
+      this.syncs.push(new FullSync({
         endpoint: bridge && new Endpoint({ fw: bridge.fwB }),
         p: paramCompat,
         syncPrefix: new Name("/psync-test"),
@@ -93,7 +93,7 @@ class Fixture {
     }
   }
 
-  private readonly syncs: PSyncFull[] = [];
+  private readonly syncs: FullSync[] = [];
   private readonly updates: Array<Mock<[SyncUpdate<Name>], void>> = [];
 
   public delayTick(multiple = 1): Promise<void> {

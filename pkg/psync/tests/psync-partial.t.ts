@@ -5,7 +5,7 @@ import { Name } from "@ndn/packet";
 import { delay } from "@ndn/util";
 import { afterEach, expect, type Mock, test, vi } from "vitest";
 
-import { makePSyncCompatParam, PSyncPartialPublisher, PSyncPartialSubscriber, type Subscription, type SyncUpdate } from "..";
+import { makePSyncCompatParam, PartialPublisher, PartialSubscriber, type Subscription, type SyncUpdate } from "..";
 
 afterEach(Endpoint.deleteDefaultForwarder);
 
@@ -14,7 +14,7 @@ function delayTick(multiple = 1): Promise<void> {
 }
 
 test("simple", async () => {
-  const pub = new PSyncPartialPublisher({
+  const pub = new PartialPublisher({
     p: makePSyncCompatParam(),
     syncPrefix: new Name("/psync-test"),
   });
@@ -26,14 +26,14 @@ test("simple", async () => {
   ];
   await delayTick();
 
-  const sub = new PSyncPartialSubscriber({
+  const sub = new PartialSubscriber({
     p: makePSyncCompatParam(),
     syncPrefix: new Name("/psync-test"),
     syncInterestLifetime: 100,
     syncInterestInterval: [110, 150],
   });
   const st: Array<[Subscription, Mock<[SyncUpdate<Name>], void>]> = [];
-  const subState = vi.fn(({ topics }: PSyncPartialSubscriber.StateEvent) => {
+  const subState = vi.fn(({ topics }: PartialSubscriber.StateEvent) => {
     expect(topics).toHaveLength(4);
     for (const [i, { id }] of pt.entries()) {
       const found = topics.filter(({ prefix }) => prefix.equals(id));

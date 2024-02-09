@@ -7,5 +7,5 @@ This is a transitional package that re-exports dataset synchronization and pubsu
 * `@ndn/psync`: PSync and syncps
 * `@ndn/svs`: StateVectorSync and SVS-PS
 
-This package will be deprecated in the future.
-Please import desired functionality from these package directly.
+These re-exports are deprecated.
+Please import desired functionality from the above packages directly.
