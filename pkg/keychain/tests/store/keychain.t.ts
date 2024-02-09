@@ -1,8 +1,8 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Component, Data, digestSigning, KeyLocator, Name } from "@ndn/packet";
-import { dirSync as tmpDir } from "tmp";
-import { beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
+import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
+import { beforeAll, describe, expect, test, vi } from "vitest";
 
 import { Certificate, CertNaming, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, SigningAlgorithmListFull, ValidityPeriod } from "../..";
 import * as TestCertStore from "../../test-fixture/cert-store";
@@ -20,25 +20,18 @@ test("temp CertStore", async () => {
   TestCertStore.check(record);
 });
 
-describe("persistent", () => {
-  let locator: string;
-  beforeEach(async () => {
-    const d = tmpDir({ unsafeCleanup: true });
-    locator = d.name;
-    return d.removeCallback;
-  });
+test("persistent KeyStore", async () => {
+  using tmpDir = makeTmpDir();
+  const keyChain = KeyChain.open(tmpDir.name, SigningAlgorithmListFull);
+  const record = await TestKeyStore.execute(keyChain);
+  TestKeyStore.check(record);
+});
 
-  test("persistent KeyStore", async () => {
-    const keyChain = KeyChain.open(locator, SigningAlgorithmListFull);
-    const record = await TestKeyStore.execute(keyChain);
-    TestKeyStore.check(record);
-  });
-
-  test("persistent CertStore", async () => {
-    const keyChain = KeyChain.open(locator, SigningAlgorithmListFull);
-    const record = await TestCertStore.execute(keyChain);
-    TestCertStore.check(record);
-  });
+test("persistent CertStore", async () => {
+  using tmpDir = makeTmpDir();
+  const keyChain = KeyChain.open(tmpDir.name, SigningAlgorithmListFull);
+  const record = await TestCertStore.execute(keyChain);
+  TestCertStore.check(record);
 });
 
 describe("getSigner", () => {

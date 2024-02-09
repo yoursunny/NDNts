@@ -1,12 +1,10 @@
 import { Certificate, EcCurve, ECDSA, generateSigningKey, RSA, RsaModulusLength, type SigningAlgorithm } from "@ndn/keychain";
 import { Data } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
-import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";
-import { afterEach, expect, test } from "vitest";
+import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
+import { expect, test } from "vitest";
 
 import { execute } from "../../../test-fixture/cxxprogram";
-
-afterEach(deleteTmpFiles);
 
 type Row<G> = [
   desc: string,
@@ -27,8 +25,9 @@ test.each(TABLE)("%s", async (desc, algo, genParam) => {
   const packet = new Data("/D", Uint8Array.of(0xC0, 0xC1));
   await privateKey.sign(packet);
 
-  const certFile = writeTmpFile(Encoder.encode(cert.data));
-  const packetFile = writeTmpFile(Encoder.encode(packet));
+  using tmpDir = makeTmpDir();
+  const certFile = tmpDir.createFile(Encoder.encode(cert.data));
+  const packetFile = tmpDir.createFile(Encoder.encode(packet));
   const { stdout } = await execute(import.meta.url, [certFile, packetFile]);
 
   const [certOk, packetOk] = stdout.split("\n");

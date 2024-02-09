@@ -2,7 +2,7 @@ import "./api";
 
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
 import { delay, sha256, toHex } from "@ndn/util";
-import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";
+import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
 import { beforeAll, beforeEach, expect, test } from "vitest";
 
 import { navigateToPage, page, pageInvoke } from "../../test-fixture/pptr";
@@ -13,8 +13,10 @@ let filename: string;
 beforeAll(async () => {
   objectBody = makeObjectBody(128 * 1024);
   objectBodyDigest = toHex(await sha256(objectBody));
-  filename = writeTmpFile(objectBody);
-  return deleteTmpFiles;
+
+  const tmpDir = makeTmpDir();
+  filename = tmpDir.createFile(objectBody);
+  return tmpDir[Symbol.dispose];
 });
 
 beforeEach(() => navigateToPage(import.meta.url));

@@ -9,7 +9,7 @@ import { Bridge } from "@ndn/l3face";
 import { Segment2, Segment3 } from "@ndn/naming-convention2";
 import { Data, FwHint, Name, type Verifier } from "@ndn/packet";
 import { Closers, delay } from "@ndn/util";
-import { deleteTmpFiles, writeTmpFile } from "@ndn/util/test-fixture/tmpfile";
+import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, consume } from "streaming-iterables";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
@@ -75,8 +75,9 @@ test("stream to stream", async () => {
 describe("file source", () => {
   let filename: string;
   beforeAll(() => {
-    filename = writeTmpFile(objectBody);
-    return deleteTmpFiles;
+    const tmpDir = makeTmpDir();
+    filename = tmpDir.createFile(objectBody);
+    return tmpDir[Symbol.dispose];
   });
 
   test("file to buffer", async () => {

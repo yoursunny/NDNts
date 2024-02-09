@@ -4,7 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment } from "@ndn/naming-convention2";
 import { Data, digestSigning, Name } from "@ndn/packet";
-import { makeTmpDir } from "@ndn/util/test-fixture/tmpfile";
+import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
 import { expect, test } from "vitest";
 
 import { PyRepoStore } from "..";

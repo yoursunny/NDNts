@@ -4,21 +4,22 @@ import { generateSigningKey, KeyChain } from "@ndn/keychain";
 import { FakeNfd } from "@ndn/nfdmgmt/test-fixture/prefix-reg";
 import { Data, type Name } from "@ndn/packet";
 import { Closers } from "@ndn/util";
-import { dirSync as tmpDir } from "tmp";
+import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
 import { afterAll, expect, test } from "vitest";
 
 const closers = new Closers();
 afterAll(closers.close);
 
-const tmpKeyChain = tmpDir({ unsafeCleanup: true });
-afterAll(tmpKeyChain.removeCallback);
+const tmpDir = makeTmpDir();
+closers.push(tmpDir); // `using tmpDir` seems to cause premature cleanup
+const keyChainDir = tmpDir.join("keychain");
 let signerName: Name;
 {
-  const keyChain = KeyChain.open(tmpKeyChain.name);
+  const keyChain = KeyChain.open(keyChainDir);
   const [signerPvt] = await generateSigningKey(keyChain, "/key-signer");
   signerName = signerPvt.name;
 }
-process.env.NDNTS_KEYCHAIN = tmpKeyChain.name;
+process.env.NDNTS_KEYCHAIN = keyChainDir;
 process.env.NDNTS_KEY = "/key-signer";
 
 const nfd = await new FakeNfd().open();

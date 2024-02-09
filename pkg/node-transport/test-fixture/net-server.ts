@@ -1,7 +1,7 @@
 import { type EventEmitter, once } from "node:events";
 import net from "node:net";
 
-import { tmpNameSync } from "tmp";
+import { makeTmpDir, type TmpDir } from "@ndn/util/test-fixture/tmp";
 
 /**
  * Transport test server.
@@ -127,7 +127,14 @@ export class IpcServer extends NetServer {
   /** Unix/IPC server path. */
   public readonly path = process.platform === "win32" ?
     `//./pipe/2a8370be-8abc-448f-bb09-54d8b243cf7a/${Math.trunc(Math.random() * 0x100000000)}` :
-    tmpNameSync();
+    (this.tmpDir = makeTmpDir()).filename();
+
+  private tmpDir?: TmpDir;
+
+  public override [Symbol.asyncDispose](): Promise<void> {
+    this.tmpDir?.[Symbol.dispose]();
+    return super[Symbol.asyncDispose]();
+  }
 
   protected override listenBegin(): void {
     this.server.listen(this.path);

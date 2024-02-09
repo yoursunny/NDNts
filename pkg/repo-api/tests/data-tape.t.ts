@@ -6,9 +6,9 @@ import { BufferBreaker } from "@ndn/node-transport/test-fixture/buffer-breaker";
 import { Data, Interest, Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import { Closers, delay, randomJitter } from "@ndn/util";
+import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect } from "streaming-iterables";
-import { dirSync as tmpDir } from "tmp";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { BulkInsertInitiator, BulkInsertTarget, copy, DataTape } from "..";
@@ -65,23 +65,16 @@ describe("DataTape reader", () => {
   });
 });
 
-describe("DataTape file", () => {
-  let dir: string;
-  beforeEach(() => {
-    const d = tmpDir({ unsafeCleanup: true });
-    dir = d.name;
-    return d.removeCallback;
-  });
+test("DataTape file copy", async () => {
+  using tmpDir = makeTmpDir();
 
-  test("copy", async () => {
-    const tapeA = new DataTape(`${dir}/A.dtar`);
-    await copy(new DataTape(makeDataTapeReadStream), tapeA);
-    await expect(collect(tapeA.listNames())).resolves.toHaveLength(500);
+  const tapeA = new DataTape(tmpDir.join("A.dtar"));
+  await copy(new DataTape(makeDataTapeReadStream), tapeA);
+  await expect(collect(tapeA.listNames())).resolves.toHaveLength(500);
 
-    const tapeB = new DataTape(`${dir}/B.dtar`);
-    await copy(tapeA, new Name("/A/2"), tapeB);
-    await expect(collect(tapeB.listNames())).resolves.toHaveLength(100);
-  });
+  const tapeB = new DataTape(tmpDir.join("B.dtar"));
+  await copy(tapeA, new Name("/A/2"), tapeB);
+  await expect(collect(tapeB.listNames())).resolves.toHaveLength(100);
 });
 
 async function testBulkInsertTarget(

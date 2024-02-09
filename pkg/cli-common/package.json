@@ -36,9 +36,5 @@
     "env-var": "^7.4.1",
     "tslib": "^2.6.2",
     "wtfnode": "^0.9.1"
-  },
-  "devDependencies": {
-    "@types/tmp": "^0.2.6",
-    "tmp": "^0.2.1"
   }
 }
