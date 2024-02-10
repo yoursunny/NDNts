@@ -6,6 +6,7 @@ import { Name, type NameLike } from "@ndn/packet";
 import { DataStore } from "@ndn/repo";
 import { Closers, console, crypto, delay } from "@ndn/util";
 import memdown from "memdown";
+import pDefer from "p-defer";
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
 
 import { type MappingEntry, type Subscription, SvPublisher, SvSubscriber, SvSync, TimedMappingEntry } from "..";
@@ -54,7 +55,6 @@ function enableDebug(subs: Record<string, SvSubscriber<any>>): void {
 }
 
 type Sub = Subscription<Name, SvSubscriber.Update>;
-type UpdateHandler = (update: SvSubscriber.Update) => void;
 
 async function publishCheck(
     publisher: SvPublisher,
@@ -66,28 +66,32 @@ async function publishCheck(
 ) {
   const abort = new AbortController();
   const received = Array.from<SvSubscriber.Update | undefined>({ length: expectReceive.length });
+  let nWaiting = expectReceive.length;
+  const allReceived = pDefer<void>();
   for (const [i, sub] of expectReceive.entries()) {
-    let isReceived = false;
-    const handleUpdate: UpdateHandler = (update) => {
-      expect(isReceived).toBeFalsy();
-      isReceived = true;
+    sub.addEventListener("update", (update) => { // eslint-disable-line @typescript-eslint/no-loop-func
+      expect(received[i]).toBeUndefined();
       received[i] = update;
-    };
-    sub.addEventListener("update", handleUpdate, { signal: abort.signal });
+      if (--nWaiting === 0) {
+        setTimeout(() => allReceived.resolve(), 200);
+      }
+    }, { signal: abort.signal });
   }
   for (const sub of expectNotReceive) {
-    const handleUpdate: UpdateHandler = ({ publisher, seqNum, name }) => {
+    sub.addEventListener("update", ({ publisher, seqNum, name }) => {
       expect.fail(`unexpected update ${publisher}:${seqNum} ${name}`);
-    };
-    sub.addEventListener("update", handleUpdate, { signal: abort.signal });
+    }, { signal: abort.signal });
   }
 
   const payload = crypto.getRandomValues(new Uint8Array(payloadLength));
   const seqNum = await publisher.publish(name, payload, entry);
-  await delay(1000);
+  await Promise.race([
+    delay(1000),
+    allReceived.promise,
+  ]);
 
   for (const update of received) {
-    expect(update).toBeTruthy();
+    expect(update).toBeDefined();
     expect(update!.publisher).toEqualName(publisher.id);
     expect(update!.seqNum).toBe(seqNum);
     expect(update!.name).toEqualName(name);
@@ -107,8 +111,7 @@ test("simple", async () => {
 
   const repoA = new DataStore(memdown());
   const repoB = new DataStore(memdown());
-  const repoC = new DataStore(memdown());
-  closers.push(repoA, repoB, repoC);
+  closers.push(repoA, repoB);
 
   const pubA0 = new SvPublisher({ ...pubOpts, sync: syncA, id: new Name("/0"), store: repoA });
   const pubA1 = new SvPublisher({ ...pubOpts, sync: syncA, id: new Name("/1"), store: repoA });
@@ -138,7 +141,7 @@ test("simple", async () => {
 
   // bad inner signature
   await publishCheck(pubB7, "/t/7", 100, undefined, [], [subC1, subC9, subDt, subD0]);
-  // bad outer signaturet
+  // bad outer signature
   await publishCheck(pubB8, "/t/8", 100, undefined, [], [subC1, subC9, subDt, subD0]);
   // bad mapping signature, but subC would not retrieve mapping
   await publishCheck(pubB9, "/t/9", 100, undefined, [subC9], [subC1, subDt, subD0]);

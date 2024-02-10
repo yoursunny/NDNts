@@ -2,7 +2,7 @@ import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
 import { Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { CustomEvent, randomJitter, trackEventListener } from "@ndn/util";
-import { type Promisable } from "type-fest";
+import type { Promisable } from "type-fest";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { StateVector } from "./state-vector";
@@ -112,6 +112,14 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     return new StateVector(this.own);
   }
 
+  /**
+   * Multi-purpose callback passed to {@link SvSyncNode} constructor.
+   *
+   * @remarks
+   * - `nodeOp(id)`: get seqNum
+   * - `nodeOp(id, n)`: set seqNum, return new seqNum
+   * - `nodeOp(id, 0)`: delete node during initialization
+   */
   private readonly nodeOp = (id: Name, n: number | undefined): number => {
     if (n !== undefined) { // setSeqNum requested
       if (!this.producer) { // decrement/remove permitted during initialization
@@ -167,18 +175,18 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
         ourNewer: ourNewer.length,
       });
       if (ourNewer.length > 0) {
-        this.sendSyncInterest();
+        void this.sendSyncInterest();
       }
       this.aggregated = undefined;
     } else { // in steady state
       this.debug("timer");
-      this.sendSyncInterest();
+      void this.sendSyncInterest();
     }
 
     this.resetTimer();
   };
 
-  private sendSyncInterest(): void {
+  private async sendSyncInterest(): Promise<void> {
     this.debug("send");
 
     const interest = new Interest();
@@ -187,14 +195,15 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     interest.mustBeFresh = true;
     interest.lifetime = this.syncInterestLifetime;
 
-    void (async () => {
-      await this.signer.sign(interest);
-      try {
-        await this.endpoint.consume(interest, {
-          describe: `${this.describe}[c]`,
-        });
-      } catch {}
-    })();
+    await this.signer.sign(interest);
+    try {
+      await this.endpoint.consume(interest, {
+        describe: `${this.describe}[c]`,
+        retx: 0,
+      });
+    } catch {
+      // not expecting a reply, so that a timeout will happen and it shall be ignored
+    }
   }
 }
 
@@ -208,6 +217,7 @@ export namespace SvSync {
    */
   export type Timer = [ms: number, jitter: number];
 
+  /** {@link SvSync.create} options. */
   export interface Options {
     /**
      * Endpoint for communication.
@@ -232,8 +242,7 @@ export namespace SvSync {
      * During initialization, it's possible to remove SyncNode or decrease seqNum.
      * Calling `sync.close()` has no effect.
      *
-     * Sync protocol starts running after the function has returned and the returned Promise
-     * is resolved.
+     * Sync protocol starts running after the returned Promise is resolved.
      */
     initialize?: (sync: SvSync) => Promisable<void>;
 
