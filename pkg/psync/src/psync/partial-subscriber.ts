@@ -84,8 +84,6 @@ export class PartialSubscriber extends TypedEventTarget<EventMap>
     }
     this.closed = true;
 
-    this.bloom.dispose();
-
     this.cAbort?.abort();
     this.cAbort = undefined;
     clearTimeout(this.cTimer);

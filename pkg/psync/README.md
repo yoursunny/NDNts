@@ -11,7 +11,7 @@ This package contains **PSync** and related protocols, including:
   * application nack handling is incomplete
 * [syncps - Pubsub](https://github.com/pollere/DNMP-v2/tree/main/syncps)
   * simple unit test
-  * note: current implementation is compatible with DNMP-v2 syncps, not DCT syncps
+  * implementation is compatible with DNMP-v2 syncps, not DCT syncps
 
 These implementations are parameterized.
 Certain algorithm settings (e.g. hashtable size) and encoding details (e.g. endianness) are extracted from the core logic and put into `Parameters` structures.

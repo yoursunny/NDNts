@@ -163,7 +163,6 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
           this.debug("s-expire", pending.interest);
           pending.defer.resolve(undefined);
         }
-        pending.bloom.dispose();
       }, interest.lifetime),
       defer: pDefer<Data | undefined>(),
     };
