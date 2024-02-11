@@ -130,8 +130,7 @@ export namespace Bridge {
 
     /**
      * Forwarder A.
-     * @defaultValue
-     * A new Forwarder, which can be retrieved with `bridge.fwA`.
+     * @defaultValue `Forwarder.create(.fwOpts)`
      * @remarks
      * Disposing the bridge closes auto-created Forwarder but not passed-in Forwarder.
      */
@@ -139,8 +138,7 @@ export namespace Bridge {
 
     /**
      * Forwarder B.
-     * @defaultValue
-     * A new Forwarder, which can be retrieved with `bridge.fwB`.
+     * @defaultValue `Forwarder.create(.fwOpts)`
      * @remarks
      * Disposing the bridge closes auto-created Forwarder but not passed-in Forwarder.
      */
@@ -155,15 +153,13 @@ export namespace Bridge {
 
     /**
      * Relay options for packets from forwarder A to forwarder B.
-     * @defaultValue
-     * RelayOptions with 0% loss and 1ms delay.
+     * @defaultValue instant delivery
      */
     relayAB?: Relay;
 
     /**
      * Relay options for packets from forwarder B to forwarder A.
-     * @defaultValue
-     * RelayOptions with 0% loss and 1ms delay.
+     * @defaultValue instant delivery
      */
     relayBA?: Relay;
 
@@ -220,11 +216,10 @@ export namespace Bridge {
     };
   }
 
-  export type Renamed<A extends string, B extends string> = Disposable & {
-    [k in `fw${A | B}`]: Forwarder;
-  } & {
-    [k in `face${A | B}`]: FwFace;
-  };
+  export type Renamed<A extends string, B extends string> =
+    Except<Bridge, "fwA" | "fwB" | "faceA" | "faceB"> &
+    { [k in `fw${A | B}`]: Forwarder; } &
+    { [k in `face${A | B}`]: FwFace; };
 
   /** {@link star} options, where each edge/leaf can have different options. */
   export type StarEdgeOptions = Except<CreateOptions, "fwA">;
