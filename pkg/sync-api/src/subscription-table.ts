@@ -6,9 +6,13 @@ import type { Subscription } from "./pubsub";
 class Sub<Update extends Event> extends TypedEventTarget<Subscription.EventMap<any>> implements Subscription<Name, Update> {
   constructor(
       public readonly topic: Name,
-      public readonly remove: () => void,
+      private readonly dispose_: () => void,
   ) {
     super();
+  }
+
+  public [Symbol.dispose](): void {
+    this.dispose_();
   }
 }
 

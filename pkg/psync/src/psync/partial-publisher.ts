@@ -113,7 +113,7 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
     return this.c.add(prefix);
   }
 
-  private handleHelloInterest: ProducerHandler = async (interest) => {
+  private readonly handleHelloInterest: ProducerHandler = async (interest) => {
     if (interest.name.length !== this.syncPrefix.length + 1) {
       // segment Interest should be satisfied by StateProducerBuffer
       return undefined;
@@ -123,7 +123,7 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
     return this.sendStateData(interest, state, "h-process", this.hFreshness);
   };
 
-  private handleSyncInterest: ProducerHandler = async (interest) => {
+  private readonly handleSyncInterest: ProducerHandler = async (interest) => {
     if (interest.name.length !== this.syncPrefix.length + 1 + this.codec.encodeBloomLength + 1) {
       // segment Interest should be satisfied by StateProducerBuffer
       return undefined;
@@ -171,7 +171,7 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
     return pending.defer.promise;
   };
 
-  private handleIncreaseSeqNum = (node: PSyncNode) => {
+  private readonly handleIncreaseSeqNum = (node: PSyncNode) => {
     this.debug(`+(${node.id},${node.seqNum})`);
 
     for (const [nameHex, { interest, recvIblt, bloom, expire, defer }] of this.sPendings) {
@@ -215,9 +215,11 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
 }
 
 export namespace PartialPublisher {
+  /** Algorithm parameters. */
   export interface Parameters extends PSyncCore.Parameters, PSyncCodec.Parameters {
   }
 
+  /** {@link PartialPublisher} constructor options. */
   export interface Options {
     /**
      * Algorithm parameters.

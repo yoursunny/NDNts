@@ -19,6 +19,7 @@ interface DebugEntry {
 }
 
 type EventMap = {
+  /** Emitted for debugging. */
   debug: CustomEvent<DebugEntry>;
   state: PartialSubscriber.StateEvent;
 };
@@ -205,10 +206,12 @@ export class PartialSubscriber extends TypedEventTarget<EventMap>
 }
 
 export namespace PartialSubscriber {
+  /** Algorithm parameters. */
   export interface Parameters extends PSyncCore.Parameters, PSyncCodec.Parameters {
     bloom: BloomParameters;
   }
 
+  /** {@link PartialSubscriber} constructor options. */
   export interface Options {
     /**
      * Algorithm parameters.

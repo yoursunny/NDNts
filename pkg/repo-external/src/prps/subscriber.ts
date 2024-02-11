@@ -1,12 +1,14 @@
 import { Endpoint, type Producer, type ProducerHandler, type RetxPolicy } from "@ndn/endpoint";
 import { Data, digestSigning, Interest, type Name, type Signer, type Verifier } from "@ndn/packet";
+import type { Subscriber, Subscription } from "@ndn/sync-api";
 import { Decoder } from "@ndn/tlv";
-import { pushable } from "@ndn/util";
+import { CustomEvent } from "@ndn/util";
+import { TypedEventTarget } from "typescript-event-target";
 
 import { NotifyAppParam, NotifySuffix } from "./packet";
 
 /** ndn-python-repo PubSub protocol subscriber. */
-export class PrpsSubscriber {
+export class PrpsSubscriber implements Subscriber<Name, PrpsSubscriber.Update> {
   constructor({
     endpoint = new Endpoint(),
     msgInterestLifetime = Interest.DefaultLifetime,
@@ -30,8 +32,8 @@ export class PrpsSubscriber {
   private readonly subAnnouncement?: false;
   private readonly subSigner: Signer;
 
-  public subscribe(topic: Name): PrpsSubscriber.Subscription {
-    return new Subscription(topic, this.endpoint,
+  public subscribe(topic: Name): Subscription<Name, PrpsSubscriber.Update> {
+    return new Sub(topic, this.endpoint,
       this.msgInterestLifetime, this.msgRetx, this.pubVerifier,
       this.subAnnouncement, this.subSigner);
   }
@@ -77,12 +79,11 @@ export namespace PrpsSubscriber {
     subSigner?: Signer;
   }
 
-  export type Subscription = AsyncIterable<Data> & Disposable & {
-    readonly topic: Name;
-  };
+  export type Update = CustomEvent<Data>;
 }
 
-class Subscription implements PrpsSubscriber.Subscription {
+class Sub extends TypedEventTarget<Subscription.EventMap<PrpsSubscriber.Update>>
+  implements Subscription<Name, PrpsSubscriber.Update> {
   constructor(
       public readonly topic: Name,
       private readonly endpoint: Endpoint,
@@ -92,6 +93,7 @@ class Subscription implements PrpsSubscriber.Subscription {
       subAnnouncement: false | undefined,
       subSigner: Signer,
   ) {
+    super();
     this.notifyPrefix = topic.append(NotifySuffix);
     this.notifyProducer = this.endpoint.produce(this.notifyPrefix, this.handleNotifyInterest, {
       describe: `prps-sub(${topic})`,
@@ -102,16 +104,10 @@ class Subscription implements PrpsSubscriber.Subscription {
 
   public [Symbol.dispose](): void {
     this.notifyProducer.close();
-    this.messages.stop();
-  }
-
-  public [Symbol.asyncIterator]() {
-    return this.messages[Symbol.asyncIterator]();
   }
 
   private readonly notifyPrefix: Name;
   private readonly notifyProducer: Producer;
-  private readonly messages = pushable<Data>();
 
   private readonly handleNotifyInterest: ProducerHandler = async (interest) => {
     if (interest.name.length <= this.notifyPrefix.length || !interest.appParameters) {
@@ -127,7 +123,7 @@ class Subscription implements PrpsSubscriber.Subscription {
       retx: this.msgRetx,
       verifier: this.pubVerifier,
     });
-    this.messages.push(msgData);
+    this.dispatchTypedEvent("update", new CustomEvent("update", { detail: msgData }));
 
     return new Data(interest.name);
   };

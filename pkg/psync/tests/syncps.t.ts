@@ -121,7 +121,7 @@ test("simple", async () => {
   const [, updatesBtP] = f.subscribe(1, "/P");
   const [, updatesCtQ] = f.subscribe(2, "/Q");
 
-  subAtPZ.remove();
+  subAtPZ[Symbol.dispose]();
   await f.publish(1, "/P/Z/0");
   await f.delayTick();
   expect(updatesAtR).toHaveLength(0);
@@ -131,7 +131,7 @@ test("simple", async () => {
   expect(updatesBtP).toHaveLength(0);
   expect(updatesCtQ).toHaveLength(0);
 
-  subAtP1.remove();
+  subAtP1[Symbol.dispose]();
   await Promise.all([
     f.publish(0, "/P/A/1"),
     f.publish(1, "/P/B/1"),

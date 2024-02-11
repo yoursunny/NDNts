@@ -40,23 +40,21 @@ test("simple", async () => {
     pubExpectedResults.push(rem === 4 ? "rejected" : "fulfilled");
   }
 
-  const sub0A = sub0.subscribe(topicA);
-  const sub0B = sub0.subscribe(topicB);
-  const sub1A = sub1.subscribe(topicA);
-  const mapDataIndex = map((data: Data): number => {
-    expect(data.content).toHaveLength(2);
-    expect(data.content[0]).toBe(0xDD);
-    return data.content[1]!;
-  });
-  const [
-    data0A,
-    data0B,
-    data1A,
-    pubResults,
-  ] = await Promise.all([
-    collect(mapDataIndex(sub0A)),
-    collect(mapDataIndex(sub0B)),
-    collect(mapDataIndex(sub1A)),
+  const subscribeAndCollect = (subscriber: PrpsSubscriber, topic: Name) => {
+    const sub = subscriber.subscribe(topic);
+    const nums: number[] = [];
+    sub.addEventListener("update", ({ detail: data }) => {
+      expect(data.content).toHaveLength(2);
+      expect(data.content[0]).toBe(0xDD);
+      nums.push(data.content[1]);
+    });
+    return [sub, nums] as const;
+  };
+
+  const [sub0A, data0A] = subscribeAndCollect(sub0, topicA);
+  const [sub0B, data0B] = subscribeAndCollect(sub0, topicB);
+  const [sub1A, data1A] = subscribeAndCollect(sub1, topicA);
+  const [pubResults] = await Promise.all([
     Promise.allSettled(pubPromises),
     (async () => {
       using closers = new Closers(sub0A, sub0B, sub1A);

@@ -13,13 +13,12 @@ export interface Subscriber<Topic = Name, Update extends Event = SyncUpdate<Topi
  *
  * @remarks
  * Listen to the 'update' event to receive updates on incoming publications matching the topic.
+ * Unsubscribe by disposing the subscription.
  */
-export interface Subscription<Topic = Name, Update extends Event = SyncUpdate<Topic>> extends TypedEventTarget<Subscription.EventMap<Update>> {
+export interface Subscription<Topic = Name, Update extends Event = SyncUpdate<Topic>>
+  extends Disposable, TypedEventTarget<Subscription.EventMap<Update>> {
   /** The topic. */
   readonly topic: Topic;
-
-  /** Unsubscribe. */
-  remove: () => void;
 }
 
 export namespace Subscription {

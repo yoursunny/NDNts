@@ -69,7 +69,7 @@ test("simple", async () => {
   expect(st[0]![1]).toHaveBeenCalledTimes(2);
   expect(st[1]![1]).toHaveBeenCalledTimes(1);
 
-  st[0]![0].remove();
+  st[0]![0][Symbol.dispose]();
   pt[0]!.seqNum = 6;
   pt[1]!.seqNum = 6;
   pt[2]!.seqNum = 6;
