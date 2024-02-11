@@ -1,11 +1,10 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { L3Face } from "@ndn/l3face";
 import { MockTransport } from "@ndn/l3face/test-fixture/mock-transport";
 import { BufferBreaker } from "@ndn/node-transport/test-fixture/buffer-breaker";
 import { Data, Interest, Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
-import { Closers, delay, randomJitter } from "@ndn/util";
+import { delay, randomJitter } from "@ndn/util";
 import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect } from "streaming-iterables";
@@ -91,7 +90,7 @@ async function testBulkInsertTarget(
   await bi.accept(makeDataTapeReadStream("read"));
   expect(storeInsert).toHaveBeenCalledTimes(16);
 
-  await Closers.close(tape);
+  await tape[Symbol.asyncDispose]();
   const readback = new DataTape(new BufferReadableMock(retrieve()));
   await expect(collect(readback.listData())).resolves.toHaveLength(500);
 }
@@ -107,22 +106,21 @@ test("BulkInsertTarget make-stream", () => {
 });
 
 test("BulkInsertInitiator", async () => {
-  const transport = new MockTransport();
-  const bi = new BulkInsertInitiator(new L3Face(transport));
+  const tr = new MockTransport();
+  const bi = new BulkInsertInitiator(tr);
   bi.addEventListener("error", (evt) => {
-    expect(evt.detail).toBeUndefined();
+    expect.fail(`unexpected error event ${evt.detail}`);
   });
   let n = 0;
   const interval = randomJitter(0.5, 10);
   for (let i = 0; i < 10; ++i) {
     await delay(interval());
-    const pkts: Data[] = [];
-    const count = Math.trunc(Math.random() * 64);
-    for (let j = 0; j < count; ++j) {
-      pkts.push(new Data(`/D/${++n}`));
-    }
+    const pkts = Array.from(
+      { length: Math.trunc(Math.random() * 64) },
+      () => new Data(`/D/${++n}`), // eslint-disable-line @typescript-eslint/no-loop-func
+    );
     await bi.insert(...pkts);
   }
-  await Closers.close(bi);
-  expect(transport.sent).toHaveLength(n);
+  await bi[Symbol.asyncDispose]();
+  expect(tr.sent).toHaveLength(n);
 });

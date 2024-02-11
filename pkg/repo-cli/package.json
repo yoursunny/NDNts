@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@ndn/cli-common": "workspace:*",
-    "@ndn/l3face": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "@ndn/packet": "workspace:*",

@@ -1,5 +1,4 @@
 import { exitClosers } from "@ndn/cli-common";
-import { L3Face } from "@ndn/l3face";
 import { SequenceNum } from "@ndn/naming-convention2";
 import { TcpTransport } from "@ndn/node-transport";
 import { Data, Name } from "@ndn/packet";
@@ -121,8 +120,8 @@ export const FillBiCommand: CommandModule<{}, BaseArgs & {
   },
 
   async handler(args) {
-    const face = new L3Face(await TcpTransport.connect(args.host, args.port));
-    const bi = new BulkInsertInitiator(face);
+    const tr = await TcpTransport.connect(args.host, args.port);
+    const bi = new BulkInsertInitiator(tr);
     exitClosers.push(bi);
     await execute(args, bi);
   },

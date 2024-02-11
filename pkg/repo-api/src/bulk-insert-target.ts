@@ -16,7 +16,7 @@ export class BulkInsertTarget {
   /**
    * Accept bulk insertion from a stream of Data packets.
    * @param stream - Input stream.
-   * @returns Number of Data packets inserted.
+   * @returns Promise that resolves to number of Data packets inserted, when `stream` has ended.
    */
   public accept(stream: NodeJS.ReadableStream): Promise<number> {
     const src = new DataTape(stream);
