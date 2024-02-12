@@ -1,5 +1,5 @@
 import { type Forwarder, type FwFace, FwPacket } from "@ndn/fw";
-import { Data, Interest, type Name, type Signer, SigType } from "@ndn/packet";
+import { Data, Interest, type Name, Signer } from "@ndn/packet";
 import { flatTransform } from "streaming-iterables";
 
 import type { DataBuffer } from "./data-buffer";
@@ -142,7 +142,7 @@ export class ProducerImpl implements Producer {
       }: ProducerOptions,
   ) {
     this.signal = signal;
-    this.dataSigner = dataSigner;
+    this.dataSigner = dataSigner && Signer.onlyIfUnsigned(dataSigner);
     this.dataBuffer = dataBuffer;
 
     this.face = fw.addFace(
@@ -188,7 +188,7 @@ export class ProducerImpl implements Producer {
       return undefined;
     }
 
-    await signUnsignedData(data, this.dataSigner);
+    await this.dataSigner?.sign(data);
     if (!await data.canSatisfy(interest)) { // isCacheLookup=false because the buffer is not considered a cache
       return undefined;
     }
@@ -217,11 +217,5 @@ export class ProducerImpl implements Producer {
 
   public [Symbol.dispose](): void {
     this.close();
-  }
-}
-
-export async function signUnsignedData(data: Data, dataSigner: Signer | undefined) {
-  if (dataSigner && data.sigInfo.type === SigType.Null) {
-    await dataSigner.sign(data);
   }
 }

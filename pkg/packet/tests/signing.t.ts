@@ -6,7 +6,7 @@ import { type Decodable, Decoder, type Encodable, Encoder } from "@ndn/tlv";
 import { delay } from "@ndn/util";
 import { expect, test } from "vitest";
 
-import { Data, digestSigning, Interest, LLSign, LLVerify, Name, nullSigner, SigInfo, SigType, TT } from "..";
+import { Data, digestSigning, Interest, LLSign, LLVerify, Name, nullSigner, SigInfo, Signer, SigType, TT } from "..";
 import * as TestSignVerify from "../test-fixture/sign-verify";
 
 class TestAlgo {
@@ -153,4 +153,23 @@ test("nullSigner", async () => {
   await nullSigner.sign(data);
   expect(data.sigInfo.type).toBe(SigType.Null);
   expect(data.sigValue).toHaveLength(0);
+});
+
+test("onlyIfUnsigned", async () => {
+  const digestIfUnsigned = Signer.onlyIfUnsigned(digestSigning);
+
+  const interest = new Interest("/I");
+  expect(interest.sigInfo).toBeUndefined();
+  await digestIfUnsigned.sign(interest);
+  expect(interest.sigInfo?.type).toBe(SigType.Sha256);
+
+  const data = new Data("/D");
+  expect(data.sigInfo.type).toBe(SigType.Null);
+  await digestIfUnsigned.sign(data);
+  expect(data.sigInfo.type).toBe(SigType.Sha256);
+
+  Signer.putSigInfo(data, SigType.HmacWithSha256, "/K");
+  expect(data.sigInfo?.type).toBe(SigType.HmacWithSha256);
+  await digestIfUnsigned.sign(data);
+  expect(data.sigInfo?.type).toBe(SigType.HmacWithSha256);
 });

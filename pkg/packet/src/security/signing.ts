@@ -73,6 +73,20 @@ export namespace Signer {
     }
     return pkt.sigInfo;
   }
+
+  /**
+   * Create a Signer that signs a packet only if it does not already have a non-Null signature.
+   * @param signer - Inner signer.
+   */
+  export function onlyIfUnsigned(signer: Signer): Signer {
+    return {
+      async sign(pkt) {
+        if (!pkt.sigInfo || pkt.sigInfo.type === SigType.Null) {
+          await signer.sign(pkt);
+        }
+      },
+    };
+  }
 }
 
 /** High level verifier, such as a named public key. */

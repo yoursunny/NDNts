@@ -1,7 +1,5 @@
-import type { Data, Interest, Signer } from "@ndn/packet";
+import { type Data, type Interest, Signer } from "@ndn/packet";
 import { assert } from "@ndn/util";
-
-import { signUnsignedData } from "./producer";
 
 /** Outgoing Data buffer for producer. */
 export interface DataBuffer {
@@ -38,7 +36,7 @@ export class DataStoreBuffer implements DataBuffer {
   }: DataStoreBuffer.Options = {}) {
     assert(ttl >= 0);
     this.ttl = ttl;
-    this.dataSigner = dataSigner;
+    this.dataSigner = dataSigner && Signer.onlyIfUnsigned(dataSigner);
   }
 
   private readonly ttl: number;
@@ -51,7 +49,7 @@ export class DataStoreBuffer implements DataBuffer {
   public async insert(...pkts: Data[]) {
     const expireTime = this.ttl > 0 ? Date.now() + this.ttl : undefined;
     if (this.dataSigner) {
-      await Promise.all(pkts.map((data) => signUnsignedData(data, this.dataSigner)));
+      await Promise.all(pkts.map((data) => this.dataSigner!.sign(data)));
     }
     return this.store.insert({ expireTime }, ...pkts);
   }
