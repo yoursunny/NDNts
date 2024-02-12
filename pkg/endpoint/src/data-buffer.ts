@@ -23,13 +23,13 @@ export class DataStoreBuffer implements DataBuffer {
    *
    * @example
    * ```ts
-   * new DataStoreBuffer(new DataStore(memdown()))
+   * new DataStoreBuffer(await makeInMemoryDataStore())
    * ```
    *
    * @remarks
    * `DataStore` is declared as an interface instead of importing, in order to reduce bundle size
    * for webapps that do not use DataBuffer. The trade-off is that, applications wanting to use
-   * DataBuffer would have to import `memdown` and `@ndn/repo` themselves.
+   * DataBuffer would have to import `@ndn/repo` themselves.
    */
   /* eslint-enable tsdoc/syntax */
   constructor(public readonly store: DataStore, {

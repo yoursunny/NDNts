@@ -4,7 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Certificate, ECDSA, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, RSA, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, digestSigning, type NameLike, type Signer, type Verifier } from "@ndn/packet";
 import { PrefixRegShorter } from "@ndn/repo";
-import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
+import { makeRepoProducer } from "@ndn/repo/test-fixture/producer";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
 import { HierarchicalSigner, HierarchicalVerifier, pattern as P, TrustSchema, TrustSchemaPolicy, TrustSchemaSigner, TrustSchemaVerifier } from "..";
@@ -57,7 +57,7 @@ class Context {
     enableProducer = true,
   }: Row, f: (verifier: Verifier, data: Verifier.Verifiable) => Promise<void>) {
     const certProducer = enableProducer ?
-      await makeRepoProducer([this.cert1.data, this.cert2.data], { reg: PrefixRegShorter(4) }) :
+      await makeRepoProducer({ reg: PrefixRegShorter(4) }, [this.cert1.data, this.cert2.data]) :
       undefined;
     const verifier = makeVerifier(this);
     try {

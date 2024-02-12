@@ -8,30 +8,38 @@ Data ingestion is mainly supported through APIs, not command packets.
 Data retrieval is on par with other repo implementations.
 
 ```ts
-import { DataStore, RepoProducer, PrefixRegShorter } from "@ndn/repo";
+import { makeInMemoryDataStore, RepoProducer, PrefixRegShorter } from "@ndn/repo";
 
 // other imports for examples
+import { Endpoint } from "@ndn/endpoint";
 import { Name, Interest, Data } from "@ndn/packet";
 import { delay } from "@ndn/util";
-import memdown from "memdown";
 import assert from "node:assert/strict";
 ```
 
 ## DataStore
 
-**DataStore** is a Data packet storage, based on [LevelDB](https://www.npmjs.com/package/leveldown) or other [abstract-leveldown](https://www.npmjs.com/package/abstract-leveldown) compatible key-value store.
+**DataStore** is a Data packet storage, based on an [abstract-level](https://www.npmjs.com/package/abstract-level) compatible key-value database.
 It implements most of `DataStore` interfaces defined in `@ndn/repo-api` package, offering APIs to insert and delete Data packets.
 
-```ts
-// DataStore constructor accepts an abstract-leveldown instance.
-// For in-memory storage, use 'memdown'.
-// For persistent storage, use 'leveldown' in Node.js or 'level-js' in browsers.
-//
-// DataStore type implements AsyncDisposable interface. With `await using` keyword, the DataStore
-// is closed when the variable goes out of scope. Alternatively, you can invoke
-// `await store[Symbol.asyncDispose]()` explicitly.
-await using store = new DataStore(memdown());
+`DataStore.create()` function creates a **DataStore** instance, but it's more convenient to use a helper function:
 
+* `makeInMemoryDataStore()` creates an in-memory DataStore, backed by [memory-level](https://www.npmjs.com/package/memory-level).
+* `makePersistentDataStore(location)` creates a persistent DataStore, backed by [level](https://www.npmjs.com/package/level).
+  * `location` is a directory path (relative or absolute) in Node.js, or a IDB database name in browser.
+
+The **DataStore** type implements [AsyncDisposable](https://github.com/tc39/proposal-explicit-resource-management) interface.
+With `await using` keyword (TypeScript only), the DataStore is closed when the variable goes out of scope.
+Alternatively, you can invoke `await store[Symbol.asyncDispose]()` explicitly.
+
+```ts
+await using store = await makeInMemoryDataStore();
+```
+
+The **DataStore** type supports Data insertion, Data deletion, and Data lookup.
+During insertion, you can set an expiration time upon which the packet disappears.
+
+```ts
 // Insert Data packets.
 await store.insert(new Data("/A/0"));
 // You can totally insert multiple Data packets in one command.
@@ -65,22 +73,28 @@ assert.equal(rA3, undefined);
 
 **RepoProducer** makes packets in a DataStore available for retrieval.
 
+`RepoProducer.create()` function creates a **RepoProducer** instance, serving Data from an existing **DataStore** instance.
+
+The `reg` option passed to this function controls what name prefixes should be registered:
+
+* `PrefixRegStatic(new Name("/A"), new Name("/B"))` registers a fixed set of prefixes.
+* `PrefixRegShorter(1)` registers prefixes that are 1-component shorter than each Data name.
+* See [test cases](tests/producer.t.ts) for more options.
+
+These registrations are effectively within NDNts logical forwarder.
+Typically you'll combine them with a prefix readvertise module such as `@ndn/nfdmgmt` to propagate the prefix registration to remote forwarders.
+
+The **RepoProducer** type implements [Disposable](https://github.com/tc39/proposal-explicit-resource-management) interface.
+With `using` keyword (TypeScript only), the producer is closed when the variable goes out of scope.
+Alternatively, you can invoke `repoProducer[Symbol.dispose]()` explicitly.
+
 ```ts
 // Construct a RepoProducer.
-// The 'reg' option controls what name prefixes should be registered.
-// PrefixRegStatic(new Name("/A"), new Name("/B")) registers a fixed set of prefixes.
-// PrefixRegShorter(1) registers prefixes that are 1-component shorter than each Data name.
-// See test cases for more options.
-// These registrations stay with NDNts logical forwarder. Typically you'll want a package such as
-// @ndn/nfdmgmt to propagate them to the uplink(s).
-//
-//
-// RepoProducer type implements Disposable interface. With `using` keyword, the RepoProducer
-// is closed when the variable goes out of scope. Alternatively, you can invoke
-// `repoProducer[Symbol.dispose]()` explicitly.
-//
-// DataStore and RepoProducer are independent. Closing the RepoProducer does not close the
-// DataStore. Closing the DataStore does not close the RepoProducer, but RepoProducer could
-// misbehave if it's attached to a closed DataStore.
 using repoProducer = RepoProducer.create(store, { reg: PrefixRegShorter(1) });
+await delay(10); // prefix registration is asynchronous so we delay a little bit
+
+// Try to retrieve Data.
+const endpoint = new Endpoint();
+const retrieved = await endpoint.consume("/A/2");
+assert.equal(`${retrieved?.name}`, "/8=A/8=2");
 ```

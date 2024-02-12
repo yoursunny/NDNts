@@ -7,8 +7,11 @@ import type { RepoProducer } from "./producer";
  * version among stored Data.
  *
  * @remarks
- * This should be passed to {@link RepoProducer.create} as part of options.
+ * The returned function should be passed as {@link RepoProducer.Options.fallback}.
  */
 export function respondRdr(opts: apiRespondRdr.Options = {}): RepoProducer.FallbackHandler {
-  return async (interest, producer, store) => apiRespondRdr(interest, store, opts);
+  return (interest, producer, store) => {
+    void producer;
+    return apiRespondRdr(interest, store, opts);
+  };
 }

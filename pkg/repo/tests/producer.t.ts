@@ -8,13 +8,12 @@ import { retrieveMetadata } from "@ndn/rdr";
 import { delay } from "@ndn/util";
 import { beforeEach, expect, test } from "vitest";
 
-import { type DataStore, PrefixRegShorter, PrefixRegStatic, PrefixRegStrip, RepoProducer, respondRdr } from "..";
-import { makeDataStore } from "../test-fixture/data-store";
+import { type DataStore, makeInMemoryDataStore, PrefixRegShorter, PrefixRegStatic, PrefixRegStrip, RepoProducer, respondRdr } from "..";
 
 let store: DataStore;
 let announced: NameMultiSet; // could be NameSet
 beforeEach(async () => {
-  store = await makeDataStore();
+  store = await makeInMemoryDataStore();
   announced = new NameMultiSet();
   const fw = Forwarder.getDefault();
   fw.addEventListener("annadd", ({ name }) => { announced.add(name); });

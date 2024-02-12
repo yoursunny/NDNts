@@ -1,10 +1,9 @@
 import { exitClosers } from "@ndn/cli-common";
 import { Timestamp } from "@ndn/naming-convention2";
 import { digestSigning, Name } from "@ndn/packet";
-import { DataStore } from "@ndn/repo";
+import { makeInMemoryDataStore } from "@ndn/repo";
 import { SvPublisher } from "@ndn/svs";
 import { console, crypto, toHex, toUtf8 } from "@ndn/util";
-import memdown from "memdown";
 
 import { myID, openSvSync } from "./svs-common";
 
@@ -12,7 +11,7 @@ const sync = await openSvSync();
 const pub = new SvPublisher({
   sync,
   id: myID,
-  store: new DataStore(memdown()),
+  store: await makeInMemoryDataStore(),
   innerSigner: digestSigning,
   outerSigner: digestSigning,
   mappingSigner: digestSigning,

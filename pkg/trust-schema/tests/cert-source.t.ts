@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { Certificate, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, ValidityPeriod } from "@ndn/keychain";
 import { Name, type NameLike } from "@ndn/packet";
-import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
+import { makeRepoProducer } from "@ndn/repo/test-fixture/producer";
 import { delay } from "@ndn/util";
 import { collect } from "streaming-iterables";
 import { beforeAll, beforeEach, describe, expect, type MockInstance, test, vi } from "vitest";
@@ -89,7 +89,7 @@ describe("CertFetcher", () => {
   beforeEach(async () => {
     endpoint = new Endpoint();
     consumeFn = vi.spyOn(endpoint, "consume");
-    const producer = await makeRepoProducer([certB.data]);
+    const producer = await makeRepoProducer({}, [certB.data]);
     fetcher0 = new CertFetcher({
       interestLifetime: 50,
       endpoint,

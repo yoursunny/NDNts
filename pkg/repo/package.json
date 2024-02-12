@@ -34,12 +34,17 @@
     "@types/abstract-leveldown": "^7.2.5",
     "@types/encoding-down": "^5.0.5",
     "@types/levelup": "^5.1.5",
+    "abstract-level": "^2.0.0",
+    "abstract-level-1": "npm:abstract-level@^1.0.4",
     "abstract-leveldown": "^7.2.0",
     "encoding-down": "^7.1.0",
+    "level": "^8.0.1",
     "levelup": "^5.1.1",
+    "memory-level": "^1.0.0",
     "streaming-iterables": "^8.0.1",
     "throat": "^6.0.2",
     "tslib": "^2.6.2",
+    "type-fest": "^4.10.2",
     "typescript-event-target": "^1.1.0"
   },
   "devDependencies": {
@@ -47,8 +52,9 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
-    "@types/level-errors": "^3.0.2",
+    "@types/leveldown": "^4.0.6",
     "@types/memdown": "^3.0.5",
+    "leveldown": "^6.1.1",
     "memdown": "^6.1.1"
   }
 }

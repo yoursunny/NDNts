@@ -4,15 +4,37 @@ import { Endpoint } from "@ndn/endpoint";
 import { Data, Interest, Name } from "@ndn/packet";
 import { BufferChunkSource, fetch, serve } from "@ndn/segmented-object";
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
-import { delay } from "@ndn/util";
+import { Closers, delay } from "@ndn/util";
+import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
+import leveldown from "leveldown";
+import memdown from "memdown";
 import { collect, map } from "streaming-iterables";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
-import type { DataStore } from "..";
-import { makeDataStore } from "../test-fixture/data-store";
+import { DataStore, makeInMemoryDataStore, makePersistentDataStore } from "..";
 
-test("insert get delete", async () => {
-  await using store = await makeDataStore();
+const closers = new Closers();
+afterEach(closers.close);
+
+type Row = [string, () => Promise<DataStore>];
+const TABLE: readonly Row[] = [
+  ["memory-level", makeInMemoryDataStore],
+  ["memdown", async () => new DataStore(memdown())], // eslint-disable-line etc/no-deprecated
+  ["classic-level", () => {
+    const tmpDir = makeTmpDir();
+    closers.push(tmpDir);
+    return makePersistentDataStore(tmpDir.name);
+  }],
+  ["leveldown", async () => {
+    const tmpDir = makeTmpDir();
+    closers.push(tmpDir);
+    return new DataStore(leveldown(tmpDir.name)); // eslint-disable-line etc/no-deprecated
+  }],
+];
+
+test.each(TABLE)("insert get delete %s", async (desc, openDataStore) => {
+  void desc;
+  await using store = await openDataStore();
 
   await store.insert(new Data("/A/1"), new Data("/A/2"));
   await expect(store.get(new Name("/A/0"))).resolves.toBeUndefined();
@@ -28,11 +50,12 @@ test("insert get delete", async () => {
   await expect(store.get(new Name("/A/2"))).resolves.toHaveName("/A/2");
 });
 
-describe("segmented object", () => {
+describe.each(TABLE)("segmented object %s", (desc, openDataStore) => {
+  void desc;
   afterEach(Endpoint.deleteDefaultForwarder);
 
   test("insert", async () => {
-    await using store = await makeDataStore();
+    await using store = await openDataStore();
 
     const body = makeObjectBody(500 * 25);
     const producer = serve("/S", new BufferChunkSource(body, { chunkSize: 500 }));
@@ -42,8 +65,11 @@ describe("segmented object", () => {
   });
 });
 
-test("list find expire", async () => {
-  await using store = await makeDataStore();
+test.each(TABLE)("list find expire %s", async (desc, openDataStore) => {
+  await using store = await openDataStore();
+  if (!desc.endsWith("-level")) {
+    await (store as any).db.open(); // workaround to enable .tx()
+  }
 
   const expireTime = Date.now() + 600;
   await Promise.all([
@@ -75,8 +101,9 @@ test("list find expire", async () => {
   await store.clearExpired();
 });
 
-test("events", async () => {
-  await using store = await makeDataStore();
+test.each(TABLE)("events %s", async (desc, openDataStore) => {
+  void desc;
+  await using store = await openDataStore();
 
   const onInsert = vi.fn<[DataStore.RecordEvent], void>();
   const onDelete = vi.fn<[DataStore.RecordEvent], void>();
@@ -105,4 +132,31 @@ test("events", async () => {
   expect(onInsert).not.toHaveBeenCalled();
   expect(onDelete).toHaveBeenCalledTimes(2);
   expect(onDelete.mock.calls.map(([{ name }]) => name)).toEqualNames(["/A/1", "/A/3"]);
+});
+
+test("data migration", async () => {
+  const tmpDir = makeTmpDir();
+  closers.push(tmpDir);
+
+  const pkts = Array.from({ length: 100 }, (value, i) => {
+    void value;
+    return new Data(`/D/${i}`);
+  });
+
+  {
+    await using storeD = new DataStore(leveldown(tmpDir.name)); // eslint-disable-line etc/no-deprecated
+    await storeD.insert(pkts);
+  }
+
+  {
+    await using storeA = await makePersistentDataStore(tmpDir.name);
+    await Promise.all(Array.from({ length: 120 }, (value, i) => {
+      void value;
+      const getPromise = storeA.get(new Name(`/D/${i}`));
+      if (i >= 100) {
+        return expect(getPromise).resolves.toBeUndefined();
+      }
+      return expect(getPromise).resolves.toBeInstanceOf(Data);
+    }));
+  }
 });

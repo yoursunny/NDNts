@@ -3,9 +3,8 @@ import "@ndn/packet/test-fixture/expect";
 import { Endpoint } from "@ndn/endpoint";
 import { generateSigningKey } from "@ndn/keychain";
 import { Name, type NameLike } from "@ndn/packet";
-import { DataStore } from "@ndn/repo";
+import { makeInMemoryDataStore } from "@ndn/repo";
 import { Closers, console, crypto, delay } from "@ndn/util";
-import memdown from "memdown";
 import pDefer from "p-defer";
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
 
@@ -109,8 +108,8 @@ test("simple", async () => {
   const syncD = await SvSync.create({ ...syncOpts, describe: "D" });
   closers.push(syncA, syncB, syncC, syncD);
 
-  const repoA = new DataStore(memdown());
-  const repoB = new DataStore(memdown());
+  const repoA = await makeInMemoryDataStore();
+  const repoB = await makeInMemoryDataStore();
   closers.push(repoA, repoB);
 
   const pubA0 = new SvPublisher({ ...pubOpts, sync: syncA, id: new Name("/0"), store: repoA });
@@ -152,7 +151,7 @@ test("timed", async () => {
   const syncB = await SvSync.create({ ...syncOpts, describe: "B" });
   closers.push(syncA, syncB);
 
-  const repoA = new DataStore(memdown());
+  const repoA = await makeInMemoryDataStore();
   closers.push(repoA);
 
   const pubP = new SvPublisher({ ...pubOpts, sync: syncA, id: new Name("/P"), store: repoA });

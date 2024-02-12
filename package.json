@@ -36,6 +36,11 @@
         "typescript",
         "webpack"
       ]
+    },
+    "updateConfig": {
+      "ignoreDependencies": [
+        "abstract-level-1"
+      ]
     }
   }
 }

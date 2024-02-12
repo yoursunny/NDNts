@@ -4,9 +4,8 @@ import { generateEncryptionKey, generateSigningKey, RSAOAEP } from "@ndn/keychai
 import { AccessManager, Producer } from "@ndn/nac";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Data, Name } from "@ndn/packet";
-import { DataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
+import { makeInMemoryDataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
 import { console, toUtf8 } from "@ndn/util";
-import memdown from "memdown";
 
 await openUplinks();
 const keyChain = new NdnsecKeyChain({ importOptions: { preferRSAOAEP: true } });
@@ -17,7 +16,7 @@ if (!memberKeyName) {
 const memberEncrypter = await keyChain.getKey(memberKeyName, "encrypter");
 console.log("member key name", memberEncrypter.name.toString());
 
-const dataStore = new DataStore(memdown());
+const dataStore = await makeInMemoryDataStore();
 exitClosers.push(RepoProducer.create(dataStore, {
   reg: PrefixRegStatic(new Name("/nac/example"), new Name("/example/testApp")),
 }));

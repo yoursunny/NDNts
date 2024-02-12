@@ -62,7 +62,12 @@ export namespace RepoProducer {
      */
     describe?: string;
 
-    /** Interest handler function for when Data is not found in repo. */
+    /**
+     * Interest handler function for when Data is not found in repo.
+     *
+     * @remarks
+     * To support RDR metadata version discovery, pass {@link respondRdr} as this option.
+     */
     fallback?: FallbackHandler;
 
     /**

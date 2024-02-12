@@ -4,7 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { Certificate, generateEncryptionKey, generateSigningKey, RSAOAEP, ValidityPeriod } from "@ndn/keychain";
 import { Component, Data, Name, type Verifier } from "@ndn/packet";
 import { PrefixRegStatic } from "@ndn/repo";
-import { makeRepoProducer } from "@ndn/repo/test-fixture/data-store";
+import { makeRepoProducer } from "@ndn/repo/test-fixture/producer";
 import { Closers, crypto } from "@ndn/util";
 import { afterEach, expect, test } from "vitest";
 
@@ -76,10 +76,10 @@ test("simple", async () => {
     issuerPrivateKey: rootSigner,
     publicKey: cEncrypter,
   });
-  const cR = await makeRepoProducer([cCert.data], {
+  const cR = await makeRepoProducer({
     endpoint: cE,
     reg: PrefixRegStatic(new Name("/consumer")),
-  });
+  }, [cCert.data]);
   closers.push(cR);
 
   const c = Consumer.create({

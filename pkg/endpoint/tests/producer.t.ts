@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { generateSigningKey } from "@ndn/keychain";
 import { Data, Interest, type NameLike } from "@ndn/packet";
-import { makeDataStore } from "@ndn/repo/test-fixture/data-store";
+import { makeInMemoryDataStore } from "@ndn/repo";
 import { delay } from "@ndn/util";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
@@ -11,7 +11,7 @@ import { DataStoreBuffer, Endpoint, type Options, type Producer, type ProducerHa
 afterEach(Endpoint.deleteDefaultForwarder);
 
 async function makeEndpointBuffered(autoBuffer?: boolean, bo?: DataStoreBuffer.Options, eo?: Options): Promise<[Endpoint, DataStoreBuffer]> {
-  const dataStoreBuffer = new DataStoreBuffer(await makeDataStore(), bo);
+  const dataStoreBuffer = new DataStoreBuffer(await makeInMemoryDataStore(), bo);
   const ep = new Endpoint({ ...eo, dataBuffer: dataStoreBuffer, autoBuffer });
   return [ep, dataStoreBuffer];
 }
