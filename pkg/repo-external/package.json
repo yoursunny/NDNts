@@ -26,26 +26,6 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/endpoint": "workspace:*",
-    "@ndn/naming-convention2": "workspace:*",
-    "@ndn/packet": "workspace:*",
-    "@ndn/repo-api": "workspace:*",
-    "@ndn/sync-api": "workspace:^",
-    "@ndn/tlv": "workspace:*",
-    "@ndn/util": "workspace:*",
-    "p-defer": "^4.0.0",
-    "streaming-iterables": "^8.0.1",
-    "tslib": "^2.6.2",
-    "typescript-event-target": "^1.1.0"
-  },
-  "devDependencies": {
-    "@ndn/fw": "workspace:^",
-    "@ndn/keychain": "workspace:^",
-    "@ndn/l3face": "workspace:^",
-    "@ndn/ndnsec": "workspace:^",
-    "@ndn/nfdmgmt": "workspace:^",
-    "@types/netmask": "^2.0.5",
-    "execa": "^8.0.1",
-    "netmask": "^2.0.2"
+    "@ndn/pyrepo": "workspace:^"
   }
 }

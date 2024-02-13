@@ -30,7 +30,7 @@ export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S
    *
    * You can connect to repo-ng or ndn-python-repo by creating a TCP transport with
    * {@link \@ndn/node-transport!TcpTransport.connect}. However, it is recommended to use
-   * {@link \@ndn/repo-external!PyRepoClient} for inserting Data into ndn-python-repo.
+   * {@link \@ndn/pyrepo!PyRepoClient} for inserting Data into ndn-python-repo.
    */
   /* eslint-enable tsdoc/syntax */
   constructor(tr: Pick<Transport, "tx">) {

@@ -4,8 +4,8 @@ import { digestSigning, Interest, Name, SignedInterestPolicy } from "@ndn/packet
 import { Decoder, Encoder } from "@ndn/tlv";
 import { assert, delay, randomJitter, sha256, toHex } from "@ndn/util";
 
-import { PrpsPublisher } from "../prps/mod";
 import { CommandParam, CommandRes, DeleteVerb, InsertVerb, ObjectParam, StatQuery, type Verb } from "./packet";
+import { PrpsPublisher } from "./prps/mod";
 
 const checkSIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce());
 

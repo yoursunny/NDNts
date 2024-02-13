@@ -1,0 +1,51 @@
+{
+  "name": "@ndn/pyrepo",
+  "version": "0.0.0",
+  "description": "NDNts: ndn-python-repo client",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "main": "src/mod.ts",
+  "module": "lib/mod_browser.js",
+  "sideEffects": false,
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "pkg/pyrepo"
+  },
+  "publishConfig": {
+    "main": "lib/mod_node.js",
+    "types": "lib/mod.d.ts"
+  },
+  "dependencies": {
+    "@ndn/endpoint": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "@ndn/repo-api": "workspace:*",
+    "@ndn/sync-api": "workspace:^",
+    "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
+    "p-defer": "^4.0.0",
+    "streaming-iterables": "^8.0.1",
+    "tslib": "^2.6.2",
+    "typescript-event-target": "^1.1.0"
+  },
+  "devDependencies": {
+    "@ndn/fw": "workspace:^",
+    "@ndn/keychain": "workspace:^",
+    "@ndn/l3face": "workspace:^",
+    "@ndn/ndnsec": "workspace:^",
+    "@ndn/nfdmgmt": "workspace:^",
+    "@types/netmask": "^2.0.5",
+    "execa": "^8.0.1",
+    "netmask": "^2.0.2"
+  }
+}

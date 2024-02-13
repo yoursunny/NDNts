@@ -1,2 +1,6 @@
-export * from "./prps/mod";
-export * from "./pyrepo/mod";
+export {
+  PrpsPublisher,
+  PrpsSubscriber,
+  PyRepoClient,
+  PyRepoStore,
+} from "@ndn/pyrepo";
