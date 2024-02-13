@@ -3,7 +3,7 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package allows inserting and deleting Data in [ndn-python-repo](https://github.com/UCLA-IRL/ndn-python-repo).
-This implementation is compatible with ndn-python-repo `dda1dce1` (2024-02-04).
+This implementation is compatible with ndn-python-repo `dafd23dc` (2024-02-13).
 To install and start the specified version, run:
 
 ```bash
@@ -13,14 +13,14 @@ cd pyrepo-venv
 source ./bin/activate
 
 # install ndn-python-repo
-pip install git+https://github.com/UCLA-IRL/ndn-python-repo@dda1dce135a952498a2a79d3cddf9c3ee33399d0
+pip install git+https://github.com/UCLA-IRL/ndn-python-repo@dafd23dcc25bf9c130a110e37b66d6d1683a8212
 
 # run ndn-python-repo
 export NDN_CLIENT_TRANSPORT=unix:///run/nfd/nfd.sock
 ndn-python-repo
 ```
 
-`PyRepoClient` type is a client for [ndn-python-repo protocol](https://github.com/UCLA-IRL/ndn-python-repo/tree/dda1dce135a952498a2a79d3cddf9c3ee33399d0/docs/src/specification).
+`PyRepoClient` type is a client for [ndn-python-repo protocol](https://github.com/UCLA-IRL/ndn-python-repo/tree/dafd23dcc25bf9c130a110e37b66d6d1683a8212/docs/src/specification).
 `PyRepoStore` type implements a write-only subset of `DataStore` interfaces as defined in `@ndn/repo-api` package.
 
 ```ts
@@ -51,18 +51,15 @@ await using store = new PyRepoStore({
   repoPrefix: new Name(repoPrefix),
 });
 
-const packets: Data[] = [];
-for (let i = 0; i < 100; ++i) {
+const packets = await Promise.all(Array.from({ length: 100 }, async (v, i) => {
   const data = new Data(dataPrefix.append(`${i}`));
-  data.freshnessPeriod = 1;
   await digestSigning.sign(data);
-  packets.push(data);
-}
+  return data;
+}));
+console.log(`Inserting ${packets.length} packets under ${dataPrefix} in ${repoPrefix}`);
+await store.insert(...packets);
 
-console.log(`Inserting ${packets.length} packets under ${dataPrefix} to ${repoPrefix}`);
-try {
-  await store.insert(...packets);
-} finally {
-  face.close();
-}
+const names = packets.filter((v, i) => i % 3 === 0).map(({ name }) => name);
+console.log(`Deleting ${names.length} packets under ${dataPrefix} in ${repoPrefix}`);
+await store.delete(...names);
 ```

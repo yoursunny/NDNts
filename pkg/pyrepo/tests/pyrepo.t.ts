@@ -37,7 +37,6 @@ test.runIf(PyRepo.supported)("workflow", async () => {
   });
   const pkts = await Promise.all(Array.from(names, async (name) => {
     const data = new Data(name);
-    data.freshnessPeriod = 1;
     await digestSigning.sign(data);
     return data;
   }));
