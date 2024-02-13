@@ -91,12 +91,12 @@ const CJS_IMPORTS = new Set([
   "levelup",
   "minimalistic-assert",
   "mnemonist",
+  "mutexlight",
   "nodemailer",
   "obliterator",
   "progress",
   "prompts",
   "retry",
-  "throat",
   "wtfnode",
 ]);
 

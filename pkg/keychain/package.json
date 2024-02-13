@@ -36,9 +36,9 @@
     "@yoursunny/webcrypto-ed25519": "0.0.20230624",
     "idb-keyval": "^6.2.1",
     "mnemonist": "^0.39.8",
-    "throat": "^6.0.2",
     "tslib": "^2.6.2",
-    "type-fest": "^4.10.2"
+    "type-fest": "^4.10.2",
+    "wait-your-turn": "^1.0.1"
   },
   "devDependencies": {
     "@types/b64-lite": "^1.4.2",

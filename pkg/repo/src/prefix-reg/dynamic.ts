@@ -26,7 +26,7 @@ export function PrefixRegDynamic(transform: (name: Name) => Name): PrefixRegCont
       face.removeRoute(prefix);
     };
 
-    void store.mutex(async () => {
+    void store.mutex.use(async () => {
       for await (const name of store.listNames()) {
         handleInsertName(name);
       }

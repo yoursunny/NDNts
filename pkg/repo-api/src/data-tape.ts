@@ -1,12 +1,12 @@
 import { rxFromStream } from "@ndn/l3face";
 import { Data, type Interest, type Name } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
-import { assert } from "@ndn/util";
+import { assert, lock } from "@ndn/util";
 import { isReadableStream, isWritableStream } from "is-stream";
 import { pEvent } from "p-event";
 import { filter, map, pipeline, writeToStream } from "streaming-iterables";
-import throat from "throat";
 import type { Promisable } from "type-fest";
+import { Mutex } from "wait-your-turn";
 
 import * as S from "./data-store";
 import { makeOpenFileStreamFunction } from "./data-tape-file_node";
@@ -58,7 +58,7 @@ export class DataTape implements DataTape.Reader, DataTape.Writer {
   }
 
   private readonly makeStream: (mode: DataTape.StreamMode) => NodeJS.ReadableStream | NodeJS.WritableStream;
-  private readonly mutex = throat(1);
+  private readonly mutex = new Mutex();
   private currentWriter?: NodeJS.WritableStream;
 
   private async closeCurrentWriter() {
@@ -71,38 +71,38 @@ export class DataTape implements DataTape.Reader, DataTape.Writer {
   }
 
   private async useReader<R>(cb: (reader: AsyncIterable<Data>) => Promisable<R>): Promise<R> {
-    return this.mutex(async (): Promise<R> => {
-      await this.closeCurrentWriter();
+    // @ts-expect-error https://github.com/microsoft/TypeScript/issues/55538
+    using locked = await lock(this.mutex);
+    await this.closeCurrentWriter();
 
-      const stream = this.makeStream("read");
-      assert(isReadableStream(stream), "stream is not Readable");
+    const stream = this.makeStream("read");
+    assert(isReadableStream(stream), "stream is not Readable");
 
-      return pipeline(
-        () => rxFromStream(stream),
-        map(({ decoder }) => {
-          try {
-            return decoder.decode(Data);
-          } catch {
-            return undefined;
-          }
-        }),
-        filter((data): data is Data => data instanceof Data),
-        cb,
-      );
-    });
+    return pipeline(
+      () => rxFromStream(stream),
+      map(({ decoder }) => {
+        try {
+          return decoder.decode(Data);
+        } catch {
+          return undefined;
+        }
+      }),
+      filter((data): data is Data => data instanceof Data),
+      cb,
+    );
   }
 
   private async useWriter(cb: (write: (pkts: AsyncIterable<Data>) => Promise<void>) => Promise<void>) {
-    await this.mutex(async () => {
-      this.currentWriter ??= this.makeStream("append") as NodeJS.WritableStream;
-      assert(isWritableStream(this.currentWriter), "stream is not Writable");
+    // @ts-expect-error https://github.com/microsoft/TypeScript/issues/55538
+    using locked = await lock(this.mutex);
+    this.currentWriter ??= this.makeStream("append") as NodeJS.WritableStream;
+    assert(isWritableStream(this.currentWriter), "stream is not Writable");
 
-      await cb((pkts) => pipeline(
-        () => pkts,
-        map((pkt) => Encoder.encode(pkt)),
-        writeToStream(this.currentWriter!),
-      ));
-    });
+    await cb((pkts) => pipeline(
+      () => pkts,
+      map((pkt) => Encoder.encode(pkt)),
+      writeToStream(this.currentWriter!),
+    ));
   }
 
   public listNames(prefix?: Name): AsyncIterable<Name> {

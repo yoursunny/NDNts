@@ -2,7 +2,7 @@ import { delay } from "@ndn/util";
 import Webpack, { type Configuration } from "webpack";
 import WebpackDevServer from "webpack-dev-server";
 
-// @ts-expect-error type
+// @ts-expect-error no types
 import makeWebpackConfig from "./webpack.config.js";
 
 export default async function setup() {

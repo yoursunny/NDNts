@@ -34,7 +34,8 @@
     "minimalistic-assert": "^1.0.1",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",
-    "type-fest": "^4.10.2"
+    "type-fest": "^4.10.2",
+    "wait-your-turn": "^1.0.1"
   },
   "devDependencies": {
     "@types/tmp": "^0.2.6",

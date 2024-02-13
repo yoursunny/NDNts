@@ -1,10 +1,10 @@
 import { type Data, ImplicitDigest, type Interest, type Name, NameMap } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
-import { assert, trackEventListener } from "@ndn/util";
+import { assert, lock, trackEventListener } from "@ndn/util";
 import type { AbstractLevelDOWN } from "abstract-leveldown";
 import { filter, map, pipeline } from "streaming-iterables";
-import throat from "throat";
 import { TypedEventTarget } from "typescript-event-target";
+import { Mutex } from "wait-your-turn";
 
 import * as DB from "./db";
 
@@ -81,8 +81,8 @@ export class DataStore extends TypedEventTarget<EventMap>
     }
   }
 
+  public readonly mutex = new Mutex();
   private readonly db: DB.Db;
-  public readonly mutex = throat(1);
   public readonly [kMaybeHaveEventListener] = trackEventListener(this);
 
   /** Close the store. */
@@ -241,7 +241,9 @@ export class Transaction {
   /** Commit the transaction. */
   public async commit(): Promise<void> {
     if (this.diffs) {
-      await this.store.mutex(() => this.commitWithDiff());
+      // @ts-expect-error https://github.com/microsoft/TypeScript/issues/55538
+      using locked = await lock(this.store.mutex);
+      await this.commitWithDiff();
     } else {
       await this.chain.write();
     }

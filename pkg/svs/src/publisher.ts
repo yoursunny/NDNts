@@ -5,7 +5,7 @@ import type { DataStore as S } from "@ndn/repo-api";
 import { BufferChunkSource, type ChunkOptions, DataProducer } from "@ndn/segmented-object";
 import type { SyncNode } from "@ndn/sync-api";
 import { Encoder } from "@ndn/tlv";
-import { Closers } from "@ndn/util";
+import { Closer } from "@ndn/util";
 import { collect, map } from "streaming-iterables";
 
 import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
@@ -70,7 +70,7 @@ export class SvPublisher {
   public async close(): Promise<void> {
     this.outerProducer.close();
     this.mappingProducer.close();
-    await Closers.close(this.store);
+    await Closer.close(this.store);
   }
 
   /**

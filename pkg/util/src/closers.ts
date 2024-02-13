@@ -1,9 +1,32 @@
 import "./polyfill_node";
 
 import type { Promisable } from "type-fest";
+import type { Semaphore } from "wait-your-turn";
 
 export interface Closer {
   close: () => void;
+}
+export namespace Closer {
+  /** Close or dispose an object. */
+  export function close(c: any): Promisable<void> {
+    for (const key of ["close", Symbol.dispose, Symbol.asyncDispose] as const) {
+      if (typeof c[key] === "function") {
+        return c[key]();
+      }
+    }
+  }
+
+  /** Convert a closable object to AsyncDisposable. */
+  export function asAsyncDisposable(c: Closer | Disposable | AsyncDisposable): AsyncDisposable {
+    if (typeof (c as any)[Symbol.asyncDispose] === "function") {
+      return c as AsyncDisposable;
+    }
+    return {
+      async [Symbol.asyncDispose]() {
+        await close(c);
+      },
+    };
+  }
 }
 
 /** A list of objects that can be closed or disposed. */
@@ -19,7 +42,7 @@ export class Closers extends Array<Closer | Disposable | AsyncDisposable> implem
    */
   public readonly close = () => {
     for (let i = this.length - 1; i >= 0; --i) {
-      void Closers.close(this[i]);
+      void Closer.close(this[i]);
     }
     this.splice(0, Infinity);
   };
@@ -42,25 +65,15 @@ export class Closers extends Array<Closer | Disposable | AsyncDisposable> implem
   }
 }
 
-export namespace Closers {
-  /** Close or dispose an object. */
-  export function close(c: any): Promisable<void> {
-    for (const key of ["close", Symbol.dispose, Symbol.asyncDispose] as const) {
-      if (typeof c[key] === "function") {
-        return c[key]();
-      }
-    }
-  }
-
-  /** Convert a closable object to AsyncDisposable. */
-  export function asAsyncDisposable(c: Closer | Disposable | AsyncDisposable): AsyncDisposable {
-    if (typeof (c as any)[Symbol.asyncDispose] === "function") {
-      return c as AsyncDisposable;
-    }
-    return {
-      async [Symbol.asyncDispose]() {
-        await close(c);
-      },
-    };
-  }
+/**
+ * Acquire a semaphore for unlocking via Disposable.
+ * @param semaphore - Semaphore or Mutex from `wait-your-turn` package.
+ */
+export async function lock(semaphore: Pick<Semaphore, "acquire">): Promise<Disposable> {
+  const release = await semaphore.acquire();
+  return {
+    [Symbol.dispose](): void {
+      release();
+    },
+  };
 }

@@ -1,6 +1,7 @@
 import { expect, test, vi } from "vitest";
+import { Mutex } from "wait-your-turn";
 
-import { Closers, delay } from "..";
+import { Closer, Closers, delay, lock } from "..";
 
 test("closers", async () => {
   const closers = new Closers();
@@ -80,7 +81,7 @@ test("asAsyncDisposable", async () => {
     close: vi.fn<[], void>(),
   };
   {
-    await using d0 = Closers.asAsyncDisposable(c0);
+    await using d0 = Closer.asAsyncDisposable(c0);
   }
   expect(c0.close).toHaveBeenCalledOnce();
 
@@ -88,7 +89,7 @@ test("asAsyncDisposable", async () => {
     [Symbol.dispose]: vi.fn<[], void>(),
   };
   {
-    await using d1 = Closers.asAsyncDisposable(c1);
+    await using d1 = Closer.asAsyncDisposable(c1);
   }
   expect(c1[Symbol.dispose]).toHaveBeenCalledOnce();
 
@@ -96,8 +97,22 @@ test("asAsyncDisposable", async () => {
     [Symbol.asyncDispose]: vi.fn<[], Promise<void>>().mockResolvedValue(),
   };
   {
-    await using d2 = Closers.asAsyncDisposable(c2);
+    await using d2 = Closer.asAsyncDisposable(c2);
     expect(d2).toBe(c2);
   }
   expect(c2[Symbol.asyncDispose]).toHaveBeenCalledOnce();
+});
+
+test("lock", async () => {
+  const mutex = new Mutex();
+  await expect(Promise.allSettled(Array.from({ length: 20 }, async (v, i) => {
+    void v;
+    await delay(100 * Math.random());
+    using locked = await lock(mutex);
+    await delay(100 * Math.random());
+
+    if (i % 4 === 0) {
+      throw new Error("4");
+    }
+  }))).resolves.toHaveLength(20);
 });

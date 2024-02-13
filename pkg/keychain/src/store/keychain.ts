@@ -1,6 +1,6 @@
 import { Name, type Signer } from "@ndn/packet";
-import throat from "throat";
 import type { Promisable } from "type-fest";
+import { Mutex } from "wait-your-turn";
 
 import { CryptoAlgorithmListSlim } from "../algolist/mod";
 import type { Certificate } from "../cert/mod";
@@ -223,52 +223,52 @@ export namespace KeyChain {
  * within an `s*` function, otherwise it would cause a deadlock.
  */
 export abstract class KeyChainSerialized extends KeyChain {
-  protected readonly mutex = throat(1);
+  protected readonly mutex = new Mutex();
 
   public override listKeys(prefix: Name = new Name()): Promise<Name[]> {
-    return this.mutex(async () => this.sListKeys(prefix));
+    return this.mutex.use(async () => this.sListKeys(prefix));
   }
 
   protected abstract sListKeys(prefix: Name): Promisable<Name[]>;
 
   public override getKeyPair(name: Name): Promise<KeyChain.KeyPair> {
-    return this.mutex(async () => this.sGetKeyPair(name));
+    return this.mutex.use(async () => this.sGetKeyPair(name));
   }
 
   protected abstract sGetKeyPair(name: Name): Promisable<KeyChain.KeyPair>;
 
   public override insertKey(name: Name, stored: KeyStore.StoredKey): Promise<void> {
-    return this.mutex(async () => this.sInsertKey(name, stored));
+    return this.mutex.use(async () => this.sInsertKey(name, stored));
   }
 
   protected abstract sInsertKey(name: Name, stored: KeyStore.StoredKey): Promisable<void>;
 
   public override deleteKey(name: Name): Promise<void> {
-    return this.mutex(async () => this.sDeleteKey(name));
+    return this.mutex.use(async () => this.sDeleteKey(name));
   }
 
   protected abstract sDeleteKey(name: Name): Promisable<void>;
 
   public override listCerts(prefix: Name = new Name()): Promise<Name[]> {
-    return this.mutex(async () => this.sListCerts(prefix));
+    return this.mutex.use(async () => this.sListCerts(prefix));
   }
 
   protected abstract sListCerts(prefix: Name): Promisable<Name[]>;
 
   public override getCert(name: Name): Promise<Certificate> {
-    return this.mutex(async () => this.sGetCert(name));
+    return this.mutex.use(async () => this.sGetCert(name));
   }
 
   protected abstract sGetCert(name: Name): Promisable<Certificate>;
 
   public override insertCert(cert: Certificate): Promise<void> {
-    return this.mutex(async () => this.sInsertCert(cert));
+    return this.mutex.use(async () => this.sInsertCert(cert));
   }
 
   protected abstract sInsertCert(cert: Certificate): Promisable<void>;
 
   public override deleteCert(name: Name): Promise<void> {
-    return this.mutex(async () => this.sDeleteCert(name));
+    return this.mutex.use(async () => this.sDeleteCert(name));
   }
 
   protected abstract sDeleteCert(name: Name): Promisable<void>;
