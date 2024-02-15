@@ -15,8 +15,8 @@ import assert from "node:assert/strict";
 
 ## Encoder
 
-The **Encoder** has an internal buffer of `Uint8Array` type.
-It prepends any encodable items to the internal buffer, and reallocates a larger buffer when necessary.
+The **Encoder** *prepend*s encodable items to an internal `ArrayBuffer`.
+It reallocates a larger buffer when necessary.
 
 ```ts
 // Encode TLV object that implements EncodableObj interface:
@@ -40,6 +40,10 @@ encoder = new Encoder();
 encoder.encode([0xB0, Uint8Array.of(0xC0, 0xC1), new Name("/A")]);
 assert.deepEqual(encoder.output,
   Uint8Array.of(0xB0, 0x07, 0xC0, 0xC1, 0x07, 0x03, 0x08, 0x01, 0x41));
+
+// `Encoder.encode()` is a shortcut for encoding one item and obtaining the output:
+const wireB = Encoder.encode(new Name("/B"));
+assert.deepEqual(wireB, Uint8Array.of(0x07, 0x03, 0x08, 0x01, 0x42));
 ```
 
 ## Decoder
@@ -54,14 +58,24 @@ assert.equal(type, 0x08);
 assert.equal(length, 1);
 assert.deepEqual(value, Uint8Array.of(0x41));
 // The remaining [0xFF] is still in the buffer.
+assert.equal(decoder.eof, false);
 // If you continue reading, you get an error due to incomplete TLV.
 assert.throws(() => decoder.read());
 
 // Decode into TLV object:
 decoder = new Decoder(Uint8Array.of(0x07, 0x03, 0x08, 0x01, 0x41));
-const name = decoder.decode(Name);
-assert(name instanceof Name);
-assert.equal(name.toString(), "/8=A");
+const nameA = decoder.decode(Name);
+assert(nameA instanceof Name);
+assert.equal(nameA.toString(), "/8=A");
+// We have fully consumed the buffer.
+assert.equal(decoder.eof, true);
+
+// `Decoder.decode()` is a shortcut for decoding one item and checking for EOF.
+const nameB = Decoder.decode(wireB, Name);
+assert(nameB instanceof Name);
+assert.equal(nameB.toString(), "/8=B");
+// It throws if there's junk after the TLV.
+assert.throws(() => Decoder.decode(Uint8Array.of(...wireB, 0xFF), Name));
 ```
 
 ## EvDecoder

@@ -192,7 +192,7 @@ test("wrap-nest", () => {
     public encodeTo(encoder: Encoder): void {
       const value = new Uint8Array(this.n);
       value.fill(0xBB);
-      encoder.encode([0x4F, value]);
+      encoder.prependTlv(0x4F, value);
     }
 
     public toString(): string {

@@ -10,14 +10,23 @@ export interface EncodableObj {
  *
  * @remarks
  * First item is a number for TLV-TYPE.
- * Optional second item could be OmitEmpty to omit the TLV if TLV-VALUE is empty.
- * Subsequent items are Encodables for TLV-VALUE.
+ * Optional second item could be {@link Encoder.OmitEmpty} to omit the TLV if TLV-VALUE is empty.
+ * Subsequent items are `Encodable`s for TLV-VALUE.
  */
 export type EncodableTlv = [type: number, ...Encodable[]] |
 [type: number, omitEmpty: typeof Encoder.OmitEmpty, ...Encodable[]];
 
-/** An object acceptable to `Encoder.encode()`. */
-export type Encodable = Uint8Array | undefined | false | EncodableObj | EncodableTlv;
+/**
+ * An object acceptable to {@link Encoder.encode}.
+ *
+ * @remarks
+ * - `Uint8Array`: prepended as is.
+ * - `undefined` and `false`: skipped.
+ * - `EncodableObj`: `.encodeTo(encoder)` is invoked.
+ * - `EncodableTlv`: passed to {@link Encoder.prependTlv}.
+ * - `Encodable[]`: passed to {@link Encoder.prependValue}.
+ */
+export type Encodable = Uint8Array | undefined | false | EncodableObj | EncodableTlv | readonly Encodable[];
 
 function sizeofVarNum(n: number): number {
   if (n < 0xFD) {
@@ -33,15 +42,15 @@ function sizeofVarNum(n: number): number {
   throw new Error("VAR-NUMBER is too large");
 }
 
-function writeVarNum(room: Uint8Array, off: number, n: number) {
+function writeVarNum(room: Uint8Array, dv: DataView, off: number, n: number) {
   if (n < 0xFD) {
     room[off++] = n;
   } else if (n <= 0xFFFF) {
     room[off++] = 0xFD;
-    asDataView(room).setUint16(off, n);
+    dv.setUint16(off, n);
   } else {
     room[off++] = 0xFE;
-    asDataView(room).setUint32(off, n);
+    dv.setUint32(off, n);
   }
 }
 
@@ -83,28 +92,42 @@ export class Encoder {
     const sizeofT = sizeofVarNum(tlvType);
     const sizeofL = sizeofVarNum(tlvLength);
     const room = this.prependRoom(sizeofT + sizeofL);
-    writeVarNum(room, 0, tlvType);
-    writeVarNum(room, sizeofT, tlvLength);
+    const dv = asDataView(room);
+    writeVarNum(room, dv, 0, tlvType);
+    writeVarNum(room, dv, sizeofT, tlvLength);
   }
 
-  /** Prepend TLV-VALUE. */
+  /**
+   * Prepend TLV-VALUE.
+   *
+   * @remarks
+   * Elements are prepended in the reverse order, so that they would appear in the output
+   * in the same order as the parameter order.
+   */
   public prependValue(...tlvValue: Encodable[]) {
     for (let i = tlvValue.length - 1; i >= 0; --i) {
       this.encode(tlvValue[i]);
     }
   }
 
-  /** Prepend TLV structure. */
+  /**
+   * Prepend TLV structure.
+   * @see {@link EncodableTlv}
+   */
   public prependTlv(tlvType: number, ...tlvValue: Encodable[]): void;
 
-  /** Prepend TLV structure, but skip if TLV-VALUE is empty. */
+  /**
+   * Prepend TLV structure, but skip if TLV-VALUE is empty.
+   * @see {@link EncodableTlv}
+   */
   public prependTlv(tlvType: number, omitEmpty: typeof Encoder.OmitEmpty, ...tlvValue: Encodable[]): void;
 
-  public prependTlv(tlvType: number, omitEmpty?: typeof Encoder.OmitEmpty | Encodable,
-      ...tlvValue: Encodable[]) {
-    const hasOmitEmpty = omitEmpty === Encoder.OmitEmpty;
+  public prependTlv(
+      tlvType: number, arg2?: typeof Encoder.OmitEmpty | Encodable, ...tlvValue: Encodable[]
+  ) {
+    const hasOmitEmpty = arg2 === Encoder.OmitEmpty;
     if (!hasOmitEmpty) {
-      tlvValue.unshift(omitEmpty);
+      tlvValue.unshift(arg2);
     }
 
     const sizeBefore = this.size;
@@ -116,10 +139,10 @@ export class Encoder {
     }
   }
 
-  /** Prepend an Encodable object or an array of Encodable objects. */
-  public encode(obj: Encodable | readonly Encodable[]): void {
+  /** Prepend `Encodable`. */
+  public encode(obj: Encodable): void {
     if (obj instanceof Uint8Array) {
-      this.prependRoom(obj.byteLength).set(obj);
+      this.prependRoom(obj.length).set(obj);
     } else if (typeof (obj as EncodableObj | undefined)?.encodeTo === "function") {
       (obj as EncodableObj).encodeTo(this);
     } else if (Array.isArray(obj)) {
@@ -143,17 +166,26 @@ export class Encoder {
 }
 
 export namespace Encoder {
+  /**
+   * Indicate that TLV should be skipped if TLV-VALUE is empty.
+   * @see {@link EncodableTlv}
+   */
   export const OmitEmpty = Symbol("@ndn/tlv#OmitEmpty");
 
   /** Encode a single object into Uint8Array. */
-  export function encode(obj: Encodable | readonly Encodable[], initBufSize?: number): Uint8Array {
+  export function encode(obj: Encodable, initBufSize?: number): Uint8Array {
     const encoder = new Encoder(initBufSize);
     encoder.encode(obj);
     return encoder.output;
   }
 
-  /** Extract the encoding output of an element while writing to a larger encoder. */
-  export function extract(obj: Encodable | readonly Encodable[], cb: (output: Uint8Array) => void): Encodable {
+  /**
+   * Extract the encoding output of an element while writing to a parent encoder.
+   * @param obj - Encodable element.
+   * @param cb - Function to receive the encoding output of `obj`.
+   * @returns Wrapped Encodable object.
+   */
+  export function extract(obj: Encodable, cb: (output: Uint8Array) => void): Encodable {
     return {
       encodeTo(encoder) {
         const sizeBefore = encoder.size;

@@ -17,7 +17,28 @@ export interface StructFieldType<T> {
   asString?: (this: void, value: T) => string;
 }
 export namespace StructFieldType {
-  export function wrap<T extends EncodableObj>(F: Constructor<T> & Decodable<T>, overrides: Partial<StructFieldType<T>> = {}): StructFieldType<T> {
+  /**
+   * Turn a TLV class into a field type, where the TLV directly appears as the field.
+   *
+   * @example
+   * Given this structure:
+   * ```abnf
+   * Outer = OUTER-TYPE TLV-LENGTH Inner
+   * Inner = INNER-TYPE TLV-LENGTH INNER-VALUE
+   * ```
+   *
+   * You can define the `Outer` builder:
+   * ```ts
+   * const buildOuter = new StructBuilder("Outer", TT.Outer)
+   *   .add(TT.Inner, "inner", StructFieldType.wrap(Inner));
+   * ```
+   *
+   * `Inner` type must encode itself as a TLV, and its TLV-TYPE must equal field TLV-TYPE.
+   */
+  export function wrap<T extends EncodableObj>(
+      F: Constructor<T, []> & Decodable<T>,
+      overrides: Partial<StructFieldType<T>> = {},
+  ): StructFieldType<T> {
     return {
       newValue: () => new F(),
       encode: (value) => {
@@ -30,7 +51,30 @@ export namespace StructFieldType {
     };
   }
 
-  export function nest<T extends EncodableObj>(F: Constructor<T> & Decodable<T>, overrides: Partial<StructFieldType<T>> = {}): StructFieldType<T> {
+  /**
+   * Turn a TLV class into a field type, where the TLV is nested inside the field.
+   *
+   * @example
+   * Given this structure:
+   * ```abnf
+   * Outer = OUTER-TYPE TLV-LENGTH Middle
+   * Middle = MIDDLE-TYPE TLV-LENGTH Inner
+   * Inner = INNER-TYPE TLV-LENGTH INNER-VALUE
+   * ```
+   *
+   * You can define the `Outer` builder:
+   * ```ts
+   * const buildOuter = new StructBuilder("Outer", TT.Outer)
+   *   .add(TT.Middle, "inner", StructFieldType.nest(Inner));
+   * ```
+   *
+   * `Inner` type does not have to encode itself as a TLV. Its encoding result appears as
+   * the TLV-VALUE of the "middle" field TLV.
+   */
+  export function nest<T extends EncodableObj>(
+      F: Constructor<T, []> & Decodable<T>,
+      overrides: Partial<StructFieldType<T>> = {},
+  ): StructFieldType<T> {
     return {
       newValue: () => new F(),
       encode: (value) => value,
@@ -76,11 +120,10 @@ export const StructFieldNNIBig: StructFieldType<bigint> = {
  * If the field is required, it is initialized as zero.
  */
 export function StructFieldEnum<E extends number>(Enum: Record<number, string>): StructFieldType<E> {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return {
     ...(StructFieldNNI as any),
     asString: (value) => `${value}(${Enum[value] ?? "unknown"})`,
-  } as StructFieldType<E>;
+  };
 }
 
 /**
@@ -185,7 +228,7 @@ type AddFlags<FlagPrefix extends string, FlagBit extends string> =
  *
  * To use StructBuilder, calling code should follow these steps:
  * 1. Invoke `.add()` method successively to define sub-TLV elements.
- * 2. Obtain a base class via `.baseClass()` method, would contain one field for each sub-TLV-TYPE
+ * 2. Obtain a base class via `.baseClass()` method, which contains one field for each sub-TLV-TYPE
  *    as defined, along with constructor, encoding, and decoding functions.
  * 3. Declare a subclass deriving from this base class, to add more functionality.
  * 4. Assign the subclass constructor to `.subclass` property of the builder.
@@ -360,7 +403,7 @@ export class StructBuilder<U extends {}> {
         if (b.topTT === undefined) {
           encoder.encode(elements);
         } else {
-          encoder.encode([b.topTT, ...elements]);
+          encoder.prependTlv(b.topTT, ...elements);
         }
       }
 
