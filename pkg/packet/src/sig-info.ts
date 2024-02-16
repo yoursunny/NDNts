@@ -122,6 +122,8 @@ export namespace SigInfo {
   /** Add an extension TLV in SigInfo. */
   export const registerExtension = EXTENSIONS.registerExtension;
 
+  export const registerExtensionWithStructFieldType = EXTENSIONS.register;
+
   /** Remove an extension TLV in SigInfo. */
   export const unregisterExtension = EXTENSIONS.unregisterExtension;
 }

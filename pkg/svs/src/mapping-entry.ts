@@ -60,18 +60,18 @@ export namespace MappingEntry {
   }
 }
 
+const StructFieldTimestampComponent = {
+  encode(v: Date) {
+    return Timestamp.create(v);
+  },
+  decode({ vd }: Decoder.Tlv) {
+    const comp = vd.decode(Component);
+    return comp.is(Timestamp) ? new Date(comp.as(Timestamp)) : new Date();
+  },
+};
+
 const timedExtensions = new ExtensionRegistry();
-timedExtensions.registerExtension<Date>({
-  tt: Timestamp.type,
-  decode(obj, { decoder }) {
-    void obj;
-    return new Date(decoder.decode(Component).as(Timestamp));
-  },
-  encode(obj, value) {
-    void obj;
-    return Timestamp.create(value);
-  },
-});
+timedExtensions.register(Timestamp.type, StructFieldTimestampComponent);
 
 /** SVS-PS MappingEntry with Timestamp element. */
 @MappingEntry.extend
@@ -82,7 +82,7 @@ export class TimedMappingEntry extends MappingEntry implements Extensible {
   }
 
   public readonly [Extensible.TAG] = timedExtensions;
-  public declare timestamp: Date | undefined;
+  public declare timestamp: Date;
 }
 Extensible.defineGettersSetters(TimedMappingEntry, {
   timestamp: Timestamp.type,

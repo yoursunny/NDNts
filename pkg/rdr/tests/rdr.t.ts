@@ -4,7 +4,7 @@ import { Endpoint } from "@ndn/endpoint";
 import { generateSigningKey } from "@ndn/keychain";
 import { Version } from "@ndn/naming-convention2";
 import { Interest, Name, type Signer, type Verifier } from "@ndn/packet";
-import { Decoder, Extensible, Extension, ExtensionRegistry, NNI } from "@ndn/tlv";
+import { Decoder, Extensible, Extension, ExtensionRegistry, NNI, StructFieldNNI, StructFieldText } from "@ndn/tlv";
 import { Closers, toUtf8 } from "@ndn/util";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
@@ -86,15 +86,7 @@ describe("producer", () => {
 
 test("ExtensibleMetadata", async () => {
   const registryA: ExtensionRegistry<MetadataA> = new ExtensionRegistry<MetadataA>();
-  registryA.registerExtension<number>({
-    tt: 0xA1,
-    decode(obj, { nni }, accumulator) {
-      return nni;
-    },
-    encode(obj, value) {
-      return [this.tt, NNI(value)];
-    },
-  });
+  registryA.register(0xA1, StructFieldNNI);
 
   @Metadata.extend
   class MetadataA extends Metadata implements Extensible {
@@ -110,15 +102,7 @@ test("ExtensibleMetadata", async () => {
   }
 
   const registryB: ExtensionRegistry<MetadataB> = new ExtensionRegistry<MetadataB>();
-  registryB.registerExtension<string>({
-    tt: 0xB1,
-    decode(obj, { text }, accumulator) {
-      return text;
-    },
-    encode(obj, value) {
-      return [this.tt, toUtf8(value)];
-    },
-  });
+  registryB.register(0xB1, StructFieldText);
 
   @Metadata.extend
   class MetadataB extends Metadata implements Extensible {

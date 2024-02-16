@@ -1,47 +1,17 @@
 import { Segment } from "@ndn/naming-convention2";
-import { Component, TT as l3TT } from "@ndn/packet";
+import { type Component, StructFieldComponentNested, TT as l3TT } from "@ndn/packet";
 import { Metadata } from "@ndn/rdr";
-import { Extensible, Extension, ExtensionRegistry, NNI } from "@ndn/tlv";
+import { Extensible, Extension, ExtensionRegistry, StructFieldNNI, StructFieldNNIBig } from "@ndn/tlv";
 
 import { ModeDir, ModeFile, TT } from "./an";
 
 const EXTENSIONS = new ExtensionRegistry();
-EXTENSIONS.registerExtension<Component>({
-  tt: l3TT.FinalBlock,
-  decode(obj, { vd }) {
-    void obj;
-    return vd.decode(Component);
-  },
-  encode(obj, value) {
-    void obj;
-    return [l3TT.FinalBlock, value];
-  },
-});
+EXTENSIONS.register(l3TT.FinalBlock, StructFieldComponentNested);
 for (const tt of [TT.SegmentSize, TT.Size, TT.Mode]) {
-  EXTENSIONS.registerExtension<number>({
-    tt,
-    decode(obj, { nni }) {
-      void obj;
-      return nni;
-    },
-    encode(obj, value) {
-      void obj;
-      return [tt, NNI(value)];
-    },
-  });
+  EXTENSIONS.register(tt, StructFieldNNI);
 }
 for (const tt of [TT.Atime, TT.Btime, TT.Ctime, TT.Mtime]) {
-  EXTENSIONS.registerExtension<Date>({
-    tt,
-    decode(obj, { nniBig }) {
-      void obj;
-      return new Date(Number(nniBig / 1000000n));
-    },
-    encode(obj, value) {
-      void obj;
-      return [tt, NNI(BigInt(value.getTime()) * 1000000n)];
-    },
-  });
+  EXTENSIONS.register(tt, StructFieldNNIBig);
 }
 
 /** ndn6-file-server file/directory metadata. */
@@ -51,9 +21,14 @@ export class FileMetadata extends Metadata implements Extensible {
   public declare finalBlock: Component | undefined;
   public declare segmentSize: number | undefined;
   public declare size: number | undefined;
+  private declare atimeBig: bigint | undefined;
+  private declare btimeBig: bigint | undefined;
+  private declare ctimeBig: bigint | undefined;
+  private declare mtimeOBig: bigint | undefined;
   public declare atime: Date | undefined;
   public declare btime: Date | undefined;
   public declare ctime: Date | undefined;
+  private declare mtimeO: Date | undefined;
 
   public get lastSeg(): number | undefined {
     const { finalBlock } = this;
@@ -88,11 +63,11 @@ export class FileMetadata extends Metadata implements Extensible {
   }
 
   public get mtime(): Date {
-    return (Extension.get(this, TT.Mtime) as Date | undefined) ?? new Date();
+    return this.mtimeO ?? new Date();
   }
 
   public set mtime(v) {
-    Extension.set(this, TT.Mtime, v);
+    this.mtimeO = v;
   }
 }
 Extensible.defineGettersSetters(FileMetadata, {
@@ -100,7 +75,20 @@ Extensible.defineGettersSetters(FileMetadata, {
   segmentSize: TT.SegmentSize,
   size: TT.Size,
   mode: TT.Mode,
-  atime: TT.Atime,
-  btime: TT.Btime,
-  ctime: TT.Ctime,
+  atimeBig: TT.Atime,
+  btimeBig: TT.Btime,
+  ctimeBig: TT.Ctime,
+  mtimeOBig: TT.Mtime,
 });
+for (const key of ["atime", "btime", "ctime", "mtimeO"] as const) {
+  Object.defineProperty(FileMetadata.prototype, key, {
+    enumerable: true,
+    get(this: FileMetadata) {
+      const value = this[`${key}Big`];
+      return value === undefined ? undefined : new Date(Number(value / 1000000n));
+    },
+    set(this: FileMetadata, value: Date | undefined) {
+      this[`${key}Big`] = value === undefined ? undefined : BigInt(value.getTime()) * 1000000n;
+    },
+  });
+}

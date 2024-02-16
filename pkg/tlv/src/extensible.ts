@@ -2,6 +2,8 @@ import DefaultWeakMap from "mnemonist/default-weak-map.js";
 
 import type { Decoder } from "./decoder";
 import type { Encodable } from "./encoder";
+import type { EvDecoder } from "./ev-decoder";
+import type { StructFieldType } from "./struct-field";
 
 const RECORDS = new DefaultWeakMap<Extensible, Map<number, unknown>>(() => new Map());
 
@@ -88,9 +90,27 @@ export namespace Extension {
   }
 }
 
+type ExtensionFieldType<R> = Pick<StructFieldType<R>, "encode" | "decode">;
+
+export interface ExtensionOptions {
+  order?: number;
+}
+
+interface StructFieldExtension {
+  type: ExtensionFieldType<any>;
+  order?: number;
+}
+
+type AnyExtension = StructFieldExtension | Extension<any, any>;
+
 /** Registry of known extension fields of a parent TLV element. */
 export class ExtensionRegistry<T extends Extensible> {
-  private readonly table = new Map<number, Extension<T, any>>();
+  private readonly table = new Map<number, AnyExtension>();
+
+  /** Add an extension. */
+  public readonly register = <R>(tt: number, type: ExtensionFieldType<R>, { order }: ExtensionOptions = {}): void => {
+    this.table.set(tt, { type, order });
+  };
 
   /** Add an extension. */
   public readonly registerExtension = <R>(ext: Extension<T, R>): void => {
@@ -103,8 +123,7 @@ export class ExtensionRegistry<T extends Extensible> {
   };
 
   /** UnknownElementCallback for EvDecoder. */
-  public readonly decodeUnknown = (target: T, tlv: Decoder.Tlv, order: number) => {
-    void order;
+  public readonly decodeUnknown: EvDecoder.UnknownElementHandler<T> = (target, tlv) => {
     const { type: tt } = tlv;
     const ext = this.table.get(tt);
     if (!ext) {
@@ -112,7 +131,12 @@ export class ExtensionRegistry<T extends Extensible> {
     }
 
     const record = RECORDS.get(target);
-    record.set(tt, ext.decode(target, tlv, record.get(tt)));
+    let type: ExtensionFieldType<any> | undefined;
+    if ((type = (ext as StructFieldExtension).type) === undefined) {
+      record.set(tt, (ext as Extension<T, any>).decode(target, tlv, record.get(tt)));
+    } else {
+      record.set(tt, type.decode(tlv));
+    }
     return true;
   };
 
@@ -123,7 +147,7 @@ export class ExtensionRegistry<T extends Extensible> {
       return [];
     }
 
-    const fields: Array<{ tt: number; value: unknown; ext: Extension<T, any> }> = [];
+    const fields: Array<{ tt: number; value: unknown; ext: AnyExtension }> = [];
     for (const [tt, value] of record) {
       const ext = this.table.get(tt);
       if (!ext) {
@@ -133,6 +157,12 @@ export class ExtensionRegistry<T extends Extensible> {
     }
 
     fields.sort((a, b) => (a.ext.order ?? a.tt) - (b.ext.order ?? b.tt));
-    return fields.map(({ value, ext }) => ext.encode(source, value));
+    return fields.map(({ tt, value, ext }) => {
+      let type: ExtensionFieldType<any> | undefined;
+      if ((type = (ext as StructFieldExtension).type) !== undefined) {
+        return [tt, type.encode(value)];
+      }
+      return (ext as Extension<T, any>).encode(source, value);
+    });
   }
 }

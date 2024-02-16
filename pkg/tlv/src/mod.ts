@@ -5,3 +5,4 @@ export * from "./extensible";
 export * from "./nni";
 export * from "./string";
 export * from "./struct-builder";
+export * from "./struct-field";

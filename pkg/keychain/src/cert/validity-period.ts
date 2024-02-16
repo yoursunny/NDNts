@@ -1,5 +1,5 @@
 import { SigInfo } from "@ndn/packet";
-import { type Decoder, type Encodable, type Encoder, EvDecoder, Extension } from "@ndn/tlv";
+import { type Decoder, type Encoder, EvDecoder, Extension, StructFieldType } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
 
 import { TT } from "./an";
@@ -79,17 +79,7 @@ export class ValidityPeriod {
   }
 }
 
-SigInfo.registerExtension({
-  tt: TT.ValidityPeriod,
-  decode(obj: SigInfo, { decoder }: Decoder.Tlv): ValidityPeriod {
-    void obj;
-    return decoder.decode(ValidityPeriod);
-  },
-  encode(obj: SigInfo, value: ValidityPeriod): Encodable {
-    void obj;
-    return value;
-  },
-});
+SigInfo.registerExtensionWithStructFieldType(TT.ValidityPeriod, StructFieldType.wrap(ValidityPeriod));
 
 export namespace ValidityPeriod {
   export type TimestampInput = number | Date;
