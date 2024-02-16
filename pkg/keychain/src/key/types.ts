@@ -104,15 +104,15 @@ export interface CryptoAlgorithm<I = any, Asym extends boolean = any, G = any> {
    * @returns Generated key pair or secret key.
    *
    * @remarks
-   * Some algorithms allow importing an existing key from a serialization format such as PKCS#8 or
-   * JWK. This could be supported by passing the serialized key as part of `params`, and then
-   * perform the importing operation in this method instead of generating a new key.
+   * Some algorithms allow importing an existing key pair from a serialization format such as
+   * PKCS#8 or JWK. This could be supported by passing the serialized key as part of `params`,
+   * and then importing instead of generating in this method.
    */
   cryptoGenerate: (params: G, extractable: boolean) => Promise<
   If<Asym, CryptoAlgorithm.GeneratedKeyPair<I>, CryptoAlgorithm.GeneratedSecretKey<I>, never>>;
 
   /**
-   * Import public key from SPKI.
+   * Import public key from SubjectPublicKeyInfo.
    *
    * @remarks
    * This should only appear on asymmetric algorithm.

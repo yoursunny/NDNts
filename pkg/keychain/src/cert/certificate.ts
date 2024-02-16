@@ -46,9 +46,16 @@ export class Certificate {
     return this.data.sigInfo.keyLocator?.name;
   }
 
-  /** Whether this is a self-signed certificate. */
+  /**
+   * Whether this is a self-signed certificate.
+   *
+   * @remarks
+   * A certificate is considered self-signed if its issuer key name is same as the certificate's
+   * key name, i.e. they are the same key.
+   */
   public get isSelfSigned(): boolean {
-    return this.issuer?.isPrefixOf(this.name) ?? false;
+    return !!this.issuer &&
+      CertNaming.toKeyName(this.issuer).equals(CertNaming.toKeyName(this.name));
   }
 
   /**

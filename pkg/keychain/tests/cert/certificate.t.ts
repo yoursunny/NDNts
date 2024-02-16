@@ -1,6 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Data, Name, SigType } from "@ndn/packet";
+import { Version } from "@ndn/naming-convention2";
+import { Component, Data, Name, SigType } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { expect, test } from "vitest";
 
@@ -79,4 +80,54 @@ test("decode Ed25519 cert", async () => {
     checkValidity: false,
   });
   await pub.verify(data);
+});
+
+test("issue", async () => {
+  const [issuerPrivateKey] = await generateSigningKey("/issuer");
+  const [, publicKey] = await generateSigningKey("/rp");
+
+  const cert = await Certificate.issue({
+    validity: ValidityPeriod.daysFromNow(1),
+    issuerId: Component.from("i"),
+    issuerPrivateKey,
+    publicKey,
+  });
+
+  expect(cert.name).toHaveLength(5);
+  expect(publicKey.name.append("i").isPrefixOf(cert.name)).toBeTruthy();
+  expect(cert.name.at(-1).is(Version)).toBeTruthy();
+});
+
+test("self-sign", async () => {
+  const [privateKey, publicKey] = await generateSigningKey("/my/KEY/x");
+
+  const cert = await Certificate.selfSign({ privateKey, publicKey });
+  expect(cert.name).toHaveLength(5);
+  expect(cert.name.getPrefix(-1)).toEqualName("/my/KEY/x/self");
+  expect(cert.name.at(-1).is(Version)).toBeTruthy();
+  expect(cert.isSelfSigned).toBeTruthy();
+
+  const [, publicKeyY] = await generateSigningKey("/my/KEY/y");
+
+  await expect(Certificate.selfSign({
+    validity: ValidityPeriod.daysFromNow(1),
+    privateKey,
+    publicKey: publicKeyY,
+  })).rejects.toThrow(/mismatch/);
+
+  const sameKeyName = await Certificate.issue({
+    validity: ValidityPeriod.daysFromNow(1),
+    issuerId: Component.from("i"),
+    issuerPrivateKey: privateKey.withKeyLocator(cert.name),
+    publicKey,
+  });
+  expect(sameKeyName.isSelfSigned).toBeTruthy();
+
+  const sameSubjectName = await Certificate.issue({
+    validity: ValidityPeriod.daysFromNow(1),
+    issuerId: Component.from("i"),
+    issuerPrivateKey: privateKey,
+    publicKey: publicKeyY,
+  });
+  expect(sameSubjectName.isSelfSigned).toBeFalsy();
 });
