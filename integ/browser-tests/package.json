@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "serve": "webpack serve",
-    "test": "../../node_modules/.bin/vitest"
+    "test": "vitest"
   },
   "dependencies": {
     "@ndn/autoconfig": "workspace:*",
@@ -27,12 +27,12 @@
     "@types/webpack": "^5.28.5",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "html-webpack-plugin": "^5.6.0",
-    "puppeteer": "^22.0.0",
+    "puppeteer": "^22.1.0",
     "ts-loader": "^9.5.1",
     "tslib": "^2.6.2",
     "type-fest": "^4.10.2",
-    "webpack": "^5.90.1",
+    "webpack": "^5.90.3",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.0.1"
+    "webpack-dev-server": "^5.0.2"
   }
 }

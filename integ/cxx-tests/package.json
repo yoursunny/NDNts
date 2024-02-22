@@ -2,7 +2,7 @@
   "name": "@ndn/cxx-tests",
   "private": true,
   "scripts": {
-    "test": "../../node_modules/.bin/vitest"
+    "test": "vitest"
   },
   "dependencies": {
     "@ndn/endpoint": "workspace:*",

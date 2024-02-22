@@ -32,7 +32,7 @@
     "@ndn/rdr": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "is-stream": "^3.0.0",
+    "is-stream": "^4.0.1",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
     "streaming-iterables": "^8.0.1",

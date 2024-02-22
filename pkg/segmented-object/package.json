@@ -32,7 +32,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
     "event-iterator": "^2.0.0",
-    "hirestime": "^7.0.3",
+    "hirestime": "^7.0.4",
     "mnemonist": "^0.39.8",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",

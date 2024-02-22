@@ -33,7 +33,7 @@
     "@ndn/quic-transport": "workspace:*",
     "@ndn/ws-transport": "workspace:*",
     "default-gateway": "^7.2.2",
-    "hirestime": "^7.0.3",
+    "hirestime": "^7.0.4",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
