@@ -1,8 +1,8 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
-import { Certificate, ECDSA, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, RSA, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
-import { Component, Data, digestSigning, type NameLike, type Signer, type Verifier } from "@ndn/packet";
+import { Certificate, ECDSA, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, RSA, SigningAlgorithmListFull } from "@ndn/keychain";
+import { Component, Data, digestSigning, type NameLike, type Signer, ValidityPeriod, type Verifier } from "@ndn/packet";
 import { PrefixRegShorter } from "@ndn/repo";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/producer";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";

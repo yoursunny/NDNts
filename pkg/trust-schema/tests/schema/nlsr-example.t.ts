@@ -1,7 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Certificate, CertNaming, generateSigningKey, KeyChain, type NamedSigner, ValidityPeriod } from "@ndn/keychain";
-import { Component, Data, type Name } from "@ndn/packet";
+import { Certificate, CertNaming, generateSigningKey, KeyChain, type NamedSigner } from "@ndn/keychain";
+import { Component, Data, type Name, ValidityPeriod } from "@ndn/packet";
 import { collect, take } from "streaming-iterables";
 import { beforeAll, expect, test } from "vitest";
 

@@ -1,6 +1,6 @@
-import type { Name } from "@ndn/packet";
+import type { Name, ValidityPeriod } from "@ndn/packet";
 
-import type { Certificate, ValidityPeriod } from "../cert/mod";
+import type { Certificate } from "../certificate";
 import { CertNaming } from "../mod";
 import type { CryptoAlgorithm } from "./types";
 

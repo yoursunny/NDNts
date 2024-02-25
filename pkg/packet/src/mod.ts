@@ -9,3 +9,4 @@ export * from "./interest";
 export * from "./key-locator";
 export * from "./nack";
 export * from "./sig-info";
+export * from "./validity-period";

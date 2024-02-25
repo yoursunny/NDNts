@@ -2,7 +2,7 @@ import { KeyLocator, LLVerify, type Name, Verifier } from "@ndn/packet";
 import { assert } from "@ndn/util";
 
 import { SigningAlgorithmListSlim } from "../algolist/mod";
-import type { Certificate } from "../cert/mod";
+import type { Certificate } from "../certificate";
 import * as CertNaming from "../naming";
 import { ImportCertCached, type ImportCertOptions, isPublicSecretKey } from "./impl-import-cert";
 import { type CryptoAlgorithm, KeyKind, type NamedVerifier, type SigningAlgorithm } from "./types";

@@ -43,6 +43,6 @@
   "devDependencies": {
     "@ndn/node-transport": "workspace:*",
     "stream-mock": "^2.0.5",
-    "type-fest": "^4.10.2"
+    "type-fest": "^4.10.3"
   }
 }

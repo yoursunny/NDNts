@@ -1,7 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Certificate, CertNaming, ECDSA, generateSigningKey, type NamedSigner, type NamedVerifier, RSA, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
-import { Name } from "@ndn/packet";
+import { Certificate, CertNaming, ECDSA, generateSigningKey, type NamedSigner, type NamedVerifier, RSA, SigningAlgorithmListFull } from "@ndn/keychain";
+import { Name, ValidityPeriod } from "@ndn/packet";
 import { fromHex, toUtf8 } from "@ndn/util";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 

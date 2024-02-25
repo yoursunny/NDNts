@@ -1,5 +1,5 @@
-import { Certificate, CertNaming, createVerifier, SigningAlgorithmListFull, ValidityPeriod } from "@ndn/keychain";
-import { Component, Name } from "@ndn/packet";
+import { Certificate, CertNaming, createVerifier, SigningAlgorithmListFull } from "@ndn/keychain";
+import { Component, Name, ValidityPeriod } from "@ndn/packet";
 import type { CommandModule } from "yargs";
 
 import { inputCertBase64, keyChain, printCertBase64 } from "./util";

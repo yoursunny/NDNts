@@ -1,8 +1,8 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
-import { Certificate, generateEncryptionKey, generateSigningKey, RSAOAEP, ValidityPeriod } from "@ndn/keychain";
-import { Component, Data, Name, type Verifier } from "@ndn/packet";
+import { Certificate, generateEncryptionKey, generateSigningKey, RSAOAEP } from "@ndn/keychain";
+import { Component, Data, Name, ValidityPeriod, type Verifier } from "@ndn/packet";
 import { PrefixRegStatic } from "@ndn/repo";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/producer";
 import { Closers, crypto } from "@ndn/util";

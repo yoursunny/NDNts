@@ -1,8 +1,8 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
-import { Certificate, CertNaming, generateSigningKey, type NamedSigner, type NamedVerifier, ValidityPeriod } from "@ndn/keychain";
-import { Component, FwHint, Name, type Signer } from "@ndn/packet";
+import { Certificate, CertNaming, generateSigningKey, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
+import { Component, FwHint, Name, type Signer, ValidityPeriod } from "@ndn/packet";
 import { type DataStore, makeInMemoryDataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
 import { Closers, delay, toHex, toUtf8 } from "@ndn/util";
 import { createTransport as createMT } from "nodemailer";

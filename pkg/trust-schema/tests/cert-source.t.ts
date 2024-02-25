@@ -1,8 +1,8 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Endpoint } from "@ndn/endpoint";
-import { Certificate, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, ValidityPeriod } from "@ndn/keychain";
-import { Name, type NameLike } from "@ndn/packet";
+import { Certificate, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
+import { Name, type NameLike, ValidityPeriod } from "@ndn/packet";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/producer";
 import { delay } from "@ndn/util";
 import { collect } from "streaming-iterables";

@@ -3,7 +3,7 @@ import "@ndn/tlv/test-fixture/expect";
 import { Decoder } from "@ndn/tlv";
 import { expect, test } from "vitest";
 
-import { ValidityPeriod } from "../..";
+import { ValidityPeriod } from "..";
 
 test("encode decode", () => {
   const wire = Uint8Array.from([

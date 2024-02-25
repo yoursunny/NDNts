@@ -31,6 +31,10 @@ export const TT = {
   SigTime: 0x28,
   SigSeqNum: 0x2A,
 
+  ValidityPeriod: 0xFD,
+  NotBefore: 0xFE,
+  NotAfter: 0xFF,
+
   Nack: 0x0320,
   NackReason: 0x0321,
 } as const;

@@ -2,7 +2,7 @@ import type { LLEncrypt, Name } from "@ndn/packet";
 import { assert } from "@ndn/util";
 
 import { EncryptionAlgorithmListSlim } from "../algolist/mod";
-import type { Certificate } from "../cert/mod";
+import type { Certificate } from "../certificate";
 import * as CertNaming from "../naming";
 import { ImportCertCached, type ImportCertOptions, isPublicSecretKey } from "./impl-import-cert";
 import { type CryptoAlgorithm, type EncryptionAlgorithm, KeyKind, type NamedEncrypter } from "./types";

@@ -1,11 +1,11 @@
-import { type Component, Data, type Name, SigInfo, type Signer } from "@ndn/packet";
+import { type Component, Data, type Name, SigInfo, type Signer, ValidityPeriod } from "@ndn/packet";
 import { assert } from "@ndn/util";
 import * as asn1 from "@yoursunny/asn1";
 
-import type { CryptoAlgorithm, NamedSigner, PublicKey } from "../key/mod";
-import * as CertNaming from "../naming";
-import { ContentTypeKEY } from "./an";
-import { ValidityPeriod } from "./validity-period";
+import type { CryptoAlgorithm, NamedSigner, PublicKey } from "./key/mod";
+import * as CertNaming from "./naming";
+
+const ContentTypeKEY = 0x02;
 
 /**
  * NDN Certificate v2.
@@ -21,14 +21,13 @@ export class Certificate {
    * Thrown if the Data packet is not a certificate.
    */
   public static fromData(data: Data): Certificate {
-    const { name, contentType, sigInfo } = data;
+    const { name, contentType, sigInfo: { validity } } = data;
     if (!CertNaming.isCertName(name)) {
       throw new Error(`${name} is not a certificate name`);
     }
     if (contentType !== ContentTypeKEY) {
       throw new Error("ContentType must be KEY");
     }
-    const validity = ValidityPeriod.get(sigInfo);
     if (!validity) {
       throw new Error("ValidityPeriod is missing");
     }
@@ -132,8 +131,7 @@ export namespace Certificate {
   }: BuildOptions): Promise<Certificate> {
     assert(CertNaming.isCertName(name));
     const data = new Data(name, Data.ContentType(ContentTypeKEY), Data.FreshnessPeriod(freshness));
-    data.sigInfo = new SigInfo();
-    ValidityPeriod.set(data.sigInfo, validity);
+    data.sigInfo = new SigInfo(validity);
     data.content = publicKeySpki;
     await signer.sign(data);
     return Certificate.fromData(data);
@@ -180,8 +178,7 @@ export namespace Certificate {
 
     /**
      * ValidityPeriod
-     * @defaultValue
-     * Maximum validity.
+     * @defaultValue `ValidityPeriod.MAX`
      */
     validity?: ValidityPeriod;
 

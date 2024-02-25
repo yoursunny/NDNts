@@ -1,5 +1,5 @@
-import { Certificate, CertNaming, generateSigningKey, ValidityPeriod } from "@ndn/keychain";
-import { Component } from "@ndn/packet";
+import { Certificate, CertNaming, generateSigningKey } from "@ndn/keychain";
+import { Component, ValidityPeriod } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import { expect, test } from "vitest";
 

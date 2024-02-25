@@ -1,8 +1,8 @@
-import { SigInfo } from "@ndn/packet";
-import { type Decoder, type Encoder, EvDecoder, Extension, StructFieldType } from "@ndn/tlv";
+import { type Decoder, type Encoder, EvDecoder } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
 
 import { TT } from "./an";
+import type { SigInfo } from "./sig-info";
 
 const timestampRe = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/;
 
@@ -16,13 +16,11 @@ function decodeTimestamp(str: string): number {
   return Date.UTC(y, m - 1, d, h, i, s);
 }
 
-function padDateNum(n: number, size = 2): string {
-  return n.toString().padStart(size, "0");
-}
-
 function encodeTimestamp(timestamp: number): string {
-  const d = new Date(timestamp);
-  return `${padDateNum(d.getUTCFullYear(), 4)}${padDateNum(1 + d.getUTCMonth())}${padDateNum(d.getUTCDate())}T${padDateNum(d.getUTCHours())}${padDateNum(d.getUTCMinutes())}${padDateNum(d.getUTCSeconds())}`;
+  const dt = new Date(timestamp);
+  const p = (f: "FullYear" | "Month" | "Date" | "Hours" | "Minutes" | "Seconds", size = 2, add = 0): string =>
+    (add + dt[`getUTC${f}`]()).toString().padStart(size, "0");
+  return `${p("FullYear", 4)}${p("Month", 2, 1)}${p("Date")}T${p("Hours")}${p("Minutes")}${p("Seconds")}`;
 }
 
 const EVD = new EvDecoder<ValidityPeriod>("ValidityPeriod", TT.ValidityPeriod)
@@ -79,7 +77,7 @@ export class ValidityPeriod {
   }
 }
 
-SigInfo.registerExtensionWithStructFieldType(TT.ValidityPeriod, StructFieldType.wrap(ValidityPeriod));
+// SigInfo.registerExtensionWithStructFieldType(TT.ValidityPeriod, StructFieldType.wrap(ValidityPeriod));
 
 export namespace ValidityPeriod {
   export type TimestampInput = number | Date;
@@ -98,13 +96,19 @@ export namespace ValidityPeriod {
     return new ValidityPeriod(notBefore, notAfter);
   }
 
-  /** Retrieve ValidityPeriod from SigInfo. */
+  /**
+   * Retrieve ValidityPeriod from SigInfo.
+   * @deprecated Retrieve from `si.validity` directly.
+   */
   export function get(si: SigInfo): ValidityPeriod | undefined {
-    return Extension.get(si, TT.ValidityPeriod) as ValidityPeriod | undefined;
+    return si.validity;
   }
 
-  /** Assign ValidityPeriod onto SigInfo. */
-  export function set(si: SigInfo, v?: ValidityPeriod) {
-    Extension.set(si, TT.ValidityPeriod, v);
+  /**
+   * Assign ValidityPeriod onto SigInfo.
+   * @deprecated Assign to `si.validity` directly.
+   */
+  export function set(si: SigInfo, v?: ValidityPeriod): void {
+    si.validity = v;
   }
 }

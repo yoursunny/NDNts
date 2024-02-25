@@ -1,12 +1,12 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Version } from "@ndn/naming-convention2";
-import { Component, Data, Name, SigType } from "@ndn/packet";
+import { Component, Data, Name, SigType, ValidityPeriod } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { expect, test } from "vitest";
 
-import { Certificate, CertNaming, createVerifier, generateSigningKey, SigningAlgorithmListFull, SigningAlgorithmListSlim, ValidityPeriod } from "../..";
-import * as sample_certs from "../../test-fixture/certs";
+import { Certificate, CertNaming, createVerifier, generateSigningKey, SigningAlgorithmListFull, SigningAlgorithmListSlim } from "..";
+import * as sample_certs from "../test-fixture/certs";
 
 test("encode decode", async () => {
   const [pvt] = await generateSigningKey("/operator/KEY/key-1");
@@ -38,7 +38,7 @@ test("encode decode", async () => {
   expect(() => Certificate.fromData(data)).toThrow(/ContentType/);
 
   data = Decoder.decode(wire, Data);
-  ValidityPeriod.set(data.sigInfo, undefined);
+  data.sigInfo.validity = undefined;
   expect(() => Certificate.fromData(data)).toThrow(/ValidityPeriod/);
 });
 

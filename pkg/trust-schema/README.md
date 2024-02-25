@@ -17,8 +17,8 @@ This package implements trust schemas.
 import { TrustSchema, TrustSchemaSigner, TrustSchemaVerifier, printESM, versec } from "@ndn/trust-schema";
 
 // other imports for examples
-import { Certificate, KeyChain, ValidityPeriod, generateSigningKey } from "@ndn/keychain";
-import { Component, Data } from "@ndn/packet";
+import { Certificate, KeyChain, generateSigningKey } from "@ndn/keychain";
+import { Component, Data, ValidityPeriod } from "@ndn/packet";
 import assert from "node:assert/strict";
 ```
 

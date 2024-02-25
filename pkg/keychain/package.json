@@ -14,9 +14,7 @@
   "type": "module",
   "main": "src/mod.ts",
   "module": "lib/mod_browser.js",
-  "sideEffects": [
-    "**/validity-period*"
-  ],
+  "sideEffects": false,
   "homepage": "https://yoursunny.com/p/NDNts/",
   "repository": {
     "type": "git",
@@ -37,7 +35,7 @@
     "idb-keyval": "^6.2.1",
     "mnemonist": "^0.39.8",
     "tslib": "^2.6.2",
-    "type-fest": "^4.10.2",
+    "type-fest": "^4.10.3",
     "wait-your-turn": "^1.0.1"
   },
   "devDependencies": {

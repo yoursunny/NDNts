@@ -1,6 +1,6 @@
 import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
-import { Certificate, CertNaming, type NamedVerifier, type ValidityPeriod } from "@ndn/keychain";
-import { Component, type ComponentLike, type Data, type FwHint, type Signer } from "@ndn/packet";
+import { Certificate, CertNaming, type NamedVerifier } from "@ndn/keychain";
+import { Component, type ComponentLike, type Data, type FwHint, type Signer, type ValidityPeriod } from "@ndn/packet";
 import { Metadata, serveMetadata } from "@ndn/rdr";
 import { KeyMap, toHex } from "@ndn/util";
 

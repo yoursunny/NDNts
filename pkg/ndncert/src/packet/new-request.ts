@@ -1,5 +1,5 @@
-import { Certificate, createVerifier, type NamedSigner, type NamedVerifier, type SigningAlgorithm, SigningAlgorithmListSlim, ValidityPeriod } from "@ndn/keychain";
-import { Data, Interest, type SignedInterestPolicy } from "@ndn/packet";
+import { Certificate, createVerifier, type NamedSigner, type NamedVerifier, type SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
+import { Data, Interest, type SignedInterestPolicy, ValidityPeriod } from "@ndn/packet";
 import { Encoder, EvDecoder } from "@ndn/tlv";
 
 import * as crypto from "../crypto-common";

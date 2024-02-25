@@ -1,7 +1,7 @@
 import { Data, type Name } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 
-import { Certificate } from "../cert/mod";
+import { Certificate } from "../certificate";
 import { StoreBase } from "./store-base";
 
 interface StoredCert {

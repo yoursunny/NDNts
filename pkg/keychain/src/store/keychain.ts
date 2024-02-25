@@ -3,7 +3,7 @@ import type { Promisable } from "type-fest";
 import { Mutex } from "wait-your-turn";
 
 import { CryptoAlgorithmListSlim } from "../algolist/mod";
-import type { Certificate } from "../cert/mod";
+import type { Certificate } from "../certificate";
 import type { CryptoAlgorithm, NamedSigner } from "../key/mod";
 import * as CertNaming from "../naming";
 import { CertStore } from "./cert-store";

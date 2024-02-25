@@ -1,6 +1,6 @@
 import { type ConsumerOptions, Endpoint } from "@ndn/endpoint";
-import { Certificate, type NamedSigner, type NamedVerifier, type ValidityPeriod } from "@ndn/keychain";
-import { type FwHint, Interest, type Name } from "@ndn/packet";
+import { Certificate, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
+import { type FwHint, Interest, type Name, type ValidityPeriod } from "@ndn/packet";
 
 import * as crypto from "../crypto-common";
 import { type CaProfile, ChallengeRequest, ChallengeResponse, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
