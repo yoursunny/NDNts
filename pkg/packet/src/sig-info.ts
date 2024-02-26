@@ -10,10 +10,10 @@ const EXTENSIONS: ExtensionRegistry<SigInfo> = new ExtensionRegistry<SigInfo>();
 const EVD = new EvDecoder<SigInfo>("SigInfo", [TT.ISigInfo, TT.DSigInfo])
   .add(TT.SigType, (t, { nni }) => t.type = nni, { required: true })
   .add(TT.KeyLocator, (t, { decoder }) => t.keyLocator = decoder.decode(KeyLocator))
-  .add(TT.ValidityPeriod, (t, { decoder }) => t.validity = decoder.decode(ValidityPeriod))
   .add(TT.SigNonce, (t, { value }) => t.nonce = value)
   .add(TT.SigTime, (t, { nni }) => t.time = nni)
   .add(TT.SigSeqNum, (t, { nniBig }) => t.seqNum = nniBig)
+  .add(TT.ValidityPeriod, (t, { decoder }) => t.validity = decoder.decode(ValidityPeriod))
   .setUnknown(EXTENSIONS.decodeUnknown);
 
 /** SignatureInfo on Interest or Data. */
@@ -29,10 +29,10 @@ export class SigInfo {
    * - {@link SigInfo} to copy from
    * - number as SigType
    * - {@link KeyLocator}, or Name/URI/KeyDigest to construct KeyLocator
-   * - {@link ValidityPeriod}
    * - {@link SigInfo.Nonce}`(v)`
    * - {@link SigInfo.Time}`(v)`
    * - {@link SigInfo.SeqNum}`(v)`
+   * - {@link ValidityPeriod}
    */
   constructor(...args: SigInfo.CtorArg[]) {
     const klArgs: KeyLocator.CtorArg[] = [];
@@ -41,11 +41,11 @@ export class SigInfo {
         this.type = arg;
       } else if (KeyLocator.isCtorArg(arg)) {
         klArgs.push(arg);
-      } else if (arg instanceof ValidityPeriod) {
-        this.validity = arg;
       } else if (arg instanceof SigInfo) {
         Object.assign(this, arg);
         Extensible.cloneRecord(this, arg);
+      } else if (arg instanceof ValidityPeriod) {
+        this.validity = arg;
       } else if (arg[ctorAssign]) {
         arg[ctorAssign](this);
       } else {
@@ -59,10 +59,10 @@ export class SigInfo {
 
   public type: number = SigType.Null;
   public keyLocator?: KeyLocator;
-  public validity?: ValidityPeriod;
   public nonce?: Uint8Array;
   public time?: number;
   public seqNum?: bigint;
+  public validity?: ValidityPeriod;
   public readonly [Extensible.TAG] = EXTENSIONS;
 
   /**
@@ -79,10 +79,10 @@ export class SigInfo {
     encoder.prependTlv(tt,
       [TT.SigType, NNI(this.type)],
       this.keyLocator,
-      this.validity,
       [TT.SigNonce, Encoder.OmitEmpty, this.nonce],
       this.time !== undefined && [TT.SigTime, NNI(this.time)],
       this.seqNum !== undefined && [TT.SigSeqNum, NNI(this.seqNum)],
+      this.validity,
       ...EXTENSIONS.encode(this),
     );
   }
@@ -124,13 +124,5 @@ export namespace SigInfo {
   }
 
   /** Constructor argument. */
-  export type CtorArg = SigInfo | number | KeyLocator.CtorArg | CtorTag;
-
-  /** Add an extension TLV in SigInfo. */
-  export const registerExtension = EXTENSIONS.registerExtension;
-
-  export const registerExtensionWithStructFieldType = EXTENSIONS.register;
-
-  /** Remove an extension TLV in SigInfo. */
-  export const unregisterExtension = EXTENSIONS.unregisterExtension;
+  export type CtorArg = SigInfo | number | KeyLocator.CtorArg | CtorTag | ValidityPeriod;
 }

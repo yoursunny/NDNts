@@ -77,8 +77,6 @@ export class ValidityPeriod {
   }
 }
 
-// SigInfo.registerExtensionWithStructFieldType(TT.ValidityPeriod, StructFieldType.wrap(ValidityPeriod));
-
 export namespace ValidityPeriod {
   export type TimestampInput = number | Date;
 

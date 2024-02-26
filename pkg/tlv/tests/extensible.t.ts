@@ -1,6 +1,6 @@
 import "../test-fixture/expect";
 
-import { beforeEach, expect, test } from "vitest";
+import { expect, test } from "vitest";
 
 import { Decoder, type Encodable, Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI, StructFieldText } from "..";
 
