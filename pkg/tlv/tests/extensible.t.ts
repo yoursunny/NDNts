@@ -2,21 +2,10 @@ import "../test-fixture/expect";
 
 import { expect, test } from "vitest";
 
-import { Decoder, type Encodable, Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI, StructFieldBool, StructFieldText } from "..";
+import { Decoder, type Encodable, type Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI, StructFieldBool, StructFieldNNI, StructFieldText } from "..";
 
 const EXTENSIONS: ExtensionRegistry<ExtTestTarget> = new ExtensionRegistry<ExtTestTarget>();
-EXTENSIONS.registerExtension<number>({
-  tt: 0xA1,
-  order: 0xA9,
-  decode(obj, { nni }, accumulator = 0): number {
-    void obj;
-    return accumulator + nni;
-  },
-  encode(obj, value): Encodable {
-    void obj;
-    return [this.tt, NNI(value)];
-  },
-});
+EXTENSIONS.register(0xA1, StructFieldNNI, { order: 0xA9 });
 EXTENSIONS.register(0xA2, StructFieldBool);
 EXTENSIONS.register(0xA3, StructFieldText);
 
@@ -70,16 +59,12 @@ test("encode", () => {
   expect(target).toEncodeAs([
     0xA0, 0x00,
   ]);
-
-  Extension.set(target, 0xA9, 0);
-  expect(() => Encoder.encode(target)).toThrow(/unknown extension type/);
 });
 
 test("decode", () => {
   let decoder = new Decoder(Uint8Array.of(
-    0xA0, 0x06,
-    0xA1, 0x01, 0x01,
-    0xA1, 0x01, 0x03,
+    0xA0, 0x03,
+    0xA1, 0x01, 0x04,
   ));
   let obj = EVD.decode(new ExtTestTarget(), decoder);
   expect(obj.a1).toBe(4);

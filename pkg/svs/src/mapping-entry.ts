@@ -1,6 +1,6 @@
 import { GenericNumber, Timestamp } from "@ndn/naming-convention2";
 import { Component, Name, TT as l3TT } from "@ndn/packet";
-import { type Decodable, type Decoder, type Encodable, type EncodableObj, type Encoder, EvDecoder, Extensible, ExtensionRegistry } from "@ndn/tlv";
+import { type Decodable, type Decoder, type Encodable, type EncodableObj, type Encoder, EvDecoder, Extensible, ExtensionRegistry, type StructFieldType } from "@ndn/tlv";
 
 import { TT } from "./an";
 
@@ -60,7 +60,8 @@ export namespace MappingEntry {
   }
 }
 
-const StructFieldTimestampComponent = {
+const StructFieldTimestampComponent: StructFieldType<Date> = {
+  newValue: () => new Date(),
   encode(v: Date) {
     return Timestamp.create(v);
   },

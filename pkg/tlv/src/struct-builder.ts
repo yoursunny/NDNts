@@ -2,8 +2,9 @@ import { assert } from "@ndn/util";
 import type { Constructor, IfNever, Simplify } from "type-fest";
 
 import { type Decodable, type Decoder } from "./decoder";
-import { type Encodable, type EncodableObj, type Encoder } from "./encoder";
+import { type EncodableObj, type Encoder } from "./encoder";
 import { EvDecoder } from "./ev-decoder";
+import { encodeFields, type Field, makeField, sortFields } from "./impl-field";
 import type { StructFieldType } from "./struct-field";
 
 /** StructBuilder field options. */
@@ -41,14 +42,6 @@ interface Options<
    * If specified, the field is treated as bit flags.
    */
   flagBits?: Record<FlagBit, number>;
-}
-
-interface Field<T> extends Required<EvDecoder.RuleOptions> {
-  readonly tt: number;
-  readonly key: string;
-  newValue: () => T;
-  encode: (v: T) => Iterable<Encodable | typeof Encoder.OmitEmpty>;
-  asString: (v: T) => Iterable<string>;
 }
 
 interface FlagBitDesc {
@@ -131,79 +124,32 @@ export class StructBuilder<U extends {}> {
       type: StructFieldType<T>,
       opts: Options<Required, Repeat, FlagPrefix, FlagBit> = {},
   ): StructBuilder<Simplify<U & AddField<K, T, Required, Repeat> & AddFlags<FlagPrefix, FlagBit>>> {
-    const fo = { flagPrefix: key, ...opts, ...this.EVD.applyDefaultsToRuleOptions(opts) };
-    const { asString: itemAsString = (value) => `${value}` } = type;
+    const field = makeField(tt, key, type, opts, this.EVD);
+    const { flagPrefix = key, flagBits } = opts;
 
-    if (fo.repeat) {
-      this.fields.push({
-        ...fo,
-        tt,
-        key,
-        newValue: () => [],
-        *encode(vec) {
-          for (const item of vec) {
-            yield type.encode(item);
+    if (flagBits) {
+      field.asString = function*(v: unknown) {
+        if (typeof v !== "number") {
+          return;
+        }
+        yield ` ${key}=0x${v.toString(16).toUpperCase()}(`;
+        let delim = "";
+        for (const [str, bit] of Object.entries<number>(flagBits)) {
+          if ((v & bit) !== 0) {
+            yield `${delim}${str}`;
+            delim = "|";
           }
-        },
-        *asString(vec) {
-          if (vec.length === 0) {
-            return;
-          }
-          let delim = ` ${key}=[`;
-          for (const item of vec) {
-            yield `${delim}${itemAsString(item)}`;
-            delim = ", ";
-          }
-          yield "]";
-        },
-      } satisfies Field<T[]>);
-    } else {
-      this.fields.push({
-        ...fo,
-        tt,
-        key,
-        newValue: fo.required ? type.newValue : () => undefined,
-        *encode(v) {
-          if (v !== undefined) {
-            yield type.encode(v);
-          }
-        },
-        asString: fo.flagBits ? function*(v) {
-          if (typeof v !== "number") {
-            return;
-          }
-          yield ` ${key}=0x${v.toString(16).toUpperCase()}(`;
-          let delim = "";
-          for (const [str, bit] of Object.entries<number>(fo.flagBits!)) {
-            if ((v & bit) !== 0) {
-              yield `${delim}${str}`;
-              delim = "|";
-            }
-          }
-          yield ")";
-        } : function*(v) {
-          if (v !== undefined) {
-            yield ` ${key}=${itemAsString(v)}`;
-          }
-        },
-      } satisfies Field<T | undefined>);
-    }
+        }
+        yield ")";
+      };
 
-    this.EVD.add(
-      tt,
-      fo.repeat ?
-        (t, tlv) => t[key].push(type.decode(tlv)) :
-        (t, tlv) => t[key] = type.decode(tlv),
-      fo,
-    );
-
-    if (fo.flagBits) {
-      for (const [str, bit] of Object.entries<number>(fo.flagBits)) {
-        const prop = fo.flagPrefix + str.slice(0, 1).toUpperCase() + str.slice(1);
+      for (const [str, bit] of Object.entries<number>(flagBits)) {
+        const prop = flagPrefix + str.slice(0, 1).toUpperCase() + str.slice(1);
         this.flagBits.push({ key, prop, bit });
       }
     }
 
+    this.fields.push(field);
     return this as any;
   }
 
@@ -218,7 +164,7 @@ export class StructBuilder<U extends {}> {
    * @typeParam S - Subclass type.
    */
   public baseClass<S>(): (new() => Simplify<U> & EncodableObj) & Decodable<S> {
-    this.fields.sort(({ order: a }, { order: b }) => a - b);
+    sortFields(this.fields);
     const b = this; // eslint-disable-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
     return class {
       constructor() {
@@ -246,12 +192,7 @@ export class StructBuilder<U extends {}> {
       }
 
       public encodeTo(encoder: Encoder): void {
-        const elements: Encodable[] = [];
-        for (const { tt, key, encode } of b.fields) {
-          for (const value of encode((this as any)[key])) {
-            elements.push([tt, value as Encodable]);
-          }
-        }
+        const elements = encodeFields(b.fields, this);
 
         if (b.topTT === undefined) {
           encoder.encode(elements);
