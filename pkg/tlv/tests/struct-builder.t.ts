@@ -2,7 +2,7 @@ import "../test-fixture/expect";
 
 import { expect, test } from "vitest";
 
-import { Decoder, Encoder, StructBuilder, StructFieldBytes, StructFieldEnum, StructFieldNNI, StructFieldNNIBig, StructFieldText, StructFieldType } from "..";
+import { Decoder, Encoder, StructBuilder, StructFieldBool, StructFieldBytes, StructFieldEnum, StructFieldNNI, StructFieldNNIBig, StructFieldText, StructFieldType } from "..";
 
 test("basic", () => {
   const b = new StructBuilder("MyType", 0x40)
@@ -252,7 +252,11 @@ test("types", () => {
     .add(0x42, "a42", StructFieldNNIBig, { required: true })
     .add(0x43, "a43", StructFieldEnum<MyEnum>(MyEnum), { required: true })
     .add(0x44, "a44", StructFieldText, { required: true })
-    .add(0x45, "a45", StructFieldBytes, { required: true });
+    .add(0x45, "a45", StructFieldBytes, { required: true })
+    .add(0x50, "a50", StructFieldBool, { required: false })
+    .add(0x51, "a51", StructFieldBool, { required: false })
+    .add(0x52, "a52", StructFieldBool, { required: false })
+    .add(0x53, "a53", StructFieldBool, { required: true });
   class MyType extends b.baseClass<MyType>() {}
   b.subclass = MyType;
 
@@ -261,6 +265,11 @@ test("types", () => {
   expect(myObj.a42).toBe(0n);
   expect(myObj.a43).toBe(0);
   expect(myObj.a44).toBe("");
+  expect(myObj.a45).toEqualUint8Array([]);
+  expect(myObj.a50).toBeUndefined();
+  expect(myObj.a51).toBeUndefined();
+  expect(myObj.a52).toBeUndefined();
+  expect(myObj.a53).toBe(false);
   expect(myObj.toString()).toBe([
     "MyType",
     "a41=0",
@@ -268,6 +277,7 @@ test("types", () => {
     "a43=0(unknown)",
     "a44=",
     "a45=",
+    "a53=false",
   ].join(" "));
 
   myObj.a41 = 0xAA41;
@@ -275,6 +285,10 @@ test("types", () => {
   myObj.a43 = MyEnum.Q;
   myObj.a44 = "AA44";
   myObj.a45 = Uint8Array.of(0xAA, 0x45);
+  myObj.a50 = false;
+  myObj.a51 = true;
+  myObj.a52 = undefined;
+  myObj.a53 = true;
   expect(myObj.toString()).toBe([
     "MyType",
     `a41=${0xAA41}`,
@@ -282,6 +296,9 @@ test("types", () => {
     "a43=2(Q)",
     "a44=AA44",
     "a45=AA45",
+    "a50=false",
+    "a51=true",
+    "a53=true",
   ].join(" "));
 
   expect(myObj).toEncodeAs(
@@ -304,6 +321,14 @@ test("types", () => {
     ({ type, value }) => {
       expect(type).toBe(0x45);
       expect(value).toEqualUint8Array([0xAA, 0x45]);
+    },
+    ({ type, length }) => {
+      expect(type).toBe(0x51);
+      expect(length).toBe(0);
+    },
+    ({ type, length }) => {
+      expect(type).toBe(0x53);
+      expect(length).toBe(0);
     },
   );
 });

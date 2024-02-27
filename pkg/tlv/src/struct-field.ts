@@ -20,14 +20,14 @@ export interface StructFieldType<T> {
 
   /**
    * Encode a value to sub-TLV element.
-   * @returns TLV-VALUE only.
+   * @returns TLV-VALUE, or `Encoder.OmitEmpty` to omit the field.
    *
    * @remarks
    * Invoked by TLV class `.encodeTo` method.
    * If the field is optional and unset, this is not invoked.
    * If the field is repeatable, this is invoked once per element.
    */
-  encode: (this: void, value: T) => Encodable;
+  encode: (this: void, value: T) => Encodable | typeof Encoder.OmitEmpty;
 
   /**
    * Decode a value from sub-TLV element.
@@ -120,6 +120,12 @@ export namespace StructFieldType {
     };
   }
 }
+
+export const StructFieldBool: StructFieldType<boolean> = {
+  newValue: () => false,
+  encode: (value) => value ? new Uint8Array(0) : Encoder.OmitEmpty,
+  decode: () => true,
+};
 
 /**
  * StructBuilder field type of non-negative integer.

@@ -47,7 +47,7 @@ interface Field<T> extends Required<EvDecoder.RuleOptions> {
   readonly tt: number;
   readonly key: string;
   newValue: () => T;
-  encode: (v: T) => Iterable<Encodable>;
+  encode: (v: T) => Iterable<Encodable | typeof Encoder.OmitEmpty>;
   asString: (v: T) => Iterable<string>;
 }
 
@@ -75,9 +75,9 @@ type AddFlags<FlagPrefix extends string, FlagBit extends string> =
  *
  * @remarks
  * StructBuilder allows you to define the typing, constructor, encoder, and decoder, while writing
- * each field only once. It is only compatible with a subset of TLV structures. Namely, the TLV
- * structure shall contain a sequence of sub-TLV elements with distinct TLV-TYPE numbers, where
- * each sub-TLV-TYPE may appear zero, one, or multiple times.
+ * each field only once. To be compatible with StructBuilder, the TLV structure being described
+ * shall contain a sequence of sub-TLV elements with distinct TLV-TYPE numbers, where each
+ * sub-TLV-TYPE appears zero, one, or multiple times.
  *
  * To use StructBuilder, calling code should follow these steps:
  * 1. Invoke `.add()` method successively to define sub-TLV elements.
@@ -249,7 +249,7 @@ export class StructBuilder<U extends {}> {
         const elements: Encodable[] = [];
         for (const { tt, key, encode } of b.fields) {
           for (const value of encode((this as any)[key])) {
-            elements.push([tt, value]);
+            elements.push([tt, value as Encodable]);
           }
         }
 

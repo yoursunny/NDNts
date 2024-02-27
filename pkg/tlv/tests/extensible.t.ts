@@ -2,7 +2,7 @@ import "../test-fixture/expect";
 
 import { expect, test } from "vitest";
 
-import { Decoder, type Encodable, Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI, StructFieldText } from "..";
+import { Decoder, type Encodable, Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI, StructFieldBool, StructFieldText } from "..";
 
 const EXTENSIONS: ExtensionRegistry<ExtTestTarget> = new ExtensionRegistry<ExtTestTarget>();
 EXTENSIONS.registerExtension<number>({
@@ -17,19 +17,7 @@ EXTENSIONS.registerExtension<number>({
     return [this.tt, NNI(value)];
   },
 });
-EXTENSIONS.registerExtension<boolean>({
-  tt: 0xA2,
-  decode() {
-    return true;
-  },
-  encode(obj, value) {
-    void obj;
-    if (value) {
-      return [this.tt];
-    }
-    return undefined;
-  },
-});
+EXTENSIONS.register(0xA2, StructFieldBool);
 EXTENSIONS.register(0xA3, StructFieldText);
 
 const EVD = new EvDecoder<ExtTestTarget>("ExtTestTarget")

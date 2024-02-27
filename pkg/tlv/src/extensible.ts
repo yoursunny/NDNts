@@ -160,7 +160,7 @@ export class ExtensionRegistry<T extends Extensible> {
     return fields.map(({ tt, value, ext }) => {
       let type: ExtensionFieldType<any> | undefined;
       if ((type = (ext as StructFieldExtension).type) !== undefined) {
-        return [tt, type.encode(value)];
+        return [tt, type.encode(value) as Encodable];
       }
       return (ext as Extension<T, any>).encode(source, value);
     });
