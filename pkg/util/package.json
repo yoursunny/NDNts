@@ -40,7 +40,7 @@
   "devDependencies": {
     "@types/tmp": "^0.2.6",
     "@types/write": "^2.0.4",
-    "tmp": "^0.2.1",
+    "tmp": "^0.2.3",
     "write": "^2.0.0"
   },
   "engines": {
