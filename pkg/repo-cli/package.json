@@ -30,14 +30,12 @@
     "@ndn/repo": "workspace:*",
     "@ndn/repo-api": "workspace:*",
     "@ndn/util": "workspace:*",
-    "leveldown": "^6.1.1",
     "progress": "^2.0.3",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/leveldown": "^4.0.6",
     "@types/progress": "^2.0.7",
     "@types/yargs": "^17.0.32"
   }

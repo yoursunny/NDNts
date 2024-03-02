@@ -1,6 +1,5 @@
 import { exitClosers } from "@ndn/cli-common";
-import { DataStore } from "@ndn/repo";
-import leveldown from "leveldown";
+import { type DataStore, makePersistentDataStore } from "@ndn/repo";
 import type { Argv } from "yargs";
 
 export interface StoreArgs {
@@ -16,8 +15,8 @@ export function declareStoreArgs<T>(argv: Argv<T>): Argv<T & StoreArgs> {
     });
 }
 
-export function openStore(argv: StoreArgs): DataStore {
-  const store = new DataStore(leveldown(argv.store));
+export async function openStore(argv: StoreArgs): Promise<DataStore> {
+  const store = await makePersistentDataStore(argv.store);
   exitClosers.push(store);
   return store;
 }

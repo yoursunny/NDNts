@@ -93,7 +93,7 @@ export const FillStoreCommand: CommandModule<{}, BaseArgs & StoreArgs> = {
   },
 
   async handler(args) {
-    const store = openStore(args);
+    const store = await openStore(args);
     await execute(args, store);
   },
 };

@@ -35,8 +35,7 @@
     "env-var": "^7.4.1",
     "fast-chunk-string": "^1.0.1",
     "get-stdin": "^9.0.0",
-    "leveldown": "^6.1.1",
-    "nodemailer": "^6.9.10",
+    "nodemailer": "^6.9.11",
     "prompts": "^2.4.2",
     "stdout-stream": "^2.0.0",
     "tslib": "^2.6.2",
@@ -44,7 +43,6 @@
   },
   "devDependencies": {
     "@types/fast-chunk-string": "^1.0.3",
-    "@types/leveldown": "^4.0.6",
     "@types/nodemailer": "^6.4.14",
     "@types/prompts": "^2.4.9",
     "@types/stdout-stream": "^1.4.2",

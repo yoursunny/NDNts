@@ -77,7 +77,7 @@ export const ServerCommand: CommandModule<{}, Args> = {
 
   async handler(args) {
     await openUplinks();
-    const store = openStore(args);
+    const store = await openStore(args);
     const producer = RepoProducer.create(store, {
       fallback: args.rdr ? respondRdr({ signer: await getSigner() }) : undefined,
     });

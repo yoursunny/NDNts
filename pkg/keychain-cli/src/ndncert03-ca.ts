@@ -2,10 +2,9 @@ import { exitClosers, openUplinks } from "@ndn/cli-common";
 import { createVerifier, SigningAlgorithmListFull } from "@ndn/keychain";
 import { Server, type ServerChallenge, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "@ndn/ndncert";
 import type { Verifier } from "@ndn/packet";
-import { DataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
+import { makePersistentDataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
 import { toHex } from "@ndn/util";
 import envvar from "env-var";
-import leveldown from "leveldown";
 import { createTransport as createMT } from "nodemailer";
 import stdout from "stdout-stream";
 import type { CommandModule } from "yargs";
@@ -36,15 +35,15 @@ export const Ndncert03CaCommand: CommandModule<{}, Args> = {
         type: "string",
       })
       .option("challenge", {
-        demandOption: true,
         array: true,
         choices: ["nop", "pin", "email", "possession"],
+        demandOption: true,
         desc: "supported challenges",
         type: "string",
       })
       .option("possession-issuer", {
-        desc: "possession challenge - existing issuer certificate file",
         defaultDescription: "CA certificate",
+        desc: "possession challenge - existing issuer certificate file",
         type: "string",
       });
   },
@@ -55,7 +54,7 @@ export const Ndncert03CaCommand: CommandModule<{}, Args> = {
     const profile = await inputCaProfile(profileFile, true);
     const signer = await keyChain.getSigner(profile.cert.name);
 
-    const repo = new DataStore(leveldown(store));
+    const repo = await makePersistentDataStore(store);
     RepoProducer.create(repo, { reg: PrefixRegShorter(2) });
 
     const challenges: ServerChallenge[] = [];
