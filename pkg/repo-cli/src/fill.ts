@@ -6,9 +6,9 @@ import { BulkInsertInitiator, type DataStore } from "@ndn/repo-api";
 import { crypto } from "@ndn/util";
 import ProgressBar from "progress";
 import { batch, consume, pipeline, tap, transform } from "streaming-iterables";
-import type { Argv, CommandModule } from "yargs";
+import type { CommandModule, InferredOptionTypes, Options } from "yargs";
 
-import { declareStoreArgs, openStore, type StoreArgs } from "./util";
+import { openStore, type StoreArgs, storeOptions } from "./util";
 
 interface GenDataArgs {
   prefix: Name;
@@ -24,64 +24,62 @@ function* genData({ prefix, start, count, size }: GenDataArgs) {
   }
 }
 
-interface BaseArgs extends GenDataArgs {
-  batch: number;
-  parallel: number;
-  progress: boolean;
-}
+const baseOptions = {
+  prefix: {
+    coerce: Name.from,
+    default: new Name("/repodemo"),
+    desc: "demo data prefix",
+    type: "string",
+  },
+  start: {
+    default: 0,
+    desc: "start sequence number",
+    type: "number",
+  },
+  count: {
+    default: 1048576,
+    desc: "count of packets",
+    type: "number",
+  },
+  size: {
+    default: 1000,
+    desc: "payload size",
+    type: "number",
+  },
+  batch: {
+    default: 64,
+    desc: "packets per batch",
+    type: "number",
+  },
+  parallel: {
+    default: 1,
+    desc: "number of parallel transactions",
+    type: "number",
+  },
+  progress: {
+    default: true,
+    desc: "show progress bar",
+    type: "boolean",
+  },
+} satisfies Record<string, Options>;
 
-function declareBaseArgv(argv: Argv): Argv<BaseArgs> {
-  return argv
-    .option("prefix", {
-      coerce: Name.from,
-      default: new Name("/repodemo"),
-      desc: "demo data prefix",
-      type: "string",
-    })
-    .option("start", {
-      default: 0,
-      desc: "start sequence number",
-      type: "number",
-    })
-    .option("count", {
-      default: 1048576,
-      desc: "count of packets",
-      type: "number",
-    })
-    .option("size", {
-      default: 1000,
-      desc: "payload size",
-      type: "number",
-    })
-    .option("batch", {
-      default: 64,
-      desc: "packets per batch",
-      type: "number",
-    })
-    .option("parallel", {
-      default: 1,
-      desc: "number of parallel transactions",
-      type: "number",
-    })
-    .option("progress", {
-      default: true,
-      desc: "show progress bar",
-      type: "boolean",
-    });
-}
+type BaseArgs = InferredOptionTypes<typeof baseOptions>;
 
 async function execute(args: BaseArgs, store: DataStore.Insert) {
   const progress = args.progress ?
     new ProgressBar(":bar :current/:total :rateD/s :elapseds ETA:etas", { total: args.count }) :
     undefined;
-  await pipeline(
-    () => genData(args),
-    batch(args.batch),
-    tap((pkts) => progress?.tick(pkts.length)),
-    transform(args.parallel, (pkts) => store.insert(...pkts)),
-    consume,
-  );
-  progress?.terminate();
+  try {
+    await pipeline(
+      () => genData(args),
+      batch(args.batch),
+      tap((pkts) => progress?.tick(pkts.length)),
+      transform(args.parallel, (pkts) => store.insert(...pkts)),
+      consume,
+    );
+  } finally {
+    progress?.terminate();
+  }
 }
 
 export const FillStoreCommand: CommandModule<{}, BaseArgs & StoreArgs> = {
@@ -89,7 +87,9 @@ export const FillStoreCommand: CommandModule<{}, BaseArgs & StoreArgs> = {
   describe: "fill repo with demo data via store transaction",
 
   builder(argv) {
-    return declareStoreArgs(declareBaseArgv(argv));
+    return argv
+      .options(baseOptions)
+      .options(storeOptions);
   },
 
   async handler(args) {
@@ -106,7 +106,8 @@ export const FillBiCommand: CommandModule<{}, BaseArgs & {
   describe: "fill repo with demo data via bulk insertion",
 
   builder(argv) {
-    return declareBaseArgv(argv)
+    return argv
+      .options(baseOptions)
       .option("host", {
         default: "127.0.0.1",
         desc: "destination host",

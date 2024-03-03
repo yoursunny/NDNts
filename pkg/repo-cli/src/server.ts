@@ -6,7 +6,7 @@ import { type DataStore, RepoProducer, respondRdr } from "@ndn/repo";
 import { BulkInsertTarget } from "@ndn/repo-api";
 import type { CommandModule } from "yargs";
 
-import { declareStoreArgs, openStore, type StoreArgs } from "./util";
+import { openStore, type StoreArgs, storeOptions } from "./util";
 
 interface Args extends StoreArgs {
   rdr: boolean;
@@ -42,7 +42,8 @@ export const ServerCommand: CommandModule<{}, Args> = {
   describe: "run repo server",
 
   builder(argv) {
-    return declareStoreArgs(argv)
+    return argv
+      .options(storeOptions)
       .option("rdr", {
         default: false,
         desc: "respond to RDR discovery Interests",

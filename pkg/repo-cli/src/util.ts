@@ -1,19 +1,16 @@
 import { exitClosers } from "@ndn/cli-common";
 import { type DataStore, makePersistentDataStore } from "@ndn/repo";
-import type { Argv } from "yargs";
+import type { InferredOptionTypes, Options } from "yargs";
 
-export interface StoreArgs {
-  store: string;
-}
+export const storeOptions = {
+  store: {
+    demandOption: true,
+    desc: "filesystem location for LevelDB",
+    type: "string",
+  },
+} satisfies Record<string, Options>;
 
-export function declareStoreArgs<T>(argv: Argv<T>): Argv<T & StoreArgs> {
-  return argv
-    .option("store", {
-      demandOption: true,
-      desc: "filesystem location for LevelDB",
-      type: "string",
-    });
-}
+export type StoreArgs = InferredOptionTypes<typeof storeOptions>;
 
 export async function openStore(argv: StoreArgs): Promise<DataStore> {
   const store = await makePersistentDataStore(argv.store);
