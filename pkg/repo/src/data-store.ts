@@ -1,7 +1,6 @@
 import { type Data, ImplicitDigest, type Interest, type Name, NameMap } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
 import { assert, lock, trackEventListener } from "@ndn/util";
-import type { AbstractLevelDOWN } from "abstract-leveldown";
 import { filter, map, pipeline } from "streaming-iterables";
 import { TypedEventTarget } from "typescript-event-target";
 import { Mutex } from "wait-your-turn";
@@ -16,7 +15,6 @@ type EventMap = {
 };
 
 const kMaybeHaveEventListener = Symbol("@ndn/repo#DataStore.maybeHaveEventListener");
-const kAbstractLevelConstruct = Symbol("@ndn/repo#DataStore.AbstractLevelConstruct");
 
 /**
  * Data packet storage based on LevelDB or other abstract-level compatible key-value database.
@@ -31,7 +29,7 @@ export class DataStore extends TypedEventTarget<EventMap>
    * @param open - Function that opens an abstract-level compatible key-value database with
    * the given options.
    */
-  public static create(open: DB.DbAbstractLevelOpener): Promise<DataStore>;
+  public static create(open: DB.DbOpener): Promise<DataStore>;
 
   /**
    * Create DataStore from an abstract-level subclass constructor.
@@ -39,50 +37,31 @@ export class DataStore extends TypedEventTarget<EventMap>
    * @param args - `ctor` arguments; last should be options object.
    */
   public static create<const A extends unknown[], const O extends {}>(
-    ctor: DB.DbAbstractLevelCtor<A, O>, ...args: [...A, O]
+    ctor: DB.DbCtor<A, O>, ...args: [...A, O]
   ): Promise<DataStore>;
 
   public static async create<A extends unknown[], O extends {}>(
-      fn: DB.DbAbstractLevelOpener | DB.DbAbstractLevelCtor<A, O>,
+      fn: DB.DbOpener | DB.DbCtor<A, O>,
       ...args: [...A, O] | []
   ) {
-    let db: DB.DbAbstractLevel;
+    let db: DB.Db;
     if (args.length === 0) {
-      db = await (fn as DB.DbAbstractLevelOpener)(DB.AbstractLevelOptions);
+      db = await (fn as DB.DbOpener)(DB.AbstractLevelOptions);
     } else {
-      db = new (fn as DB.DbAbstractLevelCtor<A, O>)(
+      db = new (fn as DB.DbCtor<A, O>)(
         ...(args.slice(0, -1) as A),
         { ...(args.at(-1) as O), ...DB.AbstractLevelOptions },
       );
     }
     await db.open();
-    return new DataStore(db, kAbstractLevelConstruct);
+    return new DataStore(db);
   }
 
-  /**
-   * Legacy constructor.
-   * @param db - An abstract-leveldown compatible store that supports Buffer as keys.
-   *
-   * @deprecated Upgrade to `abstract-level` and use {@link DataStore.create}.
-   *
-   * @remarks
-   * Warning: due to past design mistakes, `.tx()` is broken when using this constructor.
-   */
-  constructor(db: AbstractLevelDOWN);
-
-  constructor(db: DB.DbAbstractLevel, isAbstractLevel: typeof kAbstractLevelConstruct);
-
-  constructor(db: AbstractLevelDOWN | DB.DbAbstractLevel, isAbstractLevel?: typeof kAbstractLevelConstruct) {
+  private constructor(private readonly db: DB.Db) {
     super();
-    if (isAbstractLevel) {
-      this.db = db as DB.DbAbstractLevel;
-    } else {
-      this.db = DB.openAbstractLevelDown(db as AbstractLevelDOWN);
-    }
   }
 
   public readonly mutex = new Mutex();
-  private readonly db: DB.Db;
   public readonly [kMaybeHaveEventListener] = trackEventListener(this);
 
   /** Close the store. */
@@ -91,7 +70,8 @@ export class DataStore extends TypedEventTarget<EventMap>
   }
 
   private async *iterRecords(prefix?: Name): AsyncGenerator<DB.Record> {
-    const it = this.db.iterator(prefix ? { gte: prefix } : {});
+    const range = prefix ? { gte: prefix } : {};
+    const it = (this.db as DB.Db2).iterator(range);
     for await (const [name, record] of it as unknown as AsyncIterable<[Name, DB.Record]>) {
       if (prefix?.isPrefixOf(name) === false) {
         break;

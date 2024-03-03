@@ -3,9 +3,6 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import { assert, fromUtf8 } from "@ndn/util";
 import type { AbstractChainedBatch, AbstractDatabaseOptions, AbstractLevel } from "abstract-level";
 import type { AbstractChainedBatch as Batch1, AbstractLevel as Level1 } from "abstract-level-1";
-import type { AbstractIterator, AbstractLevelDOWN } from "abstract-leveldown";
-import EncodingDown from "encoding-down";
-import levelup, { type LevelUp, type LevelUpChain } from "levelup";
 import type { Promisable } from "type-fest";
 
 /** Value stored in database. */
@@ -17,7 +14,8 @@ export interface Record {
 }
 const textEncoder = new TextEncoder();
 
-const encodingOptions = {
+/** Required options when creating abstract-level compatible key-value database. */
+export const AbstractLevelOptions: AbstractDatabaseOptions<Name, Record> = {
   keyEncoding: {
     name: "d6d494ba-4d45-4b51-a102-26b8867c5034",
     format: "view",
@@ -64,56 +62,26 @@ const encodingOptions = {
       return record;
     },
   },
-} as const satisfies AbstractDatabaseOptions<Name, Record>;
+};
 
-/** Required options when creating abstract-level compatible key-value database. */
-export const AbstractLevelOptions: AbstractDatabaseOptions<Name, Record> = encodingOptions;
+export type Db2 = AbstractLevel<any, Name, Record>;
 
 /** An abstract-level compatible key-value database. */
-export type DbAbstractLevel = AbstractLevel<any, Name, Record> | Level1<any, Name, Record>;
+export type Db = Db2 | Level1<any, Name, Record>;
 
-/** Function to create DbAbstractLevel. */
-export type DbAbstractLevelOpener = (
-  opts: AbstractDatabaseOptions<Name, Record>
-) => Promisable<DbAbstractLevel>;
+/** Function to create Db. */
+export type DbOpener = (opts: AbstractDatabaseOptions<Name, Record>) => Promisable<Db>;
 
 /**
  * Constructor of AbstractLevel subclass.
  * @typeParam A - Constructor arguments, excluding the last.
  * @typeParam O - Last constructor argument, which must be the options object.
  */
-export type DbAbstractLevelCtor<A extends unknown[], O extends {}> =
-  new(...a: [...A, O & AbstractDatabaseOptions<Name, Record>]) => DbAbstractLevel;
-
-/** An abstract-leveldown compatible key-value database wrapped in LevelUp. */
-export type DbLevelUp = LevelUp<EncodingDown<Name, Record>, AbstractIterator<Name, Record>>;
-
-/** A key-value database usable by DataStore. */
-export type Db = DbLevelUp | DbAbstractLevel;
+export type DbCtor<A extends unknown[], O extends {}> =
+  new(...a: [...A, O & AbstractDatabaseOptions<Name, Record>]) => Db;
 
 /** A transaction chain in key-value database. */
-export type DbChain = LevelUpChain<Name, Record> | AbstractChainedBatch<Db, Name, Record> |
-Batch1<Db, Name, Record>;
-
-function toCodecOptions(f: keyof typeof encodingOptions) {
-  const { name, encode, decode } = encodingOptions[f];
-  return {
-    buffer: true,
-    type: name,
-    encode(input: any): Buffer {
-      return Buffer.from(encode(input));
-    },
-    decode,
-  };
-}
-
-/** Wrap an abstract-leveldown database. */
-export function openAbstractLevelDown(db: AbstractLevelDOWN): Db {
-  return levelup(EncodingDown<Name, Record>(db, {
-    keyEncoding: toCodecOptions("keyEncoding"),
-    valueEncoding: toCodecOptions("valueEncoding"),
-  }));
-}
+export type DbChain = AbstractChainedBatch<Db, Name, Record> | Batch1<Db, Name, Record>;
 
 /** Determine whether `err` represents "not found". */
 export function isNotFound(err: unknown): boolean {

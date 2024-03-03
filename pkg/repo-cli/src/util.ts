@@ -10,7 +10,7 @@ export function declareStoreArgs<T>(argv: Argv<T>): Argv<T & StoreArgs> {
   return argv
     .option("store", {
       demandOption: true,
-      desc: "filesystem location for leveldown",
+      desc: "filesystem location for LevelDB",
       type: "string",
     });
 }

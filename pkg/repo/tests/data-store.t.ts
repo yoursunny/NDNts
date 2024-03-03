@@ -6,12 +6,10 @@ import { BufferChunkSource, fetch, serve } from "@ndn/segmented-object";
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
 import { Closers, delay } from "@ndn/util";
 import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
-import leveldown from "leveldown";
-import memdown from "memdown";
 import { collect, map } from "streaming-iterables";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-import { DataStore, makeInMemoryDataStore, makePersistentDataStore } from "..";
+import { type DataStore, makeInMemoryDataStore, makePersistentDataStore } from "..";
 
 const closers = new Closers();
 afterEach(closers.close);
@@ -19,16 +17,10 @@ afterEach(closers.close);
 type Row = [string, () => Promise<DataStore>];
 const TABLE: readonly Row[] = [
   ["memory-level", makeInMemoryDataStore],
-  ["memdown", async () => new DataStore(memdown())], // eslint-disable-line etc/no-deprecated
   ["classic-level", () => {
     const tmpDir = makeTmpDir();
     closers.push(tmpDir);
     return makePersistentDataStore(tmpDir.name);
-  }],
-  ["leveldown", async () => {
-    const tmpDir = makeTmpDir();
-    closers.push(tmpDir);
-    return new DataStore(leveldown(tmpDir.name)); // eslint-disable-line etc/no-deprecated
   }],
 ];
 
@@ -132,31 +124,4 @@ test.each(TABLE)("events %s", async (desc, openDataStore) => {
   expect(onInsert).not.toHaveBeenCalled();
   expect(onDelete).toHaveBeenCalledTimes(2);
   expect(onDelete.mock.calls.map(([{ name }]) => name)).toEqualNames(["/A/1", "/A/3"]);
-});
-
-test("data migration", async () => {
-  const tmpDir = makeTmpDir();
-  closers.push(tmpDir);
-
-  const pkts = Array.from({ length: 100 }, (value, i) => {
-    void value;
-    return new Data(`/D/${i}`);
-  });
-
-  {
-    await using storeD = new DataStore(leveldown(tmpDir.name)); // eslint-disable-line etc/no-deprecated
-    await storeD.insert(pkts);
-  }
-
-  {
-    await using storeA = await makePersistentDataStore(tmpDir.name);
-    await Promise.all(Array.from({ length: 120 }, (value, i) => {
-      void value;
-      const getPromise = storeA.get(new Name(`/D/${i}`));
-      if (i >= 100) {
-        return expect(getPromise).resolves.toBeUndefined();
-      }
-      return expect(getPromise).resolves.toBeInstanceOf(Data);
-    }));
-  }
 });

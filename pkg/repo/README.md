@@ -26,7 +26,7 @@ It implements most of `DataStore` interfaces defined in `@ndn/repo-api` package,
 
 * `makeInMemoryDataStore()` creates an in-memory DataStore, backed by [memory-level](https://www.npmjs.com/package/memory-level).
 * `makePersistentDataStore(location)` creates a persistent DataStore, backed by [level](https://www.npmjs.com/package/level).
-  * `location` is a directory path (relative or absolute) in Node.js, or a IDB database name in browser.
+  * `location` is a directory path (relative or absolute) in Node.js, or an IDB database name in browser.
 
 The **DataStore** type implements [AsyncDisposable](https://github.com/tc39/proposal-explicit-resource-management) interface.
 With `await using` keyword (TypeScript only), the DataStore is closed when the variable goes out of scope.
