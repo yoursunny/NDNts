@@ -1,11 +1,12 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Endpoint } from "@ndn/endpoint";
+import { consume } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { generateSigningKey } from "@ndn/keychain";
 import { Version } from "@ndn/naming-convention2";
 import { Interest, Name, type Signer, type Verifier } from "@ndn/packet";
 import { Decoder, Extensible, Extension, ExtensionRegistry, NNI, StructFieldNNI, StructFieldText } from "@ndn/tlv";
-import { Closers, toUtf8 } from "@ndn/util";
+import { Closers } from "@ndn/util";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { Metadata, retrieveMetadata, serveMetadata } from "..";
@@ -20,7 +21,7 @@ beforeAll(async () => {
 const closers = new Closers();
 afterEach(() => {
   closers.close();
-  Endpoint.deleteDefaultForwarder();
+  Forwarder.deleteDefault();
 });
 
 describe("consumer", () => {
@@ -50,14 +51,13 @@ describe("producer", () => {
     const p = serveMetadata(simpleMetadata);
     closers.push(p);
 
-    const endpoint = new Endpoint();
     const [data] = await Promise.all([
-      endpoint.consume(new Interest("/D/32=metadata", Interest.CanBePrefix, Interest.MustBeFresh)),
-      expect(endpoint.consume(new Interest("/D/32=metadata", Interest.CanBePrefix,
+      consume(new Interest("/D/32=metadata", Interest.CanBePrefix, Interest.MustBeFresh)),
+      expect(consume(new Interest("/D/32=metadata", Interest.CanBePrefix,
         Interest.Lifetime(100)))).rejects.toThrow(),
-      expect(endpoint.consume(new Interest("/D/32=metadata", Interest.MustBeFresh,
+      expect(consume(new Interest("/D/32=metadata", Interest.MustBeFresh,
         Interest.Lifetime(100)))).rejects.toThrow(),
-      expect(endpoint.consume(new Interest(new Name("/D/32=metadata").append(Version, 4),
+      expect(consume(new Interest(new Name("/D/32=metadata").append(Version, 4),
         Interest.CanBePrefix, Interest.MustBeFresh,
         Interest.Lifetime(100)))).rejects.toThrow(),
     ]);
@@ -73,7 +73,7 @@ describe("producer", () => {
     const p = serveMetadata(makeMetadata, { prefix: "/R", freshnessPeriod: 100 });
     closers.push(p);
 
-    const data = await new Endpoint().consume(new Interest("/R/32=metadata", Interest.CanBePrefix, Interest.MustBeFresh));
+    const data = await consume(new Interest("/R/32=metadata", Interest.CanBePrefix, Interest.MustBeFresh));
     expect(data.name).toHaveLength(4);
     expect(data.freshnessPeriod).toBe(100);
     const name2 = Decoder.decode(data.content, Name);

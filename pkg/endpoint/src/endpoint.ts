@@ -14,6 +14,15 @@ import { produce, type Producer, type ProducerHandler, type ProducerOptions } fr
 export interface Options extends ConsumerOptions, ProducerOptions {
 }
 
+const cOptsKeys: readonly string[] = [
+  "fw", "describe", "signal", "modifyInterest", "retx", "verifier",
+] satisfies ReadonlyArray<keyof ConsumerOptions>;
+
+const pOptsKeys: readonly string[] = [
+  "fw", "describe", "signal", "routeCapture", "announcement",
+  "concurrency", "dataSigner", "dataBuffer", "autoBuffer",
+] satisfies ReadonlyArray<keyof ProducerOptions>;
+
 /**
  * Endpoint provides basic consumer and producer functionality. It is the main entry point for an
  * application to interact with the logical forwarder.
@@ -23,19 +32,27 @@ export interface Options extends ConsumerOptions, ProducerOptions {
  * functions instead. This class will be deprecated in the future.
  */
 export class Endpoint {
-  constructor(public readonly opts: Options = {}) {
-    this.fw = opts.fw ?? Forwarder.getDefault();
-  }
+  constructor(public readonly opts: Options = {}) {}
 
   /** Logical forwarder instance. */
-  public readonly fw: Forwarder;
+  public get fw(): Forwarder {
+    return this.opts.fw ?? Forwarder.getDefault();
+  }
+
+  public get cOpts(): ConsumerOptions {
+    return Object.fromEntries(Object.entries(this.opts).filter(([key]) => cOptsKeys.includes(key)));
+  }
+
+  public get pOpts(): ProducerOptions {
+    return Object.fromEntries(Object.entries(this.opts).filter(([key]) => pOptsKeys.includes(key)));
+  }
 
   /**
    * Retrieve a single piece of Data.
    * @param interest - Interest or Interest name.
    */
   public consume(interest: Interest | NameLike, opts: ConsumerOptions = {}): ConsumerContext {
-    return consume(interest, { ...this.opts, fw: this.fw, ...opts });
+    return consume(interest, { ...this.opts, ...opts });
   }
 
   /**
@@ -44,7 +61,7 @@ export class Endpoint {
    * @param handler - Function to handle incoming Interest.
    */
   public produce(prefix: NameLike | undefined, handler: ProducerHandler, opts: ProducerOptions = {}): Producer {
-    return produce(prefix, handler, { ...this.opts, fw: this.fw, ...opts });
+    return produce(prefix, handler, { ...this.opts, ...opts });
   }
 }
 

@@ -1,5 +1,5 @@
-import { Endpoint, type RetxPolicy } from "@ndn/endpoint";
-import { Interest, Name, type NameLike, type Verifier } from "@ndn/packet";
+import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
+import { Interest, Name, type NameLike } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
 import { Metadata, MetadataKeyword } from "./metadata";
@@ -23,7 +23,10 @@ export function makeDiscoveryInterest(prefix: NameLike): Interest {
  * @param opts - Other options.
  * @returns Metadata packet.
  */
-export async function retrieveMetadata(prefix: NameLike, opts?: retrieveMetadata.Options): Promise<Metadata>;
+export async function retrieveMetadata(
+  prefix: NameLike,
+  cOpts?: ConsumerOptions & EndpointOptions
+): Promise<Metadata>;
 
 /**
  * Retrieve metadata packet of subclass type.
@@ -33,52 +36,35 @@ export async function retrieveMetadata(prefix: NameLike, opts?: retrieveMetadata
  * @param opts - Other options.
  * @returns Metadata packet of type C.
  */
-export async function retrieveMetadata<C extends Metadata.Constructor>(prefix: NameLike, ctor: C, opts?: retrieveMetadata.Options): Promise<InstanceType<C>>;
+export async function retrieveMetadata<C extends Metadata.Constructor>(
+  prefix: NameLike, ctor: C,
+  cOpts?: ConsumerOptions & EndpointOptions
+): Promise<InstanceType<C>>;
 
-export async function retrieveMetadata(prefix: NameLike, arg2: any = {}, opts: retrieveMetadata.Options = {}) {
+export async function retrieveMetadata(
+    prefix: NameLike, arg2: any,
+    cOpts?: ConsumerOptions & EndpointOptions,
+) {
   let ctor: Metadata.Constructor = Metadata;
   if (typeof arg2 === "function") {
     ctor = arg2;
   } else {
-    opts = arg2;
+    cOpts = arg2;
   }
-  const {
-    endpoint = new Endpoint(),
-    retx,
-    signal,
-    verifier,
-  } = opts;
 
   const interest = makeDiscoveryInterest(prefix);
-  const data = await endpoint.consume(interest, {
+  const data = await consume(interest, {
     describe: `RDR-c(${prefix})`,
-    retx,
-    signal,
-    verifier,
+    ...cOpts?.endpoint?.cOpts, // eslint-disable-line etc/no-deprecated
+    ...cOpts,
   });
   return Decoder.decode(data.content, ctor);
 }
 
-export namespace retrieveMetadata {
-  export interface Options {
-    /**
-     * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder.
-     */
-    endpoint?: Endpoint;
-
-    /** Interest retransmission policy. */
-    retx?: RetxPolicy;
-
-    /** Abort signal to cancel retrieval. */
-    signal?: AbortSignal;
-
-    /**
-     * Data verifier.
-     * @defaultValue
-     * No verification.
-     */
-    verifier?: Verifier;
-  }
+interface EndpointOptions {
+  /**
+   * Endpoint for communication.
+   * @deprecated Use {@link ConsumerOptions} fields only.
+   */
+  endpoint?: Endpoint;
 }

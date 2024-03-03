@@ -1,3 +1,4 @@
+import { type ConsumerOptions } from "@ndn/endpoint";
 import { Component, type Name } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
@@ -8,7 +9,7 @@ import { type DirEntry, parseDirectoryListing } from "./ls";
 import { FileMetadata } from "./metadata";
 
 /** {@link Client} options. */
-export interface ClientOptions extends retrieveMetadata.Options, fetch.Options {
+export interface ClientOptions extends ConsumerOptions, fetch.Options {
 }
 
 /** ndn6-file-server client. */

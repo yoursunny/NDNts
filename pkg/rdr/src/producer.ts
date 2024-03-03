@@ -1,4 +1,4 @@
-import { Endpoint, type Producer } from "@ndn/endpoint";
+import { type Endpoint, produce, type Producer, type ProducerOptions } from "@ndn/endpoint";
 import { Segment, Version } from "@ndn/naming-convention2";
 import { Data, type Interest, Name, type NameLike, noopSigning, type Signer } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
@@ -57,13 +57,14 @@ export function isDiscoveryInterest({ name, canBePrefix, mustBeFresh }: Interest
 export function serveMetadata(m: Metadata | (() => Metadata), opts: serveMetadata.Options = {}): Producer {
   const {
     prefix: prefixInput,
-    endpoint = new Endpoint(),
-    announcement,
+    endpoint, // eslint-disable-line etc/no-deprecated
+    pOpts,
+    announcement, // eslint-disable-line etc/no-deprecated
   } = opts;
   const makeMetadata = typeof m === "function" ? m : () => m;
   const prefix = makeName(makeMetadata(), prefixInput).getPrefix(-2);
 
-  return endpoint.produce(prefix,
+  return produce(prefix,
     async (interest) => {
       if (isDiscoveryInterest(interest) && interest.name.length === prefix.length) {
         return makeMetadataPacket(makeMetadata(), opts);
@@ -73,19 +74,26 @@ export function serveMetadata(m: Metadata | (() => Metadata), opts: serveMetadat
     {
       describe: `RDR-s(${prefix})`,
       announcement,
+      ...endpoint?.pOpts,
+      ...pOpts,
     });
 }
 export namespace serveMetadata {
   export interface Options extends makeMetadataPacket.Options {
     /**
      * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder.
+     * @deprecated Specify `.pOpts`.
      */
     endpoint?: Endpoint;
 
-    /** Prefix to announce from producer. */
-    announcement?: Endpoint.RouteAnnouncement;
+    /** Producer options. */
+    pOpts?: ProducerOptions;
+
+    /**
+     * Prefix to announce from producer.
+     * @deprecated Specify in `.pOpts.announcement`.
+     */
+    announcement?: ProducerOptions.RouteAnnouncement;
   }
 }
 

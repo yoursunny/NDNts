@@ -33,6 +33,7 @@
     "tslib": "^2.6.2"
   },
   "devDependencies": {
+    "@ndn/fw": "workspace:^",
     "@ndn/keychain": "workspace:*",
     "@ndn/util": "workspace:*"
   }
