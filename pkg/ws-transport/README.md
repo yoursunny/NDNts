@@ -12,7 +12,7 @@ To create a WebSocket transport without wrapping into L3Face, use `WsTransport.c
 import { WsTransport } from "@ndn/ws-transport";
 
 // other imports for examples
-import { Endpoint } from "@ndn/endpoint";
+import { consume } from "@ndn/endpoint";
 import { Data, Interest, Name } from "@ndn/packet";
 
 if (process.env.CI) { process.exit(0); }
@@ -25,16 +25,13 @@ if (process.env.CI) { process.exit(0); }
 // You may customize the route prefixes via addRoutes property in the first argument.
 const uplink = await WsTransport.createFace({}, "wss://hobo.cs.arizona.edu/ws/");
 
-// Construct an Endpoint on the default logical forwarder.
-const endpoint = new Endpoint();
-
 // We can now send Interests and retrieve Data.
 let seq = Math.trunc(Math.random() * 1e8);
 for (let i = 0; i < 5; ++i) {
   try {
     const interest = new Interest(`/ndn/edu/arizona/ping/NDNts/${seq++}`);
     console.log(`<I ${interest.name}`);
-    const data = await endpoint.consume(interest);
+    const data = await consume(interest);
     console.log(`>D ${data.name}`);
   } catch (err: unknown) {
     console.warn(err);

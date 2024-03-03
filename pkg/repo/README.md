@@ -11,7 +11,7 @@ Data retrieval is on par with other repo implementations.
 import { makeInMemoryDataStore, RepoProducer, PrefixRegShorter } from "@ndn/repo";
 
 // other imports for examples
-import { Endpoint } from "@ndn/endpoint";
+import { consume } from "@ndn/endpoint";
 import { Name, Interest, Data } from "@ndn/packet";
 import { delay } from "@ndn/util";
 import assert from "node:assert/strict";
@@ -94,7 +94,6 @@ using repoProducer = RepoProducer.create(store, { reg: PrefixRegShorter(1) });
 await delay(10); // prefix registration is asynchronous so we delay a little bit
 
 // Try to retrieve Data.
-const endpoint = new Endpoint();
-const retrieved = await endpoint.consume("/A/2");
+const retrieved = await consume("/A/2");
 assert.equal(`${retrieved?.name}`, "/8=A/8=2");
 ```

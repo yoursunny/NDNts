@@ -19,7 +19,7 @@ This implementation is validated against NFD using [nfdmgmt-interop](../../integ
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 
 // other imports for examples
-import { Endpoint } from "@ndn/endpoint";
+import { consume, produce } from "@ndn/endpoint";
 import { Forwarder, type FwFace } from "@ndn/fw";
 import { generateSigningKey } from "@ndn/keychain";
 import { UnixTransport } from "@ndn/node-transport";
@@ -56,15 +56,14 @@ const [privateKey] = await generateSigningKey("/K");
 enableNfdPrefixReg(uplinkP, { signer: privateKey });
 
 // Start a producer.
-const producer = new Endpoint({ fw: fwP }).produce("/P",
-  async () => {
-    console.log("producing");
-    return new Data("/P", Data.FreshnessPeriod(1000), toUtf8("NDNts + NFD"));
-  });
+const producer = produce("/P", async () => {
+  console.log("producing");
+  return new Data("/P", Data.FreshnessPeriod(1000), toUtf8("NDNts + NFD"));
+}, { fw: fwP });
 await delay(500);
 
 // Start a consumer, fetch Data from the producer via NFD.
-const data = await new Endpoint({ fw: fwC }).consume(new Interest("/P", Interest.MustBeFresh));
+const data = await consume(new Interest("/P", Interest.MustBeFresh), { fw: fwC });
 const payloadText = fromUtf8(data.content);
 console.log("received", `${data.name} ${payloadText}`);
 assert.equal(payloadText, "NDNts + NFD");

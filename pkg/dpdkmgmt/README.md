@@ -14,7 +14,7 @@ Currently, there are several limitations when using this package:
 import { openFace } from "@ndn/dpdkmgmt";
 
 // other imports for examples
-import { Endpoint } from "@ndn/endpoint";
+import { consume, produce } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Name, Interest, Data } from "@ndn/packet";
 import { delay, fromUtf8, toUtf8 } from "@ndn/util";
@@ -62,17 +62,17 @@ console.log(`uplinkC=${uplinkC}`, `uplinkP=${uplinkP}`, `transport=${scheme}`);
 
 // Start a producer.
 let t0 = 0;
-const producer = new Endpoint({ fw: fwP }).produce("/P",
-  async (interest) => {
-    console.log(`producing Data, latency=${Date.now() - t0}ms`);
-    return new Data(interest.name, Data.FreshnessPeriod(1000), toUtf8("NDNts + NDN-DPDK"));
-  });
+const producer = produce("/P", async (interest) => {
+  console.log(`producing Data, latency=${Date.now() - t0}ms`);
+  return new Data(interest.name, Data.FreshnessPeriod(1000), toUtf8("NDNts + NDN-DPDK"));
+}, { fw: fwP });
 await delay(500);
 
 // Start a consumer, fetching Data from the producer via NDN-DPDK.
 t0 = Date.now();
-const data = await new Endpoint({ fw: fwC }).consume(
+const data = await consume(
   new Interest(`/P/${Math.trunc(Math.random() * 1e8)}`, Interest.MustBeFresh),
+  { fw: fwC },
 );
 const t1 = Date.now();
 const payloadText = fromUtf8(data.content);

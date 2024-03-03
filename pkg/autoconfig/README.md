@@ -8,7 +8,7 @@ This package establishes connection to a NDN network using [NDN-FCH service](htt
 import { fchQuery, connectToNetwork } from "@ndn/autoconfig";
 
 // other imports for examples
-import { Endpoint } from "@ndn/endpoint";
+import { consume } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import assert from "node:assert/strict";
 
@@ -60,13 +60,10 @@ function showFchResponse(title, res) {
 ## Connect to Network
 
 ```ts
-const fw = Forwarder.create();
-
 // Connect to NDN network via routers in FCH response, consider default IPv4 gateway as a candidate.
 // Also provide a fallback list in case the above candidates fail.
 // Keep only the fastest face and close others.
 const faces = await connectToNetwork({
-  fw,
   fallback: ["titan.cs.memphis.edu", "vnetlab.gcom.di.uminho.pt"],
   connectTimeout: 3000,
 });
@@ -77,7 +74,7 @@ console.log("fastest face is", `${fastestFace}`);
 // By default, default route "/" is added to the face, so that you can send Interests right away.
 try {
   const t0 = Date.now();
-  const data = await new Endpoint({ fw }).consume(`/ndn/edu/memphis/ping/${Math.trunc(Math.random() * 1e8)}`);
+  const data = await consume(`/ndn/edu/memphis/ping/${Math.trunc(Math.random() * 1e8)}`);
   console.log("Interest satisfied", `${data.name}`, `${Date.now() - t0}ms`);
 } catch (err: unknown) {
   console.warn(err);
