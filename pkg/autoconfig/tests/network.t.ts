@@ -1,4 +1,4 @@
-import { Endpoint } from "@ndn/endpoint";
+import { produce } from "@ndn/endpoint";
 import { Forwarder, type FwFace } from "@ndn/fw";
 import { UdpServer, UdpServerForwarder } from "@ndn/node-transport/test-fixture/udp-server";
 import { Data, Name } from "@ndn/packet";
@@ -17,10 +17,10 @@ afterEach(() => {
 
 async function addServerWithDelayProducer(delayDuration: number): Promise<string> {
   const server = await UdpServer.create(UdpServerForwarder);
-  const producer = new Endpoint({ fw: server.fw }).produce("/localhop/test-connection", async (interest) => {
+  const producer = produce("/localhop/test-connection", async (interest) => {
     await delay(delayDuration);
     return new Data(interest.name);
-  });
+  }, { fw: server.fw });
   closers.push(server, producer);
   return server.hostport;
 }

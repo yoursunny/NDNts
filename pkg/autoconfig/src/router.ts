@@ -1,4 +1,4 @@
-import { Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { type Forwarder, type FwFace, TapFace } from "@ndn/fw";
 import { Interest, Name, type NameLike } from "@ndn/packet";
 import type { H3Transport } from "@ndn/quic-transport";
@@ -121,15 +121,15 @@ async function testConnection(
   const tapFace = TapFace.create(face);
   tapFace.addRoute("/");
   const abort = new AbortController();
+  const cOpts: ConsumerOptions = { fw: tapFace.fw, signal: abort.signal };
   try {
-    const endpoint = new Endpoint({ fw: tapFace.fw, signal: abort.signal });
     await Promise.any(tc.map((pkt) => {
       if (typeof pkt === "string" && pkt.endsWith("/*")) {
         pkt = new Name(pkt.slice(0, -2)).append(Math.trunc(Math.random() * 1e8).toString().padStart(8, "0"));
       }
       const interest = pkt instanceof Interest ? pkt :
         new Interest(pkt, Interest.CanBePrefix, Interest.Lifetime(testConnectionTimeout));
-      return endpoint.consume(interest);
+      return consume(interest, cOpts);
     }));
   } finally {
     abort.abort();
