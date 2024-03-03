@@ -1,42 +1,43 @@
 import "@ndn/packet/test-fixture/expect";
 
+import { Forwarder } from "@ndn/fw";
 import { generateSigningKey } from "@ndn/keychain";
 import { Data, Interest, type NameLike } from "@ndn/packet";
 import { makeInMemoryDataStore } from "@ndn/repo";
 import { delay } from "@ndn/util";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { DataStoreBuffer, Endpoint, type Options, type Producer, type ProducerHandler } from "..";
+import { consume, DataStoreBuffer, Endpoint, type Options, produce, type Producer, type ProducerHandler, type ProducerOptions } from "..";
 
-afterEach(Endpoint.deleteDefaultForwarder);
+afterEach(Forwarder.deleteDefault);
 
-async function makeEndpointBuffered(autoBuffer?: boolean, bo?: DataStoreBuffer.Options, eo?: Options): Promise<[Endpoint, DataStoreBuffer]> {
-  const dataStoreBuffer = new DataStoreBuffer(await makeInMemoryDataStore(), bo);
-  const ep = new Endpoint({ ...eo, dataBuffer: dataStoreBuffer, autoBuffer });
-  return [ep, dataStoreBuffer];
+async function makeBufferedProducer(autoBuffer?: boolean, bo?: DataStoreBuffer.Options, eo?: Options): Promise<ProducerOptions> {
+  const dataBuffer = new DataStoreBuffer(await makeInMemoryDataStore(), bo);
+  return {
+    ...eo,
+    dataBuffer,
+    autoBuffer,
+  };
 }
 
 describe("unsatisfied", () => {
   let pAbort: AbortController;
-  let pEndpoint: Endpoint;
   const pHandler = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>(
-    async (interest) => new Data(interest.name));
+    async (interest) => new Data(interest.name),
+  );
   let p: Producer;
-  let cEndpoint: Endpoint;
   beforeEach(() => {
     pAbort = new AbortController();
-    pEndpoint = new Endpoint({ signal: pAbort.signal });
     pHandler.mockReset();
-    cEndpoint = new Endpoint();
   });
 
   const expectTimeout = async (name: NameLike) => {
-    await expect(cEndpoint.consume(new Interest(name, Interest.Lifetime(100)))).rejects.toThrow(/expire/);
+    await expect(consume(new Interest(name, Interest.Lifetime(100)))).rejects.toThrow(/expire/);
   };
 
   describe("with route", () => {
     beforeEach(() => {
-      p = pEndpoint.produce("/A", pHandler);
+      p = produce("/A", pHandler, { signal: pAbort.signal });
     });
 
     test("Data non-match", async () => {
@@ -58,7 +59,7 @@ describe("unsatisfied", () => {
     });
 
     test("producer aborted", async () => {
-      p.close();
+      pAbort.abort();
       await expectTimeout("/A/3");
       expect(pHandler).not.toHaveBeenCalled();
     });
@@ -66,7 +67,7 @@ describe("unsatisfied", () => {
 
   describe("without route", () => {
     beforeEach(() => {
-      p = pEndpoint.produce(undefined, pHandler);
+      p = produce(undefined, pHandler, { signal: pAbort.signal });
     });
 
     test("Data no route", async () => {
@@ -77,77 +78,82 @@ describe("unsatisfied", () => {
 });
 
 test("fill buffer in handler", async () => {
-  const [ep, dataStoreBuffer] = await makeEndpointBuffered();
+  const pOpts = await makeBufferedProducer();
   const handler = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>(
     async (interest: Interest, { dataBuffer }: Producer) => {
-      expect(dataBuffer).toBe(dataStoreBuffer);
-      if (!interest.name.equals("/A")) { return undefined; }
+      expect(dataBuffer).toBe(pOpts.dataBuffer);
+      if (!interest.name.equals("/A")) {
+        return undefined;
+      }
       await dataBuffer!.insert(new Data("/A/0"), new Data("/A/1"), new Data("/A/2"));
       return undefined;
     });
-  ep.produce("/A", handler);
+  produce("/A", handler, pOpts);
 
-  await expect(ep.consume(new Interest("/A", Interest.CanBePrefix))).resolves.toHaveName("/A/0");
+  await expect(consume(new Interest("/A", Interest.CanBePrefix))).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(1);
 
-  await expect(ep.consume(new Interest("/A", Interest.CanBePrefix))).resolves.toHaveName("/A/0");
+  await expect(consume(new Interest("/A", Interest.CanBePrefix))).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(1);
 
-  await expect(ep.consume("/A/1")).resolves.toHaveName("/A/1");
-  await expect(ep.consume("/A/2")).resolves.toHaveName("/A/2");
+  await expect(consume("/A/1")).resolves.toHaveName("/A/1");
+  await expect(consume("/A/2")).resolves.toHaveName("/A/2");
   expect(handler).toHaveBeenCalledTimes(1);
 });
 
 test("prefill buffer", async () => {
-  const [ep, dataStoreBuffer] = await makeEndpointBuffered();
+  const pOpts = await makeBufferedProducer();
   const handler = vi.fn(async (interest: Interest) => new Data(interest.name));
-  const producer = ep.produce(undefined, handler);
+  const producer = produce(undefined, handler, pOpts);
   producer.face.addRoute("/A");
 
-  await dataStoreBuffer.insert(new Data("/A/0"), new Data("/A/1"));
+  await pOpts.dataBuffer!.insert(new Data("/A/0"), new Data("/A/1"));
   await expect(producer.processInterest(new Interest("/A/0"))).resolves.toHaveName("/A/0");
-  await expect(ep.consume("/A/0")).resolves.toHaveName("/A/0");
+  await expect(consume("/A/0")).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(0);
 
-  await expect(ep.consume("/A/2")).resolves.toHaveName("/A/2");
+  await expect(consume("/A/2")).resolves.toHaveName("/A/2");
   expect(handler).toHaveBeenCalledTimes(1);
 });
 
 test.each([false, true])("autoBuffer %j", async (autoBuffer) => {
-  const [ep] = await makeEndpointBuffered(autoBuffer);
+  const pOpts = await makeBufferedProducer(autoBuffer);
   const handler = vi.fn(async (interest: Interest, { dataBuffer }: Producer) => {
+    void interest;
     await dataBuffer!.insert(new Data("/A/1"));
     return new Data("/A/0");
   });
-  ep.produce("/A", handler);
+  produce("/A", handler, pOpts);
 
-  await expect(ep.consume("/A/0")).resolves.toHaveName("/A/0");
+  await expect(consume("/A/0")).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(1);
 
-  await expect(ep.consume("/A/1")).resolves.toHaveName("/A/1");
+  await expect(consume("/A/1")).resolves.toHaveName("/A/1");
   expect(handler).toHaveBeenCalledTimes(1);
 
-  await expect(ep.consume("/A/0")).resolves.toHaveName("/A/0");
+  await expect(consume("/A/0")).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(autoBuffer ? 1 : 2);
 });
 
 test("buffer expire", async () => {
-  const [ep] = await makeEndpointBuffered(undefined, { ttl: 150 });
+  const pOpts = await makeBufferedProducer(undefined, { ttl: 150 });
   const handler = vi.fn(async (interest: Interest) => {
-    if (!interest.name.equals("/A")) { return undefined; }
+    if (!interest.name.equals("/A")) {
+      return undefined;
+    }
     return new Data("/A/0");
   });
-  ep.produce("/A", handler);
+  produce("/A", handler, pOpts);
 
-  await expect(ep.consume(new Interest("/A", Interest.CanBePrefix))).resolves.toHaveName("/A/0");
+  await expect(consume(new Interest("/A", Interest.CanBePrefix))).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(1);
 
   await delay(30);
-  await expect(ep.consume("/A/0")).resolves.toHaveName("/A/0");
+  await expect(consume("/A/0")).resolves.toHaveName("/A/0");
   expect(handler).toHaveBeenCalledTimes(1);
 
   await delay(130);
-  await expect(ep.consume(new Interest("/A/0", Interest.Lifetime(100)))).rejects.toThrow();
+  await expect(consume(new Interest("/A/0", Interest.Lifetime(100)))).rejects.toThrow();
   expect(handler).toHaveBeenCalledTimes(2);
 });
 
@@ -155,8 +161,8 @@ test("auto signing", async () => {
   const [signer0, verifier0] = await generateSigningKey("/K0");
   const [signer1, verifier1] = await generateSigningKey("/K1");
   const [signer2, verifier2] = await generateSigningKey("/K2");
-  const [ep] = await makeEndpointBuffered(true, { dataSigner: signer2 }, { dataSigner: signer1 });
-  ep.produce("/A", async (interest, { dataBuffer }) => {
+  const pOpts = await makeBufferedProducer(true, { dataSigner: signer2 }, { dataSigner: signer1 });
+  produce("/A", async (interest, { dataBuffer }) => {
     if (interest.name.equals("/A/0")) {
       const data = new Data("/A/0");
       await signer0.sign(data);
@@ -165,9 +171,9 @@ test("auto signing", async () => {
 
     await dataBuffer!.insert(new Data("/A/2")); // signed by signer2
     return new Data("/A/1"); // signed by signer1
-  });
+  }, pOpts);
 
-  await expect(ep.consume("/A/0", { verifier: verifier0 })).resolves.toHaveName("/A/0");
-  await expect(ep.consume("/A/1", { verifier: verifier1 })).resolves.toHaveName("/A/1");
-  await expect(ep.consume("/A/2", { verifier: verifier2 })).resolves.toHaveName("/A/2");
+  await expect(consume("/A/0", { verifier: verifier0 })).resolves.toHaveName("/A/0");
+  await expect(consume("/A/1", { verifier: verifier1 })).resolves.toHaveName("/A/1");
+  await expect(consume("/A/2", { verifier: verifier2 })).resolves.toHaveName("/A/2");
 });

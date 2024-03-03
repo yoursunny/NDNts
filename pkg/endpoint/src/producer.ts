@@ -1,5 +1,5 @@
-import { type Forwarder, type FwFace, FwPacket } from "@ndn/fw";
-import { Data, Interest, type Name, Signer } from "@ndn/packet";
+import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
+import { Data, Interest, Name, type NameLike, Signer } from "@ndn/packet";
 import { flatTransform } from "streaming-iterables";
 
 import type { DataBuffer } from "./data-buffer";
@@ -20,8 +20,14 @@ import type { DataBuffer } from "./data-buffer";
  */
 export type ProducerHandler = (interest: Interest, producer: Producer) => Promise<Data | undefined>;
 
-/** {@link Endpoint.produce} options. */
+/** {@link produce} options. */
 export interface ProducerOptions {
+  /**
+   * Logical forwarder instance.
+   * @defaultValue `Forwarder.getDefault()`
+   */
+  fw?: Forwarder;
+
   /**
    * Description for debugging purpose.
    * @defaultValue
@@ -48,7 +54,7 @@ export interface ProducerOptions {
    * What name to be readvertised.
    * Ignored if prefix is `undefined`.
    */
-  announcement?: FwFace.RouteAnnouncement;
+  announcement?: ProducerOptions.RouteAnnouncement;
 
   /**
    * How many Interests to process in parallel.
@@ -96,10 +102,15 @@ export interface ProducerOptions {
   autoBuffer?: boolean;
 }
 
+export namespace ProducerOptions {
+  /** Describe how to derive route announcement from name prefix in {@link produce}. */
+  export type RouteAnnouncement = FwFace.RouteAnnouncement;
+}
+
 /** A running producer. */
 export interface Producer extends Disposable {
   /**
-   * Prefix specified in {@link Endpoint.produce} call.
+   * Prefix specified in {@link produce} call.
    * Additional prefixes can be added via `.face.addRoute()`.
    */
   readonly prefix: Name | undefined;
@@ -125,12 +136,12 @@ export interface Producer extends Disposable {
   close: () => void;
 }
 
-export class ProducerImpl implements Producer {
+class ProducerImpl implements Producer {
   constructor(
-      fw: Forwarder,
       public readonly prefix: Name | undefined,
       private readonly handler: ProducerHandler,
       {
+        fw = Forwarder.getDefault(),
         describe = `produce(${prefix})`,
         signal,
         routeCapture = true,
@@ -218,4 +229,17 @@ export class ProducerImpl implements Producer {
   public [Symbol.dispose](): void {
     this.close();
   }
+}
+
+/**
+ * Start a producer.
+ * @param prefix - Prefix registration; if `undefined`, prefixes may be added later.
+ * @param handler - Function to handle incoming Interest.
+ */
+export function produce(prefix: NameLike | undefined, handler: ProducerHandler, opts: ProducerOptions = {}): Producer {
+  return new ProducerImpl(
+    prefix === undefined ? undefined : Name.from(prefix),
+    handler,
+    opts,
+  );
 }

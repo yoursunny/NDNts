@@ -1,11 +1,17 @@
-import { CancelInterest, type Forwarder, FwPacket } from "@ndn/fw";
-import { Data, Interest, type Verifier } from "@ndn/packet";
+import { CancelInterest, Forwarder, FwPacket } from "@ndn/fw";
+import { Data, Interest, type NameLike, type Verifier } from "@ndn/packet";
 import { pushable } from "@ndn/util";
 
 import { makeRetxGenerator, type RetxPolicy } from "./retx";
 
-/** {@link Endpoint.consume} options. */
+/** {@link consume} options. */
 export interface ConsumerOptions {
+  /**
+   * Logical forwarder instance.
+   * @defaultValue `Forwarder.getDefault()`
+   */
+  fw?: Forwarder;
+
   /**
    * Description for debugging purpose.
    * @defaultValue
@@ -50,10 +56,10 @@ export interface ConsumerContext extends Promise<Data> {
   readonly nRetx: number;
 }
 
-export function makeConsumer(
-    fw: Forwarder,
+function makeConsumer(
     interest: Interest,
     {
+      fw = Forwarder.getDefault(),
       describe = `consume(${interest.name})`,
       signal,
       modifyInterest,
@@ -127,4 +133,15 @@ export function makeConsumer(
     interest: { value: interest },
     nRetx: { get() { return nRetx; } },
   }) as ConsumerContext;
+}
+
+/**
+ * Retrieve a single piece of Data.
+ * @param interest - Interest or Interest name.
+ */
+export function consume(interest: Interest | NameLike, opts: ConsumerOptions = {}): ConsumerContext {
+  return makeConsumer(
+    interest instanceof Interest ? interest : new Interest(interest),
+    opts,
+  );
 }

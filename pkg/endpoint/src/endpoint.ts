@@ -1,8 +1,8 @@
-import { Forwarder, type FwFace } from "@ndn/fw";
-import { Interest, Name, type NameLike } from "@ndn/packet";
+import { Forwarder } from "@ndn/fw";
+import type { Interest, NameLike } from "@ndn/packet";
 
-import { type ConsumerContext, type ConsumerOptions, makeConsumer } from "./consumer";
-import { type Producer, type ProducerHandler, ProducerImpl, type ProducerOptions } from "./producer";
+import { consume, type ConsumerContext, type ConsumerOptions } from "./consumer";
+import { produce, type Producer, type ProducerHandler, type ProducerOptions } from "./producer";
 
 /**
  * {@link Endpoint} constructor options.
@@ -12,16 +12,15 @@ import { type Producer, type ProducerHandler, ProducerImpl, type ProducerOptions
  * {@link Endpoint.consume} and {@link Endpoint.produce} unless overridden.
  */
 export interface Options extends ConsumerOptions, ProducerOptions {
-  /**
-   * Logical forwarder instance.
-   * @defaultValue `Forwarder.getDefault()`
-   */
-  fw?: Forwarder;
 }
 
 /**
  * Endpoint provides basic consumer and producer functionality. It is the main entry point for an
  * application to interact with the logical forwarder.
+ *
+ * @remarks
+ * Use of this class is discouraged. Please switch to `consume()` and `produce()` standalone
+ * functions instead. This class will be deprecated in the future.
  */
 export class Endpoint {
   constructor(public readonly opts: Options = {}) {
@@ -36,11 +35,7 @@ export class Endpoint {
    * @param interest - Interest or Interest name.
    */
   public consume(interest: Interest | NameLike, opts: ConsumerOptions = {}): ConsumerContext {
-    return makeConsumer(
-      this.fw,
-      interest instanceof Interest ? interest : new Interest(interest),
-      { ...this.opts, ...opts },
-    );
+    return consume(interest, { ...this.opts, fw: this.fw, ...opts });
   }
 
   /**
@@ -49,12 +44,7 @@ export class Endpoint {
    * @param handler - Function to handle incoming Interest.
    */
   public produce(prefix: NameLike | undefined, handler: ProducerHandler, opts: ProducerOptions = {}): Producer {
-    return new ProducerImpl(
-      this.fw,
-      prefix === undefined ? undefined : Name.from(prefix),
-      handler,
-      { ...this.opts, ...opts },
-    );
+    return produce(prefix, handler, { ...this.opts, fw: this.fw, ...opts });
   }
 }
 
@@ -63,5 +53,5 @@ export namespace Endpoint {
   export const deleteDefaultForwarder = Forwarder.deleteDefault;
 
   /** Describe how to derive route announcement from name prefix in {@link Endpoint.produce}. */
-  export type RouteAnnouncement = FwFace.RouteAnnouncement;
+  export type RouteAnnouncement = ProducerOptions.RouteAnnouncement;
 }

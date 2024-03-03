@@ -8,17 +8,19 @@ import { Data, FwHint, Interest, Name } from "@ndn/packet";
 import { getDataFullName } from "@ndn/packet/test-fixture/name";
 import { delay, fromUtf8 } from "@ndn/util";
 import { BufferWritableMock } from "stream-mock";
-import { consume } from "streaming-iterables";
+import { consume as consumeIterable } from "streaming-iterables";
 import { afterEach, beforeEach, expect, test } from "vitest";
 
-import { Endpoint } from "..";
+import { consume, type ConsumerOptions, produce, type ProducerOptions } from "..";
 
 let fw: Forwarder;
-let ep: Endpoint;
+let cOpts: ConsumerOptions;
+let pOpts: ProducerOptions;
 
 function initForwarder(dataNoTokenMatch = false): void {
   fw = Forwarder.create({ dataNoTokenMatch });
-  ep = new Endpoint({ fw, retx: 0 });
+  cOpts = { fw, retx: 0 };
+  pOpts = { fw };
 }
 
 beforeEach(() => initForwarder());
@@ -29,56 +31,54 @@ test("simple", async () => {
   const nameDigest = await getDataFullName(dataDigest);
   const nameWrongDigest = await getDataFullName(new Data("/P/wrong-digest", Uint8Array.of(0xC0)));
 
-  const producerP = ep.produce("/P",
-    async ({ name }) => {
-      await delay(2);
-      switch (true) {
-        case name.equals("/P/prefix"):
-        case name.equals("/P/no-prefix"): {
-          return new Data(name.append("suffix"));
-        }
-        case name.equals("/P/fresh"): {
-          return new Data("/P/fresh", Data.FreshnessPeriod(1000));
-        }
-        case name.equals(nameDigest): {
-          return dataDigest;
-        }
-        case name.equals(nameWrongDigest): {
-          return new Data("/P/wrong-digest", Uint8Array.of(0xC1));
-        }
-        default: {
-          return new Data(name);
-        }
+  const producerP = produce("/P", async ({ name }) => {
+    await delay(2);
+    switch (true) {
+      case name.equals("/P/prefix"):
+      case name.equals("/P/no-prefix"): {
+        return new Data(name.append("suffix"));
       }
-    });
+      case name.equals("/P/fresh"): {
+        return new Data("/P/fresh", Data.FreshnessPeriod(1000));
+      }
+      case name.equals(nameDigest): {
+        return dataDigest;
+      }
+      case name.equals(nameWrongDigest): {
+        return new Data("/P/wrong-digest", Uint8Array.of(0xC1));
+      }
+      default: {
+        return new Data(name);
+      }
+    }
+  }, pOpts);
 
-  const producerQ = ep.produce("/Q",
-    async (interest) => {
-      await delay(120);
-      return new Data(interest.name);
-    });
+  const producerQ = produce("/Q", async (interest) => {
+    await delay(120);
+    return new Data(interest.name);
+  }, pOpts);
 
-  const canceledInterest = ep.consume("/Q/canceled", { signal: AbortSignal.timeout(50) });
+  const canceledInterest = consume("/Q/canceled", { ...cOpts, signal: AbortSignal.timeout(50) });
   await Promise.all([
-    expect(ep.consume("/O/no-route", { modifyInterest: { lifetime: 500 } }))
+    expect(consume("/O/no-route", { ...cOpts, modifyInterest: { lifetime: 500 } }))
       .rejects.toThrow(),
-    expect(ep.consume("/P/exact"))
+    expect(consume("/P/exact", cOpts))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume("/P/prefix", { modifyInterest: { canBePrefix: true } }))
+    expect(consume("/P/prefix", { ...cOpts, modifyInterest: { canBePrefix: true } }))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume("/P/no-prefix", { modifyInterest: { lifetime: 500 } }))
+    expect(consume("/P/no-prefix", { ...cOpts, modifyInterest: { lifetime: 500 } }))
       .rejects.toThrow(),
-    expect(ep.consume("/P/fresh", { modifyInterest: { mustBeFresh: true } }))
+    expect(consume("/P/fresh", { ...cOpts, modifyInterest: { mustBeFresh: true } }))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume("/P/no-fresh", { modifyInterest: { mustBeFresh: true, lifetime: 500 } }))
+    expect(consume("/P/no-fresh", { ...cOpts, modifyInterest: { mustBeFresh: true, lifetime: 500 } }))
       .resolves.toBeInstanceOf(Data), // isCacheLookup=false
-    expect(ep.consume("/Q/exact"))
+    expect(consume("/Q/exact", cOpts))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume("/Q/too-slow", { modifyInterest: { lifetime: 100 } }))
+    expect(consume("/Q/too-slow", { ...cOpts, modifyInterest: { lifetime: 100 } }))
       .rejects.toThrow(),
-    expect(ep.consume(nameDigest))
+    expect(consume(nameDigest, cOpts))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume(nameWrongDigest, { modifyInterest: { lifetime: 500 } }))
+    expect(consume(nameWrongDigest, { ...cOpts, modifyInterest: { lifetime: 500 } }))
       .rejects.toThrow(),
     expect(canceledInterest)
       .rejects.toThrow(),
@@ -93,16 +93,14 @@ test("simple", async () => {
 
 test("aggregate & retransmit", async () => {
   const producedNames = new Set<string>();
-  ep.produce("/P",
-    async (interest) => {
-      if (producedNames.has(interest.name.valueHex)) {
-        return undefined;
-      }
-      producedNames.add(interest.name.valueHex);
-      await delay(100);
-      return new Data("/P/Q/R/S");
-    },
-    { concurrency: 8 });
+  produce("/P", async (interest) => {
+    if (producedNames.has(interest.name.valueHex)) {
+      return undefined;
+    }
+    producedNames.add(interest.name.valueHex);
+    await delay(100);
+    return new Data("/P/Q/R/S");
+  }, { ...pOpts, concurrency: 8 });
 
   const rxDataTokens = new Set<number>();
   let nRxRejects = 0;
@@ -150,11 +148,11 @@ test("aggregate & retransmit", async () => {
   face.addRoute("/L");
 
   await Promise.all([
-    expect(ep.consume(new Interest("/P/Q", Interest.CanBePrefix)))
+    expect(consume(new Interest("/P/Q", Interest.CanBePrefix), cOpts))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume(new Interest("/P/Q", Interest.CanBePrefix)))
+    expect(consume(new Interest("/P/Q", Interest.CanBePrefix), cOpts))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume("/P/Q/R/S"))
+    expect(consume("/P/Q/R/S", cOpts))
       .resolves.toBeInstanceOf(Data),
     delay(200),
   ]);
@@ -167,18 +165,18 @@ test("aggregate & retransmit", async () => {
 
 test("FwHint", async () => {
   fw.nodeNames.push(new Name("/B/n"));
-  ep.produce("/A", async (interest) => {
+  produce("/A", async (interest) => {
     expect(interest).toHaveName("/C");
     return new Data(interest.name.append("A"));
-  });
-  ep.produce("/C", async (interest) => {
+  }, pOpts);
+  produce("/C", async (interest) => {
     expect(interest).toHaveName("/C");
     return new Data(interest.name.append("B"));
-  });
+  }, pOpts);
 
-  await expect(ep.consume(new Interest("/C", Interest.CanBePrefix, new FwHint("/A"))))
+  await expect(consume(new Interest("/C", Interest.CanBePrefix, new FwHint("/A")), cOpts))
     .resolves.toHaveName("/C/A");
-  await expect(ep.consume(new Interest("/C", Interest.CanBePrefix, new FwHint("/B"))))
+  await expect(consume(new Interest("/C", Interest.CanBePrefix, new FwHint("/B")), cOpts))
     .resolves.toHaveName("/C/B");
 });
 
@@ -190,20 +188,20 @@ test("Data without token", async () => {
       await delay(50);
       yield FwPacket.create(new Data("/P/Q/R/S", Data.FreshnessPeriod(500)));
     })(),
-    tx: consume,
+    tx: consumeIterable,
   });
   face.addRoute("/P");
 
   await Promise.all([
-    expect(ep.consume(new Interest("/P/Q", Interest.CanBePrefix)))
+    expect(consume(new Interest("/P/Q", Interest.CanBePrefix), cOpts))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume(new Interest("/P/Q", Interest.CanBePrefix, Interest.MustBeFresh)))
+    expect(consume(new Interest("/P/Q", Interest.CanBePrefix, Interest.MustBeFresh), cOpts))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume("/P/Q/R/S"))
+    expect(consume("/P/Q/R/S", cOpts))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume(new Interest("/P/Q/R/S", Interest.CanBePrefix)))
+    expect(consume(new Interest("/P/Q/R/S", Interest.CanBePrefix), cOpts))
       .resolves.toBeInstanceOf(Data),
-    expect(ep.consume(new Interest("/P/Q/R/S", Interest.MustBeFresh)))
+    expect(consume(new Interest("/P/Q/R/S", Interest.MustBeFresh), cOpts))
       .resolves.toBeInstanceOf(Data),
   ]);
 });
@@ -215,12 +213,12 @@ test("tracer", async () => {
     fw,
   });
   const abort = new AbortController();
-  const consumerA = ep.consume("/A", { signal: abort.signal });
+  const consumerA = consume("/A", { ...cOpts, signal: abort.signal });
   abort.abort();
   await expect(consumerA).rejects.toThrow();
 
-  const producerB = ep.produce("/B", async () => new Data("/B/1", Data.FreshnessPeriod(1000)));
-  await ep.consume(new Interest("/B", Interest.CanBePrefix, Interest.MustBeFresh));
+  const producerB = produce("/B", async () => new Data("/B/1", Data.FreshnessPeriod(1000)), pOpts);
+  await consume(new Interest("/B", Interest.CanBePrefix, Interest.MustBeFresh), cOpts);
   producerB.close();
 
   const faceC = fw.addFace(new NoopFace());

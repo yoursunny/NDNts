@@ -1,13 +1,12 @@
 import "@ndn/packet/test-fixture/expect";
 
+import { Forwarder } from "@ndn/fw";
 import { Data, Interest, type Verifier } from "@ndn/packet";
 import { afterEach, beforeEach, describe, expect, type Mock, test, vi } from "vitest";
 
-import { Endpoint, type ProducerHandler, type RetxPolicy } from "..";
+import { consume, produce, type ProducerHandler, type RetxPolicy } from "..";
 
-let ep: Endpoint;
-beforeEach(() => { ep = new Endpoint(); });
-afterEach(Endpoint.deleteDefaultForwarder);
+afterEach(Forwarder.deleteDefault);
 
 describe("retx limit", () => {
   let producer: Mock<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>;
@@ -17,11 +16,11 @@ describe("retx limit", () => {
       .mockResolvedValueOnce(undefined)
       .mockResolvedValueOnce(undefined)
       .mockResolvedValueOnce(new Data("/A"));
-    ep.produce("/A", producer);
+    produce("/A", producer);
   });
 
   test("resolve", async () => {
-    const promise = ep.consume(
+    const promise = consume(
       new Interest("/A", Interest.Lifetime(500)),
       {
         retx: {
@@ -43,7 +42,7 @@ describe("retx limit", () => {
     [0, 1],
     [1, 2],
   ])("reject %#", async (retx, nInterests) => {
-    const promise = ep.consume(
+    const promise = consume(
       new Interest("/A", Interest.Lifetime(200)),
       { retx },
     );
@@ -53,7 +52,7 @@ describe("retx limit", () => {
   });
 
   test("abort", async () => {
-    const promise = ep.consume(
+    const promise = consume(
       new Interest("/A", Interest.Lifetime(2000)),
       {
         signal: AbortSignal.timeout(100),
@@ -70,12 +69,12 @@ describe("retx limit", () => {
 test("verify", async () => {
   const producer = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>()
     .mockResolvedValueOnce(new Data("/A"));
-  ep.produce("/A", producer);
+  produce("/A", producer);
 
   const verify = vi.fn<Parameters<Verifier["verify"]>, ReturnType<Verifier["verify"]>>()
     .mockRejectedValue(new Error("mock-verify-error"));
 
-  const promise = ep.consume(
+  const promise = consume(
     new Interest("/A", Interest.Lifetime(200)),
     { verifier: { verify } },
   );
