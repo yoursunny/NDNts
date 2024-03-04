@@ -1,6 +1,6 @@
 import "@ndn/util/test-fixture/expect";
 
-import { Endpoint } from "@ndn/endpoint";
+import { consume } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
 import { Data, Interest, Name } from "@ndn/packet";
 import { DataTape } from "@ndn/repo-api";
@@ -48,8 +48,7 @@ test("bufferBehind bufferAhead", async () => {
     bufferAhead: 2,
   });
 
-  const endpoint = new Endpoint();
-  const retrieveSegment = (segmentNum: number) => endpoint.consume(
+  const retrieveSegment = (segmentNum: number) => consume(
     new Interest(prefix.append(Segment, segmentNum), Interest.Lifetime(500)));
 
   await expect(retrieveSegment(19)).resolves.toBeInstanceOf(Data);

@@ -18,9 +18,11 @@ export function makeDiscoveryInterest(prefix: NameLike): Interest {
 }
 
 /**
- * Retrieve metadata packet of subclass type.
+ * Retrieve metadata packet of base type.
  * @param prefix - Metadata packet prefix.
- * @param opts - Other options.
+ * @param opts - Consumer options.
+ * - Commonly specified: `.retx` and `.verifier`.
+ * - `.describe` defaults to "RDR-c" + prefix.
  * @returns Metadata packet.
  */
 export async function retrieveMetadata(
@@ -33,7 +35,9 @@ export async function retrieveMetadata(
  * @typeParam C - Metadata subclass type.
  * @param prefix - Metadata packet prefix.
  * @param ctor - Metadata subclass constructor.
- * @param opts - Other options.
+ * @param opts - Consumer options.
+ * - Commonly specified: `.retx` and `.verifier`.
+ * - `.describe` defaults to "RDR-c" + prefix.
  * @returns Metadata packet of type C.
  */
 export async function retrieveMetadata<C extends Metadata.Constructor>(

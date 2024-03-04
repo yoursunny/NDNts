@@ -1,4 +1,4 @@
-import { Endpoint } from "@ndn/endpoint";
+import { type Endpoint, produce, type ProducerOptions } from "@ndn/endpoint";
 import { type Data, type Interest, Name, type NameLike } from "@ndn/packet";
 
 import type { ChunkSource } from "./chunk-source/mod";
@@ -13,8 +13,8 @@ export interface Server {
    * Process an Interest.
    *
    * @remarks
-   * The producer handler is already attached to the Endpoint and will react to incoming Interests.
-   * It's usually unnecessary to call this function manually.
+   * The producer handler is already attached to the logical forwarder and will respond to incoming
+   * Interests. It's usually unnecessary to call this function manually.
    */
   processInterest: (interest: Interest) => Promise<Data | undefined>;
 
@@ -34,15 +34,29 @@ export interface Server {
  */
 export function serve(prefix: NameLike, source: ChunkSource, opts: serve.Options = {}): Server {
   prefix = Name.from(prefix);
-  const { endpoint = new Endpoint() } = opts;
-  const dp = DataProducer.create(source, prefix, opts);
-  const ep = endpoint.produce(opts.producerPrefix ?? prefix,
-    dp.processInterest,
-    {
-      concurrency: 16,
-      describe: opts.describe ?? `serve(${prefix})`,
-      announcement: opts.announcement,
-    });
+  const {
+    endpoint, // eslint-disable-line etc/no-deprecated
+    producerPrefix = prefix,
+    pOpts,
+    describe, // eslint-disable-line etc/no-deprecated
+    announcement, // eslint-disable-line etc/no-deprecated
+  } = opts;
+
+  const dp = DataProducer.create(source, prefix, {
+    signer: pOpts?.dataSigner,
+    ...opts,
+  });
+
+  const epOpts: ProducerOptions = {
+    concurrency: 16,
+    ...endpoint?.pOpts,
+    ...pOpts,
+    describe,
+    announcement,
+  };
+  epOpts.describe ??= `serve(${prefix})`;
+  const ep = produce(producerPrefix, dp.processInterest, epOpts);
+
   return {
     prefix,
     processInterest: ep.processInterest,
@@ -57,16 +71,13 @@ export namespace serve {
   export interface Options extends DataProducer.Options {
     /**
      * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder.
+     * @deprecated Specify `.pOpts`.
      */
     endpoint?: Endpoint;
 
-    /** FwFace description. */
-    describe?: string;
-
     /**
-     * Producer name prefix, if it differs from Data prefix.
+     * Producer name prefix.
+     * @defaultValue Data prefix.
      *
      * @remarks
      * Specifying a shorter prefix enables name discovery.
@@ -74,10 +85,26 @@ export namespace serve {
     producerPrefix?: Name;
 
     /**
-     * Prefix announcement, or `false` to disable announcement.
-     * @defaultValue
-     * Announce the same name as producer name prefix or Data prefix.
+     * Producer options.
+     *
+     * @remarks
+     * - `.describe` defaults to "serve" + Data prefix.
+     * - `.concurrency` defaults to 16.
+     * - `.announcement` defaults to `producerPrefix`.
+     * - {@link DataProducer.Options.signer} defaults to `.dataSigner`.
      */
-    announcement?: Endpoint.RouteAnnouncement;
+    pOpts?: ProducerOptions;
+
+    /**
+     * FwFace description.
+     * @deprecated Specify in `.pOpts.describe`.
+     */
+    describe?: string;
+
+    /**
+     * Prefix announcement, or `false` to disable announcement.
+     * @deprecated Specify in `.pOpts.announcement`.
+     */
+    announcement?: ProducerOptions.RouteAnnouncement;
   }
 }

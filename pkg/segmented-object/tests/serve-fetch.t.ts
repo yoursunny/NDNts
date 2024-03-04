@@ -224,7 +224,7 @@ test("FwFace closing", async () => {
     fwB: Forwarder.getDefault(),
   }).rename("S", "F");
   const server = serve("/R", new IterableChunkSource(generateChunksSlowly()), {
-    endpoint: new Endpoint({ fw: bridge.fwS }),
+    pOpts: { fw: bridge.fwS },
   });
   closers.push(server);
 
@@ -253,7 +253,7 @@ test("congestion avoidance", async () => {
   }).rename("F", "S");
 
   const server = serve("/R", new BufferChunkSource(objectBody), {
-    endpoint: new Endpoint({ fw: bridge.fwS }),
+    pOpts: { fw: bridge.fwS },
   });
   closers.push(server);
 

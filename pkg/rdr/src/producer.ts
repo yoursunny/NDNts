@@ -67,15 +67,18 @@ export function serveMetadata(m: Metadata | (() => Metadata), opts: serveMetadat
   return produce(prefix,
     async (interest) => {
       if (isDiscoveryInterest(interest) && interest.name.length === prefix.length) {
-        return makeMetadataPacket(makeMetadata(), opts);
+        return makeMetadataPacket(makeMetadata(), {
+          signer: pOpts?.dataSigner,
+          ...opts,
+        });
       }
       return undefined;
     },
     {
       describe: `RDR-s(${prefix})`,
-      announcement,
       ...endpoint?.pOpts,
       ...pOpts,
+      announcement,
     });
 }
 export namespace serveMetadata {
@@ -86,7 +89,14 @@ export namespace serveMetadata {
      */
     endpoint?: Endpoint;
 
-    /** Producer options. */
+    /**
+     * Producer options.
+     *
+     * @remarks
+     * - `.describe` defaults to "RDR-s" + prefix.
+     * - `.announcement` defaults to {@link makeMetadataPacket.Options.prefix}.
+     * - {@link makeMetadataPacket.Options.signer} defaults to `.dataSigner`.
+     */
     pOpts?: ProducerOptions;
 
     /**

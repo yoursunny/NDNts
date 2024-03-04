@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Endpoint } from "@ndn/endpoint";
+import { consume, produce } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment2, Segment3, Version2, Version3 } from "@ndn/naming-convention2";
 import { Data, Interest, Name } from "@ndn/packet";
@@ -29,7 +29,7 @@ describe("serve", () => {
     expect(versioned.at(-1)).toEqualComponent(Version3.create(65));
 
     // missing CanBePrefix
-    await expect(new Endpoint().consume(new Interest("/A", Interest.MustBeFresh, Interest.Lifetime(50))))
+    await expect(consume(new Interest("/A", Interest.MustBeFresh, Interest.Lifetime(50))))
       .rejects.toThrow();
   });
 
@@ -65,14 +65,14 @@ describe("serve", () => {
     const server = serve("/A", source);
     closers.push(server);
 
-    await expect(new Endpoint().consume(new Interest("/A", Interest.CanBePrefix, Interest.MustBeFresh)))
+    await expect(consume(new Interest("/A", Interest.CanBePrefix, Interest.MustBeFresh)))
       .resolves.toHaveName(new Name("/A").append(Segment3, 0));
     await expect(discoverVersion(new Name("/A"))).rejects.toThrow();
   });
 });
 
 test("discover simple", async () => {
-  const producer = new Endpoint().produce("/A",
+  const producer = produce("/A",
     async (interest) => {
       expect(interest.name).toEqualName("/A");
       expect(interest.canBePrefix).toBeTruthy();
@@ -96,7 +96,7 @@ test.each<[discoverVersion.Options["expectedSuffixLen"], string, boolean]>([
   [discoverVersion.ANY_SUFFIX_LEN, "/S/S", true],
 ])("discover expectedSuffixLen %#", async (expectedSuffixLen, nameMid, ok) => {
   const versioned = new Name(`/A${nameMid}`).append(Version3, 2);
-  const producer = new Endpoint().produce("/A",
+  const producer = produce("/A",
     async () => new Data(versioned.append(Segment3, 4), Data.FreshnessPeriod(1000)),
   );
   closers.push(producer);
@@ -117,7 +117,7 @@ const wrongNames = [
 ];
 
 test.each(wrongNames)("discover wrong name %#", async (dataName) => {
-  const producer = new Endpoint().produce("/A",
+  const producer = produce("/A",
     async () => new Data(dataName, Data.FreshnessPeriod(1000)));
   closers.push(producer);
 

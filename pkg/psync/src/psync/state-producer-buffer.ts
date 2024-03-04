@@ -28,9 +28,11 @@ export class StateProducerBuffer {
     const server = serveVersioned(name, source, {
       freshnessPeriod,
       signer: this.signer,
-      endpoint: this.endpoint,
-      describe: `${this.describe}[pb]`,
-      announcement: false,
+      pOpts: {
+        ...this.endpoint.pOpts,
+        describe: `${this.describe}[pb]`,
+        announcement: false,
+      },
     });
     this.servers.push(server);
     this.evict();
