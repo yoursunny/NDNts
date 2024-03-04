@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Endpoint } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { generateSigningKey } from "@ndn/keychain";
 import { Name, type NameLike } from "@ndn/packet";
 import { makeInMemoryDataStore } from "@ndn/repo";
@@ -41,7 +41,7 @@ beforeAll(async () => {
 const closers = new Closers();
 afterEach(() => {
   closers.close();
-  Endpoint.deleteDefaultForwarder();
+  Forwarder.deleteDefault();
 });
 
 function enableDebug(subs: Record<string, SvSubscriber<any>>): void {

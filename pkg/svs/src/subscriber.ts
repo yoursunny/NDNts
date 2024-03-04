@@ -1,11 +1,11 @@
-import { type ConsumerOptions, Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
 import { GenericNumber, Segment } from "@ndn/naming-convention2";
 import { Data, Interest, lpm, Name, noopSigning, TT as l3TT, type Verifier } from "@ndn/packet";
 import { fetch } from "@ndn/segmented-object";
 import { type Subscriber, type Subscription, SubscriptionTable, type SyncUpdate } from "@ndn/sync-api";
 import { Decoder, EvDecoder } from "@ndn/tlv";
 import { assert, concatBuffers, CustomEvent } from "@ndn/util";
-import { batch, consume, pipeline, transform } from "streaming-iterables";
+import { batch, consume as consumeIterable, pipeline, transform } from "streaming-iterables";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
@@ -26,7 +26,8 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
   extends TypedEventTarget<EventMap>
   implements Subscriber<Name, SvSubscriber.Update, SvSubscriber.SubscribeInfo<ME>> {
   constructor({
-    endpoint = new Endpoint(),
+    endpoint, // eslint-disable-line etc/no-deprecated
+    cOpts,
     sync,
     retxLimit = 2,
     mappingBatch = 10,
@@ -37,14 +38,16 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
     mappingVerifier = noopSigning,
   }: SvSubscriber.Options) {
     super();
-    this.endpoint = endpoint;
     this.syncPrefix = sync.syncPrefix;
     this.mappingBatch = mappingBatch;
     this.mappingEVD = makeMappingEVD<ME>(mappingEntryType as MappingEntry.Constructor<ME>);
     this.mustFilterByMapping = mustFilterByMapping;
     this.innerVerifier = innerVerifier;
     this.outerFetchOpts = {
-      cOpts: endpoint.cOpts,
+      cOpts: {
+        ...endpoint?.cOpts,
+        ...cOpts,
+      },
       describe: `SVS-PS(${sync.syncPrefix})[retrieve]`,
       signal: this.abort.signal,
       retxLimit,
@@ -52,12 +55,16 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
       verifier: outerVerifier,
     };
     this.outerConsumerOpts = {
+      ...endpoint?.cOpts,
+      ...cOpts,
       describe: `SVS-PS(${sync.syncPrefix})[retrieve]`,
       signal: this.abort.signal,
       retx: retxLimit,
       verifier: outerVerifier,
     };
     this.mappingConsumerOpts = {
+      ...endpoint?.cOpts,
+      ...cOpts,
       describe: `SVS-PS(${sync.syncPrefix})[mapping]`,
       signal: this.abort.signal,
       retx: retxLimit,
@@ -67,7 +74,6 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
   }
 
   private readonly abort = new AbortController();
-  private readonly endpoint: Endpoint;
   private readonly syncPrefix: Name;
   private readonly nameSubs = new SubscriptionTable<SvSubscriber.Update>();
   private readonly nameFilters = new WeakMap<Subscription<Name, SvSubscriber.Update>, (entry: ME) => boolean>();
@@ -125,7 +131,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
           this.emitError(`dispatchUpdate(${update.id}, ${seqNum}): ${err}`);
         }
       }),
-      consume,
+      consumeIterable,
     );
   };
 
@@ -142,13 +148,13 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
             GenericNumber.create(loSeqNum), GenericNumber.create(hiSeqNum)),
         );
         try {
-          const data = await this.endpoint.consume(interest, this.mappingConsumerOpts);
+          const data = await consume(interest, this.mappingConsumerOpts);
           this.mappingEVD.decode(m, new Decoder(data.content));
         } catch (err: unknown) {
           this.emitError(`retrieveMapping(${update.id},${loSeqNum}..${hiSeqNum}): ${err}`);
         }
       }),
-      consume,
+      consumeIterable,
     );
     return m;
   }
@@ -175,7 +181,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
 
     const outerPrefix = publisher.append(...this.syncPrefix.comps, GenericNumber.create(seqNum));
     let payload: Uint8Array;
-    const outer = await this.endpoint.consume(
+    const outer = await consume(
       new Interest(outerPrefix, Interest.CanBePrefix),
       this.outerConsumerOpts,
     );
@@ -234,10 +240,12 @@ export namespace SvSubscriber {
   export interface Options {
     /**
      * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder.
+     * @deprecated Specify `.cOpts`.
      */
     endpoint?: Endpoint;
+
+    /** Consumer options. */
+    cOpts?: ConsumerOptions;
 
     /**
      * SvSync instance.

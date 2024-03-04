@@ -1,4 +1,5 @@
-import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
+import { consume, type ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { CustomEvent, randomJitter, trackEventListener } from "@ndn/util";
@@ -24,8 +25,9 @@ type EventMap = SyncProtocol.EventMap<Name> & {
 /** StateVectorSync participant. */
 export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
   public static async create({
-    endpoint = new Endpoint(),
+    fw,
     describe,
+    endpoint, // eslint-disable-line etc/no-deprecated
     initialStateVector = new StateVector(),
     initialize,
     syncPrefix,
@@ -35,12 +37,28 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     signer = nullSigner,
     verifier,
   }: SvSync.Options): Promise<SvSync> {
+    fw ??= endpoint?.fw ?? Forwarder.getDefault();
+    describe ??= `SvSync(${syncPrefix})`;
+
     const sync = new SvSync(
-      endpoint, describe ?? `SvSync(${syncPrefix})`, initialStateVector, syncPrefix, syncInterestLifetime,
-      randomJitter(steadyTimer[1], steadyTimer[0]), randomJitter(suppressionTimer[1], suppressionTimer[0]),
-      signer, verifier);
+      describe,
+      initialStateVector,
+      syncPrefix,
+      Interest.makeModifyFunc({
+        canBePrefix: true,
+        mustBeFresh: true,
+        lifetime: syncInterestLifetime,
+      }),
+      { fw, describe: `${describe}[c]`, retx: 0 },
+      randomJitter(steadyTimer[1], steadyTimer[0]),
+      randomJitter(suppressionTimer[1], suppressionTimer[0]),
+      signer,
+      verifier,
+    );
+
     await initialize?.(sync);
-    sync.producer = sync.endpoint.produce(sync.syncPrefix, sync.handleSyncInterest, {
+    sync.producer = produce(sync.syncPrefix, sync.handleSyncInterest, {
+      fw,
       describe: `${sync.describe}[p]`,
       routeCapture: false,
     });
@@ -48,11 +66,11 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
   }
 
   private constructor(
-      private readonly endpoint: Endpoint,
       public readonly describe: string,
       private readonly own: StateVector,
       public readonly syncPrefix: Name,
-      private readonly syncInterestLifetime: number,
+      private readonly modifyInterest: Interest.ModifyFunc,
+      private readonly cOpts: ConsumerOptions,
       private readonly steadyTimer: () => number,
       private readonly suppressionTimer: () => number,
       private readonly signer: Signer,
@@ -191,16 +209,11 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
 
     const interest = new Interest();
     interest.name = this.syncPrefix.append(this.own.toComponent());
-    interest.canBePrefix = true;
-    interest.mustBeFresh = true;
-    interest.lifetime = this.syncInterestLifetime;
-
+    this.modifyInterest(interest);
     await this.signer.sign(interest);
+
     try {
-      await this.endpoint.consume(interest, {
-        describe: `${this.describe}[c]`,
-        retx: 0,
-      });
+      await consume(interest, this.cOpts);
     } catch {
       // not expecting a reply, so that a timeout will happen and it shall be ignored
     }
@@ -220,14 +233,19 @@ export namespace SvSync {
   /** {@link SvSync.create} options. */
   export interface Options {
     /**
-     * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder.
+     * Use the specified logical forwarder.
+     * @defaultValue `Forwarder.getDefault()`
      */
-    endpoint?: Endpoint;
+    fw?: Forwarder;
 
     /** Description for debugging purpose. */
     describe?: string;
+
+    /**
+     * Endpoint for communication.
+     * @deprecated Specify `.fw`.
+     */
+    endpoint?: Endpoint;
 
     /**
      * Initial state vector.

@@ -1,6 +1,6 @@
 import { type Decoder, type Encodable, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { assert, constrain, sha256 } from "@ndn/util";
-import type { Except, Schema } from "type-fest";
+import type { ArrayValues, Except, Schema } from "type-fest";
 
 import { TT } from "./an";
 import { FwHint } from "./fwhint";
@@ -298,7 +298,7 @@ export namespace Interest {
   export type ModifyFunc = (interest: Interest) => void;
 
   /** Common fields to assign onto an existing Interest. */
-  export type ModifyFields = Partial<Pick<PublicFields, typeof modifyFields[number]>>;
+  export type ModifyFields = Partial<Pick<PublicFields, ArrayValues<typeof modifyFields>>>;
 
   /** A structure to modify an existing Interest. */
   export type Modify = ModifyFunc | ModifyFields;

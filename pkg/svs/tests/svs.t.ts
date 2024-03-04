@@ -1,4 +1,3 @@
-import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face";
 import { Name } from "@ndn/packet";
@@ -66,7 +65,7 @@ test("example", async () => {
 
   const opts: SvSync.Options = {
     ...baseOpts,
-    endpoint: new Endpoint({ fw: fwAB }),
+    fw: fwAB,
   };
 
   const pA = await SvSync.create({ ...opts, describe: "A" });
@@ -77,7 +76,7 @@ test("example", async () => {
   const nB = pB.add("/B");
   nB.seqNum = 15;
   const uB = new UpdateHandler(pB);
-  const pC = await SvSync.create({ ...opts, describe: "C", endpoint: new Endpoint({ fw: fwC }) });
+  const pC = await SvSync.create({ ...opts, describe: "C", fw: fwC });
   const nC = pC.add(new Name("/C"));
   nC.seqNum = 25;
   const uC = new UpdateHandler(pC);
@@ -132,7 +131,7 @@ test("initialize", async () => {
   const fw = Forwarder.create();
   const opts: SvSync.Options = {
     ...baseOpts,
-    endpoint: new Endpoint({ fw }),
+    fw,
   };
 
   const p0 = await SvSync.create({ ...opts, describe: "0" });

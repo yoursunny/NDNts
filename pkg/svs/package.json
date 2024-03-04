@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@ndn/endpoint": "workspace:*",
+    "@ndn/fw": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/repo-api": "workspace:*",
@@ -40,7 +41,6 @@
     "typescript-event-target": "^1.1.0"
   },
   "devDependencies": {
-    "@ndn/fw": "workspace:*",
     "@ndn/keychain": "workspace:*",
     "@ndn/l3face": "workspace:*",
     "@ndn/repo": "workspace:*",

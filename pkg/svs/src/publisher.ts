@@ -1,4 +1,4 @@
-import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
+import { type Endpoint, produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
 import { GenericNumber } from "@ndn/naming-convention2";
 import { Data, Name, type NameLike, nullSigner, type Signer } from "@ndn/packet";
 import type { DataStore as S } from "@ndn/repo-api";
@@ -15,7 +15,8 @@ import type { SvSync } from "./sync";
 /** SVS-PS publisher. */
 export class SvPublisher {
   constructor({
-    endpoint = new Endpoint(),
+    endpoint, // eslint-disable-line etc/no-deprecated
+    pOpts,
     sync,
     id,
     store,
@@ -31,18 +32,22 @@ export class SvPublisher {
     this.innerSigner = innerSigner;
     this.outerSigner = outerSigner;
 
-    this.outerProducer = endpoint.produce(
+    this.outerProducer = produce(
       this.nodeSyncPrefix,
       this.handleOuter,
       {
+        ...endpoint?.pOpts,
+        ...pOpts,
         describe: `SVS-PS(${id})[outer]`,
       },
     );
 
-    this.mappingProducer = endpoint.produce(
+    this.mappingProducer = produce(
       this.nodeSyncPrefix.append(MappingKeyword),
       this.handleMapping,
       {
+        ...endpoint?.pOpts,
+        ...pOpts,
         describe: `SVS-PS(${id})[mapping]`,
         dataSigner: mappingSigner,
       },
@@ -165,10 +170,12 @@ export namespace SvPublisher {
   export interface Options {
     /**
      * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder.
+     * @deprecated Specify `.pOpts`.
      */
     endpoint?: Endpoint;
+
+    /** Producer options. */
+    pOpts?: ProducerOptions;
 
     /**
      * SvSync instance.
