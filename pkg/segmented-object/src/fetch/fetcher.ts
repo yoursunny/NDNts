@@ -1,4 +1,4 @@
-import type { Endpoint } from "@ndn/endpoint";
+import type { ConsumerOptions, Endpoint } from "@ndn/endpoint";
 import { CancelInterest, Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { Data, Interest, type Name, type Verifier } from "@ndn/packet";
 import { CustomEvent } from "@ndn/util";
@@ -23,35 +23,37 @@ export class Fetcher extends TypedEventTarget<EventMap> {
   private count_ = 0;
   private readonly logic: FetchLogic;
   private readonly face: FwFace;
-  private readonly segmentNumConvention!: SegmentConvention;
-  private readonly modifyInterest!: Interest.ModifyFunc;
+  private readonly segmentNumConvention: SegmentConvention;
+  private readonly modifyInterest: Interest.ModifyFunc;
   private readonly signal?: AbortSignal;
-  private readonly lifetimeAfterRto!: number;
-  private readonly acceptContentType!: readonly number[];
+  private readonly lifetimeAfterRto: number;
+  private readonly acceptContentType: readonly number[];
   private readonly verifier?: Verifier;
 
   constructor(private readonly name: Name, opts: Fetcher.Options) {
     super();
 
-    const endpoint = opts.endpoint;
     const {
-      fw = endpoint?.fw ?? Forwarder.getDefault(),
+      fw = Forwarder.getDefault(),
       describe = `fetch(${name})`,
       segmentNumConvention = defaultSegmentConvention,
-      modifyInterest = endpoint?.opts.modifyInterest,
-      signal = endpoint?.opts.signal,
+      modifyInterest,
+      signal,
       lifetimeAfterRto = 1000,
       acceptContentType = [0],
-      verifier = endpoint?.opts.verifier,
-    } = opts;
-    Object.assign(this, {
-      segmentNumConvention,
-      modifyInterest: Interest.makeModifyFunc(modifyInterest),
-      signal,
-      lifetimeAfterRto,
-      acceptContentType,
       verifier,
-    } satisfies Fetcher.Options);
+    } = {
+      ...opts.endpoint?.cOpts, // eslint-disable-line etc/no-deprecated
+      ...opts.cOpts,
+      ...opts,
+    };
+
+    this.segmentNumConvention = segmentNumConvention;
+    this.modifyInterest = Interest.makeModifyFunc(modifyInterest);
+    this.signal = signal;
+    this.lifetimeAfterRto = lifetimeAfterRto;
+    this.acceptContentType = acceptContentType;
+    this.verifier = verifier;
 
     this.logic = new FetchLogic(opts);
     this.logic.addEventListener("end", () => {
@@ -143,24 +145,36 @@ export namespace Fetcher {
   export interface Options extends FetchLogic.Options {
     /**
      * Inherit fetcher options from Endpoint consumer options.
+     * @deprecated Specify `.cOpts`.
+     */
+    endpoint?: Endpoint;
+
+    /**
+     * Inherit fetcher options from consumer options.
      *
      * @remarks
      * These options are inherited if the corresponding fetcher option is unset:
+     * - `describe`
      * - `fw`
      * - `modifyInterest`
      * - `signal`
      * - `verifier`
      *
      * Other options cannot be inherited, notably:
-     * - `describe`
      * - `retx`
      */
-    endpoint?: Endpoint;
+    cOpts?: ConsumerOptions;
 
-    /** Use the specified logical forwarder instead of the default. */
+    /**
+     * Use the specified logical forwarder.
+     * @defaultValue `Forwarder.getDefault()`
+     */
     fw?: Forwarder;
 
-    /** FwFace description. */
+    /**
+     * FwFace description.
+     * @defaultValue "fetch" + name
+     */
     describe?: string;
 
     /**
@@ -183,9 +197,6 @@ export namespace Fetcher {
     /**
      * InterestLifetime added to RTO.
      * @defaultValue 1000ms
-     *
-     * @remarks
-     * Ignored if `lifetime` is set.
      */
     lifetimeAfterRto?: number;
 

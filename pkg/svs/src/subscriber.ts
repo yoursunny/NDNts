@@ -44,7 +44,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
     this.mustFilterByMapping = mustFilterByMapping;
     this.innerVerifier = innerVerifier;
     this.outerFetchOpts = {
-      endpoint,
+      cOpts: endpoint.cOpts,
       describe: `SVS-PS(${sync.syncPrefix})[retrieve]`,
       signal: this.abort.signal,
       retxLimit,

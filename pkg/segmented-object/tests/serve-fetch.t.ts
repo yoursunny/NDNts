@@ -143,6 +143,7 @@ test("ranged", async () => {
 
 test.each<(fw: Forwarder, fwHint: FwHint) => fetch.Options>([
   (fw, fwHint) => ({ fw, modifyInterest: { fwHint } }),
+  (fw, fwHint) => ({ cOpts: { fw, modifyInterest: { fwHint } } }),
   (fw, fwHint) => ({ endpoint: new Endpoint({ fw, modifyInterest: { fwHint } }) }),
 ])("modifyInterest %#", async (makeOpts) => {
   using bridge = Bridge.create({
@@ -186,6 +187,7 @@ describe("empty object", () => {
 
   test.each<(verifier: Verifier) => fetch.Options>([
     (verifier) => ({ verifier }),
+    (verifier) => ({ cOpts: { verifier } }),
     (verifier) => ({ endpoint: new Endpoint({ verifier }) }),
   ])("verify error %#", async (makeOpts) => {
     const verify = vi.fn<Parameters<Verifier["verify"]>, ReturnType<Verifier["verify"]>>()

@@ -21,18 +21,20 @@ export class StateFetcher {
 
   public async fetch(name: Name, { signal }: AbortController, describeSuffix = "c"): Promise<Result> {
     const versioned = await discoverVersion(name, {
-      endpoint: this.endpoint,
-      describe: `${this.describe}[${describeSuffix}v]`,
+      cOpts: {
+        ...this.endpoint.cOpts,
+        describe: `${this.describe}[${describeSuffix}v]`,
+        modifyInterest: { lifetime: this.syncInterestLifetime },
+        retx: 0,
+        signal,
+        verifier: this.verifier,
+      },
       // PSync C++ library prior to 62f0800a61f49c7dd698e142e046831dbc88c5b9 would insert a useless
       // component, making a 3-component suffix; otherwise, it's a 2-component suffix
       expectedSuffixLen: [2, 3],
-      modifyInterest: { lifetime: this.syncInterestLifetime },
-      retxLimit: 0,
-      signal,
-      verifier: this.verifier,
     });
     const payload = await fetch(versioned, {
-      endpoint: this.endpoint,
+      cOpts: this.endpoint.cOpts,
       describe: `${this.describe}[${describeSuffix}f]`,
       modifyInterest: { lifetime: this.syncInterestLifetime },
       retxLimit: 0,

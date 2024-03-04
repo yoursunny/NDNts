@@ -10,7 +10,7 @@ export interface RetxOptions {
   limit?: number;
 
   /**
-   * Initial retx interval
+   * Initial retx interval.
    * @defaultValue
    * 50% of InterestLifetime
    */

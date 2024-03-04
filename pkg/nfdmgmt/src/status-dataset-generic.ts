@@ -50,8 +50,16 @@ export async function list<R>(arg1: string | StatusDataset<R>, arg2: any = {}, a
 
   const { endpoint, prefix, verifier } = CommonOptions.applyDefaults(opts);
   const name = concatName(prefix, datasetName, params);
-  const versioned = await discoverVersion(name, { endpoint, verifier });
-  const payload = await fetch(versioned, { endpoint, verifier });
+  const versioned = await discoverVersion(name, {
+    cOpts: {
+      ...endpoint.cOpts,
+      verifier,
+    },
+  });
+  const payload = await fetch(versioned, {
+    cOpts: endpoint.cOpts,
+    verifier,
+  });
 
   const decoder = new Decoder(payload);
   const results: R[] = [];
