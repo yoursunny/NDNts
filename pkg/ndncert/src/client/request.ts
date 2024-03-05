@@ -1,6 +1,6 @@
-import { type ConsumerOptions, Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
 import { Certificate, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
-import { type FwHint, Interest, type Name, type ValidityPeriod } from "@ndn/packet";
+import { Interest, type ValidityPeriod } from "@ndn/packet";
 
 import * as crypto from "../crypto-common";
 import { type CaProfile, ChallengeRequest, ChallengeResponse, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
@@ -10,10 +10,19 @@ import type { ClientChallenge } from "./challenge";
 export interface ClientOptions {
   /**
    * Endpoint for communication.
-   * @defaultValue
-   * Endpoint on default logical forwarder with up to 4 retransmissions.
+   * @deprecated Specify `.cOpts`.
    */
   endpoint?: Endpoint;
+
+  /**
+   * Consumer options.
+   *
+   * @remarks
+   * - `.describe` defaults to "NDNCERT-client" + CA prefix + key name.
+   * - `.retx` defaults to 4.
+   * - `.verifier` is overridden.
+   */
+  cOpts?: ConsumerOptions;
 
   /** CA profile. */
   profile: CaProfile;
@@ -37,15 +46,19 @@ export interface ClientOptions {
 
 /** Request a certificate for the given key. */
 export async function requestCertificate({
-  endpoint = new Endpoint({ retx: 4 }),
+  endpoint, // eslint-disable-line etc/no-deprecated
+  cOpts,
   profile,
   privateKey,
   publicKey,
   validity,
   challenges,
 }: ClientOptions): Promise<Certificate> {
-  const consumerOptions: ConsumerOptions = {
-    describe: `NDNCERT-CLIENT(${privateKey.name})`,
+  cOpts = {
+    describe: `NDNCERT-client(${profile.prefix}, REQUEST, ${privateKey.name})`,
+    retx: 4,
+    ...endpoint?.cOpts,
+    ...cOpts,
     verifier: profile.publicKey,
   };
   const signedInterestPolicy = crypto.makeSignedInterestPolicy();
@@ -60,7 +73,7 @@ export async function requestCertificate({
     validity,
   });
   const certRequestName = newRequest.certRequest.name;
-  const newData = await endpoint.consume(newRequest.interest, consumerOptions);
+  const newData = await consume(newRequest.interest, cOpts);
   ErrorMsg.throwOnError(newData);
   const newResponse = await NewResponse.fromData(newData, profile);
   const { ecdhPub: caEcdhPub, salt, requestId, challenges: serverChallenges } = newResponse;
@@ -78,8 +91,7 @@ export async function requestCertificate({
   }
 
   let challengeParameters = await challenge.start({ requestId, certRequestName });
-  let issuedCertName: Name;
-  let issuedCertFwHint: FwHint | undefined;
+  const issuedCertInterest = new Interest();
   while (true) {
     const challengeRequest = await ChallengeRequest.build({
       profile,
@@ -91,14 +103,17 @@ export async function requestCertificate({
       selectedChallenge: challenge.challengeId,
       parameters: challengeParameters,
     });
-    const challengeData = await endpoint.consume(challengeRequest.interest, consumerOptions);
+
+    const challengeData = await consume(challengeRequest.interest, cOpts);
     ErrorMsg.throwOnError(challengeData);
+
     const challengeResponse = await ChallengeResponse.fromData(challengeData, profile, requestId, sessionKey.sessionDecrypter);
     if (challengeResponse.status === Status.SUCCESS) {
-      issuedCertName = challengeResponse.issuedCertName!;
-      issuedCertFwHint = challengeResponse.fwHint;
+      issuedCertInterest.name = challengeResponse.issuedCertName!;
+      issuedCertInterest.fwHint = challengeResponse.fwHint;
       break;
     }
+
     challengeParameters = await challenge.next({
       requestId,
       certRequestName,
@@ -109,9 +124,7 @@ export async function requestCertificate({
     });
   }
 
-  const issuedCertInterest = new Interest(issuedCertName);
-  issuedCertInterest.fwHint = issuedCertFwHint;
-  const issuedCertData = await endpoint.consume(issuedCertInterest, consumerOptions);
+  const issuedCertData = await consume(issuedCertInterest, cOpts);
   const issuedCert = Certificate.fromData(issuedCertData);
   return issuedCert;
 }

@@ -1,6 +1,7 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Endpoint } from "@ndn/endpoint";
+import { consume } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { Certificate, CertNaming, generateSigningKey, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
 import { Component, FwHint, Name, type Signer, ValidityPeriod } from "@ndn/packet";
 import { type DataStore, makeInMemoryDataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
@@ -302,7 +303,7 @@ beforeEach(async () => {
   closers.push(repo, repoProducer);
   return () => {
     closers.close();
-    Endpoint.deleteDefaultForwarder();
+    Forwarder.deleteDefault();
   };
 });
 
@@ -345,11 +346,10 @@ test("INFO command", async () => {
 test("unsupported or malformed commands", async () => {
   startServer();
 
-  const endpoint = new Endpoint();
   const [probeErr, newErr, challengeErr] = await Promise.all([
-    endpoint.consume("/authority/CA/PROBE"),
-    endpoint.consume("/authority/CA/NEW"),
-    endpoint.consume("/authority/CA/CHALLENGE"),
+    consume("/authority/CA/PROBE"),
+    consume("/authority/CA/NEW"),
+    consume("/authority/CA/CHALLENGE"),
   ]);
   expect(() => ErrorMsg.throwOnError(probeErr)).toThrow();
   expect(() => ErrorMsg.throwOnError(newErr)).toThrow();
@@ -406,10 +406,10 @@ test("probe entries and redirects", async () => {
   expect(redirects[0]!.caCertFullName).toEqualName(subCertFullName);
 
   await expect(retrieveCaProfile({
-    endpoint: new Endpoint({
+    cOpts: {
       retx: 0,
       modifyInterest: { lifetime: 100 },
-    }),
+    },
     caCertFullName: redirects[0]!.caCertFullName,
   })).rejects.toThrow();
   startServer({

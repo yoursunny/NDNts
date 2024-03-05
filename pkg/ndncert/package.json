@@ -45,6 +45,7 @@
     "typescript-event-target": "^1.1.0"
   },
   "devDependencies": {
+    "@ndn/fw": "workspace:^",
     "@ndn/repo": "workspace:*",
     "@types/b64-lite": "^1.4.2",
     "@types/mailparser": "^3.4.4"

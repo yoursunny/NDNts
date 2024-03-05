@@ -1,4 +1,4 @@
-import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
+import { type Endpoint, produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
 import { Certificate, CertNaming, type NamedVerifier } from "@ndn/keychain";
 import { Component, type ComponentLike, type Data, type FwHint, type Signer, type ValidityPeriod } from "@ndn/packet";
 import { Metadata, serveMetadata } from "@ndn/rdr";
@@ -11,10 +11,18 @@ import type { ServerChallenge, ServerChallengeContext } from "./challenge";
 export interface ServerOptions {
   /**
    * Endpoint for communication.
-   * @defaultValue
-   * Endpoint on default logical forwarder.
+   * @deprecated Specify `.pOpts`.
    */
   endpoint?: Endpoint;
+
+  /**
+   * Producer options.
+   *
+   * @remarks
+   * - `.describe` defaults to "NDNCERT-CA" + CA prefix.
+   * - `.announcement` is overridden as CA prefix + "/CA".
+   */
+  pOpts?: ProducerOptions;
 
   /** Repo for storing issued certificates. */
   repo: RepoDataStore;
@@ -48,7 +56,8 @@ interface RepoDataStore {
 /** NDNCERT server. */
 export class Server {
   public static create({
-    endpoint = new Endpoint(),
+    endpoint, // eslint-disable-line etc/no-deprecated
+    pOpts,
     repo,
     repoFwHint,
     profile,
@@ -57,9 +66,20 @@ export class Server {
     challenges,
     issuerId = "NDNts-NDNCERT",
   }: ServerOptions): Server {
-    return new Server(endpoint, repo, repoFwHint, profile, signer, probe,
+    return new Server(
+      {
+        ...endpoint?.pOpts,
+        ...pOpts,
+        announcement: profile.prefix.append(C.CA),
+      },
+      repo,
+      repoFwHint,
+      profile,
+      signer,
+      probe,
       new Map<string, ServerChallenge>(challenges.map((challenge) => [challenge.challengeId, challenge])),
-      Component.from(issuerId));
+      Component.from(issuerId),
+    );
   }
 
   private readonly state = new KeyMap<Uint8Array, Context, string>(toHex);
@@ -68,7 +88,7 @@ export class Server {
   private readonly signedInterestPolicy = crypto.makeSignedInterestPolicy();
 
   private constructor(
-      endpoint: Endpoint,
+      pOpts: ProducerOptions,
       private readonly repo: RepoDataStore,
       private readonly repoFwHint: FwHint | undefined,
       private readonly profile: CaProfile,
@@ -79,18 +99,17 @@ export class Server {
   ) {
     const { prefix, data: { name: infoName } } = profile;
     const infoVersion = infoName.getPrefix(-1);
-    const announcement = prefix.append(C.CA);
 
     this.producers = [
-      serveMetadata(new Metadata(infoVersion), { endpoint, announcement, signer }),
-      endpoint.produce(infoVersion, this.handleInfoInterest,
-        { describe: `NDNCERT-CA(${prefix}, INFO)`, announcement }),
-      endpoint.produce(announcement.append(C.PROBE), this.handleProbeInterest,
-        { describe: `NDNCERT-CA(${prefix}, PROBE)`, announcement }),
-      endpoint.produce(announcement.append(C.NEW), this.handleNewInterest,
-        { describe: `NDNCERT-CA(${prefix}, NEW)`, announcement }),
-      endpoint.produce(announcement.append(C.CHALLENGE), this.handleChallengeInterest,
-        { describe: `NDNCERT-CA(${prefix}, CHALLENGE)`, announcement }),
+      serveMetadata(new Metadata(infoVersion), { pOpts, signer }),
+      produce(infoVersion, this.handleInfoInterest,
+        { describe: `NDNCERT-CA(${prefix}, INFO)`, ...pOpts }),
+      produce(prefix.append(C.CA, C.PROBE), this.handleProbeInterest,
+        { describe: `NDNCERT-CA(${prefix}, PROBE)`, ...pOpts }),
+      produce(prefix.append(C.CA, C.NEW), this.handleNewInterest,
+        { describe: `NDNCERT-CA(${prefix}, NEW)`, ...pOpts }),
+      produce(prefix.append(C.CA, C.CHALLENGE), this.handleChallengeInterest,
+        { describe: `NDNCERT-CA(${prefix}, CHALLENGE)`, ...pOpts }),
     ];
 
     this.cleanupTimer = setInterval(this.cleanupContext, 60000);
@@ -238,6 +257,7 @@ export class Server {
   }
 
   private async finishChallenge(now: number, request: ChallengeRequest, context: Context) {
+    void now;
     this.deleteContext(request);
 
     const issuedCert = await Certificate.issue({

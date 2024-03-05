@@ -1,4 +1,4 @@
-import { type ConsumerOptions, Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
 import { CertNaming } from "@ndn/keychain";
 import type { Name } from "@ndn/packet";
 
@@ -8,10 +8,19 @@ import { type CaProfile, ErrorMsg, type ParameterKV, ProbeRequest, ProbeResponse
 export interface ClientProbeOptions {
   /**
    * Endpoint for communication.
-   * @defaultValue
-   * Endpoint on default logical forwarder with up to 4 retransmissions.
+   * @deprecated Specify `.cOpts`.
    */
   endpoint?: Endpoint;
+
+  /**
+   * Consumer options.
+   *
+   * @remarks
+   * - `.describe` defaults to "NDNCERT-client" + CA prefix.
+   * - `.retx` defaults to 4.
+   * - `.verifier` is overridden.
+   */
+  cOpts?: ConsumerOptions;
 
   /** CA profile. */
   profile: CaProfile;
@@ -22,12 +31,16 @@ export interface ClientProbeOptions {
 
 /** Run PROBE command to determine available names. */
 export async function requestProbe({
-  endpoint = new Endpoint({ retx: 4 }),
+  endpoint, // eslint-disable-line etc/no-deprecated
+  cOpts,
   profile,
   parameters,
 }: ClientProbeOptions): Promise<ProbeResponse.Fields> {
-  const consumerOptions: ConsumerOptions = {
-    describe: "NDNCERT-CLIENT-PROBE",
+  cOpts = {
+    describe: `NDNCERT-client(${profile.prefix}, PROBE)`,
+    retx: 4,
+    ...endpoint?.cOpts,
+    ...cOpts,
     verifier: profile.publicKey,
   };
 
@@ -35,7 +48,7 @@ export async function requestProbe({
     profile,
     parameters,
   });
-  const probeData = await endpoint.consume(probeRequest.interest, consumerOptions);
+  const probeData = await consume(probeRequest.interest, cOpts);
   ErrorMsg.throwOnError(probeData);
   const probeResponse = await ProbeResponse.fromData(probeData, profile);
   return probeResponse;
