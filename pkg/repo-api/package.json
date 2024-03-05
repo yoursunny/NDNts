@@ -34,7 +34,7 @@
     "@ndn/util": "workspace:*",
     "is-stream": "^4.0.1",
     "p-defer": "^4.0.0",
-    "p-event": "^6.0.0",
+    "p-event": "^6.0.1",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",
     "typescript-event-target": "^1.1.0",
@@ -43,6 +43,6 @@
   "devDependencies": {
     "@ndn/node-transport": "workspace:*",
     "stream-mock": "^2.0.5",
-    "type-fest": "^4.10.3"
+    "type-fest": "^4.11.0"
   }
 }

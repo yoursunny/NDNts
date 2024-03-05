@@ -32,11 +32,11 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "abortable-iterator": "^5.0.1",
-    "p-event": "^6.0.0",
+    "p-event": "^6.0.1",
     "retry": "^0.13.1",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",
-    "type-fest": "^4.10.3",
+    "type-fest": "^4.11.0",
     "typescript-event-target": "^1.1.0"
   }
 }

@@ -39,6 +39,7 @@
     "tslib": "^2.6.2"
   },
   "devDependencies": {
-    "@ndn/endpoint": "workspace:*"
+    "@ndn/endpoint": "workspace:*",
+    "@ndn/fw": "workspace:^"
   }
 }

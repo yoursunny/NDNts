@@ -30,7 +30,7 @@
     "@ndn/util": "workspace:*",
     "@types/ws": "^8.5.10",
     "event-iterator": "^2.0.0",
-    "p-event": "^6.0.0",
+    "p-event": "^6.0.1",
     "tslib": "^2.6.2",
     "ws": "^8.16.0"
   },

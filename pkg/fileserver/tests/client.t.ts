@@ -3,7 +3,8 @@ import "@ndn/util/test-fixture/expect";
 import { assert } from "node:console";
 
 import { configure as bfsConfigure, fs as bfs, registerBackend as bfsRegisterBackend } from "@browserfs/core/index.js";
-import { Endpoint } from "@ndn/endpoint";
+import { produce } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { Segment, Version } from "@ndn/naming-convention2";
 import { Data, Name } from "@ndn/packet";
 import { makeMetadataPacket, MetadataKeyword } from "@ndn/rdr";
@@ -27,16 +28,14 @@ const versionB = versionRoot - 2000;
 let bodyB: Buffer;
 const segNumsB = new Set<number>();
 beforeAll(async () => {
-  const endpoint = new Endpoint();
-
   const versionedNameRoot = prefix.append(lsKeyword, Version.create(versionRoot));
-  endpoint.produce(
+  produce(
     versionedNameRoot.append(Segment, 0),
     async ({ name }) => new Data(name, Data.FinalBlock, buildDirectoryListing([
       { name: "A", isDir: true },
     ])),
   );
-  endpoint.produce(
+  produce(
     prefix.append(MetadataKeyword),
     async (interest) => {
       const m = new FileMetadata(versionedNameRoot);
@@ -47,13 +46,13 @@ beforeAll(async () => {
   );
 
   const versionedNameA = prefix.append("A", lsKeyword, Version.create(versionA));
-  endpoint.produce(
+  produce(
     versionedNameA.append(Segment, 0),
     async ({ name }) => new Data(name, Data.FinalBlock, buildDirectoryListing([
       { name: "B.bin", isDir: false },
     ])),
   );
-  endpoint.produce(
+  produce(
     prefix.append("A", MetadataKeyword),
     async (interest) => {
       const m = new FileMetadata(versionedNameA);
@@ -66,13 +65,13 @@ beforeAll(async () => {
   const versionedNameB = prefix.append("A", "B.bin", Version.create(versionB));
   bodyB = makeObjectBody(200 * 1000 + 500);
   const producerB = DataProducer.create(new BufferChunkSource(bodyB, { chunkSize: 1000 }), versionedNameB);
-  endpoint.produce(versionedNameB, (interest, producer) => {
+  produce(versionedNameB, (interest, producer) => {
     const segNum = interest.name.at(-1).as(Segment);
     expect(segNum).toBeLessThanOrEqual(200);
     segNumsB.add(segNum);
     return producerB.processInterest(interest, producer);
   });
-  endpoint.produce(
+  produce(
     prefix.append("A", "B.bin", MetadataKeyword),
     async (interest) => {
       const m = new FileMetadata(versionedNameB);
@@ -95,7 +94,7 @@ beforeAll(async () => {
     },
   });
 });
-afterAll(Endpoint.deleteDefaultForwarder);
+afterAll(Forwarder.deleteDefault);
 
 type ReadFileIntoCase = [fileBegin: number, fileEnd: number, nSegs: number];
 const readFileIntoCases: readonly ReadFileIntoCase[] = [
