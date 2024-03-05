@@ -4,7 +4,7 @@ Test environment:
 
 * Ubuntu 22.04
 * ndn-cxx 0.8.1-55-gc5003938
-* [name-based-access-control C++ library](https://github.com/named-data/name-based-access-control) commit `af4e4e735873a37a5bf1b7dbe9eed5014283900b` (2024-01-26)
+* [name-based-access-control C++ library](https://github.com/named-data/name-based-access-control) commit `6624987951cfa2fcc9cca11c250e98bdbf42233f` (2024-02-19)
   * `./waf configure --with-examples`
 * Node.js 20.11.0
 

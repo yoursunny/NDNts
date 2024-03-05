@@ -1,4 +1,4 @@
-import { Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
 import { Certificate, CertNaming, createEncrypter, type CryptoAlgorithm, type NamedDecrypter, type NamedEncrypter, RSAOAEP } from "@ndn/keychain";
 import { type Component, Interest, Name, type Signer, type Verifier } from "@ndn/packet";
 import type { DataStore as S } from "@ndn/repo-api";
@@ -10,13 +10,19 @@ import { KeyDecryptionKey, KeyEncryptionKey } from "./packet/mod";
 /** NAC access manager. */
 export class AccessManager {
   public static create({
-    endpoint = new Endpoint({ retx: 2 }),
+    endpoint, // eslint-disable-line etc/no-deprecated
+    cOpts,
     dataStore,
     prefix,
     keys,
   }: AccessManager.Options): AccessManager {
     return new AccessManager(
-      endpoint,
+      {
+        describe: `NAC-AccessManager(${prefix})`,
+        retx: 2,
+        ...endpoint?.cOpts,
+        ...cOpts,
+      },
       dataStore,
       prefix,
       keys,
@@ -24,7 +30,7 @@ export class AccessManager {
   }
 
   private constructor(
-      private readonly endpoint: Endpoint,
+      private readonly cOpts: ConsumerOptions,
       private readonly dataStore: AccessManager.DataStore,
       private readonly prefix: Name,
       private readonly keys: AccessManager.Keys,
@@ -78,9 +84,9 @@ export class AccessManager {
   private async extractMemberKey(member: NamedEncrypter.PublicKey | Certificate | Name): Promise<NamedEncrypter.PublicKey> {
     if (member instanceof Name) {
       assert(!!this.keys.memberVerifier, "cannot retrieve member certificate without memberVerifier");
-      const data = await this.endpoint.consume(
+      const data = await consume(
         new Interest(member, Interest.CanBePrefix, Interest.MustBeFresh),
-        { verifier: this.keys.memberVerifier });
+        { ...this.cOpts, verifier: this.keys.memberVerifier });
       member = Certificate.fromData(data);
     }
     if (member instanceof Certificate) {
@@ -138,10 +144,19 @@ export namespace AccessManager {
   export interface Options {
     /**
      * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder with up to 2 retransmissions.
+     * @deprecated Specify `.cOpts`.
      */
     endpoint?: Endpoint;
+
+    /**
+     * Consumer options.
+     *
+     * @remarks
+     * - `.describe` defaults to "NAC-AccessManager" + `.prefix`.
+     * - `.retx` defaults to 2.
+     * - `.verifier` is overridden.
+     */
+    cOpts?: ConsumerOptions;
 
     /** Repo for publishing KEK and KDK packets. */
     dataStore: DataStore;

@@ -1,4 +1,4 @@
-import { type ConsumerOptions, Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
 import { AESCBC, createDecrypter, type NamedDecrypter, RSAOAEP } from "@ndn/keychain";
 import { type Data, type Decrypter, Interest, type Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
@@ -8,36 +8,36 @@ import { ContentKey, EncryptedContent, KeyDecryptionKey } from "./packet/mod";
 /** NAC consumer. */
 export class Consumer implements Decrypter {
   public static create({
-    endpoint = new Endpoint({ retx: 2 }),
+    endpoint, // eslint-disable-line etc/no-deprecated
+    cOpts,
     verifier,
     memberDecrypter,
   }: Consumer.Options): Consumer {
     return new Consumer(
-      endpoint,
-      verifier,
+      {
+        describe: `NAC-Consumer(${memberDecrypter.name})`,
+        retx: 2,
+        ...endpoint?.cOpts,
+        ...cOpts,
+        verifier,
+      },
       memberDecrypter,
     );
   }
 
   private constructor(
-      private readonly endpoint: Endpoint,
-      private readonly verifier: Verifier,
+      private readonly cOpts: ConsumerOptions,
       private readonly memberDecrypter: NamedDecrypter,
   ) {}
 
   public async decrypt(data: Data): Promise<void> {
-    const consumeOpts: ConsumerOptions = {
-      describe: `NAC-Consumer(${this.memberDecrypter.name})`,
-      verifier: this.verifier,
-    };
-
     const enc = Decoder.decode(data.content, EncryptedContent);
     ContentKey.parseLocator(enc.name);
-    const ckData = await this.endpoint.consume(new Interest(enc.name, Interest.CanBePrefix), consumeOpts);
+    const ckData = await consume(new Interest(enc.name, Interest.CanBePrefix), this.cOpts);
     const ck = await ContentKey.fromData(ckData);
 
     const kdkName = KeyDecryptionKey.makeName({ ...ck, memberKeyName: this.memberDecrypter.name });
-    const kdkData = await this.endpoint.consume(new Interest(kdkName, Interest.MustBeFresh), consumeOpts);
+    const kdkData = await consume(new Interest(kdkName, Interest.MustBeFresh), this.cOpts);
     const kdk = await KeyDecryptionKey.fromData(kdkData);
 
     const kdkDecrypter = createDecrypter(RSAOAEP, await kdk.loadKeyPair(this.memberDecrypter));
@@ -52,10 +52,19 @@ export namespace Consumer {
   export interface Options {
     /**
      * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder with up to 2 retransmissions.
+     * @deprecated Specify `.cOpts`.
      */
     endpoint?: Endpoint;
+
+    /**
+     * Consumer options.
+     *
+     * @remarks
+     * - `.describe` defaults to "NAC-Consumer" + member name.
+     * - `.retx` defaults to 2.
+     * - `.verifier` is overridden.
+     */
+    cOpts?: ConsumerOptions;
 
     /** Verifier for KDK and CK. */
     verifier: Verifier;

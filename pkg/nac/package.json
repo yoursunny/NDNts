@@ -40,6 +40,7 @@
     "type-fest": "^4.11.0"
   },
   "devDependencies": {
+    "@ndn/l3face": "workspace:^",
     "@ndn/repo": "workspace:*"
   }
 }

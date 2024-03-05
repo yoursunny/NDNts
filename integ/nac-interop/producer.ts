@@ -1,5 +1,5 @@
 import { exitClosers, openUplinks } from "@ndn/cli-common";
-import { Endpoint } from "@ndn/endpoint";
+import { produce } from "@ndn/endpoint";
 import { generateEncryptionKey, generateSigningKey, RSAOAEP } from "@ndn/keychain";
 import { AccessManager, Producer } from "@ndn/nac";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
@@ -42,7 +42,7 @@ const p = Producer.create({
   signer: pSigner,
 });
 const pEncrypter = await p.createEncrypter(kekHandle.kek);
-exitClosers.push(new Endpoint().produce("/example/testApp", async (interest) => {
+exitClosers.push(produce("/example/testApp", async (interest) => {
   const data = new Data(interest.name.append("testApp", Math.random().toString()));
   data.freshnessPeriod = 1;
   data.content = toUtf8("NDNts @ndn/nac interop test");

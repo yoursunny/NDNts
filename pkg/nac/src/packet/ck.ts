@@ -52,9 +52,10 @@ export namespace ContentKey {
 
   /**
    * Parse content key locator name.
-   *
    * @remarks
    * In an encrypted application packet, it appears in EncryptedPayload.Name field.
+   * @throws Error
+   * Thrown if `name` is not a valid content key locator name.
    */
   export function parseLocator(name: Name): LocatorParts {
     if (!name.get(-2)?.equals(Keyword.CK)) {

@@ -1,5 +1,5 @@
 import { closeUplinks, openUplinks } from "@ndn/cli-common";
-import { Endpoint } from "@ndn/endpoint";
+import { consume } from "@ndn/endpoint";
 import { Consumer } from "@ndn/nac";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Interest, Name, noopSigning } from "@ndn/packet";
@@ -14,7 +14,7 @@ if (!memberKeyName) {
 const memberDecrypter = await keyChain.getKey(memberKeyName, "decrypter");
 console.log("member key name", memberDecrypter.name.toString());
 
-const data = await new Endpoint().consume(new Interest(`/example/testApp/${Math.random()}`, Interest.CanBePrefix));
+const data = await consume(new Interest(`/example/testApp/${Math.random()}`, Interest.CanBePrefix));
 console.log("retrieved Data name", data.name.toString());
 
 const c = Consumer.create({
