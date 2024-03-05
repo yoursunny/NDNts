@@ -174,7 +174,13 @@ export namespace SvPublisher {
      */
     endpoint?: Endpoint;
 
-    /** Producer options. */
+    /**
+     * Producer options.
+     *
+     * @remarks
+     * - `.describe` is overridden as "SVS-PS" + prefix.
+     * - `.dataSigner` is overridden.
+     */
     pOpts?: ProducerOptions;
 
     /**

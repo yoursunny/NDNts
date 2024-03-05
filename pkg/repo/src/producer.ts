@@ -1,4 +1,4 @@
-import { Endpoint, type Producer as EndpointProducer, type ProducerHandler } from "@ndn/endpoint";
+import { type Endpoint, produce, type Producer as EndpointProducer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
 import type { Data, Interest } from "@ndn/packet";
 import type { Closer } from "@ndn/util";
 
@@ -8,12 +8,17 @@ import { type PrefixRegController, PrefixRegStrip } from "./prefix-reg/mod";
 /** Make packets in {@link DataStore} available for retrieval. */
 export class RepoProducer implements Disposable {
   public static create(store: DataStore, {
-    endpoint = new Endpoint(),
+    endpoint, // eslint-disable-line etc/no-deprecated
+    pOpts,
     describe = "repo",
     fallback = async () => undefined,
     reg = PrefixRegStrip(PrefixRegStrip.stripNonGeneric),
   }: RepoProducer.Options = {}) {
-    return new RepoProducer(store, endpoint, describe, fallback, reg);
+    return new RepoProducer(store, fallback, reg, {
+      describe,
+      ...endpoint?.pOpts,
+      ...pOpts,
+    });
   }
 
   private readonly prod: EndpointProducer;
@@ -21,13 +26,11 @@ export class RepoProducer implements Disposable {
 
   private constructor(
       private readonly store: DataStore,
-      endpoint: Endpoint,
-      describe: string,
       private readonly fallback: RepoProducer.FallbackHandler,
       reg: PrefixRegController,
+      pOpts: ProducerOptions,
   ) {
-    this.prod = endpoint.produce(undefined, this.processInterest, { describe });
-    this.fallback = fallback;
+    this.prod = produce(undefined, this.processInterest, pOpts);
     this.reg = reg(store, this.prod.face);
   }
 
@@ -51,10 +54,17 @@ export namespace RepoProducer {
   export interface Options {
     /**
      * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder.
+     * @deprecated Specify `.pOpts`.
      */
     endpoint?: Endpoint;
+
+    /**
+     * Producer options.
+     *
+     * @remarks
+     * - `.describe` defaults to {@link Options.describe}.
+     */
+    pOpts?: ProducerOptions;
 
     /**
      * Description for debugging purpose.

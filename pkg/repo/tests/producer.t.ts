@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Endpoint } from "@ndn/endpoint";
+import { consume } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment, SequenceNum, Version } from "@ndn/naming-convention2";
 import { Component, Data, Interest, Name, type NameLike, NameMultiSet } from "@ndn/packet";
@@ -44,11 +44,10 @@ test("simple", async () => {
     await delay(50);
     expect(listAnnounced()).toEqualNames(["/A", "/B"]);
 
-    const endpoint = new Endpoint();
     await Promise.all([
-      expect(endpoint.consume(new Interest("/A/0", Interest.Lifetime(100)))).rejects.toThrow(),
-      expect(endpoint.consume("/A/1")).resolves.toHaveName("/A/1"),
-      expect(endpoint.consume(new Interest("/B", Interest.CanBePrefix))).resolves.toHaveName("/B/4"),
+      expect(consume(new Interest("/A/0", Interest.Lifetime(100)))).rejects.toThrow(),
+      expect(consume("/A/1")).resolves.toHaveName("/A/1"),
+      expect(consume(new Interest("/B", Interest.CanBePrefix))).resolves.toHaveName("/B/4"),
     ]);
   }
 

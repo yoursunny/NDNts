@@ -55,19 +55,19 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
       verifier: outerVerifier,
     };
     this.outerConsumerOpts = {
+      retx: retxLimit,
       ...endpoint?.cOpts,
       ...cOpts,
       describe: `SVS-PS(${sync.syncPrefix})[retrieve]`,
       signal: this.abort.signal,
-      retx: retxLimit,
       verifier: outerVerifier,
     };
     this.mappingConsumerOpts = {
+      retx: retxLimit,
       ...endpoint?.cOpts,
       ...cOpts,
       describe: `SVS-PS(${sync.syncPrefix})[mapping]`,
       signal: this.abort.signal,
-      retx: retxLimit,
       verifier: mappingVerifier,
     };
     sync.addEventListener("update", this.handleSyncUpdate);
@@ -244,7 +244,14 @@ export namespace SvSubscriber {
      */
     endpoint?: Endpoint;
 
-    /** Consumer options. */
+    /**
+     * Consumer options.
+     *
+     * @remarks
+     * - `.describe` is overridden as "SVS-PS" + prefix.
+     * - `.retx` defaults to {@link Options.retxLimit}.
+     * - `.signal` and `.verifier` are overridden.
+     */
     cOpts?: ConsumerOptions;
 
     /**
