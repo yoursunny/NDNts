@@ -1,6 +1,6 @@
 import type * as net from "node:net";
 
-import { Endpoint, type Producer } from "@ndn/endpoint";
+import { produce, type Producer } from "@ndn/endpoint";
 import { Forwarder, type FwFace, TapFace } from "@ndn/fw";
 import { L3Face, StreamTransport } from "@ndn/l3face";
 import { TcpServer } from "@ndn/node-transport/test-fixture/net-server";
@@ -13,7 +13,7 @@ import { ControlParameters, ControlResponse } from "..";
 export class PrefixRegServer {
   constructor(private readonly face: FwFace, public readonly faceId = 1) {
     this.tap = TapFace.create(face);
-    this.mgmt = new Endpoint({ fw: this.tap.fw }).produce("/localhost/nfd/rib", this.handleCommand);
+    this.mgmt = produce("/localhost/nfd/rib", this.handleCommand, { fw: this.tap.fw });
   }
 
   private readonly tap: FwFace;

@@ -1,8 +1,9 @@
+import type { ConsumerOptions } from "@ndn/endpoint";
 import type { Component } from "@ndn/packet";
 import { discoverVersion, fetch } from "@ndn/segmented-object";
 import { type Decodable, Decoder } from "@ndn/tlv";
 
-import { CommonOptions, concatName } from "./common";
+import { type CommonOptions, concatName, localhostPrefix } from "./common";
 
 export interface StatusDatasetOptions extends CommonOptions {
 }
@@ -48,18 +49,21 @@ export async function list<R>(arg1: string | StatusDataset<R>, arg2: any = {}, a
     [datasetName, params = [], d, opts] = [arg1.datasetName, arg1.datasetParams, arg1, arg2];
   }
 
-  const { endpoint, prefix, verifier } = CommonOptions.applyDefaults(opts);
-  const name = concatName(prefix, datasetName, params);
-  const versioned = await discoverVersion(name, {
-    cOpts: {
-      ...endpoint.cOpts,
-      verifier,
-    },
-  });
-  const payload = await fetch(versioned, {
-    cOpts: endpoint.cOpts,
+  const {
+    endpoint, // eslint-disable-line etc/no-deprecated
+    cOpts: cOptsInput,
+    verifier, // eslint-disable-line etc/no-deprecated
+    prefix = localhostPrefix,
+  } = opts;
+  const cOpts: ConsumerOptions = {
+    ...endpoint?.cOpts,
+    ...cOptsInput,
     verifier,
-  });
+  };
+
+  const name = concatName(prefix, datasetName, params);
+  const versioned = await discoverVersion(name, { cOpts });
+  const payload = await fetch(versioned, { cOpts });
 
   const decoder = new Decoder(payload);
   const results: R[] = [];

@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Endpoint } from "@ndn/endpoint";
+import { consume, produce } from "@ndn/endpoint";
 import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Certificate, generateSigningKey, KeyChain } from "@ndn/keychain";
@@ -137,21 +137,22 @@ test("preloadCert", async () => {
   await userKeyChain.insertCert(userCert);
 
   using bridge = Bridge.create().rename("NFD", "User");
-  const nfdEp = new Endpoint({ fw: bridge.fwNFD });
-  const interP = new Endpoint({
+  const interP = produce(interPub.name, async () => interCert.data, {
     fw: bridge.fwNFD,
     announcement: false,
-  }).produce(interPub.name, async () => interCert.data);
+  });
   let nCommands = 0;
-  const nfdP = nfdEp.produce("/localhop/nfd", async (interest) => {
+  const nfdP = produce("/localhop/nfd", async (interest) => {
     interP.close();
-    await expect(nfdEp.consume(userCert.name)).resolves.toBeInstanceOf(Data);
-    await expect(nfdEp.consume(interCert.name)).resolves.toBeInstanceOf(Data);
+    await expect(consume(userCert.name, { fw: bridge.fwNFD }))
+      .resolves.toBeInstanceOf(Data);
+    await expect(consume(interCert.name, { fw: bridge.fwNFD }))
+      .resolves.toBeInstanceOf(Data);
     ++nCommands;
     return new Data(interest.name, Encoder.encode([0x65,
       [0x66, NNI(200)],
       [0x67]]));
-  });
+  }, { fw: bridge.fwNFD });
   closers.push(nfdP, interP);
 
   enableNfdPrefixReg(bridge.faceUser, {
@@ -161,9 +162,8 @@ test("preloadCert", async () => {
     preloadInterestLifetime: 100,
   });
 
-  const userEp = new Endpoint({ fw: bridge.fwUser });
-  const userPA = userEp.produce("/A", async () => undefined);
-  const userPB = userEp.produce("/B", async () => undefined);
+  const userPA = produce("/A", async () => undefined, { fw: bridge.fwUser });
+  const userPB = produce("/B", async () => undefined, { fw: bridge.fwUser });
   closers.push(userPA, userPB);
   await delay(600);
   expect(nCommands).toBe(2);

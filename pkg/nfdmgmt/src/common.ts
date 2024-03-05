@@ -1,5 +1,5 @@
-import { Endpoint } from "@ndn/endpoint";
-import { type Component, Name, noopSigning, type Verifier } from "@ndn/packet";
+import type { ConsumerOptions, Endpoint } from "@ndn/endpoint";
+import { type Component, Name, type Verifier } from "@ndn/packet";
 
 export const localhostPrefix = new Name("/localhost/nfd");
 export const localhopPrefix = new Name("/localhop/nfd");
@@ -16,33 +16,30 @@ export function getPrefix(isLocal = false) {
 export interface CommonOptions {
   /**
    * Endpoint for communication.
-   * @defaultValue
-   * Endpoint on default logical forwarder.
+   * @deprecated Specify `.cOpts`.
    */
   endpoint?: Endpoint;
+
+  /**
+   * Consumer options.
+   *
+   * @remarks
+   * - `.describe` defaults to "nfdmgmt".
+   * - `.verifier` is recommended.
+   */
+  cOpts?: ConsumerOptions;
+
+  /**
+   * Data verifier.
+   * @deprecated Specify in `.cOpts.verifier`.
+   */
+  verifier?: Verifier;
 
   /**
    * NFD management prefix.
    * @defaultValue `getPrefix()`
    */
   prefix?: Name;
-
-  /**
-   * Data verifier.
-   * @defaultValue
-   * No verification.
-   */
-  verifier?: Verifier;
-}
-
-export namespace CommonOptions {
-  export function applyDefaults({
-    endpoint = new Endpoint(),
-    prefix = localhostPrefix,
-    verifier = noopSigning,
-  }: CommonOptions): Required<CommonOptions> {
-    return { endpoint, prefix, verifier };
-  }
 }
 
 export function concatName(prefix: Name, subName: string, params: readonly Component[]): Name {

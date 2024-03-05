@@ -1,4 +1,4 @@
-import { Endpoint, type Producer } from "@ndn/endpoint";
+import { consume, type ConsumerOptions, produce, type Producer, type ProducerOptions } from "@ndn/endpoint";
 import { type FwFace, ReadvertiseDestination, TapFace } from "@ndn/fw";
 import { Certificate, type KeyChain } from "@ndn/keychain";
 import { Interest, type Name, NameMap } from "@ndn/packet";
@@ -88,28 +88,28 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
   private async tap<R>(f: (opts: ControlCommandOptions) => Promisable<R>): Promise<R> {
     const tapFace = TapFace.create(this.face);
     tapFace.addRoute("/");
-    const endpoint = new Endpoint({
+    const eOpts: ConsumerOptions & ProducerOptions = {
       announcement: false,
       describe: "NfdPrefixReg",
       fw: tapFace.fw,
-    });
-    const preloadProducers = await this.preload(endpoint);
+    };
+    const preloadProducers = await this.preload(eOpts);
 
     using closers = new Closers();
     closers.push(...map(preloadProducers, ([, p]) => p), tapFace);
     // https://github.com/typescript-eslint/typescript-eslint/issues/7889
     // eslint-disable-next-line @typescript-eslint/return-await
-    return await f({ ...this.commandOptions, endpoint });
+    return await f({ ...this.commandOptions, cOpts: eOpts });
   }
 
-  private async preload(endpoint: Endpoint) {
+  private async preload(eOpts: ConsumerOptions & ProducerOptions) {
     const producers = new NameMap<Producer>();
     let name = this.preloadCertName;
     while (name && !producers.has(name)) {
       try {
-        const cert = await this.retrievePreload(endpoint, name);
+        const cert = await this.retrievePreload(name, eOpts);
         this.preloadCerts.set(name, cert);
-        producers.set(name, endpoint.produce(name, async () => cert.data));
+        producers.set(name, produce(name, async () => cert.data, eOpts));
         name = cert.issuer;
       } catch {
         name = undefined;
@@ -118,7 +118,7 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
     return producers;
   }
 
-  private async retrievePreload(endpoint: Endpoint, name: Name): Promise<Certificate> {
+  private async retrievePreload(name: Name, cOpts: ConsumerOptions): Promise<Certificate> {
     const cert = this.preloadCerts.get(name);
     if (cert) {
       return cert;
@@ -131,7 +131,7 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
     }
 
     const interest = new Interest(name, Interest.CanBePrefix, this.preloadInterestLifetime);
-    const data = await endpoint.consume(interest);
+    const data = await consume(interest, cOpts);
     return Certificate.fromData(data);
   }
 
