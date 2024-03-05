@@ -1,11 +1,12 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Endpoint } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { Certificate, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
+import { Bridge } from "@ndn/l3face";
 import { Name, type NameLike, ValidityPeriod } from "@ndn/packet";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/producer";
 import { delay } from "@ndn/util";
-import { collect } from "streaming-iterables";
+import { collect, tap } from "streaming-iterables";
 import { beforeAll, beforeEach, describe, expect, type MockInstance, test, vi } from "vitest";
 
 import { CertFetcher, type CertSource, CertSources, KeyChainCertSource, TrustAnchorContainer } from "..";
@@ -82,27 +83,29 @@ test("KeyChainCertSource", async () => {
 });
 
 describe("CertFetcher", () => {
-  let endpoint: Endpoint;
-  let consumeFn: MockInstance<Parameters<Endpoint["consume"]>, ReturnType<Endpoint["consume"]>>;
+  let nAB: number;
+  let bridge: Bridge;
   let fetcher0: CertFetcher;
   let fetcher1: CertFetcher;
   beforeEach(async () => {
-    endpoint = new Endpoint();
-    consumeFn = vi.spyOn(endpoint, "consume");
-    const producer = await makeRepoProducer({}, [certB.data]);
+    nAB = 0;
+    bridge = Bridge.create({
+      relayAB: (s) => tap(() => { ++nAB; }, s),
+    });
+    const producer = await makeRepoProducer({ pOpts: { fw: bridge.fwB } }, [certB.data]);
     fetcher0 = new CertFetcher({
+      cOpts: { fw: bridge.fwA, retx: 0 },
       interestLifetime: 50,
-      endpoint,
       positiveTtl: 200,
       negativeTtl: 200,
     });
     fetcher1 = new CertFetcher({
+      cOpts: { fw: bridge.fwA, retx: 0 }, // same logical forwarder, sharing cache
       interestLifetime: 50,
-      endpoint, // same Endpoint, sharing cache
     });
     return () => {
       producer.close();
-      Endpoint.deleteDefaultForwarder();
+      Forwarder.deleteDefault();
     };
   });
 
@@ -110,40 +113,40 @@ describe("CertFetcher", () => {
     let found = await findIn(fetcher0, pubB);
     expect(found).toHaveLength(1);
     expect(found[0]).toHaveName(certB.name);
-    expect(consumeFn).toHaveBeenCalledTimes(1);
+    expect(nAB).toBe(1);
 
     found = await findIn(fetcher1, certB);
     expect(found).toHaveLength(1);
     expect(found[0]).toHaveName(certB.name);
-    expect(consumeFn).toHaveBeenCalledTimes(1); // cached positive response
+    expect(nAB).toBe(1); // cached positive response
 
     await delay(300); // cache expired
 
     found = await findIn(fetcher1, certB);
     expect(found).toHaveLength(1);
     expect(found[0]).toHaveName(certB.name);
-    expect(consumeFn).toHaveBeenCalledTimes(2);
+    expect(nAB).toBe(2);
 
     found = await findIn(fetcher0, pubB);
     expect(found).toHaveLength(1);
     expect(found[0]).toHaveName(certB.name);
-    expect(consumeFn).toHaveBeenCalledTimes(2); // cached positive response
+    expect(nAB).toBe(2); // cached positive response
   });
 
   test("negative", async () => {
     let found = await findIn(fetcher0, pubA);
     expect(found).toHaveLength(0);
-    expect(consumeFn).toHaveBeenCalledTimes(1);
+    expect(nAB).toBe(1);
 
     found = await findIn(fetcher1, pubA);
     expect(found).toHaveLength(0);
-    expect(consumeFn).toHaveBeenCalledTimes(1); // cached negative response
+    expect(nAB).toBe(1); // cached negative response
 
     await delay(300); // cache expired
 
     found = await findIn(fetcher1, pubA);
     expect(found).toHaveLength(0);
-    expect(consumeFn).toHaveBeenCalledTimes(2);
+    expect(nAB).toBe(2);
   });
 });
 

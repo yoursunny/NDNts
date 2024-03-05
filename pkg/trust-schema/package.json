@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@ndn/endpoint": "workspace:*",
+    "@ndn/fw": "workspace:^",
     "@ndn/keychain": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
@@ -36,6 +37,7 @@
     "type-fest": "^4.10.3"
   },
   "devDependencies": {
+    "@ndn/l3face": "workspace:^",
     "@ndn/repo": "workspace:*",
     "streaming-iterables": "^8.0.1"
   }

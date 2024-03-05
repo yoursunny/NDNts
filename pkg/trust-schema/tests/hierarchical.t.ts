@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Endpoint } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { Certificate, ECDSA, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, RSA, SigningAlgorithmListFull } from "@ndn/keychain";
 import { Component, Data, digestSigning, type NameLike, type Signer, ValidityPeriod, type Verifier } from "@ndn/packet";
 import { PrefixRegShorter } from "@ndn/repo";
@@ -9,7 +9,7 @@ import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
 import { HierarchicalSigner, HierarchicalVerifier, pattern as P, TrustSchema, TrustSchemaPolicy, TrustSchemaSigner, TrustSchemaVerifier } from "..";
 
-afterAll(Endpoint.deleteDefaultForwarder);
+afterAll(Forwarder.deleteDefault);
 
 interface IContext extends Context {}
 

@@ -1,4 +1,5 @@
-import { type ConsumerOptions, Endpoint, type RetxPolicy } from "@ndn/endpoint";
+import { consume, type ConsumerOptions, type Endpoint, type RetxPolicy } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { Certificate, CertNaming } from "@ndn/keychain";
 import { Interest, type Name, NameMap } from "@ndn/packet";
 
@@ -67,37 +68,41 @@ class Cache {
   }
 }
 
-const endpointCache = new WeakMap<Endpoint, Cache>();
+const cacheMap = new WeakMap<object, Cache>();
 
 /** Fetch certificates from network. */
 export class CertFetcher implements CertSource {
   constructor(opts: CertFetcher.Options) {
     const {
-      endpoint = new Endpoint({ retx: 2 }),
+      owner: ownerInput,
+      endpoint, // eslint-disable-line etc/no-deprecated
+      cOpts,
       interestLifetime,
       retx, // eslint-disable-line etc/no-deprecated
     } = opts;
-    this.endpoint = endpoint;
-    this.consumerOpts = {
+
+    this.cOpts = {
       describe: "trust-schema CertFetcher",
+      ...endpoint?.cOpts,
+      ...cOpts,
       retx,
     };
-    if (interestLifetime) {
-      this.consumerOpts.modifyInterest = {
+    if (interestLifetime !== undefined) {
+      this.cOpts.modifyInterest = {
         lifetime: interestLifetime,
       };
     }
 
-    let cache = endpointCache.get(endpoint);
+    const owner = ownerInput ?? endpoint ?? cOpts?.fw ?? Forwarder.getDefault();
+    let cache = cacheMap.get(owner);
     if (!cache) {
       cache = new Cache(opts);
-      endpointCache.set(endpoint, cache);
+      cacheMap.set(owner, cache);
     }
     this.cache = cache;
   }
 
-  private readonly endpoint: Endpoint;
-  private readonly consumerOpts: ConsumerOptions;
+  private readonly cOpts: ConsumerOptions;
   private readonly cache: Cache;
 
   /**
@@ -122,7 +127,7 @@ export class CertFetcher implements CertSource {
     }
     let cert: Certificate;
     try {
-      const data = await this.endpoint.consume(interest, this.consumerOpts);
+      const data = await consume(interest, this.cOpts);
       cert = Certificate.fromData(data);
       this.cache.addPositive(cert);
     } catch {
@@ -165,22 +170,40 @@ export namespace CertFetcher {
 
   export interface Options extends CacheOptions {
     /**
-     * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder with up to 2 retransmissions.
+     * Cache instance owner as WeakMap key.
+     * @defaultValue `.endpoint ?? .cOpts.fw ?? Forwarder.getDefault()`
      *
      * @remarks
-     * {@link CertFetcher}s on the same Endpoint share the same cache instance.
+     * {@link CertFetcher}s with the same `.owner` share the same cache instance.
      * Cache options are determined when it's first created.
+     */
+    owner?: object;
+
+    /**
+     * Endpoint for communication.
+     * @deprecated Specify `.cOpts`.
      */
     endpoint?: Endpoint;
 
-    /** InterestLifetime for certificate retrieval. */
+    /**
+     * Consumer options.
+     *
+     * @remarks
+     * - `.describe` defaults to "CertFetcher".
+     */
+    cOpts?: ConsumerOptions;
+
+    /**
+     * InterestLifetime for certificate retrieval.
+     *
+     * @remarks
+     * If specified, `.cOpts.modifyInterest` is overridden.
+     */
     interestLifetime?: number;
 
     /**
      * RetxPolicy for certificate retrieval.
-     * @deprecated Pass to `.endpoint` constructor.
+     * @deprecated Specify in `.cOpts.retx`.
      */
     retx?: RetxPolicy;
   }
