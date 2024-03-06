@@ -1,6 +1,5 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face";
 import { Name, type NameLike } from "@ndn/packet";
@@ -71,8 +70,8 @@ class Fixture {
 
     for (const bridge of [undefined, ...star]) {
       this.syncs.push(new FullSync({
-        endpoint: bridge && new Endpoint({ fw: bridge.fwB }),
         p: paramCompat,
+        fw: bridge?.fwB,
         syncPrefix: new Name("/psync-test"),
         syncInterestLifetime: 100,
         syncInterestInterval: [110, 150],

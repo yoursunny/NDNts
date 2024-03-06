@@ -1,4 +1,4 @@
-import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
+import { type Endpoint, produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
 import { Data, type Interest, type Name, NameMap, type Signer } from "@ndn/packet";
 import type { SyncNode, SyncProtocol } from "@ndn/sync-api";
@@ -33,32 +33,39 @@ type EventMap = SyncProtocol.EventMap<Name> & {
 export class PartialPublisher extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
   constructor({
     p,
-    endpoint = new Endpoint(),
-    describe,
     syncPrefix,
+    describe = `PartialPublisher(${syncPrefix})`,
+    endpoint, // eslint-disable-line etc/no-deprecated
+    pOpts,
     helloReplyFreshness = 1000,
     syncReplyFreshness = 1000,
     signer,
     producerBufferLimit = 32,
   }: PartialPublisher.Options) {
     super();
-    this.endpoint = endpoint;
-    this.describe = describe ?? `PartialPublisher(${syncPrefix})`;
+    this.describe = describe;
     this.syncPrefix = syncPrefix;
     this.c = new PSyncCore(p);
     this.c.onIncreaseSeqNum = this.handleIncreaseSeqNum;
     this.codec = new PSyncCodec(p, this.c.ibltParams);
 
-    this.pBuffer = new StateProducerBuffer(this.endpoint, this.describe, this.codec,
-      signer, producerBufferLimit);
+    this.pBuffer = new StateProducerBuffer(this.describe, this.codec, producerBufferLimit, {
+      ...endpoint?.pOpts,
+      ...pOpts,
+      dataSigner: signer,
+    });
     this.hFreshness = helloReplyFreshness;
-    this.hProducer = endpoint.produce(syncPrefix.append("hello"), this.handleHelloInterest, {
+    this.hProducer = produce(syncPrefix.append("hello"), this.handleHelloInterest, {
+      ...endpoint?.pOpts,
+      ...pOpts,
       describe: `${this.describe}[h]`,
       concurrency: Infinity,
       announcement: syncPrefix,
     });
     this.sFreshness = syncReplyFreshness;
-    this.sProducer = endpoint.produce(syncPrefix.append("sync"), this.handleSyncInterest, {
+    this.sProducer = produce(syncPrefix.append("sync"), this.handleSyncInterest, {
+      ...endpoint?.pOpts,
+      ...pOpts,
       describe: `${this.describe}[s]`,
       concurrency: Infinity,
       announcement: syncPrefix,
@@ -66,7 +73,6 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
   }
 
   private readonly maybeHaveEventListener = trackEventListener(this);
-  private readonly endpoint: Endpoint;
   public readonly describe: string;
   private readonly syncPrefix: Name;
   private readonly c: PSyncCore;
@@ -228,18 +234,32 @@ export namespace PartialPublisher {
      */
     p: Parameters;
 
+    /** Sync producer prefix. */
+    syncPrefix: Name;
+
+    /**
+     * Description for debugging purpose.
+     * @defaultValue PartialPublisher + syncPrefix
+     */
+    describe?: string;
+
     /**
      * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder.
+     * @deprecated Specify `.pOpts`.
      */
     endpoint?: Endpoint;
 
-    /** Description for debugging purpose. */
-    describe?: string;
-
-    /** Sync producer prefix. */
-    syncPrefix: Name;
+    /**
+     * Producer options (advanced).
+     *
+     * @remarks
+     * - `.fw` is overridden as {@link Options.fw}.
+     * - `.describe` is overridden as {@link Options.describe}.
+     * - `.announcement` is overridden.
+     * - `.routeCapture` is overridden.
+     * - `.concurrency` is overridden.
+     */
+    pOpts?: ProducerOptions;
 
     /**
      * FreshnessPeriod of hello reply Data packet.

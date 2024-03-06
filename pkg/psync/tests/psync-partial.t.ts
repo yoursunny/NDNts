@@ -1,13 +1,13 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Endpoint } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { Name } from "@ndn/packet";
 import { delay } from "@ndn/util";
 import { afterEach, expect, type Mock, test, vi } from "vitest";
 
 import { makePSyncCompatParam, PartialPublisher, PartialSubscriber, type Subscription, type SyncUpdate } from "..";
 
-afterEach(Endpoint.deleteDefaultForwarder);
+afterEach(Forwarder.deleteDefault);
 
 function delayTick(multiple = 1): Promise<void> {
   return delay(300 * multiple);

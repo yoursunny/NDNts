@@ -1,5 +1,5 @@
-import type { Endpoint } from "@ndn/endpoint";
-import type { Name, Signer } from "@ndn/packet";
+import type { ProducerOptions } from "@ndn/endpoint";
+import type { Name } from "@ndn/packet";
 import { BufferChunkSource, type Server, serveVersioned } from "@ndn/segmented-object";
 import { assert } from "@ndn/util";
 
@@ -8,15 +8,20 @@ import type { PSyncCore } from "./core";
 
 export class StateProducerBuffer {
   constructor(
-      private readonly endpoint: Endpoint,
-      private readonly describe: string,
+      describe: string,
       private readonly codec: PSyncCodec,
-      private readonly signer: Signer | undefined,
       private readonly limit: number,
+      pOpts: ProducerOptions,
   ) {
     assert(limit >= 1);
+    this.pOpts = {
+      ...pOpts,
+      describe: `${describe}[pb]`,
+      announcement: false,
+    };
   }
 
+  private readonly pOpts: ProducerOptions;
   private readonly servers: Server[] = [];
 
   public close(): void {
@@ -27,12 +32,7 @@ export class StateProducerBuffer {
     const source = new BufferChunkSource(this.codec.state2buffer(state));
     const server = serveVersioned(name, source, {
       freshnessPeriod,
-      signer: this.signer,
-      pOpts: {
-        ...this.endpoint.pOpts,
-        describe: `${this.describe}[pb]`,
-        announcement: false,
-      },
+      pOpts: this.pOpts,
     });
     this.servers.push(server);
     this.evict();

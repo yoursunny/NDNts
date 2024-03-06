@@ -1,4 +1,4 @@
-import { Endpoint } from "@ndn/endpoint";
+import type { ConsumerOptions, Endpoint } from "@ndn/endpoint";
 import type { Component, Name, Verifier } from "@ndn/packet";
 import { type Subscriber, type Subscription, SubscriptionTable, SyncUpdate } from "@ndn/sync-api";
 import { CustomEvent } from "@ndn/util";
@@ -29,15 +29,16 @@ export class PartialSubscriber extends TypedEventTarget<EventMap>
   implements Subscriber<Name, Update, PartialSubscriber.TopicInfo> {
   constructor({
     p,
-    endpoint = new Endpoint(),
-    describe,
     syncPrefix,
+    describe = `PartialSubscriber(${syncPrefix})`,
+    endpoint, // eslint-disable-line etc/no-deprecated
+    cOpts,
     syncInterestLifetime = 1000,
     syncInterestInterval,
     verifier,
   }: PartialSubscriber.Options) {
     super();
-    this.describe = describe ?? `PartialSubscriber(${syncPrefix})`;
+    this.describe = describe;
     this.helloPrefix = syncPrefix.append("hello");
     this.syncPrefix = syncPrefix.append("sync");
     this.codec = new PSyncCodec(p, IBLT.PreparedParameters.prepare(p.iblt));
@@ -45,7 +46,11 @@ export class PartialSubscriber extends TypedEventTarget<EventMap>
 
     this.subs.handleRemoveTopic = this.handleRemoveTopic;
 
-    this.cFetcher = new StateFetcher(endpoint, this.describe, this.codec, syncInterestLifetime, verifier);
+    this.cFetcher = new StateFetcher(this.describe, this.codec, syncInterestLifetime, {
+      ...endpoint?.cOpts,
+      ...cOpts,
+      verifier,
+    });
     this.cInterval = computeInterval(syncInterestInterval, syncInterestLifetime);
 
     void (async () => {
@@ -219,18 +224,32 @@ export namespace PartialSubscriber {
      */
     p: Parameters;
 
+    /** Sync producer prefix. */
+    syncPrefix: Name;
+
+    /**
+     * Description for debugging purpose.
+     * @defaultValue PartialSubscriber + syncPrefix
+     */
+    describe?: string;
+
     /**
      * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder.
+     * @deprecated Specify `.cOpts`.
      */
     endpoint?: Endpoint;
 
-    /** Description for debugging purpose. */
-    describe?: string;
-
-    /** Sync producer prefix. */
-    syncPrefix: Name;
+    /**
+     * Consumer options.
+     *
+     * @remarks
+     * - `.describe` is overridden as {@link Options.describe}.
+     * - `.modifyInterest` is overridden.
+     * - `.retx` is overridden.
+     * - `.signal` is overridden.
+     * - `.verifier` is overridden.
+     */
+    cOpts?: ConsumerOptions;
 
     /**
      * Sync Interest lifetime in milliseconds.

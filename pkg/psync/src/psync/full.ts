@@ -1,4 +1,5 @@
-import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
+import { type ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import type { Component, Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { CustomEvent, KeyMap, toHex, trackEventListener } from "@ndn/util";
@@ -34,9 +35,12 @@ type EventMap = SyncProtocol.EventMap<Name> & {
 export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
   constructor({
     p,
-    endpoint = new Endpoint(),
-    describe,
     syncPrefix,
+    endpoint, // eslint-disable-line etc/no-deprecated
+    fw = endpoint?.fw ?? Forwarder.getDefault(),
+    describe = `FullSync(${syncPrefix})`,
+    cOpts,
+    pOpts,
     syncReplyFreshness = 1000,
     signer,
     producerBufferLimit = 32,
@@ -45,29 +49,40 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
     verifier,
   }: FullSync.Options) {
     super();
-    this.endpoint = endpoint;
-    this.describe = describe ?? `FullSync(${syncPrefix})`;
+    this.describe = describe;
     this.syncPrefix = syncPrefix;
     this.c = new PSyncCore(p);
     this.c.onIncreaseSeqNum = this.handleIncreaseSeqNum;
     this.codec = new PSyncCodec(p, this.c.ibltParams);
 
     this.pFreshness = syncReplyFreshness;
-    this.pBuffer = new StateProducerBuffer(this.endpoint, this.describe, this.codec,
-      signer, producerBufferLimit);
-    this.pProducer = endpoint.produce(syncPrefix, this.handleSyncInterest, {
-      describe: `${this.describe}[p]`,
+    this.pBuffer = new StateProducerBuffer(this.describe, this.codec, producerBufferLimit, {
+      ...endpoint?.pOpts,
+      ...pOpts,
+      fw,
+      dataSigner: signer,
+    });
+    this.pProducer = produce(syncPrefix, this.handleSyncInterest, {
+      ...endpoint?.pOpts,
+      ...pOpts,
+      describe: `${describe}[p]`,
+      fw,
       routeCapture: false,
       concurrency: Infinity,
     });
 
-    this.cFetcher = new StateFetcher(endpoint, this.describe, this.codec, syncInterestLifetime, verifier);
+    this.cFetcher = new StateFetcher(this.describe, this.codec, syncInterestLifetime, {
+      ...endpoint?.cOpts,
+      ...cOpts,
+      describe,
+      fw,
+      verifier,
+    });
     this.cInterval = computeInterval(syncInterestInterval, syncInterestLifetime);
     this.scheduleSyncInterest(0);
   }
 
   private readonly maybeHaveEventListener = trackEventListener(this);
-  private readonly endpoint: Endpoint;
   public readonly describe: string;
   private readonly syncPrefix: Name;
   private readonly c: PSyncCore;
@@ -270,18 +285,50 @@ export namespace FullSync {
      */
     p: Parameters;
 
+    /** Sync group prefix. */
+    syncPrefix: Name;
+
+    /**
+     * Description for debugging purpose.
+     * @defaultValue FullSync + syncPrefix
+     */
+    describe?: string;
+
     /**
      * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder.
+     * @deprecated Specify `.fw`.
      */
     endpoint?: Endpoint;
 
-    /** Description for debugging purpose. */
-    describe?: string;
+    /**
+     * Use the specified logical forwarder.
+     * @defaultValue `Forwarder.getDefault()`
+     */
+    fw?: Forwarder;
 
-    /** Sync group prefix. */
-    syncPrefix: Name;
+    /**
+     * Consumer options (advanced).
+     *
+     * @remarks
+     * - `.fw` is overridden as {@link Options.fw}.
+     * - `.describe` is overridden as {@link Options.describe}.
+     * - `.modifyInterest` is overridden.
+     * - `.retx` is overridden.
+     * - `.signal` is overridden.
+     * - `.verifier` is overridden.
+     */
+    cOpts?: ConsumerOptions;
+
+    /**
+     * Producer options (advanced).
+     *
+     * @remarks
+     * - `.fw` is overridden as {@link Options.fw}.
+     * - `.describe` is overridden as {@link Options.describe}.
+     * - `.routeCapture` is overridden.
+     * - `.concurrency` is overridden.
+     */
+    pOpts?: ProducerOptions;
 
     /**
      * FreshnessPeriod of sync reply Data packet.

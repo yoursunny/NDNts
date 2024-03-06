@@ -1,4 +1,3 @@
-import { Endpoint } from "@ndn/endpoint";
 import { FakeNfd } from "@ndn/nfdmgmt/test-fixture/prefix-reg";
 import { Name } from "@ndn/packet";
 import { FullSync, makePSyncCompatParam, type SyncUpdate } from "@ndn/psync";
@@ -22,11 +21,11 @@ test("simple", async () => {
   await nfd.waitNFaces(1);
 
   const sync = new FullSync({
-    endpoint: new Endpoint({ fw: nfd.fw }),
     p: makePSyncCompatParam({
       expectedEntries: 30,
     }),
     syncPrefix,
+    fw: nfd.fw,
     syncInterestLifetime: 100,
     syncReplyFreshness: 500,
   });
