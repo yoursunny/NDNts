@@ -43,6 +43,15 @@ export interface ConsumerOptions {
    */
   verifier?: Verifier;
 }
+export namespace ConsumerOptions {
+  const keys: readonly string[] = [
+    "fw", "describe", "signal", "modifyInterest", "retx", "verifier",
+  ] satisfies ReadonlyArray<keyof ConsumerOptions>;
+
+  export function exact(opts: ConsumerOptions = {}): ConsumerOptions {
+    return Object.fromEntries(Object.entries(opts).filter(([key]) => keys.includes(key)));
+  }
+}
 
 /**
  * Progress of Data retrieval.

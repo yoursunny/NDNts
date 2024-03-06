@@ -71,8 +71,8 @@ class Fixture {
     for (const bridge of [undefined, ...star]) {
       this.syncs.push(new FullSync({
         p: paramCompat,
-        fw: bridge?.fwB,
         syncPrefix: new Name("/psync-test"),
+        cpOpts: { fw: bridge?.fwB },
         syncInterestLifetime: 100,
         syncInterestInterval: [110, 150],
       }));

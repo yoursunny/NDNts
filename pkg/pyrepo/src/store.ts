@@ -1,4 +1,4 @@
-import type { Endpoint } from "@ndn/endpoint";
+import { produce, ProducerOptions } from "@ndn/endpoint";
 import type { Name } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
 import { Closers, delay } from "@ndn/util";
@@ -39,7 +39,8 @@ export class PyRepoStore implements Disposable, S.Insert, S.Delete {
       this.ownsClient = true;
       opts = arg1;
     }
-    this.endpoint = this.client.endpoint;
+
+    this.insertPOpts = ProducerOptions.exact(this.client.cpOpts);
     this.preCommandDelay = opts.preCommandDelay ?? 100;
     this.incomingInterestTimeout = opts.incomingInterestTimeout ?? 5000;
     this.postRetrievalDelay = opts.postRetrievalDelay ?? 100;
@@ -47,7 +48,7 @@ export class PyRepoStore implements Disposable, S.Insert, S.Delete {
 
   public readonly client: PyRepoClient;
   private readonly ownsClient: boolean;
-  private readonly endpoint: Endpoint;
+  private readonly insertPOpts: ProducerOptions;
   private readonly preCommandDelay: number;
   private readonly incomingInterestTimeout: number;
   private readonly postRetrievalDelay: number;
@@ -68,13 +69,16 @@ export class PyRepoStore implements Disposable, S.Insert, S.Delete {
       () => answered.reject(new Error("no incoming Interest")),
       this.incomingInterestTimeout,
     );
-    const producers = pkts.map((data, i) => this.endpoint.produce(data.name, async () => {
+    const producers = pkts.map((data, i) => produce(data.name, async () => {
       retrieved.add(i);
       if (retrieved.size === pkts.length) {
         clearTimeout(timeout);
         answered.resolve();
       }
       return data;
+    }, {
+      ...this.insertPOpts,
+      describe: `pyrepo-insert(${this.client.repoPrefix},${data.name})`,
     }));
     using closers = new Closers();
     closers.push(...producers);

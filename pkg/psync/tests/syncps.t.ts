@@ -64,7 +64,7 @@ class Fixture {
 
       this.syncs.push(new SyncpsPubsub({
         ...opts,
-        fw: bridge.fwB,
+        cpOpts: { fw: bridge.fwB },
       }));
       closers.push(bridge);
     }

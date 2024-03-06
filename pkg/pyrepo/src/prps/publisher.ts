@@ -1,8 +1,10 @@
-import { Endpoint, type Producer, type ProducerHandler } from "@ndn/endpoint";
+import { consume, ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler, ProducerOptions } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { SequenceNum } from "@ndn/naming-convention2";
 import { Component, Data, digestSigning, Interest, Name, NameMap, SignedInterestPolicy, type Signer } from "@ndn/packet";
 import { type Encodable, Encoder } from "@ndn/tlv";
 import { crypto } from "@ndn/util";
+import { type SetRequired } from "type-fest";
 
 import { MsgSuffix, NotifyAppParam, NotifySuffix } from "./packet";
 
@@ -18,29 +20,39 @@ const notifySIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce());
 /** ndn-python-repo PubSub protocol publisher. */
 export class PrpsPublisher implements Disposable {
   constructor({
-    endpoint = new Endpoint({ retx: 2 }),
+    endpoint, // eslint-disable-line etc/no-deprecated
+    cpOpts,
     pubPrefix = new Name("/localhost").append(SequenceNum, 0xFFFFFFFF * Math.random()),
     pubFwHint,
     pubAnnouncement,
     pubSigner = digestSigning,
     notifyInterestLifetime = Interest.DefaultLifetime,
   }: PrpsPublisher.Options = {}) {
-    this.endpoint = endpoint;
+    this.cpOpts = {
+      fw: Forwarder.getDefault(),
+      ...endpoint?.opts,
+      ...cpOpts,
+    };
     this.pubPrefix = pubPrefix;
     this.pubFwHint = pubFwHint;
     this.pubSigner = pubSigner;
-    this.notifyInterestLifetime = notifyInterestLifetime;
-    this.msgProducer = this.endpoint.produce(pubPrefix.append(MsgSuffix), this.handleMsgInterest, {
+    this.notifyOpts = {
+      ...ConsumerOptions.exact(this.cpOpts),
+      modifyInterest: Interest.makeModifyFunc({ lifetime: notifyInterestLifetime }),
+      retx: 0,
+    };
+    this.msgProducer = produce(pubPrefix.append(MsgSuffix), this.handleMsgInterest, {
+      ...ProducerOptions.exact(this.cpOpts),
       describe: `prps-pub(${pubPrefix})`,
       announcement: pubAnnouncement ?? pubFwHint ?? pubPrefix,
     });
   }
 
-  public readonly endpoint: Endpoint;
+  public readonly cpOpts: SetRequired<ConsumerOptions & ProducerOptions, "fw">;
   public readonly pubPrefix: Name;
   public readonly pubFwHint?: Name;
   private readonly pubSigner: Signer;
-  private readonly notifyInterestLifetime: number;
+  private readonly notifyOpts: ConsumerOptions;
   private readonly msgProducer: Producer;
   private readonly pendings = new NameMap<Pending>();
 
@@ -70,13 +82,13 @@ export class PrpsPublisher implements Disposable {
     notifyParam.publisherFwHint = this.pubFwHint;
     const notifyInterest = new Interest();
     notifyInterest.name = topic.append(NotifySuffix);
-    notifyInterest.lifetime = this.notifyInterestLifetime;
     notifyInterest.appParameters = Encoder.encode(notifyParam);
     notifySIP.update(notifyInterest, this);
     await digestSigning.sign(notifyInterest);
 
     try {
-      await this.endpoint.consume(notifyInterest, {
+      await consume(notifyInterest, {
+        ...this.notifyOpts,
         describe: `prps-notify(${this.pubPrefix} ${topic})`,
       });
     } finally {
@@ -116,10 +128,18 @@ export namespace PrpsPublisher {
   export interface Options {
     /**
      * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder with up to 2 retransmissions.
+     * @deprecated Specify `.cpOpts`.
      */
     endpoint?: Endpoint;
+
+    /**
+     * Consumer and producer options.
+     *
+     * @remarks
+     * - `.fw` may be specified.
+     * - Most other fields are overridden.
+     */
+    cpOpts?: ConsumerOptions & ProducerOptions;
 
     /**
      * Name prefix of the local application.

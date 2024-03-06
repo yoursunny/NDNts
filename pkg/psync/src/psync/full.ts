@@ -1,5 +1,4 @@
-import { type ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
-import { Forwarder } from "@ndn/fw";
+import { ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler, ProducerOptions } from "@ndn/endpoint";
 import type { Component, Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { CustomEvent, KeyMap, toHex, trackEventListener } from "@ndn/util";
@@ -36,11 +35,9 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
   constructor({
     p,
     syncPrefix,
-    endpoint, // eslint-disable-line etc/no-deprecated
-    fw = endpoint?.fw ?? Forwarder.getDefault(),
     describe = `FullSync(${syncPrefix})`,
-    cOpts,
-    pOpts,
+    endpoint, // eslint-disable-line etc/no-deprecated
+    cpOpts,
     syncReplyFreshness = 1000,
     signer,
     producerBufferLimit = 32,
@@ -58,24 +55,21 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
     this.pFreshness = syncReplyFreshness;
     this.pBuffer = new StateProducerBuffer(this.describe, this.codec, producerBufferLimit, {
       ...endpoint?.pOpts,
-      ...pOpts,
-      fw,
+      ...ProducerOptions.exact(cpOpts),
       dataSigner: signer,
     });
     this.pProducer = produce(syncPrefix, this.handleSyncInterest, {
       ...endpoint?.pOpts,
-      ...pOpts,
+      ...ProducerOptions.exact(cpOpts),
       describe: `${describe}[p]`,
-      fw,
       routeCapture: false,
       concurrency: Infinity,
     });
 
     this.cFetcher = new StateFetcher(this.describe, this.codec, syncInterestLifetime, {
       ...endpoint?.cOpts,
-      ...cOpts,
+      ...ConsumerOptions.exact(cpOpts),
       describe,
-      fw,
       verifier,
     });
     this.cInterval = computeInterval(syncInterestInterval, syncInterestLifetime);
@@ -296,39 +290,18 @@ export namespace FullSync {
 
     /**
      * Endpoint for communication.
-     * @deprecated Specify `.fw`.
+     * @deprecated Specify `.cpOpts`.
      */
     endpoint?: Endpoint;
 
     /**
-     * Use the specified logical forwarder.
-     * @defaultValue `Forwarder.getDefault()`
-     */
-    fw?: Forwarder;
-
-    /**
-     * Consumer options (advanced).
+     * Consumer and producer options.
      *
      * @remarks
-     * - `.fw` is overridden as {@link Options.fw}.
-     * - `.describe` is overridden as {@link Options.describe}.
-     * - `.modifyInterest` is overridden.
-     * - `.retx` is overridden.
-     * - `.signal` is overridden.
-     * - `.verifier` is overridden.
+     * - `.fw` may be specified.
+     * - Most other fields are overridden.
      */
-    cOpts?: ConsumerOptions;
-
-    /**
-     * Producer options (advanced).
-     *
-     * @remarks
-     * - `.fw` is overridden as {@link Options.fw}.
-     * - `.describe` is overridden as {@link Options.describe}.
-     * - `.routeCapture` is overridden.
-     * - `.concurrency` is overridden.
-     */
-    pOpts?: ProducerOptions;
+    cpOpts?: ConsumerOptions & ProducerOptions;
 
     /**
      * FreshnessPeriod of sync reply Data packet.

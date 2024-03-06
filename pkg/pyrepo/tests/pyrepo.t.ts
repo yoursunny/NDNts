@@ -1,6 +1,6 @@
 import { afterEach } from "node:test";
 
-import { Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment } from "@ndn/naming-convention2";
 import { Data, digestSigning, Name } from "@ndn/packet";
@@ -12,7 +12,7 @@ import { PyRepo } from "../test-fixture/pyrepo";
 
 afterEach(Forwarder.deleteDefault);
 
-test.runIf(PyRepo.supported)("workflow", async () => {
+test.runIf(PyRepo.supported)("workflow", { timeout: 30000 }, async () => {
   using tmpDir = makeTmpDir();
   await using repo = await PyRepo.create("/myrepo", { dir: tmpDir.name });
 
@@ -20,10 +20,10 @@ test.runIf(PyRepo.supported)("workflow", async () => {
     repoPrefix: new Name("/myrepo"),
     combineRange: true,
   });
-  const endpoint = new Endpoint({
+  const cOpts: ConsumerOptions = {
     modifyInterest: { lifetime: 500 },
     retx: 1,
-  });
+  };
 
   const names = Array.from({ length: 200 }, (item, i) => {
     void item;
@@ -42,7 +42,7 @@ test.runIf(PyRepo.supported)("workflow", async () => {
   }));
 
   const countRetrievable = async () => {
-    const retrieved = await Promise.allSettled(Array.from(names, (name) => endpoint.consume(name)));
+    const retrieved = await Promise.allSettled(Array.from(names, (name) => consume(name, cOpts)));
     return retrieved.filter(({ status }) => status === "fulfilled").length;
   };
 
@@ -51,4 +51,4 @@ test.runIf(PyRepo.supported)("workflow", async () => {
 
   await store.delete(...names);
   await expect(countRetrievable()).resolves.toBe(0);
-}, { timeout: 30000 });
+});

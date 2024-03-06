@@ -1,4 +1,4 @@
-import { Endpoint, type Producer, type ProducerHandler, type RetxPolicy } from "@ndn/endpoint";
+import { consume, ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler, ProducerOptions, type RetxPolicy } from "@ndn/endpoint";
 import { Data, digestSigning, Interest, type Name, type Signer, type Verifier } from "@ndn/packet";
 import type { Subscriber, Subscription } from "@ndn/sync-api";
 import { Decoder } from "@ndn/tlv";
@@ -10,14 +10,18 @@ import { NotifyAppParam, NotifySuffix } from "./packet";
 /** ndn-python-repo PubSub protocol subscriber. */
 export class PrpsSubscriber implements Subscriber<Name, PrpsSubscriber.Update> {
   constructor({
-    endpoint = new Endpoint(),
+    endpoint, // eslint-disable-line etc/no-deprecated
+    cpOpts,
     msgInterestLifetime = Interest.DefaultLifetime,
     msgRetx = 2,
     pubVerifier,
     subAnnouncement,
     subSigner = digestSigning,
   }: PrpsSubscriber.Options = {}) {
-    this.endpoint = endpoint;
+    this.cpOpts = {
+      ...endpoint?.opts,
+      ...cpOpts,
+    };
     this.msgInterestLifetime = msgInterestLifetime;
     this.msgRetx = msgRetx;
     this.pubVerifier = pubVerifier;
@@ -25,7 +29,7 @@ export class PrpsSubscriber implements Subscriber<Name, PrpsSubscriber.Update> {
     this.subSigner = subSigner;
   }
 
-  public readonly endpoint: Endpoint;
+  private readonly cpOpts: ConsumerOptions & ProducerOptions;
   private readonly msgInterestLifetime: number;
   private readonly msgRetx: RetxPolicy;
   private readonly pubVerifier?: Verifier;
@@ -33,7 +37,7 @@ export class PrpsSubscriber implements Subscriber<Name, PrpsSubscriber.Update> {
   private readonly subSigner: Signer;
 
   public subscribe(topic: Name): Subscription<Name, PrpsSubscriber.Update> {
-    return new Sub(topic, this.endpoint,
+    return new Sub(topic, this.cpOpts,
       this.msgInterestLifetime, this.msgRetx, this.pubVerifier,
       this.subAnnouncement, this.subSigner);
   }
@@ -43,10 +47,18 @@ export namespace PrpsSubscriber {
   export interface Options {
     /**
      * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder.
+     * @deprecated Specify `.cpOpts`.
      */
     endpoint?: Endpoint;
+
+    /**
+     * Consumer and producer options.
+     *
+     * @remarks
+     * - `.fw` may be specified.
+     * - Most other fields are overridden.
+     */
+    cpOpts?: ConsumerOptions & ProducerOptions;
 
     /** InterestLifetime of msg Interests. */
     msgInterestLifetime?: number;
@@ -86,20 +98,26 @@ class Sub extends TypedEventTarget<Subscription.EventMap<PrpsSubscriber.Update>>
   implements Subscription<Name, PrpsSubscriber.Update> {
   constructor(
       public readonly topic: Name,
-      private readonly endpoint: Endpoint,
+      cpOpts: ConsumerOptions & ProducerOptions,
       private readonly msgInterestLifetime: number,
-      private readonly msgRetx: RetxPolicy,
-      private readonly pubVerifier: Verifier | undefined,
+      msgRetx: RetxPolicy,
+      pubVerifier: Verifier | undefined,
       subAnnouncement: false | undefined,
       subSigner: Signer,
   ) {
     super();
     this.notifyPrefix = topic.append(NotifySuffix);
-    this.notifyProducer = this.endpoint.produce(this.notifyPrefix, this.handleNotifyInterest, {
+    this.notifyProducer = produce(this.notifyPrefix, this.handleNotifyInterest, {
+      ...ProducerOptions.exact(cpOpts),
       describe: `prps-sub(${topic})`,
       announcement: subAnnouncement,
       dataSigner: subSigner,
     });
+    this.msgCOpts = {
+      ...ConsumerOptions.exact(cpOpts),
+      retx: msgRetx,
+      verifier: pubVerifier,
+    };
   }
 
   public [Symbol.dispose](): void {
@@ -108,6 +126,7 @@ class Sub extends TypedEventTarget<Subscription.EventMap<PrpsSubscriber.Update>>
 
   private readonly notifyPrefix: Name;
   private readonly notifyProducer: Producer;
+  private readonly msgCOpts: ConsumerOptions;
 
   private readonly handleNotifyInterest: ProducerHandler = async (interest) => {
     if (interest.name.length <= this.notifyPrefix.length || !interest.appParameters) {
@@ -118,10 +137,9 @@ class Sub extends TypedEventTarget<Subscription.EventMap<PrpsSubscriber.Update>>
     const msgInterest = notifyParam.makeMsgInterest(this.topic);
     msgInterest.lifetime = this.msgInterestLifetime;
 
-    const msgData = await this.endpoint.consume(msgInterest, {
+    const msgData = await consume(msgInterest, {
+      ...this.msgCOpts,
       describe: `prps-msg(${this.topic} ${notifyParam.publisher})`,
-      retx: this.msgRetx,
-      verifier: this.pubVerifier,
     });
     this.dispatchTypedEvent("update", new CustomEvent("update", { detail: msgData }));
 

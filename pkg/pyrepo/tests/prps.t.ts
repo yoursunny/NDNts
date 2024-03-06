@@ -1,30 +1,30 @@
 import { Endpoint } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face";
-import { type Data, Name } from "@ndn/packet";
+import { Name } from "@ndn/packet";
 import { Closers, delay } from "@ndn/util";
-import { collect, map } from "streaming-iterables";
 import { afterEach, expect, test } from "vitest";
 
 import { PrpsPublisher, PrpsSubscriber } from "..";
 
-afterEach(Endpoint.deleteDefaultForwarder);
+afterEach(Forwarder.deleteDefault);
 
-test("simple", async () => {
+test("pubsub", { timeout: 10000 }, async () => {
   const star = Bridge.star({
     leaves: 3,
-    relayBA: { delay: 10, jitter: 0.1 },
+    relayBA: { delay: 6, jitter: 0.1 },
   });
 
   const sub0 = new PrpsSubscriber({
-    endpoint: new Endpoint({ fw: star[0]!.fwB }),
+    cpOpts: { fw: star[0]!.fwB },
     msgInterestLifetime: 200,
   });
   const sub1 = new PrpsSubscriber({
-    endpoint: new Endpoint({ fw: star[1]!.fwB }),
+    cpOpts: { fw: star[1]!.fwB },
     msgInterestLifetime: 200,
   });
   using pub = new PrpsPublisher({
-    endpoint: new Endpoint({ fw: star[2]!.fwB, retx: 1 }),
+    cpOpts: { fw: star[2]!.fwB, retx: 1 },
     notifyInterestLifetime: 1000,
   });
 

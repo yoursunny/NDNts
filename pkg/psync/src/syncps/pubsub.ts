@@ -1,5 +1,4 @@
-import { consume, type ConsumerOptions, type Endpoint, produce, type Producer, type ProducerOptions } from "@ndn/endpoint";
-import { Forwarder } from "@ndn/fw";
+import { consume, ConsumerOptions, type Endpoint, produce, type Producer, ProducerOptions } from "@ndn/endpoint";
 import { Timestamp } from "@ndn/naming-convention2";
 import { type Component, Data, digestSigning, Interest, lpm, type Name, type Signer, type Verifier } from "@ndn/packet";
 import { type Subscriber, type Subscription, SubscriptionTable } from "@ndn/sync-api";
@@ -82,12 +81,10 @@ function defaultFilterPubs(items: SyncpsPubsub.FilterPubItem[]) {
 export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscriber<Name, CustomEvent<Data>> {
   constructor({
     p,
-    endpoint, // eslint-disable-line etc/no-deprecated
-    fw = Forwarder.getDefault(),
-    describe,
-    cOpts,
-    pOpts,
     syncPrefix,
+    describe = `SyncpsPubsub(${syncPrefix})`,
+    endpoint, // eslint-disable-line etc/no-deprecated
+    cpOpts,
     syncInterestLifetime = 4000,
     syncDataPubSize = 1300,
     syncSigner = digestSigning,
@@ -101,7 +98,7 @@ export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscrib
     pubVerifier,
   }: SyncpsPubsub.Options) {
     super();
-    this.describe = describe ?? `SyncpsPubsub(${syncPrefix})`;
+    this.describe = describe;
     this.syncPrefix = syncPrefix;
     const ibltParams = IBLT.PreparedParameters.prepare(p.iblt);
     this.codec = new SyncpsCodec(p, ibltParams);
@@ -120,8 +117,7 @@ export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscrib
       routeCapture: false,
       concurrency: Infinity,
       ...endpoint?.pOpts,
-      ...pOpts,
-      fw,
+      ...ProducerOptions.exact(cpOpts),
       dataSigner: syncSigner,
     });
     this.pFilter = filterPubs;
@@ -130,7 +126,7 @@ export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscrib
     this.cOpts = {
       describe: `${this.describe}[c]`,
       ...endpoint?.cOpts,
-      ...cOpts,
+      ...ConsumerOptions.exact(cpOpts),
       verifier: syncVerifier,
     };
     this.cLifetime = syncInterestLifetime;
@@ -508,17 +504,8 @@ export namespace SyncpsPubsub {
      */
     p: Parameters;
 
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.fw`.
-     */
-    endpoint?: Endpoint;
-
-    /**
-     * Use the specified logical forwarder.
-     * @defaultValue `Forwarder.getDefault()`
-     */
-    fw?: Forwarder;
+    /** Sync group prefix. */
+    syncPrefix: Name;
 
     /**
      * Description for debugging purpose.
@@ -527,31 +514,19 @@ export namespace SyncpsPubsub {
     describe?: string;
 
     /**
-     * Consumer options (advanced).
-     *
-     * @remarks
-     * - `.fw` is overridden as {@link Options.fw}.
-     * - `.describe` defaults to {@link Options.describe}.
-     * - `.signal` is overridden.
-     * - `.verifier` is overridden.
+     * Endpoint for communication.
+     * @deprecated Specify `.cpOpts`.
      */
-    cOpts?: ConsumerOptions;
+    endpoint?: Endpoint;
 
     /**
-     * Producer options (advanced).
+     * Consumer and producer options.
      *
      * @remarks
-     * - `.fw` is overridden as {@link Options.fw}.
-     * - `.describe` defaults to {@link Options.describe}.
-     * - `.routeCapture` defaults to false.
-     * - `.concurrency` defaults to Infinity.
-     *   Setting a small value may cause misbehavior.
-     * - `.dataSigner` is overridden.
+     * - `.fw` may be specified.
+     * - Most other fields are overridden.
      */
-    pOpts?: ProducerOptions;
-
-    /** Sync group prefix. */
-    syncPrefix: Name;
+    cpOpts?: ConsumerOptions & ProducerOptions;
 
     /**
      * Sync Interest lifetime in milliseconds.

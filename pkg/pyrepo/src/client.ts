@@ -1,4 +1,4 @@
-import { type Endpoint } from "@ndn/endpoint";
+import { consume, ConsumerOptions } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
 import { digestSigning, Interest, Name, SignedInterestPolicy } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
@@ -15,17 +15,21 @@ export class PyRepoClient implements Disposable {
     this.repoPrefix = opts.repoPrefix;
     this.publisher = new PrpsPublisher(opts);
 
-    this.endpoint = this.publisher.endpoint;
+    const { fw } = this.cpOpts;
     this.fwHint = this.publisher.pubFwHint ?? this.publisher.pubPrefix;
-    this.endpoint.fw.nodeNames.push(this.fwHint);
+    fw.nodeNames.push(this.fwHint);
 
     this.combineRange = opts.combineRange ?? false;
     this.commandLengthLimit = opts.commandLengthLimit ?? 6144;
     this.commandTimeout = opts.commandTimeout ?? 60000;
     this.checkInterval = randomJitter(0.1, opts.checkInterval ?? 1000);
+    this.checkOpts = {
+      ...ConsumerOptions.exact(this.cpOpts),
+      fw,
+      retx: 0,
+    };
   }
 
-  public readonly endpoint: Endpoint;
   public readonly repoPrefix: Name;
   private readonly publisher: PrpsPublisher;
   private readonly fwHint: Name;
@@ -33,11 +37,17 @@ export class PyRepoClient implements Disposable {
   private readonly commandLengthLimit: number;
   private readonly commandTimeout: number;
   private readonly checkInterval: () => number;
+  private readonly checkOpts: ConsumerOptions;
+
+  public get cpOpts() {
+    return this.publisher.cpOpts;
+  }
 
   public [Symbol.dispose](): void {
-    const nodeNameIndex = this.endpoint.fw.nodeNames.findIndex((nodeName) => nodeName.equals(this.fwHint));
+    const { fw } = this.cpOpts;
+    const nodeNameIndex = fw.nodeNames.findIndex((nodeName) => nodeName.equals(this.fwHint));
     if (nodeNameIndex >= 0) {
-      this.endpoint.fw.nodeNames.splice(nodeNameIndex, 1);
+      fw.nodeNames.splice(nodeNameIndex, 1);
     }
 
     this.publisher[Symbol.dispose]();
@@ -113,7 +123,8 @@ export class PyRepoClient implements Disposable {
       checkSIP.update(checkInterest, this);
       await digestSigning.sign(checkInterest);
 
-      const checkData = await this.endpoint.consume(checkInterest, {
+      const checkData = await consume(checkInterest, {
+        ...this.checkOpts,
         describe: `pyrepo-check(${this.repoPrefix} ${requestDigestHex})`,
       });
 

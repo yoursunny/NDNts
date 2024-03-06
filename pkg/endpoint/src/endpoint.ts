@@ -1,8 +1,8 @@
 import { Forwarder } from "@ndn/fw";
 import type { Interest, NameLike } from "@ndn/packet";
 
-import { consume, type ConsumerContext, type ConsumerOptions } from "./consumer";
-import { produce, type Producer, type ProducerHandler, type ProducerOptions } from "./producer";
+import { consume, type ConsumerContext, ConsumerOptions } from "./consumer";
+import { produce, type Producer, type ProducerHandler, ProducerOptions } from "./producer";
 
 /**
  * {@link Endpoint} constructor options.
@@ -13,15 +13,6 @@ import { produce, type Producer, type ProducerHandler, type ProducerOptions } fr
  */
 export interface Options extends ConsumerOptions, ProducerOptions {
 }
-
-const cOptsKeys: readonly string[] = [
-  "fw", "describe", "signal", "modifyInterest", "retx", "verifier",
-] satisfies ReadonlyArray<keyof ConsumerOptions>;
-
-const pOptsKeys: readonly string[] = [
-  "fw", "describe", "signal", "routeCapture", "announcement",
-  "concurrency", "dataSigner", "dataBuffer", "autoBuffer",
-] satisfies ReadonlyArray<keyof ProducerOptions>;
 
 /**
  * Endpoint provides basic consumer and producer functionality. It is the main entry point for an
@@ -40,11 +31,11 @@ export class Endpoint {
   }
 
   public get cOpts(): ConsumerOptions {
-    return Object.fromEntries(Object.entries(this.opts).filter(([key]) => cOptsKeys.includes(key)));
+    return ConsumerOptions.exact(this.opts);
   }
 
   public get pOpts(): ProducerOptions {
-    return Object.fromEntries(Object.entries(this.opts).filter(([key]) => pOptsKeys.includes(key)));
+    return ProducerOptions.exact(this.opts);
   }
 
   /**

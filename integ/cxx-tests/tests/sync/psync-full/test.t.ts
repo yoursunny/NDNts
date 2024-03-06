@@ -25,7 +25,7 @@ test("simple", async () => {
       expectedEntries: 30,
     }),
     syncPrefix,
-    fw: nfd.fw,
+    cpOpts: { fw: nfd.fw },
     syncInterestLifetime: 100,
     syncReplyFreshness: 500,
   });

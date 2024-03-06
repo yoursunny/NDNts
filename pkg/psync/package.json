@@ -27,7 +27,6 @@
   },
   "dependencies": {
     "@ndn/endpoint": "workspace:*",
-    "@ndn/fw": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
@@ -45,6 +44,7 @@
     "typescript-event-target": "^1.1.0"
   },
   "devDependencies": {
+    "@ndn/fw": "workspace:^",
     "@ndn/l3face": "workspace:*",
     "@types/murmurhash3js-revisited": "^3.0.3",
     "@types/pako": "^2.0.3"

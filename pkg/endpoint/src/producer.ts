@@ -105,6 +105,15 @@ export interface ProducerOptions {
 export namespace ProducerOptions {
   /** Describe how to derive route announcement from name prefix in {@link produce}. */
   export type RouteAnnouncement = FwFace.RouteAnnouncement;
+
+  const keys: readonly string[] = [
+    "fw", "describe", "signal", "routeCapture", "announcement",
+    "concurrency", "dataSigner", "dataBuffer", "autoBuffer",
+  ] satisfies ReadonlyArray<keyof ProducerOptions>;
+
+  export function exact(opts: ProducerOptions = {}): ProducerOptions {
+    return Object.fromEntries(Object.entries(opts).filter(([key]) => keys.includes(key)));
+  }
 }
 
 /** A running producer. */

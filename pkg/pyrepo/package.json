@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@ndn/endpoint": "workspace:*",
+    "@ndn/fw": "workspace:^",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/repo-api": "workspace:*",
@@ -36,10 +37,10 @@
     "p-defer": "^4.0.0",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",
+    "type-fest": "^4.11.0",
     "typescript-event-target": "^1.1.0"
   },
   "devDependencies": {
-    "@ndn/fw": "workspace:^",
     "@ndn/keychain": "workspace:^",
     "@ndn/l3face": "workspace:^",
     "@ndn/ndnsec": "workspace:^",
