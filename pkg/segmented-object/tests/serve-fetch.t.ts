@@ -3,7 +3,7 @@ import "@ndn/util/test-fixture/expect";
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
 import { Blob } from "node:buffer";
 
-import { consume, Endpoint, produce, type ProducerHandler } from "@ndn/endpoint";
+import { consume, produce, type ProducerHandler } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face";
 import { Segment2, Segment3 } from "@ndn/naming-convention2";
@@ -144,7 +144,6 @@ test("ranged", async () => {
 test.each<(fw: Forwarder, fwHint: FwHint) => fetch.Options>([
   (fw, fwHint) => ({ fw, modifyInterest: { fwHint } }),
   (fw, fwHint) => ({ cOpts: { fw, modifyInterest: { fwHint } } }),
-  (fw, fwHint) => ({ endpoint: new Endpoint({ fw, modifyInterest: { fwHint } }) }),
 ])("modifyInterest %#", async (makeOpts) => {
   using bridge = Bridge.create({
     fwOpts,
@@ -187,7 +186,6 @@ describe("empty object", () => {
   test.each<(verifier: Verifier) => fetch.Options>([
     (verifier) => ({ verifier }),
     (verifier) => ({ cOpts: { verifier } }),
-    (verifier) => ({ endpoint: new Endpoint({ verifier }) }),
   ])("verify error %#", async (makeOpts) => {
     const verify = vi.fn<Parameters<Verifier["verify"]>, ReturnType<Verifier["verify"]>>()
       .mockRejectedValue(new Error("mock-verify-error"));
@@ -212,7 +210,7 @@ test("abort", async () => {
   const t0 = Date.now();
   await Promise.all([
     expect(fetch("/R", { signal })).rejects.toThrow(/aborted/),
-    expect(fetch("/R", { endpoint: new Endpoint({ signal }) })).rejects.toThrow(/aborted/),
+    expect(fetch("/R", { cOpts: { signal } })).rejects.toThrow(/aborted/),
     expect(consumeIterable(fetch("/R", { signal }))).rejects.toThrow(/aborted/),
     expect(consumeIterable(fetch("/R", { signal }).chunks())).rejects.toThrow(/aborted/),
     expect(consumeIterable(fetch("/R", { signal }).unordered())).rejects.toThrow(/aborted/),

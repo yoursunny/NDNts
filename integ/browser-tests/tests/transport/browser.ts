@@ -1,4 +1,4 @@
-import { Endpoint } from "@ndn/endpoint";
+import { consume } from "@ndn/endpoint";
 import { FwTracer } from "@ndn/fw";
 import { H3Transport } from "@ndn/quic-transport";
 import { delay, fromHex } from "@ndn/util";
@@ -9,12 +9,11 @@ import { addManualTest } from "../../test-fixture/manual";
 FwTracer.enable();
 
 async function facePing(pingPrefix: string) {
-  const endpoint = new Endpoint();
   const names: string[] = [];
   const rtts: number[] = [];
   for (let i = 0; i < 50; ++i) {
     const t0 = Date.now();
-    const data = await endpoint.consume(`${pingPrefix}/${Math.trunc(Math.random() * 1e8)}`);
+    const data = await consume(`${pingPrefix}/${Math.trunc(Math.random() * 1e8)}`);
     const t1 = Date.now();
     rtts.push(t1 - t0);
     names.push(data.name.toString());

@@ -17,12 +17,12 @@ export interface Options extends ConsumerOptions, ProducerOptions {
 /**
  * Endpoint provides basic consumer and producer functionality. It is the main entry point for an
  * application to interact with the logical forwarder.
- *
- * @remarks
- * Use of this class is discouraged. Please switch to `consume()` and `produce()` standalone
- * functions instead. This class will be deprecated in the future.
  */
 export class Endpoint {
+  /**
+   * Constructor.
+   * @deprecated Use {@link consume} and {@link produce} standalone functions.
+   */
   constructor(public readonly opts: Options = {}) {}
 
   /** Logical forwarder instance. */
@@ -41,6 +41,7 @@ export class Endpoint {
   /**
    * Retrieve a single piece of Data.
    * @param interest - Interest or Interest name.
+   * @deprecated Use {@link consume} standalone function.
    */
   public consume(interest: Interest | NameLike, opts: ConsumerOptions = {}): ConsumerContext {
     return consume(interest, { ...this.opts, ...opts });
@@ -50,6 +51,7 @@ export class Endpoint {
    * Start a producer.
    * @param prefix - Prefix registration; if `undefined`, prefixes may be added later.
    * @param handler - Function to handle incoming Interest.
+   * @deprecated Use {@link produce} standalone function.
    */
   public produce(prefix: NameLike | undefined, handler: ProducerHandler, opts: ProducerOptions = {}): Producer {
     return produce(prefix, handler, { ...this.opts, ...opts });
@@ -57,9 +59,15 @@ export class Endpoint {
 }
 
 export namespace Endpoint {
-  /** Delete default Forwarder instance (mainly for unit testing). */
+  /**
+   * Delete default Forwarder instance (mainly for unit testing).
+   * @deprecated Use `Forwarder.deleteDefault`.
+   */
   export const deleteDefaultForwarder = Forwarder.deleteDefault;
 
-  /** Describe how to derive route announcement from name prefix in {@link Endpoint.produce}. */
+  /**
+   * Describe how to derive route announcement from name prefix in {@link Endpoint.produce}.
+   * @deprecated Use `ProducerOptions.RouteAnnouncement`.
+   */
   export type RouteAnnouncement = ProducerOptions.RouteAnnouncement;
 }

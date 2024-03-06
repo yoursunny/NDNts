@@ -7,7 +7,7 @@ import { makeInMemoryDataStore } from "@ndn/repo";
 import { delay } from "@ndn/util";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { consume, DataStoreBuffer, Endpoint, type Options, produce, type Producer, type ProducerHandler, type ProducerOptions } from "..";
+import { consume, DataStoreBuffer, type Options, produce, type Producer, type ProducerHandler, type ProducerOptions } from "..";
 
 afterEach(Forwarder.deleteDefault);
 

@@ -1,4 +1,3 @@
-import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face";
 import { Name } from "@ndn/packet";
