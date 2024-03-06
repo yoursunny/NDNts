@@ -1,6 +1,5 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Endpoint } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face";
 import { Timestamp } from "@ndn/naming-convention2";
@@ -65,7 +64,7 @@ class Fixture {
 
       this.syncs.push(new SyncpsPubsub({
         ...opts,
-        endpoint: new Endpoint({ fw: bridge.fwB }),
+        fw: bridge.fwB,
       }));
       closers.push(bridge);
     }

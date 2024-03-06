@@ -3,7 +3,7 @@ import "@ndn/util/test-fixture/expect";
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
 import { Blob } from "node:buffer";
 
-import { Endpoint, type ProducerHandler } from "@ndn/endpoint";
+import { consume, Endpoint, produce, type ProducerHandler } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face";
 import { Segment2, Segment3 } from "@ndn/naming-convention2";
@@ -11,7 +11,7 @@ import { Data, FwHint, Name, type Verifier } from "@ndn/packet";
 import { Closers, delay } from "@ndn/util";
 import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
-import { collect, consume } from "streaming-iterables";
+import { collect, consume as consumeIterable } from "streaming-iterables";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { BlobChunkSource, BufferChunkSource, fetch, FileChunkSource, IterableChunkSource, serve, StreamChunkSource } from "..";
@@ -153,7 +153,7 @@ test.each<(fw: Forwarder, fwHint: FwHint) => fetch.Options>([
   }).rename("S", "F");
   bridge.fwS.nodeNames.push(new Name("/S"));
   const server = serve("/R", new BufferChunkSource(objectBody), {
-    endpoint: new Endpoint({ fw: bridge.fwS }),
+    pOpts: { fw: bridge.fwS },
   });
   closers.push(server);
 
@@ -166,15 +166,14 @@ describe("empty object", () => {
   beforeEach(() => {
     handler1.mockReset();
     const server = serve("/R", new BufferChunkSource(new Uint8Array()));
-    const producer1 = new Endpoint().produce(server.prefix.append(Segment3, 1), handler1);
+    const producer1 = produce(server.prefix.append(Segment3, 1), handler1);
     closers.push(server, producer1);
   });
 
   test("consume single", async () => {
-    const ep = new Endpoint({ modifyInterest: { lifetime: 50 } });
-    await expect(ep.consume(new Name("/R").append(Segment3, 2)))
+    await expect(consume(new Name("/R").append(Segment3, 2), { modifyInterest: { lifetime: 50 } }))
       .rejects.toThrow();
-    const data = await ep.consume(new Name("/R").append(Segment3, 0));
+    const data = await consume(new Name("/R").append(Segment3, 0));
     expect(data.content).toHaveLength(0);
   });
 
@@ -214,9 +213,9 @@ test("abort", async () => {
   await Promise.all([
     expect(fetch("/R", { signal })).rejects.toThrow(/aborted/),
     expect(fetch("/R", { endpoint: new Endpoint({ signal }) })).rejects.toThrow(/aborted/),
-    expect(consume(fetch("/R", { signal }))).rejects.toThrow(/aborted/),
-    expect(consume(fetch("/R", { signal }).chunks())).rejects.toThrow(/aborted/),
-    expect(consume(fetch("/R", { signal }).unordered())).rejects.toThrow(/aborted/),
+    expect(consumeIterable(fetch("/R", { signal }))).rejects.toThrow(/aborted/),
+    expect(consumeIterable(fetch("/R", { signal }).chunks())).rejects.toThrow(/aborted/),
+    expect(consumeIterable(fetch("/R", { signal }).unordered())).rejects.toThrow(/aborted/),
   ]);
   expect(Date.now() - t0).toBeLessThan(400);
 });
@@ -234,9 +233,9 @@ test("FwFace closing", async () => {
   const t0 = Date.now();
   await Promise.all([
     expect(fetch("/R")).rejects.toThrow(/incomplete/),
-    expect(consume(fetch("/R"))).rejects.toThrow(/incomplete/),
-    expect(consume(fetch("/R").chunks())).rejects.toThrow(/incomplete/),
-    expect(consume(fetch("/R").unordered())).rejects.toThrow(/incomplete/),
+    expect(consumeIterable(fetch("/R"))).rejects.toThrow(/incomplete/),
+    expect(consumeIterable(fetch("/R").chunks())).rejects.toThrow(/incomplete/),
+    expect(consumeIterable(fetch("/R").unordered())).rejects.toThrow(/incomplete/),
   ]);
   expect(Date.now() - t0).toBeLessThan(400);
 });

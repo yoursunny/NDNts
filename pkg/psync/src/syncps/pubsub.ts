@@ -1,4 +1,5 @@
-import { Endpoint, type Producer } from "@ndn/endpoint";
+import { consume, type ConsumerOptions, type Endpoint, produce, type Producer, type ProducerOptions } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { Timestamp } from "@ndn/naming-convention2";
 import { type Component, Data, digestSigning, Interest, lpm, type Name, type Signer, type Verifier } from "@ndn/packet";
 import { type Subscriber, type Subscription, SubscriptionTable } from "@ndn/sync-api";
@@ -81,8 +82,11 @@ function defaultFilterPubs(items: SyncpsPubsub.FilterPubItem[]) {
 export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscriber<Name, CustomEvent<Data>> {
   constructor({
     p,
-    endpoint = new Endpoint(),
+    endpoint, // eslint-disable-line etc/no-deprecated
+    fw = Forwarder.getDefault(),
     describe,
+    cOpts,
+    pOpts,
     syncPrefix,
     syncInterestLifetime = 4000,
     syncDataPubSize = 1300,
@@ -97,7 +101,6 @@ export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscrib
     pubVerifier,
   }: SyncpsPubsub.Options) {
     super();
-    this.endpoint = endpoint;
     this.describe = describe ?? `SyncpsPubsub(${syncPrefix})`;
     this.syncPrefix = syncPrefix;
     const ibltParams = IBLT.PreparedParameters.prepare(p.iblt);
@@ -112,23 +115,30 @@ export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscrib
     this.dVerifier = pubVerifier;
     this.dConfirmIblt = new IBLT(ibltParams);
 
-    this.pProducer = endpoint.produce(syncPrefix, this.handleSyncInterest, {
+    this.pProducer = produce(syncPrefix, this.handleSyncInterest, {
       describe: `${this.describe}[p]`,
       routeCapture: false,
       concurrency: Infinity,
+      ...endpoint?.pOpts,
+      ...pOpts,
+      fw,
       dataSigner: syncSigner,
     });
     this.pFilter = filterPubs;
     this.pPubSize = syncDataPubSize;
 
-    this.cVerifier = syncVerifier;
+    this.cOpts = {
+      describe: `${this.describe}[c]`,
+      ...endpoint?.cOpts,
+      ...cOpts,
+      verifier: syncVerifier,
+    };
     this.cLifetime = syncInterestLifetime;
 
     this.scheduleSyncInterest(0);
   }
 
   private readonly maybeHaveEventListener = trackEventListener(this);
-  private readonly endpoint: Endpoint;
   public readonly describe: string;
   private readonly syncPrefix: Name;
   private readonly codec: SyncpsCodec;
@@ -153,7 +163,7 @@ export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscrib
   private readonly pPubSize: number;
   private readonly pPendings = new KeyMap<Component, PendingInterest, string>((c) => toHex(c.value));
 
-  private readonly cVerifier?: Verifier;
+  private readonly cOpts: ConsumerOptions;
   private readonly cLifetime: number;
   private cAbort?: AbortController;
   private cTimer!: NodeJS.Timeout | number;
@@ -337,10 +347,9 @@ export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscrib
 
     let content: Data[];
     try {
-      const data = await this.endpoint.consume(interest, {
-        describe: `${this.describe}[c]`,
+      const data = await consume(interest, {
+        ...this.cOpts,
         signal: abort.signal,
-        verifier: this.cVerifier,
       });
       content = this.codec.decodeContent(data.content);
     } catch {
@@ -501,13 +510,45 @@ export namespace SyncpsPubsub {
 
     /**
      * Endpoint for communication.
-     * @defaultValue
-     * Endpoint on default logical forwarder.
+     * @deprecated Specify `.fw`.
      */
     endpoint?: Endpoint;
 
-    /** Description for debugging purpose. */
+    /**
+     * Use the specified logical forwarder.
+     * @defaultValue `Forwarder.getDefault()`
+     */
+    fw?: Forwarder;
+
+    /**
+     * Description for debugging purpose.
+     * @defaultValue SyncpsPubsub + syncPrefix
+     */
     describe?: string;
+
+    /**
+     * Consumer options (advanced).
+     *
+     * @remarks
+     * - `.fw` is overridden as {@link Options.fw}.
+     * - `.describe` defaults to {@link Options.describe}.
+     * - `.signal` is overridden.
+     * - `.verifier` is overridden.
+     */
+    cOpts?: ConsumerOptions;
+
+    /**
+     * Producer options (advanced).
+     *
+     * @remarks
+     * - `.fw` is overridden as {@link Options.fw}.
+     * - `.describe` defaults to {@link Options.describe}.
+     * - `.routeCapture` defaults to false.
+     * - `.concurrency` defaults to Infinity.
+     *   Setting a small value may cause misbehavior.
+     * - `.dataSigner` is overridden.
+     */
+    pOpts?: ProducerOptions;
 
     /** Sync group prefix. */
     syncPrefix: Name;

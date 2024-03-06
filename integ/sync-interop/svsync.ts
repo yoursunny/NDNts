@@ -1,5 +1,5 @@
 import { exitClosers } from "@ndn/cli-common";
-import { Endpoint } from "@ndn/endpoint";
+import { consume, produce } from "@ndn/endpoint";
 import { GenericNumber } from "@ndn/naming-convention2";
 import { Data, Interest } from "@ndn/packet";
 import { console, fromUtf8, toUtf8 } from "@ndn/util";
@@ -8,8 +8,7 @@ import { myDataPrefix, myID, openSvSync, syncPrefix } from "./svs-common";
 
 const sync = await openSvSync();
 
-const endpoint = new Endpoint({ retx: 2 });
-const producer = endpoint.produce(myDataPrefix, async (interest) => {
+const producer = produce(myDataPrefix, async (interest) => {
   const n = interest.name.at(myDataPrefix.length).as(GenericNumber);
   return new Data(interest.name, Data.FreshnessPeriod(1), toUtf8(`NDNts message ${n}`));
 });
@@ -23,7 +22,7 @@ sync.addEventListener("update", (update) => {
       try {
         const name = id.append(...syncPrefix.comps, GenericNumber.create(seqNum));
         const interest = new Interest(name, Interest.CanBePrefix, Interest.Lifetime(2000));
-        const data = await endpoint.consume(interest);
+        const data = await consume(interest, { retx: 2 });
         console.log(`MSG ${id}:${seqNum} ${fromUtf8(data.content)}`);
       } catch (err: unknown) {
         console.warn(`FETCH-ERR ${id}:${seqNum} ${err}`);
