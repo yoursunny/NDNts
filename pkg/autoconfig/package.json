@@ -41,6 +41,6 @@
     "@types/default-gateway": "^7.2.2",
     "@types/koa": "^2.15.0",
     "koa": "^2.15.0",
-    "type-fest": "^4.11.0"
+    "type-fest": "^4.11.1"
   }
 }

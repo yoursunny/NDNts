@@ -80,7 +80,7 @@ export function makeRetxGenerator(policy: RetxPolicy | undefined): RetxGenerator
       randomize = 0.1,
       backoff = 1,
       max = interestLifetime * 0.9,
-    } = policy as RetxOptions;
+    } = policy;
     const jitter = randomJitter(randomize);
     let nextInterval = interval;
     for (let i = 0; i < limit; ++i) {
