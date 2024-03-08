@@ -13,7 +13,7 @@ function delayTick(multiple = 1): Promise<void> {
   return delay(300 * multiple);
 }
 
-test("simple", async () => {
+test("simple", { retry: 3 }, async () => {
   const pub = new PartialPublisher({
     p: makePSyncCompatParam(),
     syncPrefix: new Name("/psync-test"),
@@ -79,4 +79,4 @@ test("simple", async () => {
 
   pub.close();
   sub.close();
-}, { retry: 3 });
+});

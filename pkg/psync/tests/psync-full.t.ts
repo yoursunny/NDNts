@@ -216,7 +216,7 @@ test.each([20, 50, 100])("many updates %d", async (count) => {
   }
 });
 
-describe.each([4, 6])("many nodes %d", (count) => {
+describe.each([4, 6])("many nodes %d", { timeout: 20000 }, (count) => {
   test("", async () => {
     const f = new Fixture(count);
     await f.delayTick();
@@ -234,5 +234,5 @@ describe.each([4, 6])("many nodes %d", (count) => {
         expect(node!.seqNum).toBe(1);
       }
     }
-  }, 20000);
+  });
 });

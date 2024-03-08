@@ -69,7 +69,7 @@ test("connectToNetwork", async () => {
   expect(faces2).toHaveLength(2);
 });
 
-test("defaultGateway", async () => {
+test("defaultGateway", { timeout: 10000 }, async () => {
   await using fchServer = await FchServer.create(() => "127.0.0.1:7001,127.0.0.1:7002");
   const mockGatewayResult: defaultGateway.Result<4> = {
     gateway: "127.0.0.1",
@@ -108,7 +108,7 @@ test("defaultGateway", async () => {
   expect(testConnection).toHaveBeenCalledTimes(3);
   expect(calledWith6363).toBeTruthy();
   expect(calledWith7004).toBeFalsy();
-}, { timeout: 10000 });
+});
 
 test("connectFailure", async () => {
   const testConnection = vi.fn<[FwFace], Promise<unknown>>()

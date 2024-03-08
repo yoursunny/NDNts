@@ -99,7 +99,7 @@ async function publishCheck(
   abort.abort();
 }
 
-test("simple", async () => {
+test("simple", { timeout: 20000 }, async () => {
   const [signerE] = await generateSigningKey("/kE");
 
   const syncA = await SvSync.create({ ...syncOpts, describe: "A" });
@@ -144,9 +144,9 @@ test("simple", async () => {
   await publishCheck(pubB8, "/t/8", 100, undefined, [], [subC1, subC9, subDt, subD0]);
   // bad mapping signature, but subC would not retrieve mapping
   await publishCheck(pubB9, "/t/9", 100, undefined, [subC9], [subC1, subDt, subD0]);
-}, { timeout: 20000 });
+});
 
-test("timed", async () => {
+test("timed", { timeout: 20000 }, async () => {
   const syncA = await SvSync.create({ ...syncOpts, describe: "A" });
   const syncB = await SvSync.create({ ...syncOpts, describe: "B" });
   closers.push(syncA, syncB);
@@ -208,4 +208,4 @@ test("timed", async () => {
   await publishCheck(pubQ, "/N/3", 1000, makeNewEntry(), [sub0N, sub0F, sub1N, sub1F], [sub0P, sub1P]);
   expect(filter0F).toHaveBeenCalledTimes(2);
   expect(filter1F).toHaveBeenCalledTimes(4);
-}, { timeout: 20000 });
+});

@@ -32,7 +32,7 @@ const TABLE: Row[] = [
   },
 ];
 
-test.each(TABLE)("reg %#", async ({ faceIsLocal, expectedPrefix }) => {
+test.each(TABLE)("reg %#", { timeout: 10000, retry: 3 }, async ({ faceIsLocal, expectedPrefix }) => {
   const fw = Forwarder.create();
   closers.push(fw);
 
@@ -110,7 +110,7 @@ test.each(TABLE)("reg %#", async ({ faceIsLocal, expectedPrefix }) => {
   uplinkL3.dispatchTypedEvent("up", new Event("up"));
   await delay(200);
   expect(verbs).toHaveLength(6);
-}, { timeout: 10000, retry: 3 });
+});
 
 test("preloadCert", async () => {
   const [rootPvt, rootPub] = await generateSigningKey("/root");

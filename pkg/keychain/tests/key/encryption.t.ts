@@ -1,10 +1,10 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Component, Name } from "@ndn/packet";
+import { Component, Name, ValidityPeriod } from "@ndn/packet";
 import { crypto } from "@ndn/util";
 import { expect, test } from "vitest";
 
-import { AesBlockSize, AESCBC, AESCTR, AESGCM, Certificate, CounterIvChecker, createEncrypter, type EncryptionAlgorithm, EncryptionAlgorithmListFull, generateEncryptionKey, generateSigningKey, KeyChain, type NamedDecrypter, type NamedEncrypter, RSAOAEP, ValidityPeriod } from "../..";
+import { AesBlockSize, AESCBC, AESCTR, AESGCM, Certificate, CounterIvChecker, createEncrypter, type EncryptionAlgorithm, EncryptionAlgorithmListFull, generateEncryptionKey, generateSigningKey, KeyChain, type NamedDecrypter, type NamedEncrypter, RSAOAEP } from "../..";
 
 async function testEncryptDecrypt(encrypter: NamedEncrypter, decrypter: NamedDecrypter, aead: boolean) {
   expect(encrypter.name).toEqualName(decrypter.name);
@@ -123,7 +123,7 @@ test.each([
   await expect(dA.llDecrypt(cA1)).rejects.toThrow(); // counter not increasing
 });
 
-test("RSA-OAEP encrypt-decrypt", async () => {
+test("RSA-OAEP encrypt-decrypt", { timeout: 10000 }, async () => {
   const keyChain = KeyChain.createTemp(EncryptionAlgorithmListFull);
   const name = new Name("/my/KEY/x");
   await generateEncryptionKey(keyChain, name, RSAOAEP);
@@ -138,4 +138,4 @@ test("RSA-OAEP encrypt-decrypt", async () => {
   });
   const encrypter = await createEncrypter(cert, { algoList: EncryptionAlgorithmListFull });
   await testEncryptDecrypt(encrypter, decrypter, true);
-}, 10000);
+});

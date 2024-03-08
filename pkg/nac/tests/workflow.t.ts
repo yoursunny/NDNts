@@ -11,7 +11,7 @@ import { expect, test } from "vitest";
 
 import { AccessManager, Consumer, Producer } from "..";
 
-test("simple", async () => {
+test("simple", { timeout: 10000 }, async () => {
   using closers = new Closers();
   const star = Bridge.star({ leaves: 3 }); // 0=AccessManager, 1=Producer, 2=Consumer
   closers.push(...star);
@@ -20,14 +20,14 @@ test("simple", async () => {
 
   const amName = new Name("/access/manager");
   const amR = await makeRepoProducer({
-    pOpts: { fw: star[0].fwB },
+    pOpts: { fw: star[0]!.fwB },
     reg: PrefixRegStatic(amName),
   });
   closers.push(amR);
   const [amSigner, amVerifier] = await generateSigningKey(amName);
   const [amOwnKdkEncrypter, amOwnKdkDecrypter] = await generateEncryptionKey(amName.append("kdk-encrypt"), RSAOAEP);
   const am = AccessManager.create({
-    cOpts: { fw: star[0].fwB },
+    cOpts: { fw: star[0]!.fwB },
     dataStore: amR.store,
     prefix: amName,
     keys: {
@@ -46,7 +46,7 @@ test("simple", async () => {
   expect(kekHlookup.kek).toHaveName(kek.name);
 
   const pR = await makeRepoProducer({
-    pOpts: { fw: star[1].fwB },
+    pOpts: { fw: star[1]!.fwB },
     reg: PrefixRegStatic(new Name("/producer/ck-prefix")),
   });
   closers.push(pR);
@@ -63,7 +63,7 @@ test("simple", async () => {
     const data = new Data(interest.name, appContent);
     await pEncrypter.encrypt(data);
     return data;
-  }, { fw: star[1].fwB, dataSigner: pSigner });
+  }, { fw: star[1]!.fwB, dataSigner: pSigner });
   closers.push(pP);
 
   const [cEncrypter, cDecrypter] = await generateEncryptionKey("/consumer", RSAOAEP);
@@ -74,14 +74,14 @@ test("simple", async () => {
     publicKey: cEncrypter,
   });
   const cR = await makeRepoProducer({
-    pOpts: { fw: star[2].fwB },
+    pOpts: { fw: star[2]!.fwB },
     reg: PrefixRegStatic(new Name("/consumer")),
   }, [cCert.data]);
   closers.push(cR);
 
   const c = Consumer.create({
     cOpts: {
-      fw: star[2].fwB,
+      fw: star[2]!.fwB,
       modifyInterest: { lifetime: 100 }, // allow failed CK retrieval timeout faster
     },
     verifier: {
@@ -95,7 +95,7 @@ test("simple", async () => {
     memberDecrypter: cDecrypter,
   });
   const appData = await consume("/data/part1/packet0", {
-    fw: star[2].fwB,
+    fw: star[2]!.fwB,
     verifier: pVerifier,
   });
   expect(appData.content).not.toEqualUint8Array(appContent);
@@ -104,4 +104,4 @@ test("simple", async () => {
   await kekH.grant(cCert.name);
   await c.decrypt(appData);
   expect(appData.content).toEqualUint8Array(appContent);
-}, 10000);
+});

@@ -56,6 +56,7 @@ export async function list<R>(arg1: string | StatusDataset<R>, arg2: any = {}, a
     prefix = localhostPrefix,
   } = opts;
   const cOpts: ConsumerOptions = {
+    describe: "nfdmgmt",
     ...endpoint?.cOpts,
     ...cOptsInput,
     verifier,

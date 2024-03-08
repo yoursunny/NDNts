@@ -49,7 +49,7 @@ describe.each(EcCurve.Choices)("ECDSA %s", (curve) => {
 
 describe.each(RsaModulusLength.Choices)("RSA %d", (modulusLength) => {
   describe.each(TestSignVerify.PacketTable)("sign-verify %j", ({ Packet }) => {
-    test("", async () => {
+    test("", { timeout: 15000 }, async () => {
       const [pvtA, pubA] = await generateSigningKey("/A/KEY/x", RSA, { modulusLength });
       const [pvtB, pubB] = await generateSigningKey("/B/KEY/x", RSA, { modulusLength });
 
@@ -57,10 +57,10 @@ describe.each(RsaModulusLength.Choices)("RSA %d", (modulusLength) => {
       TestSignVerify.check(record, { deterministic: true });
       expect(record.sA0.sigInfo.type).toBe(SigType.Sha256WithRsa);
       expect(record.sA0.sigInfo.keyLocator).toHaveName(pvtA.name);
-    }, { timeout: 15000 });
+    });
   });
 
-  test("load", async () => {
+  test("load", { timeout: 15000 }, async () => {
     const keyChain = KeyChain.createTemp(SigningAlgorithmListFull);
     const name = new Name("/my/KEY/x");
     await generateSigningKey(keyChain, name, RSA, { modulusLength });
@@ -73,7 +73,7 @@ describe.each(RsaModulusLength.Choices)("RSA %d", (modulusLength) => {
     expect(verifier.name).toEqualName(signer.name);
     expect(verifier.sigType).toBe(SigType.Sha256WithRsa);
     await verifier.verify(cert.data);
-  }, { timeout: 15000 });
+  });
 });
 
 describe("HMAC", () => {

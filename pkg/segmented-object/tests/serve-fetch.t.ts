@@ -238,7 +238,7 @@ test("FwFace closing", async () => {
   expect(Date.now() - t0).toBeLessThan(400);
 });
 
-test("congestion avoidance", async () => {
+test("congestion avoidance", { timeout: 15000 }, async () => {
   const relay: Bridge.RelayOptions = {
     loss: 0.02,
     delay: 50,
@@ -258,4 +258,4 @@ test("congestion avoidance", async () => {
 
   const fetched = fetch("/R");
   await expect(fetched).resolves.toEqualUint8Array(objectBody);
-}, 15000);
+});

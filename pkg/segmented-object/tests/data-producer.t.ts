@@ -20,7 +20,7 @@ test("listData", async () => {
   expect(Buffer.concat(packets.map((data) => data.content))).toEqualUint8Array(objectBody);
 });
 
-test("DataTape insert", async () => {
+test("DataTape insert", { timeout: 10000 }, async () => {
   const src = new BufferChunkSource(objectBody);
   const list = DataProducer.listData(src, new Name("/R"));
 
@@ -31,7 +31,7 @@ test("DataTape insert", async () => {
   const packets = await collect(tape.listData());
   packets.sort((a, b) => a.name.compare(b.name));
   expect(Buffer.concat(packets.map((data) => data.content))).toEqualUint8Array(objectBody);
-}, 10000);
+});
 
 test("bufferBehind bufferAhead", async () => {
   let offset = 0;
