@@ -36,19 +36,11 @@ function makePackageOverrides(config, ...pkgs) {
 }
 
 /** @type {XoOptions} */
-const tsdoc = {
-  plugins: ["tsdoc"],
-  rules: {
-    "tsdoc/syntax": "warn",
-  },
-};
-
-/** @type {XoOptions} */
 module.exports = {
   ...js,
   overrides: [
-    ...makePackageOverrides(merge(js, ts, tsdoc), ""),
-    ...makePackageOverrides(merge(js, ts, tsdoc, web),
+    ...makePackageOverrides(merge(js, ts), ""),
+    ...makePackageOverrides(merge(js, ts, web),
       "/pkg/quic-transport",
       "/pkg/web-bluetooth-transport",
       "/pkg/ws-transport",
@@ -57,13 +49,13 @@ module.exports = {
       files: [
         "**/integ/browser-tests/**/*.{ts,cts,mts}",
       ],
-      ...merge(js, ts, tsdoc, web, pptr),
+      ...merge(js, ts, web, pptr),
     },
     {
       files: [
         "**/README.md.ts",
       ],
-      ...merge(js, ts, tsdoc, literate, {
+      ...merge(js, ts, literate, {
         rules: {
           "unicorn/no-process-exit": "off",
         },
