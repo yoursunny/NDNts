@@ -1,4 +1,4 @@
-import { StructFieldName, StructFieldNameNested, TT as l3TT } from "@ndn/packet";
+import { type Name, StructFieldName, StructFieldNameNested, TT as l3TT } from "@ndn/packet";
 import { Decoder, EvDecoder, StructBuilder, StructFieldEnum, StructFieldNNI, type StructFields, StructFieldText } from "@ndn/tlv";
 import type { SetRequired } from "type-fest";
 
@@ -71,6 +71,12 @@ interface Commands {
 
   "faces/destroy": CP<"faceId", never>;
 
+  "cs/config": CP<never,
+  "capacity" | "flags" | `flag${keyof typeof CsFlags}` | "mask" | `mask${keyof typeof CsFlags}`
+  >;
+
+  "cs/erase": CP<"name", "count">;
+
   "strategy-choice/set": CP<"name" | "strategy", never>;
 
   "strategy-choice/unset": CP<"name", never>;
@@ -90,4 +96,32 @@ interface Commands {
  */
 export async function invoke<C extends keyof Commands>(command: C, params: Commands[C], opts: ControlCommandOptions = {}): Promise<ControlResponse> {
   return invokeGeneric(command, new ControlParameters(params), opts);
+}
+
+/**
+ * Erase all CS entries under a name prefix.
+ * @param name - Name prefix.
+ * @param opts - Other options.
+ * @returns Total erased entries.
+ *
+ * @remarks
+ * NFD cs/erase command can impose a limit on how many CS entries may be erased upon each
+ * invocation. This function repeatedly invoke cs/erase until it returns zero. Notice that this
+ * function could take a long time if `name` is a busy prefix, and this function may continue
+ * forever if `name` is a prefix of `opts.prefix`.
+ */
+export async function invokeCsErase(name: Name, opts: ControlCommandOptions = {}): Promise<number> {
+  let total = 0;
+  while (true) {
+    const cr = await invoke("cs/erase", { name }, opts);
+    if (cr.statusCode !== 200) {
+      throw new Error(`cs/erase ${cr.statusCode} ${cr.statusText}`);
+    }
+    const cp = ControlParameters.decodeFromResponseBody(cr);
+    if (!cp.count) { // 0 (fully erased) or undefined (NFD violated protocol)
+      break;
+    }
+    total += cp.count;
+  }
+  return total;
 }

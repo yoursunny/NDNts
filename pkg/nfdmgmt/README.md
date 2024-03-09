@@ -7,7 +7,7 @@ It includes both a generic variant and a NFD-specific variant with additional ty
 
 * [X] ControlCommand
   * [X] generic: `invokeGeneric`, `ControlResponse`
-  * [X] NFD: `invoke`, `ControlParameters`
+  * [X] NFD: `invoke`, `invokeCsErase`, `ControlParameters`
 * [X] StatusDataset
   * [X] generic: `list`, `StatusDataset`
   * [X] NFD: `FaceDataset`, `FaceQuery`, `CsInfo`, `StrategyChoice`, `RibEntry`
