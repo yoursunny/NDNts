@@ -21,7 +21,7 @@ export class WsTransport extends Transport {
       try {
         await pEvent(sock, "open", { timeout: opts.connectTimeout ?? 10000 });
       } catch (err: unknown) {
-        sock.close(1002);
+        sock.close();
         throw err;
       }
     }
@@ -87,7 +87,7 @@ export class WsTransport extends Transport {
   }
 
   public close(): void {
-    this.sock.close(1000);
+    this.sock.close();
   }
 
   /** Reopen the transport by connecting again with the same options. */
