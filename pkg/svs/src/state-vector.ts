@@ -83,7 +83,7 @@ export class StateVector {
     return o;
   }
 
-  /** Encode TLV-VALUE of name component. */
+  /** Encode TLV-VALUE only. */
   public encodeTo(encoder: Encoder): void {
     const list = Array.from(this);
     list.sort(([a], [b]) => -a.compare(b));
@@ -95,12 +95,15 @@ export class StateVector {
     }
   }
 
-  /** Encode to name component. */
+  /**
+   * Encode to name component.
+   * @deprecated No longer supported.
+   */
   public toComponent(): Component {
     return new Component(TT.StateVector, Encoder.encode(this));
   }
 
-  /** Decode TLV-VALUE of name component. */
+  /** Decode TLV-VALUE only. */
   public static decodeFrom(decoder: Decoder): StateVector {
     const vv = new StateVector();
     while (!decoder.eof) {
@@ -115,7 +118,10 @@ export class StateVector {
     return vv;
   }
 
-  /** Decode from name component. */
+  /**
+   * Decode from name component.
+   * @deprecated No longer supported.
+   */
   public static fromComponent(comp: Component): StateVector {
     if (comp.type !== TT.StateVector) {
       throw new Error("unexpected NameComponent TLV-TYPE");
@@ -125,7 +131,19 @@ export class StateVector {
 }
 
 export namespace StateVector {
-  /** TLV-TYPE of name component. */
+  /**
+   * StateVector TLV-TYPE.
+   *
+   * @remarks
+   * SVS v1 encodes StateVector as a name component of this type.
+   * SVS v2 encodes StateVector as a sub-element of this type within AppParameters.
+   */
+  export const Type = TT.StateVector;
+
+  /**
+   * TLV-TYPE of name component.
+   * @deprecated Use {@link Type}.
+   */
   export const NameComponentType = TT.StateVector;
 
   export interface DiffEntry {

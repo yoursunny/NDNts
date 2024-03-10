@@ -1,8 +1,9 @@
 import { consume, type ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
-import { Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
+import { Component, Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
-import { CustomEvent, randomJitter, trackEventListener } from "@ndn/util";
+import { Decoder, Encoder } from "@ndn/tlv";
+import { assert, CustomEvent, randomJitter, trackEventListener } from "@ndn/util";
 import type { Promisable } from "type-fest";
 import { TypedEventTarget } from "typescript-event-target";
 
@@ -25,25 +26,22 @@ type EventMap = SyncProtocol.EventMap<Name> & {
 /** StateVectorSync participant. */
 export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
   public static async create({
-    fw,
-    describe,
+    syncPrefix,
     endpoint, // eslint-disable-line etc/no-deprecated
+    fw = endpoint?.fw ?? Forwarder.getDefault(),
+    describe = `SvSync(${syncPrefix})`,
     initialStateVector = new StateVector(),
     initialize,
-    syncPrefix,
     syncInterestLifetime = 1000,
     steadyTimer = [30000, 0.1],
     suppressionTimer = [200, 0.5],
     signer = nullSigner,
     verifier,
   }: SvSync.Options): Promise<SvSync> {
-    fw ??= endpoint?.fw ?? Forwarder.getDefault();
-    describe ??= `SvSync(${syncPrefix})`;
-
     const sync = new SvSync(
+      syncPrefix,
       describe,
       initialStateVector,
-      syncPrefix,
       Interest.makeModifyFunc({
         canBePrefix: true,
         mustBeFresh: true,
@@ -57,18 +55,18 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     );
 
     await initialize?.(sync);
-    sync.producer = produce(sync.syncPrefix, sync.handleSyncInterest, {
+    sync.producer = produce(syncPrefix, sync.handleSyncInterest, {
       fw,
-      describe: `${sync.describe}[p]`,
+      describe: `${describe}[p]`,
       routeCapture: false,
     });
     return sync;
   }
 
   private constructor(
+      public readonly syncPrefix: Name,
       public readonly describe: string,
       private readonly own: StateVector,
-      public readonly syncPrefix: Name,
       private readonly modifyInterest: Interest.ModifyFunc,
       private readonly cOpts: ConsumerOptions,
       private readonly steadyTimer: () => number,
@@ -153,7 +151,9 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
 
   private readonly handleSyncInterest: ProducerHandler = async (interest) => {
     await this.verifier?.verify(interest);
-    const recv = StateVector.fromComponent(interest.name.at(this.syncPrefix.length));
+    const vComp = interest.name.at(this.syncPrefix.length);
+    assert(vComp.type === StateVector.Type, "name component is not a StateVector");
+    const recv = new Decoder(vComp.value).decode(StateVector);
 
     const ourOlder = this.own.listOlderThan(recv);
     const ourNewer = recv.listOlderThan(this.own);
@@ -208,7 +208,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     this.debug("send");
 
     const interest = new Interest();
-    interest.name = this.syncPrefix.append(this.own.toComponent());
+    interest.name = this.syncPrefix.append(new Component(StateVector.Type, Encoder.encode(this.own)));
     this.modifyInterest(interest);
     await this.signer.sign(interest);
 
@@ -232,6 +232,15 @@ export namespace SvSync {
 
   /** {@link SvSync.create} options. */
   export interface Options {
+    /** Sync group prefix. */
+    syncPrefix: Name;
+
+    /**
+     * Endpoint for communication.
+     * @deprecated Specify `.fw`.
+     */
+    endpoint?: Endpoint;
+
     /**
      * Use the specified logical forwarder.
      * @defaultValue `Forwarder.getDefault()`
@@ -240,12 +249,6 @@ export namespace SvSync {
 
     /** Description for debugging purpose. */
     describe?: string;
-
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.fw`.
-     */
-    endpoint?: Endpoint;
 
     /**
      * Initial state vector.
@@ -263,9 +266,6 @@ export namespace SvSync {
      * Sync protocol starts running after the returned Promise is resolved.
      */
     initialize?: (sync: SvSync) => Promisable<void>;
-
-    /** Sync group prefix. */
-    syncPrefix: Name;
 
     /**
      * Sync Interest lifetime in milliseconds.
