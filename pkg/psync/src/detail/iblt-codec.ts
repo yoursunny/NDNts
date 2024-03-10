@@ -1,4 +1,4 @@
-import { Component } from "@ndn/packet";
+import { Component, TT } from "@ndn/packet";
 
 import { IBLT } from "../iblt";
 
@@ -12,7 +12,7 @@ export class IbltCodec {
   declare protected readonly ibltParams: IBLT.PreparedParameters;
 
   public iblt2comp(iblt: IBLT): Component {
-    return new Component(undefined, this.ibltCompression.compress(iblt.serialize()));
+    return new Component(TT.GenericNameComponent, this.ibltCompression.compress(iblt.serialize()));
   }
 
   public comp2iblt(comp: Component): IBLT {

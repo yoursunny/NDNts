@@ -1,5 +1,5 @@
 import { type ConsumerOptions } from "@ndn/endpoint";
-import { Component, type Name } from "@ndn/packet";
+import { Component, type Name, TT } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
 import { assert } from "@ndn/util";
@@ -40,7 +40,7 @@ export class Client {
       if (child) {
         yield child.name;
       }
-    })(), (comp) => new Component(undefined, comp)));
+    })(), (comp) => new Component(TT.GenericNameComponent, comp)));
     return retrieveMetadata(name, FileMetadata, this.opts);
   }
 

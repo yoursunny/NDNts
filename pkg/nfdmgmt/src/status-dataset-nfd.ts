@@ -84,7 +84,9 @@ buildFaceQueryFilter.subclass = FaceQueryFilter;
 export function FaceQuery(filter: FaceQuery.Filter): StatusDataset<FaceStatus> {
   return {
     datasetName: "faces/query",
-    datasetParams: [new Component(undefined, Encoder.encode(Object.assign(new FaceQueryFilter(), filter)))],
+    datasetParams: [
+      new Component(l3TT.GenericNameComponent, Encoder.encode(Object.assign(new FaceQueryFilter(), filter))),
+    ],
     decodeFrom: FaceStatus.decodeFrom,
   };
 }

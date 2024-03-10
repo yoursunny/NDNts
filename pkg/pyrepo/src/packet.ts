@@ -7,13 +7,13 @@ export interface Verb {
 }
 
 export const InsertVerb = {
-  action: new Component(undefined, "insert"),
-  check: new Component(undefined, "insert check"),
+  action: new Component(l3TT.GenericNameComponent, "insert"),
+  check: new Component(l3TT.GenericNameComponent, "insert check"),
 };
 
 export const DeleteVerb = {
-  action: new Component(undefined, "delete"),
-  check: new Component(undefined, "delete check"),
+  action: new Component(l3TT.GenericNameComponent, "delete"),
+  check: new Component(l3TT.GenericNameComponent, "delete check"),
 };
 
 const enum TT {

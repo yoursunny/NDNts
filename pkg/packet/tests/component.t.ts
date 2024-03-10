@@ -19,6 +19,7 @@ test("decode", () => {
   expect(comp.toString()).toEqual("240=A%01%A0");
   expect(AltUri.ofComponent(comp)).toEqual("240=A%01%A0");
 
+  // eslint-disable-next-line etc/no-deprecated
   comp = new Component(undefined, Uint8Array.of(0x2E, 0x2E, 0x2E, 0x42));
   expect(comp.type).toBe(0x08);
   expect(comp.value).toEqualUint8Array([0x2E, 0x2E, 0x2E, 0x42]);

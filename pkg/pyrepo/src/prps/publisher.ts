@@ -1,7 +1,7 @@
 import { consume, ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler, ProducerOptions } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { SequenceNum } from "@ndn/naming-convention2";
-import { Component, Data, digestSigning, Interest, Name, NameMap, SignedInterestPolicy, type Signer } from "@ndn/packet";
+import { Component, Data, digestSigning, Interest, Name, NameMap, SignedInterestPolicy, type Signer, TT } from "@ndn/packet";
 import { type Encodable, Encoder } from "@ndn/tlv";
 import { crypto } from "@ndn/util";
 import { type SetRequired } from "type-fest";
@@ -71,7 +71,10 @@ export class PrpsPublisher implements Disposable {
     let key: Name;
     do {
       crypto.getRandomValues(notifyNonce);
-      key = this.pubPrefix.append(MsgSuffix, ...topic.comps, new Component(undefined, notifyNonce));
+      key = this.pubPrefix.append(
+        MsgSuffix, ...topic.comps,
+        new Component(TT.GenericNameComponent, notifyNonce),
+      );
     } while (this.pendings.has(key));
 
     this.pendings.set(key, { topic, item });

@@ -74,6 +74,12 @@ export class Component {
   }
 
   /**
+   * Construct GenericNameComponent from TLV-VALUE.
+   * @deprecated Pass `TT.GenericNameComponent` as type.
+   */
+  constructor(type: undefined, value: Uint8Array | string);
+
+  /**
    * Construct from TLV-TYPE and TLV-VALUE.
    * @param type - TLV-TYPE. Default is GenericNameComponent.
    * @param value - TLV-VALUE. If specified as string, it's encoded as UTF-8 but not interpreted

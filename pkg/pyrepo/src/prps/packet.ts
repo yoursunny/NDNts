@@ -20,7 +20,7 @@ export class NotifyAppParam extends buildNotifyAppParam.baseClass<NotifyAppParam
   public makeMsgInterest(topic: Name): Interest {
     const interest = new Interest();
     interest.name = this.publisher.append(
-      MsgSuffix, ...topic.comps, new Component(undefined, this.nonce));
+      MsgSuffix, ...topic.comps, new Component(l3TT.GenericNameComponent, this.nonce));
     interest.fwHint = this.publisherFwHint && new FwHint(this.publisherFwHint);
     return interest;
   }

@@ -17,7 +17,7 @@ class Markered implements NumberConvention {
   }
 
   public create(v: number | bigint): Component {
-    return new Component(undefined, Encoder.encode([this.marker, NNI(v)], 9));
+    return new Component(TT.GenericNameComponent, Encoder.encode([this.marker, NNI(v)], 9));
   }
 
   public parse(comp: Component): number {

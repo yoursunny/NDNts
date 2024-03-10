@@ -108,7 +108,7 @@ export function makePSyncCompatParam({
       return [
         GenericNumber.create(bf.projectedElementCount),
         GenericNumber.create(Math.trunc(bf.falsePositiveProbability * 1000)),
-        new Component(undefined, bf.encode()),
+        new Component(TT.GenericNameComponent, bf.encode()),
       ];
     },
     decodeBloom(Bloom, comps) {

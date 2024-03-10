@@ -1,5 +1,5 @@
 import type { NamedSigner, NamedVerifier } from "@ndn/keychain";
-import { Component, Interest, type LLDecrypt, type LLEncrypt, type SignedInterestPolicy } from "@ndn/packet";
+import { Component, Interest, type LLDecrypt, type LLEncrypt, type SignedInterestPolicy, TT as l3TT } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
 import type { Promisable } from "type-fest";
@@ -125,7 +125,7 @@ export namespace ChallengeRequest {
     ]);
 
     const interest = new Interest();
-    interest.name = profile.prefix.append(C.CA, C.CHALLENGE, new Component(undefined, requestId));
+    interest.name = profile.prefix.append(C.CA, C.CHALLENGE, new Component(l3TT.GenericNameComponent, requestId));
     interest.mustBeFresh = true;
     interest.appParameters = encrypted_payload.encode(
       await sessionEncrypter.llEncrypt({ plaintext: payload, additionalData: requestId }));
