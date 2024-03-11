@@ -9,3 +9,5 @@ This package contains **StateVectorSync** and related protocols, including:
   * core synchronization logic only, does not deal with Data fetching
 * [SVS-PS](https://named-data.github.io/StateVectorSync/PubSubSpec.html), revision 2023-05-19
   * simple unit test
+
+[SVS v2](https://github.com/named-data/StateVectorSync/pull/14) is being implemented.

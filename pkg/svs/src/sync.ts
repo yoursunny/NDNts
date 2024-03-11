@@ -34,10 +34,18 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     initialize,
     syncInterestLifetime = 1000,
     steadyTimer = [30000, 0.1],
+    periodicTimeout = steadyTimer,
+    svs2suppression = false,
     suppressionTimer = [200, 0.5],
+    suppressionPeriod = suppressionTimer[0],
+    suppressionTimeout = SvSync.suppressionExpDelay(suppressionPeriod),
     signer = nullSigner,
     verifier,
   }: SvSync.Options): Promise<SvSync> {
+    if (typeof periodicTimeout === "number") {
+      periodicTimeout = [periodicTimeout, 0.1];
+    }
+
     const sync = new SvSync(
       syncPrefix,
       describe,
@@ -48,7 +56,8 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
         lifetime: syncInterestLifetime,
       }),
       { fw, describe: `${describe}[c]`, retx: 0 },
-      randomJitter(steadyTimer[1], steadyTimer[0]),
+      randomJitter(periodicTimeout[1], periodicTimeout[0]),
+      svs2suppression ? suppressionTimeout :
       randomJitter(suppressionTimer[1], suppressionTimer[0]),
       signer,
       verifier,
@@ -223,10 +232,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
 export namespace SvSync {
   /**
    * Timer settings.
-   *
-   * @remarks
-   * ms: median interval in milliseconds.
-   * jitter: ± percentage, in [0.0, 1.0) range.
+   * @deprecated No longer supported.
    */
   export type Timer = [ms: number, jitter: number];
 
@@ -274,16 +280,65 @@ export namespace SvSync {
     syncInterestLifetime?: number;
 
     /**
-     * Sync Interest timer in steady state.
+     * Sync Interest timer in steady state (SVS v1).
      * @defaultValue `[30000ms, ±10%]`
+     * @remarks
+     * - median: median interval in milliseconds.
+     * - jitter: ± percentage, in [0.0, 1.0) range.
      */
-    steadyTimer?: Timer;
+    steadyTimer?: [median: number, jitter: number];
 
     /**
-     * Sync Interest timer in suppression state.
-     * @defaultValue `[200ms, ±50%]`
+     * Sync Interest timer in steady state (SVS v2).
+     * @defaultValue `[30000ms, ±10%]`
+     * @remarks
+     * If specified as tuple,
+     * - median: median interval in milliseconds.
+     * - jitter: ± percentage, in [0.0, 1.0) range.
+     *
+     * If specified as number, it's interpreted as median.
+     *
+     * SVS v1 `steadyTimer` and SVS v2 `periodicTimeout` are equivalent.
+     * If both are specified, this option takes precedence.
+     * @experimental
      */
-    suppressionTimer?: Timer;
+    periodicTimeout?: number | [median: number, jitter: number];
+
+    /**
+     * Use SVS v2 suppression timer.
+     * @defaultValue false
+     * @experimental
+     */
+    svs2suppression?: boolean;
+
+    /**
+     * Sync Interest timer in suppression state (SVS v1).
+     * @defaultValue `[200ms, ±50%]`
+     * @remarks
+     * - median: median interval in milliseconds.
+     * - jitter: ± percentage, in [0.0, 1.0) range.
+     *
+     * This option takes effect only if `.svs2timer` is false.
+     */
+    suppressionTimer?: [median: number, jitter: number];
+
+    /**
+     * Sync Interest timer in suppression state, maximum value (SVS v2).
+     * @defaultValue `200ms`
+     * @experimental
+     */
+    suppressionPeriod?: number;
+
+    /**
+     * Sync Interest timer in suppression state, value generator (SVS v2).
+     * @defaultValue `SvSync.suppressionExpDelay(suppressionPeriod)`
+     * @remarks
+     * The maximum value returned by the generator function should be `suppressionPeriod`.
+     *
+     * This option takes effect only if `.svs2timer` is true.
+     * @experimental
+     */
+    suppressionTimeout?: () => number;
 
     /**
      * Sync Interest signer.
@@ -296,6 +351,21 @@ export namespace SvSync {
      * @defaultValue no verification
      */
     verifier?: Verifier;
+  }
+
+  /**
+   * SVS v2 suppression timeout exponential decay function.
+   * @param c - Constant factor.
+   * @param f - Decay factor.
+   * @returns Function to generate suppression timeout values.
+   * @experimental
+   */
+  export function suppressionExpDelay(c: number, f = 10): () => number {
+    const cf = c / f;
+    return () => {
+      const v = Math.random() * c;
+      return -c * Math.expm1((v - c) / cf);
+    };
   }
 }
 
