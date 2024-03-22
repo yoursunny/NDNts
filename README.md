@@ -14,6 +14,8 @@
 Supported platforms include:
 
 * Node.js: 18.x and 20.x and 21.x, on Windows and Linux.
+  * Generally, I support *Active LTS* and *Current* versions.
+  * Support for 18.x and 21.x will be dropped on or after 2024-04-23.
 * Bundlers: webpack 5.
 * Firefox: latest version on Windows and Mac.
 * Chrome: latest version on Windows, Mac, Android, and iOS 16.0+.
