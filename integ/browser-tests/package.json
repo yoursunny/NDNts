@@ -27,12 +27,12 @@
     "@types/webpack": "^5.28.5",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "html-webpack-plugin": "^5.6.0",
-    "puppeteer": "^22.4.1",
+    "puppeteer": "^22.6.0",
     "ts-loader": "^9.5.1",
     "tslib": "^2.6.2",
-    "type-fest": "^4.12.0",
-    "webpack": "^5.90.3",
+    "type-fest": "^4.13.1",
+    "webpack": "^5.91.0",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.0.2"
+    "webpack-dev-server": "^5.0.4"
   }
 }
