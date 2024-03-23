@@ -126,7 +126,7 @@ export class StateVector {
 
   /** Decode TLV-VALUE only. */
   public static decodeFrom(decoder: Decoder): StateVector {
-    const vv = new StateVector();
+    const v = new StateVector();
     while (!decoder.eof) {
       const { type: entryT, vd: d1 } = decoder.read();
       const id = d1.decode(Name);
@@ -134,9 +134,9 @@ export class StateVector {
       if (entryT !== TT.StateVectorEntry || seqNumT !== TT.SeqNo || !d1.eof) {
         throw new Error("invalid StateVector");
       }
-      vv.set(id, seqNum);
+      v.set(id, { seqNum, lastUpdate: 0 });
     }
-    return vv;
+    return v;
   }
 
   /**

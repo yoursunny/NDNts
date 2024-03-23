@@ -59,6 +59,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
       randomJitter(periodicTimeout[1], periodicTimeout[0]),
       svs2suppression ? suppressionTimeout :
       randomJitter(suppressionTimer[1], suppressionTimer[0]),
+      svs2suppression ? suppressionPeriod : undefined,
       signer,
       verifier,
     );
@@ -80,6 +81,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
       private readonly cOpts: ConsumerOptions,
       private readonly steadyTimer: () => number,
       private readonly suppressionTimer: () => number,
+      private readonly svs2suppressionPeriod: number | undefined,
       private readonly signer: Signer,
       private readonly verifier?: Verifier,
   ) {
@@ -179,14 +181,26 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
 
     if (this.aggregated) { // in suppression state
       this.aggregated.mergeFrom(recv);
-    } else if (ourNewer.length > 0) { // in steady state, entering suppression state
-      this.aggregated = recv;
-      this.resetTimer();
-    } else { // in steady state
-      this.resetTimer();
+      return undefined;
     }
+
+    // in steady state
+    if (this.shouldEnterSuppression(ourNewer)) {
+      // entering suppression state
+      this.aggregated = recv;
+    }
+    this.resetTimer();
     return undefined;
   };
+
+  private shouldEnterSuppression(ourNewer: readonly StateVector.DiffEntry[]): boolean {
+    if (this.svs2suppressionPeriod === undefined) {
+      return ourNewer.length > 0;
+    }
+
+    const ignoreUpdatedAfter = Date.now() - this.svs2suppressionPeriod;
+    return ourNewer.some(({ id }) => this.own.getEntry(id).lastUpdate <= ignoreUpdatedAfter);
+  }
 
   private resetTimer(immediate = false): void {
     clearTimeout(this.timer);
@@ -305,7 +319,7 @@ export namespace SvSync {
     periodicTimeout?: number | [median: number, jitter: number];
 
     /**
-     * Use SVS v2 suppression timer.
+     * Use SVS v2 suppression timer and suppression logic.
      * @defaultValue false
      * @experimental
      */

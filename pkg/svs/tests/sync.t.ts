@@ -47,7 +47,7 @@ class DebugHandler {
 const baseOpts: SvSync.Options = {
   syncPrefix: new Name("/svs-test"),
   syncInterestLifetime: 200,
-  steadyTimer: [900, 0.05],
+  steadyTimer: [600, 0.05],
   suppressionTimer: [50, 0.4],
 };
 
@@ -61,12 +61,11 @@ test.each([false, true])("example %#", async (svs2suppression) => {
   using bridge = Bridge.create({
     relayAB: (it) => filter(() => !lossToC, it),
   }).rename("AB", "C");
-  const { fwAB, fwC } = bridge;
 
   const opts: SvSync.Options = {
     ...baseOpts,
     svs2suppression,
-    fw: fwAB,
+    fw: bridge.fwAB,
   };
 
   const pA = await SvSync.create({ ...opts, describe: "A" });
@@ -77,13 +76,13 @@ test.each([false, true])("example %#", async (svs2suppression) => {
   const nB = pB.add("/B");
   nB.seqNum = 15;
   const uB = new UpdateHandler(pB);
-  const pC = await SvSync.create({ ...opts, describe: "C", fw: fwC });
+  const pC = await SvSync.create({ ...opts, describe: "C", fw: bridge.fwC });
   const nC = pC.add(new Name("/C"));
   nC.seqNum = 25;
   const uC = new UpdateHandler(pC);
   closers.push(pA, pB, pC);
 
-  await delay(200);
+  await delay(800);
   expect(pA.get("/A").seqNum).toBe(10);
   expect(pB.get("/A").seqNum).toBe(10);
   expect(pC.get("/A").seqNum).toBe(10);
@@ -114,7 +113,7 @@ test.each([false, true])("example %#", async (svs2suppression) => {
   debugHandler.cnt.clear();
 
   lossToC = false;
-  await delay(1200);
+  await delay(800);
   expect(pA.get("/A").seqNum).toBe(11);
   expect(pB.get("/A").seqNum).toBe(11);
   expect(pC.get("/A").seqNum).toBe(11);
@@ -181,7 +180,7 @@ test("initialize", async () => {
       n1C.seqNum = 3; // decrease
       n1D.seqNum = 4; // new node
 
-      await delay(1200); // longer than steady timer, but no sync Interest would be sent
+      await delay(800); // longer than steady timer, but no sync Interest would be sent
     },
   });
   expect(debugHandler.cnt.get("1:send")).toBe(0);
