@@ -53,17 +53,30 @@ class MatchState {
   /**
    * Clone the state while consuming part of the name.
    * @param incrementPos - How many components are consumed.
-   * @param varsL - Updated variables.
+   * @returns Updated state.
    */
-  public extend(incrementPos: number, ...varsL: Array<Iterable<readonly [string, Name]>>): MatchState {
-    const { vars } = this;
-    return new MatchState(this.name, this.pos + incrementPos,
-      new Map<string, Name>((function*() {
-        yield* vars;
-        for (const vars of varsL) {
-          yield* vars;
+  public extend(incrementPos: number): MatchState;
+
+  /**
+   * Clone the state while consuming part of the name.
+   * @param incrementPos - How many components are consumed.
+   * @param varsL - Updated variables.
+   * @returns Updated state, or `false` if variables are inconsistent.
+   */
+  public extend(incrementPos: number, ...varsL: Array<Iterable<readonly [string, Name]>>): MatchState | false;
+
+  public extend(incrementPos: number, ...varsL: Array<Iterable<readonly [string, Name]>>): any {
+    const result = new Map(this.vars);
+    for (const vars of varsL) {
+      for (const [k, rv] of vars) {
+        const lv = result.get(k);
+        if (lv?.equals(rv) === false) {
+          return false;
         }
-      })()));
+        result.set(k, rv);
+      }
+    }
+    return new MatchState(this.name, this.pos + incrementPos, result);
   }
 }
 
@@ -218,7 +231,10 @@ export class VariablePattern extends Pattern {
       const value = state.tail(i);
       for (const innerVars of this.innerMatch(value)) {
         if (this.filtersAccept(value, innerVars)) {
-          yield state.extend(i, innerVars, [[this.id, value]]);
+          const s = state.extend(i, innerVars, [[this.id, value]]);
+          if (s) {
+            yield s;
+          }
         }
       }
     }
