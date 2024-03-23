@@ -1,5 +1,5 @@
 import { consume, type ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler } from "@ndn/endpoint";
-import { Forwarder } from "@ndn/fw";
+import type { Forwarder } from "@ndn/fw";
 import { Component, Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { Decoder, Encoder } from "@ndn/tlv";
@@ -28,7 +28,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
   public static async create({
     syncPrefix,
     endpoint, // eslint-disable-line etc/no-deprecated
-    fw = endpoint?.fw ?? Forwarder.getDefault(),
+    fw = endpoint?.fw,
     describe = `SvSync(${syncPrefix})`,
     initialStateVector = new StateVector(),
     initialize,
@@ -318,7 +318,7 @@ export namespace SvSync {
      * - median: median interval in milliseconds.
      * - jitter: ± percentage, in [0.0, 1.0) range.
      *
-     * This option takes effect only if `.svs2timer` is false.
+     * This option takes effect only if `.svs2suppression` is false.
      */
     suppressionTimer?: [median: number, jitter: number];
 
@@ -335,7 +335,7 @@ export namespace SvSync {
      * @remarks
      * The maximum value returned by the generator function should be `suppressionPeriod`.
      *
-     * This option takes effect only if `.svs2timer` is true.
+     * This option takes effect only if `.svs2suppression` is true.
      * @experimental
      */
     suppressionTimeout?: () => number;

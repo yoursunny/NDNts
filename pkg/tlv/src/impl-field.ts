@@ -1,6 +1,6 @@
 import type { Encodable, Encoder } from "./encoder";
 import type { EvDecoder } from "./ev-decoder";
-import { type StructFieldType } from "./struct-field";
+import type { StructFieldType } from "./struct-field";
 
 export interface Field<T> extends Required<EvDecoder.RuleOptions> {
   readonly tt: number;

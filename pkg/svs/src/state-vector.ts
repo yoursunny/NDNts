@@ -9,44 +9,65 @@ export class StateVector {
   /**
    * Constructor.
    * @param from - Copy from state vector or its JSON value.
+   * @param lastUpdate - Initial lastUpdate value for each node entry.
    */
-  constructor(from?: StateVector | Record<string, number>) {
+  constructor(from?: StateVector | Record<string, number>, lastUpdate = 0) {
     if (from instanceof StateVector) {
       for (const [id, seqNum] of from) {
-        this.m.set(id, seqNum);
+        this.m.set(id, { seqNum, lastUpdate });
       }
     } else if (from !== undefined) {
-      for (const [idHex, seqNum] of Object.entries(from)) {
-        this.m.set(new Name(fromHex(idHex)), seqNum);
+      for (const [idHex, entry] of Object.entries(from)) {
+        this.m.set(new Name(fromHex(idHex)), toNodeEntry(entry, lastUpdate));
       }
     }
   }
 
-  private readonly m = new NameMap<number>();
+  private readonly m = new NameMap<StateVector.NodeEntry>();
 
-  /** Get sequence number of a node. */
+  /**
+   * Get node sequence number.
+   *
+   * @remarks
+   * If the node does not exist, returns zero.
+   */
   public get(id: Name): number {
-    return this.m.get(id) ?? 0;
+    return this.getEntry(id).seqNum;
   }
 
   /**
-   * Set sequence number of a node.
+   * Get node entry.
    *
    * @remarks
-   * Setting to zero removes the node.
+   * If the node does not exist, returns an entry with seqNum=0.
    */
-  public set(id: Name, seqNum: number): void {
-    seqNum = Math.trunc(seqNum);
-    if (seqNum <= 0) {
+  public getEntry(id: Name): StateVector.NodeEntry {
+    return this.m.get(id) ?? { seqNum: 0, lastUpdate: 0 };
+  }
+
+  /**
+   * Set node sequence number or entry.
+   * @param entry -
+   * If specified as number, it's interpreted as sequence number, and `Date.now()` is used as
+   * lastUpdate. Otherwise, it's used as the node entry.
+   *
+   * @remarks
+   * Setting sequence number to zero removes the node.
+   */
+  public set(id: Name, entry: number | StateVector.NodeEntry): void {
+    entry = toNodeEntry(entry);
+    if (entry.seqNum <= 0) {
       this.m.delete(id);
     } else {
-      this.m.set(id, seqNum);
+      this.m.set(id, entry);
     }
   }
 
   /** Iterate over nodes and their sequence numbers. */
-  public [Symbol.iterator](): IterableIterator<[id: Name, seqNum: number]> {
-    return this.m[Symbol.iterator]();
+  public *[Symbol.iterator](): IterableIterator<[id: Name, seqNum: number]> {
+    for (const [id, { seqNum }] of this.m) {
+      yield [id, seqNum];
+    }
   }
 
   private *iterOlderThan(other: StateVector): Iterable<StateVector.DiffEntry> {
@@ -68,9 +89,9 @@ export class StateVector {
   }
 
   /** Update this state vector to have newer sequence numbers between this and other. */
-  public mergeFrom(other: StateVector): void {
+  public mergeFrom(other: StateVector, lastUpdate = Date.now()): void {
     for (const { id, hiSeqNum } of this.iterOlderThan(other)) {
-      this.set(id, hiSeqNum);
+      this.set(id, { seqNum: hiSeqNum, lastUpdate });
     }
   }
 
@@ -146,9 +167,32 @@ export namespace StateVector {
    */
   export const NameComponentType = TT.StateVector;
 
+  /** Per-node entry. */
+  export interface NodeEntry {
+    /** Current sequence number (positive integer). */
+    seqNum: number;
+
+    /** Last update timestamp (from `Date.now()`). */
+    lastUpdate: number;
+  }
+
+  /** Result of {@link StateVector.listOlderThan}. */
   export interface DiffEntry {
+    /** Node ID. */
     id: Name;
+
+    /** Low sequence number (inclusive). */
     loSeqNum: number;
+
+    /** High sequence number (inclusive). */
     hiSeqNum: number;
   }
+}
+
+function toNodeEntry(entry: number | StateVector.NodeEntry, lastUpdate = Date.now()): StateVector.NodeEntry {
+  if (typeof entry === "number") {
+    entry = { seqNum: entry, lastUpdate };
+  }
+  entry.seqNum = Math.trunc(entry.seqNum);
+  return entry;
 }
