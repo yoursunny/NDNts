@@ -1,13 +1,37 @@
 import { SequenceNum, Timestamp } from "@ndn/naming-convention2";
 import type { Name } from "@ndn/packet";
+import take from "obliterator/take.js";
 
 import { AlternatePattern, Pattern, VariablePattern, type Vars } from "../pattern";
+import type * as A from "./ast";
+
+/** Function in a call expression. */
+export interface Callable {
+  readonly nargs: number | [min: number, max: number];
+  readonly asVariable?: boolean;
+  readonly makeFilter?: (...args: readonly A.Expr[]) => VariablePattern.Filter;
+}
 
 /** A filter that matches {@link Timestamp} convention. */
 export const timestamp = new VariablePattern.ConventionFilter(Timestamp);
 
 /** A filter that matches {@link SequenceNum} convention. */
 export const seq = new VariablePattern.ConventionFilter(SequenceNum);
+
+export const builtinFunctions: Record<string, Callable> = {
+  sysid: { nargs: 0, asVariable: true },
+  host: { nargs: 0, asVariable: true },
+  uid: { nargs: 0, asVariable: true },
+  pid: { nargs: 0, asVariable: true },
+  timestamp: {
+    nargs: 0,
+    makeFilter: () => timestamp,
+  },
+  seq: {
+    nargs: 0,
+    makeFilter: () => seq,
+  },
+};
 
 /** A filter from a component constraint term. */
 export class ConstraintTerm implements VariablePattern.Filter {
@@ -16,15 +40,7 @@ export class ConstraintTerm implements VariablePattern.Filter {
   public accept(name: Name, vars: Vars) {
     void name;
     const value = vars.get(this.id);
-    if (!value) {
-      return false;
-    }
-
-    for (const m of this.pattern.match(value)) { // eslint-disable-line no-unreachable-loop
-      void m;
-      return true;
-    }
-    return false;
+    return !!value && take(this.pattern.match(value), 1).length > 0;
   }
 }
 

@@ -200,29 +200,18 @@ class Compiler {
 
   private makePatternCall(expr: A.Call, ctx: CompilePatternCtx): Pattern {
     void ctx;
-    const requireNoArgument = () => {
-      if (expr.args.length > 0) {
-        throwCompileError(`${expr.func}() takes no arguments`, expr);
-      }
-    };
-    switch (expr.func.toLowerCase()) {
-      case "timestamp": {
-        requireNoArgument();
-        return new VariablePattern(this.makeAutoId(), { filter: F.timestamp });
-      }
-      case "seq": {
-        requireNoArgument();
-        return new VariablePattern(this.makeAutoId(), { filter: F.seq });
-      }
-      case "sysid":
-      case "host":
-      case "uid":
-      case "pid": {
-        requireNoArgument();
-        return new VariablePattern(expr.func.toUpperCase());
-      }
+    const callable = F.builtinFunctions[expr.func.toLowerCase()];
+    if (!callable) {
+      throwCompileError(`unknown function ${expr.func}`, expr);
     }
-    throwCompileError(`unknown function ${expr.func}`, expr);
+    if (callable.nargs !== expr.args.length) {
+      throwCompileError(`${expr.func}() takes ${callable.nargs} arguments but is passed ${
+        expr.args.length} arguments`, expr);
+    }
+    return new VariablePattern(
+      callable.asVariable ? expr.func.toUpperCase() : this.makeAutoId(), {
+        filter: callable.makeFilter?.(...expr.args),
+      });
   }
 
   private makePatternAlt(expr: A.Alt, ctx: CompilePatternCtx): Pattern {

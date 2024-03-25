@@ -105,7 +105,7 @@ export class Ident extends Token {
   public override toString() { return this.id; }
 }
 
-const RE_IDENT = /^([a-z_#]\w*)/i;
+const RE_IDENT = /^([a-z_#$]\w*)/i;
 
 /** Name component literal token. */
 export class ComponentLit extends Token {

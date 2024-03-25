@@ -33,6 +33,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
     "mnemonist": "^0.39.8",
+    "obliterator": "^2.0.4",
     "tslib": "^2.6.2",
     "type-fest": "^4.13.1"
   },
