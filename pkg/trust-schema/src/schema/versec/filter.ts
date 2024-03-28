@@ -13,10 +13,10 @@ export interface Callable {
 }
 
 /** A filter that matches {@link Timestamp} convention. */
-export const timestamp = new VariablePattern.ConventionFilter(Timestamp);
+const timestamp = new VariablePattern.ConventionFilter(Timestamp);
 
 /** A filter that matches {@link SequenceNum} convention. */
-export const seq = new VariablePattern.ConventionFilter(SequenceNum);
+const seq = new VariablePattern.ConventionFilter(SequenceNum);
 
 export const builtinFunctions: Record<string, Callable> = {
   sysid: { nargs: 0, asVariable: true },
@@ -32,6 +32,17 @@ export const builtinFunctions: Record<string, Callable> = {
     makeFilter: () => seq,
   },
 };
+
+export class FunctionFilter implements VariablePattern.Filter {
+  constructor(
+      public readonly callExpr: A.Call,
+      public readonly inner: VariablePattern.Filter,
+  ) {}
+
+  public accept(name: Name, vars: Vars) {
+    return this.inner.accept(name, vars);
+  }
+}
 
 /** A filter from a component constraint term. */
 export class ConstraintTerm implements VariablePattern.Filter {
@@ -67,7 +78,7 @@ export function simplify(filter: VariablePattern.Filter): VariablePattern.Filter
 
 /**
  * Simplify a filter.
- * @param allow  - Allow set. Terms not in allow set are deleted.
+ * @param allow - Allow set. Terms not in allow set are deleted.
  */
 export function simplify(filter: VariablePattern.Filter, allow: ReadonlySet<string> | undefined): VariablePattern.Filter | undefined;
 

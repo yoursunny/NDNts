@@ -48,7 +48,8 @@ class Printer {
   }
 
   private translateVariablePattern(p: VariablePattern): A.Expr {
-    let name: A.Name | A.Ident = new A.Ident(p.id);
+    const ident = new A.Ident(p.id);
+    let name: A.Name | A.Ident = ident;
     if (p.inner) {
       const inner = this.translatePattern(p.inner);
       if (inner instanceof A.Name || inner instanceof A.Ident) {
@@ -58,21 +59,21 @@ class Printer {
       }
     }
 
-    switch (p.filter) {
-      case undefined: {
-        return name;
-      }
-      case F.timestamp: {
-        return new A.Call("timestamp");
-      }
-      case F.seq: {
-        return new A.Call("seq");
-      }
+    if (p.filter === undefined) {
+      return name;
     }
-    return new A.Constrained(name, this.translateFilter(p.filter));
+    if (!A.Ident.isRuntime(p.id) && p.filter instanceof F.FunctionFilter) {
+      return p.filter.callExpr;
+    }
+    return new A.Constrained(name, this.translateFilter(p.filter, ident));
   }
 
-  private translateFilter(f: VariablePattern.Filter): A.ComponentConstraintEq {
+  private translateFilter(f: VariablePattern.Filter, parentIdent: A.Ident): A.ComponentConstraintEq {
+    if (f instanceof F.FunctionFilter) {
+      return new A.ComponentConstraint([
+        new A.ComponentConstraintTerm(parentIdent, f.callExpr),
+      ]);
+    }
     if (f instanceof F.ConstraintTerm) {
       return new A.ComponentConstraint([
         new A.ComponentConstraintTerm(new A.Ident(f.id), this.translatePattern(f.pattern)),
@@ -80,7 +81,7 @@ class Printer {
     }
     if (f instanceof F.And || f instanceof F.Or) {
       const op = f instanceof F.And ? new T.And() : new T.Or();
-      return f.filters.map((sub) => this.translateFilter(sub))
+      return f.filters.map((sub) => this.translateFilter(sub, parentIdent))
         .reduce((left, right) => new A.ComponentConstraintRel(left, op, right));
     }
     return new A.ComponentConstraint([

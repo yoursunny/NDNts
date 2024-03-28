@@ -210,7 +210,9 @@ class Compiler {
     }
     return new VariablePattern(
       callable.asVariable ? expr.func.toUpperCase() : this.makeAutoId(), {
-        filter: callable.makeFilter?.(...expr.args),
+        filter: callable.makeFilter ?
+          new F.FunctionFilter(expr, callable.makeFilter(...expr.args)) :
+          undefined,
       });
   }
 
