@@ -1,10 +1,16 @@
 import { CertNaming } from "@ndn/keychain";
+import { assert } from "@ndn/util";
+import DefaultMap from "mnemonist/default-map.js";
 
 import { AlternatePattern, CertNamePattern, ConcatPattern, ConstPattern, type Pattern, VariablePattern } from "../pattern";
 import type { TrustSchemaPolicy } from "../policy";
 import * as A from "./ast";
 import * as F from "./filter";
 import * as T from "./token";
+
+class PrintPatternCtx {
+  public readonly filters = new DefaultMap<string, VariablePattern.Filter[]>(() => []);
+}
 
 class Printer {
   public readonly schema = new A.Schema();
@@ -16,27 +22,34 @@ class Printer {
     }
     this.savedPatterns.add(id);
 
-    this.schema.stmts.push(new A.Stmt(
-      new A.Ident(id),
-      this.translatePattern(p),
-    ));
+    const ident = new A.Ident(id);
+    const ctx = new PrintPatternCtx();
+    const def = this.translatePattern(p, ctx);
+    let cc: A.ComponentConstraintEq | undefined;
+    for (const [id, filters] of ctx.filters) {
+      const filter = F.combine(...filters);
+      assert(filter);
+      const fcc = this.translateFilter(filter, new A.Ident(id));
+      cc = cc ? new A.ComponentConstraintRel(cc, new T.And(), fcc) : fcc;
+    }
+    this.schema.stmts.push(new A.Stmt(ident, def, cc));
   }
 
-  private translatePattern(p: Pattern): A.Expr {
+  private translatePattern(p: Pattern, ctx: PrintPatternCtx): A.Expr {
     if (p instanceof ConstPattern) {
       return this.translateConstPattern(p);
     }
     if (p instanceof VariablePattern) {
-      return this.translateVariablePattern(p);
+      return this.translateVariablePattern(p, ctx);
     }
     if (p instanceof CertNamePattern) {
       return this.translateCertNamePattern(p);
     }
     if (p instanceof ConcatPattern) {
-      return this.translateConcatPattern(p);
+      return this.translateConcatPattern(p, ctx);
     }
     if (p instanceof AlternatePattern) {
-      return this.translateAlternatePattern(p);
+      return this.translateAlternatePattern(p, ctx);
     }
     return new A.Ident(`!${p.constructor.name}`);
   }
@@ -47,11 +60,11 @@ class Printer {
     );
   }
 
-  private translateVariablePattern(p: VariablePattern): A.Expr {
+  private translateVariablePattern(p: VariablePattern, ctx: PrintPatternCtx): A.Expr {
     const ident = new A.Ident(p.id);
     let name: A.Name | A.Ident = ident;
     if (p.inner) {
-      const inner = this.translatePattern(p.inner);
+      const inner = this.translatePattern(p.inner, ctx);
       if (inner instanceof A.Name || inner instanceof A.Ident) {
         name = inner;
       } else {
@@ -65,28 +78,8 @@ class Printer {
     if (!A.Ident.isRuntime(p.id) && p.filter instanceof F.FunctionFilter) {
       return p.filter.callExpr;
     }
-    return new A.Constrained(name, this.translateFilter(p.filter, ident));
-  }
-
-  private translateFilter(f: VariablePattern.Filter, parentIdent: A.Ident): A.ComponentConstraintEq {
-    if (f instanceof F.FunctionFilter) {
-      return new A.ComponentConstraint([
-        new A.ComponentConstraintTerm(parentIdent, f.callExpr),
-      ]);
-    }
-    if (f instanceof F.ConstraintTerm) {
-      return new A.ComponentConstraint([
-        new A.ComponentConstraintTerm(new A.Ident(f.id), this.translatePattern(f.pattern)),
-      ]);
-    }
-    if (f instanceof F.And || f instanceof F.Or) {
-      const op = f instanceof F.And ? new T.And() : new T.Or();
-      return f.filters.map((sub) => this.translateFilter(sub, parentIdent))
-        .reduce((left, right) => new A.ComponentConstraintRel(left, op, right));
-    }
-    return new A.ComponentConstraint([
-      new A.ComponentConstraintTerm(new A.Ident("!filter"), new A.Ident(f.constructor.name)),
-    ]);
+    ctx.filters.get(p.id).push(p.filter);
+    return name;
   }
 
   private translateCertNamePattern(p: CertNamePattern): A.Expr {
@@ -99,21 +92,52 @@ class Printer {
     ]);
   }
 
-  private translateConcatPattern(p: ConcatPattern): A.Expr {
+  private translateConcatPattern(p: ConcatPattern, ctx: PrintPatternCtx): A.Expr {
     return new A.Name(
-      p.parts.map((part) => this.translatePattern(part)),
+      p.parts.map((part) => this.translatePattern(part, ctx)),
     );
   }
 
-  private translateAlternatePattern(p: AlternatePattern): A.Expr {
+  private translateAlternatePattern(p: AlternatePattern, ctx: PrintPatternCtx): A.Expr {
     return new A.Alt(
-      p.choices.map((choice) => this.translatePattern(choice)),
+      p.choices.map((choice) => this.translatePattern(choice, ctx)),
     );
+  }
+
+  private translateFilter(f: VariablePattern.Filter, parentIdent: A.Ident): A.ComponentConstraintEq {
+    if (f instanceof F.FunctionFilter) {
+      return new A.ComponentConstraint([
+        new A.ComponentConstraintTerm(parentIdent, f.callExpr),
+      ]);
+    }
+
+    if (f instanceof F.ConstraintTerm) {
+      const ctx = new PrintPatternCtx();
+      const cc = new A.ComponentConstraint([
+        new A.ComponentConstraintTerm(new A.Ident(f.id), this.translatePattern(f.pattern, ctx)),
+      ]);
+      if (ctx.filters.size > 0) {
+        cc.terms.push(new A.ComponentConstraintTerm(new A.Ident("!ctx"),
+          new A.Ident(Array.from(ctx.filters.keys()).join(","))));
+      }
+      return cc;
+    }
+
+    if (f instanceof F.And || f instanceof F.Or) {
+      const op = f instanceof F.And ? new T.And() : new T.Or();
+      return f.filters.map((sub) => this.translateFilter(sub, parentIdent))
+        .reduce((left, right) => new A.ComponentConstraintRel(left, op, right));
+    }
+
+    return new A.ComponentConstraint([
+      new A.ComponentConstraintTerm(new A.Ident("!filter"), new A.Ident(f.constructor.name)),
+    ]);
   }
 
   public processRule(packet: string, signer: string): void {
     this.schema.stmts.push(new A.Stmt(
       new A.Ident(packet),
+      undefined,
       undefined,
       [new A.SigningConstraint([new A.Ident(signer)])],
     ));

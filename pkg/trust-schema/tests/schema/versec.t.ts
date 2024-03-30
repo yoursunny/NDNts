@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Name } from "@ndn/packet";
 import { expect, test } from "vitest";
 
-import { TrustSchemaPolicy, versec } from "../..";
+import { printESM, TrustSchemaPolicy, versec } from "../..";
 
 const { ast: A, nest: N, token: T } = versec;
 
@@ -51,15 +51,17 @@ test("parser", () => {
 
   const groups = N.split(T.Comma, units);
   expect(groups.map((g) => g.length)).toEqual([3, 12, 7, 5, 0]);
-  const groupsNonEmpty = N.split(T.Comma, units, true);
+  const groupsNonEmpty = N.split(T.Comma, units, { skipEmpty: true });
   expect(groupsNonEmpty.map((g) => g.length)).toEqual([3, 12, 7, 5]);
 
   const schema = A.parse(tokens);
-  expect(schema.stmts.map((stmt) => [stmt.ident.id, stmt.definition?.constructor, stmt.signingChain.length])).toEqual([
-    ["_variable", A.ComponentLit, 0],
-    ["#pub", A.Name, 2],
-    ["ident1", A.Constrained, 0],
-    ["signer4", undefined, 2],
+  expect(schema.stmts.map(
+    (stmt) => [stmt.ident.id, stmt.definition?.constructor, !!stmt.componentConstraint, stmt.signingChain.length],
+  )).toEqual([
+    ["_variable", A.ComponentLit, false, 0],
+    ["#pub", A.Name, false, 2],
+    ["ident1", A.Ident, true, 0],
+    ["signer4", undefined, false, 2],
   ]);
   expect(() => A.parse(T.scan("\"const\": \"const\""))).toThrow(/statement must start with ident/);
   expect(() => A.parse(T.scan("ident/\"const\" <= signer"))).toThrow(/invalid definition/);

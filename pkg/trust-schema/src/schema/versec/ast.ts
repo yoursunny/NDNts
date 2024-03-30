@@ -120,7 +120,7 @@ export class Name extends Expr {
   }
 
   protected override exprParens(parent: Expr) {
-    return !(parent instanceof Name || parent instanceof Constrained || this.comps.length === 1);
+    return !(parent instanceof Name || this.comps.length === 1);
   }
 
   protected override *exprToTokens(): Iterable<T.Token> {
@@ -129,28 +129,6 @@ export class Name extends Expr {
         yield new T.Slash();
       }
       yield* Expr.exprToTokens(comp, this);
-    }
-  }
-}
-
-/** Constrained expression node. */
-export class Constrained extends Expr {
-  constructor(
-      public name: Name | Ident,
-      public componentConstraint: ComponentConstraintEq,
-  ) {
-    super();
-  }
-
-  protected override exprParens() {
-    return true;
-  }
-
-  protected override *exprToTokens(): Iterable<T.Token> {
-    yield* Expr.exprToTokens(this.name, this);
-    if (this.componentConstraint) {
-      yield new T.And();
-      yield* this.componentConstraint.toTokens();
     }
   }
 }
@@ -240,6 +218,7 @@ export class Stmt extends Node {
   constructor(
       public ident: Ident,
       public definition: Expr | undefined = undefined,
+      public componentConstraint: ComponentConstraintEq | undefined = undefined,
       public signingChain: SigningConstraint[] = [],
   ) {
     super();
@@ -250,6 +229,10 @@ export class Stmt extends Node {
     if (this.definition) {
       yield new T.Colon();
       yield* this.definition.toTokens();
+      if (this.componentConstraint) {
+        yield new T.And();
+        yield* this.componentConstraint.toTokens();
+      }
     }
     for (const sc of this.signingChain) {
       yield* sc.toTokens();
@@ -274,7 +257,7 @@ export class Schema extends Node {
 /** Parse a schema. */
 export function parse(tokens: Iterable<T.Token>): Schema {
   return new Schema(
-    N.split(T.Comma, N.scan(tokens), true).map(parseStmt),
+    N.split(T.Comma, N.scan(tokens), { skipEmpty: true }).map(parseStmt),
   );
 }
 
@@ -284,17 +267,20 @@ function throwParseError(msg: string, units: readonly N.Unit[] = []): never {
 }
 
 function parseStmt(units: readonly N.Unit[]): Stmt {
-  const [idu, ...su] = N.split(T.ArrowL, units);
-  const [ident, colon, ...du] = idu!;
+  const [idcu, ...su] = N.split(T.ArrowL, units);
+  const [ident, colon, ...dcu] = idcu!;
+  const [du = [], cu] = N.split(T.And, dcu, { limit: 1 });
   if (!(ident instanceof T.Ident)) {
-    throwParseError("statement must start with ident", idu);
+    throwParseError("statement must start with ident", units);
   }
+
   const stmt = new Stmt(Ident.fromToken(ident));
   if (colon) {
-    if (!(colon instanceof T.Colon) || du.length === 0) {
-      throwParseError("invalid definition", idu);
+    if (!(colon instanceof T.Colon) || dcu.length === 0) {
+      throwParseError("invalid definition", units);
     }
     stmt.definition = parseExpr(du);
+    stmt.componentConstraint = cu && parseComponentConstraintEq(cu);
   }
   stmt.signingChain = su.map(parseSigningConstraint);
   return stmt;
@@ -302,37 +288,21 @@ function parseStmt(units: readonly N.Unit[]): Stmt {
 
 function parseExpr(units: readonly N.Unit[]): Expr {
   units = N.unParen(units);
-  const nu: N.Unit[] = [];
-  const cu = [...units];
-  while (cu.length > 0) {
-    const u = cu.shift()!;
-    if (u instanceof T.And) {
-      break;
-    }
-    nu.push(u);
-  }
 
-  if (nu.length === 0) {
+  if (units.length === 0) {
     throwParseError("expression must have name", units);
   }
-  const name = parseName(nu);
-  if (cu.length === 0) {
-    if (name.comps.length === 1) {
-      return name.comps[0]!;
-    }
-    return name;
+  const name = parseName(units);
+  if (name.comps.length === 1) {
+    return name.comps[0]!;
   }
-
-  return new Constrained(
-    name.comps.length === 1 && name.comps[0] instanceof Ident ? name.comps[0] : name,
-    parseComponentConstraintEq(cu),
-  );
+  return name;
 }
 
 function parseName(units: readonly N.Unit[]): Name {
   units = N.unParen(units);
   return new Name(
-    N.split(T.Slash, units, true).map(parseComponent),
+    N.split(T.Slash, units, { skipEmpty: true }).map(parseComponent),
   );
 }
 
@@ -348,7 +318,7 @@ function parseComponent(units: readonly N.Unit[]): Expr {
   if (units.length === 2 && units[0] instanceof T.Ident && units[1] instanceof N.Paren) {
     return new Call(
       units[0].id,
-      N.split(T.Comma, units[1].mid, true).map(parseExpr),
+      N.split(T.Comma, units[1].mid, { skipEmpty: true }).map(parseExpr),
     );
   }
 
@@ -386,7 +356,7 @@ function parseComponentConstraintEq(units: readonly N.Unit[]): ComponentConstrai
 
 function parseComponentConstraint(brace: N.Brace): ComponentConstraint {
   return new ComponentConstraint(
-    N.split(T.Comma, brace.mid, true).map(parseComponentConstraintTerm),
+    N.split(T.Comma, brace.mid, { skipEmpty: true }).map(parseComponentConstraintTerm),
   );
 }
 

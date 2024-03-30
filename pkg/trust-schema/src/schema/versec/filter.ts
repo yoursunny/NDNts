@@ -102,6 +102,15 @@ export function simplify(filter: VariablePattern.Filter, allow?: ReadonlySet<str
   return new combine(subs);
 }
 
+/** Combine filters in AND relation. */
+export function combine(...filters: ReadonlyArray<VariablePattern.Filter | undefined>): VariablePattern.Filter | undefined {
+  filters = filters.filter((f) => f !== undefined);
+  if (filters.length === 0) {
+    return undefined;
+  }
+  return simplify(new And(filters as VariablePattern.Filter[]));
+}
+
 /**
  * Reduce a component constraint term as a {@link Pattern} if possible.
  * @returns

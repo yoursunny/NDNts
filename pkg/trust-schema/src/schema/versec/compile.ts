@@ -67,6 +67,23 @@ function collectVariables(pattern: Pattern, ids = new Set<string>()): typeof ids
   return ids;
 }
 
+class Constrained extends A.Expr {
+  constructor(
+      public readonly name: A.Name | A.Ident,
+      public readonly componentConstraint: A.ComponentConstraintEq,
+  ) {
+    super();
+  }
+
+  protected exprParens(): boolean {
+    assert(false);
+  }
+
+  protected exprToTokens(): Iterable<T.Token> {
+    assert(false);
+  }
+}
+
 class CompilePatternCtx {
   /**
    * Constructor.
@@ -92,8 +109,7 @@ class CompilePatternCtx {
    * @param f - Filter that represents the constraint.
    */
   public andFilter(f: VariablePattern.Filter): CompilePatternCtx {
-    const combineF = this.filter ? F.simplify(new F.And([this.filter, f])) : f;
-    return new CompilePatternCtx(this.parentDefs, combineF);
+    return new CompilePatternCtx(this.parentDefs, F.combine(this.filter, f));
   }
 }
 
@@ -112,9 +128,17 @@ class Compiler {
 
   public processDefs(): void {
     for (const stmt of this.schema.stmts) {
-      if (stmt.definition) {
-        this.processDef(stmt.ident, stmt.definition);
+      let { definition: def, componentConstraint: cc } = stmt;
+      if (!def) {
+        continue;
       }
+      if (cc) {
+        if (!(def instanceof A.Name || def instanceof A.Ident)) {
+          def = new A.Name([def]);
+        }
+        def = new Constrained(def as A.Name | A.Ident, cc);
+      }
+      this.processDef(stmt.ident, def);
     }
   }
 
@@ -160,7 +184,7 @@ class Compiler {
     if (expr instanceof A.Name) {
       return this.makePatternName(expr, ctx);
     }
-    if (expr instanceof A.Constrained) {
+    if (expr instanceof Constrained) {
       return this.makePatternConstrained(expr, ctx);
     }
     /* c8 ignore next */
@@ -236,7 +260,7 @@ class Compiler {
     return new ConcatPattern(patternFromComponents(expr.comps));
   }
 
-  private makePatternConstrained(expr: A.Constrained, ctx: CompilePatternCtx): Pattern {
+  private makePatternConstrained(expr: Constrained, ctx: CompilePatternCtx): Pattern {
     const filter = this.makeConstraintFilter(expr.componentConstraint, ctx);
     const inner = this.makePattern(expr.name, ctx.andFilter(filter));
     return new VariablePattern(this.makeAutoId(), {

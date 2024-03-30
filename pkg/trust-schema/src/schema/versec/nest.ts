@@ -76,18 +76,22 @@ export function scan(tokens: Iterable<T.Token>): Unit[] {
  * Split by operator.
  * @param sep - Separator operator type.
  * @param sequence - A sequence of units.
- * @param skipEmpty - Of true, empty sub sequences are skipped.
  * @returns Sub sequences.
  */
-export function split(sep: typeof T.Operator, sequence: readonly Unit[], skipEmpty = false): Unit[][] {
+export function split(
+    sep: typeof T.Operator,
+    sequence: readonly Unit[],
+    { skipEmpty = false, limit = Infinity }: split.Options = {},
+): Unit[][] {
   const result: Unit[][] = [];
   let sub: Unit[] = [];
   for (const u of sequence) {
-    if (u instanceof sep) {
+    if (u instanceof sep && limit > 0) {
       if (sub.length > 0 || !skipEmpty) {
         result.push(sub);
       }
       sub = [];
+      --limit;
     } else {
       sub.push(u);
     }
@@ -96,6 +100,22 @@ export function split(sep: typeof T.Operator, sequence: readonly Unit[], skipEmp
     result.push(sub);
   }
   return result;
+}
+export namespace split {
+  export interface Options {
+    /**
+     * If true, empty sub sequences are skipped.
+     * @defaultValue false
+     */
+    skipEmpty?: boolean;
+
+    /**
+     * Maximum number of splits.
+     * @remarks
+     * `split(Z, "AZBZC", { limit: 1 })` returns `["A", "BZC"]`
+     */
+    limit?: number;
+  }
 }
 
 /** Strip outer parens. */
