@@ -111,7 +111,11 @@ export class Fetcher extends TypedEventTarget<EventMap> {
   };
 
   private async handleData(data: Data, segNum: number, congestionMark: number) {
-    const now = this.logic.now();
+    // Invoke satisfy() before verification, so that retransmission would not be triggered
+    // while verify() is running. However, setFinalSegNum() invocation stays after verification,
+    // so that FetchLogic does not prematurely indicate fetch completion.
+    this.logic.satisfy(segNum, congestionMark !== 0);
+
     try {
       await this.verifier?.verify(data);
     } catch (err: unknown) {
@@ -119,7 +123,6 @@ export class Fetcher extends TypedEventTarget<EventMap> {
       return;
     }
 
-    this.logic.satisfy(segNum, now, congestionMark !== 0);
     if (data.isFinalBlock) {
       this.logic.setFinalSegNum(segNum);
     } else if (data.finalBlockId?.is(this.segmentNumConvention)) {

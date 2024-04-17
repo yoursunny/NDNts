@@ -181,11 +181,8 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
     return req.interest;
   }
 
-  /**
-   * Notify a request has been satisfied.
-   * @param now - Reading of `this.now()` at packet arrival (e.g. before verification).
-   */
-  public satisfy(segNum: number, now: number, hasCongestionMark: boolean) {
+  /** Notify a request has been satisfied. */
+  public satisfy(segNum: number, hasCongestionMark: boolean) {
     const req = this.pending.get(segNum);
     if (!req) {
       return;
@@ -196,6 +193,7 @@ export class FetchLogic extends TypedEventTarget<EventMap> {
       this.tl.put();
     }
 
+    const now = this.now();
     if (!req.isRetx) {
       const rtt = now - req.txTime;
       this.rtte.push(rtt, this.tl.nTaken + 1);
