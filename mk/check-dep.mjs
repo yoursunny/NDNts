@@ -28,7 +28,7 @@ const ignoredTypes = new Set(["yargs"]);
 
 /** @type {import("@pnpm/lockfile-types").Lockfile} */
 const doc = yaml.load(readFileSync("pnpm-lock.yaml", "utf8"));
-if (!satisfies(doc.lockfileVersion, "^6.0.0")) {
+if (!satisfies(doc.lockfileVersion, "^9.0.0")) {
   throw new Error("lockfileVersion not supported");
 }
 
