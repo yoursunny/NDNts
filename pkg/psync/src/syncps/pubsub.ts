@@ -2,7 +2,7 @@ import { consume, ConsumerOptions, type Endpoint, produce, type Producer, Produc
 import { Timestamp } from "@ndn/naming-convention2";
 import { type Component, Data, digestSigning, Interest, lpm, type Name, type Signer, type Verifier } from "@ndn/packet";
 import { type Subscriber, type Subscription, SubscriptionTable } from "@ndn/sync-api";
-import { CustomEvent, KeyMap, toHex, trackEventListener } from "@ndn/util";
+import { KeyMap, toHex, trackEventListener } from "@ndn/util";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import filter from "obliterator/filter.js";
 import take from "obliterator/take.js";

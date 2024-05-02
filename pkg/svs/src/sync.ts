@@ -3,7 +3,7 @@ import type { Forwarder } from "@ndn/fw";
 import { Component, Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { Decoder, Encoder } from "@ndn/tlv";
-import { assert, CustomEvent, randomJitter, trackEventListener } from "@ndn/util";
+import { assert, randomJitter, trackEventListener } from "@ndn/util";
 import type { Promisable } from "type-fest";
 import { TypedEventTarget } from "typescript-event-target";
 

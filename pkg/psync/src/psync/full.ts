@@ -1,7 +1,7 @@
 import { ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler, ProducerOptions } from "@ndn/endpoint";
 import type { Component, Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
-import { CustomEvent, KeyMap, toHex, trackEventListener } from "@ndn/util";
+import { KeyMap, toHex, trackEventListener } from "@ndn/util";
 import pDefer, { type DeferredPromise } from "p-defer";
 import { TypedEventTarget } from "typescript-event-target";
 

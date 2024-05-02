@@ -1,7 +1,7 @@
 import { Transport } from "@ndn/l3face";
 import type { Data } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
-import { CustomEvent, pushable } from "@ndn/util";
+import { pushable } from "@ndn/util";
 import pDefer, { type DeferredPromise } from "p-defer";
 import { consume } from "streaming-iterables";
 import { TypedEventTarget } from "typescript-event-target";

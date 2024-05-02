@@ -1,6 +1,7 @@
 import assert from "minimalistic-assert";
 
-export { CustomEvent } from "./platform_node";
+/** @deprecated Use global `CustomEvent`. */
+export const CustomEvent = globalThis.CustomEvent;
 
 /**
  * Keep records on whether an event listener has been added.

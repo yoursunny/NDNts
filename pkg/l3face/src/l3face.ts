@@ -1,7 +1,7 @@
 import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { LpService } from "@ndn/lp";
 import { Interest, type NameLike } from "@ndn/packet";
-import { asDataView, CustomEvent, pushable } from "@ndn/util";
+import { asDataView, pushable } from "@ndn/util";
 import { abortableSource, AbortError as IteratorAbortError } from "abortable-iterator";
 import * as retry from "retry";
 import { consume, filter, map, pipeline } from "streaming-iterables";

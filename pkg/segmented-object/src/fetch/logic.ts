@@ -1,4 +1,4 @@
-import { assert, CustomEvent } from "@ndn/util";
+import { assert } from "@ndn/util";
 import hirestime from "hirestime";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import pDefer from "p-defer";

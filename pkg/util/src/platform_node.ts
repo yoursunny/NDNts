@@ -15,17 +15,5 @@ export const console = new Console(process.stderr);
 /** Web Crypto API. */
 export const crypto: Crypto = webcrypto as any;
 
-class CustomEventPonyfill extends Event {
-  constructor(type: string, options?: CustomEventInit) {
-    super(type, options);
-    this.detail = options?.detail;
-  }
-
-  public readonly detail: any;
-}
-
-/** CustomEvent object. */
-export const CustomEvent: typeof globalThis["CustomEvent"] = globalThis.CustomEvent ?? CustomEventPonyfill;
-
 /** Make a Promise that resolves after specified duration. */
 export const delay: <T = void>(after: number, value?: T) => Promise<T> = setTimeoutPromise;

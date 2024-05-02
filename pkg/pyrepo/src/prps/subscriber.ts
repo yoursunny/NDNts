@@ -2,7 +2,6 @@ import { consume, ConsumerOptions, type Endpoint, produce, type Producer, type P
 import { Data, digestSigning, Interest, type Name, type Signer, type Verifier } from "@ndn/packet";
 import type { Subscriber, Subscription } from "@ndn/sync-api";
 import { Decoder } from "@ndn/tlv";
-import { CustomEvent } from "@ndn/util";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { NotifyAppParam, NotifySuffix } from "./packet";

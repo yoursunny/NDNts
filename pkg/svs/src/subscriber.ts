@@ -4,7 +4,7 @@ import { Data, Interest, lpm, Name, noopSigning, TT as l3TT, type Verifier } fro
 import { fetch } from "@ndn/segmented-object";
 import { type Subscriber, type Subscription, SubscriptionTable, type SyncUpdate } from "@ndn/sync-api";
 import { Decoder, EvDecoder } from "@ndn/tlv";
-import { assert, concatBuffers, CustomEvent } from "@ndn/util";
+import { assert, concatBuffers } from "@ndn/util";
 import { batch, consume as consumeIterable, pipeline, transform } from "streaming-iterables";
 import { TypedEventTarget } from "typescript-event-target";
 

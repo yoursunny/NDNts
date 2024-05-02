@@ -2,7 +2,7 @@ import { type Endpoint, produce, type Producer, type ProducerHandler, type Produ
 import { Segment } from "@ndn/naming-convention2";
 import { Data, type Interest, type Name, NameMap, type Signer } from "@ndn/packet";
 import type { SyncNode, SyncProtocol } from "@ndn/sync-api";
-import { CustomEvent, trackEventListener } from "@ndn/util";
+import { trackEventListener } from "@ndn/util";
 import { BloomFilter } from "@yoursunny/psync-bloom";
 import pDefer, { type DeferredPromise } from "p-defer";
 import { TypedEventTarget } from "typescript-event-target";

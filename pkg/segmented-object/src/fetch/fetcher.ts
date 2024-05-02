@@ -1,7 +1,6 @@
 import type { ConsumerOptions, Endpoint } from "@ndn/endpoint";
 import { CancelInterest, Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { Data, Interest, type Name, type Verifier } from "@ndn/packet";
-import { CustomEvent } from "@ndn/util";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { defaultSegmentConvention, type SegmentConvention } from "../convention";

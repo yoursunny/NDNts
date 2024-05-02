@@ -1,7 +1,6 @@
 import type { ConsumerOptions, Endpoint } from "@ndn/endpoint";
 import type { Component, Name, Verifier } from "@ndn/packet";
 import { type Subscriber, type Subscription, SubscriptionTable, SyncUpdate } from "@ndn/sync-api";
-import { CustomEvent } from "@ndn/util";
 import { BloomFilter, type Parameters as BloomParameters } from "@yoursunny/psync-bloom";
 import { TypedEventTarget } from "typescript-event-target";
 

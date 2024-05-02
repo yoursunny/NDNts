@@ -26,8 +26,6 @@ if (!crypto.subtle && !globalThis.isSecureContext) {
   });
 }
 
-export const CustomEvent = globalThis.CustomEvent;
-
 export function delay<T = void>(after: number, value?: T): Promise<T> {
   return new Promise<T>((resolve) => setTimeout(resolve, after, value));
 }
