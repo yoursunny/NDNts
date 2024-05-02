@@ -34,7 +34,7 @@
     "minimalistic-assert": "^1.0.1",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",
-    "type-fest": "^4.15.0",
+    "type-fest": "^4.18.1",
     "wait-your-turn": "^1.0.1"
   },
   "devDependencies": {
@@ -44,6 +44,6 @@
     "write": "^2.0.0"
   },
   "engines": {
-    "node": "^18.18.0 || ^20.10.0 || ^21.0.0"
+    "node": "^18.18.0 || ^20.12.0 || ^22.0.0"
   }
 }

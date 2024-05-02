@@ -26,7 +26,7 @@ jobs:
   unittest:
     strategy:
       matrix:
-        node: [18, 20, 21]
+        node: [18, 20, 22]
       fail-fast: false
     runs-on: ubuntu-22.04
     steps:
@@ -48,11 +48,7 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - run: corepack pnpm test
-        if: ${{ matrix.node == 18 }}
-      - run: corepack pnpm test
-        env:
-          NODE_OPTIONS: --experimental-websocket
-        if: ${{ matrix.node == 21 }}
+        if: ${{ matrix.node == 18 || matrix.node == 22 }}
       - run: corepack pnpm cover
         env:
           NODE_OPTIONS: --experimental-websocket
@@ -131,7 +127,7 @@ jobs:
           fqdn: ndnts-nightly.ndn.today
         env:
           GH_PAT: ${{ secrets.NIGHTLY_ACCESS_TOKEN }}
-      - uses: nwtgck/actions-netlify@v2.1.0
+      - uses: nwtgck/actions-netlify@v3
         with:
           publish-dir: ./docs/
           production-deploy: true

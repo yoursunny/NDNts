@@ -34,6 +34,6 @@
     "retry": "^0.13.1",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",
-    "typescript-event-target": "^1.1.0"
+    "typescript-event-target": "^1.1.1"
   }
 }
