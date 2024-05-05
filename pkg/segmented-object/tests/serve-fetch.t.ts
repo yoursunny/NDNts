@@ -3,11 +3,11 @@ import "@ndn/util/test-fixture/expect";
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
 import { Blob } from "node:buffer";
 
-import { consume, produce, type ProducerHandler } from "@ndn/endpoint";
+import { consume } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face";
 import { Segment2, Segment3 } from "@ndn/naming-convention2";
-import { Data, FwHint, Name, type Verifier } from "@ndn/packet";
+import { FwHint, Name, type Verifier } from "@ndn/packet";
 import { Closers, delay } from "@ndn/util";
 import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
@@ -40,10 +40,14 @@ test("buffer to buffer", async () => {
   const server = serve("/R", chunkSource);
   closers.push(server);
 
+  const nFaces = Forwarder.getDefault().faces.size;
+
   const fetched = fetch("/R");
   expect(fetched.count).toBe(0);
   await expect(fetched).resolves.toEqualUint8Array(objectBody);
   expect(fetched.count).toBeGreaterThan(0);
+
+  expect(Forwarder.getDefault().faces.size).toBe(nFaces);
 });
 
 test("blob to chunks", async () => {
@@ -160,13 +164,9 @@ test.each<(fw: Forwarder, fwHint: FwHint) => fetch.Options>([
 });
 
 describe("empty object", () => {
-  const handler1 = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>(
-    async (interest) => new Data(interest.name, Data.ContentType(3)));
   beforeEach(() => {
-    handler1.mockReset();
     const server = serve("/R", new BufferChunkSource(new Uint8Array()));
-    const producer1 = produce(server.prefix.append(Segment3, 1), handler1);
-    closers.push(server, producer1);
+    closers.push(server);
   });
 
   test("consume single", async () => {
@@ -180,18 +180,21 @@ describe("empty object", () => {
     const fetched = fetch("/R");
     await expect(fetched).resolves.toHaveLength(0);
     expect(fetched.count).toBe(1);
-    expect(handler1).toHaveBeenCalled();
   });
 
   test.each<(verifier: Verifier) => fetch.Options>([
     (verifier) => ({ verifier }),
     (verifier) => ({ cOpts: { verifier } }),
   ])("verify error %#", async (makeOpts) => {
+    const nFaces = Forwarder.getDefault().faces.size;
+
     const verify = vi.fn<Parameters<Verifier["verify"]>, ReturnType<Verifier["verify"]>>()
       .mockRejectedValue(new Error("mock-verify-error"));
     await expect(fetch("/R", { retxLimit: 0, ...makeOpts({ verify }) }))
       .rejects.toThrow(/mock-verify-error/);
     expect(verify).toHaveBeenCalledTimes(1);
+
+    expect(Forwarder.getDefault().faces.size).toBe(nFaces);
   });
 });
 
@@ -199,7 +202,11 @@ test("segment number convention mismatch", async () => {
   const server = serve("/R", new BufferChunkSource(objectBody), { segmentNumConvention: Segment2 });
   closers.push(server);
 
+  const nFaces = Forwarder.getDefault().faces.size;
+
   await expect(fetch("/R", { retxLimit: 1 })).rejects.toThrow();
+
+  expect(Forwarder.getDefault().faces.size).toBe(nFaces);
 });
 
 test("abort", async () => {
