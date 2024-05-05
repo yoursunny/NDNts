@@ -37,7 +37,6 @@
     "mnemonist": "^0.39.8",
     "obliterator": "^2.0.4",
     "p-defer": "^4.0.1",
-    "p-event": "^6.0.1",
     "p-lazy": "^4.0.0",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.2",

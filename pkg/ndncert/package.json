@@ -34,7 +34,7 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "@types/imap": "^0.8.40",
-    "@types/nodemailer": "^6.4.14",
+    "@types/nodemailer": "^6.4.15",
     "ajv": "^8.13.0",
     "b64-lite": "^1.4.0",
     "imap-emails": "^1.0.4",

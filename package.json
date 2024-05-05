@@ -18,13 +18,13 @@
     "@types/node": "^20.12.8",
     "@types/wtfnode": "^0.7.3",
     "@typescript/lib-dom": "npm:@types/web@0.0.143",
-    "@vitest/coverage-v8": "^1.5.3",
+    "@vitest/coverage-v8": "^1.6.0",
     "@yoursunny/xo-config": "0.58.0",
     "codedown": "^3.1.0",
     "tslib": "^2.6.2",
     "typedoc": "^0.25.13",
     "typescript": "~5.4.5",
-    "vitest": "^1.5.3"
+    "vitest": "^1.6.0"
   },
   "engines": {
     "node": "^20.12.0 || ^22.0.0"

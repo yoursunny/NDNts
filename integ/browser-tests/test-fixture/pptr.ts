@@ -9,7 +9,7 @@ const port = 9327;
 export let page: Page;
 
 beforeAll(async () => {
-  const browser = await puppeteer.launch({ headless: "new" });
+  const browser = await puppeteer.launch();
   page = await browser.newPage();
   page.on("console", (evt) => { console.log(`[BROWSER ${evt.type()}] ${evt.text()}`); });
   return async () => {
