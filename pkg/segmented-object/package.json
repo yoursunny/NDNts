@@ -31,7 +31,6 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
-    "event-iterator": "^2.0.0",
     "hirestime": "^7.0.4",
     "it-keepalive": "^1.2.0",
     "mnemonist": "^0.39.8",

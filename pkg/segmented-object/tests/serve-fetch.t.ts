@@ -5,6 +5,7 @@ import { Blob } from "node:buffer";
 
 import { consume } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
+import { SnapshotFaces } from "@ndn/fw/test-fixture/snapshot-faces";
 import { Bridge } from "@ndn/l3face";
 import { Segment2, Segment3 } from "@ndn/naming-convention2";
 import { FwHint, Name, type Verifier } from "@ndn/packet";
@@ -18,11 +19,17 @@ import { BlobChunkSource, BufferChunkSource, fetch, FileChunkSource, IterableChu
 import { makeObjectBody } from "../test-fixture/object-body";
 
 const fwOpts: Forwarder.Options = { dataNoTokenMatch: false };
+let sFaces: SnapshotFaces;
 const closers = new Closers();
 const objectBody = makeObjectBody();
-beforeEach(() => Forwarder.replaceDefault(Forwarder.create(fwOpts)));
-afterEach(() => {
+beforeEach(() => {
+  Forwarder.replaceDefault(Forwarder.create(fwOpts));
+  sFaces = new SnapshotFaces();
+});
+afterEach(async () => {
   closers.close();
+  await delay(1);
+  sFaces.expectSameFaces();
   Forwarder.deleteDefault();
 });
 
@@ -40,14 +47,10 @@ test("buffer to buffer", async () => {
   const server = serve("/R", chunkSource);
   closers.push(server);
 
-  const nFaces = Forwarder.getDefault().faces.size;
-
   const fetched = fetch("/R");
   expect(fetched.count).toBe(0);
   await expect(fetched).resolves.toEqualUint8Array(objectBody);
   expect(fetched.count).toBeGreaterThan(0);
-
-  expect(Forwarder.getDefault().faces.size).toBe(nFaces);
 });
 
 test("blob to chunks", async () => {
@@ -186,15 +189,11 @@ describe("empty object", () => {
     (verifier) => ({ verifier }),
     (verifier) => ({ cOpts: { verifier } }),
   ])("verify error %#", async (makeOpts) => {
-    const nFaces = Forwarder.getDefault().faces.size;
-
     const verify = vi.fn<Parameters<Verifier["verify"]>, ReturnType<Verifier["verify"]>>()
       .mockRejectedValue(new Error("mock-verify-error"));
     await expect(fetch("/R", { retxLimit: 0, ...makeOpts({ verify }) }))
       .rejects.toThrow(/mock-verify-error/);
     expect(verify).toHaveBeenCalledTimes(1);
-
-    expect(Forwarder.getDefault().faces.size).toBe(nFaces);
   });
 });
 
@@ -202,11 +201,9 @@ test("segment number convention mismatch", async () => {
   const server = serve("/R", new BufferChunkSource(objectBody), { segmentNumConvention: Segment2 });
   closers.push(server);
 
-  const nFaces = Forwarder.getDefault().faces.size;
-
+  const sFaces = new SnapshotFaces();
   await expect(fetch("/R", { retxLimit: 1 })).rejects.toThrow();
-
-  expect(Forwarder.getDefault().faces.size).toBe(nFaces);
+  sFaces.expectSameFaces();
 });
 
 test("abort", async () => {

@@ -1,7 +1,6 @@
 import type { ConsumerOptions, Endpoint } from "@ndn/endpoint";
 import { type Data, Name, type NameLike, type Verifier } from "@ndn/packet";
 import { assert, concatBuffers, Reorder } from "@ndn/util";
-// import EventIterator from "event-iterator";
 import { collect, map, parallelMap, type WritableStreamish, writeToStream } from "streaming-iterables";
 import type { Promisable } from "type-fest";
 

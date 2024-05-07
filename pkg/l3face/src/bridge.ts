@@ -205,6 +205,7 @@ export namespace Bridge {
     L3Face.processAddRoutes(faceA, routesAB);
     const faceB = fwB.addFace(new L3Face(tB, { advertiseFrom: false }));
     L3Face.processAddRoutes(faceB, routesBA);
+    closers.push(faceA, faceB);
 
     return {
       fwA,
