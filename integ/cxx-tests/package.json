@@ -14,6 +14,7 @@
     "tslib": "^2.6.2"
   },
   "devDependencies": {
-    "execa": "^8.0.1"
+    "execa": "^9.0.2",
+    "streaming-iterables": "^8.0.1"
   }
 }

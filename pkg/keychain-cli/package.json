@@ -32,7 +32,7 @@
     "@ndn/repo": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "env-var": "^7.4.1",
+    "env-var": "^7.4.2",
     "fast-chunk-string": "^1.0.1",
     "get-stdin": "^9.0.0",
     "nodemailer": "^6.9.13",

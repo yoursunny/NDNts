@@ -7,7 +7,7 @@ import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { FakeNfd } from "@ndn/nfdmgmt/test-fixture/prefix-reg";
 import { Name, type NameLike } from "@ndn/packet";
 import { assert, Closers } from "@ndn/util";
-import { execa, type ExecaChildProcess, execaSync } from "execa";
+import { execa, execaSync, type ResultPromise } from "execa";
 import { long2ip } from "netmask";
 
 let pyrepoInstalled: boolean | undefined;
@@ -62,7 +62,7 @@ export class PyRepo implements AsyncDisposable {
   }
 
   private constructor(
-      private readonly p: ExecaChildProcess,
+      private readonly p: ResultPromise,
       private readonly nfd: FakeNfd,
   ) {}
 

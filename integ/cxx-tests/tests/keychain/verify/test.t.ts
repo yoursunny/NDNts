@@ -4,7 +4,7 @@ import { Encoder } from "@ndn/tlv";
 import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
 import { expect, test } from "vitest";
 
-import { execute } from "../../../test-fixture/cxxprogram";
+import * as cxx from "../../../test-fixture/cxxprogram";
 
 type Row<G> = [
   desc: string,
@@ -18,6 +18,8 @@ const TABLE = ([] as Array<Row<any>>).concat(
 );
 
 test.each(TABLE)("%s", async (desc, algo, genParam) => {
+  const exe = await cxx.compile(import.meta.dirname);
+
   void desc;
   const [privateKey, publicKey] = await generateSigningKey("/A", algo, genParam);
   const cert = await Certificate.selfSign({ privateKey, publicKey });
@@ -28,9 +30,9 @@ test.each(TABLE)("%s", async (desc, algo, genParam) => {
   using tmpDir = makeTmpDir();
   const certFile = tmpDir.createFile(Encoder.encode(cert.data));
   const packetFile = tmpDir.createFile(Encoder.encode(packet));
-  const { stdout } = await execute(import.meta.url, [certFile, packetFile]);
+  const { stdout } = await exe.run([certFile, packetFile], {});
 
-  const [certOk, packetOk] = stdout.split("\n");
+  const [certOk, packetOk] = stdout;
   expect(certOk).toBe("1");
   expect(packetOk).toBe("1");
 });

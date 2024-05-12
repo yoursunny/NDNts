@@ -4,7 +4,7 @@ import { FullSync, makePSyncCompatParam, type SyncUpdate } from "@ndn/psync";
 import { Closers, delay } from "@ndn/util";
 import { afterEach, expect, test, vi } from "vitest";
 
-import { execute } from "../../../test-fixture/cxxprogram";
+import * as cxx from "../../../test-fixture/cxxprogram";
 
 const syncPrefix = new Name("/sync");
 const userA = new Name("/userA");
@@ -15,9 +15,11 @@ const closers = new Closers();
 afterEach(closers.close);
 
 test("simple", async () => {
+  const exe = await cxx.compile(import.meta.dirname);
+
   await using nfd = await new FakeNfd().open();
 
-  const p = execute(import.meta.url, [`${nfd.port}`, `${syncPrefix}`, `${userA}`]);
+  const p = exe.run([`${nfd.port}`, `${syncPrefix}`, `${userA}`], {});
   await nfd.waitNFaces(1);
 
   const sync = new FullSync({
@@ -48,7 +50,7 @@ test("simple", async () => {
   p.kill("SIGINT");
   const { stdout } = await p;
   const hiSeqNums = new Map<string, number>();
-  for (const line of stdout.split("\n")) {
+  for (const line of stdout) {
     const [user, , hiSeqNum] = line.split("\t") as [string, string, string];
     hiSeqNums.set(user, Number.parseInt(hiSeqNum, 10));
   }

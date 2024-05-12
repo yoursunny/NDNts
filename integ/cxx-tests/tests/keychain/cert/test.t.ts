@@ -3,9 +3,11 @@ import { Component, ValidityPeriod } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import { expect, test } from "vitest";
 
-import { execute } from "../../../test-fixture/cxxprogram";
+import * as cxx from "../../../test-fixture/cxxprogram";
 
 test("decode", async () => {
+  const exe = await cxx.compile(import.meta.dirname);
+
   const [, publicKey] = await generateSigningKey("/A");
   const [issuerPrivateKey] = await generateSigningKey("/B");
 
@@ -18,9 +20,10 @@ test("decode", async () => {
   });
   const certName = CertNaming.parseCertName(cert.name);
 
-  const { stdout } = await execute(import.meta.url, [], { input: Buffer.from(Encoder.encode(cert.data)) });
-  const [name, identity, keyId, issuerId, validityNotBefore, validityNotAfter] =
-    stdout.split("\n");
+  const { stdout } = await exe.run([], {
+    input: Buffer.from(Encoder.encode(cert.data)),
+  });
+  const [name, identity, keyId, issuerId, validityNotBefore, validityNotAfter] = stdout;
   expect(name).toBe(cert.name.toString());
   expect(identity).toBe(certName.subjectName.toString());
   expect(keyId).toBe(certName.keyId.toString());

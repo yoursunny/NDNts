@@ -33,7 +33,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
     "dotenv": "^16.4.5",
-    "env-var": "^7.4.1",
+    "env-var": "^7.4.2",
     "tslib": "^2.6.2",
     "wtfnode": "^0.9.2"
   }
