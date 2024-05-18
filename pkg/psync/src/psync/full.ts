@@ -1,4 +1,5 @@
 import { ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler, ProducerOptions } from "@ndn/endpoint";
+import { GenericNumber } from "@ndn/naming-convention2";
 import type { Component, Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { KeyMap, toHex, trackEventListener } from "@ndn/util";
@@ -51,6 +52,7 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
     this.c = new PSyncCore(p);
     this.c.onIncreaseSeqNum = this.handleIncreaseSeqNum;
     this.codec = new PSyncCodec(p, this.c.ibltParams);
+    this.syncInterestNameCumulativeNElements = p.syncInterestNameCumulativeNElements ?? true;
 
     this.pFreshness = syncReplyFreshness;
     this.pBuffer = new StateProducerBuffer(this.describe, this.codec, producerBufferLimit, {
@@ -81,6 +83,7 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
   private readonly syncPrefix: Name;
   private readonly c: PSyncCore;
   private readonly codec: PSyncCodec;
+  private readonly syncInterestNameCumulativeNElements: boolean;
   private closed = false;
 
   private readonly pFreshness: number;
@@ -136,7 +139,8 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
   }
 
   private handleSyncInterest: ProducerHandler = async (interest) => {
-    if (interest.name.length !== this.syncPrefix.length + 1) {
+    if (interest.name.length !== this.syncPrefix.length +
+      (this.syncInterestNameCumulativeNElements ? 2 : 1)) {
       // segment Interest should be satisfied by StateProducerBuffer
       return undefined;
     }
@@ -225,7 +229,10 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
     const abort = new AbortController();
     this.cAbort = abort;
     const ibltComp = this.codec.iblt2comp(this.c.iblt);
-    const name = this.syncPrefix.append(ibltComp);
+    let name = this.syncPrefix.append(ibltComp);
+    if (this.syncInterestNameCumulativeNElements) {
+      name = name.append(GenericNumber.create(this.c.sumSeqNum));
+    }
     this.cCurrentInterestName = name;
     this.debug("c-request");
 
@@ -268,6 +275,19 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
 
 export namespace FullSync {
   export interface Parameters extends PSyncCore.Parameters, PSyncCodec.Parameters {
+    /**
+     * If true, sync Interest name contains cumulative number of elements in IBLT.
+     * @defaultValue true
+     *
+     * @remarks
+     * PSync C++ library commit d83af5255db9c4a557264542647f7ccb281e6840 (2024-04-09) introduced an
+     * algorithm change that involves a breaking change in sync Interest encoding.
+     * To interact with PSync since this commit, set to true.
+     * To interact with PSync before this commit, set to false.
+     *
+     * @experimental
+     */
+    syncInterestNameCumulativeNElements?: boolean;
   }
 
   export interface Options {

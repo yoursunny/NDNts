@@ -25,6 +25,7 @@ export class PSyncCore {
   public readonly nodes = new NameMap<PSyncNode>();
   public readonly keys = new Map<number, PSyncNode>(); // key => node
   public readonly iblt: IBLT;
+  public sumSeqNum = 0;
 
   public get(prefix: Name): PSyncNode | undefined {
     return this.nodes.get(prefix);
@@ -126,13 +127,14 @@ export class PSyncNode implements SyncNode<Name>, PSyncCore.PrefixSeqNum {
     assert(!this.c.keys.has(this.k)); // algorithm cannot handle hash collision
     this.c.keys.set(this.k, this);
     this.c.iblt.insert(this.k);
+    this.c.sumSeqNum += this.seq;
 
     if (triggerEvent) {
       this.c.onIncreaseSeqNum?.(this, prevSeqNum, prevKey);
     }
   }
 
-  public remove() {
+  public remove(): void {
     this.detachKey();
     this.c.nodes.delete(this.prefix);
   }
@@ -146,6 +148,7 @@ export class PSyncNode implements SyncNode<Name>, PSyncCore.PrefixSeqNum {
     if (this.seq > 0 && this.c.keys.get(this.k) === this) {
       this.c.keys.delete(this.k);
       this.c.iblt.erase(this.k);
+      this.c.sumSeqNum -= this.seq;
     }
   }
 }

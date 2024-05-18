@@ -20,4 +20,4 @@ In the future, there would be alternative parameter sets optimized for the moder
 
 NOTICE:
 PSync commit d83af5255db9c4a557264542647f7ccb281e6840 (2024-04-09) introduces breaking changes to the FullSync algorithm and codec.
-This library is currently incompatible with PSync revision since this commit.
+This library has been adjusted to support the changed encoding, but does not yet implement the improved algorithm.

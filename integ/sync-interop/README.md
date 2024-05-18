@@ -5,13 +5,13 @@
 Test environment:
 
 * Ubuntu 22.04
-* ndn-cxx 0.8.1-55-gc5003938
-* NFD 22.12-41-g91c15c8c
-* Node.js 20.11.0
+* ndn-cxx 0.8.1-88-g5eb7a075
+* NFD 22.12-69-gec352f2b
+* Node.js 20.12.2
 
 Reference implementation:
 
-* PSync 0.4.0-15-gac63e32
+* PSync 0.4.0-24-gdcb0bb86
 
 Build reference program:
 
