@@ -1,4 +1,5 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
+import { delay } from "@ndn/util";
 
 /** HTTP/3 transport. */
 export class H3Transport extends Transport {
@@ -10,11 +11,19 @@ export class H3Transport extends Transport {
    * @param uri - Server URI.
    * @param opts - WebTransport options.
    */
-  public static async connect(uri: string, opts: WebTransportOptions = {}): Promise<H3Transport> {
-    const tr = new WebTransport(uri, opts);
+  public static async connect(uri: string, opts: H3Transport.Options = {}): Promise<H3Transport> {
+    const { connectTimeout = 10000, ...wtOpts } = opts;
+    const tr = new WebTransport(uri, wtOpts);
     void tr.closed.catch(() => undefined);
-    await tr.ready;
-    return new H3Transport(uri, opts, tr);
+    const isTimeout = await Promise.race([
+      tr.ready,
+      delay(connectTimeout, true),
+    ]);
+    if (isTimeout) {
+      tr.close();
+      throw new Error("timeout");
+    }
+    return new H3Transport(uri, wtOpts, tr);
   }
 
   private constructor(
@@ -63,6 +72,15 @@ export class H3Transport extends Transport {
 }
 
 export namespace H3Transport {
+  /** {@link H3Transport.connect} options. */
+  export interface Options extends WebTransportOptions {
+    /**
+     * Connect timeout (in milliseconds).
+     * @defaultValue 10000
+     */
+    connectTimeout?: number;
+  }
+
   /** Create a transport and add to forwarder. */
   export const createFace = L3Face.makeCreateFace(H3Transport.connect);
 }

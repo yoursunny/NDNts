@@ -42,7 +42,7 @@ export function createFace(router: string, {
       if (!H3Transport) {
         throw new Error("H3Transport unavailable");
       }
-      return H3Transport.createFace({ fw, addRoutes, lp: { mtu } }, uri.toString());
+      return H3Transport.createFace({ fw, addRoutes, lp: { mtu } }, uri.toString(), { connectTimeout });
     }
     default: {
       throw new Error(`unknown protocol ${uri.protocol}`);
