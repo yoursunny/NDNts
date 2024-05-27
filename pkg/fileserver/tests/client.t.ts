@@ -2,7 +2,6 @@ import "@ndn/util/test-fixture/expect";
 
 import { assert } from "node:console";
 
-import { configure as bfsConfigure, fs as bfs, registerBackend as bfsRegisterBackend } from "@browserfs/core/index.js";
 import { produce } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment, Version } from "@ndn/naming-convention2";
@@ -10,10 +9,11 @@ import { Data, Name } from "@ndn/packet";
 import { makeMetadataPacket, MetadataKeyword } from "@ndn/rdr";
 import { BufferChunkSource, DataProducer } from "@ndn/segmented-object";
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
+import { configure as zenfsConfigure, fs as zenfs } from "@zenfs/core";
 import { collect } from "streaming-iterables";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
-import { buildDirectoryListing, Client, FileMetadata, lsKeyword, ModeDir, ModeFile, NDNFileSystem } from "..";
+import { buildDirectoryListing, Client, FileMetadata, lsKeyword, ModeDir, ModeFile, NDNZenFS } from "..";
 
 // Directory hierarchy:
 //   /
@@ -86,11 +86,12 @@ beforeAll(async () => {
 
   client = new Client(prefix);
 
-  bfsRegisterBackend(NDNFileSystem);
-  await bfsConfigure({
-    "/N": {
-      fs: "NDN",
-      options: { client },
+  await zenfsConfigure({
+    mounts: {
+      "/N": {
+        backend: NDNZenFS,
+        client,
+      },
     },
   });
 });
@@ -150,62 +151,51 @@ test.each(readFileIntoCases)("readFileInto [%d,%d)", async (...tc) => {
   }, ...tc);
 });
 
-test("bfs rejects", async () => {
-  expect(() => bfs.statSync("/N/A")).toThrow(/ENOTSUP/);
-  expect(() => bfs.readdirSync("/N/A")).toThrow(/ENOTSUP/);
-  await expect(bfs.promises.open("/N/A/B.bin", "w")).rejects.toThrow(/ENOTSUP/);
-
-  // below are not ENOTSUP due to BaseFilesystem wrappers
-  expect(() => bfs.readFileSync("/N/A/B.bin")).toThrow(/ENOENT/);
-  expect(() => bfs.openSync("/N/A/B.bin", "r")).toThrow(/ENOENT/);
+test("zenfs rejects", async () => {
+  expect(() => zenfs.statSync("/N/A")).toThrow(/ENOTSUP/);
+  expect(() => zenfs.readdirSync("/N/A")).toThrow(/ENOTSUP/);
+  await expect(zenfs.promises.open("/N/A/B.bin", "w")).rejects.toThrow(/EPERM/);
+  expect(() => zenfs.readFileSync("/N/A/B.bin")).toThrow(/ENOTSUP/);
+  expect(() => zenfs.openSync("/N/A/B.bin", "r")).toThrow(/ENOTSUP/);
 });
 
-test("bfs stat", async () => {
-  const statRoot = await bfs.promises.stat("/N");
+test("zenfs stat", async () => {
+  const statRoot = await zenfs.promises.stat("/N");
   expect(statRoot.isDirectory()).toBeTruthy();
 
-  const statA = await bfs.promises.stat("/N/A");
+  const statA = await zenfs.promises.stat("/N/A");
   expect(statA.isDirectory()).toBeTruthy();
 
-  const statB = await bfs.promises.stat("/N/A/B.bin");
+  const statB = await zenfs.promises.stat("/N/A/B.bin");
   expect(statB.isFile()).toBeTruthy();
   expect(statB.size).toBe(bodyB.length);
 });
 
-describe("bfs open", () => {
-  let fd: number;
+describe("zenfs open", () => {
+  let fh: zenfs.promises.FileHandle;
   beforeAll(async () => {
-    const fh = await bfs.promises.open("/N/A/B.bin", "r");
-    assert(typeof fh === "number"); // https://github.com/browser-fs/core/issues/32
-    fd = fh as unknown as number;
+    fh = await zenfs.promises.open("/N/A/B.bin", "r");
   });
   afterAll(async () => {
-    await bfs.promises.close(fd);
-  });
-
-  test("rejects", () => {
-    const buf = new Uint8Array(16);
-    expect(() => bfs.readSync(fd, buf)).toThrow(/ENOTSUP/);
-    expect(() => bfs.readSync(fd, buf, 0, 16, 0)).toThrow(/ENOTSUP/);
+    await fh.close();
   });
 
   test("stat", async () => {
-    expect(bfs.fstatSync(fd).size).toBe(bodyB.length);
-    expect((await bfs.promises.fstat(fd)).size).toBe(bodyB.length);
+    expect((await fh.stat()).size).toBe(bodyB.length);
   });
 
   test.each(readFileIntoCases)("read [%d,%d)", async (...tc) => {
     await testReadFileInto(async (...args) => {
-      await bfs.promises.read(fd, ...args);
+      await fh.read(...args);
     }, ...tc);
   });
 });
 
-test("bfs readdir", async () => {
-  await expect(bfs.promises.readdir("/N")).resolves.toEqual(["A"]);
-  await expect(bfs.promises.readdir("/N/A")).resolves.toEqual(["B.bin"]);
+test("zenfs readdir", async () => {
+  await expect(zenfs.promises.readdir("/N")).resolves.toEqual(["A"]);
+  await expect(zenfs.promises.readdir("/N/A")).resolves.toEqual(["B.bin"]);
 });
 
-test("bfs readFile", async () => {
-  await expect(bfs.promises.readFile("/N/A/B.bin")).resolves.toEqualUint8Array(bodyB);
+test("zenfs readFile", async () => {
+  await expect(zenfs.promises.readFile("/N/A/B.bin")).resolves.toEqualUint8Array(bodyB);
 });

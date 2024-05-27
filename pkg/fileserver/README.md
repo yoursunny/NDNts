@@ -16,7 +16,7 @@ Client (consumer):
 
 * simple client
   * demonstrated in `@ndn/cat` package `file-client` subcommand
-* [BrowserFS](https://browser-fs.github.io/core/) wrapper
+* [ZenFS](https://zen-fs.github.io/core/) wrapper
   * rudimentary, not really usable
 
 Server (producer): not yet.
