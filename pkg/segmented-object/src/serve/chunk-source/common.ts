@@ -28,6 +28,7 @@ export interface ChunkSource {
   close?: () => void;
 }
 
+/** ChunkSource where total size is known. */
 export abstract class KnownSizeChunkSource implements ChunkSource {
   constructor(
       protected readonly chunkSize: number,

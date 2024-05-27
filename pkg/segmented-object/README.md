@@ -16,7 +16,7 @@ The consumer functionality:
 * [X] supports multiple naming conventions.
 * [X] has Interest pipelining, congestion control, and loss recovery.
 * [X] verifies packets with a `Verifier` (fixed key or trust schema).
-* [X] emits events as segments arrive.
+* [ ] emits events as segments arrive.
 * [X] outputs in-order data chunks as a readable stream.
 * [X] outputs completely reassembled object via Promise.
 
@@ -24,7 +24,7 @@ The producer functionality:
 
 * [X] takes input from `Uint8Array`.
 * [X] takes input from readable streams.
-* [X] takes input from files (`Blob` in browser and Node.js, filename in Node.js).
+* [X] takes input from files or `Blob`.
 * [X] generates segments of fixed size.
 * [ ] generates segments of available data as Interest arrives, to minimize delivery latency.
 * [X] responds to version discovery Interests with CanBePrefix.

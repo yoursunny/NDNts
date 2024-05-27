@@ -1,7 +1,5 @@
 import "@ndn/util/test-fixture/expect";
 
-import { assert } from "node:console";
-
 import { produce } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Segment, Version } from "@ndn/naming-convention2";

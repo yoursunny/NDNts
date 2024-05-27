@@ -1,11 +1,12 @@
-import fs from "node:fs/promises";
+import type { FileHandle } from "node:fs/promises";
 
 import PLazy from "p-lazy";
 
 import { type Chunk, type ChunkOptions, type ChunkSource, getMaxChunkSize, KnownSizeChunkSource } from "./common";
+import { fsOpen } from "./platform_node";
 
 class FileHandleChunkSource extends KnownSizeChunkSource {
-  constructor(private readonly fh: fs.FileHandle, chunkSize: number, totalSize: number) {
+  constructor(private readonly fh: FileHandle, chunkSize: number, totalSize: number) {
     super(chunkSize, totalSize);
   }
 
@@ -28,10 +29,10 @@ class FileHandleChunkSource extends KnownSizeChunkSource {
  * Warning: modifying the file while FileChunkSource is active may cause undefined behavior.
  */
 export class FileChunkSource implements ChunkSource {
-  constructor(path: string, opts: ChunkOptions = {}) {
+  constructor(path: string, opts: FileChunkSource.Options = {}) {
     const chunkSize = getMaxChunkSize(opts);
     this.opening = PLazy.from(async () => {
-      const fh = await fs.open(path, "r");
+      const fh = await fsOpen(path, opts);
       const { size } = await fh.stat();
       return new FileHandleChunkSource(fh, chunkSize, size);
     });
@@ -55,4 +56,18 @@ export class FileChunkSource implements ChunkSource {
     const h = await this.opening;
     await h.close();
   }
+}
+export namespace FileChunkSource {
+  /** {@link FileChunkSource} options. */
+  export type Options = ChunkOptions & {
+    /**
+     * Whether to use ZenFS.
+     *
+     * @remarks
+     * - Set `true` to use ZenFS, which is a cross-platform virtual filesystem independent from
+     *   the underlying operating system. This is the default in browser environment.
+     * - Set `false` to use Node.js native filesystem. This is the default in Node.js.
+     */
+    zenfs?: boolean;
+  };
 }

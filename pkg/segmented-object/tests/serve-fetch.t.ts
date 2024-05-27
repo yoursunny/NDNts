@@ -2,6 +2,7 @@ import "@ndn/util/test-fixture/expect";
 
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
 import { Blob } from "node:buffer";
+import path from "node:path";
 
 import { consume } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
@@ -11,6 +12,7 @@ import { Segment2, Segment3 } from "@ndn/naming-convention2";
 import { FwHint, Name, type Verifier } from "@ndn/packet";
 import { Closers, delay } from "@ndn/util";
 import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
+import { promises as zenfs } from "@zenfs/core";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, consume as consumeIterable } from "streaming-iterables";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
@@ -22,6 +24,11 @@ const fwOpts: Forwarder.Options = { dataNoTokenMatch: false };
 let sFaces: SnapshotFaces;
 const closers = new Closers();
 const objectBody = makeObjectBody();
+const zenfsFilename = "/serve-fetch-test/1.bin";
+beforeAll(async () => {
+  await zenfs.mkdir(path.dirname(zenfsFilename));
+  await zenfs.writeFile(zenfsFilename, objectBody);
+});
 beforeEach(() => {
   Forwarder.replaceDefault(Forwarder.create(fwOpts));
   sFaces = new SnapshotFaces();
@@ -94,6 +101,14 @@ describe("file source", () => {
     const fetched = fetch("/R");
     await expect(fetched).resolves.toEqualUint8Array(objectBody);
   });
+});
+
+test("zenfs to buffer", async () => {
+  const server = serve("/R", new FileChunkSource(zenfsFilename, { zenfs: true }));
+  closers.push(server);
+
+  const fetched = fetch("/R");
+  await expect(fetched).resolves.toEqualUint8Array(objectBody);
 });
 
 test("iterable to unordered", async () => {
@@ -201,9 +216,7 @@ test("segment number convention mismatch", async () => {
   const server = serve("/R", new BufferChunkSource(objectBody), { segmentNumConvention: Segment2 });
   closers.push(server);
 
-  const sFaces = new SnapshotFaces();
   await expect(fetch("/R", { retxLimit: 1 })).rejects.toThrow();
-  sFaces.expectSameFaces();
 });
 
 test("abort", async () => {
