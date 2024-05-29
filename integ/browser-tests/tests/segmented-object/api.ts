@@ -6,5 +6,6 @@ export interface FetchedInfo {
 declare global {
   interface Window {
     testBlobChunkSource: () => Promise<FetchedInfo>;
+    testZenFS: (payloadHex: string) => Promise<FetchedInfo>;
   }
 }

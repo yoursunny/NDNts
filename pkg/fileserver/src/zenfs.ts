@@ -1,7 +1,7 @@
 import type { FileReadResult } from "node:fs/promises";
 
 import { assert, asUint8Array } from "@ndn/util";
-import { type Backend, Errno, ErrnoError, File, FileSystem, type FileSystemMetadata, FileType, isWriteable, Readonly, Stats as Stats_ } from "@zenfs/core";
+import { Async, type Backend, Errno, ErrnoError, File, FileSystem, type FileSystemMetadata, FileType, isWriteable, Readonly, Stats } from "@zenfs/core";
 import LRUCache from "mnemonist/lru-cache.js";
 import { collect, map, pipeline } from "streaming-iterables";
 
@@ -14,7 +14,7 @@ import type { FileMetadata } from "./metadata";
  * @remarks
  * This backend only supports async operations.
  */
-export class NDNFileSystem extends Readonly(FileSystem) {
+export class NDNFileSystem extends Async(Readonly(FileSystem)) {
   constructor(opts: NDNFileSystem.Options) {
     super();
     const {
@@ -28,6 +28,13 @@ export class NDNFileSystem extends Readonly(FileSystem) {
     if (statsCacheCapacity > 0) {
       this.statsCache = new LRUCache(statsCacheCapacity);
     }
+  }
+
+  public override _sync: undefined;
+
+  public override ready(): Promise<void> {
+    this._disableSync = true; // eslint-disable-line etc/no-internal
+    return super.ready();
   }
 
   public override metadata(): FileSystemMetadata {
@@ -54,10 +61,6 @@ export class NDNFileSystem extends Readonly(FileSystem) {
     return statsFromFileMetadata(m);
   }
 
-  public override statSync(): Stats {
-    throw new ErrnoError(Errno.ENOTSUP);
-  }
-
   public override async readdir(path: string): Promise<string[]> {
     const m = await this.getFileMetadata(path);
     return pipeline(
@@ -67,20 +70,12 @@ export class NDNFileSystem extends Readonly(FileSystem) {
     );
   }
 
-  public override readdirSync(): string[] {
-    throw new ErrnoError(Errno.ENOTSUP);
-  }
-
   public override async openFile(path: string, flag: string): Promise<File> {
     if (isWriteable(flag)) {
       throw new ErrnoError(Errno.EPERM, path);
     }
     const m = await this.getFileMetadata(path);
     return new NDNFile(path, this.client, m);
-  }
-
-  public override openFileSync(): File {
-    throw new ErrnoError(Errno.ENOTSUP);
   }
 }
 export namespace NDNFileSystem {
@@ -89,8 +84,6 @@ export namespace NDNFileSystem {
     statsCacheCapacity?: number;
   }
 }
-
-class Stats extends Stats_ {}
 
 class NDNFile extends File {
   constructor(
