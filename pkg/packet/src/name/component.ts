@@ -18,7 +18,6 @@ const CODEPOINT_PERCENT = "%".codePointAt(0)!;
 const CODEPOINT_PERIOD = ".".codePointAt(0)!;
 
 const encoderHeadroom = 10;
-const FROM = Symbol("@ndn/packet#Component.from");
 
 /** Name component or component URI. */
 export type ComponentLike = Component | string;
@@ -70,28 +69,26 @@ export class Component {
     if (!hasNonPeriods && length >= 3) {
       length -= 3;
     }
-    return new Component(type, FROM, encoder, length); // eslint-disable-line etc/no-internal
+    return new Component(type, encoder, length); // eslint-disable-line etc/no-internal
   }
 
-  /**
-   * Construct GenericNameComponent from TLV-VALUE.
-   * @deprecated Pass `TT.GenericNameComponent` as type.
-   */
-  constructor(type: undefined, value: Uint8Array | string);
+  /** Construct GenericNameComponent with TLV-LENGTH zero. */
+  constructor();
 
   /**
    * Construct from TLV-TYPE and TLV-VALUE.
-   * @param type - TLV-TYPE. Default is GenericNameComponent.
+   * @param type - TLV-TYPE.
    * @param value - TLV-VALUE. If specified as string, it's encoded as UTF-8 but not interpreted
    *                as URI. Use `Component.from()` to interpret URI.
    *
    * @throws Error
    * Thrown if `type` is not a valid name component TLV-TYPE.
    */
-  constructor(type?: number, value?: Uint8Array | string);
+  constructor(type: number, value?: Uint8Array | string);
 
   /**
    * Decode from TLV.
+   * @param type - Complete name component TLV.
    *
    * @throws Error
    * Thrown if `tlv` does not contain a complete name component TLV and nothing else.
@@ -99,12 +96,11 @@ export class Component {
   constructor(tlv: Uint8Array);
 
   /** @internal */
-  constructor(type: number, isFrom: typeof FROM, encoder: Encoder, length: number);
+  constructor(type: number, encoder: Encoder, length: number);
 
   constructor(
       arg1: number | Uint8Array = TT.GenericNameComponent,
-      value?: Uint8Array | string | typeof FROM,
-      encoder?: Encoder, length?: number,
+      arg2?: Uint8Array | string | Encoder, length?: number,
   ) {
     if (arg1 instanceof Uint8Array) {
       this.tlv = arg1;
@@ -113,19 +109,19 @@ export class Component {
       decoder.throwUnlessEof();
     } else {
       this.type = arg1;
+      let encoder: Encoder;
       let tailroom = 0;
-      if (value === FROM) {
-        tailroom = encoder!.size - length!;
+      if (arg2 instanceof Encoder) {
+        encoder = arg2;
+        tailroom = encoder.size - length!;
       } else {
-        if (typeof value === "string") {
-          value = toUtf8(value);
-        }
+        const value = typeof arg2 === "string" ? toUtf8(arg2) : arg2;
         length = value?.length ?? 0;
         encoder = new Encoder(encoderHeadroom + length);
         encoder.encode(value);
       }
-      encoder!.prependTypeLength(this.type, length!);
-      this.tlv = encoder!.output;
+      encoder.prependTypeLength(this.type, length!);
+      this.tlv = encoder.output;
       if (tailroom !== 0) {
         this.tlv = this.tlv.subarray(0, -tailroom);
       }
