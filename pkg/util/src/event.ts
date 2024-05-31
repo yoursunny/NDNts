@@ -1,4 +1,4 @@
-import assert from "minimalistic-assert";
+import assert from "tiny-invariant";
 
 /** @deprecated Use global `CustomEvent`. */
 export const CustomEvent = globalThis.CustomEvent;

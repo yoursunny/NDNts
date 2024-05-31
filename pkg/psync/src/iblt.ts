@@ -88,7 +88,7 @@ export class IBLT {
 
   private update2(ht: Hashtable, change: number, keyInput: number): void {
     const { key, buf, checkHash } = this.key;
-    assert.equal(key, keyInput);
+    assert(key === keyInput);
     for (let k = 0; k < this.p.nHash; ++k) {
       const h = this.p.hash(k, buf);
       const i = k * this.p.nBuckets + h % this.p.nBuckets;
@@ -105,7 +105,7 @@ export class IBLT {
     const hts: Hashtable[] = [
       this.ht,
       ...others.map((other) => {
-        assert.equal(this.p.nEntries, other.p.nEntries);
+        assert(this.p.nEntries === other.p.nEntries);
         return other.ht;
       }),
     ];

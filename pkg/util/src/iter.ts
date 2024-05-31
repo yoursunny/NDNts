@@ -1,6 +1,6 @@
 import EventIterator from "event-iterator";
-import assert from "minimalistic-assert";
 import type { AnyIterable } from "streaming-iterables";
+import assert from "tiny-invariant";
 
 /** An iterable that you can push values into. */
 export interface Pushable<T> extends AsyncIterable<T> {

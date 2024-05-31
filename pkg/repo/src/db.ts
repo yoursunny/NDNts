@@ -35,7 +35,7 @@ export const AbstractLevelOptions: AbstractDatabaseOptions<Name, Record> = {
       const jBufCap = 3 * jText.length;
       const jBuf = encoder.prependRoom(jBufCap);
       const { read: jTextLen = 0, written: jBufLen = 0 } = textEncoder.encodeInto(jText, jBuf);
-      assert.equal(jTextLen, jText.length);
+      assert(jTextLen === jText.length);
       encoder.encode(record.data);
       return encoder.output.subarray(0, encoder.size - jBufCap + jBufLen);
     },

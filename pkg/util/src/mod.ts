@@ -1,6 +1,6 @@
 import "./polyfill_node";
 
-import assert from "minimalistic-assert";
+import assert from "tiny-invariant";
 
 export { assert };
 export { console, concatBuffers, crypto, delay } from "./platform_node";

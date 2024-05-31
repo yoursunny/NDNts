@@ -232,7 +232,7 @@ export class Transaction {
   private async commitWithDiff() {
     const requests = Array.from(this.diffs!);
     const oldRecords = await this.db.getMany(requests.map(([name]) => name));
-    assert.equal(requests.length, oldRecords.length);
+    assert(requests.length === oldRecords.length);
 
     await this.chain.write();
 

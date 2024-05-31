@@ -1,4 +1,4 @@
-import assert from "minimalistic-assert";
+import assert from "tiny-invariant";
 
 export function concatBuffers(list: readonly Uint8Array[], totalLength?: number): Uint8Array {
   totalLength ??= list.reduce((l, { byteLength }) => l + byteLength, 0);
@@ -8,7 +8,7 @@ export function concatBuffers(list: readonly Uint8Array[], totalLength?: number)
     c.set(part, offset);
     offset += part.byteLength;
   }
-  assert.equal(offset, totalLength);
+  assert(offset === totalLength);
   return c;
 }
 

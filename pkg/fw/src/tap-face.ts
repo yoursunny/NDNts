@@ -14,7 +14,7 @@ class TapRxController {
   }
 
   public add(src: FwFace, dst: TapFace) {
-    assert.equal(src.fw, this.fw);
+    assert(src.fw === this.fw);
     this.taps.add(src, dst);
   }
 
