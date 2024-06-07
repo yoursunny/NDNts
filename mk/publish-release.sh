@@ -18,7 +18,7 @@ if [[ ${NDNTS_SKIP_BUILD:-0} -ne 1 ]]; then
   corepack pnpm test
 fi
 
-RECURSE='corepack pnpm m --filter='./pkg/**' --workspace-concurrency=1 exec'
+RECURSE='corepack pnpm m --filter='./pkg/**' --workspace-concurrency=1 --reporter-hide-prefix exec'
 $RECURSE bash -c 'node '$ROOTDIR'/mk/edit-packagejson.mjs V '$VERSION
 git commit -a -m 'v'$VERSION
 

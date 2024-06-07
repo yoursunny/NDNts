@@ -13,15 +13,15 @@
     "test": "vitest",
     "typedoc": "bash mk/typedoc.sh"
   },
-  "packageManager": "pnpm@9.1.4+sha256.30a1801ac4e723779efed13a21f4c39f9eb6c9fbb4ced101bce06b422593d7c9",
+  "packageManager": "pnpm@9.2.0+sha256.94fab213df221c55b6956b14a2264c21c6203cca9f0b3b95ff2fe9b84b120390",
   "devDependencies": {
-    "@types/node": "^20.12.13",
+    "@types/node": "^20.14.2",
     "@types/wtfnode": "^0.7.3",
-    "@typescript/lib-dom": "npm:@types/web@0.0.147",
+    "@typescript/lib-dom": "npm:@types/web@0.0.148",
     "@vitest/coverage-v8": "^1.6.0",
     "@yoursunny/xo-config": "0.58.0",
     "codedown": "^3.1.0",
-    "tslib": "^2.6.2",
+    "tslib": "^2.6.3",
     "typedoc": "^0.25.13",
     "typescript": "~5.4.5",
     "vitest": "^1.6.0"

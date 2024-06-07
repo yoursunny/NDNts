@@ -32,11 +32,11 @@
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@zenfs/core": "^0.12.9",
+    "@zenfs/core": "^0.12.10",
     "mnemonist": "^0.39.8",
     "obliterator": "^2.0.4",
     "streaming-iterables": "^8.0.1",
-    "tslib": "^2.6.2"
+    "tslib": "^2.6.3"
   },
   "devDependencies": {
     "@ndn/endpoint": "workspace:*",

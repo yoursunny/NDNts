@@ -28,7 +28,7 @@ if [[ $ACT == lint ]]; then
   fi
 
   ROOTDIR=$(pwd)
-  for DIR in $(corepack pnpm -s -r exec pwd); do
+  for DIR in $(corepack pnpm -s -r --reporter-hide-prefix exec pwd); do
     if [[ $DIR == $ROOTDIR ]]; then
       continue
     fi
