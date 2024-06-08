@@ -8,25 +8,18 @@ import readlink from "readlink";
 const readlinkPromise = promisify(readlink);
 
 /**
- * @typedef {{
- *  conditions: string[];
- *  importAssertions: object;
- *  parentURL?: string;
- * }} ResolveContext
- *
- * @typedef {{
- *  format?: string;
- *  shortCircuit?: boolean;
- *  url: string;
- * }} ResolveResult
+ * @typedef {import("node:module").ResolveHookContext} ResolveHookContext
+ * @typedef {import("node:module").ResolveFnOutput} ResolveFnOutput
+ * @typedef {import("node:module").LoadHookContext} LoadHookContext
+ * @typedef {import("node:module").LoadFnOutput} LoadFnOutput
  */
 
 /**
  * Node.js loader resolve hook.
  * @param {string} specifier
- * @param {ResolveContext} context
- * @param {(specifier: string, context: ResolveContext) => Promise<ResolveResult>} nextResolve
- * @returns {Promise<ResolveResult>}
+ * @param {ResolveHookContext} context
+ * @param {(specifier: string, context: ResolveHookContext) => Promise<ResolveResult>} nextResolve
+ * @returns {Promise<ResolveFnOutput>}
  */
 export async function resolve(specifier, context, nextResolve) {
   try {
@@ -56,26 +49,13 @@ export async function resolve(specifier, context, nextResolve) {
     ...r,
   };
 }
-/**
- * @typedef {{
- *  conditions: string[];
- *  format?: string;
- *  importAssertions: object;
- * }} LoadContext
- *
- * @typedef {{
- *  format?: string;
- *  shortCircuit?: boolean;
- *  source: string | ArrayBuffer | Uint8Array;
- * }} LoadResult
- */
 
 /**
  * Node.js loader load hook.
  * @param {string} url
- * @param {LoadContext} context
- * @param {(url: string, context: LoadContext) => Promise<LoadResult>} nextLoad
- * @returns {Promise<LoadResult>}
+ * @param {LoadHookContext} context
+ * @param {(url: string, context: LoadHookContext) => Promise<LoadFnOutput>} nextLoad
+ * @returns {Promise<LoadFnOutput>}
  */
 export async function load(url, context, nextLoad) {
   let { protocol, pathname } = new URL(url);
