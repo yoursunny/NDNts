@@ -1,4 +1,4 @@
-import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { AESCBC, createDecrypter, type NamedDecrypter, RSAOAEP } from "@ndn/keychain";
 import { type Data, type Decrypter, Interest, type Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
@@ -8,7 +8,6 @@ import { ContentKey, EncryptedContent, KeyDecryptionKey } from "./packet/mod";
 /** NAC consumer. */
 export class Consumer implements Decrypter {
   public static create({
-    endpoint, // eslint-disable-line etc/no-deprecated
     cOpts,
     verifier,
     memberDecrypter,
@@ -17,7 +16,6 @@ export class Consumer implements Decrypter {
       {
         describe: `NAC-Consumer(${memberDecrypter.name})`,
         retx: 2,
-        ...endpoint?.cOpts,
         ...cOpts,
         verifier,
       },
@@ -50,12 +48,6 @@ export class Consumer implements Decrypter {
 export namespace Consumer {
   /** {@link Consumer.create} options. */
   export interface Options {
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.cOpts`.
-     */
-    endpoint?: Endpoint;
-
     /**
      * Consumer options.
      *

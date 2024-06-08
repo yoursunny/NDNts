@@ -1,5 +1,5 @@
-import { consume, type ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler } from "@ndn/endpoint";
-import type { Forwarder } from "@ndn/fw";
+import { consume, type ConsumerOptions, produce, type Producer, type ProducerHandler } from "@ndn/endpoint";
+import { Forwarder } from "@ndn/fw";
 import { Component, Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { Decoder, Encoder } from "@ndn/tlv";
@@ -27,8 +27,7 @@ type EventMap = SyncProtocol.EventMap<Name> & {
 export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
   public static async create({
     syncPrefix,
-    endpoint, // eslint-disable-line etc/no-deprecated
-    fw = endpoint?.fw,
+    fw = Forwarder.getDefault(),
     describe = `SvSync(${syncPrefix})`,
     initialStateVector = new StateVector(),
     initialize,
@@ -244,22 +243,10 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
 }
 
 export namespace SvSync {
-  /**
-   * Timer settings.
-   * @deprecated No longer supported.
-   */
-  export type Timer = [ms: number, jitter: number];
-
   /** {@link SvSync.create} options. */
   export interface Options {
     /** Sync group prefix. */
     syncPrefix: Name;
-
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.fw`.
-     */
-    endpoint?: Endpoint;
 
     /**
      * Use the specified logical forwarder.

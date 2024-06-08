@@ -1,4 +1,4 @@
-import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { Interest, Name, type NameLike } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
@@ -25,10 +25,7 @@ export function makeDiscoveryInterest(prefix: NameLike): Interest {
  * - `.describe` defaults to "RDR-c" + prefix.
  * @returns Metadata packet.
  */
-export async function retrieveMetadata(
-  prefix: NameLike,
-  cOpts?: ConsumerOptions & EndpointOptions
-): Promise<Metadata>;
+export async function retrieveMetadata(prefix: NameLike, cOpts?: ConsumerOptions): Promise<Metadata>;
 
 /**
  * Retrieve metadata packet of subclass type.
@@ -41,14 +38,10 @@ export async function retrieveMetadata(
  * @returns Metadata packet of type C.
  */
 export async function retrieveMetadata<C extends Metadata.Constructor>(
-  prefix: NameLike, ctor: C,
-  cOpts?: ConsumerOptions & EndpointOptions
+  prefix: NameLike, ctor: C, cOpts?: ConsumerOptions
 ): Promise<InstanceType<C>>;
 
-export async function retrieveMetadata(
-    prefix: NameLike, arg2: any,
-    cOpts?: ConsumerOptions & EndpointOptions,
-) {
+export async function retrieveMetadata(prefix: NameLike, arg2: any, cOpts?: ConsumerOptions) {
   let ctor: Metadata.Constructor = Metadata;
   if (typeof arg2 === "function") {
     ctor = arg2;
@@ -59,16 +52,7 @@ export async function retrieveMetadata(
   const interest = makeDiscoveryInterest(prefix);
   const data = await consume(interest, {
     describe: `RDR-c(${prefix})`,
-    ...cOpts?.endpoint?.cOpts, // eslint-disable-line etc/no-deprecated
     ...cOpts,
   });
   return Decoder.decode(data.content, ctor);
-}
-
-interface EndpointOptions {
-  /**
-   * Endpoint for communication.
-   * @deprecated Use {@link ConsumerOptions} fields only.
-   */
-  endpoint?: Endpoint;
 }

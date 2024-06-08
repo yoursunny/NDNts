@@ -1,4 +1,4 @@
-import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { Certificate, CertNaming, createEncrypter, type CryptoAlgorithm, type NamedDecrypter, type NamedEncrypter, RSAOAEP } from "@ndn/keychain";
 import { type Component, Interest, Name, type Signer, type Verifier } from "@ndn/packet";
 import type { DataStore as S } from "@ndn/repo-api";
@@ -10,7 +10,6 @@ import { KeyDecryptionKey, KeyEncryptionKey } from "./packet/mod";
 /** NAC access manager. */
 export class AccessManager {
   public static create({
-    endpoint, // eslint-disable-line etc/no-deprecated
     cOpts,
     dataStore,
     prefix,
@@ -20,7 +19,6 @@ export class AccessManager {
       {
         describe: `NAC-AccessManager(${prefix})`,
         retx: 2,
-        ...endpoint?.cOpts,
         ...cOpts,
       },
       dataStore,
@@ -142,12 +140,6 @@ export namespace AccessManager {
 
   /** {@link AccessManager.create} options. */
   export interface Options {
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.cOpts`.
-     */
-    endpoint?: Endpoint;
-
     /**
      * Consumer options.
      *

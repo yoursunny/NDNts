@@ -29,7 +29,7 @@ interface State {
 
 /** Readvertise prefix announcements via NFD prefix registration protocol. */
 export class NfdPrefixReg extends ReadvertiseDestination<State> {
-  private readonly commandOptions: Except<ControlCommandOptions, "endpoint">;
+  private readonly commandOptions: ControlCommandOptions;
   private readonly routeElements: [origin: Encodable, cost: Encodable, flags: Encodable, expiry: Encodable];
   private readonly refreshInterval?: () => number;
   private readonly preloadCertName?: Name;
@@ -185,7 +185,7 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
 export namespace NfdPrefixReg {
   /** {@link enableNfdPrefixReg} options. */
   export type Options =
-  Except<ControlCommandOptions, "endpoint" | "prefix"> &
+  Except<ControlCommandOptions, "prefix"> &
   Pick<ControlParameters.Fields, "origin" | "cost" | `flag${keyof typeof RouteFlags}`> &
   {
     retry?: ReadvertiseDestination.RetryOptions;

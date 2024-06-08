@@ -1,4 +1,4 @@
-import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { CertNaming } from "@ndn/keychain";
 import { Segment } from "@ndn/naming-convention2";
 import type { Name } from "@ndn/packet";
@@ -8,12 +8,6 @@ import { C, CaProfile, ProbeResponse } from "../packet/mod";
 
 /** {@link retrieveCaProfile} options. */
 export interface RetrieveCaProfileOptions {
-  /**
-   * Endpoint for communication.
-   * @deprecated Specify `.cOpts`.
-   */
-  endpoint?: Endpoint;
-
   /**
    * Consumer options.
    *
@@ -36,7 +30,6 @@ export interface RetrieveCaProfileOptions {
 
 /** Retrieve and validate CA profile. */
 export async function retrieveCaProfile({
-  endpoint, // eslint-disable-line etc/no-deprecated
   cOpts,
   caPrefix,
   caCertFullName,
@@ -44,7 +37,6 @@ export async function retrieveCaProfile({
   cOpts = {
     describe: `NDNCERT-client(${caPrefix}, INFO)`,
     retx: 4,
-    ...endpoint?.cOpts,
     ...cOpts,
   };
   ProbeResponse.checkCaCertFullName(caCertFullName);

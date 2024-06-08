@@ -1,4 +1,4 @@
-import { ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler, ProducerOptions } from "@ndn/endpoint";
+import { ConsumerOptions, produce, type Producer, type ProducerHandler, ProducerOptions } from "@ndn/endpoint";
 import { GenericNumber } from "@ndn/naming-convention2";
 import type { Component, Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
@@ -37,7 +37,6 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
     p,
     syncPrefix,
     describe = `FullSync(${syncPrefix})`,
-    endpoint, // eslint-disable-line etc/no-deprecated
     cpOpts,
     syncReplyFreshness = 1000,
     signer,
@@ -56,12 +55,10 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
 
     this.pFreshness = syncReplyFreshness;
     this.pBuffer = new StateProducerBuffer(this.describe, this.codec, producerBufferLimit, {
-      ...endpoint?.pOpts,
       ...ProducerOptions.exact(cpOpts),
       dataSigner: signer,
     });
     this.pProducer = produce(syncPrefix, this.handleSyncInterest, {
-      ...endpoint?.pOpts,
       ...ProducerOptions.exact(cpOpts),
       describe: `${describe}[p]`,
       routeCapture: false,
@@ -69,7 +66,6 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
     });
 
     this.cFetcher = new StateFetcher(this.describe, this.codec, syncInterestLifetime, {
-      ...endpoint?.cOpts,
       ...ConsumerOptions.exact(cpOpts),
       describe,
       verifier,
@@ -307,12 +303,6 @@ export namespace FullSync {
      * @defaultValue FullSync + syncPrefix
      */
     describe?: string;
-
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.cpOpts`.
-     */
-    endpoint?: Endpoint;
 
     /**
      * Consumer and producer options.

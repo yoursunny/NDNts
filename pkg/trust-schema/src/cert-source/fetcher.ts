@@ -1,4 +1,4 @@
-import { consume, type ConsumerOptions, type Endpoint, type RetxPolicy } from "@ndn/endpoint";
+import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Certificate, CertNaming } from "@ndn/keychain";
 import { Interest, type Name, NameMap } from "@ndn/packet";
@@ -75,17 +75,13 @@ export class CertFetcher implements CertSource {
   constructor(opts: CertFetcher.Options) {
     const {
       owner: ownerInput,
-      endpoint, // eslint-disable-line etc/no-deprecated
       cOpts,
       interestLifetime,
-      retx, // eslint-disable-line etc/no-deprecated
     } = opts;
 
     this.cOpts = {
       describe: "trust-schema CertFetcher",
-      ...endpoint?.cOpts,
       ...cOpts,
-      retx,
     };
     if (interestLifetime !== undefined) {
       this.cOpts.modifyInterest = {
@@ -93,7 +89,7 @@ export class CertFetcher implements CertSource {
       };
     }
 
-    const owner = ownerInput ?? endpoint ?? cOpts?.fw ?? Forwarder.getDefault();
+    const owner = ownerInput ?? cOpts?.fw ?? Forwarder.getDefault();
     let cache = cacheMap.get(owner);
     if (!cache) {
       cache = new Cache(opts);
@@ -171,19 +167,13 @@ export namespace CertFetcher {
   export interface Options extends CacheOptions {
     /**
      * Cache instance owner as WeakMap key.
-     * @defaultValue `.endpoint ?? .cOpts.fw ?? Forwarder.getDefault()`
+     * @defaultValue `.cOpts.fw ?? Forwarder.getDefault()`
      *
      * @remarks
      * {@link CertFetcher}s with the same `.owner` share the same cache instance.
      * Cache options are determined when it's first created.
      */
     owner?: object;
-
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.cOpts`.
-     */
-    endpoint?: Endpoint;
 
     /**
      * Consumer options.
@@ -200,11 +190,5 @@ export namespace CertFetcher {
      * If specified, `.cOpts.modifyInterest` is overridden.
      */
     interestLifetime?: number;
-
-    /**
-     * RetxPolicy for certificate retrieval.
-     * @deprecated Specify in `.cOpts.retx`.
-     */
-    retx?: RetxPolicy;
   }
 }

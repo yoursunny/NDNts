@@ -1,4 +1,4 @@
-import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { CertNaming } from "@ndn/keychain";
 import type { Name } from "@ndn/packet";
 
@@ -6,12 +6,6 @@ import { type CaProfile, ErrorMsg, type ParameterKV, ProbeRequest, ProbeResponse
 
 /** {@link requestProbe} options. */
 export interface ClientProbeOptions {
-  /**
-   * Endpoint for communication.
-   * @deprecated Specify `.cOpts`.
-   */
-  endpoint?: Endpoint;
-
   /**
    * Consumer options.
    *
@@ -31,7 +25,6 @@ export interface ClientProbeOptions {
 
 /** Run PROBE command to determine available names. */
 export async function requestProbe({
-  endpoint, // eslint-disable-line etc/no-deprecated
   cOpts,
   profile,
   parameters,
@@ -39,7 +32,6 @@ export async function requestProbe({
   cOpts = {
     describe: `NDNCERT-client(${profile.prefix}, PROBE)`,
     retx: 4,
-    ...endpoint?.cOpts,
     ...cOpts,
     verifier: profile.publicKey,
   };

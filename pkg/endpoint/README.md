@@ -88,13 +88,3 @@ try {
   console.log("Consumer error", err);
 }
 ```
-
-## `Endpoint` class deprecated
-
-The `Endpoint` class allows inheriting consumer/producer options from constructor parameters to each consumer/producer created by `endpoint.consume()` and `endpoint.produce()` methods.
-This design can cause surprising behavior when the same `Endpoint` instance is reused in different parts of the application.
-Therefore, `Endpoint` class is deprecated in favor of `consume()` and `produce()` standalone functions.
-
-APIs accepting `Endpoint` as an option are now accepting `ConsumerOptions` or `ProducerOptions` instead.
-
-The `Endpoint` class and API acceptance of `Endpoint` instance will be deleted on or after 2024-06-05.

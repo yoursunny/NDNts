@@ -80,14 +80,15 @@ export interface ProducerOptions {
    * @remarks
    * Providing an outgoing Data buffer allows the {@link ProducerHandler} to prepare multiple Data
    * packets in response to one Interest, in which one Data satisfies the current Interest and
-   * additional Data satisfy upcoming Interest. This is useful for a producer that generates a
+   * additional Data satisfy upcoming Interests. This is useful for a producer that generates a
    * multi-segment response triggered by a single Interest, such as a
    * {@link https://redmine.named-data.net/projects/nfd/wiki/StatusDataset | StatusDataset}
    * producer in NFD Management protocol.
    *
-   * The producer can prepare the Data packets and insert them to the DataBuffer, and then return
-   * `undefined`, so that the Interest is used to query the DataBuffer and the first matching Data
-   * is sent. The producer can also return a specify Data packet to satisfy the current Interest.
+   * The producer handler can prepare the Data packets and insert them to the DataBuffer. Either it
+   * can return `undefined`, so that the DataBuffer is queried with the current Interest and the
+   * first matching Data is sent. Or it can return a specific Data packet for satisfying the
+   * current Interest.
    */
   dataBuffer?: DataBuffer;
 

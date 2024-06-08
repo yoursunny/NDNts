@@ -1,4 +1,4 @@
-import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { GenericNumber, Segment } from "@ndn/naming-convention2";
 import { Data, Interest, lpm, Name, noopSigning, TT as l3TT, type Verifier } from "@ndn/packet";
 import { fetch } from "@ndn/segmented-object";
@@ -26,7 +26,6 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
   extends TypedEventTarget<EventMap>
   implements Subscriber<Name, SvSubscriber.Update, SvSubscriber.SubscribeInfo<ME>> {
   constructor({
-    endpoint, // eslint-disable-line etc/no-deprecated
     cOpts,
     sync,
     retxLimit = 2,
@@ -44,10 +43,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
     this.mustFilterByMapping = mustFilterByMapping;
     this.innerVerifier = innerVerifier;
     this.outerFetchOpts = {
-      cOpts: {
-        ...endpoint?.cOpts,
-        ...cOpts,
-      },
+      cOpts,
       describe: `SVS-PS(${sync.syncPrefix})[retrieve]`,
       signal: this.abort.signal,
       retxLimit,
@@ -56,7 +52,6 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
     };
     this.outerConsumerOpts = {
       retx: retxLimit,
-      ...endpoint?.cOpts,
       ...cOpts,
       describe: `SVS-PS(${sync.syncPrefix})[retrieve]`,
       signal: this.abort.signal,
@@ -64,7 +59,6 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
     };
     this.mappingConsumerOpts = {
       retx: retxLimit,
-      ...endpoint?.cOpts,
       ...cOpts,
       describe: `SVS-PS(${sync.syncPrefix})[mapping]`,
       signal: this.abort.signal,
@@ -238,12 +232,6 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
 
 export namespace SvSubscriber {
   export interface Options {
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.cOpts`.
-     */
-    endpoint?: Endpoint;
-
     /**
      * Consumer options.
      *

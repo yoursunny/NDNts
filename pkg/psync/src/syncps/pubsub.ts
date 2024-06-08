@@ -1,4 +1,4 @@
-import { consume, ConsumerOptions, type Endpoint, produce, type Producer, ProducerOptions } from "@ndn/endpoint";
+import { consume, ConsumerOptions, produce, type Producer, ProducerOptions } from "@ndn/endpoint";
 import { Timestamp } from "@ndn/naming-convention2";
 import { type Component, Data, digestSigning, Interest, lpm, type Name, type Signer, type Verifier } from "@ndn/packet";
 import { type Subscriber, type Subscription, SubscriptionTable } from "@ndn/sync-api";
@@ -83,7 +83,6 @@ export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscrib
     p,
     syncPrefix,
     describe = `SyncpsPubsub(${syncPrefix})`,
-    endpoint, // eslint-disable-line etc/no-deprecated
     cpOpts,
     syncInterestLifetime = 4000,
     syncDataPubSize = 1300,
@@ -116,7 +115,6 @@ export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscrib
       describe: `${this.describe}[p]`,
       routeCapture: false,
       concurrency: Infinity,
-      ...endpoint?.pOpts,
       ...ProducerOptions.exact(cpOpts),
       dataSigner: syncSigner,
     });
@@ -125,7 +123,6 @@ export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscrib
 
     this.cOpts = {
       describe: `${this.describe}[c]`,
-      ...endpoint?.cOpts,
       ...ConsumerOptions.exact(cpOpts),
       verifier: syncVerifier,
     };
@@ -512,12 +509,6 @@ export namespace SyncpsPubsub {
      * @defaultValue SyncpsPubsub + syncPrefix
      */
     describe?: string;
-
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.cpOpts`.
-     */
-    endpoint?: Endpoint;
 
     /**
      * Consumer and producer options.

@@ -1,4 +1,4 @@
-import { consume, ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler, ProducerOptions } from "@ndn/endpoint";
+import { consume, ConsumerOptions, produce, type Producer, type ProducerHandler, ProducerOptions } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { SequenceNum } from "@ndn/naming-convention2";
 import { Component, Data, digestSigning, Interest, Name, NameMap, SignedInterestPolicy, type Signer, TT } from "@ndn/packet";
@@ -20,7 +20,6 @@ const notifySIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce());
 /** ndn-python-repo PubSub protocol publisher. */
 export class PrpsPublisher implements Disposable {
   constructor({
-    endpoint, // eslint-disable-line etc/no-deprecated
     cpOpts,
     pubPrefix = new Name("/localhost").append(SequenceNum, 0xFFFFFFFF * Math.random()),
     pubFwHint,
@@ -30,7 +29,6 @@ export class PrpsPublisher implements Disposable {
   }: PrpsPublisher.Options = {}) {
     this.cpOpts = {
       fw: Forwarder.getDefault(),
-      ...endpoint?.opts,
       ...cpOpts,
     };
     this.pubPrefix = pubPrefix;
@@ -129,12 +127,6 @@ export class PrpsPublisher implements Disposable {
 
 export namespace PrpsPublisher {
   export interface Options {
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.cpOpts`.
-     */
-    endpoint?: Endpoint;
-
     /**
      * Consumer and producer options.
      *

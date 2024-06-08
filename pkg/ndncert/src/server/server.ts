@@ -1,4 +1,4 @@
-import { type Endpoint, produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
+import { produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
 import { Certificate, CertNaming, type NamedVerifier } from "@ndn/keychain";
 import { Component, type ComponentLike, type Data, type FwHint, type Signer, type ValidityPeriod } from "@ndn/packet";
 import { Metadata, serveMetadata } from "@ndn/rdr";
@@ -9,12 +9,6 @@ import { C, type CaProfile, ChallengeRequest, ChallengeResponse, ErrorCode, Erro
 import type { ServerChallenge, ServerChallengeContext } from "./challenge";
 
 export interface ServerOptions {
-  /**
-   * Endpoint for communication.
-   * @deprecated Specify `.pOpts`.
-   */
-  endpoint?: Endpoint;
-
   /**
    * Producer options.
    *
@@ -56,7 +50,6 @@ interface RepoDataStore {
 /** NDNCERT server. */
 export class Server {
   public static create({
-    endpoint, // eslint-disable-line etc/no-deprecated
     pOpts,
     repo,
     repoFwHint,
@@ -68,7 +61,6 @@ export class Server {
   }: ServerOptions): Server {
     return new Server(
       {
-        ...endpoint?.pOpts,
         ...pOpts,
         announcement: profile.prefix.append(C.CA),
       },

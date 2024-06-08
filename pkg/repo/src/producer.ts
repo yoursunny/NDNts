@@ -1,4 +1,4 @@
-import { type Endpoint, produce, type Producer as EndpointProducer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
+import { produce, type Producer as EndpointProducer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
 import type { Data, Interest } from "@ndn/packet";
 import type { Closer } from "@ndn/util";
 
@@ -8,17 +8,12 @@ import { type PrefixRegController, PrefixRegStrip } from "./prefix-reg/mod";
 /** Make packets in {@link DataStore} available for retrieval. */
 export class RepoProducer implements Disposable {
   public static create(store: DataStore, {
-    endpoint, // eslint-disable-line etc/no-deprecated
     pOpts,
     describe = "repo",
     fallback = async () => undefined,
     reg = PrefixRegStrip(PrefixRegStrip.stripNonGeneric),
   }: RepoProducer.Options = {}) {
-    return new RepoProducer(store, fallback, reg, {
-      describe,
-      ...endpoint?.pOpts,
-      ...pOpts,
-    });
+    return new RepoProducer(store, fallback, reg, { describe, ...pOpts });
   }
 
   private readonly prod: EndpointProducer;
@@ -52,12 +47,6 @@ export class RepoProducer implements Disposable {
 export namespace RepoProducer {
   /** {@link RepoProducer.create} options. */
   export interface Options {
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.pOpts`.
-     */
-    endpoint?: Endpoint;
-
     /**
      * Producer options.
      *

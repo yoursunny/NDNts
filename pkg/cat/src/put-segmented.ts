@@ -62,7 +62,10 @@ export const PutSegmentedCommand: CommandModule<CommonArgs, Args> = {
     });
     exitClosers.push(server);
     if (ver !== "none" && rdr) {
-      const metadataServer = serveMetadata(new Metadata(server.prefix), { signer, announcement: false });
+      const metadataServer = serveMetadata(new Metadata(server.prefix), {
+        signer,
+        pOpts: { announcement: false },
+      });
       exitClosers.push(metadataServer);
     }
     await exitClosers.wait();

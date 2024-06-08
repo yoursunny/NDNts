@@ -50,16 +50,12 @@ export async function list<R>(arg1: string | StatusDataset<R>, arg2: any = {}, a
   }
 
   const {
-    endpoint, // eslint-disable-line etc/no-deprecated
     cOpts: cOptsInput,
-    verifier, // eslint-disable-line etc/no-deprecated
     prefix = localhostPrefix,
   } = opts;
   const cOpts: ConsumerOptions = {
     describe: "nfdmgmt",
-    ...endpoint?.cOpts,
     ...cOptsInput,
-    verifier,
   };
 
   const name = concatName(prefix, datasetName, params);

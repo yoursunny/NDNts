@@ -1,5 +1,5 @@
-import type { ConsumerOptions, Endpoint } from "@ndn/endpoint";
-import { type Component, Name, type Verifier } from "@ndn/packet";
+import type { ConsumerOptions } from "@ndn/endpoint";
+import { type Component, Name } from "@ndn/packet";
 
 export const localhostPrefix = new Name("/localhost/nfd");
 export const localhopPrefix = new Name("/localhop/nfd");
@@ -15,12 +15,6 @@ export function getPrefix(isLocal = false) {
 
 export interface CommonOptions {
   /**
-   * Endpoint for communication.
-   * @deprecated Specify `.cOpts`.
-   */
-  endpoint?: Endpoint;
-
-  /**
    * Consumer options.
    *
    * @remarks
@@ -28,12 +22,6 @@ export interface CommonOptions {
    * - `.verifier` is recommended.
    */
   cOpts?: ConsumerOptions;
-
-  /**
-   * Data verifier.
-   * @deprecated Specify in `.cOpts.verifier`.
-   */
-  verifier?: Verifier;
 
   /**
    * NFD management prefix.

@@ -1,4 +1,4 @@
-import { type Endpoint, produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
+import { produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
 import { Data, type Interest, type Name, NameMap, type Signer } from "@ndn/packet";
 import type { SyncNode, SyncProtocol } from "@ndn/sync-api";
@@ -35,7 +35,6 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
     p,
     syncPrefix,
     describe = `PartialPublisher(${syncPrefix})`,
-    endpoint, // eslint-disable-line etc/no-deprecated
     pOpts,
     helloReplyFreshness = 1000,
     syncReplyFreshness = 1000,
@@ -50,13 +49,11 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
     this.codec = new PSyncCodec(p, this.c.ibltParams);
 
     this.pBuffer = new StateProducerBuffer(this.describe, this.codec, producerBufferLimit, {
-      ...endpoint?.pOpts,
       ...pOpts,
       dataSigner: signer,
     });
     this.hFreshness = helloReplyFreshness;
     this.hProducer = produce(syncPrefix.append("hello"), this.handleHelloInterest, {
-      ...endpoint?.pOpts,
       ...pOpts,
       describe: `${this.describe}[h]`,
       concurrency: Infinity,
@@ -64,7 +61,6 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
     });
     this.sFreshness = syncReplyFreshness;
     this.sProducer = produce(syncPrefix.append("sync"), this.handleSyncInterest, {
-      ...endpoint?.pOpts,
       ...pOpts,
       describe: `${this.describe}[s]`,
       concurrency: Infinity,
@@ -242,12 +238,6 @@ export namespace PartialPublisher {
      * @defaultValue PartialPublisher + syncPrefix
      */
     describe?: string;
-
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.pOpts`.
-     */
-    endpoint?: Endpoint;
 
     /**
      * Producer options (advanced).

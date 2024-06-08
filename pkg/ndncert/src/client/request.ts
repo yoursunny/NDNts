@@ -1,4 +1,4 @@
-import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
+import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { Certificate, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
 import { Interest, type ValidityPeriod } from "@ndn/packet";
 
@@ -8,12 +8,6 @@ import type { ClientChallenge } from "./challenge";
 
 /** {@link requestCertificate} options. */
 export interface ClientOptions {
-  /**
-   * Endpoint for communication.
-   * @deprecated Specify `.cOpts`.
-   */
-  endpoint?: Endpoint;
-
   /**
    * Consumer options.
    *
@@ -46,7 +40,6 @@ export interface ClientOptions {
 
 /** Request a certificate for the given key. */
 export async function requestCertificate({
-  endpoint, // eslint-disable-line etc/no-deprecated
   cOpts,
   profile,
   privateKey,
@@ -57,7 +50,6 @@ export async function requestCertificate({
   cOpts = {
     describe: `NDNCERT-client(${profile.prefix}, REQUEST, ${privateKey.name})`,
     retx: 4,
-    ...endpoint?.cOpts,
     ...cOpts,
     verifier: profile.publicKey,
   };

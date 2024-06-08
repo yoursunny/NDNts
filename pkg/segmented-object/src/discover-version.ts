@@ -1,6 +1,5 @@
-import { consume, type ConsumerOptions, type Endpoint } from "@ndn/endpoint";
-import { type Forwarder } from "@ndn/fw";
-import { Interest, type Name, type Verifier } from "@ndn/packet";
+import { consume, type ConsumerOptions } from "@ndn/endpoint";
+import { Interest, type Name } from "@ndn/packet";
 
 import { defaultSegmentConvention, defaultVersionConvention, type SegmentConvention, type VersionConvention } from "./convention";
 
@@ -10,13 +9,6 @@ import { defaultSegmentConvention, defaultVersionConvention, type SegmentConvent
  * @returns Promise that resolves to versioned name annotated with identified conventions.
  */
 export async function discoverVersion(name: Name, {
-  endpoint, // eslint-disable-line etc/no-deprecated
-  fw, // eslint-disable-line etc/no-deprecated
-  describe, // eslint-disable-line etc/no-deprecated
-  modifyInterest, // eslint-disable-line etc/no-deprecated
-  signal, // eslint-disable-line etc/no-deprecated
-  verifier, // eslint-disable-line etc/no-deprecated
-  retxLimit, // eslint-disable-line etc/no-deprecated
   cOpts,
   versionConvention = defaultVersionConvention,
   segmentNumConvention = defaultSegmentConvention,
@@ -25,13 +17,7 @@ export async function discoverVersion(name: Name, {
 }: discoverVersion.Options = {}): Promise<discoverVersion.Result> {
   const interest = new Interest(name, Interest.CanBePrefix, Interest.MustBeFresh);
   const data = await consume(interest, {
-    fw,
-    describe: describe ?? `discoverVersion(${name})`,
-    modifyInterest,
-    signal,
-    verifier,
-    retx: retxLimit,
-    ...endpoint?.cOpts,
+    describe: `discoverVersion(${name})`,
     ...cOpts,
   });
 
@@ -54,48 +40,6 @@ export namespace discoverVersion {
   export const ANY_SUFFIX_LEN = Symbol("@ndn/segmented-object#discoverVersion.ANY_SUFFIX_LEN");
 
   export interface Options {
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.cOpts`.
-     */
-    endpoint?: Endpoint;
-
-    /**
-     * Use the specified logical forwarder.
-     * @deprecated Specify in `.cOpts.fw`.
-     */
-    fw?: Forwarder;
-
-    /**
-     * FwFace description.
-     * @deprecated Specify in `.cOpts.describe`.
-     */
-    describe?: string;
-
-    /**
-     * Interest modification.
-     * @deprecated Specify in `.cOpts.modifyInterest`.
-     */
-    modifyInterest?: Interest.Modify;
-
-    /**
-     * AbortSignal that allows canceling the Interest via AbortController.
-     * @deprecated Specify in `.cOpts.signal`.
-     */
-    signal?: AbortSignal;
-
-    /**
-     * Data verifier.
-     * @deprecated Specify in `.cOpts.verifier`.
-     */
-    verifier?: Verifier;
-
-    /**
-     * Maximum number of retransmissions, excluding initial Interest.
-     * @deprecated Specify in `.cOpts.retx`.
-     */
-    retxLimit?: number;
-
     /**
      * Consumer options.
      *

@@ -1,4 +1,4 @@
-import type { ConsumerOptions, Endpoint } from "@ndn/endpoint";
+import type { ConsumerOptions } from "@ndn/endpoint";
 import { type Data, Name, type NameLike, type Verifier } from "@ndn/packet";
 import { assert, concatBuffers, Reorder } from "@ndn/util";
 import { collect, map, parallelMap, type WritableStreamish, writeToStream } from "streaming-iterables";
@@ -16,7 +16,6 @@ class FetchResult implements fetch.Result {
   private startFetcher(): AsyncIterable<SegData> {
     assert(!this.uvf, "fetch.Result is already used");
     const opts = {
-      ...this.opts.endpoint?.cOpts, // eslint-disable-line etc/no-deprecated
       ...this.opts.cOpts,
       ...this.opts,
     };
@@ -86,12 +85,6 @@ export function fetch(name: NameLike, opts: fetch.Options = {}): fetch.Result {
 export namespace fetch {
   /** {@link fetch} options. */
   export interface Options extends UnverifiedFetcherOptions {
-    /**
-     * Inherit fetcher options from Endpoint consumer options.
-     * @deprecated Specify `.cOpts`.
-     */
-    endpoint?: Endpoint;
-
     /**
      * Inherit fetcher options from consumer options.
      *

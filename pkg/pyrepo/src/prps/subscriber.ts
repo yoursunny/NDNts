@@ -1,4 +1,4 @@
-import { consume, ConsumerOptions, type Endpoint, produce, type Producer, type ProducerHandler, ProducerOptions, type RetxPolicy } from "@ndn/endpoint";
+import { consume, ConsumerOptions, produce, type Producer, type ProducerHandler, ProducerOptions, type RetxPolicy } from "@ndn/endpoint";
 import { Data, digestSigning, Interest, type Name, type Signer, type Verifier } from "@ndn/packet";
 import type { Subscriber, Subscription } from "@ndn/sync-api";
 import { Decoder } from "@ndn/tlv";
@@ -9,18 +9,14 @@ import { NotifyAppParam, NotifySuffix } from "./packet";
 /** ndn-python-repo PubSub protocol subscriber. */
 export class PrpsSubscriber implements Subscriber<Name, PrpsSubscriber.Update> {
   constructor({
-    endpoint, // eslint-disable-line etc/no-deprecated
-    cpOpts,
+    cpOpts = {},
     msgInterestLifetime = Interest.DefaultLifetime,
     msgRetx = 2,
     pubVerifier,
     subAnnouncement,
     subSigner = digestSigning,
   }: PrpsSubscriber.Options = {}) {
-    this.cpOpts = {
-      ...endpoint?.opts,
-      ...cpOpts,
-    };
+    this.cpOpts = cpOpts;
     this.msgInterestLifetime = msgInterestLifetime;
     this.msgRetx = msgRetx;
     this.pubVerifier = pubVerifier;
@@ -44,12 +40,6 @@ export class PrpsSubscriber implements Subscriber<Name, PrpsSubscriber.Update> {
 
 export namespace PrpsSubscriber {
   export interface Options {
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.cpOpts`.
-     */
-    endpoint?: Endpoint;
-
     /**
      * Consumer and producer options.
      *

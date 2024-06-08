@@ -1,4 +1,4 @@
-import type { ConsumerOptions, Endpoint } from "@ndn/endpoint";
+import type { ConsumerOptions } from "@ndn/endpoint";
 import type { Component, Name, Verifier } from "@ndn/packet";
 import { type Subscriber, type Subscription, SubscriptionTable, SyncUpdate } from "@ndn/sync-api";
 import { BloomFilter, type Parameters as BloomParameters } from "@yoursunny/psync-bloom";
@@ -30,7 +30,6 @@ export class PartialSubscriber extends TypedEventTarget<EventMap>
     p,
     syncPrefix,
     describe = `PartialSubscriber(${syncPrefix})`,
-    endpoint, // eslint-disable-line etc/no-deprecated
     cOpts,
     syncInterestLifetime = 1000,
     syncInterestInterval,
@@ -46,7 +45,6 @@ export class PartialSubscriber extends TypedEventTarget<EventMap>
     this.subs.handleRemoveTopic = this.handleRemoveTopic;
 
     this.cFetcher = new StateFetcher(this.describe, this.codec, syncInterestLifetime, {
-      ...endpoint?.cOpts,
       ...cOpts,
       verifier,
     });
@@ -231,12 +229,6 @@ export namespace PartialSubscriber {
      * @defaultValue PartialSubscriber + syncPrefix
      */
     describe?: string;
-
-    /**
-     * Endpoint for communication.
-     * @deprecated Specify `.cOpts`.
-     */
-    endpoint?: Endpoint;
 
     /**
      * Consumer options.

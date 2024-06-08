@@ -33,9 +33,7 @@ export interface ControlCommandOptions extends CommonOptions {
  */
 export async function invokeGeneric(command: string, params: Encodable, opts: ControlCommandOptions = {}): Promise<ControlResponse> {
   const {
-    endpoint, // eslint-disable-line etc/no-deprecated
     cOpts,
-    verifier, // eslint-disable-line etc/no-deprecated
     prefix = localhostPrefix,
     signer = digestSigning,
     signedInterestPolicy = defaultSIP,
@@ -46,9 +44,7 @@ export async function invokeGeneric(command: string, params: Encodable, opts: Co
 
   const data = await consume(interest, {
     describe: "nfdmgmt",
-    ...endpoint?.cOpts,
     ...cOpts,
-    verifier,
   });
   return Decoder.decode(data.content, ControlResponse);
 }
