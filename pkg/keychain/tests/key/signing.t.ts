@@ -1,12 +1,12 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Data, Name, SigType } from "@ndn/packet";
+import { Data, Name, SigType, ValidityPeriod } from "@ndn/packet";
 import * as TestSignVerify from "@ndn/packet/test-fixture/sign-verify";
 import { Decoder } from "@ndn/tlv";
 import { fromHex } from "@ndn/util";
 import { describe, expect, test } from "vitest";
 
-import { Certificate, createVerifier, EcCurve, ECDSA, Ed25519, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, SigningAlgorithmListFull, ValidityPeriod } from "../..";
+import { Certificate, createVerifier, EcCurve, ECDSA, Ed25519, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, SigningAlgorithmListFull } from "../..";
 
 describe.each(EcCurve.Choices)("ECDSA %s", (curve) => {
   test.each(TestSignVerify.PacketTable)("sign-verify %j", async ({ Packet }) => {

@@ -2,7 +2,6 @@ import { type Decoder, type Encoder, EvDecoder } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
 
 import { TT } from "./an";
-import type { SigInfo } from "./sig-info";
 
 const timestampRe = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/;
 
@@ -92,21 +91,5 @@ export namespace ValidityPeriod {
     const notAfter = new Date(notBefore);
     notAfter.setUTCDate(notAfter.getUTCDate() + n);
     return new ValidityPeriod(notBefore, notAfter);
-  }
-
-  /**
-   * Retrieve ValidityPeriod from SigInfo.
-   * @deprecated Retrieve from `si.validity` directly.
-   */
-  export function get(si: SigInfo): ValidityPeriod | undefined {
-    return si.validity;
-  }
-
-  /**
-   * Assign ValidityPeriod onto SigInfo.
-   * @deprecated Assign to `si.validity` directly.
-   */
-  export function set(si: SigInfo, v?: ValidityPeriod): void {
-    si.validity = v;
   }
 }

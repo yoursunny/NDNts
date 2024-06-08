@@ -20,6 +20,7 @@ function* listImports(filename) {
 }
 
 const ignoredFolder = new Set([
+  "pkg/repo-external", // multi-line re-export, not handled by this script
   "pkg/sync", // multi-line re-export, not handled by this script
 ]);
 const ignoredMissing = new Set(["memif"]);

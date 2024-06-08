@@ -1,5 +1,5 @@
-import { Component, Name, NameMap } from "@ndn/packet";
-import { Decoder, Encoder, NNI } from "@ndn/tlv";
+import { Name, NameMap } from "@ndn/packet";
+import { type Decoder, type Encoder, NNI } from "@ndn/tlv";
 import { fromHex } from "@ndn/util";
 
 import { TT } from "./an";
@@ -116,14 +116,6 @@ export class StateVector {
     }
   }
 
-  /**
-   * Encode to name component.
-   * @deprecated No longer supported.
-   */
-  public toComponent(): Component {
-    return new Component(TT.StateVector, Encoder.encode(this));
-  }
-
   /** Decode TLV-VALUE only. */
   public static decodeFrom(decoder: Decoder): StateVector {
     const v = new StateVector();
@@ -138,17 +130,6 @@ export class StateVector {
     }
     return v;
   }
-
-  /**
-   * Decode from name component.
-   * @deprecated No longer supported.
-   */
-  public static fromComponent(comp: Component): StateVector {
-    if (comp.type !== TT.StateVector) {
-      throw new Error("unexpected NameComponent TLV-TYPE");
-    }
-    return StateVector.decodeFrom(new Decoder(comp.value));
-  }
 }
 
 export namespace StateVector {
@@ -160,12 +141,6 @@ export namespace StateVector {
    * SVS v2 encodes StateVector as a sub-element of this type within AppParameters.
    */
   export const Type = TT.StateVector;
-
-  /**
-   * TLV-TYPE of name component.
-   * @deprecated Use {@link Type}.
-   */
-  export const NameComponentType = TT.StateVector;
 
   /** Per-node entry. */
   export interface NodeEntry {

@@ -1,8 +1,8 @@
-import { Component, Name } from "@ndn/packet";
+import { Component, Name, ValidityPeriod } from "@ndn/packet";
 import type { ReadonlyDeep } from "type-fest";
 import { expect } from "vitest";
 
-import { Certificate, ECDSA, generateSigningKey, type KeyChain, ValidityPeriod } from "..";
+import { Certificate, ECDSA, generateSigningKey, type KeyChain } from "..";
 
 export interface TestRecord {
   key: string;

@@ -1,10 +1,10 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Component, Data, digestSigning, KeyLocator, Name } from "@ndn/packet";
+import { Component, Data, digestSigning, KeyLocator, Name, ValidityPeriod } from "@ndn/packet";
 import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
 import { beforeAll, describe, expect, test, vi } from "vitest";
 
-import { Certificate, CertNaming, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, SigningAlgorithmListFull, ValidityPeriod } from "../..";
+import { Certificate, CertNaming, generateSigningKey, KeyChain, type NamedSigner, type NamedVerifier, SigningAlgorithmListFull } from "../..";
 import * as TestCertStore from "../../test-fixture/cert-store";
 import * as TestKeyStore from "../../test-fixture/key-store";
 

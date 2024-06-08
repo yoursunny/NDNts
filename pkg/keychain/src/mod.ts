@@ -7,7 +7,3 @@ export * from "./store/mod";
 
 /** Certificate naming conversions and utilities. */
 export * as CertNaming from "./naming";
-
-export {
-  /** @deprecated Import from `@ndn/packet`. */ ValidityPeriod,
-} from "@ndn/packet";
