@@ -88,7 +88,7 @@ export class Component {
 
   /**
    * Decode from TLV.
-   * @param type - Complete name component TLV.
+   * @param tlv - Complete name component TLV.
    *
    * @throws Error
    * Thrown if `tlv` does not contain a complete name component TLV and nothing else.

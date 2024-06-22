@@ -98,7 +98,7 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
     using closers = new Closers();
     closers.push(...map(preloadProducers, ([, p]) => p), tapFace);
     // https://github.com/typescript-eslint/typescript-eslint/issues/7889
-    // eslint-disable-next-line @typescript-eslint/return-await
+
     return await f({ ...this.commandOptions, cOpts: eOpts });
   }
 

@@ -243,7 +243,6 @@ export namespace PartialPublisher {
      * Producer options (advanced).
      *
      * @remarks
-     * - `.fw` is overridden as {@link Options.fw}.
      * - `.describe` is overridden as {@link Options.describe}.
      * - `.announcement` is overridden.
      * - `.routeCapture` is overridden.

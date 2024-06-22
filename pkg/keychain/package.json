@@ -35,7 +35,7 @@
     "idb-keyval": "^6.2.1",
     "mnemonist": "^0.39.8",
     "tslib": "^2.6.3",
-    "type-fest": "^4.20.0",
+    "type-fest": "^4.20.1",
     "wait-your-turn": "^1.0.1"
   },
   "devDependencies": {

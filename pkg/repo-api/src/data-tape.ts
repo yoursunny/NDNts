@@ -78,7 +78,7 @@ export class DataTape implements DataTape.Reader, DataTape.Writer {
     const stream = this.makeStream("read");
     assert(isReadableStream(stream), "stream is not Readable");
 
-    return pipeline(
+    return await pipeline(
       () => rxFromStream(stream),
       map(({ decoder }) => {
         try {

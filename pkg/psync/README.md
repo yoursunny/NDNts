@@ -15,7 +15,7 @@ This package contains **PSync** and related protocols, including:
 
 These implementations are parameterized.
 Certain algorithm settings (e.g. hashtable size) and encoding details (e.g. endianness) are extracted from the core logic and put into `Parameters` structures.
-Each protocol has at least a set of *compat* parameters that is consistent with the reference implementation, validated in [sync-interop](../../integ/sync-interop/).
+Each protocol has at least a set of *compat* parameters that is consistent with the reference implementation, validated in [sync-interop](../../integ/sync-interop/README.md).
 In the future, there would be alternative parameter sets optimized for the modern web (e.g. smaller code bundle size), but incompatible with the reference implementation.
 
 NOTICE:

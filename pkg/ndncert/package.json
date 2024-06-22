@@ -38,10 +38,10 @@
     "ajv": "^8.16.0",
     "b64-lite": "^1.4.0",
     "imap-emails": "^1.0.4",
-    "nodemailer": "^6.9.13",
+    "nodemailer": "^6.9.14",
     "p-timeout": "^6.1.2",
     "tslib": "^2.6.3",
-    "type-fest": "^4.20.0",
+    "type-fest": "^4.20.1",
     "typescript-event-target": "^1.1.1"
   },
   "devDependencies": {

@@ -5,7 +5,7 @@ import * as N from "./nest";
 import * as T from "./token";
 
 /** AST node. */
-export abstract class Node {
+export abstract class Node { // eslint-disable-line @typescript-eslint/no-extraneous-class
   public abstract toTokens(): Iterable<T.Token>;
 }
 
