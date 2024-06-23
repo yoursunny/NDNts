@@ -34,7 +34,6 @@
   },
   "devDependencies": {
     "@ndn/keychain": "workspace:*",
-    "@ndn/repo": "workspace:*",
     "stream-mock": "^2.0.5"
   }
 }
