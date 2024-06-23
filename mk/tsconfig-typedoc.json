@@ -10,11 +10,5 @@
   },
   "include": [
     "../pkg/*/src/**/*"
-  ],
-  "typedocOptions": {
-    "entryPointStrategy": "packages",
-    "out": "../docs/typedoc",
-    "name": "NDNts",
-    "readme": "./typedoc-README.md"
-  }
+  ]
 }

@@ -23,9 +23,7 @@ pushd mk/nightly-output/ >/dev/null
   echo '<pre>'
   ls *.tgz | gawk '{ printf "'$BASEURI'/%s\n", $1 }'
   echo '</pre>'
-  if [[ -n ${GTAGID:-} ]]; then
-    echo '<script async src="https://www.googletagmanager.com/gtag/js?id='$GTAGID'"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","'$GTAGID'");</script>'
-  fi
+  echo '<script async src="https://www.googletagmanager.com/gtag/js?id=G-YSW3MP43Z4"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}if(location.hostname.endsWith(".ndn.today")){gtag("js",new Date());gtag("config","G-YSW3MP43Z4");}</script>'
 ) >index.html
 popd >/dev/null
 cp docs/favicon.ico mk/nightly-output/
