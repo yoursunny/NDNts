@@ -126,7 +126,7 @@ export namespace UdpTransport {
   export async function multicasts(opts: Except<udp.MulticastOptions, "intf"> = {}): Promise<UdpTransport[]> {
     const intfs = udp.listMulticastIntfs();
     return (await Promise.allSettled(intfs.map((intf) => UdpTransport.multicast({ ...opts, intf }))))
-      .filter((res): res is PromiseFulfilledResult<UdpTransport> => res.status === "fulfilled")
+      .filter((res) => res.status === "fulfilled")
       .map(({ value }) => value);
   }
 

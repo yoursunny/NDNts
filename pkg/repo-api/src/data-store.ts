@@ -67,7 +67,7 @@ export namespace Insert {
         })();
       },
       get singles() {
-        return args.filter((a): a is Data => a instanceof Data);
+        return args.filter((a) => a instanceof Data);
       },
       get batches() {
         return args.filter(isDataIterable);

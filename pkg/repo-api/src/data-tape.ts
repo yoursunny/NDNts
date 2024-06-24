@@ -87,7 +87,7 @@ export class DataTape implements DataTape.Reader, DataTape.Writer {
           return undefined;
         }
       }),
-      filter((data): data is Data => data instanceof Data),
+      filter((data) => data instanceof Data),
       cb,
     );
   }

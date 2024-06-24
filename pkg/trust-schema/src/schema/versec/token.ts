@@ -79,7 +79,7 @@ function declareOperator(className: string, opPretty: string, autoCommaAfter: bo
     },
   };
   OPERATORS[op] = klass[className]!;
-  return OPERATORS[op]!;
+  return OPERATORS[op];
 }
 
 const OPERATORS: Record<string, new() => Operator> = {};

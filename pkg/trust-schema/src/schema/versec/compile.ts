@@ -279,8 +279,7 @@ class Compiler {
     let filters: VariablePattern.Filter[];
     let op: typeof F.Or | typeof F.And = F.And;
     if (cc instanceof A.ComponentConstraint) {
-      filters = cc.terms.map((term) => this.makeConstraintTermFilter(term, ctx))
-        .filter((f): f is VariablePattern.Filter => !!f);
+      filters = cc.terms.map((term) => this.makeConstraintTermFilter(term, ctx)).filter((f) => !!f);
     } else if (cc instanceof A.ComponentConstraintRel) {
       filters = [
         this.makeConstraintFilter(cc.left, ctx),

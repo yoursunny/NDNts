@@ -163,7 +163,7 @@ test("fragmentation", async () => {
   const output = await pipeline(
     input,
     new LpService({ mtu: 1200 }, { mtu: Infinity }).tx,
-    filter((item): item is Uint8Array => item instanceof Uint8Array),
+    filter((item) => item instanceof Uint8Array),
     tap((fragment) => fragments.push(fragment)),
     map((buf: Uint8Array) => new Decoder(buf).read()),
     new LpService({ reassemblerCapacity: 2 }, { mtu: Infinity }).rx,
