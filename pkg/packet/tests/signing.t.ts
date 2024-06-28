@@ -153,6 +153,23 @@ test("nullSigner", async () => {
   await nullSigner.sign(data);
   expect(data.sigInfo.type).toBe(SigType.Null);
   expect(data.sigValue).toHaveLength(0);
+
+  const interest = new Interest("/I");
+  expect(interest.sigInfo).toBeUndefined();
+  expect(interest.sigValue).toHaveLength(0);
+
+  await nullSigner.sign(interest);
+  expect(interest.sigInfo?.type).toBe(SigType.Null);
+  expect(interest.sigValue).toHaveLength(0);
+  await expect(interest.validateParamsDigest()).resolves.toBeUndefined();
+
+  const parameterized = new Interest("/I/P");
+  parameterized.appParameters = Uint8Array.of(0xA0, 0xA1);
+
+  await nullSigner.sign(parameterized);
+  expect(parameterized.sigInfo?.type).toBe(SigType.Null);
+  expect(parameterized.sigValue).toHaveLength(0);
+  await expect(parameterized.validateParamsDigest()).resolves.toBeUndefined();
 });
 
 test("onlyIfUnsigned", async () => {

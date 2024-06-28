@@ -9,14 +9,22 @@ export const myDataPrefix = myID.append(...syncPrefix.comps);
 
 export async function openSvSync(): Promise<SvSync> {
   await openUplinks();
+
   const key = await HMAC.cryptoGenerate({
     importRaw: Buffer.from("dGhpcyBpcyBhIHNlY3JldCBtZXNzYWdl", "base64"),
   }, false);
-  const sync = await SvSync.create({
+  const opts: SvSync.Options = {
     syncPrefix,
     signer: createSigner(HMAC, key),
     verifier: createVerifier(HMAC, key),
-  });
+  };
+
+  if (process.env.NDNTS_INTEROP_SVS2) {
+    opts.svs2interest = true;
+    opts.svs2suppression = true;
+  }
+
+  const sync = await SvSync.create(opts);
   exitClosers.push(sync);
   return sync;
 }

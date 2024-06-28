@@ -25,7 +25,7 @@ test("basic", () => {
   expect(v0.get(name5)).toBe(0);
   expect(v0.getEntry(name5).lastUpdate).toBe(0);
 
-  const wire = fromHex("CA0A070508036F6E65CC0101CA0A0705080374776FCC0102");
+  const wire = fromHex("C918CA0A070508036F6E65CC0101CA0A0705080374776FCC0102");
   expect(Encoder.encode(v0)).toEqualUint8Array(wire);
 
   const t0 = Date.now();

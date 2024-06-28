@@ -10,4 +10,15 @@ This package contains **StateVectorSync** and related protocols, including:
 * [SVS-PS](https://named-data.github.io/StateVectorSync/PubSubSpec.html), revision 2023-05-19
   * simple unit test
 
-[SVS v2](https://github.com/named-data/StateVectorSync/pull/14) is being implemented.
+Compatibility with the reference implementation is validated in [sync-interop](../../integ/sync-interop/README.md).
+
+[SVS v2](https://github.com/named-data/StateVectorSync/pull/14) is being implemented:
+
+* [X] Encode StateVector in ApplicationParameters instead of Name.
+      Enable with `svs2interest: true` option.
+* [X] Use exponential decay function for suppression timeout.
+      Enable with `svs2suppression: true` option.
+* [X] Don't enter suppression state if every node was updated in last suppression period.
+      Enable with `svs2suppression: true` option.
+* [ ] Piggyback SVS-PS MappingData.
+* [ ] Accept piggybacked SVS-PS MappingData.

@@ -1,13 +1,16 @@
 import { consume, type ConsumerOptions, produce, type Producer, type ProducerHandler } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
+import { Version } from "@ndn/naming-convention2";
 import { Component, Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { Decoder, Encoder } from "@ndn/tlv";
-import { assert, randomJitter, trackEventListener } from "@ndn/util";
+import { randomJitter, trackEventListener } from "@ndn/util";
 import type { Promisable } from "type-fest";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { StateVector } from "./state-vector";
+
+const V2 = Version.create(2);
 
 interface DebugEntry {
   action: string;
@@ -32,6 +35,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     initialStateVector = new StateVector(),
     initialize,
     syncInterestLifetime = 1000,
+    svs2interest = false,
     steadyTimer = [30000, 0.1],
     periodicTimeout = steadyTimer,
     svs2suppression = false,
@@ -49,6 +53,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
       syncPrefix,
       describe,
       initialStateVector,
+      svs2interest,
       Interest.makeModifyFunc({
         canBePrefix: true,
         mustBeFresh: true,
@@ -76,6 +81,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
       public readonly syncPrefix: Name,
       public readonly describe: string,
       private readonly own: StateVector,
+      private readonly svs2interest: boolean,
       private readonly modifyInterest: Interest.ModifyFunc,
       private readonly cOpts: ConsumerOptions,
       private readonly steadyTimer: () => number,
@@ -162,8 +168,15 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
   private readonly handleSyncInterest: ProducerHandler = async (interest) => {
     await this.verifier?.verify(interest);
     const vComp = interest.name.at(this.syncPrefix.length);
-    assert(vComp.type === StateVector.Type, "name component is not a StateVector");
-    const recv = new Decoder(vComp.value).decode(StateVector);
+    let decoder: Decoder;
+    if (vComp.equals(V2) && !!interest.appParameters) {
+      decoder = new Decoder(interest.appParameters);
+    } else if (vComp.type === StateVector.Type) {
+      decoder = new Decoder(vComp.tlv);
+    } else {
+      throw new Error("cannot find StateVector");
+    }
+    const recv = decoder.decode(StateVector);
 
     const ourOlder = this.own.listOlderThan(recv);
     const ourNewer = recv.listOlderThan(this.own);
@@ -230,7 +243,12 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     this.debug("send");
 
     const interest = new Interest();
-    interest.name = this.syncPrefix.append(new Component(StateVector.Type, Encoder.encode(this.own)));
+    if (this.svs2interest) {
+      interest.name = this.syncPrefix.append(V2);
+      interest.appParameters = Encoder.encode(this.own);
+    } else {
+      interest.name = this.syncPrefix.append(new Component(Encoder.encode(this.own)));
+    }
     this.modifyInterest(interest);
     await this.signer.sign(interest);
 
@@ -279,6 +297,13 @@ export namespace SvSync {
      * @defaultValue 1000
      */
     syncInterestLifetime?: number;
+
+    /**
+     * Encode sync Interest in SVS v2 format.
+     * @defaultValue false
+     * @experimental
+     */
+    svs2interest?: boolean;
 
     /**
      * Sync Interest timer in steady state (SVS v1).

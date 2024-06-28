@@ -104,23 +104,29 @@ export class StateVector {
     return o;
   }
 
-  /** Encode TLV-VALUE only. */
+  /** Encode StateVector TLV. */
   public encodeTo(encoder: Encoder): void {
     const list = Array.from(this);
     list.sort(([a], [b]) => -a.compare(b));
+    const sizeBefore = encoder.size;
     for (const [id, seqNum] of list) {
       encoder.prependTlv(TT.StateVectorEntry,
         id,
         [TT.SeqNo, NNI(seqNum)],
       );
     }
+    encoder.prependTypeLength(TT.StateVector, encoder.size - sizeBefore);
   }
 
-  /** Decode TLV-VALUE only. */
+  /** Decode StateVector TLV. */
   public static decodeFrom(decoder: Decoder): StateVector {
     const v = new StateVector();
-    while (!decoder.eof) {
-      const { type: entryT, vd: d1 } = decoder.read();
+    const { type: svT, vd: d0 } = decoder.read();
+    if (svT !== TT.StateVector) {
+      throw new Error("invalid StateVector");
+    }
+    while (!d0.eof) {
+      const { type: entryT, vd: d1 } = d0.read();
       const id = d1.decode(Name);
       const { type: seqNumT, nni: seqNum } = d1.read();
       if (entryT !== TT.StateVectorEntry || seqNumT !== TT.SeqNo || !d1.eof) {

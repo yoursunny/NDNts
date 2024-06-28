@@ -15,9 +15,9 @@
   },
   "packageManager": "pnpm@9.4.0+sha256.b6fd0bfda555e7e584ad7e56b30c68b01d5a04f9ee93989f4b93ca8473c49c74",
   "devDependencies": {
-    "@types/node": "^20.14.8",
+    "@types/node": "^20.14.9",
     "@types/wtfnode": "^0.7.3",
-    "@typescript/lib-dom": "npm:@types/web@0.0.149",
+    "@typescript/lib-dom": "npm:@types/web@0.0.150",
     "@vitest/coverage-v8": "^1.6.0",
     "@yoursunny/xo-config": "0.58.0",
     "codedown": "^3.1.0",

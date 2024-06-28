@@ -55,7 +55,7 @@ const closers = new Closers();
 afterEach(closers.close);
 
 // specification section 5.2 example
-test.each([false, true])("example %#", async (svs2suppression) => {
+test.each([false, true])("example %#", async (svs2) => {
   const debugHandler = new DebugHandler();
   let lossToC = false;
   using bridge = Bridge.create({
@@ -64,7 +64,8 @@ test.each([false, true])("example %#", async (svs2suppression) => {
 
   const opts: SvSync.Options = {
     ...baseOpts,
-    svs2suppression,
+    svs2interest: svs2,
+    svs2suppression: svs2,
     fw: bridge.fwAB,
   };
 

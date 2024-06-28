@@ -101,13 +101,14 @@ corepack pnpm literate integ/sync-interop/syncps.ts
 Test environment:
 
 * Ubuntu 22.04
-* ndn-cxx 0.8.1-55-gc5003938
-* NFD 22.12-41-g91c15c8c
-* Node.js 20.11.0
+* ndn-cxx 0.8.1-88-g5eb7a075
+* NFD 22.12-69-gec352f2b
+* Node.js 20.12.2
 
 Reference implementation:
 
-* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `023ca70c4ffd9b8cb3f9ed3acdc81a40f22818f2` (2024-02-18)
+* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `1bf5c25dcc3085affae58e87e3e85d0eedee6561` (2024-04-27)
+* [SVS v2](https://github.com/named-data/ndn-svs/pull/26) commit `1290954f8d0d5c1f61caab9ac1aeacde500c9990` (2024-03-08)
 
 Build reference program:
 
@@ -124,6 +125,7 @@ Test `SvSync`:
 LD_LIBRARY_PATH=build ./build/examples/chat /${RANDOM}
 
 # in NDNts directory
+export NDNTS_INTEROP_SVS2=1  # if testing SVS v2
 corepack pnpm literate integ/sync-interop/svsync.ts
 ```
 
@@ -131,6 +133,7 @@ Test `SvPublisher`:
 
 ```bash
 # in NDNts directory
+export NDNTS_INTEROP_SVS2=1  # if testing SVS v2
 corepack pnpm literate integ/sync-interop/svsps-publisher.ts
 
 # in ndn-svs directory
@@ -144,5 +147,6 @@ Test `SvSubscriber`:
 LD_LIBRARY_PATH=build ./build/examples/chat-pubsub /${RANDOM}
 
 # in NDNts directory
+export NDNTS_INTEROP_SVS2=1  # if testing SVS v2
 corepack pnpm literate integ/sync-interop/svsps-subscriber.ts
 ```

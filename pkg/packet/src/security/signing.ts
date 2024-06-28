@@ -145,6 +145,8 @@ export const digestSigning: Signer & Verifier = {
   },
 };
 
+const nullSigValue = Promise.resolve(new Uint8Array());
+
 /**
  * Signer for SigType.Null, a packet that is not signed.
  * @see https://redmine.named-data.net/projects/ndn-tlv/wiki/NullSignature
@@ -152,7 +154,6 @@ export const digestSigning: Signer & Verifier = {
 export const nullSigner: Signer = {
   sign(pkt: Signer.Signable): Promise<void> {
     Signer.putSigInfo(pkt, SigType.Null, false);
-    pkt.sigValue = new Uint8Array();
-    return Promise.resolve();
+    return pkt[LLSign.OP](() => nullSigValue);
   },
 };
