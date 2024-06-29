@@ -10,7 +10,7 @@ export namespace Closer {
   /** Close or dispose an object. */
   export function close(c: any): Promisable<void> {
     for (const key of ["close", Symbol.dispose, Symbol.asyncDispose] as const) {
-      if (typeof c[key] === "function") {
+      if (typeof c?.[key] === "function") {
         return c[key]();
       }
     }
@@ -18,7 +18,7 @@ export namespace Closer {
 
   /** Convert a closable object to AsyncDisposable. */
   export function asAsyncDisposable(c: Closer | Disposable | AsyncDisposable): AsyncDisposable {
-    if (typeof (c as any)[Symbol.asyncDispose] === "function") {
+    if (typeof (c as AsyncDisposable)[Symbol.asyncDispose] === "function") {
       return c as AsyncDisposable;
     }
     return {

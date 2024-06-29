@@ -6,7 +6,8 @@ import { BufferChunkSource, type ChunkOptions, DataProducer } from "@ndn/segment
 import type { SyncNode } from "@ndn/sync-api";
 import { Encoder } from "@ndn/tlv";
 import { Closer } from "@ndn/util";
-import { collect, map } from "streaming-iterables";
+import { collect, parallelMap } from "streaming-iterables";
+import { Mutex } from "wait-your-turn";
 
 import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
 import { MappingEntry } from "./mapping-entry";
@@ -52,6 +53,7 @@ export class SvPublisher {
   }
 
   private readonly node: SyncNode<Name>;
+  private readonly nodeMutex = new Mutex();
   private readonly nodeSyncPrefix: Name;
   private readonly store: SvPublisher.DataStore;
   private readonly chunkOptions: ChunkOptions;
@@ -90,30 +92,37 @@ export class SvPublisher {
       name.append(Version0),
       { signer: this.innerSigner },
     ));
-    const finalBlockId = inner.at(-1)!.name.get(-1)!;
+    // later steps need mutex so that concurrent publishes won't have same seqNum
+    return this.nodeMutex.use(() => this.publishInner(name, inner, entry));
+  }
 
+  private async publishInner(name: Name, inner: readonly Data[], entry: MappingEntry): Promise<number> {
     const seqNum = this.node.seqNum + 1;
     const seqNumComp = GenericNumber.create(seqNum);
 
     entry.seqNum = seqNum;
     entry.name = name;
-    const mapping = new Data(this.nodeSyncPrefix.append(MappingKeyword, seqNumComp), Encoder.encode(entry));
+    const mapping = new Data();
+    mapping.name = this.nodeSyncPrefix.append(MappingKeyword, seqNumComp);
+    mapping.content = Encoder.encode(entry);
     await nullSigner.sign(mapping);
+    // single-entry mapping is inserted into DataStore but never served to subscribers directly;
+    // it is for use by handleMapping only
 
-    const outer = map(async (data) => {
-      const encap = new Data(
-        this.nodeSyncPrefix.append(seqNumComp, Version0, data.name.get(-1)!),
-        Data.ContentType(ContentTypeEncap),
-        Data.FreshnessPeriod(60000),
-        Encoder.encode(data),
-      );
+    const finalBlockId = inner.at(-1)!.name.get(-1)!;
+    const outer = parallelMap(16, async (data) => {
+      const encap = new Data();
+      encap.name = this.nodeSyncPrefix.append(seqNumComp, Version0, data.name.get(-1)!);
+      encap.contentType = ContentTypeEncap;
+      encap.freshnessPeriod = 60000;
       encap.finalBlockId = finalBlockId;
+      encap.content = Encoder.encode(data);
       await this.outerSigner.sign(encap);
       return encap;
     }, inner);
 
     await this.store.insert(mapping, outer);
-    this.node.seqNum = seqNum;
+    this.node.seqNum = seqNum; // triggers sync Interest
     return seqNum;
   }
 
@@ -183,7 +192,12 @@ export namespace SvPublisher {
      */
     sync: SvSync;
 
-    /** Publisher node ID. */
+    /**
+     * Publisher node ID.
+     *
+     * @remarks
+     * Each publisher must have a unique node ID.
+     */
     id: Name;
 
     /** Data repository used for this publisher. */
