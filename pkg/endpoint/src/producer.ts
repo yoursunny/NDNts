@@ -2,6 +2,7 @@ import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { Data, Interest, Name, type NameLike, Signer } from "@ndn/packet";
 import { flatTransform } from "streaming-iterables";
 
+import { type CommonOptions, exactOptions } from "./common";
 import type { DataBuffer } from "./data-buffer";
 
 /**
@@ -21,23 +22,7 @@ import type { DataBuffer } from "./data-buffer";
 export type ProducerHandler = (interest: Interest, producer: Producer) => Promise<Data | undefined>;
 
 /** {@link produce} options. */
-export interface ProducerOptions {
-  /**
-   * Logical forwarder instance.
-   * @defaultValue `Forwarder.getDefault()`
-   */
-  fw?: Forwarder;
-
-  /**
-   * Description for debugging purpose.
-   * @defaultValue
-   * "produce" + prefix.
-   */
-  describe?: string;
-
-  /** AbortSignal that allows closing the producer via AbortController. */
-  signal?: AbortSignal;
-
+export interface ProducerOptions extends CommonOptions {
   /**
    * Whether routes registered by producer would cause `@ndn/fw` internal FIB to stop matching
    * toward shorter prefixes.
@@ -107,13 +92,8 @@ export namespace ProducerOptions {
   /** Describe how to derive route announcement from name prefix in {@link produce}. */
   export type RouteAnnouncement = FwFace.RouteAnnouncement;
 
-  const keys: readonly string[] = [
-    "fw", "describe", "signal", "routeCapture", "announcement",
-    "concurrency", "dataSigner", "dataBuffer", "autoBuffer",
-  ] satisfies ReadonlyArray<keyof ProducerOptions>;
-
   export function exact(opts: ProducerOptions = {}): ProducerOptions {
-    return Object.fromEntries(Object.entries(opts).filter(([key]) => keys.includes(key)));
+    return exactOptions(opts, ["routeCapture", "announcement", "concurrency", "dataSigner", "dataBuffer", "autoBuffer"]);
   }
 }
 
@@ -182,7 +162,7 @@ class ProducerImpl implements Producer {
 
     this.processInterest = this.dataBuffer ?
       this.processBuffered.bind(this, autoBuffer) :
-      this.processUnbuffered.bind(this);
+      this.processUnbuffered;
     signal?.addEventListener("abort", this.close);
   }
 
@@ -203,7 +183,7 @@ class ProducerImpl implements Producer {
 
   public readonly processInterest: (interest: Interest) => Promise<Data | undefined>;
 
-  private async processUnbuffered(interest: Interest): Promise<Data | undefined> {
+  private processUnbuffered = async (interest: Interest): Promise<Data | undefined> => {
     const data = await this.handler(interest, this);
     if (!(data instanceof Data)) {
       return undefined;
@@ -214,7 +194,7 @@ class ProducerImpl implements Producer {
       return undefined;
     }
     return data;
-  }
+  };
 
   private async processBuffered(autoBuffer: boolean, interest: Interest): Promise<Data | undefined> {
     let found = await this.dataBuffer!.find(interest);

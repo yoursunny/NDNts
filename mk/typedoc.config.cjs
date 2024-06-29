@@ -8,4 +8,5 @@ module.exports = {
   readme: "./typedoc-README.md",
   customFooterHtml: `<script async src="https://www.googletagmanager.com/gtag/js?id=${GTAG}"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}if(location.hostname.endsWith(".ndn.today")){gtag("js",new Date());gtag("config","${GTAG}");}</script>`,
   customFooterHtmlDisableWrapper: true,
+  // comments/validation-related options should be written in make-pkg-tsconfig script
 };

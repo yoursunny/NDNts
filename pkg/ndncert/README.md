@@ -3,7 +3,7 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package partially implements [NDN Certificate Management protocol v0.3](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3/841f2a2e66cc3256d113cfe61242420b9cdab6c1) and [challenges](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3-Challenges/46700d99c67dc94d13d26f838e4594f1f66d7c76).
-This implementation is validated against the reference implementation using [ndncert-interop](../../integ/ndncert-interop/README.md).
+This implementation is validated against the reference implementation using [ndncert-interop](../../integ/ndncert-interop).
 
 Features:
 

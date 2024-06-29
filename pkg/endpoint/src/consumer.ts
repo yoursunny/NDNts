@@ -2,26 +2,11 @@ import { CancelInterest, Forwarder, FwPacket } from "@ndn/fw";
 import { Data, Interest, type NameLike, type Verifier } from "@ndn/packet";
 import { pushable } from "@ndn/util";
 
+import { type CommonOptions, exactOptions } from "./common";
 import { makeRetxGenerator, type RetxPolicy } from "./retx";
 
 /** {@link consume} options. */
-export interface ConsumerOptions {
-  /**
-   * Logical forwarder instance.
-   * @defaultValue `Forwarder.getDefault()`
-   */
-  fw?: Forwarder;
-
-  /**
-   * Description for debugging purpose.
-   * @defaultValue
-   * "consume" + Interest name.
-   */
-  describe?: string;
-
-  /** AbortSignal that allows canceling the Interest via AbortController. */
-  signal?: AbortSignal;
-
+export interface ConsumerOptions extends CommonOptions {
   /**
    * Modify Interest according to specified options.
    * @defaultValue
@@ -44,12 +29,8 @@ export interface ConsumerOptions {
   verifier?: Verifier;
 }
 export namespace ConsumerOptions {
-  const keys: readonly string[] = [
-    "fw", "describe", "signal", "modifyInterest", "retx", "verifier",
-  ] satisfies ReadonlyArray<keyof ConsumerOptions>;
-
   export function exact(opts: ConsumerOptions = {}): ConsumerOptions {
-    return Object.fromEntries(Object.entries(opts).filter(([key]) => keys.includes(key)));
+    return exactOptions(opts, ["modifyInterest", "retx", "verifier"]);
   }
 }
 

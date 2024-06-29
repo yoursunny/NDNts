@@ -13,7 +13,7 @@ It includes both a generic variant and a NFD-specific variant with additional ty
   * [X] NFD: `FaceDataset`, `FaceQuery`, `CsInfo`, `StrategyChoice`, `RibEntry`
 * [ ] NotificationStream
 
-This implementation is validated against NFD using [nfdmgmt-interop](../../integ/nfdmgmt-interop/README.md).
+This implementation is validated against NFD using [nfdmgmt-interop](../../integ/nfdmgmt-interop).
 
 ```ts
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";

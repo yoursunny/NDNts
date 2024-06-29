@@ -18,6 +18,7 @@ const tsconfig = {
     exclude: ["**/node_modules", "**/lib", "**/test-fixture", "**/tests"],
     excludeExternals: true,
     excludePrivate: true,
+    jsDocCompatibility: false,
     validation: {
       notExported: false,
     },

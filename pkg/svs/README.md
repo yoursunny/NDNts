@@ -10,7 +10,7 @@ This package contains **StateVectorSync** and related protocols, including:
 * [SVS-PS](https://named-data.github.io/StateVectorSync/PubSubSpec.html), revision 2023-05-19
   * simple unit test
 
-Compatibility with the reference implementation is validated in [sync-interop](../../integ/sync-interop/README.md).
+Compatibility with the reference implementation is validated in [sync-interop](../../integ/sync-interop).
 
 [SVS v2](https://github.com/named-data/StateVectorSync/pull/14) is being implemented:
 
