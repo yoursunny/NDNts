@@ -28,7 +28,7 @@ export class PyRepo implements AsyncDisposable {
     name = Name.from(name);
     const dbFile = path.join(dir, "sqlite3.db");
     const confFile = path.join(dir, "repo.conf.json");
-    const ip = long2ip(0x7F000000 | Math.trunc(0x00FFFFFF * Math.random()));
+    const ip = long2ip(0x7F790000 | Math.trunc(0xFFFF * Math.random())); // 127.121.x.x
 
     using closers = new Closers();
     const nfd = await new FakeNfd(fw).open();
@@ -52,7 +52,7 @@ export class PyRepo implements AsyncDisposable {
       stdout: "inherit",
       stderr: "inherit",
       env: {
-        NDN_CLIENT_TRANSPORT: `tcp://127.0.0.1:${nfd.port}`,
+        NDN_CLIENT_TRANSPORT: `tcp://${ip}:${nfd.port}`,
         HOME: dir,
       },
     });
@@ -68,10 +68,10 @@ export class PyRepo implements AsyncDisposable {
 
   public async [Symbol.asyncDispose](): Promise<void> {
     this.p.kill("SIGQUIT");
-    try {
-      await this.p;
-    } catch {}
-    await this.nfd[Symbol.asyncDispose]();
+    await Promise.allSettled([
+      this.p,
+      this.nfd[Symbol.asyncDispose](),
+    ]);
   }
 }
 export namespace PyRepo {

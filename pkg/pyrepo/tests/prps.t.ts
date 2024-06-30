@@ -57,7 +57,7 @@ test("pubsub", { timeout: 10000, retry: 1 }, async () => {
     Promise.allSettled(pubPromises),
     (async () => {
       using closers = new Closers(sub0A, sub0B, sub1A);
-      await delay(3000);
+      await delay(4000);
     })(),
   ]);
 

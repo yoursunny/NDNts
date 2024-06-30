@@ -38,12 +38,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Install dependencies
         run: |
           echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu jammy main" \
             | sudo tee /etc/apt/sources.list.d/nfd-nightly.list
           sudo apt-get update
           sudo apt-get install --no-install-recommends ndnsec
+          pip install git+https://github.com/UCLA-IRL/ndn-python-repo@2dcd229a4cb81927a52e8a8f1d963c55ee939ffa
       - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_DOWNLOAD: true

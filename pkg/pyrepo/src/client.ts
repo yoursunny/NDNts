@@ -1,6 +1,6 @@
 import { consume, ConsumerOptions } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
-import { digestSigning, Interest, Name, SignedInterestPolicy } from "@ndn/packet";
+import { type Data, digestSigning, Interest, Name, SignedInterestPolicy } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { assert, delay, randomJitter, sha256, toHex } from "@ndn/util";
 
@@ -106,12 +106,11 @@ export class PyRepoClient implements Disposable {
     const p = new CommandParam();
     p.objectParams.push(...objs);
     const request = Encoder.encode(p);
-    const requestDigest = await sha256(request);
-    const requestDigestHex = toHex(requestDigest);
 
     await this.publisher.publish(this.repoPrefix.append(verb.action), request);
     const checkParam = new StatQuery();
-    checkParam.requestDigest = requestDigest;
+    checkParam.requestDigest = await sha256(request);
+    const requestDigestHex = toHex(checkParam.requestDigest);
 
     const deadline = Date.now() + this.commandTimeout;
     while (Date.now() < deadline) {
@@ -123,10 +122,15 @@ export class PyRepoClient implements Disposable {
       checkSIP.update(checkInterest, this);
       await digestSigning.sign(checkInterest);
 
-      const checkData = await consume(checkInterest, {
-        ...this.checkOpts,
-        describe: `pyrepo-check(${this.repoPrefix} ${requestDigestHex})`,
-      });
+      let checkData: Data;
+      try {
+        checkData = await consume(checkInterest, {
+          ...this.checkOpts,
+          describe: `pyrepo-check(${this.repoPrefix} ${requestDigestHex})`,
+        });
+      } catch {
+        continue;
+      }
 
       const res = Decoder.decode(checkData.content, CommandRes);
       if (res.statusCode >= 400) {

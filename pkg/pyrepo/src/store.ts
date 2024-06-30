@@ -14,7 +14,8 @@ import { PyRepoClient } from "./client";
  * This DataStore is write-only. It can insert and delete data in ndn-python-repo.
  *
  * This DataStore does not have methods to read data. To read data in ndn-python-repo, send an
- * Interest to the network, and then ndn-python-repo is supposed to reply.
+ * Interest to the network, and then ndn-python-repo itself can reply.
+ * If you really need a readable DataStore, refer to {@link @ndn/repo-api!ReadFromNetwork}.
  */
 export class PyRepoStore implements Disposable, S.Insert, S.Delete {
   /** Construct with internal {@link PyRepoClient}. */

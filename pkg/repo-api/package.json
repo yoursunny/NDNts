@@ -26,6 +26,7 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
+    "@ndn/endpoint": "workspace:*",
     "@ndn/l3face": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",

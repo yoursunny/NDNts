@@ -3,6 +3,7 @@ export * from "./bulk-insert-target";
 export * from "./copy";
 export * from "./data-array";
 export * from "./data-tape";
+export * from "./read-from-network";
 export * from "./respond-rdr";
 
 /**

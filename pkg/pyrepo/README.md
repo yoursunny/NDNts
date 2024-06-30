@@ -3,24 +3,22 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package allows inserting and deleting Data in [ndn-python-repo](https://github.com/UCLA-IRL/ndn-python-repo).
-This implementation is compatible with ndn-python-repo `dafd23dc` (2024-02-13).
+This implementation is compatible with ndn-python-repo `2dcd229a` (2024-05-09).
 To install and start the specified version, run:
 
 ```bash
 # create Python virtual environment
-python3 -m venv pyrepo-venv
-cd pyrepo-venv
-source ./bin/activate
+python3 -m venv ~/pyrepo-venv
+source ~/pyrepo-venv/bin/activate
 
 # install ndn-python-repo
-pip install git+https://github.com/UCLA-IRL/ndn-python-repo@dafd23dcc25bf9c130a110e37b66d6d1683a8212
+pip install git+https://github.com/UCLA-IRL/ndn-python-repo@2dcd229a4cb81927a52e8a8f1d963c55ee939ffa
 
 # run ndn-python-repo
-export NDN_CLIENT_TRANSPORT=unix:///run/nfd/nfd.sock
 ndn-python-repo
 ```
 
-`PyRepoClient` type is a client for [ndn-python-repo protocol](https://github.com/UCLA-IRL/ndn-python-repo/tree/dafd23dcc25bf9c130a110e37b66d6d1683a8212/docs/src/specification).
+`PyRepoClient` type is a client for [ndn-python-repo protocol](https://github.com/UCLA-IRL/ndn-python-repo/tree/2dcd229a4cb81927a52e8a8f1d963c55ee939ffa/docs/src/specification).
 `PyRepoStore` type implements a write-only subset of `DataStore` interfaces as defined in `@ndn/repo-api` package.
 
 ```ts

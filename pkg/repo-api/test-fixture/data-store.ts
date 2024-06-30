@@ -5,36 +5,41 @@ import { Data, Interest, Name, type NameLike } from "@ndn/packet";
 import { BufferChunkSource, fetch, serve } from "@ndn/segmented-object";
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
 import { collect, map } from "streaming-iterables";
+import type { RequireAtLeastOne } from "type-fest";
 import { expect } from "vitest";
 
 import type { DataStore as S } from "..";
 
-export async function testDataStoreBasic(store: S.Insert & Partial<S.ListNames & S.ListData & S.Get & S.Find & S.Delete>): Promise<void> {
+type SReadable = S.ListNames & S.ListData & S.Get & S.Find;
+
+export async function testDataStoreBasic(store: RequireAtLeastOne<S.Insert & Partial<SReadable & S.Delete>, keyof SReadable>): Promise<void> {
   const checkNames = async (prefix: NameLike | undefined, positive: Iterable<NameLike>, negative: Iterable<NameLike> = []) => {
     prefix = prefix ? Name.from(prefix) : undefined;
-    if (store.listNames) {
-      await expect(collect(store.listNames(prefix))).resolves.toEqualNames(positive);
-    }
-    if (store.listData) {
-      await expect(collect(map((data) => data.name, store.listData(prefix))))
-        .resolves.toEqualNames(positive);
-    }
-    if (store.get) {
-      for (const name of positive) {
-        await expect(store.get(Name.from(name))).resolves.toHaveName(name);
+    await Promise.all((function*(): Iterable<Promise<void>> {
+      if (store.listNames) {
+        yield expect(collect(store.listNames(prefix))).resolves.toEqualNames(positive);
       }
-      for (const name of negative) {
-        await expect(store.get(Name.from(name))).resolves.toBeUndefined();
+      if (store.listData) {
+        yield expect(collect(map((data) => data.name, store.listData(prefix))))
+          .resolves.toEqualNames(positive);
       }
-    }
-    if (store.find) {
-      for (const name of positive) {
-        await expect(store.find(new Interest(name))).resolves.toHaveName(name);
+      if (store.get) {
+        for (const name of positive) {
+          yield expect(store.get(Name.from(name))).resolves.toHaveName(name);
+        }
+        for (const name of negative) {
+          yield expect(store.get(Name.from(name))).resolves.toBeUndefined();
+        }
       }
-      for (const name of negative) {
-        await expect(store.find(new Interest(name))).resolves.toBeUndefined();
+      if (store.find) {
+        for (const name of positive) {
+          yield expect(store.find(new Interest(name))).resolves.toHaveName(name);
+        }
+        for (const name of negative) {
+          yield expect(store.find(new Interest(name))).resolves.toBeUndefined();
+        }
       }
-    }
+    })());
   };
 
   await store.insert(new Data("/A/1"), new Data("/A/2"));
