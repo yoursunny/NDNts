@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Forwarder } from "@ndn/fw";
 import { generateSigningKey } from "@ndn/keychain";
 import { Name, type NameLike } from "@ndn/packet";
-import { makeInMemoryDataStore } from "@ndn/repo";
+import { DataArray } from "@ndn/repo-api";
 import { Closers, console, crypto, delay } from "@ndn/util";
 import pDefer from "p-defer";
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
@@ -108,9 +108,8 @@ test("simple", { timeout: 20000 }, async () => {
   const syncD = await SvSync.create({ ...syncOpts, describe: "D" });
   closers.push(syncA, syncB, syncC, syncD);
 
-  const repoA = await makeInMemoryDataStore();
-  const repoB = await makeInMemoryDataStore();
-  closers.push(repoA, repoB);
+  const repoA = new DataArray();
+  const repoB = new DataArray();
 
   const pubA0 = new SvPublisher({ ...pubOpts, sync: syncA, id: new Name("/0"), store: repoA });
   const pubA1 = new SvPublisher({ ...pubOpts, sync: syncA, id: new Name("/1"), store: repoA });
@@ -151,8 +150,7 @@ test("timed", { timeout: 20000 }, async () => {
   const syncB = await SvSync.create({ ...syncOpts, describe: "B" });
   closers.push(syncA, syncB);
 
-  const repoA = await makeInMemoryDataStore();
-  closers.push(repoA);
+  const repoA = new DataArray();
 
   const pubP = new SvPublisher({ ...pubOpts, sync: syncA, id: new Name("/P"), store: repoA });
   const pubQ = new SvPublisher({ ...pubOpts, sync: syncA, id: new Name("/Q"), store: repoA });

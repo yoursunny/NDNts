@@ -2,7 +2,7 @@ import { exitClosers } from "@ndn/cli-common";
 import { SequenceNum } from "@ndn/naming-convention2";
 import { TcpTransport } from "@ndn/node-transport";
 import { Data, Name } from "@ndn/packet";
-import { BulkInsertInitiator, type DataStore } from "@ndn/repo-api";
+import { BulkInsertInitiator, type DataStore as S } from "@ndn/repo-api";
 import { crypto } from "@ndn/util";
 import ProgressBar from "progress";
 import { batch, consume, pipeline, tap, transform } from "streaming-iterables";
@@ -65,7 +65,7 @@ const baseOptions = {
 
 type BaseArgs = InferredOptionTypes<typeof baseOptions>;
 
-async function execute(args: BaseArgs, store: DataStore.Insert) {
+async function execute(args: BaseArgs, store: S.Insert) {
   const progress = args.progress ?
     new ProgressBar(":bar :current/:total :rateD/s :elapseds ETA:etas", { total: args.count }) :
     undefined;

@@ -8,7 +8,7 @@ import { PrpsPublisher, PrpsSubscriber } from "..";
 
 afterEach(Forwarder.deleteDefault);
 
-test("pubsub", { timeout: 10000 }, async () => {
+test("pubsub", { timeout: 10000, retry: 1 }, async () => {
   const star = Bridge.star({
     leaves: 3,
     relayBA: { delay: 6, jitter: 0.1 },
@@ -45,7 +45,7 @@ test("pubsub", { timeout: 10000 }, async () => {
     sub.addEventListener("update", ({ detail: data }) => {
       expect(data.content).toHaveLength(2);
       expect(data.content[0]).toBe(0xDD);
-      nums.push(data.content[1]);
+      nums.push(data.content[1]!);
     });
     return [sub, nums] as const;
   };

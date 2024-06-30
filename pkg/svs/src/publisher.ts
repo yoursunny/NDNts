@@ -167,8 +167,9 @@ export namespace SvPublisher {
    * Data repository used by publisher.
    *
    * @remarks
-   * {@link \@ndn/repo!DataStore} satisfies the requirement.
-   * Other lightweight implementations may be possible.
+   * Possible implementations include but are not limited to:
+   * - {@link \@ndn/repo!DataStore} (faster, disk-persistency option, larger code size)
+   * - {@link \@ndn/repo-api!DataArray} (slower, in-memory only, smaller code size)
    */
   /* eslint-enable tsdoc/syntax */
   export type DataStore = S.Get & S.Find & S.Insert;

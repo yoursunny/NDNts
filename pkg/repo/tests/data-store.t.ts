@@ -1,13 +1,11 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Forwarder } from "@ndn/fw";
 import { Data, Interest, Name } from "@ndn/packet";
-import { BufferChunkSource, fetch, serve } from "@ndn/segmented-object";
-import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
+import { testDataStoreBasic, testDataStoreSegmentedObject } from "@ndn/repo-api/test-fixture/data-store";
 import { Closers, delay } from "@ndn/util";
 import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
 import { collect, map } from "streaming-iterables";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 
 import { type DataStore, makeInMemoryDataStore, makePersistentDataStore } from "..";
 
@@ -24,37 +22,15 @@ const TABLE: readonly Row[] = [
   }],
 ];
 
-test.each(TABLE)("insert get delete %s", async (desc, openDataStore) => {
+test.each(TABLE)("basic %s", async (desc, openDataStore) => {
   void desc;
   await using store = await openDataStore();
-
-  await store.insert(new Data("/A/1"), new Data("/A/2"));
-  await expect(store.get(new Name("/A/0"))).resolves.toBeUndefined();
-  await expect(store.get(new Name("/A/1"))).resolves.toHaveName("/A/1");
-  await expect(store.get(new Name("/A/2"))).resolves.toHaveName("/A/2");
-
-  const dataA1 = await store.get(new Name("/A/1"));
-  await store.insert(dataA1!);
-
-  await store.delete(new Name("/A/0"), new Name("/A/1"));
-  await expect(store.get(new Name("/A/0"))).resolves.toBeUndefined();
-  await expect(store.get(new Name("/A/1"))).resolves.toBeUndefined();
-  await expect(store.get(new Name("/A/2"))).resolves.toHaveName("/A/2");
+  await testDataStoreBasic(store);
 });
 
-describe.each(TABLE)("segmented object %s", (desc, openDataStore) => {
-  void desc;
-  afterEach(Forwarder.deleteDefault);
-
-  test("insert", async () => {
-    await using store = await openDataStore();
-
-    const body = makeObjectBody(500 * 25);
-    const producer = serve("/S", new BufferChunkSource(body, { chunkSize: 500 }));
-    await store.insert(fetch("/S"));
-    producer.close();
-    await expect(collect(store.listNames())).resolves.toHaveLength(25);
-  });
+test.each(TABLE)("segmented object %s", async (desc, openDataStore) => {
+  await using store = await openDataStore();
+  await testDataStoreSegmentedObject(store);
 });
 
 test.each(TABLE)("list find expire %s", async (desc, openDataStore) => {

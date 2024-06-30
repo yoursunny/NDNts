@@ -1,6 +1,7 @@
 export * from "./bulk-insert-initiator";
 export * from "./bulk-insert-target";
 export * from "./copy";
+export * from "./data-array";
 export * from "./data-tape";
 export * from "./respond-rdr";
 

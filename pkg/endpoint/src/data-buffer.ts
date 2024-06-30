@@ -12,7 +12,7 @@ interface DataStore {
   insert: (opts: { expireTime?: number }, ...pkts: readonly Data[]) => Promise<void>;
 }
 
-/** DataBuffer implementation based on `DataStore` from `@ndn/repo` package. */
+/** DataBuffer implementation based on `@ndn/repo`. */
 export class DataStoreBuffer implements DataBuffer {
   /* eslint-disable tsdoc/syntax -- tsdoc-missing-reference */
   /**
@@ -28,6 +28,7 @@ export class DataStoreBuffer implements DataBuffer {
    * `DataStore` is declared as an interface instead of importing, in order to reduce bundle size
    * for webapps that do not use DataBuffer. The trade-off is that, applications wanting to use
    * DataBuffer would have to import `@ndn/repo` themselves.
+   * Note: {@link \@ndn/repo-api!DataArray} is insufficient because it lacks `expireTime` option.
    */
   /* eslint-enable tsdoc/syntax */
   constructor(public readonly store: DataStore, {

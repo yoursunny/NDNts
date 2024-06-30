@@ -38,7 +38,8 @@ export interface Insert<Options extends {} = {}> {
   insert: (...args: Insert.Args<Options>) => Promise<void>;
 }
 export namespace Insert {
-  export type Args<O extends {}> = [...(object extends O ? [O] | [] : []), ...ReadonlyArray<Data | AnyIterable<Data>>];
+  type Tail = ReadonlyArray<Data | AnyIterable<Data>>;
+  export type Args<O extends {}> = [...(object extends O ? [O] | [] : []), ...Tail];
 
   export interface ParsedArgs<O> {
     readonly opts?: O;
@@ -50,18 +51,19 @@ export namespace Insert {
   /** Normalize {@link Insert.insert} arguments. */
   export function parseArgs<O extends {}>(args: Args<O>): ParsedArgs<O> {
     let opts: O | undefined;
-    if (args.length > 0 && !(args[0] instanceof Data) && !isDataIterable(args[0])) {
+    if (args.length > 0 && !(args[0] instanceof Data || (args[0] as Iterable<Data>)[Symbol.iterator] ||
+        (args[0] as AsyncIterable<Data>)[Symbol.asyncIterator])) {
       opts = args.shift() as O;
     }
     return {
       opts,
       get pkts() {
         return (async function*() {
-          for (const a of args) {
-            if (isDataIterable(a)) {
-              yield* a;
+          for (const a of args as Tail) {
+            if (a instanceof Data) {
+              yield a;
             } else {
-              yield a as Data;
+              yield* a;
             }
           }
         })();
@@ -70,13 +72,9 @@ export namespace Insert {
         return args.filter((a) => a instanceof Data);
       },
       get batches() {
-        return args.filter(isDataIterable);
+        return args.filter((a): a is AnyIterable<Data> => !(a instanceof Data));
       },
     };
-  }
-
-  function isDataIterable(obj: any): obj is AnyIterable<Data> {
-    return !!obj && (!!(obj as Iterable<Data>)[Symbol.iterator] || !!(obj as AsyncIterable<Data>)[Symbol.asyncIterator]);
   }
 }
 
