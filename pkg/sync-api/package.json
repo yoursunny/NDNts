@@ -1,6 +1,6 @@
 {
   "name": "@ndn/sync-api",
-  "version": "0.0.20240113",
+  "version": "0.0.20240630",
   "description": "NDNts: Dataset Synchronization and PubSub API",
   "keywords": [
     "NDN",

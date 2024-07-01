@@ -1,6 +1,6 @@
 {
   "name": "@ndn/rdr",
-  "version": "0.0.20240113",
+  "version": "0.0.20240630",
   "description": "NDNts: RDR Protocol",
   "keywords": [
     "NDN",
