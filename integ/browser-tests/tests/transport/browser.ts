@@ -12,11 +12,10 @@ async function facePing(pingPrefix: string) {
   const names: string[] = [];
   const rtts: number[] = [];
   for (let i = 0; i < 50; ++i) {
-    const t0 = Date.now();
-    const data = await consume(`${pingPrefix}/${Math.trunc(Math.random() * 1e8)}`);
-    const t1 = Date.now();
-    rtts.push(t1 - t0);
+    const consumer = consume(`${pingPrefix}/${Math.trunc(Math.random() * 1e8)}`);
+    const data = await consumer;
     names.push(data.name.toString());
+    rtts.push(consumer.rtt!);
     await delay(10);
   }
 

@@ -2,6 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Forwarder } from "@ndn/fw";
 import { Data, Interest, type Verifier } from "@ndn/packet";
+import { delay } from "@ndn/util";
 import { afterEach, beforeEach, describe, expect, type Mock, test, vi } from "vitest";
 
 import { consume, produce, type ProducerHandler, type RetxPolicy } from "..";
@@ -20,7 +21,7 @@ describe("retx limit", () => {
   });
 
   test("resolve", async () => {
-    const promise = consume(
+    const consumer = consume(
       new Interest("/A", Interest.Lifetime(500)),
       {
         retx: {
@@ -29,9 +30,9 @@ describe("retx limit", () => {
         },
       },
     );
-    await expect(promise).resolves.toBeInstanceOf(Data);
+    await expect(consumer).resolves.toBeInstanceOf(Data);
     expect(producer).toHaveBeenCalledTimes(3);
-    expect(promise.nRetx).toBe(2);
+    expect(consumer.nRetx).toBe(2);
   });
 
   test.each<[RetxPolicy, number]>([
@@ -42,17 +43,17 @@ describe("retx limit", () => {
     [0, 1],
     [1, 2],
   ])("reject %#", async (retx, nInterests) => {
-    const promise = consume(
+    const consumer = consume(
       new Interest("/A", Interest.Lifetime(200)),
       { retx },
     );
-    await expect(promise).rejects.toThrow();
+    await expect(consumer).rejects.toThrow();
     expect(producer).toHaveBeenCalledTimes(nInterests);
-    expect(promise.nRetx).toBe(nInterests - 1);
+    expect(consumer.nRetx).toBe(nInterests - 1);
   });
 
   test("abort", async () => {
-    const promise = consume(
+    const consumer = consume(
       new Interest("/A", Interest.Lifetime(2000)),
       {
         signal: AbortSignal.timeout(100),
@@ -60,10 +61,27 @@ describe("retx limit", () => {
           limit: 2,
         },
       });
-    await expect(promise).rejects.toThrow();
+    await expect(consumer).rejects.toThrow();
     expect(producer).toHaveBeenCalledTimes(1);
-    expect(promise.nRetx).toBe(0);
+    expect(consumer.nRetx).toBe(0);
   });
+});
+
+test("RTT", async () => {
+  produce("/A", async () => {
+    await delay(200);
+    return new Data("/A");
+  });
+
+  const consumer = consume(
+    new Interest("/A", Interest.Lifetime(400)),
+    { verifier: { async verify() { await delay(400); } } },
+  );
+  expect(consumer.rtt).toBeUndefined();
+
+  await expect(consumer).resolves.toBeInstanceOf(Data);
+  expect(consumer.rtt).toBeGreaterThanOrEqual(200);
+  expect(consumer.rtt).toBeLessThanOrEqual(400);
 });
 
 test("verify", async () => {
@@ -74,10 +92,10 @@ test("verify", async () => {
   const verify = vi.fn<Parameters<Verifier["verify"]>, ReturnType<Verifier["verify"]>>()
     .mockRejectedValue(new Error("mock-verify-error"));
 
-  const promise = consume(
+  const consumer = consume(
     new Interest("/A", Interest.Lifetime(200)),
     { verifier: { verify } },
   );
-  await expect(promise).rejects.toThrow(/mock-verify-error/);
+  await expect(consumer).rejects.toThrow(/mock-verify-error/);
   expect(producer).toHaveBeenCalledTimes(1);
 });

@@ -89,7 +89,7 @@ export async function execute(cls: PacketCtor, pvtA: Signer, pubA: Verifier,
     // so change five bits to reduce test failures.
     for (let i = 0; i < 5; ++i) {
       const offset = Math.trunc(Math.random() * sig.byteLength);
-      sig[offset] ^= 0x01;
+      sig[offset]! ^= 0x01;
     }
     return sig;
   })();

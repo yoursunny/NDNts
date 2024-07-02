@@ -1,9 +1,12 @@
 import { CancelInterest, Forwarder, FwPacket } from "@ndn/fw";
 import { Data, Interest, type NameLike, type Verifier } from "@ndn/packet";
 import { pushable } from "@ndn/util";
+import hirestime from "hirestime";
 
 import { type CommonOptions, exactOptions } from "./common";
 import { makeRetxGenerator, type RetxPolicy } from "./retx";
+
+const getNow = hirestime();
 
 /** {@link consume} options. */
 export interface ConsumerOptions extends CommonOptions {
@@ -42,8 +45,24 @@ export namespace ConsumerOptions {
  * annotated with the Interest and some counters.
  */
 export interface ConsumerContext extends Promise<Data> {
+  /** Interest packet, after any modifications. */
   readonly interest: Interest;
+
+  /**
+   * Number of retransmissions sent so far.
+   *
+   * @remarks
+   * The initial Interest does not count as a retransmission.
+   */
   readonly nRetx: number;
+
+  /**
+   * Duration (milliseconds) between last Interest transmission and Data arrival.
+   *
+   * @remarks
+   * This is a valid RTT measurement if {@link nRetx} is zero.
+   */
+  readonly rtt: number | undefined;
 }
 
 function makeConsumer(
@@ -59,6 +78,8 @@ function makeConsumer(
 ): ConsumerContext {
   Interest.makeModifyFunc(modifyInterest)(interest);
 
+  let txTime = 0;
+  let rtt: number | undefined;
   let nRetx = -1;
   const retxGen = makeRetxGenerator(retx)(interest.lifetime)[Symbol.iterator]();
 
@@ -78,6 +99,7 @@ function makeConsumer(
         timer = setTimeout(sendInterest, value);
       }
       rx.push(FwPacket.create(interest));
+      txTime = getNow();
       ++nRetx;
     };
 
@@ -92,6 +114,7 @@ function makeConsumer(
       async tx(iterable) {
         for await (const pkt of iterable) {
           if (pkt.l3 instanceof Data) {
+            rtt = getNow() - txTime;
             try {
               await verifier?.verify(pkt.l3);
             } catch (err: unknown) {
@@ -122,6 +145,7 @@ function makeConsumer(
   return Object.defineProperties(promise, {
     interest: { value: interest },
     nRetx: { get() { return nRetx; } },
+    rtt: { get() { return rtt; } },
   }) as ConsumerContext;
 }
 
