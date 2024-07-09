@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { type Name, type NameLike } from "@ndn/packet";
+import type { NameLike } from "@ndn/packet";
 import { delay } from "@ndn/util";
 import { beforeEach, expect, type Mock, test, vi } from "vitest";
 
@@ -13,12 +13,12 @@ beforeEach(() => {
 });
 
 class SimpleDest extends ReadvertiseDestination {
-  protected override doAdvertise = vi.fn<[Name, {}], Promise<void>>().mockResolvedValue(undefined);
-  protected override doWithdraw = vi.fn<[Name, {}], Promise<void>>().mockResolvedValue(undefined);
+  protected override doAdvertise = vi.fn<ReadvertiseDestination["doAdvertise"]>().mockResolvedValue(undefined);
+  protected override doWithdraw = vi.fn<ReadvertiseDestination["doWithdraw"]>().mockResolvedValue(undefined);
 
   private hasEvents = false;
-  private readonly annadd = vi.fn<[Forwarder.AnnouncementEvent], void>();
-  private readonly annrm = vi.fn<[Forwarder.AnnouncementEvent], void>();
+  private readonly annadd = vi.fn<(evt: Forwarder.AnnouncementEvent) => void>();
+  private readonly annrm = vi.fn<(evt: Forwarder.AnnouncementEvent) => void>();
 
   public attachEventHandlers(fw: Forwarder): void {
     this.hasEvents = true;
@@ -35,8 +35,8 @@ class SimpleDest extends ReadvertiseDestination {
   }
 
   private static check(
-      doFn: Mock<[Name, {}], Promise<void>>,
-      onFn: false | Mock<[Forwarder.AnnouncementEvent], void>,
+      doFn: Mock<ReadvertiseDestination["doAdvertise"] & ReadvertiseDestination["doWithdraw"]>,
+      onFn: false | Mock<(evt: Forwarder.AnnouncementEvent) => void>,
       names: readonly NameLike[],
   ) {
     expect(doFn).toHaveBeenCalledTimes(names.length);

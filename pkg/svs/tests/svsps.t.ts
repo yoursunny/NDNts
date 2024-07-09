@@ -181,11 +181,11 @@ test("timed", { timeout: 20000 }, async () => {
 
   const sub0P = sub0.subscribe({ publisher: new Name("/P") });
   const sub0N = sub0.subscribe(new Name("/N"));
-  const filter0F = vi.fn<[TimedMappingEntry], boolean>().mockImplementation(filterFunc);
+  const filter0F = vi.fn(filterFunc);
   const sub0F = sub0.subscribe({ prefix: new Name("/N"), filter: filter0F });
   const sub1P = sub1.subscribe({ publisher: new Name("/P") });
   const sub1N = sub1.subscribe(new Name("/N"));
-  const filter1F = vi.fn<[TimedMappingEntry], boolean>().mockImplementation(filterFunc);
+  const filter1F = vi.fn(filterFunc);
   const sub1F = sub1.subscribe({ prefix: new Name("/N"), filter: filter1F });
 
   await publishCheck(pubP, "/H/0", 1000, makeOldEntry(), [sub0P, sub1P], [sub0N, sub0F, sub1N, sub1F]);

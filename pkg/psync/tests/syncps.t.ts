@@ -86,7 +86,7 @@ class Fixture {
     const title = String.fromCodePoint(0x41 + i);
     topic = Name.from(topic);
     const updates: Name[] = [];
-    const handleUpdate = vi.fn<[CustomEvent<Data>], void>()
+    const handleUpdate = vi.fn<(evt: CustomEvent<Data>) => void>()
       .mockImplementation(({ detail: pub }) => {
         updates.push(pub.name);
         debugPrinter.log(title, `UPDATE ${topic} ${pub.name}`);

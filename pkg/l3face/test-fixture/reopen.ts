@@ -21,13 +21,13 @@ export async function run<ServerSocket>(
 
   const face = new L3Face(transport);
 
-  const stateEvt = vi.fn<[L3Face.State], void>();
+  const stateEvt = vi.fn<(state: L3Face.State) => void>();
   face.addEventListener("state", ({ state }) => stateEvt(state));
-  const upEvt = vi.fn();
+  const upEvt = vi.fn<() => void>();
   face.addEventListener("up", upEvt);
-  const downEvt = vi.fn();
+  const downEvt = vi.fn<() => void>();
   face.addEventListener("down", downEvt);
-  const closeEvt = vi.fn();
+  const closeEvt = vi.fn<() => void>();
   face.addEventListener("close", closeEvt);
 
   let end = false;

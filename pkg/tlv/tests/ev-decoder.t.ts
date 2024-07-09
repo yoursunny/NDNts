@@ -15,8 +15,8 @@ class EvdTestTarget {
     return this.a1 * 1000 + this.a4 * 100 + this.a6 * 10 + this.a9;
   }
 
-  public observeBefore = vi.fn<[EvdTestTarget, Decoder.Tlv | undefined], void>();
-  public observeAfter = vi.fn<[EvdTestTarget, Decoder.Tlv | undefined], void>();
+  public observeBefore = vi.fn<EvDecoder.TlvObserver<EvdTestTarget>>();
+  public observeAfter = vi.fn<EvDecoder.TlvObserver<EvdTestTarget>>();
 
   public setCallbacks(evd: EvDecoder<EvdTestTarget>): void {
     evd.beforeObservers.splice(0, 1, this.observeBefore);
@@ -192,7 +192,8 @@ test("setIsCritical", () => {
 });
 
 test("setUnknown", () => {
-  const cb = vi.fn<[EvdTestTarget, Decoder.Tlv, number], boolean>((t, { type }, order) => {
+  const cb = vi.fn<EvDecoder.UnknownElementHandler<EvdTestTarget>>((t, { type }, order) => {
+    void order;
     if (type === 0xA1) {
       ++t.a1;
       return true;

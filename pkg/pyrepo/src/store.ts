@@ -7,6 +7,7 @@ import { collect } from "streaming-iterables";
 
 import { PyRepoClient } from "./client";
 
+/* eslint-disable tsdoc/syntax -- tsdoc-reference-missing-hash */
 /**
  * A DataStore implementation using ndn-python-repo.
  *
@@ -17,6 +18,7 @@ import { PyRepoClient } from "./client";
  * Interest to the network, and then ndn-python-repo itself can reply.
  * If you really need a readable DataStore, refer to {@link @ndn/repo-api!ReadFromNetwork}.
  */
+/* eslint-enable tsdoc/syntax */
 export class PyRepoStore implements Disposable, S.Insert, S.Delete {
   /** Construct with internal {@link PyRepoClient}. */
   constructor(opts: PyRepoStore.Options);

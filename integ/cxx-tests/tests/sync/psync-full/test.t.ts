@@ -33,7 +33,7 @@ test("simple", async () => {
   });
   closers.push(sync);
 
-  const handleUpdate = vi.fn<[SyncUpdate<Name>], void>();
+  const handleUpdate = vi.fn<(update: SyncUpdate<Name>) => void>();
   sync.addEventListener("update", handleUpdate);
 
   p.kill("SIGUSR1");

@@ -32,7 +32,7 @@ test("simple", { retry: 3 }, async () => {
     syncInterestLifetime: 100,
     syncInterestInterval: [110, 150],
   });
-  const st: Array<[Subscription, Mock<[SyncUpdate<Name>], void>]> = [];
+  const st: Array<[Subscription, Mock<(update: SyncUpdate<Name>) => void>]> = [];
   const subState = vi.fn(({ topics }: PartialSubscriber.StateEvent) => {
     expect(topics).toHaveLength(4);
     for (const [i, { id }] of pt.entries()) {
@@ -40,7 +40,7 @@ test("simple", { retry: 3 }, async () => {
       expect(found).toHaveLength(1);
       if (i % 2 === 0) {
         const subscription = sub.subscribe(found[0]!);
-        const handleUpdate = vi.fn<[SyncUpdate<Name>], void>();
+        const handleUpdate = vi.fn<(update: SyncUpdate<Name>) => void>();
         subscription.addEventListener("update", handleUpdate);
         st.push([subscription, handleUpdate]);
       }

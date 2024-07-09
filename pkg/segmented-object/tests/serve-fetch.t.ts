@@ -204,8 +204,7 @@ describe("empty object", () => {
     (verifier) => ({ verifier }),
     (verifier) => ({ cOpts: { verifier } }),
   ])("verify error %#", async (makeOpts) => {
-    const verify = vi.fn<Parameters<Verifier["verify"]>, ReturnType<Verifier["verify"]>>()
-      .mockRejectedValue(new Error("mock-verify-error"));
+    const verify = vi.fn<Verifier["verify"]>().mockRejectedValue(new Error("mock-verify-error"));
     await expect(fetch("/R", { retxLimit: 0, ...makeOpts({ verify }) }))
       .rejects.toThrow(/mock-verify-error/);
     expect(verify).toHaveBeenCalledTimes(1);

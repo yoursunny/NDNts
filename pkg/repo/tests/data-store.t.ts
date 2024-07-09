@@ -73,8 +73,8 @@ test.each(TABLE)("events %s", async (desc, openDataStore) => {
   void desc;
   await using store = await openDataStore();
 
-  const onInsert = vi.fn<[DataStore.RecordEvent], void>();
-  const onDelete = vi.fn<[DataStore.RecordEvent], void>();
+  const onInsert = vi.fn<(evt: DataStore.RecordEvent) => void>();
+  const onDelete = vi.fn<(evt: DataStore.RecordEvent) => void>();
   store.addEventListener("insert", onInsert);
   store.addEventListener("delete", onDelete);
 

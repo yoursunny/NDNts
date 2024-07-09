@@ -28,7 +28,7 @@
     "event-iterator": "^2.0.0",
     "p-event": "^6.0.1",
     "tslib": "^2.6.3",
-    "type-fest": "^4.20.1",
+    "type-fest": "^4.21.0",
     "url-format-lax": "^2.0.0",
     "url-parse-lax": "^5.0.0"
   },

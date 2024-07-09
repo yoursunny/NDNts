@@ -10,7 +10,7 @@ test("trackEventListener", () => {
   const target = new TrackedEventTarget();
   expect(target.maybeHaveEventListener.a).toBeFalsy();
 
-  const listener = vi.fn<[Event], void>();
+  const listener = vi.fn<(evt: Event) => void>();
   target.addEventListener("a", listener);
   expect(target.maybeHaveEventListener.a).toBeTruthy();
 

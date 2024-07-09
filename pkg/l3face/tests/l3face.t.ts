@@ -14,7 +14,7 @@ test("l3face", async () => {
   expect(face.attributes.advertiseFrom).toBeFalsy();
   expect(face.attributes.local).toBeTruthy();
 
-  const close = vi.fn<[], void>();
+  const close = vi.fn<() => void>();
   face.addEventListener("close", close);
 
   transport.recv(new Interest("/A", Interest.Lifetime(20)));

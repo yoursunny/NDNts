@@ -171,7 +171,7 @@ test("packets", async () => {
   expect(challengeInterest.name.getPrefix(3)).toEqualName("/root/CA/CHALLENGE");
   expect(challengeInterest.sigInfo).toBeDefined();
 
-  const lookupRequest = vi.fn().mockResolvedValue({
+  const lookupRequest = vi.fn<ChallengeRequest.Context["lookupRequest"]>().mockResolvedValue({
     sessionKey: caSessionKey,
     certRequestPub: newRequest.publicKey,
   });

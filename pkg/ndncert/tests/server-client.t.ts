@@ -89,8 +89,8 @@ const TABLE: Row[] = [
   {
     summary: "email, success",
     async makeChallengeLists() {
-      const emailsent = vi.fn<[ServerEmailChallenge.SentEvent], void>();
-      const emailerror = vi.fn<[ServerEmailChallenge.ErrorEvent], void>();
+      const emailsent = vi.fn<(evt: ServerEmailChallenge.SentEvent) => void>();
+      const emailerror = vi.fn<(evt: ServerEmailChallenge.ErrorEvent) => void>();
       const server = new ServerEmailChallenge({
         mail: createMT({ jsonTransport: true }),
         template: emailTemplate,

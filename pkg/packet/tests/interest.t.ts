@@ -195,7 +195,7 @@ test("decode parameterized", async () => {
   expect(interest.name).toHaveLength(3);
   expect(interest.appParameters).toBeDefined();
 
-  const verify = vi.fn();
+  const verify = vi.fn<LLVerify>();
   await expect(interest[LLVerify.OP](verify)).rejects.toThrow();
   expect(verify).not.toHaveBeenCalled();
 
@@ -211,7 +211,7 @@ test("encode signed", async () => {
   // error on out of place ParamsDigest
   const interest = new Interest(new Name(["A", ParamsDigest.PLACEHOLDER, "C"]));
   interest.sigInfo = new SigInfo(SigType.Sha256);
-  const sign = vi.fn();
+  const sign = vi.fn<LLSign>();
   await expect(interest[LLSign.OP](sign)).rejects.toThrow(/out of place/);
 
   // other tests in signing.t.ts
@@ -267,7 +267,7 @@ test("decode signed", async () => {
   expect(interest.sigValue).toBeDefined();
 
   // unrecognized elements should be preserved until modified
-  const verify = vi.fn().mockResolvedValue(undefined);
+  const verify = vi.fn<LLVerify>().mockResolvedValue(undefined);
   await interest[LLVerify.OP](verify);
   expect(verify).toHaveBeenCalledTimes(1);
   expect(verify.mock.calls[0][0]).toEqualUint8Array(Buffer.concat([name.value, signedParamsWire]));

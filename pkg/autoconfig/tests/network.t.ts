@@ -76,7 +76,7 @@ test("defaultGateway", { timeout: 10000 }, async () => {
     version: 4,
     int: "eth0",
   };
-  const mockGateway = vi.fn<[], Promise<defaultGateway.Result<4>>>().mockResolvedValue(mockGatewayResult);
+  const mockGateway = vi.fn<typeof defaultGateway.gateway4async>().mockResolvedValue(mockGatewayResult);
   vi.doMock("default-gateway", (): typeof defaultGateway => ({
     ...defaultGateway,
     gateway4async: mockGateway,
@@ -84,15 +84,14 @@ test("defaultGateway", { timeout: 10000 }, async () => {
 
   let calledWith6363 = false;
   let calledWith7004 = false;
-  const testConnection = vi.fn<[FwFace], Promise<unknown>>()
-    .mockImplementation(async (face) => {
-      const faceDescribe = face.toString();
-      calledWith6363 ||= faceDescribe.includes("127.0.0.1:6363");
-      calledWith7004 ||= faceDescribe.includes("127.0.0.1:7004");
-      if (!faceDescribe.includes("127.0.0.1:7001")) {
-        throw new Error("mock reject");
-      }
-    });
+  const testConnection = vi.fn(async (face: FwFace) => {
+    const faceDescribe = face.toString();
+    calledWith6363 ||= faceDescribe.includes("127.0.0.1:6363");
+    calledWith7004 ||= faceDescribe.includes("127.0.0.1:7004");
+    if (!faceDescribe.includes("127.0.0.1:7001")) {
+      throw new Error("mock reject");
+    }
+  });
 
   const faces = await connectToNetwork({
     fch: { server: fchServer.uri },
@@ -111,7 +110,7 @@ test("defaultGateway", { timeout: 10000 }, async () => {
 });
 
 test("connectFailure", async () => {
-  const testConnection = vi.fn<[FwFace], Promise<unknown>>()
+  const testConnection = vi.fn<(face: FwFace) => Promise<unknown>>()
     .mockRejectedValue(new Error("mock reject"));
 
   await expect(connectToNetwork({

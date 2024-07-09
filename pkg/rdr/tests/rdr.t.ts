@@ -69,7 +69,7 @@ describe("producer", () => {
   });
 
   test("serve with prefix", async () => {
-    const makeMetadata = vi.fn<[], Metadata>().mockReturnValue(simpleMetadata);
+    const makeMetadata = vi.fn<() => Metadata>().mockReturnValue(simpleMetadata);
     const p = serveMetadata(makeMetadata, { prefix: "/R", freshnessPeriod: 100 });
     closers.push(p);
 

@@ -66,7 +66,7 @@ test("const variable concat", () => {
 });
 
 test("variable.inner+filter", () => {
-  const accept = vi.fn<[name: Name, vars: P.Vars], boolean>();
+  const accept = vi.fn<P.VariablePattern.Filter["accept"]>();
   const p = new P.VariablePattern("outer", {
     minComps: 0,
     maxComps: Infinity,

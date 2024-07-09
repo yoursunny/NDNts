@@ -8,10 +8,10 @@ test("closers", async () => {
   expect(closers).toHaveLength(0);
 
   const c0 = {
-    close: vi.fn<[], void>(),
+    close: vi.fn<() => void>(),
   };
   const c1 = {
-    close: vi.fn<[], number>().mockReturnValue(1),
+    close: vi.fn<() => number>().mockReturnValue(1),
   };
   closers.push(c0, c1);
   expect(closers).toHaveLength(2);
@@ -22,7 +22,7 @@ test("closers", async () => {
   expect(c0.close).toHaveBeenCalledOnce();
   expect(c1.close).toHaveBeenCalledOnce();
 
-  const waitFulfilled = vi.fn<[], void>();
+  const waitFulfilled = vi.fn<() => void>();
   void closers.wait().then(waitFulfilled);
   expect(closers).toHaveLength(1);
 
@@ -33,9 +33,9 @@ test("closers", async () => {
   await delay(10);
   expect(waitFulfilled).toHaveBeenCalledOnce();
 
-  const f2 = vi.fn<[], void>();
-  const f3 = vi.fn<[], void>();
-  const f4 = vi.fn<[], void>();
+  const f2 = vi.fn<() => void>();
+  const f3 = vi.fn<() => void>();
+  const f4 = vi.fn<() => void>();
   closers.addTimeout(setTimeout(f2, 10));
   closers.addTimeout(setTimeout(f3, 500));
   const t4 = closers.addTimeout(setTimeout(f3, 500));
@@ -51,16 +51,16 @@ test("closers", async () => {
 
 test("disposable", () => {
   const c0 = {
-    close: vi.fn<[], void>(),
-    [Symbol.dispose]: vi.fn<[], void>(),
-    [Symbol.asyncDispose]: vi.fn<[], Promise<void>>().mockResolvedValue(),
+    close: vi.fn<() => void>(),
+    [Symbol.dispose]: vi.fn<() => void>(),
+    [Symbol.asyncDispose]: vi.fn<() => Promise<void>>().mockResolvedValue(),
   };
   const c1 = {
-    [Symbol.dispose]: vi.fn<[], void>(),
-    [Symbol.asyncDispose]: vi.fn<[], Promise<void>>().mockResolvedValue(),
+    [Symbol.dispose]: vi.fn<() => void>(),
+    [Symbol.asyncDispose]: vi.fn<() => Promise<void>>().mockResolvedValue(),
   };
   const c2 = {
-    [Symbol.asyncDispose]: vi.fn<[], Promise<void>>().mockResolvedValue(),
+    [Symbol.asyncDispose]: vi.fn<() => Promise<void>>().mockResolvedValue(),
   };
 
   {
@@ -78,7 +78,7 @@ test("disposable", () => {
 
 test("asAsyncDisposable", async () => {
   const c0 = {
-    close: vi.fn<[], void>(),
+    close: vi.fn<() => void>(),
   };
   {
     await using d0 = Closer.asAsyncDisposable(c0);
@@ -86,7 +86,7 @@ test("asAsyncDisposable", async () => {
   expect(c0.close).toHaveBeenCalledOnce();
 
   const c1 = {
-    [Symbol.dispose]: vi.fn<[], void>(),
+    [Symbol.dispose]: vi.fn<() => void>(),
   };
   {
     await using d1 = Closer.asAsyncDisposable(c1);
@@ -94,7 +94,7 @@ test("asAsyncDisposable", async () => {
   expect(c1[Symbol.dispose]).toHaveBeenCalledOnce();
 
   const c2 = {
-    [Symbol.asyncDispose]: vi.fn<[], Promise<void>>().mockResolvedValue(),
+    [Symbol.asyncDispose]: vi.fn<() => Promise<void>>().mockResolvedValue(),
   };
   {
     await using d2 = Closer.asAsyncDisposable(c2);

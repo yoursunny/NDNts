@@ -18,15 +18,14 @@ async function makeBufferedProducer(bo?: DataStoreBuffer.Options, po?: ProducerO
 
 test("fill buffer in handler", async () => {
   const pOpts = await makeBufferedProducer();
-  const handler = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>(
-    async (interest: Interest, { dataBuffer }: Producer) => {
-      expect(dataBuffer).toBe(pOpts.dataBuffer);
-      if (!interest.name.equals("/A")) {
-        return undefined;
-      }
-      await dataBuffer!.insert(new Data("/A/0"), new Data("/A/1"), new Data("/A/2"));
+  const handler = vi.fn(async (interest: Interest, { dataBuffer }: Producer) => {
+    expect(dataBuffer).toBe(pOpts.dataBuffer);
+    if (!interest.name.equals("/A")) {
       return undefined;
-    });
+    }
+    await dataBuffer!.insert(new Data("/A/0"), new Data("/A/1"), new Data("/A/2"));
+    return undefined;
+  });
   produce("/A", handler, pOpts);
 
   await expect(consume(new Interest("/A", Interest.CanBePrefix))).resolves.toHaveName("/A/0");

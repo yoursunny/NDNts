@@ -31,7 +31,7 @@ beforeEach(async () => {
 });
 
 test("RX error", async () => {
-  const handleRxError = vi.fn<[CustomEvent<L3Face.RxError>], void>();
+  const handleRxError = vi.fn<(evt: CustomEvent<L3Face.RxError>) => void>();
   face.addEventListener("rxerror", handleRxError, { once: true });
 
   setTimeout(() => sock.write(Uint8Array.of(0xF0, 0x00)), 200);
@@ -58,7 +58,7 @@ test("createFace", async () => {
   expect(face2.hasRoute("/Q")).toBeTruthy();
   BufferBreaker.duplex(sock0!, sock1!);
 
-  const rx = vi.fn<[Forwarder.PacketEvent], void>();
+  const rx = vi.fn<(evt: Forwarder.PacketEvent) => void>();
   fw.addEventListener("pktrx", rx);
   await Promise.all([
     delay(100),

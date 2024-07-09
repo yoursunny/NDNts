@@ -10,10 +10,10 @@ import { consume, produce, type ProducerHandler, type RetxPolicy } from "..";
 afterEach(Forwarder.deleteDefault);
 
 describe("retx limit", () => {
-  let producer: Mock<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>;
+  let producer: Mock<ProducerHandler>;
 
   beforeEach(() => {
-    producer = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>()
+    producer = vi.fn<ProducerHandler>()
       .mockResolvedValueOnce(undefined)
       .mockResolvedValueOnce(undefined)
       .mockResolvedValueOnce(new Data("/A"));
@@ -85,13 +85,10 @@ test("RTT", async () => {
 });
 
 test("verify", async () => {
-  const producer = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>()
-    .mockResolvedValueOnce(new Data("/A"));
+  const producer = vi.fn<ProducerHandler>().mockResolvedValueOnce(new Data("/A"));
   produce("/A", producer);
 
-  const verify = vi.fn<Parameters<Verifier["verify"]>, ReturnType<Verifier["verify"]>>()
-    .mockRejectedValue(new Error("mock-verify-error"));
-
+  const verify = vi.fn<Verifier["verify"]>().mockRejectedValue(new Error("mock-verify-error"));
   const consumer = consume(
     new Interest("/A", Interest.Lifetime(200)),
     { verifier: { verify } },

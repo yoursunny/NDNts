@@ -63,7 +63,7 @@ test("prependTlv", () => {
 });
 
 test("encode Encodable[] and extract", () => {
-  const extractCb = vi.fn<[Uint8Array], void>();
+  const extractCb = vi.fn<(wire: Uint8Array) => void>();
   expect(Encoder.encode([
     undefined,
     Uint8Array.of(0xF0),

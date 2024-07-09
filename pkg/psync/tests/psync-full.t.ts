@@ -83,17 +83,17 @@ class Fixture {
       const title = String.fromCodePoint(0x41 + i);
       debugPrinter.start(title, sync);
 
-      const handleUpdate = vi.fn<[SyncUpdate<Name>], void>()
-        .mockImplementation(({ id, loSeqNum, hiSeqNum }) => { // eslint-disable-line @typescript-eslint/no-loop-func
-          debugPrinter.log(title, `UPDATE ${id} ${loSeqNum} ${hiSeqNum}`);
-        });
+      // eslint-disable-next-line @typescript-eslint/no-loop-func
+      const handleUpdate = vi.fn(({ id, loSeqNum, hiSeqNum }: SyncUpdate<Name>) => {
+        debugPrinter.log(title, `UPDATE ${id} ${loSeqNum} ${hiSeqNum}`);
+      });
       sync.addEventListener("update", handleUpdate);
       this.updates.push(handleUpdate);
     }
   }
 
   private readonly syncs: FullSync[] = [];
-  private readonly updates: Array<Mock<[SyncUpdate<Name>], void>> = [];
+  private readonly updates: Array<Mock<(update: SyncUpdate<Name>) => void>> = [];
 
   public delayTick(multiple = 1): Promise<void> {
     return delay(250 * multiple);

@@ -19,7 +19,7 @@ test("safeIter ignore", async () => {
 
 test("safeIter catch", async () => {
   const it = pushable<number>();
-  const onError = vi.fn<[unknown], undefined>();
+  const onError = vi.fn<(err?: unknown) => void>();
   const collector = collect(safeIter(it, onError));
 
   it.push(1);

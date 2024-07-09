@@ -169,7 +169,7 @@ export namespace KeyChain {
      *
      * If this is a Signer, it is used when no matching key or certificate is found.
      */
-    fallback?: Signer | ((name: Name, keyChain: KeyChain, err?: Error) => Promise<Signer>);
+    fallback?: Signer | GetSignerFallback;
 
     /**
      * Whether to prefer key name in KeyLocator.
@@ -181,6 +181,8 @@ export namespace KeyChain {
      */
     useKeyNameKeyLocator?: boolean;
   }
+
+  export type GetSignerFallback = (name: Name, keyChain: KeyChain, err?: Error) => Promise<Signer>;
 
   /**
    * Open a persistent KeyChain.

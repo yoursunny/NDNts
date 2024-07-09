@@ -37,7 +37,7 @@
     "p-defer": "^4.0.1",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.3",
-    "type-fest": "^4.20.1",
+    "type-fest": "^4.21.0",
     "typescript-event-target": "^1.1.1"
   },
   "devDependencies": {

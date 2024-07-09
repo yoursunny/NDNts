@@ -137,7 +137,7 @@ describe("getSigner", () => {
   });
 
   test("fallback function", async () => {
-    const fallback = vi.fn().mockRejectedValue(new Error("fallback-error"));
+    const fallback = vi.fn<KeyChain.GetSignerFallback>().mockRejectedValue(new Error("fallback-error"));
     await expect(keyChain.getSigner(new Name("/N"), { fallback }))
       .rejects.toThrow(/fallback-error/);
   });
