@@ -17,4 +17,4 @@ Supported platforms include:
   * Generally, I support *Active LTS* and *Current* versions.
 * Bundlers: webpack 5.
 * Firefox: latest version on Windows and Mac.
-* Chrome: latest version on Windows, Mac, Android, and iOS 16.0+.
+* Chrome: latest version on Windows, Mac, Android, and iOS 17.4+.

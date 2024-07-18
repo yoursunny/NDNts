@@ -30,8 +30,6 @@ export class NDNFileSystem extends Async(Readonly(FileSystem)) {
     }
   }
 
-  public override _sync: undefined;
-
   public override ready(): Promise<void> {
     this._disableSync = true; // eslint-disable-line etc/no-internal
     return super.ready();

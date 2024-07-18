@@ -6,7 +6,8 @@
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
-    "module": "es2022",
+    "lib": ["DOM", "ES2023", "ESNext.Promise"],
+    "module": "ES2022",
     "moduleResolution": "Node",
     "noEmitOnError": true,
     "noImplicitOverride": true,
@@ -14,7 +15,7 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "strict": true,
-    "target": "ES2022",
+    "target": "ES2023",
     "types": [
       "node"
     ]
