@@ -19,6 +19,9 @@ const defaultParameters: Parameters = {
 /**
  * RTT estimator.
  * @see {@link https://datatracker.ietf.org/doc/html/rfc6298}
+ *
+ * While the algorithm is agnostic to time units, the default parameters assume milliseconds,
+ * following JavaScript convention.
  */
 export class RttEstimator {
   private params: Parameters;

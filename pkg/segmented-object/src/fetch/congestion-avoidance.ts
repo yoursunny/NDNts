@@ -22,6 +22,7 @@ export abstract class CongestionAvoidance extends TypedEventTarget<EventMap> {
   public get cwnd() { return this.cwnd_; }
 
   protected updateCwnd(v: number) {
+    assert(Number.isFinite(v));
     assert(v >= 0);
     this.cwnd_ = v;
     this.dispatchTypedEvent("cwndupdate", new Event("cwndupdate"));

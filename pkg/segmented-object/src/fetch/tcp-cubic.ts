@@ -3,6 +3,8 @@ import { CongestionAvoidance } from "./congestion-avoidance";
 /**
  * TCP CUBIC algorithm.
  * @see {@link https://datatracker.ietf.org/doc/html/rfc8312}
+ *
+ * RTT time unit is milliseconds, following JavaScript convention.
  */
 export class TcpCubic extends CongestionAvoidance {
   private readonly c: number;
@@ -26,8 +28,9 @@ export class TcpCubic extends CongestionAvoidance {
   }
 
   public override increase(now: number, rtt: number) {
-    if (now < this.t0) {
-      // increase and decrease processed out-of-order, t would be negative
+    if (now < this.t0 || rtt < 0.001) {
+      // increase and decrease processed out-of-order, t would be negative, ignore
+      // rtt is less than 1us, probably due to performance.now() inaccuracy, ignore
       return;
     }
 
@@ -37,9 +40,8 @@ export class TcpCubic extends CongestionAvoidance {
       return;
     }
 
-    const t = (now - this.t0) / 1000;
-    rtt /= 1000;
-    const wCubic = this.c * (t - this.k) ** 3 + this.wMax;
+    const t = now - this.t0; // milliseconds
+    const wCubic = this.c * (t / 1000 - this.k) ** 3 + this.wMax;
     const wEst = this.wMax * this.betaCubic + this.alphaAimd * (t / rtt);
     if (wCubic < wEst) { // TCP friendly region
       this.updateCwnd(wEst);
