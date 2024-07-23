@@ -29,7 +29,6 @@
     "@ndn/fw": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
-    "hirestime": "^7.0.4",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.6.3"
   },

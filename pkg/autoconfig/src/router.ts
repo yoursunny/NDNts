@@ -2,7 +2,6 @@ import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { type Forwarder, type FwFace, TapFace } from "@ndn/fw";
 import { Interest, Name, type NameLike } from "@ndn/packet";
 import type { H3Transport } from "@ndn/quic-transport";
-import hirestime from "hirestime";
 
 import { createFace } from "./platform_node";
 
@@ -82,18 +81,16 @@ export interface ConnectRouterResult {
   testConnectionResult: unknown;
 }
 
-const now = hirestime();
-
 /** Connect to a router and test the connection. */
 export async function connectToRouter(router: string, opts: ConnectRouterOptions = {}): Promise<ConnectRouterResult> {
   const face = await createFace(router, opts);
 
-  const testConnectionStart = now();
+  const testConnectionStart = performance.now();
   let testConnectionDuration: number;
   let testConnectionResult: unknown;
   try {
     testConnectionResult = await testConnection(face, opts);
-    testConnectionDuration = now() - testConnectionStart;
+    testConnectionDuration = performance.now() - testConnectionStart;
   } catch (err: unknown) {
     face.close();
     throw err;

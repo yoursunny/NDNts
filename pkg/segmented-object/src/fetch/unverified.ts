@@ -1,7 +1,6 @@
 import { CancelInterest, Forwarder, type FwFace, type FwPacket } from "@ndn/fw";
 import { Data, Interest, type Name } from "@ndn/packet";
 import { pushable } from "@ndn/util";
-import hirestime from "hirestime";
 import itKeepAlive from "it-keepalive";
 import take from "obliterator/take.js";
 
@@ -9,9 +8,6 @@ import { defaultSegmentConvention, type SegmentConvention } from "../convention"
 import type { CongestionAvoidance } from "./congestion-avoidance";
 import { RttEstimator } from "./rtt-estimator";
 import { TcpCubic } from "./tcp-cubic";
-
-/** Precise clock for fetching algorithms. */
-const getNow = hirestime();
 
 export interface UnverifiedFetcherOptions {
   /**
@@ -206,7 +202,7 @@ export class UnverifiedFetcher {
       return;
     }
 
-    const now = getNow();
+    const now = performance.now();
     const rtt = now - fs.txTime;
     if (fs.nRetx === 0) {
       this.rtte.push(rtt, this.pendings.size);
@@ -229,7 +225,7 @@ export class UnverifiedFetcher {
 
   /** Process RTO expirations on pending segments. */
   private processRtoExpiry(): void {
-    const now = getNow();
+    const now = performance.now();
     for (const [seg, fs] of this.pendings) {
       if (seg > this.segLast) {
         this.pendings.delete(seg);
@@ -286,7 +282,7 @@ export class UnverifiedFetcher {
   /** Send an Interest and record TX time. */
   private sendInterest(fs: SegState): void {
     const rto = this.rtte.rto;
-    fs.txTime = getNow();
+    fs.txTime = performance.now();
     fs.rtoExpiry = fs.txTime + rto;
 
     fs.interest = new Interest();

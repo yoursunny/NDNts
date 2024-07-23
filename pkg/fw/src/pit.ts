@@ -1,12 +1,9 @@
 import { type Data, Interest } from "@ndn/packet";
-import hirestime from "hirestime";
 import DefaultMap from "mnemonist/default-map.js";
 import { filter, flatMap, pipeline, reduce, tap } from "streaming-iterables";
 
 import type { FaceImpl } from "./face";
 import { FwPacket, RejectInterest } from "./packet";
-
-const getNow = hirestime();
 
 /** Downstream of pending Interest. */
 interface PitDn {
@@ -41,7 +38,7 @@ export class PitEntry {
 
   /** Record Interest from downstream. */
   public receiveInterest(face: FaceImpl, { l3: interest, token }: FwPacket<Interest>) {
-    const now = getNow();
+    const now = performance.now();
     const expire = now + interest.lifetime;
     const nonce = interest.nonce ?? Interest.generateNonce();
 
@@ -66,7 +63,7 @@ export class PitEntry {
 
   /** Forward Interest to upstream. */
   public forwardInterest(face: FaceImpl) {
-    const lifetime = this.lastExpire - getNow();
+    const lifetime = this.lastExpire - performance.now();
     if (lifetime <= 0) {
       return;
     }
@@ -78,7 +75,7 @@ export class PitEntry {
   public *returnData(up: FaceImpl): Iterable<{ dn: FaceImpl; token: unknown }> {
     clearTimeout(this.expireTimer);
     this.pit.eraseEntry(this);
-    const now = getNow();
+    const now = performance.now();
     for (const [dn, { expire, token }] of this.dnRecords) {
       if (expire > now && dn !== up) {
         yield { dn, token };
@@ -86,7 +83,7 @@ export class PitEntry {
     }
   }
 
-  private updateExpire(now: number = getNow()) {
+  private updateExpire(now: number = performance.now()) {
     let lastExpire = 0;
     for (const { expire } of this.dnRecords.values()) {
       lastExpire = Math.max(lastExpire, expire);

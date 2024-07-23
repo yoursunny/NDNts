@@ -1,12 +1,9 @@
 import { CancelInterest, Forwarder, FwPacket } from "@ndn/fw";
 import { Data, Interest, type NameLike, type Verifier } from "@ndn/packet";
 import { pushable } from "@ndn/util";
-import hirestime from "hirestime";
 
 import { type CommonOptions, exactOptions } from "./common";
 import { makeRetxGenerator, type RetxPolicy } from "./retx";
-
-const getNow = hirestime();
 
 /** {@link consume} options. */
 export interface ConsumerOptions extends CommonOptions {
@@ -99,7 +96,7 @@ function makeConsumer(
         timer = setTimeout(sendInterest, value);
       }
       rx.push(FwPacket.create(interest));
-      txTime = getNow();
+      txTime = performance.now();
       ++nRetx;
     };
 
@@ -114,7 +111,7 @@ function makeConsumer(
       async tx(iterable) {
         for await (const pkt of iterable) {
           if (pkt.l3 instanceof Data) {
-            rtt = getNow() - txTime;
+            rtt = performance.now() - txTime;
             try {
               await verifier?.verify(pkt.l3);
             } catch (err: unknown) {

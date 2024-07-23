@@ -29,7 +29,6 @@
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
     "@types/retry": "^0.12.5",
-    "hirestime": "^7.0.4",
     "mnemonist": "^0.39.8",
     "retry": "^0.13.1",
     "streaming-iterables": "^8.0.1",

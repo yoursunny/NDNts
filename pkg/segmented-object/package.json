@@ -32,7 +32,6 @@
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
     "@zenfs/core": "^0.15.2",
-    "hirestime": "^7.0.4",
     "it-keepalive": "^1.2.0",
     "mnemonist": "^0.39.8",
     "obliterator": "^2.0.4",
