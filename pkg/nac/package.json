@@ -37,7 +37,7 @@
     "@yoursunny/asn1": "0.0.20200718",
     "mnemonist": "^0.39.8",
     "tslib": "^2.6.3",
-    "type-fest": "^4.22.0"
+    "type-fest": "^4.23.0"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:^",
