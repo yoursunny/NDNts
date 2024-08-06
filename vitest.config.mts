@@ -1,9 +1,9 @@
-import type { CoverageOptions } from "vitest";
 import { defineConfig } from "vitest/config";
+import type { CoverageOptions } from "vitest/node";
 
 const coverage: CoverageOptions<"v8"> = {
   provider: "v8",
-  reporter: process.env.CI ? "lcovonly" : ["html", "text-summary"],
+  reporter: process.env.CI ? ["lcovonly"] : ["html", "text-summary"],
   include: ["pkg/**/src/**/*.ts"],
   all: false,
 };

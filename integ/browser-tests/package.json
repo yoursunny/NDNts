@@ -25,14 +25,14 @@
   "devDependencies": {
     "@nodelib/fs.walk": "^2.0.0",
     "@types/webpack": "^5.28.5",
-    "@zenfs/core": "^0.15.2",
-    "@zenfs/dom": "^0.2.13",
+    "@zenfs/core": "^0.16.2",
+    "@zenfs/dom": "^0.2.14",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "html-webpack-plugin": "^5.6.0",
-    "puppeteer": "^22.13.1",
+    "puppeteer": "^22.15.0",
     "ts-loader": "^9.5.1",
     "tslib": "^2.6.3",
-    "type-fest": "^4.23.0",
+    "type-fest": "^4.24.0",
     "webpack": "^5.93.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
