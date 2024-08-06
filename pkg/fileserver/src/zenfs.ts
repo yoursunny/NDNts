@@ -1,7 +1,7 @@
 import type { FileReadResult } from "node:fs/promises";
 
 import { assert, asUint8Array } from "@ndn/util";
-import { Async, type Backend, Errno, ErrnoError, File, FileSystem, type FileSystemMetadata, FileType, isWriteable, Readonly, Stats } from "@zenfs/core";
+import { Async, type Backend, constants, Errno, ErrnoError, File, FileSystem, type FileSystemMetadata, isWriteable, Readonly, Stats } from "@zenfs/core";
 import LRUCache from "mnemonist/lru-cache.js";
 import { collect, map, pipeline } from "streaming-iterables";
 
@@ -155,7 +155,7 @@ function statsFromFileMetadata(m: FileMetadata): Stats {
     ctimeMs: m.ctime?.getTime(),
     birthtimeMs: m.btime?.getTime(),
     size: m.size,
-    mode: m.isFile ? FileType.FILE : m.isDir ? FileType.DIRECTORY : 0,
+    mode: (m.isFile ? constants.S_IFREG : m.isDir ? constants.S_IFDIR : 0) | 0o644,
   });
 }
 

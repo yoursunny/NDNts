@@ -1,5 +1,5 @@
-import type { CoverageOptions } from "vitest";
 import { defineConfig } from "vitest/config";
+import type { CoverageOptions } from "vitest/node";
 
 const coverage: CoverageOptions<"v8"> = {
   provider: "v8",

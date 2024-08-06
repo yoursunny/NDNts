@@ -3,7 +3,7 @@ import type { NameLike } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 import { assert, Closers, delay, pushable, randomJitter } from "@ndn/util";
 import { filter, map, pipeline, transform } from "streaming-iterables";
-import { type Except } from "type-fest";
+import type { Except } from "type-fest";
 
 import { L3Face } from "./l3face";
 import { Transport } from "./transport";
