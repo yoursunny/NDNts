@@ -35,7 +35,7 @@
     "mnemonist": "^0.39.8",
     "obliterator": "^2.0.4",
     "tslib": "^2.6.3",
-    "type-fest": "^4.24.0"
+    "type-fest": "^4.25.0"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:^",

@@ -1,4 +1,5 @@
 import { assert } from "@ndn/util";
+import type { Arrayable } from "type-fest";
 
 import type { Decoder } from "./decoder";
 import { printTT } from "./string";
@@ -39,8 +40,8 @@ export class EvDecoder<T> {
    * @param typeName - type name, used in error messages.
    * @param topTT - If specified, the top-level TLV-TYPE will be checked to be in this list.
    */
-  constructor(private readonly typeName: string, topTT: number | readonly number[] = []) {
-    this.topTT = Array.isArray(topTT) ? (topTT as readonly number[]) : [topTT as number];
+  constructor(private readonly typeName: string, topTT: Arrayable<number> = []) {
+    this.topTT = typeof topTT === "number" ? [topTT] : topTT;
   }
 
   public applyDefaultsToRuleOptions({

@@ -1,4 +1,5 @@
 import { type Decoder, Encoder, EvDecoder } from "@ndn/tlv";
+import type { Arrayable } from "type-fest";
 
 import { TT } from "./an";
 import { Name, type NameLike } from "./name/mod";
@@ -16,19 +17,17 @@ export class FwHint {
 
   constructor(copy?: FwHint);
 
-  constructor(name: NameLike);
+  constructor(delegations: Arrayable<NameLike>);
 
-  constructor(delegations: readonly NameLike[]);
-
-  constructor(arg?: FwHint | NameLike | readonly NameLike[]) {
+  constructor(arg?: FwHint | Arrayable<NameLike>) {
     if (Array.isArray(arg)) {
       for (const name of arg) {
         this.delegations.push(Name.from(name));
       }
-    } else if (arg instanceof FwHint) {
-      this.delegations = [...arg.delegations];
     } else if (Name.isNameLike(arg)) {
       this.delegations = [Name.from(arg)];
+    } else if (arg instanceof FwHint) {
+      this.delegations = [...arg.delegations];
     }
   }
 

@@ -1,5 +1,6 @@
 import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { Interest, type Name } from "@ndn/packet";
+import type { Arrayable } from "type-fest";
 
 import { defaultSegmentConvention, defaultVersionConvention, type SegmentConvention, type VersionConvention } from "./convention";
 
@@ -80,7 +81,7 @@ export namespace discoverVersion {
      * This can be a single number or an array of acceptable numbers.
      * {@link ANY_SUFFIX_LEN} allows any suffix length.
      */
-    expectedSuffixLen?: number | readonly number[] | typeof ANY_SUFFIX_LEN;
+    expectedSuffixLen?: Arrayable<number> | typeof ANY_SUFFIX_LEN;
   }
 
   export type Result = Name & {

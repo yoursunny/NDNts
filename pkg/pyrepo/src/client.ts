@@ -3,6 +3,7 @@ import { Segment } from "@ndn/naming-convention2";
 import { type Data, digestSigning, Interest, Name, SignedInterestPolicy } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { assert, delay, randomJitter, sha256, toHex } from "@ndn/util";
+import type { Arrayable } from "type-fest";
 
 import { CommandParam, CommandRes, DeleteVerb, InsertVerb, ObjectParam, StatQuery, type Verb } from "./packet";
 import { PrpsPublisher } from "./prps/mod";
@@ -54,23 +55,16 @@ export class PyRepoClient implements Disposable {
   }
 
   /** Insert packet(s). */
-  public insert(
-      objs: Name | PyRepoClient.ObjectParam | readonly PyRepoClient.ObjectParam[],
-  ): Promise<void> {
+  public insert(objs: Name | Arrayable<PyRepoClient.ObjectParam>): Promise<void> {
     return this.submit(InsertVerb, objs);
   }
 
   /** Delete packet(s). */
-  public delete(
-      objs: Name | PyRepoClient.ObjectParam | readonly PyRepoClient.ObjectParam[],
-  ): Promise<void> {
+  public delete(objs: Name | Arrayable<PyRepoClient.ObjectParam>): Promise<void> {
     return this.submit(DeleteVerb, objs);
   }
 
-  private async submit(
-      verb: Verb,
-      objs: Name | PyRepoClient.ObjectParam | readonly PyRepoClient.ObjectParam[],
-  ): Promise<void> {
+  private async submit(verb: Verb, objs: Name | Arrayable<PyRepoClient.ObjectParam>): Promise<void> {
     objs = Array.isArray(objs) ? objs : [objs instanceof Name ? { name: objs } : objs];
     if (objs.length === 0) {
       return;
