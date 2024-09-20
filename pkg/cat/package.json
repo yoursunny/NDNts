@@ -33,7 +33,7 @@
     "@ndn/util": "workspace:*",
     "stdout-stream": "^2.0.0",
     "streaming-iterables": "^8.0.1",
-    "tslib": "^2.6.3",
+    "tslib": "^2.7.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

@@ -35,15 +35,15 @@
     "env-var": "^7.5.0",
     "fast-chunk-string": "^1.0.1",
     "get-stdin": "^9.0.0",
-    "nodemailer": "^6.9.14",
+    "nodemailer": "^6.9.15",
     "prompts": "^2.4.2",
     "stdout-stream": "^2.0.0",
-    "tslib": "^2.6.3",
+    "tslib": "^2.7.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@types/fast-chunk-string": "^1.0.3",
-    "@types/nodemailer": "^6.4.15",
+    "@types/nodemailer": "^6.4.16",
     "@types/prompts": "^2.4.9",
     "@types/stdout-stream": "^1.4.2",
     "@types/yargs": "^17.0.33"

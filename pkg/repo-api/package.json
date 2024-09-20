@@ -37,7 +37,7 @@
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
     "streaming-iterables": "^8.0.1",
-    "tslib": "^2.6.3",
+    "tslib": "^2.7.0",
     "typescript-event-target": "^1.1.1",
     "wait-your-turn": "^1.0.1"
   },
@@ -46,6 +46,6 @@
     "@ndn/node-transport": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "stream-mock": "^2.0.5",
-    "type-fest": "^4.25.0"
+    "type-fest": "^4.26.1"
   }
 }

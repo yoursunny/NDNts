@@ -34,12 +34,12 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "obliterator": "^2.0.4",
-    "tslib": "^2.6.3"
+    "tslib": "^2.7.0"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
-    "type-fest": "^4.25.0",
+    "type-fest": "^4.26.1",
     "typescript-event-target": "^1.1.1"
   }
 }

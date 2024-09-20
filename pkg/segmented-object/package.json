@@ -31,20 +31,20 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@zenfs/core": "^0.16.3",
+    "@zenfs/core": "0.16.3",
     "it-keepalive": "^1.2.0",
     "mnemonist": "^0.39.8",
     "obliterator": "^2.0.4",
     "p-defer": "^4.0.1",
     "p-lazy": "^4.0.0",
     "streaming-iterables": "^8.0.1",
-    "tslib": "^2.6.3",
+    "tslib": "^2.7.0",
     "typescript-event-target": "^1.1.1"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:*",
     "@ndn/repo-api": "workspace:*",
     "stream-mock": "^2.0.5",
-    "type-fest": "^4.25.0"
+    "type-fest": "^4.26.1"
   }
 }

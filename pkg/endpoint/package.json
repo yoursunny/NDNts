@@ -30,7 +30,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
     "streaming-iterables": "^8.0.1",
-    "tslib": "^2.6.3"
+    "tslib": "^2.7.0"
   },
   "devDependencies": {
     "@ndn/keychain": "workspace:*",
