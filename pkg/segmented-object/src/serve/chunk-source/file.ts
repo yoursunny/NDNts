@@ -65,7 +65,7 @@ export namespace FileChunkSource {
      *
      * @remarks
      * - Set `true` to use ZenFS, which is a cross-platform virtual filesystem independent from
-     *   the underlying operating system. This is the default in browser environment.
+     *   the underlying operating system. This is the only choice in browser environment.
      * - Set `false` to use Node.js native filesystem. This is the default in Node.js.
      */
     zenfs?: boolean;

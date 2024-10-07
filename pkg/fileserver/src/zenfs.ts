@@ -73,7 +73,7 @@ export class NDNFileSystem extends Async(Readonly(FileSystem)) {
       throw new ErrnoError(Errno.EPERM, path);
     }
     const m = await this.getFileMetadata(path);
-    return new NDNFile(path, this.client, m);
+    return new NDNFile(this, path, this.client, m);
   }
 }
 export namespace NDNFileSystem {
@@ -85,11 +85,12 @@ export namespace NDNFileSystem {
 
 class NDNFile extends File {
   constructor(
-      public override readonly path: string,
+      fs: NDNFileSystem,
+      path: string,
       private readonly client: Client,
       private readonly m: FileMetadata,
   ) {
-    super();
+    super(fs, path);
   }
 
   public override position = 0;
