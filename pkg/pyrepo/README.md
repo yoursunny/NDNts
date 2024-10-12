@@ -8,8 +8,8 @@ To install and start the specified version, run:
 
 ```bash
 # create Python virtual environment
-python3 -m venv ~/pyrepo-venv
-source ~/pyrepo-venv/bin/activate
+python3 -m venv ~/pyrepo.venv
+source ~/pyrepo.venv/bin/activate
 
 # install ndn-python-repo
 pip install git+https://github.com/UCLA-IRL/ndn-python-repo@2dcd229a4cb81927a52e8a8f1d963c55ee939ffa

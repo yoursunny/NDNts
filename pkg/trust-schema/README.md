@@ -151,6 +151,27 @@ await keyChain.insertCert(rootCert);
 const schema = new TrustSchema(policy, [rootCert]);
 ```
 
+## LVS Binary Format
+
+This package intends to support importing [python-ndn Light VerSec (LVS)](https://python-ndn.readthedocs.io/en/latest/src/lvs/lvs.html) binary format.
+This feature is still in design stage.
+
+To compile LVS textual format to binary format, you need to use python-ndn:
+
+```bash
+# create Python virtual environment
+python3.11 -m venv ~/lvs.venv
+source ~/lvs.venv/bin/activate
+
+# install python-ndn
+pip install 'python-ndn[dev] @ git+https://github.com/named-data/python-ndn@177844e6142bd4616929bbbfa10a857569fbdf5b'
+
+# run the compiler
+python ./lvs/compile.py <~/lvs-model.txt >~/lvs-model.tlv
+```
+
+The compiled binary TLV will be importable into NDNts in the future.
+
 ## Trust Schema Signer
 
 `TrustSchemaSigner` type can automatically select a signer among available certificates in the KeyChain.
