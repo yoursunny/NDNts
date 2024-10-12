@@ -42,7 +42,7 @@ window.testZenFS = async (payloadHex): Promise<FetchedInfo> => {
   await zenfsConfigure({
     mounts: {
       "/W": {
-        backend: WebAccess as any, // https://github.com/zen-fs/dom/issues/18
+        backend: WebAccess,
         handle: root,
       },
     },
