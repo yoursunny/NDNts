@@ -11,10 +11,10 @@
     "@ndn/psync": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "tslib": "^2.7.0"
+    "tslib": "^2.8.0"
   },
   "devDependencies": {
-    "execa": "^9.4.0",
+    "execa": "^9.4.1",
     "streaming-iterables": "^8.0.1"
   }
 }

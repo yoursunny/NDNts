@@ -38,7 +38,7 @@
     "nodemailer": "^6.9.15",
     "prompts": "^2.4.2",
     "stdout-stream": "^2.0.0",
-    "tslib": "^2.7.0",
+    "tslib": "^2.8.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

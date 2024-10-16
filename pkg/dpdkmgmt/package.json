@@ -30,7 +30,7 @@
     "@ndn/packet": "workspace:*",
     "graphql": "^16.9.0",
     "graphql-request": "^6.1.0",
-    "tslib": "^2.7.0"
+    "tslib": "^2.8.0"
   },
   "optionalDependencies": {
     "memif": "0.0.20240119"
