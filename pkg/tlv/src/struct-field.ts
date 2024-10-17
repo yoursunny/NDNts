@@ -179,6 +179,7 @@ export const StructFieldText: StructFieldType<string> = {
   newValue: () => "",
   encode: toUtf8,
   decode: ({ text }) => text,
+  asString: (value) => JSON.stringify(value),
 };
 
 /**

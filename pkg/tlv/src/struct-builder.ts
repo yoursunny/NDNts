@@ -1,5 +1,5 @@
 import { assert } from "@ndn/util";
-import type { Constructor, IfNever, Simplify } from "type-fest";
+import type { Constructor, Except, IfNever, Simplify } from "type-fest";
 
 import { type Decodable, type Decoder } from "./decoder";
 import { type EncodableObj, type Encoder } from "./encoder";
@@ -93,14 +93,19 @@ export class StructBuilder<U extends {}> {
    * Subclass constructor.
    * This must be assigned, otherwise decoding function will not work.
    */
-  public subclass?: Constructor<U, []>;
+  public subclass?: Constructor<U, []> & Decodable<U>;
   private readonly fields: Array<Field<any>> = [];
   private readonly flagBits: FlagBitDesc[] = [];
   private readonly EVD: EvDecoder<any>;
 
-  /** Return field names. */
-  public get keys(): string[] {
-    return this.fields.map(({ key }) => key);
+  /** Access EvDecoder for certain customizations. */
+  public static evdOf<U extends {}>(sb: StructBuilder<U>): Except<EvDecoder<U>, "add"> {
+    return sb.EVD;
+  }
+
+  /** Retrieve field names. */
+  public static keysOf<U extends {}>(sb: StructBuilder<U>): Array<keyof U> {
+    return sb.fields.map(({ key }) => key as keyof U);
   }
 
   /**
