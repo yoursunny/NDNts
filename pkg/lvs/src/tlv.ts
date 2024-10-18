@@ -41,12 +41,12 @@ const buildValueEdge = new StructBuilder("ValueEdge", TT.ValueEdge)
 export class ValueEdge extends buildValueEdge.baseClass<ValueEdge>() {}
 buildValueEdge.subclass = ValueEdge;
 
-const buildUserFnArg = new StructBuilder("UserFnArg", TT.FnArgs) // XXX TLV-TYPE
+const buildUserFnArg = new StructBuilder("UserFnArg", TT.FnArgs)
   .add(TT.ComponentValue, "value", StructFieldComponentNested)
   .add(TT.PatternTag, "tag", StructFieldNNI);
-makeDiscriminatedUnion(buildUserFnArg);
 export class UserFnArg extends buildUserFnArg.baseClass<UserFnArg>() {}
 buildUserFnArg.subclass = UserFnArg;
+makeDiscriminatedUnion(buildUserFnArg);
 
 const buildUserFnCall = new StructBuilder("UserFnCall", TT.UserFnCall)
   .add(TT.UserFnId, "fn", StructFieldText)
@@ -58,9 +58,9 @@ const buildConsOption = new StructBuilder("ConsOption", TT.ConsOption)
   .add(TT.ComponentValue, "value", StructFieldComponentNested)
   .add(TT.PatternTag, "tag", StructFieldNNI)
   .add(TT.UserFnCall, "call", StructFieldType.wrap(UserFnCall));
-makeDiscriminatedUnion(buildConsOption);
 export class ConsOption extends buildConsOption.baseClass<ConsOption>() {}
 buildConsOption.subclass = ConsOption;
+makeDiscriminatedUnion(buildConsOption);
 
 const buildConstraint = new StructBuilder("Constraint", TT.Constraint)
   .add(TT.ConsOption, "options", StructFieldType.wrap(ConsOption), { repeat: true });
@@ -74,6 +74,10 @@ const buildPatternEdge = new StructBuilder("PatternEdge", TT.PatternEdge)
 export class PatternEdge extends buildPatternEdge.baseClass<PatternEdge>() {}
 buildPatternEdge.subclass = PatternEdge;
 
+function findEdgeTo<Edge extends { dest: number }>(destination: number, a: readonly Edge[]): Edge | undefined {
+  return a.find(({ dest }) => dest === destination);
+}
+
 const buildNode = new StructBuilder("Node", TT.Node)
   .add(TT.NodeId, "id", StructFieldNNI, { required: true })
   .add(TT.ParentId, "parent", StructFieldNNI)
@@ -81,7 +85,11 @@ const buildNode = new StructBuilder("Node", TT.Node)
   .add(TT.ValueEdge, "valueEdges", StructFieldType.wrap(ValueEdge), { repeat: true })
   .add(TT.PatternEdge, "patternEdges", StructFieldType.wrap(PatternEdge), { repeat: true })
   .add(TT.KeyNodeId, "signConstraints", StructFieldNNI, { repeat: true });
-export class Node extends buildNode.baseClass<Node>() {}
+export class Node extends buildNode.baseClass<Node>() {
+  public findEdgeTo(dest: number): ValueEdge | PatternEdge | undefined {
+    return findEdgeTo(dest, this.valueEdges) ?? findEdgeTo(dest, this.patternEdges);
+  }
+}
 buildNode.subclass = Node;
 
 const buildTagSymbol = new StructBuilder("TagSymbol", TT.TagSymbol)
@@ -98,3 +106,25 @@ const buildLvsModel = new StructBuilder("LvsModel")
   .add(TT.TagSymbol, "tagSymbols", StructFieldType.wrap(TagSymbol), { repeat: true });
 export class LvsModel extends buildLvsModel.baseClass<LvsModel>() {}
 buildLvsModel.subclass = LvsModel;
+StructBuilder.evdOf(buildLvsModel).afterObservers.push((model) => {
+  assert(model.version === BinfmtVersion, `LvsModel.Version 0x${model.version.toString(16)} unacceptable`);
+  assert(model.startId < model.nodes.length);
+
+  for (const [i, node] of model.nodes.entries()) {
+    assert(node.id === i);
+
+    for (const sc of node.signConstraints) {
+      assert(sc < model.nodes.length);
+    }
+
+    if (node.parent === undefined) {
+      assert(node.id === model.startId);
+      continue;
+    }
+    assert(node.parent !== i && node.parent < model.nodes.length);
+    const parent = model.nodes[node.parent]!;
+    const ve = findEdgeTo(node.id, parent.valueEdges);
+    const pe = findEdgeTo(node.id, parent.patternEdges);
+    assert(Number(ve !== undefined) + Number(pe !== undefined) === 1);
+  }
+});
