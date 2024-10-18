@@ -61,6 +61,7 @@ class FetchResult implements fetch.Result {
       onrejected?: ((reason: any) => Promisable<J>) | null,
   ) {
     this.promise ??= this.startPromise();
+    // eslint-disable-next-line promise/prefer-await-to-then
     return this.promise.then(onfulfilled, onrejected);
   }
 

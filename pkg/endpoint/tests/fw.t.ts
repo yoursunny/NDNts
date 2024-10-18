@@ -227,7 +227,7 @@ test("tracer", async () => {
   tracer.disable();
   faceC.close();
 
-  await new Promise((r) => output.end(r));
+  await new Promise((resolve) => output.end(resolve));
   expect(fromUtf8(output.flatData).split("\n")).toEqual([
     "+Face consume(/8=A)",
     "consume(/8=A) >I /8=A",

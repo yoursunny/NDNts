@@ -36,9 +36,10 @@ export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S
   constructor(tr: Pick<Transport, "tx">) {
     super();
     if (tr instanceof Transport) {
-      consume(tr.rx).catch(() => undefined);
+      consume(tr.rx).catch(() => undefined); // eslint-disable-line promise/prefer-await-to-then
       this.mtu = tr.mtu;
     }
+    // eslint-disable-next-line promise/prefer-await-to-then
     this.transportTx = tr.tx(this.tx()).catch((err: unknown) => {
       this.dispatchTypedEvent("error", new CustomEvent("error", {
         detail: err instanceof Error ? err : new Error(`${err}`),

@@ -175,6 +175,7 @@ class ProducerImpl implements Producer {
     if (!(interest instanceof Interest)) {
       return;
     }
+
     const data = await this.processInterest(interest).catch(() => undefined);
     if (data) {
       yield FwPacket.create(data, token);

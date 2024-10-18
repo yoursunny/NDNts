@@ -23,7 +23,7 @@ test("closers", async () => {
   expect(c1.close).toHaveBeenCalledOnce();
 
   const waitFulfilled = vi.fn<() => void>();
-  void closers.wait().then(waitFulfilled);
+  void closers.wait().then(waitFulfilled); // eslint-disable-line promise/prefer-await-to-then
   expect(closers).toHaveLength(1);
 
   closers.close();

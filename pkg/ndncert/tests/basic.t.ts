@@ -57,6 +57,7 @@ test("packets", async () => {
   expect(profile.maxValidityPeriod).toBe(86400000);
   expect(profile.cert.name).toEqualName(rootCert.name);
 
+  // eslint-disable-next-line unicorn/prefer-structured-clone
   const profileJSON: CaProfile.ToJSON = JSON.parse(JSON.stringify(profile));
   expect(Name.from(profileJSON.prefix)).toEqualName("/root");
   expect(profileJSON.info).toBe("root CA");

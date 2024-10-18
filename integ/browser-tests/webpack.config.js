@@ -44,7 +44,7 @@ const config = {
   },
 };
 
-module.exports = async () => {
+module.exports = async () => { // eslint-disable-line unicorn/no-anonymous-default-export
   const list = fsWalk.walkSync(path.resolve(__dirname, "tests"), {
     entryFilter: ({ name }) => name === "browser.ts",
   });

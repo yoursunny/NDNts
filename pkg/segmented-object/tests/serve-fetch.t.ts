@@ -1,6 +1,5 @@
 import "@ndn/util/test-fixture/expect";
 
-// eslint-disable-next-line n/no-unsupported-features/node-builtins
 import { Blob } from "node:buffer";
 import path from "node:path";
 
@@ -82,7 +81,7 @@ test("stream to stream", async () => {
   const dst = new BufferWritableMock();
   await fetch("/R").pipe(dst);
 
-  await new Promise((r) => dst.end(r));
+  await new Promise((resolve) => dst.end(resolve));
   expect(objectBody.compare(dst.flatData)).toEqual(0);
 });
 

@@ -1,4 +1,3 @@
-// eslint-disable-next-line n/no-unsupported-features/node-builtins
 import type { Blob as NodeBlob } from "node:buffer";
 
 import { type ChunkOptions, type ChunkSource, getMaxChunkSize, KnownSizeChunkSource } from "./common";

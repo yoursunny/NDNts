@@ -157,6 +157,7 @@ test("initialize", async () => {
   expect(v0.get(new Name("/C"))).toBe(13);
   expect(v0.get(new Name("/D"))).toBe(0);
 
+  // eslint-disable-next-line unicorn/prefer-structured-clone
   const v1 = new StateVector(JSON.parse(JSON.stringify(v0)));
   const p1 = await SvSync.create({
     ...opts,

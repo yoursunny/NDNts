@@ -14,7 +14,7 @@ export class H3Transport extends Transport {
   public static async connect(uri: string, opts: H3Transport.Options = {}): Promise<H3Transport> {
     const { connectTimeout = 10000, ...wtOpts } = opts;
     const tr = new WebTransport(uri, wtOpts);
-    void tr.closed.catch(() => undefined);
+    void tr.closed.catch(() => undefined); // eslint-disable-line promise/prefer-await-to-then
     const isTimeout = await Promise.race([
       tr.ready,
       delay(connectTimeout, true),
