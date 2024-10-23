@@ -32,7 +32,7 @@
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@zenfs/core": "1.0.10",
+    "@zenfs/core": "1.1.1",
     "mnemonist": "^0.39.8",
     "obliterator": "^2.0.4",
     "streaming-iterables": "^8.0.1",

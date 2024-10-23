@@ -14,7 +14,7 @@ import type { FileMetadata } from "./metadata";
  * @remarks
  * This backend only supports async operations.
  */
-export class NDNFileSystem extends Async(Readonly(FileSystem)) {
+export class NDNFileSystem extends Async(Readonly(FileSystem)) { // eslint-disable-line etc/no-internal
   constructor(opts: NDNFileSystem.Options) {
     super();
     const {

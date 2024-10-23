@@ -101,9 +101,12 @@ export class DataStore extends TypedEventTarget<EventMap>
 
   /** Retrieve Data by exact name. */
   public async get(name: Name): Promise<Data | undefined> {
-    let record: DB.Record;
+    let record: DB.Record | undefined;
     try {
       record = await this.db.get(name);
+      // if record does not exist:
+      // - abstract-level@1 throws not-found error
+      // - abstract-level@2 returns undefined
     } catch (err: unknown) {
       if (DB.isNotFound(err)) {
         return undefined;
@@ -111,7 +114,7 @@ export class DataStore extends TypedEventTarget<EventMap>
       throw err;
     }
 
-    return DB.isExpired(record) ? undefined : record.data;
+    return record === undefined || DB.isExpired(record) ? undefined : record.data;
   }
 
   /** Find Data that satisfies Interest. */
