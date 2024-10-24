@@ -10,23 +10,14 @@ export interface Field<T> extends Required<EvDecoder.RuleOptions> {
   asString: (v: T) => Iterable<string>;
 }
 
-interface Options extends EvDecoder.RuleOptions {
-  required?: boolean;
-  repeat?: boolean;
-}
-
 export function makeField<T>(
     tt: number,
     key: string,
     type: StructFieldType<T>,
-    opts: Options,
+    opts: EvDecoder.RuleOptions,
     evd: EvDecoder<any>,
 ): Field<T[]> | Field<T | undefined> {
-  const fo = { ...opts, ...(evd ? evd.applyDefaultsToRuleOptions(opts) : {
-    order: tt,
-    required: false,
-    repeat: false,
-  }) };
+  const fo = evd.applyDefaultsToRuleOptions(opts);
   evd.add(
     tt,
     fo.repeat ?

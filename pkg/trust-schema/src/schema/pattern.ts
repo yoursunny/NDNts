@@ -209,6 +209,17 @@ export class VariablePattern extends Pattern {
   public readonly inner?: Pattern;
   public readonly filter?: VariablePattern.Filter;
 
+  public override simplify(): Pattern {
+    const inner = this.inner?.simplify();
+    if (inner === this.inner) {
+      return this;
+    }
+    return new VariablePattern(this.id, {
+      ...this,
+      inner,
+    });
+  }
+
   private *innerMatch(value: Name, input?: Map<string, Name>): Iterable<Vars> {
     if (!this.inner) {
       yield new Map<string, Name>();
