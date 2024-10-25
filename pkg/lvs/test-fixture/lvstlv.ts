@@ -20,3 +20,6 @@ export const pyndn1 = loadLVSTLV("pyndn1.tlv");
 
 /** python-ndn LVS model sample "compiler and checker demonstration". */
 export const pyndn2 = loadLVSTLV("pyndn2.tlv");
+
+/** python-ndn LVS model sample "user functions". */
+export const pyndn3 = loadLVSTLV("pyndn3.tlv");

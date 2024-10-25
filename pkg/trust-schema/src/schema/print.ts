@@ -17,8 +17,13 @@ function printPattern(p: Pattern, indent = ""): string {
       opts.push(`inner: ${printPattern(p.inner, indent).trimStart()}`);
     }
     if (p.filter) {
-      opts.push(`filter: { accept() { throw new Error(${
-        JSON.stringify(`cannot translate filter ${p.filter.constructor.name}`)}) } }`);
+      const filter = p.filter as Partial<printESM.PrintableFilter>;
+      if (typeof filter.printESM === "function") {
+        opts.push(`filter: ${filter.printESM(indent).trimStart()}`);
+      } else {
+        opts.push(`filter: { accept(name, vars) { throw new Error(${
+          JSON.stringify(`cannot translate filter ${p.filter.constructor.name}`)}) } }`);
+      }
     }
     const optsArg = opts.length === 0 ? "" : `, { ${opts.join(", ")} }`;
     return `${indent}new P.VariablePattern(${JSON.stringify(p.id)}${optsArg})`;
@@ -46,7 +51,8 @@ function printSequence(typ: string, list: Pattern[], indent: string): string {
 export function printESM(policy: TrustSchemaPolicy): string {
   const lines: string[] = [];
   lines.push(
-    "import { pattern as P, TrustSchemaPolicy } from \"@ndn/trust-schema\";",
+    "import { TrustSchemaPolicy, pattern as P } from \"@ndn/trust-schema\";",
+    "import { Name, Component } from \"@ndn/packet\";",
     "",
     "export const policy = new TrustSchemaPolicy();",
     "",
@@ -60,4 +66,10 @@ export function printESM(policy: TrustSchemaPolicy): string {
   }
   lines.push("");
   return lines.join("\n");
+}
+
+export namespace printESM {
+  export interface PrintableFilter extends VariablePattern.Filter {
+    printESM: (indent: string) => string;
+  }
 }

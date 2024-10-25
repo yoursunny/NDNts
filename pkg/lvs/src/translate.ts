@@ -1,27 +1,37 @@
 import { type Component, Name } from "@ndn/packet";
-import { pattern as P, TrustSchemaPolicy } from "@ndn/trust-schema";
+import { pattern as P, type printESM, TrustSchemaPolicy } from "@ndn/trust-schema";
 import { assert } from "@ndn/util";
 
-import { type ConsOption, type Constraint, type LvsModel, type Node, type PatternEdge, ValueEdge } from "./tlv";
+import { type ConsOption, type Constraint, type LvsModel, type Node, type PatternEdge, type UserFnCall, ValueEdge } from "./tlv";
 
-export function toPolicy(model: LvsModel): TrustSchemaPolicy {
-  return new Translator(model).translate();
+export function toPolicy(model: LvsModel, vtable: VtableInput = {}): TrustSchemaPolicy {
+  vtable = vtable instanceof Map ? vtable : new Map(Object.entries(vtable));
+  const translator = new Translator(model, vtable);
+  translator.translate();
+  return translator.policy;
 }
 
-class Translator {
-  constructor(private readonly model: LvsModel) {}
+export type UserFn = (value: Component, args: readonly Component[]) => boolean;
+export type Vtable = ReadonlyMap<string, UserFn>;
+export type VtableInput = Vtable | Record<string, UserFn>;
 
-  private readonly policy = new TrustSchemaPolicy();
+class Translator {
+  constructor(
+      private readonly model: LvsModel,
+      private readonly vtable: Vtable,
+  ) {}
+
+  public readonly policy = new TrustSchemaPolicy();
   private readonly tagSymbols = new Map<number, string>();
   private readonly wantedNodes = new Set<number>();
+  public readonly neededFns = new Set<string>();
   private lastAutoId = 0;
 
-  public translate(): TrustSchemaPolicy {
+  public translate(): void {
     this.gatherTagSymbols();
     this.gatherNodes();
     this.processPatterns();
     this.processRules();
-    return this.policy;
   }
 
   private gatherTagSymbols(): void {
@@ -99,16 +109,30 @@ class Translator {
     if (co.value) {
       return this.trValue(co.value);
     }
+
     if (co.tag) {
       return new P.VariablePattern(this.nameTag(co.tag));
     }
+
     assert(co.call);
-    // TODO
-    assert(false, "UserFnCall is unimplemented");
+    return new P.VariablePattern(`_FN_${++this.lastAutoId}`, {
+      filter: this.trCall(co.call),
+    });
   }
 
   private trValue(value: Component): P.Pattern {
     return new P.ConstPattern(new Name([value]));
+  }
+
+  private trCall(call: UserFnCall): P.VariablePattern.Filter {
+    this.neededFns.add(call.fn);
+    return new LvsFilter(this.vtable, call.fn, Array.from(call.args, (a) => {
+      if (a.value !== undefined) {
+        return a.value;
+      }
+      assert(a.tag !== undefined);
+      return this.nameTag(a.tag);
+    }));
   }
 
   private processRules(): void {
@@ -124,5 +148,45 @@ class Translator {
         }
       }
     }
+  }
+}
+
+class LvsFilter implements P.VariablePattern.Filter, printESM.PrintableFilter {
+  constructor(
+      vtable: Vtable,
+      private readonly fn: string,
+      private readonly binds: Array<string | Component>,
+  ) {
+    this.func = vtable.get(fn);
+  }
+
+  private readonly func?: UserFn;
+
+  public accept(name: Name, vars: P.Vars): boolean {
+    let args: Array<Component | undefined>;
+    return !!this.func &&
+    (args = Array.from(this.binds,
+      (b) => typeof b === "string" ? vars.get(b)?.get(0) : b)
+    ).every((a) => !!a) &&
+    this.func(name.at(0), args);
+  }
+
+  public printESM(indent: string): string {
+    const lines: string[] = [];
+    lines.push(`${indent}{`);
+    lines.push(`${indent}  accept(name, vars) {`);
+    lines.push(`${indent}    const args = [`);
+    for (const b of this.binds) {
+      if (typeof b === "string") {
+        lines.push(`${indent}      vars.get(${JSON.stringify(b)})?.get(0),`);
+      } else {
+        lines.push(`${indent}      Component.from(${JSON.stringify(b.toString())}),`);
+      }
+    }
+    lines.push(`${indent}    ];`);
+    lines.push(`${indent}    return args.every(a => !!a) && lvsUserFns.${this.fn}(name.at(0), args);`);
+    lines.push(`${indent}  }`);
+    lines.push(`${indent}}`);
+    return lines.join("\n");
   }
 }

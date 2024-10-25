@@ -241,11 +241,9 @@ export class VariablePattern extends Pattern {
     for (let i = this.minComps, max = Math.min(state.tailLength, this.maxComps); i <= max; ++i) {
       const value = state.tail(i);
       for (const innerVars of this.innerMatch(value)) {
-        if (this.filtersAccept(value, innerVars)) {
-          const s = state.extend(i, innerVars, [[this.id, value]]);
-          if (s) {
-            yield s;
-          }
+        const s = state.extend(i, innerVars, [[this.id, value]]);
+        if (s && this.filtersAccept(value, s.vars)) {
+          yield s;
         }
       }
     }

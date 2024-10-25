@@ -1,10 +1,12 @@
-import { Name } from "@ndn/packet";
-// import { printESM, versec } from "@ndn/trust-schema";
-import { console } from "@ndn/util";
-import { expect, test } from "vitest";
+import "@ndn/packet/test-fixture/expect";
 
-import { toPolicy } from "..";
-import { pyndn0, pyndn1, pyndn2 } from "../test-fixture/lvstlv";
+import { Name } from "@ndn/packet";
+import { printESM } from "@ndn/trust-schema";
+import { console } from "@ndn/util";
+import { expect, test, vi } from "vitest";
+
+import { toPolicy, type UserFn } from "..";
+import { pyndn0, pyndn1, pyndn2, pyndn3 } from "../test-fixture/lvstlv";
 
 test("pyndn0", () => {
   const model = pyndn0();
@@ -36,4 +38,21 @@ test("pyndn1", () => {
 test("pyndn2", () => {
   const model = pyndn2();
   console.log(model.toString());
+});
+
+test("pyndn3", () => {
+  const model = pyndn3();
+  console.log(model.toString());
+
+  const $fn = vi.fn<UserFn>();
+  const policy = toPolicy(model, { $fn });
+  console.log(printESM(policy));
+
+  // $fn.mockReturnValue(true);
+  // expect(policy.match(new Name("/x/y"))).toHaveLength(1);
+  // expect($fn).toHaveBeenCalledOnce();
+  // expect($fn.mock.calls[0]![0]).toEqualComponent("y");
+  // expect($fn.mock.calls[0]![1]).toHaveLength(2);
+  // expect($fn.mock.calls[0]![1][0]).toEqualComponent("c");
+  // expect($fn.mock.calls[0]![1][1]).toEqualComponent("x");
 });

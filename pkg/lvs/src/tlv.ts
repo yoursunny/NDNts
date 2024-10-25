@@ -49,7 +49,7 @@ buildUserFnArg.subclass = UserFnArg;
 makeDiscriminatedUnion(buildUserFnArg);
 
 const buildUserFnCall = new StructBuilder("UserFnCall", TT.UserFnCall)
-  .add(TT.UserFnId, "fn", StructFieldText)
+  .add(TT.UserFnId, "fn", StructFieldText, { required: true })
   .add(TT.FnArgs, "args", StructFieldType.wrap(UserFnArg), { repeat: true });
 export class UserFnCall extends buildUserFnCall.baseClass<UserFnCall>() {}
 buildUserFnCall.subclass = UserFnCall;
