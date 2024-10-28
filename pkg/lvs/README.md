@@ -13,7 +13,7 @@ python3.11 -m venv ~/lvs.venv
 source ~/lvs.venv/bin/activate
 
 # install python-ndn
-pip install 'python-ndn[dev] @ git+https://github.com/named-data/python-ndn@80aeeecbfe43b957c2a920e44b158ee95592e0b0'
+pip install 'python-ndn[dev] @ git+https://github.com/named-data/python-ndn@61ae78687b3662d472024c95f1ebfc0770c3da7b'
 
 # run the compiler
 python ./pkg/lvs/compile.py <~/lvs-model.txt >~/lvs-model.tlv

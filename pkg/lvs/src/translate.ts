@@ -42,10 +42,7 @@ class Translator {
   }
 
   private nameTag(tag: number): string {
-    // TODO
-    const prefix = this.tagSymbols.get(tag) ?? `_TAG_${tag}`;
-    const suffix = tag > this.model.namedPatternCnt ? `_${++this.lastAutoId}` : "";
-    return `${prefix}${suffix}`;
+    return this.tagSymbols.get(tag) ?? `_TAG_${tag}`;
   }
 
   private gatherNodes(): void {
