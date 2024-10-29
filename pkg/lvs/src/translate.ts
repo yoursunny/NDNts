@@ -168,7 +168,10 @@ class LvsFilter implements P.VariablePattern.Filter, printESM.PrintableFilter {
     this.func(name.at(0), args);
   }
 
-  public printESM(indent: string): string {
+  public printESM(ctx: printESM.Context): string {
+    const { indent, imports } = ctx;
+    imports.get("./lvsuserfns.mjs").add("* as lvsUserFns");
+
     const lines: string[] = [];
     lines.push(`${indent}{`);
     lines.push(`${indent}  accept(name, vars) {`);
@@ -177,6 +180,7 @@ class LvsFilter implements P.VariablePattern.Filter, printESM.PrintableFilter {
       if (typeof b === "string") {
         lines.push(`${indent}      vars.get(${JSON.stringify(b)})?.get(0),`);
       } else {
+        imports.get("@ndn/packet").add("Component");
         lines.push(`${indent}      Component.from(${JSON.stringify(b.toString())}),`);
       }
     }
