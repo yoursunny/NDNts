@@ -1,5 +1,6 @@
 import { CertNaming } from "@ndn/keychain";
 import { type Component, Name, type NameLike, type NamingConvention } from "@ndn/packet";
+import some from "obliterator/some.js";
 
 export type Vars = ReadonlyMap<string, Name>;
 export namespace Vars {
@@ -78,6 +79,11 @@ class MatchState {
     }
     return new MatchState(this.name, this.pos + incrementPos, result);
   }
+
+  public toString(): string {
+    return `MatchState(${this.name.getPrefix(this.pos)}; ${this.tail()}; ${
+      Array.from(this.vars, ([k, v]) => `${k}=${v}`).join(", ")})`;
+  }
 }
 
 /** Context of constructing a name. */
@@ -89,6 +95,11 @@ class BuildState {
 
   public append(...comps: Component[]): BuildState {
     return new BuildState(this.name.append(...comps), this.vars);
+  }
+
+  public toString(): string {
+    return `BuildState(${this.name}; ${
+      Array.from(this.vars, ([k, v]) => `${k}=${v}`).join(", ")})`;
   }
 }
 
@@ -402,14 +413,7 @@ export class ConcatPattern extends Pattern {
   }
 }
 
-/**
- * Specify several alternate patterns in "OR" relation.
- *
- * @remarks
- * When matching a name, the first successful match is returned.
- *
- * When building a name, the first choice that does not have missing variable is returned.
- */
+/** Specify several alternate patterns in "OR" relation. */
 export class AlternatePattern extends Pattern {
   constructor(public readonly choices: Pattern[] = []) {
     super();
@@ -435,6 +439,60 @@ export class AlternatePattern extends Pattern {
   protected override *buildState(state: BuildState): Iterable<BuildState> {
     for (const choice of this.choices) {
       yield* Pattern.buildState(choice, state);
+    }
+  }
+}
+
+/**
+ * Specify several overlapped patterns in "AND" relation.
+ *
+ * @remarks
+ * When matching a name, every branch of this pattern must extract the same number of name
+ * components, and their variables must be consistent.
+ *
+ * When building a name, one branch is used to build the name as long as all required variables
+ * are present, and then the built name must match all branches.
+ */
+export class OverlapPattern extends Pattern {
+  constructor(public readonly branches: Pattern[] = []) {
+    super();
+  }
+
+  public override simplify(): Pattern {
+    // flatten OverlapPattern
+    const flattened = flatten(this, OverlapPattern, "branches");
+
+    // reduce to the only branch
+    if (flattened.length === 1) {
+      return flattened[0]!;
+    }
+    return new OverlapPattern(flattened);
+  }
+
+  protected override *matchState(state: MatchState, branchIndex = 0, lastMatch?: MatchState): Iterable<MatchState> {
+    if (branchIndex >= this.branches.length) {
+      if (lastMatch) {
+        yield lastMatch;
+      }
+      return;
+    }
+    const branch = this.branches[branchIndex]!;
+    for (const submatch of Pattern.matchState(branch, state)) {
+      if (branchIndex > 0 && lastMatch!.pos !== submatch.pos) {
+        continue;
+      }
+      yield* this.matchState(submatch.extend(state.pos - submatch.pos), branchIndex + 1, submatch);
+    }
+  }
+
+  protected override *buildState(state: BuildState): Iterable<BuildState> {
+    for (const branch of this.branches) {
+      for (const built of Pattern.buildState(branch, state)) {
+        const ms = new MatchState(built.name, state.name.length, built.vars);
+        if (some(this.matchState(ms), (rematch) => rematch.accepted)) {
+          yield built;
+        }
+      }
     }
   }
 }

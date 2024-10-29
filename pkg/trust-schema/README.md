@@ -59,7 +59,8 @@ TrustSchema
 |   |         +-VariablePattern
 |   |         +-CertNamePattern
 |   |         +-ConcatPattern
-|   |         \-AlternatePattern
+|   |         +-AlternatePattern
+|   |         \-OverlapPattern
 |   |
 |   \-rules = set of
 |       packet name pattern id => signer name pattern id
@@ -84,6 +85,7 @@ It must be one of these sub-types:
 * `CertNamePattern` matches either `KEY/key-id` or `KEY/key-id/issuer-id/version` suffix in [NDN Certificate Format](https://docs.named-data.net/NDN-packet-spec/0.3/certificate.html).
 * `ConcatPattern` concatenates two or more other patterns.
 * `AlternatePattern` accepts any match among two or more possible patterns.
+* `OverlapPattern` accepts one or more name components that satisfy two or more overlapped patterns.
 
 ## VerSec Syntax
 

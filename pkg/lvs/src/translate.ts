@@ -90,10 +90,10 @@ class Translator {
       return this.trValue(edge.value);
     }
 
-    // TODO
-    assert(edge.constraints.length <= 1, "PatternEdge with multiple Constraints is unimplemented");
-    const inner = edge.constraints[0] && this.trConstraint(edge.constraints[0]);
-    return new P.VariablePattern(this.nameTag(edge.tag), { inner });
+    return new P.OverlapPattern([
+      new P.VariablePattern(this.nameTag(edge.tag)),
+      ...edge.constraints.map((cons) => this.trConstraint(cons)),
+    ]);
   }
 
   private trConstraint(cons: Constraint): P.Pattern {

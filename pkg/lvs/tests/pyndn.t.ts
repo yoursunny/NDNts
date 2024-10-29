@@ -42,17 +42,17 @@ test("pyndn2", () => {
 
 test("pyndn3", () => {
   const model = pyndn3();
-  console.log(model.toString());
+  // console.log(model.toString());
 
   const $fn = vi.fn<UserFn>();
   const policy = toPolicy(model, { $fn });
   console.log(printESM(policy));
 
-  // $fn.mockReturnValue(true);
-  // expect(policy.match(new Name("/x/y"))).toHaveLength(1);
-  // expect($fn).toHaveBeenCalledOnce();
-  // expect($fn.mock.calls[0]![0]).toEqualComponent("y");
-  // expect($fn.mock.calls[0]![1]).toHaveLength(2);
-  // expect($fn.mock.calls[0]![1][0]).toEqualComponent("c");
-  // expect($fn.mock.calls[0]![1][1]).toEqualComponent("x");
+  $fn.mockReturnValue(true);
+  expect(policy.match(new Name("/x/y"))).toHaveLength(1);
+  expect($fn).toHaveBeenCalledOnce();
+  expect($fn.mock.calls[0]![0]).toEqualComponent("y");
+  expect($fn.mock.calls[0]![1]).toHaveLength(2);
+  expect($fn.mock.calls[0]![1][0]).toEqualComponent("c");
+  expect($fn.mock.calls[0]![1][1]).toEqualComponent("x");
 });

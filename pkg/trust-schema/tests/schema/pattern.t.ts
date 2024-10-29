@@ -205,6 +205,76 @@ test("alternate", () => {
   expect(b[1]).toEqualName("/P/b/B");
 });
 
+test("overlap", () => {
+  const p = new P.OverlapPattern([
+    new P.ConcatPattern([
+      new P.ConstPattern("/P"),
+      new P.VariablePattern("a", { minComps: 1, maxComps: 2 }),
+      new P.VariablePattern("a", { minComps: 1, maxComps: 2 }),
+      new P.ConstPattern("/Q"),
+    ]),
+    new P.ConcatPattern([
+      new P.ConstPattern("/P"),
+      new P.VariablePattern("b", { minComps: 1, maxComps: 3 }),
+      new P.VariablePattern("c", { minComps: 1, maxComps: 2 }),
+      new P.ConstPattern("/Q"),
+    ]),
+    new P.ConcatPattern([
+      new P.ConstPattern("/P"),
+      new P.VariablePattern("d", { minComps: 1, maxComps: 6 }),
+      new P.ConstPattern("/Q"),
+    ]),
+  ]);
+
+  expect(match(p, "/P/Q")).toHaveLength(0);
+  expect(match(p, "/P/x/Q")).toHaveLength(0);
+  expect(match(p, "/P/x/y/Q")).toHaveLength(0);
+  expect(match(p, "/P/x/y/x/z/Q")).toHaveLength(0);
+
+  let m = match(p, "/P/x/x/Q");
+  expect(m).toHaveLength(1);
+  expect(m[0]!.get("a")).toEqualName("/x");
+  expect(m[0]!.get("b")).toEqualName("/x");
+  expect(m[0]!.get("c")).toEqualName("/x");
+  expect(m[0]!.get("d")).toEqualName("/x/x");
+
+  m = match(p, "/P/x/y/x/y/Q");
+  expect(m).toHaveLength(2);
+  m.sort((lhs, rhs) => lhs.get("b")!.length - rhs.get("b")!.length);
+  expect(m[0]!.get("a")).toEqualName("/x/y");
+  expect(m[0]!.get("b")).toEqualName("/x/y");
+  expect(m[0]!.get("c")).toEqualName("/x/y");
+  expect(m[0]!.get("d")).toEqualName("/x/y/x/y");
+  expect(m[1]!.get("a")).toEqualName("/x/y");
+  expect(m[1]!.get("b")).toEqualName("/x/y/x");
+  expect(m[1]!.get("c")).toEqualName("/y");
+  expect(m[1]!.get("d")).toEqualName("/x/y/x/y");
+
+  expect(build(p, {})).toHaveLength(0);
+  expect(build(p, { a: "/x", b: "/x/x" })).toHaveLength(0);
+  expect(build(p, { a: "/x", d: "/x/y" })).toHaveLength(0);
+
+  let b = build(p, { a: "/x" });
+  expect(b).toHaveLength(1);
+  expect(b[0]).toEqualName("/P/x/x/Q");
+
+  b = build(p, { a: "/x/y" });
+  expect(b).toHaveLength(1);
+  expect(b[0]).toEqualName("/P/x/y/x/y/Q");
+
+  b = build(p, { a: "/x/y", b: "/x/y/x" });
+  expect(b).toHaveLength(1);
+  expect(b[0]).toEqualName("/P/x/y/x/y/Q");
+
+  b = build(p, { d: "/x/x" });
+  expect(b).toHaveLength(1);
+  expect(b[0]).toEqualName("/P/x/x/Q");
+
+  b = build(p, { d: "/x/y/x/y" });
+  expect(b).toHaveLength(1);
+  expect(b[0]).toEqualName("/P/x/y/x/y/Q");
+});
+
 test("simplify", () => {
   const p = new P.AlternatePattern([
     new P.ConcatPattern([
@@ -216,15 +286,25 @@ test("simplify", () => {
       ]),
     ]),
     new P.AlternatePattern([
-      new P.ConstPattern("/M/N"),
+      new P.OverlapPattern([
+        new P.ConstPattern("/M/N"),
+      ]),
       new P.VariablePattern("x"),
+    ]),
+    new P.OverlapPattern([
+      new P.OverlapPattern([
+        new P.ConstPattern("/M/N"),
+      ]),
+      new P.OverlapPattern([
+        new P.VariablePattern("x", { maxComps: 2 }),
+      ]),
     ]),
   ]).simplify();
 
   expect(p).toBeInstanceOf(P.AlternatePattern);
   if (p instanceof P.AlternatePattern) {
-    expect(p.choices).toHaveLength(3);
-    const [p0, p1, p2] = p.choices;
+    expect(p.choices).toHaveLength(4);
+    const [p0, p1, p2, p3] = p.choices;
 
     expect(p0).toBeInstanceOf(P.ConcatPattern);
     if (p0 instanceof P.ConcatPattern) {
@@ -245,6 +325,14 @@ test("simplify", () => {
     expect(p2).toBeInstanceOf(P.VariablePattern);
     if (p2 instanceof P.VariablePattern) {
       expect(p2.id).toBe("x");
+    }
+
+    expect(p3).toBeInstanceOf(P.OverlapPattern);
+    if (p3 instanceof P.OverlapPattern) {
+      expect(p3.branches).toHaveLength(2);
+      const [p30, p31] = p3.branches;
+      expect(p30).toBeInstanceOf(P.ConstPattern);
+      expect(p31).toBeInstanceOf(P.VariablePattern);
     }
   }
 });

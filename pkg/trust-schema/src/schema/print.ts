@@ -1,4 +1,4 @@
-import { AlternatePattern, CertNamePattern, ConcatPattern, ConstPattern, type Pattern, VariablePattern } from "./pattern";
+import { AlternatePattern, CertNamePattern, ConcatPattern, ConstPattern, OverlapPattern, type Pattern, VariablePattern } from "./pattern";
 import type { TrustSchemaPolicy } from "./policy";
 
 function printPattern(p: Pattern, indent = ""): string {
@@ -36,6 +36,9 @@ function printPattern(p: Pattern, indent = ""): string {
   }
   if (p instanceof AlternatePattern) {
     return printSequence("AlternatePattern", p.choices, indent);
+  }
+  if (p instanceof OverlapPattern) {
+    return printSequence("OverlapPattern", p.branches, indent);
   }
   return `${indent}throw new Error(${
     JSON.stringify(`cannot translate pattern ${p.constructor.name}`)})`;
