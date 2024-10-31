@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Name } from "@ndn/packet";
 import { expect, test } from "vitest";
 
-import { printESM, TrustSchemaPolicy, versec } from "../..";
+import { TrustSchemaPolicy, versec } from "../..";
 
 const { ast: A, nest: N, token: T } = versec;
 

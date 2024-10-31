@@ -15,7 +15,7 @@
   },
   "packageManager": "pnpm@9.12.3+sha512.cce0f9de9c5a7c95bef944169cc5dfe8741abfb145078c0d508b868056848a87c81e626246cb60967cbd7fd29a6c062ef73ff840d96b3c86c40ac92cf4a813ee",
   "devDependencies": {
-    "@types/node": "^20.17.2",
+    "@types/node": "^20.17.5",
     "@types/wtfnode": "^0.7.3",
     "@typescript/lib-dom": "npm:@types/web@0.0.175",
     "@vitest/coverage-v8": "^2.1.4",

@@ -46,7 +46,7 @@
     "@ndn/ndnsec": "workspace:^",
     "@ndn/nfdmgmt": "workspace:^",
     "@types/netmask": "^2.0.5",
-    "execa": "^9.5.0",
+    "execa": "^9.5.1",
     "netmask": "^2.0.2"
   }
 }

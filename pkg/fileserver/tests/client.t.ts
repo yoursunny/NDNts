@@ -126,18 +126,18 @@ test("readdir", async () => {
   const statRoot = await client.stat("");
   const des = await collect(client.readdir(statRoot));
   expect(des).toHaveLength(1);
-  expect(des[0].name).toEqual("A");
-  expect(des[0].isDir).toBeTruthy();
+  expect(des[0]!.name).toEqual("A");
+  expect(des[0]!.isDir).toBeTruthy();
 });
 
 test("readFile", async () => {
   const statA = await client.stat("A");
   const des = await collect(client.readdir(statA));
   expect(des).toHaveLength(1);
-  expect(des[0].name).toEqual("B.bin");
-  expect(des[0].isDir).toBeFalsy();
+  expect(des[0]!.name).toEqual("B.bin");
+  expect(des[0]!.isDir).toBeFalsy();
 
-  const statB = await client.stat("A", des[0]);
+  const statB = await client.stat("A", des[0]!);
   const readB = await client.readFile(statB);
   expect(readB).toEqualUint8Array(bodyB);
 });
