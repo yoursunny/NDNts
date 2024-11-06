@@ -34,7 +34,7 @@
     "@ndn/util": "workspace:*",
     "dotenv": "^16.4.5",
     "env-var": "^7.5.0",
-    "tslib": "^2.8.0",
+    "tslib": "^2.8.1",
     "wtfnode": "^0.9.3"
   }
 }

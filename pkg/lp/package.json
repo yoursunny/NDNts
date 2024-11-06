@@ -30,7 +30,7 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "it-keepalive": "^1.2.0",
-    "tslib": "^2.8.0"
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
     "streaming-iterables": "^8.0.1"

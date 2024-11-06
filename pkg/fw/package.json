@@ -32,7 +32,7 @@
     "mnemonist": "^0.39.8",
     "retry": "^0.13.1",
     "streaming-iterables": "^8.0.1",
-    "tslib": "^2.8.0",
+    "tslib": "^2.8.1",
     "typescript-event-target": "^1.1.1"
   }
 }

@@ -21,6 +21,8 @@ export class WsTransport extends Transport {
       try {
         await pEvent(sock, "open", { timeout: opts.connectTimeout ?? 10000 });
       } catch (err: unknown) {
+        // ignore potential "WebSocket was closed before the connection was established" error
+        sock.addEventListener("error", () => undefined);
         sock.close();
         throw err;
       }
