@@ -147,8 +147,8 @@ export class Name {
   public append(...args: unknown[]) {
     let suffix: readonly ComponentLike[];
     if (args.length === 2 &&
-        typeof (args[0] as NamingConvention<any>).create === "function") {
-      suffix = [(args[0] as NamingConvention<any>).create(args[1])];
+        typeof (args[0] as NamingConvention<unknown>).create === "function") {
+      suffix = [(args[0] as NamingConvention<unknown>).create(args[1])];
     } else {
       suffix = args as readonly ComponentLike[];
     }
@@ -157,27 +157,12 @@ export class Name {
 
   /** Return a copy of Name with i-th component replaced with `comp`. */
   public replaceAt(i: number, comp: ComponentLike): Name {
-    const comps: ComponentLike[] = [...this.comps];
-    comps.splice(i, 1, comp);
-    return new Name(comps);
+    return new Name((this.comps as readonly ComponentLike[]).toSpliced(i, 1, comp));
   }
 
   /** Compare with other name. */
   public compare(other: NameLike): Name.CompareResult {
-    other = Name.from(other);
-    const commonSize = Math.min(this.length, other.length);
-    const cmp = this.comparePrefix(other, commonSize);
-    if (cmp !== Name.CompareResult.EQUAL) {
-      return cmp;
-    }
-
-    if (this.length > commonSize) {
-      return Name.CompareResult.RPREFIX;
-    }
-    if (other.length > commonSize) {
-      return Name.CompareResult.LPREFIX;
-    }
-    return Name.CompareResult.EQUAL;
+    return Name.compare(this, Name.from(other));
   }
 
   /** Determine if this name equals other. */
@@ -186,23 +171,16 @@ export class Name {
     if (this.hex_ !== undefined && other.hex_ !== undefined) {
       return this.hex_ === other.hex_;
     }
-    return this.length === other.length && this.comparePrefix(other, this.length) === Name.CompareResult.EQUAL;
+    return this.length === other.length && comparePrefix(this, other, this.length) === Name.CompareResult.EQUAL;
   }
 
   /** Determine if this name is a prefix of other. */
   public isPrefixOf(other: NameLike): boolean {
     other = Name.from(other);
-    return this.length <= other.length && this.comparePrefix(other, this.length) === Name.CompareResult.EQUAL;
-  }
-
-  private comparePrefix(other: Name, n: number): Name.CompareResult {
-    for (let i = 0; i < n; ++i) {
-      const cmp = this.comps[i]!.compare(other.comps[i]!);
-      if (cmp !== Component.CompareResult.EQUAL) {
-        return cmp as unknown as Name.CompareResult;
-      }
+    if (this.hex_ !== undefined && other.hex_ !== undefined) {
+      return other.hex_.startsWith(this.hex_);
     }
-    return Name.CompareResult.EQUAL;
+    return this.length <= other.length && comparePrefix(this, other, this.length) === Name.CompareResult.EQUAL;
   }
 
   public encodeTo(encoder: Encoder) {
@@ -233,4 +211,32 @@ export namespace Name {
     /** rhs is less than, but not a prefix of lhs */
     GT = 2,
   }
+
+  /** Compare two names. */
+  export function compare(lhs: Name, rhs: Name): CompareResult {
+    const commonSize = Math.min(lhs.length, rhs.length);
+    const cmp = comparePrefix(lhs, rhs, commonSize);
+    if (cmp !== CompareResult.EQUAL) {
+      return cmp;
+    }
+
+    if (lhs.length > commonSize) {
+      return CompareResult.RPREFIX;
+    }
+    if (rhs.length > commonSize) {
+      return CompareResult.LPREFIX;
+    }
+    return CompareResult.EQUAL;
+  }
+}
+
+/** Compare first n components between two names. */
+function comparePrefix(lhs: Name, rhs: Name, n: number): Name.CompareResult {
+  for (let i = 0; i < n; ++i) {
+    const cmp = lhs.comps[i]!.compare(rhs.comps[i]!);
+    if (cmp !== Component.CompareResult.EQUAL) {
+      return cmp as unknown as Name.CompareResult;
+    }
+  }
+  return Name.CompareResult.EQUAL;
 }

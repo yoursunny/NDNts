@@ -45,7 +45,8 @@ for (const filename of ["src/mod.ts", "src/main.ts"]) {
 
 await fs.writeFile("tsconfig.json", JSON.stringify(tsconfig, undefined, 2));
 
-const tsconfigTestFixture = {
+/** @type {typeof tsconfig} */
+const tsconfigTest = {
   extends: "../../../mk/tsconfig-base.json",
   compilerOptions: {
     rootDir: "..",
@@ -55,10 +56,12 @@ const tsconfigTestFixture = {
   ],
 };
 
-let hasTestFixture = false;
-try {
-  hasTestFixture = (await fs.stat("test-fixture")).isDirectory();
-} catch {}
-if (hasTestFixture) {
-  await fs.writeFile("test-fixture/tsconfig.json", JSON.stringify(tsconfigTestFixture, undefined, 2));
+for (const dir of ["test-fixture", "tests"]) {
+  let found = false;
+  try {
+    found = (await fs.stat(dir)).isDirectory();
+  } catch {}
+  if (found) {
+    await fs.writeFile(path.join(dir, "tsconfig.json"), JSON.stringify(tsconfigTest, undefined, 2));
+  }
 }

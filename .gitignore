@@ -9,6 +9,7 @@
 /pkg/*/lib/
 /pkg/*/README.md.ts
 /pkg/*/test-fixture/tsconfig.json
+/pkg/*/tests/tsconfig.json
 /pkg/*/tsconfig.json
 /pnpm-debug.log
 /pnpm-lock.yaml

@@ -178,9 +178,7 @@ export class Component {
 
   /** Compare this component with other. */
   public compare(other: ComponentLike): Component.CompareResult {
-    other = Component.from(other);
-    return 2 * Math.sign(this.type - other.type || this.length - other.length ||
-      bufferCompare<Uint8Array>(this.value, other.value));
+    return Component.compare(this, Component.from(other));
   }
 
   /** Determine if this component equals other. */
@@ -198,5 +196,11 @@ export namespace Component {
     EQUAL = 0,
     /** lhs is greater than rhs */
     GT = 2,
+  }
+
+  /** Compare two components. */
+  export function compare(lhs: Component, rhs: Component): CompareResult {
+    return 2 * Math.sign(lhs.type - rhs.type || lhs.length - rhs.length ||
+      bufferCompare<Uint8Array>(lhs.value, rhs.value));
   }
 }

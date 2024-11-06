@@ -10,9 +10,7 @@ function match(p: P.Pattern, name: NameLike): P.Vars[] {
 }
 
 function build(p: P.Pattern, vars: P.VarsLike): Name[] {
-  const list = Array.from(p.build(vars));
-  list.sort((a, b) => a.compare(b));
-  return list;
+  return Array.from(p.build(vars)).toSorted(Name.compare);
 }
 
 test("const variable concat", () => {
