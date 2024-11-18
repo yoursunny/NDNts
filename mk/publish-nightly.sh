@@ -5,16 +5,18 @@ ROOTDIR=$(pwd)
 BASEURI=${NDNTS_PUBLISH_URI:-https://ndnts-nightly.ndn.today}
 
 rm -rf mk/nightly-output/
-mkdir -p mk/nightly-output/
+mkdir -p mk/nightly-output/this/
 
 git add .
 VERSION=$(git show -s --format='%ct %H' | gawk '{ printf "0.0.%s-nightly-%s", strftime("%Y%m%d", $1, 1), substr($2, 1, 7) }')
 corepack pnpm m --filter='./pkg/**' --workspace-concurrency=1 --reporter-hide-prefix exec \
   bash -c 'node '$ROOTDIR'/mk/edit-packagejson.mjs VCDN '$VERSION' &&
-           mv $(corepack pnpm pack .) '$ROOTDIR'/mk/nightly-output/$(basename $(pwd)).tgz'
+           corepack pnpm pack --pack-destination '$ROOTDIR'/mk/nightly-output/this/ &&
+           mv '$ROOTDIR'/mk/nightly-output/this/*.tgz '$ROOTDIR'/mk/nightly-output/$(basename $(pwd)).tgz'
 git checkout -- .
 
 pushd mk/nightly-output/ >/dev/null
+rmdir this/
 (
   echo '<!DOCTYPE html>'
   echo '<title>NDNts nightly build</title>'
