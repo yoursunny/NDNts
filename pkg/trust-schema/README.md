@@ -44,6 +44,8 @@ The compiler implementation is found to have several limitations.
 python-ndn library authors defined **Light VerSec (LVS)**, a lightweight modification of VerSec that focuses on signing key validation.
 Its [syntax and semantics](https://python-ndn.readthedocs.io/en/latest/src/lvs/lvs.html) are similar to VerSec.
 For ease of processing, LVS introduced some restrictions on identifier names and token ordering.
+This package can import a subset of LVS models from its textual format via `versec.load()` function.
+See `@ndn/lvs` package for more complete LVS support via its binary format.
 
 ## Trust Schema Representation
 

@@ -2,10 +2,10 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Certificate, generateSigningKey, KeyChain } from "@ndn/keychain";
 import { Component, Data, Name, ValidityPeriod } from "@ndn/packet";
-import { TrustSchema, TrustSchemaSigner } from "@ndn/trust-schema";
+import { printESM, TrustSchema, TrustSchemaSigner } from "@ndn/trust-schema";
 import { expect, test, vi } from "vitest";
 
-import { toPolicy, type UserFn } from "..";
+import { printUserFns, toPolicy, type UserFn } from "..";
 import { pyndn0, pyndn1, pyndn2, pyndn3, pyndn4 } from "../test-fixture/lvstlv";
 
 test("pyndn0", () => {
@@ -82,6 +82,12 @@ test("pyndn2", () => {
 
 test("pyndn3", () => {
   const model = pyndn3();
+  expect(() => toPolicy(model)).toThrow(/missing user functions.*\$fn/);
+
+  const policyPrintable = toPolicy(model, toPolicy.forPrint);
+  expect(policyPrintable.match(new Name("/x/y"))).toHaveLength(0);
+  expect(printESM(policyPrintable)).toContain("$fn");
+  expect(printUserFns(policyPrintable)).toContain("$fn");
 
   const $fn = vi.fn<UserFn>();
   const policy = toPolicy(model, { $fn });

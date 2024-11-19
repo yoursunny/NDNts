@@ -1,31 +1,74 @@
 import { type Component, Name } from "@ndn/packet";
 import { pattern as P, type printESM, TrustSchemaPolicy } from "@ndn/trust-schema";
 import { assert } from "@ndn/util";
+import DefaultMap from "mnemonist/default-map.js";
 
 import { type ConsOption, type Constraint, type LvsModel, type Node, type PatternEdge, type UserFnCall, ValueEdge } from "./tlv";
-
-export function toPolicy(model: LvsModel, vtable: VtableInput = {}): TrustSchemaPolicy {
-  vtable = vtable instanceof Map ? vtable : new Map(Object.entries(vtable));
-  const translator = new Translator(model, vtable);
-  translator.translate();
-  return translator.policy;
-}
 
 export type UserFn = (value: Component, args: readonly Component[]) => boolean;
 export type Vtable = ReadonlyMap<string, UserFn>;
 export type VtableInput = Vtable | Record<string, UserFn>;
 
+/**
+ * Translate LVS model to TrustSchemaPolicy.
+ * @param model - LVS model.
+ * @param vtable - User functions.
+ * @returns Executable policy.
+ *
+ * @throws Error
+ * Malformed LVS model.
+ * Missing user functions.
+ */
+export function toPolicy(model: LvsModel, vtable?: VtableInput): TrustSchemaPolicy;
+
+/**
+ * Translate LVS model to TrustSchemaPolicy without linking user functions.
+ * @param model - LVS model.
+ * @param forPrint - {@link toPolicy.forPrint} symbol.
+ *
+ * @returns Possibly incomplete policy.
+ * If the LVS model references user functions, the policy will not execute successfully.
+ * The policy can be serialized with {@link printESM} and {@link printUserFns}.
+ */
+export function toPolicy(model: LvsModel, forPrint: typeof toPolicy.forPrint): TrustSchemaPolicy;
+
+export function toPolicy(model: LvsModel, arg2: VtableInput | typeof toPolicy.forPrint = {}): TrustSchemaPolicy {
+  const vtable: Vtable = arg2 instanceof Map ? arg2 :
+    new Map(arg2 === toPolicy.forPrint ? [] : Object.entries(arg2));
+  const translator = new Translator(model, vtable);
+  translator.translate();
+  if (arg2 !== toPolicy.forPrint) {
+    const { missingFns } = translator;
+    if (missingFns.length > 0) {
+      throw new Error(`missing user functions: ${missingFns.join(" ")}`);
+    }
+  }
+  return translator.policy;
+}
+export namespace toPolicy {
+  export const forPrint = Symbol("@ndn/lvs#toPolicy.forPrint");
+}
+
+export const neededFnsMap = new WeakMap<TrustSchemaPolicy, ReadonlyMap<string, ReadonlySet<number>>>();
+
 class Translator {
   constructor(
       private readonly model: LvsModel,
       private readonly vtable: Vtable,
-  ) {}
+  ) {
+    neededFnsMap.set(this.policy, this.neededFns);
+  }
 
   public readonly policy = new TrustSchemaPolicy();
+
+  public get missingFns(): string[] {
+    return Array.from(this.neededFns.keys()).filter((fn) => !this.vtable.get(fn));
+  }
+
   private readonly tagSymbols = new Map<number, string>();
   private readonly patternNames = new Map<string, number>();
   private readonly wantedNodes = new Set<number>();
-  public readonly neededFns = new Set<string>();
+  private readonly neededFns = new DefaultMap<string, Set<number>>(() => new Set<number>());
   private lastAutoId = 0;
 
   public translate(): void {
@@ -134,7 +177,7 @@ class Translator {
   }
 
   private trCall(call: UserFnCall): P.VariablePattern.Filter {
-    this.neededFns.add(call.fn);
+    this.neededFns.get(call.fn).add(call.args.length);
     return new LvsFilter(this.vtable, call.fn, Array.from(call.args, (a) => {
       if (a.value !== undefined) {
         return a.value;
@@ -184,10 +227,11 @@ class LvsFilter implements P.VariablePattern.Filter, printESM.PrintableFilter {
     const { indent, imports } = ctx;
     imports.get("./lvsuserfns.mjs").add("* as lvsUserFns");
 
-    const lines: string[] = [];
-    lines.push(`${indent}{`);
-    lines.push(`${indent}  accept(name, vars) {`);
-    lines.push(`${indent}    const args = [`);
+    const lines: string[] = [
+      `${indent}{`,
+      `${indent}  accept(name, vars) {`,
+      `${indent}    const args = [`,
+    ];
     for (const b of this.binds) {
       if (typeof b === "string") {
         lines.push(`${indent}      vars.get(${JSON.stringify(b)})?.get(0),`);
@@ -197,9 +241,14 @@ class LvsFilter implements P.VariablePattern.Filter, printESM.PrintableFilter {
       }
     }
     lines.push(`${indent}    ];`);
-    lines.push(`${indent}    return args.every(a => !!a) && lvsUserFns.${this.fn}(name.at(0), args);`);
-    lines.push(`${indent}  }`);
-    lines.push(`${indent}}`);
+    if (this.binds.length > 0) {
+      lines.push(`${indent}    void vars;`);
+    }
+    lines.push(
+      `${indent}    return args.every(a => !!a) && lvsUserFns.${this.fn}(name.at(0), args);`,
+      `${indent}  }`,
+      `${indent}}`,
+    );
     return lines.join("\n");
   }
 }
