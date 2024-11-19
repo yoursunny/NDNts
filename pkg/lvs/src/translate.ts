@@ -23,6 +23,7 @@ class Translator {
 
   public readonly policy = new TrustSchemaPolicy();
   private readonly tagSymbols = new Map<number, string>();
+  private readonly patternNames = new Map<string, number>();
   private readonly wantedNodes = new Set<number>();
   public readonly neededFns = new Set<string>();
   private lastAutoId = 0;
@@ -68,10 +69,21 @@ class Translator {
   }
 
   private namePattern(node: Node): string[] {
-    if (node.ruleNames.length === 0) {
+    const names: string[] = [];
+    for (const name of node.ruleNames) {
+      const used = this.patternNames.get(name);
+      if (used === undefined) {
+        this.patternNames.set(name, node.id);
+      } else if (used !== node.id) {
+        continue;
+      }
+      names.push(name);
+    }
+
+    if (names.length === 0) {
       return [`_NODE_${node.id}`];
     }
-    return node.ruleNames;
+    return names;
   }
 
   private trPattern(node: Node): P.Pattern {

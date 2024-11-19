@@ -23,3 +23,6 @@ export const pyndn2 = loadLVSTLV("pyndn2.tlv");
 
 /** python-ndn LVS model sample "user functions". */
 export const pyndn3 = loadLVSTLV("pyndn3.tlv");
+
+/** python-ndn LVS model sample "test_complicated_rule". */
+export const pyndn4 = loadLVSTLV("pyndn4.tlv");
