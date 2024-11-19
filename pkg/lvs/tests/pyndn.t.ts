@@ -1,6 +1,8 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { Name } from "@ndn/packet";
+import { Certificate, generateSigningKey, KeyChain } from "@ndn/keychain";
+import { Component, Data, Name, ValidityPeriod } from "@ndn/packet";
+import { TrustSchema, TrustSchemaSigner } from "@ndn/trust-schema";
 import { expect, test, vi } from "vitest";
 
 import { toPolicy, type UserFn } from "..";
@@ -24,14 +26,58 @@ test("pyndn0", () => {
   )).toBeFalsy();
 });
 
-test("pyndn1", () => {
+test("pyndn1", async () => {
+  const [laRootPvt, laRootPub] = await generateSigningKey("/la");
+  const laRootCert = await Certificate.selfSign({ publicKey: laRootPub, privateKey: laRootPvt });
+  const [nyRootPvt, nyRootPub] = await generateSigningKey("/ny");
+  const nyRootCert = await Certificate.selfSign({ publicKey: nyRootPub, privateKey: nyRootPvt });
+
   const model = pyndn1();
-  expect(model.nodes).toHaveLength(26);
+  const policy = toPolicy(model, {
+    $eq_type: (value, args) => value.type === args[0]?.type,
+  });
+  const schema = new TrustSchema(policy, [laRootCert, nyRootCert]);
+
+  for (let i = 0b00; i <= 0b11; ++i) {
+    const keyChain = KeyChain.createTemp();
+    const authorCertNames: Name[] = [];
+    if ((i & 0b01) !== 0) {
+      const [, laAuthorPub] = await generateSigningKey(keyChain, "/la/author/1");
+      const laAuthorCert = await Certificate.issue({
+        publicKey: laAuthorPub,
+        issuerPrivateKey: laRootPvt.withKeyLocator(laRootCert.name),
+        validity: ValidityPeriod.daysFromNow(100),
+        issuerId: Component.from("la-signer"),
+      });
+      await keyChain.insertCert(laAuthorCert);
+      authorCertNames.push(laAuthorCert.name);
+    }
+    if ((i & 0b10) !== 0) {
+      const [, nyAuthorPub] = await generateSigningKey(keyChain, "/ny/author/2");
+      const nyAuthorCert = await Certificate.issue({
+        publicKey: nyAuthorPub,
+        issuerPrivateKey: nyRootPvt.withKeyLocator(nyRootCert.name),
+        validity: ValidityPeriod.daysFromNow(100),
+        issuerId: Component.from("ny-signer"),
+      });
+      await keyChain.insertCert(nyAuthorCert);
+      authorCertNames.push(nyAuthorCert.name);
+    }
+
+    const signer = new TrustSchemaSigner({ keyChain, schema });
+    const data = new Data("/article/eco/day1");
+    if (authorCertNames.length === 0) {
+      await expect(signer.findSigner(data.name)).rejects.toThrow(/no signer/);
+    } else {
+      await signer.sign(data);
+      expect(authorCertNames.some((certName) => data.sigInfo.keyLocator?.name?.equals(certName)));
+    }
+  }
 });
 
 test("pyndn2", () => {
   const model = pyndn2();
-  void model;
+  expect(model.nodes).toHaveLength(26);
 });
 
 test("pyndn3", () => {
@@ -49,7 +95,7 @@ test("pyndn3", () => {
   expect($fn.mock.calls[0]![1][1]).toEqualComponent("x");
 });
 
-test.only("pyndn4", () => {
+test("pyndn4", () => {
   const model = pyndn4();
   const policy = toPolicy(model);
 
