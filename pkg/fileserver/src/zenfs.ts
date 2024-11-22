@@ -125,11 +125,9 @@ const fileMethodsNotsup = [
   "chownSync",
   "chmodSync",
   "utimesSync",
-  "_setTypeSync",
 ] as const satisfies ReadonlyArray<keyof File>;
 const fileMethodsAsync = [
   "stat",
-  "_setType",
   "utimes",
   "sync",
   "chown",

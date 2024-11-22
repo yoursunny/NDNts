@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@types/fast-chunk-string": "^1.0.3",
-    "@types/nodemailer": "^6.4.16",
+    "@types/nodemailer": "^6.4.17",
     "@types/prompts": "^2.4.9",
     "@types/stdout-stream": "^1.4.2",
     "@types/yargs": "^17.0.33"

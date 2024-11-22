@@ -1,8 +1,6 @@
-import { crypto, toHex } from "@ndn/util";
 import type { Config as ImapConfig } from "imap";
 import { ImapEmails, type ImapEmailsProps } from "imap-emails";
 import type { AddressObject, ParsedMail } from "mailparser";
-import { createTestAccount } from "nodemailer";
 import pTimeout from "p-timeout";
 
 import type { ClientChallengeContext } from "./challenge";
@@ -125,24 +123,10 @@ export namespace ClientEmailInboxImap {
     useHtml?: boolean;
 
     /**
-     * Regular Expression to extract PIN.
+     * Regular Expression to extract PIN into capture group 1.
      * @defaultValue
      * Accepting any 6-digit token.
      */
     regex?: RegExp;
-  }
-
-  /** Create IMAP inbox hosted by Ethereal. */
-  export async function createEthereal(extract: ExtractOptions = {}): Promise<ClientEmailInboxImap> {
-    const a = await createTestAccount();
-    const addressParts = a.user.split("@");
-    addressParts[0] += `+${toHex(crypto.getRandomValues(new Uint8Array(8)))}`;
-    return new ClientEmailInboxImap(addressParts.join("@"), {
-      user: a.user,
-      password: a.pass,
-      host: a.imap.host,
-      port: a.imap.port,
-      tls: a.imap.secure,
-    }, extract);
   }
 }

@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import { openUplinks } from "@ndn/cli-common";
 import { CertNaming, generateSigningKey, type KeyChain, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
 import { AltUri } from "@ndn/naming-convention2";
-import { type CaProfile, type ClientChallenge, type ClientChallengeContext, ClientEmailChallenge, ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, type ClientPinLikeChallenge, ClientPossessionChallenge, matchProbe, requestCertificate, requestProbe } from "@ndn/ndncert";
+import { type CaProfile, type ClientChallenge, type ClientChallengeContext, ClientEmailChallenge, type ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, type ClientPinLikeChallenge, ClientPossessionChallenge, matchProbe, requestCertificate, requestProbe } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
 import { console, toHex } from "@ndn/util";
@@ -76,7 +76,7 @@ export const Ndncert03ClientCommand: CommandModule<{}, Args> = {
         return true;
       })
       .check(({ challenge, email }) => {
-        if (challenge.includes("email") && !(email === "ethereal" || email?.includes("@"))) {
+        if (challenge.includes("email") && !email?.includes("@")) {
           throw new Error("email challenge enabled but --email is not an email address");
         }
         return true;
@@ -177,13 +177,7 @@ class InteractiveClient {
           break;
         }
         case "email": {
-          if (this.args.email === "ethereal") {
-            this.inbox = await ClientEmailInboxImap.createEthereal();
-            console.log(`Using Ethereal Email inbox ${this.inbox.address}`);
-            challenges.push(new ClientEmailChallenge(this.inbox.address, this.inbox.promptCallback));
-          } else {
-            challenges.push(new ClientEmailChallenge(this.args.email!, this.promptPin()));
-          }
+          challenges.push(new ClientEmailChallenge(this.args.email!, this.promptPin()));
           break;
         }
         case "possession": {

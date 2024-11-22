@@ -190,7 +190,6 @@ See `@ndn/ndnsec` package for more information.
 * `--challenge pin` enables "pin" challenge.
 * `--challenge email` enables "email" challenge.
 * `--email` specifies email address to use in the email challenge.
-  The special value `ethereal` generates a test account on [Ethereal Email](https://ethereal.email/) and automatically solves the email challenge.
 * `--challenge possession` enables "possession" challenge.
 * `--possession-cert` specifies existing certificate name to fulfill possession challenge.
   If `--key` is a certificate name, this may be omitted if using the same certificate.
