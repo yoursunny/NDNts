@@ -13,7 +13,7 @@
 
 Supported platforms include:
 
-* Node.js: 20.x and 22.x, on Windows and Linux.
+* Node.js: 20.x and 22.x and 23.x, on Windows and Linux.
   * Generally, I support *Active LTS* and *Current* versions.
 * Bundlers: webpack 5.
 * Firefox: latest version on Windows and Mac.

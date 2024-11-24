@@ -16,7 +16,7 @@ jobs:
           key: build-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
@@ -26,7 +26,7 @@ jobs:
   unittest:
     strategy:
       matrix:
-        node: [20, 22]
+        node: [20, 22, 23]
       fail-fast: false
     runs-on: ubuntu-22.04
     steps:
@@ -52,15 +52,13 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - run: corepack pnpm test
-        if: ${{ matrix.node == 22 }}
+        if: ${{ matrix.node != 22 }}
       - run: corepack pnpm cover
-        env:
-          NODE_OPTIONS: --experimental-websocket
-        if: ${{ matrix.node == 20 }}
+        if: ${{ matrix.node == 22 }}
       - uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-        if: ${{ matrix.node == 20 }}
+        if: ${{ matrix.node == 22 }}
         continue-on-error: true
     timeout-minutes: 30
   integ:
@@ -77,7 +75,7 @@ jobs:
           key: integ-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Install dependencies
         run: |
           echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu jammy main" \
