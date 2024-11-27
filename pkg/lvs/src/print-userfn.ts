@@ -18,7 +18,7 @@ export function printUserFns(policy: TrustSchemaPolicy): string {
     "import { assert } from \"@ndn/util\";",
     "/** @typedef {import(\"@ndn/packet\").Component} Component */",
   ];
-  for (const [fn, nargSet] of neededFns) {
+  for (const [fn, nargSet] of Array.from(neededFns).toSorted((a, b) => a[0].localeCompare(b[0]))) {
     lines.push(
       "",
       "/**",

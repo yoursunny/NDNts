@@ -10,34 +10,37 @@ export type Vtable = ReadonlyMap<string, UserFn>;
 export type VtableInput = Vtable | Record<string, UserFn>;
 
 /**
- * Translate LVS model to TrustSchemaPolicy.
+ * Translate LVS model to TrustSchemaPolicy at runtime.
  * @param model - LVS model.
  * @param vtable - User functions.
  * @returns Executable policy.
  *
  * @throws Error
  * Malformed LVS model.
- * Missing user functions.
+ * Some user functions referenced in the LVS model are not in the vtable.
  */
 export function toPolicy(model: LvsModel, vtable?: VtableInput): TrustSchemaPolicy;
 
 /**
- * Translate LVS model to TrustSchemaPolicy without linking user functions.
+ * Translate LVS model to TrustSchemaPolicy at build-time without linking user functions.
  * @param model - LVS model.
- * @param forPrint - {@link toPolicy.forPrint} symbol.
+ * @param buildTime - {@link toPolicy.buildTime} symbol.
  *
  * @returns Possibly incomplete policy.
  * If the LVS model references user functions, the policy will not execute successfully.
  * The policy can be serialized with {@link printESM} and {@link printUserFns}.
+ *
+ * @throws Error
+ * Malformed LVS model.
  */
-export function toPolicy(model: LvsModel, forPrint: typeof toPolicy.forPrint): TrustSchemaPolicy;
+export function toPolicy(model: LvsModel, buildTime: typeof toPolicy.buildTime): TrustSchemaPolicy;
 
-export function toPolicy(model: LvsModel, arg2: VtableInput | typeof toPolicy.forPrint = {}): TrustSchemaPolicy {
+export function toPolicy(model: LvsModel, arg2: VtableInput | typeof toPolicy.buildTime = {}): TrustSchemaPolicy {
   const vtable: Vtable = arg2 instanceof Map ? arg2 :
-    new Map(arg2 === toPolicy.forPrint ? [] : Object.entries(arg2));
+    new Map(arg2 === toPolicy.buildTime ? [] : Object.entries(arg2));
   const translator = new Translator(model, vtable);
   translator.translate();
-  if (arg2 !== toPolicy.forPrint) {
+  if (arg2 !== toPolicy.buildTime) {
     const { missingFns } = translator;
     if (missingFns.length > 0) {
       throw new Error(`missing user functions: ${missingFns.join(" ")}`);
@@ -46,7 +49,7 @@ export function toPolicy(model: LvsModel, arg2: VtableInput | typeof toPolicy.fo
   return translator.policy;
 }
 export namespace toPolicy {
-  export const forPrint = Symbol("@ndn/lvs#toPolicy.forPrint");
+  export const buildTime = Symbol("@ndn/lvs#toPolicy.buildTime");
 }
 
 export const neededFnsMap = new WeakMap<TrustSchemaPolicy, ReadonlyMap<string, ReadonlySet<number>>>();

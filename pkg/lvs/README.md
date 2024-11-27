@@ -53,18 +53,18 @@ It is translated to `TrustSchemaPolicy` in a build step, represented by an ECMAS
 If any user functions are referenced in the LVS model, they shall be written in another ECMAScript module.
 These ECMAScript modules are to be bundled in the compiled project, but the LVS translator is excluded.
 
-1. Use `toPolicy` with `forPrint` option to perform a build-time translation.
-2. Save the output of `printESM` as `lvsPolicy.mjs`.
-3. Save the output of `printUserFns` as `lvsUserFns.mjs`.
+1. Use `toPolicy` with `buildTime` option to perform a build-time translation.
+2. Save the output of `printESM` as `lvspolicy.mjs`.
+3. Save the output of `printUserFns` as `lvsuserfns.mjs`.
 4. Fill in the skeletons of user functions.
-5. Import `policy` from `lvsPolicy.mjs` in your application.
+5. Import `policy` from `lvspolicy.mjs` in your application.
 
 ```ts
-const policy0 = toPolicy(model, toPolicy.forPrint);
-console.group("lvsPolicy.mjs");
+const policy0 = toPolicy(model, toPolicy.buildTime);
+console.group("lvspolicy.mjs");
 console.log(printESM(policy0));
 console.groupEnd();
-console.group("lvsUserFns.mjs");
+console.group("lvsuserfns.mjs");
 console.log(printUserFns(policy0));
 console.groupEnd();
 ```

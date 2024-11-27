@@ -84,7 +84,7 @@ test("pyndn3", () => {
   const model = pyndn3();
   expect(() => toPolicy(model)).toThrow(/missing user functions.*\$fn/);
 
-  const policyPrintable = toPolicy(model, toPolicy.forPrint);
+  const policyPrintable = toPolicy(model, toPolicy.buildTime);
   expect(policyPrintable.match(new Name("/x/y"))).toHaveLength(0);
   expect(printESM(policyPrintable)).toContain("$fn");
   expect(printUserFns(policyPrintable)).toContain("$fn");

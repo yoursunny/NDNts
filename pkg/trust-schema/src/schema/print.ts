@@ -80,14 +80,12 @@ export function printESM(policy: TrustSchemaPolicy): string {
   }
   lines.push("");
 
-  const pkgs = Array.from(ctx.imports.keys());
-  pkgs.sort((a, b) => -a.localeCompare(b));
+  const pkgs = Array.from(ctx.imports.keys()).toSorted((a, b) => -a.localeCompare(b));
   for (const pkg of pkgs) {
-    const tokens = Array.from(ctx.imports.get(pkg));
+    const tokens = Array.from(ctx.imports.get(pkg)).toSorted((a, b) => a.localeCompare(b));
     if (tokens.length === 1 && tokens[0]!.startsWith("* as ")) {
       lines.unshift(`import ${tokens[0]} from ${JSON.stringify(pkg)};`);
     } else {
-      tokens.sort((a, b) => a.localeCompare(b));
       lines.unshift(`import { ${tokens.join(", ")} } from ${JSON.stringify(pkg)};`);
     }
   }

@@ -15,16 +15,16 @@
   },
   "packageManager": "pnpm@9.14.2+sha512.6e2baf77d06b9362294152c851c4f278ede37ab1eba3a55fda317a4a17b209f4dbb973fb250a77abc463a341fcb1f17f17cfa24091c4eb319cda0d9b84278387",
   "devDependencies": {
-    "@types/node": "^20.17.7",
+    "@types/node": "^20.17.8",
     "@types/wtfnode": "^0.7.3",
     "@typescript/lib-dom": "npm:@types/web@0.0.182",
-    "@vitest/coverage-v8": "^2.1.5",
+    "@vitest/coverage-v8": "^2.1.6",
     "@yoursunny/xo-config": "0.59.0",
     "codedown": "^3.2.1",
     "tslib": "^2.8.1",
     "typedoc": "^0.26.11",
     "typescript": "~5.6.3",
-    "vitest": "^2.1.5"
+    "vitest": "^2.1.6"
   },
   "engines": {
     "node": "^20.18.0 || ^22.11.0 || ^23.0.0"

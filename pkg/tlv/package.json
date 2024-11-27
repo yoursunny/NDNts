@@ -29,6 +29,6 @@
     "@ndn/util": "workspace:*",
     "mnemonist": "^0.39.8",
     "tslib": "^2.8.1",
-    "type-fest": "^4.28.0"
+    "type-fest": "^4.29.0"
   }
 }
