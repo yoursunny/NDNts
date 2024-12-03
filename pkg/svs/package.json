@@ -44,7 +44,6 @@
   "devDependencies": {
     "@ndn/keychain": "workspace:*",
     "@ndn/l3face": "workspace:*",
-    "mnemonist": "^0.39.8",
-    "p-defer": "^4.0.1"
+    "mnemonist": "^0.39.8"
   }
 }

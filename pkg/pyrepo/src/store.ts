@@ -2,7 +2,6 @@ import { produce, ProducerOptions } from "@ndn/endpoint";
 import type { Name } from "@ndn/packet";
 import { DataStore as S } from "@ndn/repo-api";
 import { Closers, delay } from "@ndn/util";
-import pDefer from "p-defer";
 import { collect } from "streaming-iterables";
 
 import { PyRepoClient } from "./client";
@@ -67,7 +66,7 @@ export class PyRepoStore implements Disposable, S.Insert, S.Delete {
     const pkts = await collect(S.Insert.parseArgs<{}>(args).pkts);
 
     const retrieved = new Set<number>();
-    const answered = pDefer<void>();
+    const answered = Promise.withResolvers<void>();
     const timeout = setTimeout(
       () => answered.reject(new Error("no incoming Interest")),
       this.incomingInterestTimeout,

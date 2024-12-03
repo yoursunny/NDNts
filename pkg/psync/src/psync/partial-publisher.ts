@@ -4,7 +4,6 @@ import { Data, type Interest, type Name, NameMap, type Signer } from "@ndn/packe
 import type { SyncNode, SyncProtocol } from "@ndn/sync-api";
 import { trackEventListener } from "@ndn/util";
 import { BloomFilter } from "@yoursunny/psync-bloom";
-import pDefer, { type DeferredPromise } from "p-defer";
 import { TypedEventTarget } from "typescript-event-target";
 
 import type { IBLT } from "../iblt";
@@ -17,7 +16,7 @@ interface PendingInterest {
   recvIblt: IBLT;
   bloom: BloomFilter;
   expire: NodeJS.Timeout | number;
-  defer: DeferredPromise<Data | undefined>;
+  defer: PromiseWithResolvers<Data | undefined>;
 }
 
 interface DebugEntry {
@@ -166,7 +165,7 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
           pending.defer.resolve(undefined);
         }
       }, interest.lifetime),
-      defer: pDefer<Data | undefined>(),
+      defer: Promise.withResolvers<Data | undefined>(),
     };
     this.sPendings.set(interest.name, pending);
     return pending.defer.promise;

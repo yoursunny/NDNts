@@ -2,7 +2,6 @@ import type { ProducerHandler } from "@ndn/endpoint";
 import { Data, digestSigning, type Interest, type Name, type Signer } from "@ndn/packet";
 import { assert } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
-import pDefer, { type DeferredPromise } from "p-defer";
 import { getIterator } from "streaming-iterables";
 
 import { defaultSegmentConvention, type SegmentConvention } from "../convention";
@@ -84,9 +83,9 @@ class SequentialDataProducer extends DataProducer {
   private requested = -1;
   private final = Infinity;
   private readonly buffer = new Map<number, Data>();
-  private readonly waitlist = new DefaultMap<number, DeferredPromise<void>>(() => pDefer());
+  private readonly waitlist = new DefaultMap<number, PromiseWithResolvers<void>>(() => Promise.withResolvers<void>());
   private readonly generator: AsyncGenerator<Chunk, false>;
-  private pause?: DeferredPromise<void>;
+  private pause?: PromiseWithResolvers<void>;
 
   constructor(source: ChunkSource, prefix: Name, opts: DataProducer.Options = {}) {
     super(source, prefix, opts);
@@ -139,7 +138,7 @@ class SequentialDataProducer extends DataProducer {
       assert(chunk.i === i, "unexpected chunk number");
 
       if (i > this.requested + bufferAhead) {
-        this.pause = pDefer();
+        this.pause = Promise.withResolvers<void>();
         await this.pause.promise;
         this.pause = undefined;
       }

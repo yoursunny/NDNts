@@ -6,7 +6,6 @@ import { KeyMap, toHex, trackEventListener } from "@ndn/util";
 import DefaultWeakMap from "mnemonist/default-weak-map.js";
 import filter from "obliterator/filter.js";
 import take from "obliterator/take.js";
-import pDefer, { type DeferredPromise } from "p-defer";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { IBLT } from "../iblt";
@@ -30,7 +29,7 @@ interface SyncInterestInfo {
 
 interface PendingInterest extends SyncInterestInfo {
   expire: NodeJS.Timeout | number;
-  defer: DeferredPromise<Data | undefined>;
+  defer: PromiseWithResolvers<Data | undefined>;
 }
 
 interface DebugEntry {
@@ -268,7 +267,7 @@ export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscrib
           pending.defer.resolve(undefined);
         }
       }, interest.lifetime),
-      defer: pDefer<Data | undefined>(),
+      defer: Promise.withResolvers<Data | undefined>(),
     };
     this.pPendings.set(ibltComp, pending);
     return pending.defer.promise;

@@ -34,7 +34,6 @@
     "@ndn/sync-api": "workspace:^",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "p-defer": "^4.0.1",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.8.1",
     "type-fest": "^4.30.0",

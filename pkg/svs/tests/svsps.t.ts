@@ -5,7 +5,6 @@ import { generateSigningKey } from "@ndn/keychain";
 import { Name, type NameLike } from "@ndn/packet";
 import { DataArray } from "@ndn/repo-api";
 import { Closers, console, crypto, delay } from "@ndn/util";
-import pDefer from "p-defer";
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
 
 import { type MappingEntry, type Subscription, SvPublisher, SvSubscriber, SvSync, TimedMappingEntry } from "..";
@@ -66,7 +65,7 @@ async function publishCheck(
   const abort = new AbortController();
   const received = Array.from<SvSubscriber.Update | undefined>({ length: expectReceive.length });
   let nWaiting = expectReceive.length;
-  const allReceived = pDefer<void>();
+  const allReceived = Promise.withResolvers<void>();
   for (const [i, sub] of expectReceive.entries()) {
     sub.addEventListener("update", (update) => { // eslint-disable-line @typescript-eslint/no-loop-func
       expect(received[i]).toBeUndefined();

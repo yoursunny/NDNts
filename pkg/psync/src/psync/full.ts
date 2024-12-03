@@ -3,7 +3,6 @@ import { GenericNumber } from "@ndn/naming-convention2";
 import type { Component, Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { KeyMap, toHex, trackEventListener } from "@ndn/util";
-import pDefer, { type DeferredPromise } from "p-defer";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { computeInterval, type IntervalFunc, type IntervalRange } from "../detail/interval";
@@ -17,7 +16,7 @@ interface PendingInterest {
   interest: Interest;
   recvIblt: IBLT;
   expire: NodeJS.Timeout | number;
-  defer: DeferredPromise<Data | undefined>;
+  defer: PromiseWithResolvers<Data | undefined>;
 }
 
 interface DebugEntry {
@@ -175,7 +174,7 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
           pending.defer.resolve(undefined);
         }
       }, interest.lifetime),
-      defer: pDefer<Data | undefined>(),
+      defer: Promise.withResolvers<Data | undefined>(),
     };
     this.pPendings.set(ibltComp, pending);
     return pending.defer.promise;

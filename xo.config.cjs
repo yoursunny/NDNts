@@ -37,7 +37,14 @@ function makePackageOverrides(config, ...pkgs) {
 
 /** @type {XoOptions} */
 module.exports = {
-  ...js,
+  ...merge(js, {
+    rules: {
+      "n/no-unsupported-features/es-syntax": ["error", {
+        version: require("./package.json").engines.node,
+        ignores: ["promise-withresolvers"],
+      }],
+    },
+  }),
   overrides: [
     ...makePackageOverrides(merge(js, ts), ""),
     ...makePackageOverrides(merge(js, ts, web),

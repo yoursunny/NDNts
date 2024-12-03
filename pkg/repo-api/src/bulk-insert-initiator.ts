@@ -2,7 +2,6 @@ import { Transport } from "@ndn/l3face";
 import type { Data } from "@ndn/packet";
 import { Encoder } from "@ndn/tlv";
 import { pushable } from "@ndn/util";
-import pDefer, { type DeferredPromise } from "p-defer";
 import { consume } from "streaming-iterables";
 import { TypedEventTarget } from "typescript-event-target";
 
@@ -10,7 +9,7 @@ import * as S from "./data-store";
 
 interface Burst {
   pkts: AsyncIterable<Data>;
-  defer: DeferredPromise<undefined>;
+  defer: PromiseWithResolvers<void>;
 }
 
 type EventMap = {
@@ -69,7 +68,7 @@ export class BulkInsertInitiator extends TypedEventTarget<EventMap> implements S
    */
   public async insert(...args: S.Insert.Args<{}>): Promise<void> {
     const { pkts } = S.Insert.parseArgs<{}>(args);
-    const defer = pDefer<undefined>();
+    const defer = Promise.withResolvers<void>();
     this.queue.push({ pkts, defer });
     return defer.promise;
   }
