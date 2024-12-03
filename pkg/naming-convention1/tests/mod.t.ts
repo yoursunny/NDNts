@@ -33,7 +33,7 @@ const TABLE: Row[] = [
   },
 ];
 
-test.each(TABLE)("%j", ({ marker, convention }) => {
+test.each(TABLE)("marker $marker", ({ marker, convention }) => {
   const markerHex = marker.toString(16).padStart(2, "0");
   const name = new Name().append(convention, 0x00010203).append(convention, 0x0405n);
   expect(name.at(0)).toEqualComponent(`%${markerHex}%00%01%02%03`);

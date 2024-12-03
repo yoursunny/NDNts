@@ -98,7 +98,7 @@ const TABLE = [
   },
 ] as Row[];
 
-test.each(TABLE)("sign %j", async ({ Packet }) => {
+test.each(TABLE)("sign $pkt", async ({ Packet }) => {
   const pkt = new Packet(new Name("/A"));
   pkt.sigInfo = new SigInfo(SigType.HmacWithSha256, Uint8Array.of(0xA0, 0xA1));
   await expect(ALGO1.sign(pkt)).rejects.toThrow(/mock-signing-error/);
@@ -107,7 +107,7 @@ test.each(TABLE)("sign %j", async ({ Packet }) => {
   expect(() => Encoder.encode(pkt)).not.toThrow();
 });
 
-test.each(TABLE)("verify %j", async ({ Packet, checkWire }) => {
+test.each(TABLE)("verify $pkt", async ({ Packet, checkWire }) => {
   const src = new Packet(new Name("/A"));
   src.sigInfo = new SigInfo(SigType.Sha256);
   await ALGO0.sign(src);
@@ -136,7 +136,7 @@ test("digestSigning simple", async () => {
   await expect(digestSigning.verify(data)).rejects.toThrow();
 });
 
-test.each(TestSignVerify.PacketTable)("digestSigning %j", async ({ Packet }) => {
+test.each(TestSignVerify.PacketTable)("digestSigning $PacketType", async ({ Packet }) => {
   const record = await TestSignVerify.execute(Packet, digestSigning, digestSigning, digestSigning, digestSigning);
   TestSignVerify.check(record, { deterministic: true, sameAB: true });
 });

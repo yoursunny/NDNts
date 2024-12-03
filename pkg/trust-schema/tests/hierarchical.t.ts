@@ -176,7 +176,7 @@ const TABLE: Row[] = [
 describe("success", () => {
   let ctx: Context;
   beforeAll(async () => { ctx = await Context.create({}); });
-  test.each(TABLE)("%j", async (row) => {
+  test.each(TABLE)("$summary", async (row) => {
     await ctx.testSigner(row, async (signer, data) => {
       await signer.sign(data);
       if (row.signerMustLpm ?? true) {
@@ -198,7 +198,7 @@ describe("success same name", () => {
       name2: "/root/site/group",
     });
   });
-  test.each(TABLE)("%j", async (row) => {
+  test.each(TABLE)("$summary", async (row) => {
     await ctx.testVerifier(row, async (verifier, data) => {
       await verifier.verify(data);
     });
@@ -212,7 +212,7 @@ describe("data non-hierarchical", () => {
       dataName: "/data",
     });
   });
-  test.each(TABLE)("%j", async (row) => {
+  test.each(TABLE)("$summary", async (row) => {
     await ctx.testSigner(row, async (signer, data) => {
       await expect(signer.sign(data)).rejects.toThrow();
     });
@@ -229,7 +229,7 @@ describe("cert non-hierarchical", () => {
       name1: "/root/other-site",
     });
   });
-  test.each(TABLE)("%j", async (row) => {
+  test.each(TABLE)("$summary", async (row) => {
     await ctx.testVerifier(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow();
     });
@@ -248,7 +248,7 @@ describe("bad signature", () => {
       },
     });
   });
-  test.each(TABLE)("%j", async (row) => {
+  test.each(TABLE)("$summary", async (row) => {
     await ctx.testVerifier(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow(/bad/);
     });
@@ -265,7 +265,7 @@ describe("root expired", () => {
       },
     });
   });
-  test.each(TABLE)("%j", async (row) => {
+  test.each(TABLE)("$summary", async (row) => {
     await ctx.testVerifier(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow(/expired/);
     });
@@ -282,7 +282,7 @@ describe("cert expired", () => {
       },
     });
   });
-  test.each(TABLE)("%j", async (row) => {
+  test.each(TABLE)("$summary", async (row) => {
     await ctx.testVerifier(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow(/expired/);
     });
@@ -299,7 +299,7 @@ describe("no KeyLocator", () => {
       }
     });
   });
-  test.each(TABLE)("%j", async (row) => {
+  test.each(TABLE)("$summary", async (row) => {
     await ctx.testVerifier(row, async (verifier, data) => {
       await expect(verifier.verify(data)).rejects.toThrow(/KeyLocator/);
     });

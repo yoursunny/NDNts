@@ -423,7 +423,7 @@ test("probe entries and redirects", async () => {
   checkCaProfile(retrieved, subProfile, "sub_CA");
 });
 
-test.each(TABLE)("challenge %j", async ({
+test.each(TABLE)("challenge $summary", async ({
   makeChallengeLists,
   clientShouldFail = false,
 }) => {

@@ -3,10 +3,12 @@ import { expect, test } from "vitest";
 import { asDataView, asUint8Array } from "..";
 
 test.each([
-  { title: "asUint8Array", T: Uint8Array, f: asUint8Array },
-  { title: "asDataView", T: DataView, f: asDataView },
-])("asArrayBufferView %j", ({ T, f }) => {
-  const ab = new ArrayBuffer(17);
+  { B: ArrayBuffer, T: Uint8Array, f: asUint8Array },
+  { B: SharedArrayBuffer, T: Uint8Array, f: asUint8Array },
+  { B: ArrayBuffer, T: DataView, f: asDataView },
+  { B: SharedArrayBuffer, T: DataView, f: asDataView },
+])("$f $B", ({ B, T, f }) => {
+  const ab = new B(17);
   const u8 = new Uint8Array(ab, 4, 11);
   const dv = new DataView(ab, 3, 8);
 

@@ -9,7 +9,7 @@ import { describe, expect, test } from "vitest";
 import { Certificate, createVerifier, EcCurve, ECDSA, Ed25519, generateSigningKey, HMAC, KeyChain, RSA, RsaModulusLength, SigningAlgorithmListFull } from "../..";
 
 describe.each(EcCurve.Choices)("ECDSA %s", (curve) => {
-  test.each(TestSignVerify.PacketTable)("sign-verify %j", async ({ Packet }) => {
+  test.each(TestSignVerify.PacketTable)("sign-verify $PacketType", async ({ Packet }) => {
     const [pvtA, pubA] = await generateSigningKey("/A/KEY/x", ECDSA, { curve });
     const [pvtB, pubB] = await generateSigningKey("/B/KEY/x", ECDSA, { curve });
 
@@ -48,7 +48,7 @@ describe.each(EcCurve.Choices)("ECDSA %s", (curve) => {
 });
 
 describe.each(RsaModulusLength.Choices)("RSA %d", (modulusLength) => {
-  describe.each(TestSignVerify.PacketTable)("sign-verify %j", ({ Packet }) => {
+  describe.each(TestSignVerify.PacketTable)("sign-verify $PacketType", ({ Packet }) => {
     test("", { timeout: 15000 }, async () => {
       const [pvtA, pubA] = await generateSigningKey("/A/KEY/x", RSA, { modulusLength });
       const [pvtB, pubB] = await generateSigningKey("/B/KEY/x", RSA, { modulusLength });
@@ -77,7 +77,7 @@ describe.each(RsaModulusLength.Choices)("RSA %d", (modulusLength) => {
 });
 
 describe("HMAC", () => {
-  test.each(TestSignVerify.PacketTable)("sign-verify %j", async ({ Packet }) => {
+  test.each(TestSignVerify.PacketTable)("sign-verify $PacketType", async ({ Packet }) => {
     const [pvtA, pubA] = await generateSigningKey("/A/KEY/x", HMAC);
     const [pvtB, pubB] = await generateSigningKey("/B/KEY/x", HMAC);
 
@@ -111,7 +111,7 @@ print(pkt.hex())
 */
 
 describe("Ed25519", () => {
-  test.each(TestSignVerify.PacketTable)("sign-verify %j", async ({ Packet }) => {
+  test.each(TestSignVerify.PacketTable)("sign-verify $PacketType", async ({ Packet }) => {
     const [pvtA, pubA] = await generateSigningKey("/A/KEY/x", Ed25519);
     const [pvtB, pubB] = await generateSigningKey("/B/KEY/x", Ed25519);
 

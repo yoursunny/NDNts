@@ -1,6 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
-import { consume, DataStoreBuffer, produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
+import { consume, DataStoreBuffer, produce, type Producer, type ProducerOptions } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { generateSigningKey } from "@ndn/keychain";
 import { Data, Interest } from "@ndn/packet";
@@ -54,7 +54,7 @@ test("prefill buffer", async () => {
   expect(handler).toHaveBeenCalledTimes(1);
 });
 
-test.each([false, true])("autoBuffer %j", async (autoBuffer) => {
+test.each([false, true])("autoBuffer %o", async (autoBuffer) => {
   const pOpts = await makeBufferedProducer(undefined, { autoBuffer });
   const handler = vi.fn(async (interest: Interest, { dataBuffer }: Producer) => {
     void interest;
