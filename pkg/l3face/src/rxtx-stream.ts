@@ -13,7 +13,7 @@ import type { Transport } from "./transport";
  * @returns RX packet stream.
  */
 export async function* rxFromStream(conn: NodeJS.ReadableStream): Transport.RxIterable {
-  let leftover = new Uint8Array();
+  let leftover: Uint8Array = new Uint8Array();
   for await (const chunk of safeIter(conn as AsyncIterable<Buffer>)) {
     if (leftover.length > 0) {
       leftover = concatBuffers([leftover, chunk], leftover.length + chunk.length);

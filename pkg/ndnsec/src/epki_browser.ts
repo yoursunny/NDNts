@@ -75,7 +75,7 @@ class EncryptedPrivateKeyInfoParser {
     iv: new Uint8Array(),
   };
 
-  public data = new Uint8Array();
+  public data: Uint8Array = new Uint8Array();
 
   constructor(encryptedKey: Uint8Array) {
     this.parse(asn1.parseVerbose(encryptedKey));

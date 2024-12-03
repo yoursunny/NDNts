@@ -49,7 +49,7 @@ class Fields {
 
   public appParameters?: Uint8Array;
   public sigInfo?: SigInfo;
-  public sigValue = new Uint8Array();
+  public sigValue: Uint8Array = new Uint8Array();
 
   public paramsPortion?: Uint8Array;
   public signedPortion?: Uint8Array;

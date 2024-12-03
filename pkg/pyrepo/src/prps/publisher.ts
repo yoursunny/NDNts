@@ -4,7 +4,7 @@ import { SequenceNum } from "@ndn/naming-convention2";
 import { Component, Data, digestSigning, Interest, Name, NameMap, SignedInterestPolicy, type Signer, TT } from "@ndn/packet";
 import { type Encodable, Encoder } from "@ndn/tlv";
 import { crypto } from "@ndn/util";
-import { type SetRequired } from "type-fest";
+import type { SetRequired } from "type-fest";
 
 import { MsgSuffix, NotifyAppParam, NotifySuffix } from "./packet";
 

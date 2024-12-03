@@ -52,7 +52,7 @@ export namespace toPolicy {
   export const buildTime = Symbol("@ndn/lvs#toPolicy.buildTime");
 }
 
-export const neededFnsMap = new WeakMap<TrustSchemaPolicy, ReadonlyMap<string, ReadonlySet<number>>>();
+export const neededFnsMap = new WeakMap<TrustSchemaPolicy, DefaultMap<string, ReadonlySet<number>>>();
 
 class Translator {
   constructor(

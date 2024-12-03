@@ -1,22 +1,22 @@
 function asArrayBufferView<T extends ArrayBufferView>(
-    T: new(ab: ArrayBuffer, offset?: number, length?: number) => T,
-    a: BufferSource,
+    T: new(ab: ArrayBufferLike, offset?: number, length?: number) => T,
+    a: ArrayBufferLike | ArrayBufferView,
 ): T {
   if (a instanceof T) {
     return a;
   }
-  if (a instanceof ArrayBuffer) {
-    return new T(a);
+  if ("buffer" in a) {
+    return new T(a.buffer, a.byteOffset, a.byteLength);
   }
-  return new T(a.buffer, a.byteOffset, a.byteLength);
+  return new T(a);
 }
 
-/** Convert ArrayBuffer or ArrayBufferView to Uint8Array. */
-export function asUint8Array(a: BufferSource): Uint8Array {
+/** Convert (Shared)ArrayBuffer(View) to Uint8Array. */
+export function asUint8Array(a: ArrayBufferLike | ArrayBufferView): Uint8Array {
   return asArrayBufferView(Uint8Array, a);
 }
 
-/** Convert ArrayBuffer or ArrayBufferView to DataView. */
-export function asDataView(a: BufferSource): DataView {
+/** Convert (Shared)ArrayBuffer(View) to DataView. */
+export function asDataView(a: ArrayBufferLike | ArrayBufferView): DataView {
   return asArrayBufferView(DataView, a);
 }

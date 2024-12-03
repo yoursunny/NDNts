@@ -66,9 +66,9 @@ class Fields {
     this.finalBlockId = this.name.get(-1)!;
   }
 
-  public content = new Uint8Array();
+  public content: Uint8Array = new Uint8Array();
   public sigInfo = new SigInfo();
-  public sigValue = new Uint8Array();
+  public sigValue: Uint8Array = new Uint8Array();
 
   public signedPortion?: Uint8Array;
   public topTlv?: Uint8Array;

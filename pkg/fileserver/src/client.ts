@@ -1,4 +1,4 @@
-import { type ConsumerOptions } from "@ndn/endpoint";
+import type { ConsumerOptions } from "@ndn/endpoint";
 import { Component, type Name, TT } from "@ndn/packet";
 import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";

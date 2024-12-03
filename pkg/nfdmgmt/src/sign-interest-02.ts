@@ -3,7 +3,7 @@ import { Encoder, NNI } from "@ndn/tlv";
 
 class SignedInterest02 implements Signer.Signable {
   public sigInfo?: SigInfo;
-  public sigValue = new Uint8Array();
+  public sigValue: Uint8Array = new Uint8Array();
 
   constructor(public name: Name, private readonly timestamp: number) {}
 
