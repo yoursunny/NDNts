@@ -1,5 +1,5 @@
 const path = require("node:path");
-const fsWalk = require("@nodelib/fs.walk");
+const fsWalk = require("@nodelib/fs.walk/promises");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
@@ -45,7 +45,7 @@ const config = {
 };
 
 module.exports = async () => { // eslint-disable-line unicorn/no-anonymous-default-export
-  const list = fsWalk.walkSync(path.resolve(__dirname, "tests"), {
+  const list = await fsWalk.walk(path.resolve(__dirname, "tests"), {
     entryFilter: ({ name }) => name === "browser.ts",
   });
   for (const { path: filename } of list) {

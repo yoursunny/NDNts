@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { isBuiltin } from "node:module";
 import path from "node:path";
 
-import fsWalk from "@nodelib/fs.walk";
+import * as fsWalk from "@nodelib/fs.walk/promises";
 import { satisfies } from "compare-versions";
 import yaml from "js-yaml";
 
@@ -19,10 +19,6 @@ function* listImports(filename) {
   }
 }
 
-const ignoredFolder = new Set([
-  "pkg/repo-external", // multi-line re-export, not handled by this script
-  "pkg/sync", // multi-line re-export, not handled by this script
-]);
 const ignoredMissing = new Set(["memif"]);
 const ignoredUnused = new Set(["@types/web-bluetooth", "graphql", "tslib"]);
 const ignoredTypes = new Set(["yargs"]);
@@ -35,14 +31,14 @@ if (!satisfies(doc.lockfileVersion, "^9.0.0")) {
 
 let nWarnings = 0;
 for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entries(doc.importers)) {
-  if (!folder.startsWith("pkg/") || ignoredFolder.has(folder)) {
+  if (!folder.startsWith("pkg/")) {
     continue;
   }
   const unusedP = new Set(Object.keys(dependencies).filter((dep) => !ignoredUnused.has(dep)));
   const unusedD = new Set(Object.keys(devDependencies).filter((dep) => !ignoredUnused.has(dep)));
 
   const libFolder = path.join(folder, "lib");
-  const jsFiles = fsWalk.walkSync(libFolder, {
+  const jsFiles = await fsWalk.walk(libFolder, {
     entryFilter: ({ dirent, name }) => dirent.isFile() && !name.endsWith(".d.ts"),
   });
   for (const { path: filename } of jsFiles) {
@@ -55,7 +51,7 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
     }
   }
 
-  const declarations = fsWalk.walkSync(libFolder, {
+  const declarations = await fsWalk.walk(libFolder, {
     entryFilter: ({ dirent, name }) => dirent.isFile() && name.endsWith(".d.ts"),
   });
   for (const { path: filename } of declarations) {
@@ -70,7 +66,7 @@ for (const [folder, { dependencies = {}, devDependencies = {} }] of Object.entri
     }
   }
 
-  const tsFiles = fsWalk.walkSync(folder, {
+  const tsFiles = await fsWalk.walk(folder, {
     deepFilter: ({ name }) => !["lib", "node_modules"].includes(name),
     entryFilter: ({ dirent, name }) => dirent.isFile() && name.endsWith(".ts"),
   });
