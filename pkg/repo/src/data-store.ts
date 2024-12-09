@@ -69,10 +69,10 @@ export class DataStore extends TypedEventTarget<EventMap>
     return this.db.close();
   }
 
-  private async *iterRecords(prefix?: Name): AsyncGenerator<DB.Record> {
+  private async *iterRecords(prefix?: Name): AsyncGenerator<DB.Value> {
     const range = prefix ? { gte: prefix } : {};
-    const it = (this.db as DB.Db2).iterator(range);
-    for await (const [name, record] of it as unknown as AsyncIterable<[Name, DB.Record]>) {
+    const it = this.db.iterator(range);
+    for await (const [name, record] of it as unknown as AsyncIterable<[Name, DB.Value]>) {
       if (prefix?.isPrefixOf(name) === false) {
         break;
       }
@@ -101,20 +101,8 @@ export class DataStore extends TypedEventTarget<EventMap>
 
   /** Retrieve Data by exact name. */
   public async get(name: Name): Promise<Data | undefined> {
-    let record: DB.Record | undefined;
-    try {
-      record = await this.db.get(name);
-      // if record does not exist:
-      // - abstract-level@1 throws not-found error
-      // - abstract-level@2 returns undefined
-    } catch (err: unknown) {
-      if (DB.isNotFound(err)) {
-        return undefined;
-      }
-      throw err;
-    }
-
-    return record === undefined || DB.isExpired(record) ? undefined : record.data;
+    const record = await this.db.get(name) as DB.Value | undefined;
+    return !record || DB.isExpired(record) ? undefined : record.data;
   }
 
   /** Find Data that satisfies Interest. */
@@ -140,7 +128,6 @@ export class DataStore extends TypedEventTarget<EventMap>
    */
   public async insert(...args: S.Insert.Args<DataStore.InsertOptions>): Promise<void> {
     const { opts, pkts } = S.Insert.parseArgs<DataStore.InsertOptions>(args);
-    await this.db.open(); // workaround for constructor(AbstractLevelDOWN)
     const tx = this.tx();
     for await (const pkt of pkts) {
       tx.insert(pkt, opts);
@@ -153,7 +140,6 @@ export class DataStore extends TypedEventTarget<EventMap>
    * @see {@link Transaction.delete}
    */
   public async delete(...names: readonly Name[]): Promise<void> {
-    await this.db.open(); // workaround for constructor(AbstractLevelDOWN)
     const tx = this.tx();
     for (const name of names) {
       tx.delete(name);
@@ -163,7 +149,6 @@ export class DataStore extends TypedEventTarget<EventMap>
 
   /** Delete all expired records. */
   public async clearExpired(): Promise<void> {
-    await this.db.open(); // workaround for constructor(AbstractLevelDOWN)
     const tx = this.tx();
     const it = filter(DB.filterExpired(true), this.iterRecords());
     for await (const { name } of it) {

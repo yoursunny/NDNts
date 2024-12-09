@@ -12,8 +12,7 @@ import { type DataStore, makeInMemoryDataStore, makePersistentDataStore } from "
 const closers = new Closers();
 afterEach(closers.close);
 
-type Row = [string, () => Promise<DataStore>];
-const TABLE: readonly Row[] = [
+const TABLE: ReadonlyArray<[string, () => Promise<DataStore>]> = [
   ["memory-level", makeInMemoryDataStore],
   ["classic-level", () => {
     const tmpDir = makeTmpDir();
@@ -29,15 +28,14 @@ test.each(TABLE)("basic %s", async (desc, openDataStore) => {
 });
 
 test.each(TABLE)("segmented object %s", async (desc, openDataStore) => {
+  void desc;
   await using store = await openDataStore();
   await testDataStoreSegmentedObject(store);
 });
 
 test.each(TABLE)("list find expire %s", async (desc, openDataStore) => {
+  void desc;
   await using store = await openDataStore();
-  if (!desc.endsWith("-level")) {
-    await (store as any).db.open(); // workaround to enable .tx()
-  }
 
   const expireTime = Date.now() + 600;
   await Promise.all([
