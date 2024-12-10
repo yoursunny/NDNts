@@ -67,7 +67,7 @@ export const AbstractLevelOptions: AbstractDatabaseOptions<Name, Value> = {
 export type Db = AbstractLevel<any, Name, Value>;
 
 /** Function to create Db. */
-export type DbOpener = (opts: AbstractDatabaseOptions<Name, Value>) => Promisable<Db>;
+export type DbOpener<D extends Db = Db> = (opts: AbstractDatabaseOptions<Name, Value>) => Promisable<D>;
 
 /**
  * Constructor of AbstractLevel subclass.
@@ -78,7 +78,7 @@ export type DbCtor<A extends unknown[], O extends {}> =
   new(...a: [...A, O & AbstractDatabaseOptions<Name, Value>]) => Db;
 
 /** A transaction chain in key-value database. */
-export type DbChain = AbstractChainedBatch<Db, Name, Value>;
+export type DbBatch = AbstractChainedBatch<Db, Name, Value>;
 
 /** Determine whether a record has expired. */
 export function isExpired({ expireTime = Infinity }: Value, now = Date.now()): boolean {

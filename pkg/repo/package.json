@@ -31,7 +31,7 @@
     "@ndn/repo-api": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "abstract-level": "^2.0.1",
+    "abstract-level": "^2.0.2",
     "level": "^9.0.0",
     "memory-level": "^2.0.0",
     "streaming-iterables": "^8.0.1",

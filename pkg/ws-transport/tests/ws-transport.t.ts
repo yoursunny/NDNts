@@ -38,7 +38,7 @@ test("pair - ws WebSocket", async () => {
 });
 
 test.runIf(globalThis.WebSocket)("pair - native WebSocket", async () => {
-  // to run this test case, set environ NODE_OPTIONS=--experimental-websocket
+  // to run this test case in Node 20, set environ NODE_OPTIONS=--experimental-websocket
   await testPair((uri) => new WebSocket(uri));
 });
 
@@ -57,7 +57,7 @@ test("TX throttle", async () => {
 
   const sws = socks[0]!;
   sws.binaryType = "nodebuffer";
-  const serverRx = vi.fn<[Uint8Array], void>();
+  const serverRx = vi.fn<(pkt: Uint8Array) => void>();
   sws.on("message", serverRx);
 
   const clientTx = pushable<Uint8Array>();

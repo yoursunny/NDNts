@@ -11,9 +11,7 @@ afterEach(Forwarder.deleteDefault);
 
 describe("unsatisfied", () => {
   let pAbort: AbortController;
-  const pHandler = vi.fn<Parameters<ProducerHandler>, ReturnType<ProducerHandler>>(
-    async (interest) => new Data(interest.name),
-  );
+  const pHandler = vi.fn<ProducerHandler>(async (interest) => new Data(interest.name));
   let p: Producer;
   beforeEach(() => {
     pAbort = new AbortController();

@@ -5,7 +5,7 @@ import { filter, map, pipeline } from "streaming-iterables";
 import { TypedEventTarget } from "typescript-event-target";
 import { Mutex } from "wait-your-turn";
 
-import * as DB from "./db";
+import { AbstractLevelOptions, type Db, type DbBatch, type DbCtor, type DbOpener, filterExpired, isExpired, type Value } from "./db";
 
 type EventMap = {
   /** Emitted when a new record is inserted. */
@@ -29,7 +29,7 @@ export class DataStore extends TypedEventTarget<EventMap>
    * @param open - Function that opens an abstract-level compatible key-value database with
    * the given options.
    */
-  public static create(open: DB.DbOpener): Promise<DataStore>;
+  public static create(open: DbOpener): Promise<DataStore>;
 
   /**
    * Create DataStore from an abstract-level subclass constructor.
@@ -37,27 +37,27 @@ export class DataStore extends TypedEventTarget<EventMap>
    * @param args - `ctor` arguments; last should be options object.
    */
   public static create<const A extends unknown[], const O extends {}>(
-    ctor: DB.DbCtor<A, O>, ...args: [...A, O]
+    ctor: DbCtor<A, O>, ...args: [...A, O]
   ): Promise<DataStore>;
 
   public static async create<A extends unknown[], O extends {}>(
-      fn: DB.DbOpener | DB.DbCtor<A, O>,
+      fn: DbOpener | DbCtor<A, O>,
       ...args: [...A, O] | []
   ) {
-    let db: DB.Db;
+    let db: Db;
     if (args.length === 0) {
-      db = await (fn as DB.DbOpener)(DB.AbstractLevelOptions);
+      db = await (fn as DbOpener)(AbstractLevelOptions);
     } else {
-      db = new (fn as DB.DbCtor<A, O>)(
+      db = new (fn as DbCtor<A, O>)(
         ...(args.slice(0, -1) as A),
-        { ...(args.at(-1) as O), ...DB.AbstractLevelOptions },
+        { ...(args.at(-1) as O), ...AbstractLevelOptions },
       );
     }
     await db.open();
     return new DataStore(db);
   }
 
-  private constructor(private readonly db: DB.Db) {
+  private constructor(private readonly db: Db) {
     super();
   }
 
@@ -69,10 +69,10 @@ export class DataStore extends TypedEventTarget<EventMap>
     return this.db.close();
   }
 
-  private async *iterRecords(prefix?: Name): AsyncGenerator<DB.Value> {
+  private async *iterRecords(prefix?: Name): AsyncGenerator<Value> {
     const range = prefix ? { gte: prefix } : {};
     const it = this.db.iterator(range);
-    for await (const [name, record] of it as unknown as AsyncIterable<[Name, DB.Value]>) {
+    for await (const [name, record] of it as unknown as AsyncIterable<[Name, Value]>) {
       if (prefix?.isPrefixOf(name) === false) {
         break;
       }
@@ -85,7 +85,7 @@ export class DataStore extends TypedEventTarget<EventMap>
   public listNames(prefix?: Name): AsyncIterable<Name> {
     return pipeline(
       () => this.iterRecords(prefix),
-      filter(DB.filterExpired(false)),
+      filter(filterExpired(false)),
       map(({ name }) => name),
     );
   }
@@ -94,21 +94,21 @@ export class DataStore extends TypedEventTarget<EventMap>
   public listData(prefix?: Name): AsyncIterable<Data> {
     return pipeline(
       () => this.iterRecords(prefix),
-      filter(DB.filterExpired(false)),
+      filter(filterExpired(false)),
       map(({ data }) => data),
     );
   }
 
   /** Retrieve Data by exact name. */
   public async get(name: Name): Promise<Data | undefined> {
-    const record = await this.db.get(name) as DB.Value | undefined;
-    return !record || DB.isExpired(record) ? undefined : record.data;
+    const record = await this.db.get(name);
+    return !record || isExpired(record) ? undefined : record.data;
   }
 
   /** Find Data that satisfies Interest. */
   public async find(interest: Interest): Promise<Data | undefined> {
     const prefix = ImplicitDigest.strip(interest.name);
-    const it = filter(DB.filterExpired(false), this.iterRecords(prefix));
+    const it = filter(filterExpired(false), this.iterRecords(prefix));
     for await (const { data } of it) {
       if (await data.canSatisfy(interest)) {
         return data;
@@ -150,7 +150,7 @@ export class DataStore extends TypedEventTarget<EventMap>
   /** Delete all expired records. */
   public async clearExpired(): Promise<void> {
     const tx = this.tx();
-    const it = filter(DB.filterExpired(true), this.iterRecords());
+    const it = filter(filterExpired(true), this.iterRecords());
     for await (const { name } of it) {
       tx.delete(name);
     }
@@ -174,12 +174,12 @@ export namespace DataStore {
 /** DataStore update transaction. */
 export class Transaction {
   private readonly timestamp = Date.now();
-  private readonly chain: DB.DbChain;
+  private readonly batch: DbBatch;
   private readonly diffs?: NameMap<keyof EventMap>;
 
-  constructor(private readonly db: DB.Db, private readonly store: DataStore) {
+  constructor(private readonly db: Db, private readonly store: DataStore) {
     assert(this.db.status === "open");
-    this.chain = this.db.batch();
+    this.batch = this.db.batch();
     const maybeHaveEventListener = this.store[kMaybeHaveEventListener] as Record<keyof EventMap, boolean>;
     if (maybeHaveEventListener.insert || maybeHaveEventListener.delete) {
       this.diffs = new NameMap();
@@ -189,7 +189,7 @@ export class Transaction {
   /** Insert a Data packet. */
   public insert(data: Data, opts: DataStore.InsertOptions = {}): this {
     const { name } = data;
-    this.chain.put(name, {
+    this.batch.put(name, {
       ...opts,
       insertTime: this.timestamp,
       data,
@@ -201,7 +201,7 @@ export class Transaction {
 
   /** Delete a Data packet. */
   public delete(name: Name): this {
-    this.chain.del(name);
+    this.batch.del(name);
     this.diffs?.set(name, "delete");
     return this;
   }
@@ -213,7 +213,7 @@ export class Transaction {
       using locked = await lock(this.store.mutex);
       await this.commitWithDiff();
     } else {
-      await this.chain.write();
+      await this.batch.write();
     }
   }
 
@@ -222,7 +222,7 @@ export class Transaction {
     const oldRecords = await this.db.getMany(requests.map(([name]) => name));
     assert(requests.length === oldRecords.length);
 
-    await this.chain.write();
+    await this.batch.write();
 
     for (const [i, [name, act]] of requests.entries()) {
       if (act === (oldRecords[i] === undefined ? "insert" : "delete")) {
