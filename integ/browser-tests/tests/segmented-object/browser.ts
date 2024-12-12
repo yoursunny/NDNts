@@ -26,13 +26,13 @@ async function fetchAndReport(server: Server): Promise<FetchedInfo> {
   };
 }
 
-window.testBlobChunkSource = (): Promise<FetchedInfo> => {
+globalThis.testBlobChunkSource = (): Promise<FetchedInfo> => {
   const file = upload.files![0]!;
   const server = serve("/R", new BlobChunkSource(file));
   return fetchAndReport(server);
 };
 
-window.testZenFS = async (payloadHex): Promise<FetchedInfo> => {
+globalThis.testZenFS = async (payloadHex): Promise<FetchedInfo> => {
   const root = await navigator.storage.getDirectory();
   const file = await root.getFileHandle("R.bin", { create: true });
   const writable = await file.createWritable();

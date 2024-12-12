@@ -11,15 +11,13 @@ export type SignVerifyTestResult = [
 ];
 
 declare global {
-  interface Window {
-    testKeyStore: (enabled: KeyStoreEnable) => Promise<KeyStoreRecord>;
-    testCertStore: () => Promise<CertStoreRecord>;
-    testDigestSigning: () => Promise<Serialize.Value<SignVerifyTestResult>>;
-    testECDSA: (curve: EcCurve) => Promise<Serialize.Value<SignVerifyTestResult>>;
-    testRSA: (modulusLength: RsaModulusLength) => Promise<Serialize.Value<SignVerifyTestResult>>;
-    testHMAC: () => Promise<Serialize.Value<SignVerifyTestResult>>;
-    testEd25519: () => Promise<Serialize.Value<SignVerifyTestResult>>;
-    testSafeBagDecode: (wire: Serialize.Value<Uint8Array>, passphrase: string) => Promise<[sigType: number, certName: string]>;
-    testSafeBagEncode: (passphrase: string) => Promise<Serialize.Value<Uint8Array>>;
-  }
+  function testKeyStore(enabled: KeyStoreEnable): Promise<KeyStoreRecord>;
+  function testCertStore(): Promise<CertStoreRecord>;
+  function testDigestSigning(): Promise<Serialize.Value<SignVerifyTestResult>>;
+  function testECDSA(curve: EcCurve): Promise<Serialize.Value<SignVerifyTestResult>>;
+  function testRSA(modulusLength: RsaModulusLength): Promise<Serialize.Value<SignVerifyTestResult>>;
+  function testHMAC(): Promise<Serialize.Value<SignVerifyTestResult>>;
+  function testEd25519(): Promise<Serialize.Value<SignVerifyTestResult>>;
+  function testSafeBagDecode(wire: Serialize.Value<Uint8Array>, passphrase: string): Promise<[sigType: number, certName: string]>;
+  function testSafeBagEncode(passphrase: string): Promise<Serialize.Value<Uint8Array>>;
 }

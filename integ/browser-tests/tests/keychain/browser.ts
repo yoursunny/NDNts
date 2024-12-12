@@ -11,12 +11,12 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import * as Serialize from "../../test-fixture/serialize";
 import type { SignVerifyTestResult } from "./api";
 
-window.testKeyStore = (enable: KeyStoreEnable) => {
+globalThis.testKeyStore = (enable: KeyStoreEnable) => {
   const keyChain = KeyChain.open("296616c2-7abb-4d9e-94b3-a97e4fd327b5", CryptoAlgorithmListFull);
   return testKeyStore(keyChain, enable);
 };
 
-window.testCertStore = () => {
+globalThis.testCertStore = () => {
   const keyChain = KeyChain.open("005a04be-9752-4f1f-adaf-b52f31742b37");
   return testCertStore(keyChain);
 };
@@ -29,33 +29,33 @@ async function testSigningKey(pvtA: Signer, pubA: Verifier,
   ]));
 }
 
-window.testDigestSigning = () => testSigningKey(digestSigning, digestSigning, digestSigning, digestSigning);
+globalThis.testDigestSigning = () => testSigningKey(digestSigning, digestSigning, digestSigning, digestSigning);
 
-window.testECDSA = async (curve: EcCurve) => {
+globalThis.testECDSA = async (curve: EcCurve) => {
   const [pvtA, pubA] = await generateSigningKey("/EC-A", ECDSA, { curve });
   const [pvtB, pubB] = await generateSigningKey("/EC-B", ECDSA, { curve });
   return testSigningKey(pvtA, pubA, pvtB, pubB);
 };
 
-window.testRSA = async (modulusLength: RsaModulusLength) => {
+globalThis.testRSA = async (modulusLength: RsaModulusLength) => {
   const [pvtA, pubA] = await generateSigningKey("/RSA-A", RSA, { modulusLength });
   const [pvtB, pubB] = await generateSigningKey("/RSA-B", RSA, { modulusLength });
   return testSigningKey(pvtA, pubA, pvtB, pubB);
 };
 
-window.testHMAC = async () => {
+globalThis.testHMAC = async () => {
   const [pvtA, pubA] = await generateSigningKey("/HMAC-A", HMAC);
   const [pvtB, pubB] = await generateSigningKey("/HMAC-B", HMAC);
   return testSigningKey(pvtA, pubA, pvtB, pubB);
 };
 
-window.testEd25519 = async () => {
+globalThis.testEd25519 = async () => {
   const [pvtA, pubA] = await generateSigningKey("/Ed25519-A", Ed25519);
   const [pvtB, pubB] = await generateSigningKey("/Ed25519-B", Ed25519);
   return testSigningKey(pvtA, pubA, pvtB, pubB);
 };
 
-window.testSafeBagDecode = async (wire: Serialize.Value<Uint8Array>, passphrase: string) => {
+globalThis.testSafeBagDecode = async (wire: Serialize.Value<Uint8Array>, passphrase: string) => {
   const keyChain = KeyChain.createTemp(CryptoAlgorithmListFull);
   const safeBag = Decoder.decode(Serialize.parse(wire), SafeBag);
   const certName = safeBag.certificate.name;
@@ -67,7 +67,7 @@ window.testSafeBagDecode = async (wire: Serialize.Value<Uint8Array>, passphrase:
   return [data.sigInfo.type, `${certName}`];
 };
 
-window.testSafeBagEncode = async (passphrase: string) => {
+globalThis.testSafeBagEncode = async (passphrase: string) => {
   const keyPair = await ECDSA.cryptoGenerate({}, true);
   const pkcs8 = new Uint8Array(await crypto.subtle.exportKey("pkcs8", keyPair.privateKey));
 

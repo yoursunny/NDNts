@@ -275,6 +275,7 @@ class SeqNumRule extends SequencedRuleBase<bigint> implements Rule {
   constructor({
     initialSeqNum = 0n,
   }: SignedInterestPolicy.SeqNumOptions) {
+    // eslint-disable-next-line unicorn/prefer-math-min-max
     super("seqNum", "SigSeqNum", (value, prev = 0n) => value > prev ? value : prev);
     this.beforeInitialSeqNum = initialSeqNum - 1n;
   }

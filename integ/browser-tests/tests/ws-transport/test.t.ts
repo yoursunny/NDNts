@@ -17,10 +17,10 @@ beforeEach(async () => {
 });
 
 test("pair", async () => {
-  await pageInvoke<typeof window.connectWsTransportPair>("connectWsTransportPair", server.uri);
+  await pageInvoke<typeof globalThis.connectWsTransportPair>("connectWsTransportPair", server.uri);
   const sockets = await server.waitNClients(2);
   bridgeWebSockets(sockets);
 
-  const result = await pageInvoke<typeof window.testWsTransportPair>("testWsTransportPair");
+  const result = await pageInvoke<typeof globalThis.testWsTransportPair>("testWsTransportPair");
   TestTransport.check(result);
 });

@@ -29,13 +29,13 @@ test("blob to buffer", async () => {
   await fileChooser.accept([filename]);
   await delay(500);
 
-  const { size, digest } = await pageInvoke<typeof window.testBlobChunkSource>("testBlobChunkSource");
+  const { size, digest } = await pageInvoke<typeof globalThis.testBlobChunkSource>("testBlobChunkSource");
   expect(size).toBe(objectBody.byteLength);
   expect(digest).toBe(objectBodyDigest);
 });
 
 test("file to buffer", async () => {
-  const { size, digest } = await pageInvoke<typeof window.testZenFS>("testZenFS", toHex(objectBody));
+  const { size, digest } = await pageInvoke<typeof globalThis.testZenFS>("testZenFS", toHex(objectBody));
   expect(size).toBe(objectBody.byteLength);
   expect(digest).toBe(objectBodyDigest);
 });

@@ -51,7 +51,7 @@ export namespace KeyDecryptionKey {
   export function parseName(name: Name): NameParts {
     const pos = name.comps.findIndex((comp) => comp.equals(Keyword.ENCRYPTED_BY));
     let memberKeyName: Name;
-    if (pos < 0 || !CertNaming.isKeyName(memberKeyName = name.slice(pos + 1))) {
+    if (pos === -1 || !CertNaming.isKeyName(memberKeyName = name.slice(pos + 1))) {
       throw new Error("bad KDK name");
     }
     return {

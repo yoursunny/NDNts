@@ -6,11 +6,11 @@ import { WsTransport } from "@ndn/ws-transport";
 let transportA: WsTransport;
 let transportB: WsTransport;
 
-window.connectWsTransportPair = async (uri) => {
+globalThis.connectWsTransportPair = async (uri) => {
   [transportA, transportB] = await Promise.all([
     WsTransport.connect(uri),
     WsTransport.connect(uri),
   ]);
 };
 
-window.testWsTransportPair = async () => testTransport(transportA, transportB);
+globalThis.testWsTransportPair = async () => testTransport(transportA, transportB);

@@ -15,7 +15,7 @@ function saveUpdate(update: SyncUpdate<unknown>): void {
   }
 }
 
-window.startPSyncPartial = async (uri) => {
+globalThis.startPSyncPartial = async (uri) => {
   face = await WsTransport.createFace({}, uri);
   sub = new PartialSubscriber({
     p: makePSyncCompatParam(),
@@ -36,7 +36,7 @@ window.startPSyncPartial = async (uri) => {
   });
 };
 
-window.endPSyncPartial = async () => {
+globalThis.endPSyncPartial = async () => {
   face.close();
   return updates;
 };

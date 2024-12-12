@@ -47,7 +47,7 @@ export class PyRepoClient implements Disposable {
   public [Symbol.dispose](): void {
     const { fw } = this.cpOpts;
     const nodeNameIndex = fw.nodeNames.findIndex((nodeName) => nodeName.equals(this.fwHint));
-    if (nodeNameIndex >= 0) {
+    if (nodeNameIndex !== -1) {
       fw.nodeNames.splice(nodeNameIndex, 1);
     }
 

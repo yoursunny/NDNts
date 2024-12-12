@@ -3,7 +3,5 @@ export interface TestRecord {
 }
 
 declare global {
-  interface Window {
-    testConnectToNetwork: () => Promise<TestRecord>;
-  }
+  function testConnectToNetwork(): Promise<TestRecord>;
 }

@@ -4,8 +4,6 @@ export interface UpdateRecord {
 }
 
 declare global {
-  interface Window {
-    startPSyncPartial: (uri: string) => Promise<void>;
-    endPSyncPartial: () => Promise<UpdateRecord[]>;
-  }
+  function startPSyncPartial(uri: string): Promise<void>;
+  function endPSyncPartial(): Promise<UpdateRecord[]>;
 }

@@ -37,7 +37,7 @@ export interface KeyEncryptionKey extends Readonly<KeyEncryptionKey.NameParts> {
 export function parseNameInternal(name: Name, keyword2: Component, type = "KEK"): KeyEncryptionKey.NameParts {
   const pos1 = name.comps.findIndex((comp) => comp.equals(Keyword.NAC));
   const pos2 = name.comps.findIndex((comp) => comp.equals(keyword2));
-  if (pos1 < 0 || pos2 < 0 || name.length !== pos2 + 2) {
+  if (pos1 === -1 || pos2 === -1 || name.length !== pos2 + 2) {
     throw new Error(`bad ${type} name`);
   }
   return {

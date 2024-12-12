@@ -165,7 +165,7 @@ function* scanLine(line: string, lineNum: number): Iterable<Token> {
       }
       case line.startsWith("\""): {
         const pos = line.indexOf("\"", 1);
-        if (pos < 0) {
+        if (pos === -1) {
           throwScanError("unterminated literal");
         }
         const comp = Component.from(line.slice(1, pos));

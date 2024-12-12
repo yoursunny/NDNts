@@ -12,7 +12,7 @@ export interface DirEntry {
 export function* parseDirectoryListing(input: Uint8Array): Iterable<DirEntry> {
   for (let start = 0; start < input.length;) {
     const pos = input.indexOf(0, start);
-    if (pos < 0) {
+    if (pos === -1) {
       throw new Error(`bad directory listing near offset ${start}`);
     }
     let isDir = false;

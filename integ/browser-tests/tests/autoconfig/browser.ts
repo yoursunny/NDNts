@@ -6,7 +6,7 @@ import { H3Transport } from "@ndn/quic-transport";
 
 FwTracer.enable();
 
-window.testConnectToNetwork = async () => {
+globalThis.testConnectToNetwork = async () => {
   const faces = await connectToNetwork({
     H3Transport,
     preferH3: true,

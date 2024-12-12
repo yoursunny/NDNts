@@ -28,7 +28,7 @@ test("PSyncPartial", async () => {
   closers.push(pub);
 
   await Promise.all([
-    pageInvoke<typeof window.startPSyncPartial>("startPSyncPartial", server.uri),
+    pageInvoke<typeof globalThis.startPSyncPartial>("startPSyncPartial", server.uri),
     (async () => {
       const sock = (await server.waitNClients(1))[0]!;
       const face = await WsTransport.createFace({}, sock);
@@ -51,7 +51,7 @@ test("PSyncPartial", async () => {
   }
 
   await delay(500);
-  const updates = await pageInvoke<typeof window.endPSyncPartial>("endPSyncPartial");
+  const updates = await pageInvoke<typeof globalThis.endPSyncPartial>("endPSyncPartial");
   expect(updates).toHaveLength(3);
   expect(updates.map((u) => u.seqNum)).toEqual([1, 2, 3]);
 });
