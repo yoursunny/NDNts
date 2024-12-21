@@ -45,6 +45,6 @@
     "@ndn/node-transport": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "stream-mock": "^2.0.5",
-    "type-fest": "^4.30.0"
+    "type-fest": "^4.30.2"
   }
 }
