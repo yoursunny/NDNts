@@ -39,7 +39,7 @@ export class ControlParameters extends buildControlParameters.baseClass<ControlP
   constructor(value: ControlParameters.Fields = {}) {
     super();
     for (const key of StructBuilder.keysOf(buildControlParameters)) {
-      (this as any)[key] = (value as any)[key];
+      (this as any)[key] = value[key];
     }
   }
 }

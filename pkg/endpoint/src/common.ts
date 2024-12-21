@@ -16,7 +16,7 @@ export interface CommonOptions {
   describe?: string;
 
   /**
-   * AbortSignal that allows cancelation via AbortController.
+   * AbortSignal that allows cancellation via AbortController.
    *
    * @remarks
    * In a consumer, the promise returned by consume() is rejected.

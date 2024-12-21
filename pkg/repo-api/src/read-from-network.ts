@@ -32,7 +32,7 @@ export class ReadFromNetwork implements S.Get, S.Find {
         switch (prop) {
           case "get":
           case "find": {
-            return (self as any)[prop];
+            return self[prop];
           }
         }
         return (inner as any)[prop];

@@ -8,11 +8,11 @@ const enum TT {
 }
 
 const EVD = new EvDecoder<ControlResponse>("ControlResponse", TT.ControlResponse)
-  .add(TT.StatusCode, (t, { nni }) => t.statusCode = nni)
+  .add(TT.StatusCode, (t, { nni }) => t.statusCode = nni, { required: true })
   .add(TT.StatusText, (t, { text, after }) => {
     t.statusText = text;
     t.body = after;
-  })
+  }, { required: true })
   .setIsCritical(EvDecoder.neverCritical);
 
 /** NFD Management ControlResponse struct. */
