@@ -327,7 +327,10 @@ export function compile(schema: A.Schema): TrustSchemaPolicy {
   return c.policy;
 }
 
-/** Load policy from VerSec syntax. */
+/**
+ * Load policy from VerSec syntax.
+ * @deprecated Deprecated in favor of LVS.
+ */
 export function load(input: string): TrustSchemaPolicy {
   const schema = A.parse(T.scan(input));
   return compile(schema);

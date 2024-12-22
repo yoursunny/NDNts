@@ -106,6 +106,8 @@ Some notes and limitations:
 * `CertNamePattern` is created by `"KEY"/_/_/_`, which should be included at the end of each certificate name.
 * Identifiers starting with `_` cannot be used in signing constraints and signing chains.
 
+**This implementation is deprecated in favor of LVS in @ndn/lvs package.**
+
 `versec.load()` function imports a policy written in VerSec syntax:
 
 ```ts

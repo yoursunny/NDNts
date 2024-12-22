@@ -76,7 +76,10 @@ function defaultFilterPubs(items: SyncpsPubsub.FilterPubItem[]) {
   return items;
 }
 
-/** syncps - pubsub service. */
+/**
+ * syncps - pubsub service.
+ * @deprecated Deprecated in favor of SVS-PS protocol.
+ */
 export class SyncpsPubsub extends TypedEventTarget<EventMap> implements Subscriber<Name, CustomEvent<Data>> {
   constructor({
     p,

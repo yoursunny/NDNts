@@ -12,6 +12,7 @@ This package contains **PSync** and related protocols, including:
 * [syncps - Pubsub](https://github.com/pollere/DNMP-v2/tree/main/syncps)
   * simple unit test
   * implementation is compatible with DNMP-v2 syncps, not DCT syncps
+  * **deprecated in favor of SVS-PS in @ndn/svs package**
 
 These implementations are parameterized.
 Certain algorithm settings (e.g. hashtable size) and encoding details (e.g. endianness) are extracted from the core logic and put into `Parameters` structures.
