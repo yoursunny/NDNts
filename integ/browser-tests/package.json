@@ -25,8 +25,8 @@
   "devDependencies": {
     "@nodelib/fs.walk": "^3.0.1",
     "@types/webpack": "^5.28.5",
-    "@zenfs/core": "1.6.8",
-    "@zenfs/dom": "1.1.0",
+    "@zenfs/core": "^1.6.16",
+    "@zenfs/dom": "^1.1.0",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "html-webpack-plugin": "^5.6.3",
     "puppeteer": "^23.11.1",

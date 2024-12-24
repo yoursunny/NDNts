@@ -105,6 +105,12 @@ export interface MulticastOptions extends SocketBufferOptions {
   /**
    * Multicast group address.
    * @defaultValue 224.0.23.170
+   *
+   * @remarks
+   * Due to dgram.Socket API limitation, if multiple multicast UDP transports are using the same
+   * port number but different group addresses, incoming traffic may be received on all sockets
+   * regardless of the group address. This also affects multicast UDP transports in other programs
+   * such as YaNFD. To isolate the traffic, the port number must be changed.
    */
   group?: string;
 

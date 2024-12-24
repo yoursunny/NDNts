@@ -28,7 +28,7 @@ const buildGeneralStatus = new StructBuilder("GeneralStatus")
   .add(TT.NSatisfiedInterests, "nSatisfiedInterests", StructFieldNNI, { required: true })
   .add(TT.NUnsatisfiedInterests, "nUnsatisfiedInterests", StructFieldNNI, { required: true })
   .setIsCritical(EvDecoder.neverCritical);
-/** NFD status/general dataset. */
+/** NFD *status/general* dataset. */
 export class GeneralStatus extends buildGeneralStatus.baseClass<GeneralStatus>() {
   public static datasetName = "status/general";
 

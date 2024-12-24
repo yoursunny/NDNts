@@ -16,6 +16,6 @@ Client (consumer):
 
 * simple client
   * demonstrated in `@ndn/cat` package `file-client` subcommand
-* [ZenFS](https://zen-fs.github.io/core/) wrapper
+* [ZenFS](https://zenfs.dev/core/) wrapper
 
 Server (producer): not yet.
