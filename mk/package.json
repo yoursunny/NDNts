@@ -9,6 +9,6 @@
     "js-yaml": "^4.1.0",
     "readlink": "^3.0.0",
     "split2": "^4.2.0",
-    "type-fest": "^4.30.2"
+    "type-fest": "^4.31.0"
   }
 }

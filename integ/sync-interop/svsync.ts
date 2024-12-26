@@ -17,6 +17,9 @@ exitClosers.push(producer);
 sync.addEventListener("update", (update) => {
   const { id, loSeqNum, hiSeqNum } = update;
   console.log(`UPDATE ${id} ${loSeqNum}..${hiSeqNum}`);
+  if (process.env.NDNTS_INTEROP_HASMSG === "0") {
+    return;
+  }
   for (const seqNum of update.seqNums()) {
     void (async () => {
       try {
