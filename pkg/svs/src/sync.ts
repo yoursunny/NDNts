@@ -1,9 +1,9 @@
 import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { Version } from "@ndn/naming-convention2";
-import { Component, Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
+import { Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { Decoder, Encoder } from "@ndn/tlv";
-import { pushable, randomJitter, trackEventListener } from "@ndn/util";
+import { assert, pushable, randomJitter, trackEventListener } from "@ndn/util";
 import { consume, map, tap } from "streaming-iterables";
 import type { Promisable } from "type-fest";
 import { TypedEventTarget } from "typescript-event-target";
@@ -36,12 +36,8 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     initialStateVector = new StateVector(),
     initialize,
     syncInterestLifetime = 1000,
-    svs2interest = false,
-    steadyTimer = [30000, 0.1],
-    periodicTimeout = steadyTimer,
-    svs2suppression = false,
-    suppressionTimer = [200, 0.5],
-    suppressionPeriod = suppressionTimer[0],
+    periodicTimeout = [30000, 0.1],
+    suppressionPeriod = 2200,
     suppressionTimeout = SvSync.suppressionExpDelay(suppressionPeriod),
     signer = nullSigner,
     verifier,
@@ -54,11 +50,9 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
       syncPrefix,
       describe,
       initialStateVector,
-      svs2interest,
       randomJitter(periodicTimeout[1], periodicTimeout[0]),
-      svs2suppression ? suppressionTimeout :
-      randomJitter(suppressionTimer[1], suppressionTimer[0]),
-      svs2suppression ? suppressionPeriod : undefined,
+      suppressionTimeout,
+      suppressionPeriod,
     );
     await initialize?.(sync);
     sync.makeFace(
@@ -74,12 +68,12 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
       public readonly syncPrefix: Name,
       public readonly describe: string,
       private readonly own: StateVector,
-      private readonly svs2interest: boolean,
       private readonly steadyTimer: () => number,
       private readonly suppressionTimer: () => number,
-      private readonly svs2suppressionPeriod: number | undefined,
+      private readonly suppressionPeriod: number,
   ) {
     super();
+    this.syncInterestName = syncPrefix.append(V2);
   }
 
   private makeFace(
@@ -120,6 +114,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
 
   private readonly maybeHaveEventListener = trackEventListener(this);
   private face?: FwFace;
+  private readonly syncInterestName: Name;
   private txStream = pushable<Interest>();
 
   /**
@@ -197,15 +192,8 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
    * @param interest - Received Interest, signature verified.
    */
   private async handleSyncInterest(interest: Interest): Promise<void> {
-    const vComp = interest.name.at(this.syncPrefix.length);
-    let decoder: Decoder;
-    if (vComp.equals(V2) && !!interest.appParameters) {
-      decoder = new Decoder(interest.appParameters);
-    } else if (vComp.type === StateVector.Type) {
-      decoder = new Decoder(vComp.tlv);
-    } else {
-      throw new Error("cannot find StateVector");
-    }
+    assert(interest.name.at(this.syncPrefix.length).equals(V2) && interest.appParameters, "cannot find StateVector");
+    const decoder = new Decoder(interest.appParameters);
     const recv = decoder.decode(StateVector);
 
     const ourOlder = this.own.listOlderThan(recv);
@@ -236,11 +224,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
   }
 
   private shouldEnterSuppression(ourNewer: readonly StateVector.DiffEntry[]): boolean {
-    if (this.svs2suppressionPeriod === undefined) {
-      return ourNewer.length > 0;
-    }
-
-    const ignoreUpdatedAfter = Date.now() - this.svs2suppressionPeriod;
+    const ignoreUpdatedAfter = Date.now() - this.suppressionPeriod;
     return ourNewer.some(({ id }) => this.own.getEntry(id).lastUpdate <= ignoreUpdatedAfter);
   }
 
@@ -272,13 +256,8 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
   /** Transmit a sync Interest. */
   private sendSyncInterest(): void {
     const interest = new Interest();
-    if (this.svs2interest) {
-      interest.name = this.syncPrefix.append(V2);
-      interest.appParameters = Encoder.encode(this.own);
-    } else {
-      interest.name = this.syncPrefix.append(new Component(Encoder.encode(this.own)));
-    }
-
+    interest.name = this.syncInterestName;
+    interest.appParameters = Encoder.encode(this.own);
     this.txStream.push(interest);
     // further modification and signing occur in the the logical face
   }
@@ -323,23 +302,7 @@ export namespace SvSync {
     syncInterestLifetime?: number;
 
     /**
-     * Encode sync Interest in SVS v2 format.
-     * @defaultValue false
-     * @experimental
-     */
-    svs2interest?: boolean;
-
-    /**
-     * Sync Interest timer in steady state (SVS v1).
-     * @defaultValue `[30000ms, ±10%]`
-     * @remarks
-     * - median: median interval in milliseconds.
-     * - jitter: ± percentage, in [0.0, 1.0) range.
-     */
-    steadyTimer?: [median: number, jitter: number];
-
-    /**
-     * Sync Interest timer in steady state (SVS v2).
+     * Sync Interest timer in steady state.
      * @defaultValue `[30000ms, ±10%]`
      * @remarks
      * If specified as tuple,
@@ -347,46 +310,20 @@ export namespace SvSync {
      * - jitter: ± percentage, in [0.0, 1.0) range.
      *
      * If specified as number, it's interpreted as median.
-     *
-     * SVS v1 `steadyTimer` and SVS v2 `periodicTimeout` are equivalent.
-     * If both are specified, this option takes precedence.
-     * @experimental
      */
     periodicTimeout?: number | [median: number, jitter: number];
 
     /**
-     * Use SVS v2 suppression timer and suppression logic.
-     * @defaultValue false
-     * @experimental
-     */
-    svs2suppression?: boolean;
-
-    /**
-     * Sync Interest timer in suppression state (SVS v1).
-     * @defaultValue `[200ms, ±50%]`
-     * @remarks
-     * - median: median interval in milliseconds.
-     * - jitter: ± percentage, in [0.0, 1.0) range.
-     *
-     * This option takes effect only if `.svs2suppression` is false.
-     */
-    suppressionTimer?: [median: number, jitter: number];
-
-    /**
-     * Sync Interest timer in suppression state, maximum value (SVS v2).
+     * Sync Interest timer in suppression state, maximum value.
      * @defaultValue `200ms`
-     * @experimental
      */
     suppressionPeriod?: number;
 
     /**
-     * Sync Interest timer in suppression state, value generator (SVS v2).
+     * Sync Interest timer in suppression state, value generator.
      * @defaultValue `SvSync.suppressionExpDelay(suppressionPeriod)`
      * @remarks
      * The maximum value returned by the generator function should be `suppressionPeriod`.
-     *
-     * This option takes effect only if `.svs2suppression` is true.
-     * @experimental
      */
     suppressionTimeout?: () => number;
 
@@ -401,6 +338,12 @@ export namespace SvSync {
      * @defaultValue no verification
      */
     verifier?: Verifier;
+
+    /** @deprecated This option has no effect and should be deleted. */
+    svs2interest?: boolean;
+
+    /** @deprecated This option has no effect and should be deleted. */
+    svs2suppression?: boolean;
   }
 
   /**

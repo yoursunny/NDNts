@@ -7,7 +7,7 @@ import { console, crypto, toHex, toUtf8 } from "@ndn/util";
 
 import { myID, openSvSync } from "./svs-common";
 
-const sync = await openSvSync();
+const sync = await openSvSync(true);
 const pub = new SvPublisher({
   sync,
   id: myID,

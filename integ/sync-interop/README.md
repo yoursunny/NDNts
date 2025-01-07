@@ -101,16 +101,15 @@ corepack pnpm literate integ/sync-interop/syncps.ts
 Test environment:
 
 * Ubuntu 22.04
-* ndn-cxx 0.9.0-1-g0311642a
-* NFD 24.07-1-gee97f534
+* ndn-cxx 0.9.0-3-ge913e3ab
+* NFD 24.07-5-g401d1a48
 * Node.js v22.11.0
 * Go 1.23.4
 
 Reference implementation:
 
-* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `e502c2aef95640d33b51c92c9659ec0bb7ee6386` (2024-12-15)
-* [SVS v2](https://github.com/named-data/ndn-svs/pull/26) commit `1290954f8d0d5c1f61caab9ac1aeacde500c9990` (2024-03-08)
-* [NDNd](https://github.com/named-data/ndnd) commit `e5c2033375770932ea049a5bde9a9c1db7b6dcce` (2024-12-25)
+* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `7fa0af007772c2e320bdc3996fd3bb57fbb21347` (2025-01-05)
+* [NDNd](https://github.com/named-data/ndnd) commit `e8bf6feb24e006e3ff9737d8c5e49b976ed61604` (2025-01-07)
 
 Build reference program:
 
@@ -120,63 +119,47 @@ Build reference program:
 ./waf
 
 # in $HOME directory
-go install -v github.com/named-data/ndnd/std/examples/low-level/svs@@v1.4.1-0.20241225025915-e5c203337577
-```
-
-Environment variables:
-
-```bash
-# if testing with C++, SVS v1
-export NDNTS_INTEROP_SVS2=0
-export NDNTS_INTEROP_B64HMAC=dGhpcyBpcyBhIHNlY3JldCBtZXNzYWdl
-export NDNTS_INTEROP_HASMSG=1
-
-# if testing with C++, SVS v2
-export NDNTS_INTEROP_SVS2=1
-export NDNTS_INTEROP_B64HMAC=dGhpcyBpcyBhIHNlY3JldCBtZXNzYWdl
-export NDNTS_INTEROP_HASMSG=1
-
-# if testing with NDNd
-export NDNTS_INTEROP_SVS2=1
-export NDNTS_INTEROP_B64HMAC=''
-export NDNTS_INTEROP_HASMSG=0
+go install -v github.com/named-data/ndnd/std/examples/low-level/svs@v1.4.3-0.20250107153723-e8bf6feb24e0
 ```
 
 Test `SvSync`:
 
 ```bash
+# set multicast strategy
+nfdc strategy set /ndn/svs /localhost/nfd/strategy/multicast
+
 # C++: in ndn-svs directory
-LD_LIBRARY_PATH=build ./build/examples/chat /${RANDOM}
+LD_LIBRARY_PATH=build ./build/examples/core /cpp-${RANDOM}
 
 # NDNd: in $HOME directory
 ~/go/bin/svs ndnd-${RANDOM}
 
-# in NDNts directory, after setting environment variables
+# in NDNts directory
 corepack pnpm literate integ/sync-interop/svsync.ts
 ```
 
 Test `SvPublisher`:
 
 ```bash
-# in NDNts directory, after setting environment variables
+# in NDNts directory
 corepack pnpm literate integ/sync-interop/svsps-publisher.ts
 
 # C++: in ndn-svs directory
-LD_LIBRARY_PATH=build ./build/examples/chat-pubsub /${RANDOM}
+LD_LIBRARY_PATH=build ./build/examples/chat-pubsub /cpp-${RANDOM}
 ```
 
 Test `SvSubscriber`:
 
 ```bash
 # C++: in ndn-svs directory
-LD_LIBRARY_PATH=build ./build/examples/chat-pubsub /${RANDOM}
+LD_LIBRARY_PATH=build ./build/examples/chat-pubsub /cpp-${RANDOM}
 
-# in NDNts directory, after setting environment variables
+# in NDNts directory
 corepack pnpm literate integ/sync-interop/svsps-subscriber.ts
 ```
 
 What to do and what to observe:
 
-* For C++ `chat` or `chat-pubsub` publisher: type a line on the console and press ENTER to publish an update.
+* For C++ `chat-pubsub` publisher: type a line on the console and press ENTER to publish an update.
 * NDNts and NDNd publisher do not need user interaction.
 * Look at console logs: when one peer publishes an update, the other peer should see the update.

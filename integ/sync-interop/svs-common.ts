@@ -4,26 +4,20 @@ import { Name } from "@ndn/packet";
 import { SvSync } from "@ndn/svs";
 
 export const syncPrefix = new Name("/ndn/svs");
-export const myID = new Name(`/${process.pid}-${Date.now()}`);
+export const myID = new Name(`/NDNts-${process.pid}-${Date.now()}`);
 export const myDataPrefix = myID.append(...syncPrefix.comps);
 
-export async function openSvSync(): Promise<SvSync> {
+export async function openSvSync(wantHMAC: boolean): Promise<SvSync> {
   await openUplinks();
 
   const opts: SvSync.Options = { syncPrefix };
 
-  const b64hmac = process.env.NDNTS_INTEROP_B64HMAC;
-  if (b64hmac) {
+  if (wantHMAC) {
     const key = await HMAC.cryptoGenerate({
-      importRaw: Buffer.from(b64hmac, "base64"),
+      importRaw: Buffer.from("dGhpcyBpcyBhIHNlY3JldCBtZXNzYWdl", "base64"),
     }, false);
     opts.signer = createSigner(HMAC, key);
     opts.verifier = createVerifier(HMAC, key);
-  }
-
-  if (process.env.NDNTS_INTEROP_SVS2 === "1") {
-    opts.svs2interest = true;
-    opts.svs2suppression = true;
   }
 
   const sync = await SvSync.create(opts);

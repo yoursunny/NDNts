@@ -47,27 +47,22 @@ class DebugHandler {
 const baseOpts: SvSync.Options = {
   syncPrefix: new Name("/svs-test"),
   syncInterestLifetime: 200,
-  steadyTimer: [600, 0.05],
-  suppressionTimer: [50, 0.4],
+  periodicTimeout: [600, 0.05],
+  suppressionPeriod: 50,
 };
 
 const closers = new Closers();
 afterEach(closers.close);
 
 // specification section 5.2 example
-test.each([false, true])("example %#", async (svs2) => {
+test("example", async () => {
   const debugHandler = new DebugHandler();
   let lossToC = false;
   using bridge = Bridge.create({
     relayAB: (it) => filter(() => !lossToC, it),
   }).rename("AB", "C");
 
-  const opts: SvSync.Options = {
-    ...baseOpts,
-    svs2interest: svs2,
-    svs2suppression: svs2,
-    fw: bridge.fwAB,
-  };
+  const opts: SvSync.Options = { ...baseOpts, fw: bridge.fwAB };
 
   const pA = await SvSync.create({ ...opts, describe: "A" });
   const nA = pA.add("/A");
@@ -130,10 +125,7 @@ test.each([false, true])("example %#", async (svs2) => {
 test("initialize", async () => {
   const debugHandler = new DebugHandler();
   const fw = Forwarder.create();
-  const opts: SvSync.Options = {
-    ...baseOpts,
-    fw,
-  };
+  const opts: SvSync.Options = { ...baseOpts, fw };
 
   const p0 = await SvSync.create({ ...opts, describe: "0" });
   closers.push(p0);

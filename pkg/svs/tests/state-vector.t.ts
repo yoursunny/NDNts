@@ -42,10 +42,10 @@ test("basic", () => {
   const v2 = Decoder.decode(wire, StateVector);
   const iterated = Array.from(v2);
   expect(iterated).toHaveLength(2);
-  expect(iterated[0][0]).toEqualName(name1);
-  expect(iterated[0][1]).toBe(1);
-  expect(iterated[1][0]).toEqualName(name2);
-  expect(iterated[1][1]).toBe(2);
+  expect(iterated[0]![0]).toEqualName(name1);
+  expect(iterated[0]![1]).toBe(1);
+  expect(iterated[1]![0]).toEqualName(name2);
+  expect(iterated[1]![1]).toBe(2);
 });
 
 test("compare-merge", () => {
@@ -68,18 +68,18 @@ test("compare-merge", () => {
   const o01 = v0.listOlderThan(v1);
   expect(o01).toHaveLength(2);
   o01.sort((a, b) => a.id.compare(b.id));
-  expect(o01[0].id).toEqualName(name1);
-  expect(o01[0].loSeqNum).toBe(11);
-  expect(o01[0].hiSeqNum).toBe(12);
-  expect(o01[1].id).toEqualName(name4);
-  expect(o01[1].loSeqNum).toBe(1);
-  expect(o01[1].hiSeqNum).toBe(40);
+  expect(o01[0]!.id).toEqualName(name1);
+  expect(o01[0]!.loSeqNum).toBe(11);
+  expect(o01[0]!.hiSeqNum).toBe(12);
+  expect(o01[1]!.id).toEqualName(name4);
+  expect(o01[1]!.loSeqNum).toBe(1);
+  expect(o01[1]!.hiSeqNum).toBe(40);
 
   const o10 = v1.listOlderThan(v0);
   expect(o10).toHaveLength(1);
-  expect(o10[0].id).toEqualName(name2);
-  expect(o10[0].loSeqNum).toBe(23);
-  expect(o10[0].hiSeqNum).toBe(29);
+  expect(o10[0]!.id).toEqualName(name2);
+  expect(o10[0]!.loSeqNum).toBe(23);
+  expect(o10[0]!.hiSeqNum).toBe(29);
 
   const v0m = new StateVector(v0);
   v0m.mergeFrom(v1);

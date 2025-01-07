@@ -5,7 +5,7 @@ import { console, fromUtf8 } from "@ndn/util";
 
 import { openSvSync } from "./svs-common";
 
-const sync = await openSvSync();
+const sync = await openSvSync(true);
 const sub = new SvSubscriber({
   sync,
   innerVerifier: digestSigning,

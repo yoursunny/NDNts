@@ -21,8 +21,8 @@ beforeAll(async () => {
   syncOpts = {
     syncPrefix: new Name("/svs-test"),
     syncInterestLifetime: 200,
-    steadyTimer: [400, 0.05],
-    suppressionTimer: [50, 0.4],
+    periodicTimeout: [400, 0.05],
+    suppressionPeriod: 50,
     signer: signerS,
     verifier: verifierS,
   };
