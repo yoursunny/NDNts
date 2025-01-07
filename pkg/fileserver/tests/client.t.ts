@@ -150,11 +150,11 @@ test.each(readFileIntoCases)("readFileInto [%d,%d)", async (...tc) => {
 });
 
 test("zenfs rejects", async () => {
-  expect(() => zenfs.statSync("/N/A")).toThrow(/ENOTSUP/);
-  expect(() => zenfs.readdirSync("/N/A")).toThrow(/ENOTSUP/);
-  await expect(zenfs.promises.open("/N/A/B.bin", "w")).rejects.toThrow(/EPERM/);
-  expect(() => zenfs.readFileSync("/N/A/B.bin")).toThrow(/ENOTSUP/);
-  expect(() => zenfs.openSync("/N/A/B.bin", "r")).toThrow(/ENOTSUP/);
+  expect(() => zenfs.statSync("/N/A")).toThrow(/async/);
+  expect(() => zenfs.readdirSync("/N/A")).toThrow(/async/);
+  await expect(zenfs.promises.open("/N/A/B.bin", "w")).rejects.toThrow(/readonly/);
+  expect(() => zenfs.readFileSync("/N/A/B.bin")).toThrow(/async/);
+  expect(() => zenfs.openSync("/N/A/B.bin", "r")).toThrow(/async/);
 });
 
 test("zenfs stat", async () => {

@@ -70,7 +70,7 @@ export class NDNFileSystem extends Async(Readonly(FileSystem)) { // eslint-disab
 
   public override async openFile(path: string, flag: string): Promise<File> {
     if (isWriteable(flag)) {
-      throw new ErrnoError(Errno.EPERM, path);
+      throw new ErrnoError(Errno.EPERM, "filesystem is readonly", path);
     }
     const m = await this.getFileMetadata(path);
     return new NDNFile(this, path, this.client, m);
