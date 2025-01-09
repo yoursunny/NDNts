@@ -1,5 +1,4 @@
 import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
-import { Version } from "@ndn/naming-convention2";
 import { Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { Decoder, Encoder } from "@ndn/tlv";
@@ -8,9 +7,8 @@ import { consume, map, tap } from "streaming-iterables";
 import type { Promisable } from "type-fest";
 import { TypedEventTarget } from "typescript-event-target";
 
+import { Version2 } from "./an";
 import { StateVector } from "./state-vector";
-
-const V2 = Version.create(2);
 
 interface DebugEntry {
   action: string;
@@ -73,7 +71,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
       private readonly suppressionPeriod: number,
   ) {
     super();
-    this.syncInterestName = syncPrefix.append(V2);
+    this.syncInterestName = syncPrefix.append(Version2);
   }
 
   private makeFace(
@@ -109,7 +107,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
       describe: this.describe,
       routeCapture: false,
     });
-    this.face.addRoute(this.syncPrefix);
+    this.face.addRoute(this.syncInterestName, this.syncPrefix);
   }
 
   private readonly maybeHaveEventListener = trackEventListener(this);
@@ -192,7 +190,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
    * @param interest - Received Interest, signature verified.
    */
   private async handleSyncInterest(interest: Interest): Promise<void> {
-    assert(interest.name.at(this.syncPrefix.length).equals(V2) && interest.appParameters, "cannot find StateVector");
+    assert(interest.appParameters);
     const decoder = new Decoder(interest.appParameters);
     const recv = decoder.decode(StateVector);
 
@@ -259,7 +257,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     interest.name = this.syncInterestName;
     interest.appParameters = Encoder.encode(this.own);
     this.txStream.push(interest);
-    // further modification and signing occur in the the logical face
+    // further modification and signing occur in the logical face
   }
 }
 

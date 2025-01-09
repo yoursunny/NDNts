@@ -139,15 +139,6 @@ export class StateVector {
 }
 
 export namespace StateVector {
-  /**
-   * StateVector TLV-TYPE.
-   *
-   * @remarks
-   * SVS v1 encodes StateVector as a name component of this type.
-   * SVS v2 encodes StateVector as a sub-element of this type within AppParameters.
-   */
-  export const Type = TT.StateVector;
-
   /** Per-node entry. */
   export interface NodeEntry {
     /** Current sequence number (positive integer). */

@@ -7,7 +7,7 @@ This package contains **StateVectorSync** and related protocols, including:
 * [StateVectorSync v2](https://named-data.github.io/StateVectorSync/Specification.html), revision 2025-01-04
   * complete unit test
   * core synchronization logic only, does not deal with Data fetching
-  * note: SVS v2 has been deleted
+  * note: SVS v1 has been deleted
 * [SVS-PS](https://named-data.github.io/StateVectorSync/PubSubSpec.html), revision 2023-05-19
   * simple unit test
   * piggyback MappingData feature is not supported
