@@ -5,7 +5,7 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import { fromHex } from "@ndn/util";
 import { expect, test } from "vitest";
 
-import { StateVector } from "..";
+import { StateVector, TT } from "..";
 
 const name1 = new Name("/one");
 const name2 = new Name("/two");
@@ -46,6 +46,61 @@ test("basic", () => {
   expect(iterated[0]![1]).toBe(1);
   expect(iterated[1]![0]).toEqualName(name2);
   expect(iterated[1]![1]).toBe(2);
+});
+
+test("encode3", () => {
+  const v0 = new StateVector();
+  v0.set(StateVector.joinID(new Name("/A"), 1636266330), 10);
+  v0.set(StateVector.joinID(new Name("/B"), 1636266412), 16);
+  v0.set(StateVector.joinID(new Name("/C"), 1636266115), 25);
+  v0.set(StateVector.joinID(new Name("/A"), 1736266473), 1);
+
+  const encoder = new Encoder();
+  v0.encodeTo(encoder, 3);
+  /* eslint-disable max-nested-callbacks */
+  expect(encoder).toEncodeAs(({ type, value }) => {
+    expect(type).toBe(TT.StateVector);
+    expect(value).toMatchTlv(
+      ({ type, value }) => {
+        expect(type).toBe(TT.StateVectorEntry);
+        expect(value).toMatchTlv(
+          ({ decoder }) => { expect(decoder.decode(Name)).toEqualName("/A"); },
+          ({ type, value }) => {
+            expect(type).toBe(TT.SeqNoEntry);
+            expect(value).toMatchTlv(
+              ({ type, nni }) => {
+                expect(type).toBe(TT.BootstrapTime);
+                expect(nni).toBe(1636266330);
+              },
+              ({ type, nni }) => {
+                expect(type).toBe(TT.SeqNo3);
+                expect(nni).toBe(10);
+              },
+            );
+          },
+          ({ type, value }) => {
+            expect(type).toBe(TT.SeqNoEntry);
+            expect(value).toMatchTlv(
+              ({ type, nni }) => {
+                expect(type).toBe(TT.BootstrapTime);
+                expect(nni).toBe(1736266473);
+              },
+              ({ type, nni }) => {
+                expect(type).toBe(TT.SeqNo3);
+                expect(nni).toBe(1);
+              },
+            );
+          },
+        );
+      },
+      () => undefined,
+      () => undefined,
+    );
+  });
+  /* eslint-enable max-nested-callbacks */
+
+  const v1 = Decoder.decode(encoder.output, StateVector);
+  expect(v0.toJSON()).toEqual(v1.toJSON());
 });
 
 test("compare-merge", () => {

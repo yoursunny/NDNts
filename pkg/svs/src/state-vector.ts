@@ -1,17 +1,61 @@
-import { Name, NameMap } from "@ndn/packet";
-import { type Decoder, type Encoder, NNI } from "@ndn/tlv";
-import { fromHex } from "@ndn/util";
+import { Component, Name, NameMap, TT as l3TT } from "@ndn/packet";
+import { type Decoder, type EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { assert, fromHex } from "@ndn/util";
+import bufferCompare from "buffer-compare";
 
 import { TT } from "./an";
 
-/** SVS state vector. */
+const evdContext = new WeakMap<NodeMap, [name: Name, bootstrapTimeTlv?: Uint8Array]>();
+
+const EVD = new EvDecoder<NodeMap>("StateVector", TT.StateVector)
+  .add(TT.StateVectorEntry,
+    new EvDecoder<NodeMap>("StateVectorEntry")
+      .add(l3TT.Name, (t, { decoder }) => {
+        evdContext.set(t, [decoder.decode(Name)]);
+      }, { required: true })
+      .add(TT.SeqNo, (t, { nni }) => {
+        const [name] = evdContext.get(t)!;
+        t.set(name, { seqNum: nni, lastUpdate: 0 });
+      })
+      .add(TT.SeqNoEntry,
+        new EvDecoder<NodeMap>("SeqNoEntry")
+          .add(TT.BootstrapTime, (t, { tlv }) => {
+            evdContext.get(t)![1] = tlv;
+          }, { required: true })
+          .add(TT.SeqNo3, (t, { nni }) => {
+            const [name, bootstrapTimeTlv] = evdContext.get(t)!;
+            t.set(name.append(new Component(bootstrapTimeTlv!)), { seqNum: nni, lastUpdate: 0 });
+          }, { required: true }),
+        { repeat: true })
+      .setIsCritical(EvDecoder.alwaysCritical),
+    { repeat: true })
+  .setIsCritical(EvDecoder.alwaysCritical);
+
+/**
+ * SVS state vector.
+
+ * For the `id` argument in various methods:
+ * - For SVS v2, this is the node name.
+ * - For SVS v3, this is the result of {@link StateVector.joinID}.
+ */
 export class StateVector {
   /**
    * Constructor.
    * @param from - Copy from state vector or its JSON value.
    * @param lastUpdate - Initial lastUpdate value for each node entry.
    */
-  constructor(from?: StateVector | Record<string, number>, lastUpdate = 0) {
+  constructor(from?: StateVector | Record<string, number>, lastUpdate?: number);
+
+  /** @internal */
+  constructor(from: NodeMap);
+
+  constructor(from?: StateVector | Record<string, number> | NodeMap, lastUpdate = 0) {
+    if (from instanceof NodeMap) {
+      this.m = from;
+      return;
+    }
+
+    this.m = new NodeMap();
     if (from instanceof StateVector) {
       for (const [id, seqNum] of from) {
         this.m.set(id, { seqNum, lastUpdate });
@@ -23,7 +67,7 @@ export class StateVector {
     }
   }
 
-  private readonly m = new NameMap<StateVector.NodeEntry>();
+  private readonly m: NodeMap;
 
   /**
    * Get node sequence number.
@@ -105,40 +149,69 @@ export class StateVector {
   }
 
   /** Encode StateVector TLV. */
-  public encodeTo(encoder: Encoder): void {
+  public encodeTo(encoder: Encoder, version: 2 | 3 = 2): void {
     const list = Array.from(this);
     list.sort(([a], [b]) => -a.compare(b));
     const sizeBefore = encoder.size;
+    this[`svs${version}EncodeValue`](encoder, list);
+    encoder.prependTypeLength(TT.StateVector, encoder.size - sizeBefore);
+  }
+
+  private svs2EncodeValue(encoder: Encoder, list: ReadonlyArray<[id: Name, seqNum: number]>): void {
     for (const [id, seqNum] of list) {
       encoder.prependTlv(TT.StateVectorEntry,
         id,
         [TT.SeqNo, NNI(seqNum)],
       );
     }
-    encoder.prependTypeLength(TT.StateVector, encoder.size - sizeBefore);
+  }
+
+  private svs3EncodeValue(encoder: Encoder, list: ReadonlyArray<[id: Name, seqNum: number]>): void {
+    let seqNoEntries: EncodableTlv[] = [];
+    for (const [i, [id, seqNum]] of list.entries()) {
+      const [name, bootstrapTime] = splitIDRaw(id);
+      seqNoEntries.unshift([
+        TT.SeqNoEntry,
+        bootstrapTime,
+        [TT.SeqNo3, NNI(seqNum)],
+      ]);
+
+      const prevEntry = list[i + 1];
+      if (prevEntry && bufferCompare(splitIDRaw(prevEntry[0])[0], name) === 0) {
+        continue;
+      }
+
+      encoder.prependTlv(TT.StateVectorEntry, [l3TT.Name, name], ...seqNoEntries);
+      seqNoEntries = [];
+    }
   }
 
   /** Decode StateVector TLV. */
   public static decodeFrom(decoder: Decoder): StateVector {
-    const v = new StateVector();
-    const { type: svT, vd: d0 } = decoder.read();
-    if (svT !== TT.StateVector) {
-      throw new Error("invalid StateVector");
-    }
-    while (!d0.eof) {
-      const { type: entryT, vd: d1 } = d0.read();
-      const id = d1.decode(Name);
-      const { type: seqNumT, nni: seqNum } = d1.read();
-      if (entryT !== TT.StateVectorEntry || seqNumT !== TT.SeqNo || !d1.eof) {
-        throw new Error("invalid StateVector");
-      }
-      v.set(id, { seqNum, lastUpdate: 0 });
-    }
-    return v;
+    return new StateVector(EVD.decode(new NodeMap(), decoder)); // eslint-disable-line etc/no-internal
   }
 }
 
 export namespace StateVector {
+  /**
+   * Join SVS v3 name and bootstrap time into logical ID.
+   * @experimental
+   */
+  export function joinID(name: Name, bootstrapTime: number): Name {
+    return name.append(new Component(
+      Encoder.encode([TT.BootstrapTime, NNI(bootstrapTime)], 12),
+    ));
+  }
+
+  /**
+   * Split logical ID into SVS v3 name and bootstrap time.
+   * @experimental
+   */
+  export function splitID(id: Name): [name: Name, bootstrapTime: number] {
+    const [name, bootstrapTime] = splitIDRaw(id);
+    return [new Name(name), NNI.decode(bootstrapTime.value)];
+  }
+
   /** Per-node entry. */
   export interface NodeEntry {
     /** Current sequence number (positive integer). */
@@ -161,6 +234,12 @@ export namespace StateVector {
   }
 }
 
+function splitIDRaw(id: Name): [name: Uint8Array, bootstrapTime: Component] {
+  const bootstrapTime = id.at(-1);
+  assert(bootstrapTime.type === TT.BootstrapTime);
+  return [id.value.subarray(0, -bootstrapTime.tlv.length), bootstrapTime];
+}
+
 function toNodeEntry(entry: number | StateVector.NodeEntry, lastUpdate = Date.now()): StateVector.NodeEntry {
   if (typeof entry === "number") {
     entry = { seqNum: entry, lastUpdate };
@@ -168,3 +247,5 @@ function toNodeEntry(entry: number | StateVector.NodeEntry, lastUpdate = Date.no
   entry.seqNum = Math.trunc(entry.seqNum);
   return entry;
 }
+
+class NodeMap extends NameMap<StateVector.NodeEntry> {}

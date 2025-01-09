@@ -13,3 +13,11 @@ This package contains **StateVectorSync** and related protocols, including:
   * piggyback MappingData feature is not supported
 
 Compatibility with the reference implementation is validated in [sync-interop](../../integ/sync-interop).
+
+[SVS v3](https://github.com/named-data/StateVectorSync/pull/15) is being implemented:
+
+* [X] Encode StateVector with BootstrapTime field.
+* [ ] Embed StateVector Data in Sync Interest.
+* [ ] Re-bootstrap test case.
+* [ ] (SVS v2) Piggyback SVS-PS MappingData.
+* [ ] (SVS v2) Accept piggybacked SVS-PS MappingData.
