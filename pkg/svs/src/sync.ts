@@ -8,7 +8,7 @@ import type { Promisable } from "type-fest";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { Version2 } from "./an";
-import { StateVector } from "./state-vector";
+import { IDImpl, StateVector } from "./state-vector";
 
 interface DebugEntry {
   action: string;
@@ -20,13 +20,13 @@ interface DebugEntry {
   ourNewer?: number;
 }
 
-type EventMap = SyncProtocol.EventMap<Name> & {
+type EventMap = SyncProtocol.EventMap<SvSync.ID> & {
   debug: CustomEvent<DebugEntry>;
   rxerror: CustomEvent<[interest: Interest, e: unknown]>;
 };
 
 /** StateVectorSync participant. */
-export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<Name> {
+export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<SvSync.ID> {
   public static async create({
     syncPrefix,
     fw = Forwarder.getDefault(),
@@ -39,12 +39,14 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     suppressionTimeout = SvSync.suppressionExpDelay(suppressionPeriod),
     signer = nullSigner,
     verifier,
+    svs3 = false,
   }: SvSync.Options): Promise<SvSync> {
     if (typeof periodicTimeout === "number") {
       periodicTimeout = [periodicTimeout, 0.1];
     }
 
     const sync = new SvSync(
+      svs3,
       syncPrefix,
       describe,
       initialStateVector,
@@ -63,6 +65,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
   }
 
   private constructor(
+      private readonly svs3: boolean,
       public readonly syncPrefix: Name,
       public readonly describe: string,
       private readonly own: StateVector,
@@ -146,12 +149,91 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
     this.face?.close();
   }
 
-  public get(id: NameLike): SyncNode<Name> {
-    return new SvSyncNode(Name.from(id), this.nodeOp);
+  /**
+   * Retrieve or create sync node by name.
+   *
+   * For SVS v2, retrieve or create sync node with specified name.
+   *
+   * For SVS v3, retrieve sync node with specified name and most recent bootstrap time.
+   * If no sync node with this name exists, create sync node with current time as bootstrap time.
+   */
+  public get(name: NameLike): SyncNode<SvSync.ID>;
+
+  /**
+   * Retrieve or create sync node by name and bootstrap time (SVS v3).
+   * @experimental
+   */
+  public get(id: { name: NameLike; bootstrapTime: number }): SyncNode<SvSync.ID>;
+
+  /**
+   * Retrieve or create sync node by name and bootstrap time (SVS v3).
+   * @experimental
+   */
+  public get(name: NameLike, bootstrapTime: number): SyncNode<SvSync.ID>;
+
+  public get(arg1: NameLike | { name: NameLike; bootstrapTime: number }, bootstrapTime = -1) {
+    let id: IDImpl;
+    if (arg1 instanceof IDImpl) {
+      id = arg1;
+    } else {
+      let name: NameLike;
+      if (Name.isNameLike(arg1)) {
+        name = arg1;
+      } else {
+        ({ name, bootstrapTime } = arg1);
+      }
+      name = Name.from(name);
+
+      if (!this.svs3) {
+        id = new IDImpl(name);
+      } else if (bootstrapTime === -1) {
+        id = this.findByName(name) as IDImpl | undefined ?? new IDImpl(name, SvSync.makeBootstrapTime());
+      } else {
+        id = new IDImpl(name, bootstrapTime);
+      }
+    }
+    return new SvSyncNode(id, this.nodeOp);
   }
 
-  public add(id: NameLike): SyncNode<Name> {
-    return this.get(id);
+  /**
+   * Retrieve or create sync node by name.
+   *
+   * For SVS v2, same as `get(name)`.
+   *
+   * For SVS v3, create sync node with specified name and current bootstrap time.
+   * Note the different between `get(name)` and `add(name)`:
+   * - `get(name)` searches for existing sync nodes with specified name first.
+   * - `add(name)` almost always creates a new sync node.
+   */
+  public add(name: NameLike): SyncNode<SvSync.ID>;
+
+  /**
+   * Same as `get(id)` (SVS v3).
+   * @experimental
+   */
+  public add(id: { name: NameLike; bootstrapTime: number }): SyncNode<SvSync.ID>;
+
+  /**
+   * Same as `get(name, bootstrapTime)` (SVS v3).
+   * @experimental
+   */
+  public add(name: NameLike, bootstrapTime: number): SyncNode<SvSync.ID>;
+
+  public add(arg1: any, bootstrapTime = SvSync.makeBootstrapTime()): SyncNode<SvSync.ID> {
+    return this.get(arg1, bootstrapTime);
+  }
+
+  private findByName(name: Name): StateVector.ID | undefined {
+    let best: StateVector.ID | undefined;
+    for (const [id] of this.own) {
+      if (!id.name.equals(name)) {
+        continue;
+      }
+      if (!best || id.bootstrapTime > best.bootstrapTime) {
+        best = id;
+      }
+    }
+    return best;
   }
 
   /**
@@ -255,7 +337,13 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<N
   private sendSyncInterest(): void {
     const interest = new Interest();
     interest.name = this.syncInterestName;
-    interest.appParameters = Encoder.encode(this.own);
+    if (this.svs3) {
+      const encoder = new Encoder();
+      this.own.encodeTo(encoder, 3); // TODO wrap in Data
+      interest.appParameters = encoder.output;
+    } else {
+      interest.appParameters = Encoder.encode(this.own);
+    }
     this.txStream.push(interest);
     // further modification and signing occur in the logical face
   }
@@ -342,6 +430,13 @@ export namespace SvSync {
 
     /** @deprecated This option has no effect and should be deleted. */
     svs2suppression?: boolean;
+
+    /**
+     * Enable SVS v3 experimental features.
+     * @defaultValue false
+     * @experimental
+     */
+    svs3?: boolean;
   }
 
   /**
@@ -358,11 +453,32 @@ export namespace SvSync {
       return -c * Math.expm1((v - c) / cf);
     };
   }
+
+  /**
+   * Make SVS v3 bootstrap time based on current timestamp.
+   * @experimental
+   */
+  export function makeBootstrapTime(now = Date.now()): number {
+    return Math.trunc(now / 1000);
+  }
+
+  /**
+   * Sync node ID.
+   *
+   * For SVS v2, this should be accessed as `Name`.
+   * Accessing the object fields would give [name, -1].
+   *
+   * For SVS v3, this should be access as `{ name, bootstrapTime }` object.
+   * Accessing as `Name` would return the name only.
+   *
+   * Note: the `Name` variant will be deleted when SVS v2 support is dropped.
+   */
+  export type ID = Name & StateVector.ID;
 }
 
-class SvSyncNode implements SyncNode<Name> {
+class SvSyncNode implements SyncNode<SvSync.ID> {
   constructor(
-      public readonly id: Name,
+      public readonly id: SvSync.ID,
       private readonly op: (id: Name, n: number | undefined) => number,
   ) {}
 

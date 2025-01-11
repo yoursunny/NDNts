@@ -1,30 +1,27 @@
-import { Component, Name, NameMap, TT as l3TT } from "@ndn/packet";
-import { type Decoder, type EncodableTlv, Encoder, EvDecoder, NNI } from "@ndn/tlv";
-import { assert, fromHex } from "@ndn/util";
-import bufferCompare from "buffer-compare";
+import { Name, TT as l3TT } from "@ndn/packet";
+import { type Decoder, type EncodableTlv, type Encoder, EvDecoder, NNI } from "@ndn/tlv";
+import { fromHex, KeyMap } from "@ndn/util";
 
 import { TT } from "./an";
 
-const evdContext = new WeakMap<NodeMap, [name: Name, bootstrapTimeTlv?: Uint8Array]>();
+const evdContext = new WeakMap<NodeMap, StateVector.ID>();
 
 const EVD = new EvDecoder<NodeMap>("StateVector", TT.StateVector)
   .add(TT.StateVectorEntry,
     new EvDecoder<NodeMap>("StateVectorEntry")
       .add(l3TT.Name, (t, { decoder }) => {
-        evdContext.set(t, [decoder.decode(Name)]);
+        evdContext.set(t, { name: decoder.decode(Name), bootstrapTime: -1 });
       }, { required: true })
       .add(TT.SeqNo, (t, { nni }) => {
-        const [name] = evdContext.get(t)!;
-        t.set(name, { seqNum: nni, lastUpdate: 0 });
+        t.set(makeIDImpl(evdContext.get(t)!), { seqNum: nni, lastUpdate: 0 });
       })
       .add(TT.SeqNoEntry,
         new EvDecoder<NodeMap>("SeqNoEntry")
-          .add(TT.BootstrapTime, (t, { tlv }) => {
-            evdContext.get(t)![1] = tlv;
+          .add(TT.BootstrapTime, (t, { nni }) => {
+            evdContext.get(t)!.bootstrapTime = nni;
           }, { required: true })
           .add(TT.SeqNo3, (t, { nni }) => {
-            const [name, bootstrapTimeTlv] = evdContext.get(t)!;
-            t.set(name.append(new Component(bootstrapTimeTlv!)), { seqNum: nni, lastUpdate: 0 });
+            t.set(makeIDImpl(evdContext.get(t)!), { seqNum: nni, lastUpdate: 0 });
           }, { required: true }),
         { repeat: true })
       .setIsCritical(EvDecoder.alwaysCritical),
@@ -61,8 +58,12 @@ export class StateVector {
         this.m.set(id, { seqNum, lastUpdate });
       }
     } else if (from !== undefined) {
-      for (const [idHex, entry] of Object.entries(from)) {
-        this.m.set(new Name(fromHex(idHex)), toNodeEntry(entry, lastUpdate));
+      for (const [idStr, entry] of Object.entries(from)) {
+        const [nameHex, bootstrapTimeStr = "-1"] = idStr.split(":");
+        this.m.set(
+          new IDImpl(new Name(fromHex(nameHex!)), Number.parseInt(bootstrapTimeStr, 10)),
+          toNodeEntry(entry, lastUpdate),
+        );
       }
     }
   }
@@ -71,26 +72,29 @@ export class StateVector {
 
   /**
    * Get node sequence number.
+   * @param id - Name (SVS v2) or Name+bootstrapTime (SVS v3).
    *
    * @remarks
    * If the node does not exist, returns zero.
    */
-  public get(id: Name): number {
+  public get(id: Name | StateVector.ID): number {
     return this.getEntry(id).seqNum;
   }
 
   /**
    * Get node entry.
+   * @param id - Name (SVS v2) or Name+bootstrapTime (SVS v3).
    *
    * @remarks
    * If the node does not exist, returns an entry with seqNum=0.
    */
-  public getEntry(id: Name): StateVector.NodeEntry {
+  public getEntry(id: Name | StateVector.ID): StateVector.NodeEntry {
     return this.m.get(id) ?? { seqNum: 0, lastUpdate: 0 };
   }
 
   /**
    * Set node sequence number or entry.
+   * @param id - Name (SVS v2) or Name+bootstrapTime (SVS v3).
    * @param entry -
    * If specified as number, it's interpreted as sequence number, and `Date.now()` is used as
    * lastUpdate. Otherwise, it's used as the node entry.
@@ -98,17 +102,17 @@ export class StateVector {
    * @remarks
    * Setting sequence number to zero removes the node.
    */
-  public set(id: Name, entry: number | StateVector.NodeEntry): void {
+  public set(id: Name | StateVector.ID, entry: number | StateVector.NodeEntry): void {
     entry = toNodeEntry(entry);
     if (entry.seqNum <= 0) {
       this.m.delete(id);
     } else {
-      this.m.set(id, entry);
+      this.m.set(makeIDImpl(id), entry);
     }
   }
 
   /** Iterate over nodes and their sequence numbers. */
-  public *[Symbol.iterator](): IterableIterator<[id: Name, seqNum: number]> {
+  public *[Symbol.iterator](): IterableIterator<[id: Name & StateVector.ID, seqNum: number]> {
     for (const [id, { seqNum }] of this.m) {
       yield [id, seqNum];
     }
@@ -143,7 +147,7 @@ export class StateVector {
   public toJSON(): Record<string, number> {
     const o: Record<string, number> = {};
     for (const [id, seqNum] of this) {
-      o[id.valueHex] = seqNum;
+      o[mapKeyOf(id)] = seqNum;
     }
     return o;
   }
@@ -151,7 +155,7 @@ export class StateVector {
   /** Encode StateVector TLV. */
   public encodeTo(encoder: Encoder, version: 2 | 3 = 2): void {
     const list = Array.from(this);
-    list.sort(([a], [b]) => -a.compare(b));
+    list.sort(([a], [b]) => -(a.name.compare(b.name) || a.bootstrapTime - b.bootstrapTime));
     const sizeBefore = encoder.size;
     this[`svs${version}EncodeValue`](encoder, list);
     encoder.prependTypeLength(TT.StateVector, encoder.size - sizeBefore);
@@ -166,22 +170,21 @@ export class StateVector {
     }
   }
 
-  private svs3EncodeValue(encoder: Encoder, list: ReadonlyArray<[id: Name, seqNum: number]>): void {
+  private svs3EncodeValue(encoder: Encoder, list: ReadonlyArray<[id: StateVector.ID, seqNum: number]>): void {
     let seqNoEntries: EncodableTlv[] = [];
-    for (const [i, [id, seqNum]] of list.entries()) {
-      const [name, bootstrapTime] = splitIDRaw(id);
+    for (const [i, [{ name, bootstrapTime }, seqNum]] of list.entries()) {
       seqNoEntries.unshift([
         TT.SeqNoEntry,
-        bootstrapTime,
+        [TT.BootstrapTime, NNI(bootstrapTime)],
         [TT.SeqNo3, NNI(seqNum)],
       ]);
 
       const prevEntry = list[i + 1];
-      if (prevEntry && bufferCompare(splitIDRaw(prevEntry[0])[0], name) === 0) {
+      if (prevEntry?.[0].name.equals(name)) {
         continue;
       }
 
-      encoder.prependTlv(TT.StateVectorEntry, [l3TT.Name, name], ...seqNoEntries);
+      encoder.prependTlv(TT.StateVectorEntry, name, ...seqNoEntries);
       seqNoEntries = [];
     }
   }
@@ -193,23 +196,18 @@ export class StateVector {
 }
 
 export namespace StateVector {
-  /**
-   * Join SVS v3 name and bootstrap time into logical ID.
-   * @experimental
-   */
-  export function joinID(name: Name, bootstrapTime: number): Name {
-    return name.append(new Component(
-      Encoder.encode([TT.BootstrapTime, NNI(bootstrapTime)], 12),
-    ));
-  }
+  /** Node identifier. */
+  export interface ID {
+    /** Node prefix. */
+    name: Name;
 
-  /**
-   * Split logical ID into SVS v3 name and bootstrap time.
-   * @experimental
-   */
-  export function splitID(id: Name): [name: Name, bootstrapTime: number] {
-    const [name, bootstrapTime] = splitIDRaw(id);
-    return [new Name(name), NNI.decode(bootstrapTime.value)];
+    /**
+     * Node bootstrap timestamp, seconds since Unix epoch (SVS v3).
+     *
+     * This field shall be set to -1 for SVS v2 nodes.
+     * @experimental
+     */
+    bootstrapTime: number;
   }
 
   /** Per-node entry. */
@@ -224,7 +222,7 @@ export namespace StateVector {
   /** Result of {@link StateVector.listOlderThan}. */
   export interface DiffEntry {
     /** Node ID. */
-    id: Name;
+    id: Name & ID;
 
     /** Low sequence number (inclusive). */
     loSeqNum: number;
@@ -232,12 +230,6 @@ export namespace StateVector {
     /** High sequence number (inclusive). */
     hiSeqNum: number;
   }
-}
-
-function splitIDRaw(id: Name): [name: Uint8Array, bootstrapTime: Component] {
-  const bootstrapTime = id.at(-1);
-  assert(bootstrapTime.type === TT.BootstrapTime);
-  return [id.value.subarray(0, -bootstrapTime.tlv.length), bootstrapTime];
 }
 
 function toNodeEntry(entry: number | StateVector.NodeEntry, lastUpdate = Date.now()): StateVector.NodeEntry {
@@ -248,4 +240,32 @@ function toNodeEntry(entry: number | StateVector.NodeEntry, lastUpdate = Date.no
   return entry;
 }
 
-class NodeMap extends NameMap<StateVector.NodeEntry> {}
+export class IDImpl extends Name implements StateVector.ID {
+  constructor(name: Name, public readonly bootstrapTime = -1) {
+    super(name);
+  }
+
+  public get name(): Name {
+    return this;
+  }
+}
+
+export function makeIDImpl(input: Name | StateVector.ID): IDImpl {
+  if (input instanceof IDImpl) {
+    return input;
+  }
+  if ("bootstrapTime" in input) {
+    return new IDImpl(input.name, input.bootstrapTime);
+  }
+  return new IDImpl(input);
+}
+
+function mapKeyOf(id: Name | StateVector.ID): string {
+  return "bootstrapTime" in id ? `${id.name.valueHex}:${id.bootstrapTime}` : `${id.valueHex}:-1`;
+}
+
+class NodeMap extends KeyMap<IDImpl, StateVector.NodeEntry, string, Parameters<typeof mapKeyOf>[0]> {
+  constructor() {
+    super(mapKeyOf);
+  }
+}

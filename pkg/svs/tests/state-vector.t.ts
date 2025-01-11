@@ -50,10 +50,10 @@ test("basic", () => {
 
 test("encode3", () => {
   const v0 = new StateVector();
-  v0.set(StateVector.joinID(new Name("/A"), 1636266330), 10);
-  v0.set(StateVector.joinID(new Name("/B"), 1636266412), 16);
-  v0.set(StateVector.joinID(new Name("/C"), 1636266115), 25);
-  v0.set(StateVector.joinID(new Name("/A"), 1736266473), 1);
+  v0.set({ name: new Name("/A"), bootstrapTime: 1636266330 }, 10);
+  v0.set({ name: new Name("/B"), bootstrapTime: 1636266412 }, 16);
+  v0.set({ name: new Name("/C"), bootstrapTime: 1636266115 }, 25);
+  v0.set({ name: new Name("/A"), bootstrapTime: 1736266473 }, 1);
 
   const encoder = new Encoder();
   v0.encodeTo(encoder, 3);
@@ -111,7 +111,7 @@ test("compare-merge", () => {
   const v1 = new StateVector({
     [name1.valueHex]: 12,
     [name2.valueHex]: 22,
-    [name4.valueHex]: 40,
+    [`${name4.valueHex}:-1`]: 40,
   });
 
   expect(v0.listOlderThan(v0)).toHaveLength(0);
@@ -139,16 +139,16 @@ test("compare-merge", () => {
   const v0m = new StateVector(v0);
   v0m.mergeFrom(v1);
   expect(v0m.toJSON()).toEqual({
-    [name1.valueHex]: 12,
-    [name2.valueHex]: 29,
-    [name4.valueHex]: 40,
+    [`${name1.valueHex}:-1`]: 12,
+    [`${name2.valueHex}:-1`]: 29,
+    [`${name4.valueHex}:-1`]: 40,
   });
 
   const v1m = new StateVector(v1);
   v1m.mergeFrom(v0);
   expect(v1m.toJSON()).toEqual({
-    [name1.valueHex]: 12,
-    [name2.valueHex]: 29,
-    [name4.valueHex]: 40,
+    [`${name1.valueHex}:-1`]: 12,
+    [`${name2.valueHex}:-1`]: 29,
+    [`${name4.valueHex}:-1`]: 40,
   });
 });

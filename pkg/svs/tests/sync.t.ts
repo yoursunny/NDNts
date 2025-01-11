@@ -1,3 +1,5 @@
+import "@ndn/packet/test-fixture/expect";
+
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face";
 import { Name } from "@ndn/packet";
@@ -55,14 +57,14 @@ const closers = new Closers();
 afterEach(closers.close);
 
 // specification section 5.2 "example with packet loss"
-test("5.2", async () => {
+test.each([2, 3] as const)("5.2 svs%d", async (protocolVer) => {
   const debugHandler = new DebugHandler();
   let lossToC = false;
   using bridge = Bridge.create({
     relayAB: (it) => filter(() => !lossToC, it),
   }).rename("AB", "C");
 
-  const opts: SvSync.Options = { ...baseOpts, fw: bridge.fwAB };
+  const opts: SvSync.Options = { ...baseOpts, svs3: protocolVer === 3, fw: bridge.fwAB };
 
   const pA = await SvSync.create({ ...opts, describe: "A" });
   const nA = pA.add("/A");
@@ -126,21 +128,16 @@ test("5.2", async () => {
 test("5.3", async () => {
   const debugHandler = new DebugHandler();
 
-  const idA0 = StateVector.joinID(new Name("/A"), 1636266330);
-  const idA1 = StateVector.joinID(new Name("/A"), 1736266473);
-  const idB0 = StateVector.joinID(new Name("/B"), 1636266412);
-  const idC0 = StateVector.joinID(new Name("/C"), 1636266115);
-
   const initialStateVector = new StateVector();
-  initialStateVector.set(idA0, 10);
-  initialStateVector.set(idB0, 15);
-  initialStateVector.set(idC0, 25);
+  initialStateVector.set({ name: new Name("/A"), bootstrapTime: 1636266330 }, 10);
+  initialStateVector.set({ name: new Name("/B"), bootstrapTime: 1636266412 }, 15);
+  initialStateVector.set({ name: new Name("/C"), bootstrapTime: 1636266115 }, 25);
 
-  const opts: SvSync.Options = { ...baseOpts, initialStateVector };
+  const opts: SvSync.Options = { ...baseOpts, svs3: true, initialStateVector };
 
   const pA0 = await SvSync.create({ ...opts, describe: "A0" });
   const pB0 = await SvSync.create({ ...opts, describe: "B0" });
-  const nB0 = pB0.get(idB0);
+  const nB0 = pB0.get("/B", 1636266412);
   const pC0 = await SvSync.create({ ...opts, describe: "C0" });
   closers.push(pB0, pC0);
 
@@ -149,11 +146,11 @@ test("5.3", async () => {
 
   ++nB0.seqNum;
   await delay(100);
-  expect(pB0.get(idB0).seqNum).toBe(16);
-  expect(pC0.get(idB0).seqNum).toBe(16);
+  expect(pB0.get("/B", 1636266412).seqNum).toBe(16);
+  expect(pC0.get("/B", 1636266412).seqNum).toBe(16);
 
-  const pA1 = await SvSync.create({ ...baseOpts, describe: "A1" });
-  const nA1 = pA1.add(idA1);
+  const pA1 = await SvSync.create({ ...opts, describe: "A1" });
+  const nA1 = pA1.add("/A", SvSync.makeBootstrapTime(1736266473001));
   nA1.seqNum = 1;
 
   debugHandler.start(pA1);
@@ -161,18 +158,44 @@ test("5.3", async () => {
   debugHandler.start(pC0);
 
   await delay(800);
-  expect(pA1.get(idA0).seqNum).toBe(10);
-  expect(pB0.get(idA0).seqNum).toBe(10);
-  expect(pC0.get(idA0).seqNum).toBe(10);
-  expect(pA1.get(idA1).seqNum).toBe(1);
-  expect(pB0.get(idA1).seqNum).toBe(1);
-  expect(pC0.get(idA1).seqNum).toBe(1);
-  expect(pA1.get(idB0).seqNum).toBe(16);
-  expect(pB0.get(idB0).seqNum).toBe(16);
-  expect(pC0.get(idB0).seqNum).toBe(16);
-  expect(pA1.get(idC0).seqNum).toBe(25);
-  expect(pB0.get(idC0).seqNum).toBe(25);
-  expect(pC0.get(idC0).seqNum).toBe(25);
+  expect(pA1.get("/A", 1636266330).seqNum).toBe(10);
+  expect(pB0.get("/A", 1636266330).seqNum).toBe(10);
+  expect(pC0.get("/A", 1636266330).seqNum).toBe(10);
+  expect(pA1.get("/A", 1736266473).seqNum).toBe(1);
+  expect(pB0.get("/A", 1736266473).seqNum).toBe(1);
+  expect(pC0.get("/A", 1736266473).seqNum).toBe(1);
+  expect(pA1.get("/B", 1636266412).seqNum).toBe(16);
+  expect(pB0.get("/B", 1636266412).seqNum).toBe(16);
+  expect(pC0.get("/B", 1636266412).seqNum).toBe(16);
+  expect(pA1.get({ name: "/C", bootstrapTime: 1636266115 }).seqNum).toBe(25);
+  expect(pB0.get("/C", 1636266115).seqNum).toBe(25);
+  expect(pC0.get("/C", 1636266115).seqNum).toBe(25);
+
+  // .get(id)
+  const nA1g = pA1.get(nA1.id);
+  expect(nA1g.id.name).toEqualName("/A");
+  expect(nA1g.id.bootstrapTime).toBe(1736266473);
+  expect(nA1g.seqNum).toBe(1);
+
+  // .get(name)
+  const nA1n = pA1.get("/A");
+  expect(nA1n.id.name).toEqualName("/A");
+  expect(nA1n.id.bootstrapTime).toBe(1736266473);
+  expect(nA1n.seqNum).toBe(1);
+
+  const minBootstrapTime = (Date.now() - 2000) / 1000;
+
+  // .add(name)
+  const nA1a = pA1.add("/A");
+  expect(nA1a.id.name).toEqualName("/A");
+  expect(nA1a.id.bootstrapTime).toBeGreaterThan(minBootstrapTime);
+  expect(nA1a.seqNum).toBe(0);
+
+  // .get(nonexistent-name)
+  const nDg = pA1.get("/D");
+  expect(nDg.id.name).toEqualName("/D");
+  expect(nDg.id.bootstrapTime).toBeGreaterThan(minBootstrapTime);
+  expect(nDg.seqNum).toBe(0);
 });
 
 test("initialize", async () => {
