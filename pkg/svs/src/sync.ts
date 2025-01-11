@@ -1,13 +1,13 @@
 import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
-import { Interest, Name, type NameLike, nullSigner, type Signer, type Verifier } from "@ndn/packet";
+import { Data, Interest, Name, type NameLike, noopSigning, nullSigner, type Signer, TT as l3TT, type Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { assert, pushable, randomJitter, trackEventListener } from "@ndn/util";
-import { consume, map, tap } from "streaming-iterables";
+import { consume, tap } from "streaming-iterables";
 import type { Promisable } from "type-fest";
 import { TypedEventTarget } from "typescript-event-target";
 
-import { Version2 } from "./an";
+import { TT, Version2, Version3 } from "./an";
 import { IDImpl, StateVector } from "./state-vector";
 
 interface DebugEntry {
@@ -38,7 +38,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
     suppressionPeriod = 2200,
     suppressionTimeout = SvSync.suppressionExpDelay(suppressionPeriod),
     signer = nullSigner,
-    verifier,
+    verifier = noopSigning,
     svs3 = false,
   }: SvSync.Options): Promise<SvSync> {
     if (typeof periodicTimeout === "number") {
@@ -50,17 +50,15 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
       syncPrefix,
       describe,
       initialStateVector,
+      syncInterestLifetime,
       randomJitter(periodicTimeout[1], periodicTimeout[0]),
       suppressionTimeout,
       suppressionPeriod,
-    );
-    await initialize?.(sync);
-    sync.makeFace(
-      fw,
-      syncInterestLifetime,
       signer,
       verifier,
     );
+    await initialize?.(sync);
+    sync.makeFace(fw);
     return sync;
   }
 
@@ -69,37 +67,28 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
       public readonly syncPrefix: Name,
       public readonly describe: string,
       private readonly own: StateVector,
+      private readonly syncInterestLifetime: number,
       private readonly steadyTimer: () => number,
       private readonly suppressionTimer: () => number,
       private readonly suppressionPeriod: number,
+      private readonly signer: Signer,
+      private readonly verifier: Verifier,
   ) {
     super();
-    this.syncInterestName = syncPrefix.append(Version2);
+    this.syncInterestName = syncPrefix.append(svs3 ? Version3 : Version2);
   }
 
-  private makeFace(
-      fw: Forwarder,
-      syncInterestLifetime: number,
-      signer: Signer,
-      verifier?: Verifier,
-  ): void {
+  private makeFace(fw: Forwarder): void {
     this.face = fw.addFace({
-      rx: map(async (interest) => {
-        this.debug("send");
-        interest.canBePrefix = true;
-        interest.mustBeFresh = true;
-        interest.lifetime = syncInterestLifetime;
-        await signer.sign(interest);
-        return FwPacket.create(interest);
-      }, this.txStream),
+      rx: this.txStream,
       tx: (iterable) => consume(tap(async (pkt) => {
         if (!(FwPacket.isEncodable(pkt) && pkt.l3 instanceof Interest)) {
           return;
         }
         const interest = pkt.l3;
         try {
-          await verifier?.verify(interest);
-          await this.handleSyncInterest(interest);
+          const [recv] = await this.parseSyncInterest(interest);
+          await this.handleRecv(recv);
         } catch (err: unknown) {
           this.dispatchTypedEvent("rxerror", new CustomEvent<[interest: Interest, e: unknown]>("rxerror", {
             detail: [interest, err],
@@ -116,7 +105,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
   private readonly maybeHaveEventListener = trackEventListener(this);
   private face?: FwFace;
   private readonly syncInterestName: Name;
-  private txStream = pushable<Interest>();
+  private txStream = pushable<FwPacket>();
 
   /**
    * In steady state, undefined.
@@ -268,14 +257,39 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
   };
 
   /**
-   * Handle incoming sync Interest.
-   * @param interest - Received Interest, signature verified.
+   * Parse and verify incoming sync Interest.
+   * @param interest - Received Interest.
    */
-  private async handleSyncInterest(interest: Interest): Promise<void> {
+  private async parseSyncInterest(interest: Interest): Promise<[recv: StateVector, piggyback: Uint8Array]> {
     assert(interest.appParameters);
-    const decoder = new Decoder(interest.appParameters);
-    const recv = decoder.decode(StateVector);
+    const d0 = new Decoder(interest.appParameters);
+    const { type, decoder: d1, after } = d0.read();
+    let recv: StateVector;
+    switch (type) {
+      case TT.StateVector: { // SVS v2
+        await this.verifier.verify(interest);
+        recv = d1.decode(StateVector);
+        break;
+      }
+      case l3TT.Data: { // SVS v3
+        const data = d1.decode(Data);
+        assert(data.name.equals(this.syncInterestName));
+        await this.verifier.verify(data);
+        recv = Decoder.decode(data.content, StateVector);
+        break;
+      }
+      default: {
+        throw new Error("cannot find StateVector in Interest");
+      }
+    }
+    return [recv, after];
+  }
 
+  /**
+   * Handle incoming state vector.
+   * @param recv - Received StateVector.
+   */
+  private async handleRecv(recv: StateVector): Promise<void> {
     const ourOlder = this.own.listOlderThan(recv);
     const ourNewer = recv.listOlderThan(this.own);
     this.debug("recv", {
@@ -322,30 +336,43 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
         ourNewer: ourNewer.length,
       });
       if (ourNewer.length > 0) {
-        this.sendSyncInterest();
+        void this.sendSyncInterest();
       }
       this.aggregated = undefined;
     } else { // in steady state
       this.debug("timer");
-      this.sendSyncInterest();
+      void this.sendSyncInterest();
     }
 
     this.resetTimer();
   };
 
   /** Transmit a sync Interest. */
-  private sendSyncInterest(): void {
+  private async sendSyncInterest(): Promise<void> {
     const interest = new Interest();
     interest.name = this.syncInterestName;
+    interest.canBePrefix = true;
+    interest.mustBeFresh = true;
+    interest.lifetime = this.syncInterestLifetime;
+
     if (this.svs3) {
       const encoder = new Encoder();
-      this.own.encodeTo(encoder, 3); // TODO wrap in Data
-      interest.appParameters = encoder.output;
+      this.own.encodeTo(encoder, 3);
+
+      const data = new Data();
+      data.name = this.syncInterestName;
+      data.content = encoder.output;
+      await this.signer.sign(data);
+
+      interest.appParameters = Encoder.encode(data);
+      await interest.updateParamsDigest();
     } else {
       interest.appParameters = Encoder.encode(this.own);
+      await this.signer.sign(interest);
     }
-    this.txStream.push(interest);
-    // further modification and signing occur in the logical face
+
+    this.debug("send");
+    this.txStream.push(FwPacket.create(interest));
   }
 }
 
@@ -414,13 +441,15 @@ export namespace SvSync {
     suppressionTimeout?: () => number;
 
     /**
-     * Sync Interest signer.
+     * Sync Interest signer (SVS v2).
+     * State Vector Data signer (SVS v3).
      * @defaultValue nullSigner
      */
     signer?: Signer;
 
     /**
-     * Sync Interest verifier.
+     * Sync Interest verifier (SVS v2).
+     * State Vector Data verifier (SVS v3).
      * @defaultValue no verification
      */
     verifier?: Verifier;

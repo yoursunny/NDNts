@@ -1,12 +1,13 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Forwarder } from "@ndn/fw";
+import { Certificate, generateSigningKey } from "@ndn/keychain";
 import { Bridge } from "@ndn/l3face";
-import { Name } from "@ndn/packet";
+import { Data, Interest, Name } from "@ndn/packet";
 import { Closers, delay } from "@ndn/util";
 import DefaultMap from "mnemonist/default-map.js";
 import { filter } from "streaming-iterables";
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 
 import { StateVector, SvSync } from "..";
 
@@ -57,14 +58,23 @@ const closers = new Closers();
 afterEach(closers.close);
 
 // specification section 5.2 "example with packet loss"
-test.each([2, 3] as const)("5.2 svs%d", async (protocolVer) => {
+test.each([
+  [2, false, Interest],
+  [3, true, Data],
+] as const)("5.2 svs%d", async (ver, svs3, typeSignVerify) => {
+  void ver;
   const debugHandler = new DebugHandler();
   let lossToC = false;
   using bridge = Bridge.create({
     relayAB: (it) => filter(() => !lossToC, it),
   }).rename("AB", "C");
 
-  const opts: SvSync.Options = { ...baseOpts, svs3: protocolVer === 3, fw: bridge.fwAB };
+  const [pvt, pub] = await generateSigningKey("/G");
+  const cert = await Certificate.selfSign({ privateKey: pvt, publicKey: pub });
+  const signer = pvt.withKeyLocator(cert.name);
+  const spySign = vi.spyOn(signer, "sign");
+  const spyVerify = vi.spyOn(pub, "verify");
+  const opts: SvSync.Options = { ...baseOpts, svs3, fw: bridge.fwAB, signer, verifier: pub };
 
   const pA = await SvSync.create({ ...opts, describe: "A" });
   const nA = pA.add("/A");
@@ -122,6 +132,11 @@ test.each([2, 3] as const)("5.2 svs%d", async (protocolVer) => {
   expect(uA.lastSeqNumRecord).toEqual({ B: 15, C: 25 });
   expect(uB.lastSeqNumRecord).toEqual({ C: 25, A: 11 });
   expect(uC.lastSeqNumRecord).toEqual({ A: 11, B: 15 });
+
+  expect(spySign).toHaveBeenCalled();
+  expect(spySign.mock.lastCall![0]).toBeInstanceOf(typeSignVerify);
+  expect(spyVerify).toHaveBeenCalled();
+  expect(spyVerify.mock.lastCall![0]).toBeInstanceOf(typeSignVerify);
 });
 
 // specification section 5.3 "re-bootstrap"
