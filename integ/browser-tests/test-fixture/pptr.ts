@@ -1,5 +1,4 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { console, delay } from "@ndn/util";
 import puppeteer, { type Page } from "puppeteer";
@@ -19,11 +18,11 @@ beforeAll(async () => {
 
 /**
  * Navigate to test case page.
- * @param importMetaUrl - `import.meta.url` of calling test case.
+ * @param importMeta - `import.meta` of calling test case.
  * @param delayDuration - How long (in milliseconds) to wait after navigation.
  */
-export async function navigateToPage(importMetaUrl: string, delayDuration = 500) {
-  const dir = path.basename(path.dirname(fileURLToPath(importMetaUrl)));
+export async function navigateToPage(importMeta: ImportMeta, delayDuration = 500) {
+  const dir = path.basename(importMeta.dirname);
   await page.goto(`http://localhost:${port}/${dir}.html`);
   await delay(delayDuration);
 }

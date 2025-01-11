@@ -15,7 +15,7 @@ let server: WsServer;
 beforeEach(async () => {
   server = await new WsServer().open();
   closers.push(server);
-  await navigateToPage(import.meta.url);
+  await navigateToPage(import.meta);
 
   return closers.close;
 });

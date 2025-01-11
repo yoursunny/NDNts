@@ -19,7 +19,7 @@ beforeAll(async () => {
   return tmpDir[Symbol.dispose];
 });
 
-beforeEach(() => navigateToPage(import.meta.url));
+beforeEach(() => navigateToPage(import.meta));
 
 test("blob to buffer", async () => {
   const [fileChooser] = await Promise.all([

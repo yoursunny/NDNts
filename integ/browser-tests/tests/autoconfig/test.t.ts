@@ -4,7 +4,7 @@ import { beforeEach, expect, test } from "vitest";
 
 import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 
-beforeEach(() => navigateToPage(import.meta.url));
+beforeEach(() => navigateToPage(import.meta));
 
 test("connectToNetwork", async () => {
   const record = await pageInvoke<typeof globalThis.testConnectToNetwork>("testConnectToNetwork");
