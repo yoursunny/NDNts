@@ -54,8 +54,8 @@ const baseOpts: SvSync.Options = {
 const closers = new Closers();
 afterEach(closers.close);
 
-// specification section 5.2 example
-test("example", async () => {
+// specification section 5.2 "example with packet loss"
+test("5.2", async () => {
   const debugHandler = new DebugHandler();
   let lossToC = false;
   using bridge = Bridge.create({
@@ -120,6 +120,59 @@ test("example", async () => {
   expect(uA.lastSeqNumRecord).toEqual({ B: 15, C: 25 });
   expect(uB.lastSeqNumRecord).toEqual({ C: 25, A: 11 });
   expect(uC.lastSeqNumRecord).toEqual({ A: 11, B: 15 });
+});
+
+// specification section 5.3 "re-bootstrap"
+test("5.3", async () => {
+  const debugHandler = new DebugHandler();
+
+  const idA0 = StateVector.joinID(new Name("/A"), 1636266330);
+  const idA1 = StateVector.joinID(new Name("/A"), 1736266473);
+  const idB0 = StateVector.joinID(new Name("/B"), 1636266412);
+  const idC0 = StateVector.joinID(new Name("/C"), 1636266115);
+
+  const initialStateVector = new StateVector();
+  initialStateVector.set(idA0, 10);
+  initialStateVector.set(idB0, 15);
+  initialStateVector.set(idC0, 25);
+
+  const opts: SvSync.Options = { ...baseOpts, initialStateVector };
+
+  const pA0 = await SvSync.create({ ...opts, describe: "A0" });
+  const pB0 = await SvSync.create({ ...opts, describe: "B0" });
+  const nB0 = pB0.get(idB0);
+  const pC0 = await SvSync.create({ ...opts, describe: "C0" });
+  closers.push(pB0, pC0);
+
+  pA0.close();
+  closers.splice(closers.indexOf(pA0), 1);
+
+  ++nB0.seqNum;
+  await delay(100);
+  expect(pB0.get(idB0).seqNum).toBe(16);
+  expect(pC0.get(idB0).seqNum).toBe(16);
+
+  const pA1 = await SvSync.create({ ...baseOpts, describe: "A1" });
+  const nA1 = pA1.add(idA1);
+  nA1.seqNum = 1;
+
+  debugHandler.start(pA1);
+  debugHandler.start(pB0);
+  debugHandler.start(pC0);
+
+  await delay(800);
+  expect(pA1.get(idA0).seqNum).toBe(10);
+  expect(pB0.get(idA0).seqNum).toBe(10);
+  expect(pC0.get(idA0).seqNum).toBe(10);
+  expect(pA1.get(idA1).seqNum).toBe(1);
+  expect(pB0.get(idA1).seqNum).toBe(1);
+  expect(pC0.get(idA1).seqNum).toBe(1);
+  expect(pA1.get(idB0).seqNum).toBe(16);
+  expect(pB0.get(idB0).seqNum).toBe(16);
+  expect(pC0.get(idB0).seqNum).toBe(16);
+  expect(pA1.get(idC0).seqNum).toBe(25);
+  expect(pB0.get(idC0).seqNum).toBe(25);
+  expect(pC0.get(idC0).seqNum).toBe(25);
 });
 
 test("initialize", async () => {

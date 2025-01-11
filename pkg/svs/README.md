@@ -18,6 +18,6 @@ Compatibility with the reference implementation is validated in [sync-interop](.
 
 * [X] Encode StateVector with BootstrapTime field.
 * [ ] Embed StateVector Data in Sync Interest.
-* [ ] Re-bootstrap test case.
+* [X] Re-bootstrap test case.
 * [ ] (SVS v2) Piggyback SVS-PS MappingData.
 * [ ] (SVS v2) Accept piggybacked SVS-PS MappingData.

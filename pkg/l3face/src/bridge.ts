@@ -242,8 +242,10 @@ export namespace Bridge {
    */
   export function star(opts: StarOptions | readonly StarEdgeOptions[], fwA = Forwarder.create()): Bridge[] {
     if (!Array.isArray(opts)) {
-      const a = Array.from<StarEdgeOptions>({ length: (opts as StarOptions).leaves });
-      a.fill(opts as StarOptions);
+      const a = Array.from(
+        { length: (opts as StarOptions).leaves },
+        () => structuredClone(opts as StarOptions),
+      );
       opts = a;
     }
     return opts.map((opt, i) => Bridge.create({
