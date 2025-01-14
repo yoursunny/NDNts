@@ -1,7 +1,7 @@
 import { exitClosers } from "@ndn/cli-common";
 import { console } from "@ndn/util";
 
-import { myID, openSvSync } from "./svs-common";
+import { args, openSvSync } from "./svs-common";
 
 const sync = await openSvSync(false);
 
@@ -10,8 +10,8 @@ sync.addEventListener("update", (update) => {
   console.log(`UPDATE ${id} ${loSeqNum}..${hiSeqNum}`);
 });
 
-const node = sync.add(myID);
+const node = sync.add(args.me);
 exitClosers.addTimeout(setInterval(() => {
-  node.seqNum++;
-  console.log(`PUBLISH ${myID} ${node.seqNum}`);
+  ++node.seqNum;
+  console.log(`PUBLISH ${node.id} ${node.seqNum}`);
 }, 5000));

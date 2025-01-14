@@ -13,7 +13,8 @@ literate_run() {
     pushd $1 >/dev/null
     FILE=README.md
   fi
-  node --import $ROOTDIR/mk/loader-import.mjs $FILE
+  shift
+  node --import $ROOTDIR/mk/loader-import.mjs $FILE "$@"
   popd >/dev/null
 }
 
@@ -28,7 +29,7 @@ if [[ ${1:-} == lint ]]; then
 fi
 
 if [[ -n ${1:-} ]]; then
-  literate_run $1
+  literate_run "$@"
   exit
 fi
 

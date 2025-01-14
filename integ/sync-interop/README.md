@@ -101,15 +101,15 @@ corepack pnpm literate integ/sync-interop/syncps.ts
 Test environment:
 
 * Ubuntu 22.04
-* ndn-cxx 0.9.0-3-ge913e3ab
-* NFD 24.07-5-g401d1a48
-* Node.js v22.11.0
+* ndn-cxx 0.9.0-16-gd384a530
+* NFD 24.07-11-ga745025b
+* Node.js v22.13.0
 * Go 1.23.4
 
 Reference implementation:
 
 * [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `7fa0af007772c2e320bdc3996fd3bb57fbb21347` (2025-01-05)
-* [NDNd](https://github.com/named-data/ndnd) commit `e8bf6feb24e006e3ff9737d8c5e49b976ed61604` (2025-01-07)
+* [NDNd](https://github.com/named-data/ndnd) commit `814d19d06446eeb84cecbe24ee4469ea7fca3a4c` (2025-01-14)
 
 Build reference program:
 
@@ -119,30 +119,44 @@ Build reference program:
 ./waf
 
 # in $HOME directory
-go install -v github.com/named-data/ndnd/std/examples/low-level/svs@v1.4.3-0.20250107153723-e8bf6feb24e0
+go install -v github.com/named-data/ndnd/std/examples/low-level/svs@v1.4.3-0.20250113180516-814d19d06446
 ```
 
-Test `SvSync`:
+The sync group prefix shall use multicast strategy:
 
 ```bash
+# start NFD
+sudo systemctl restart nfd
+
 # set multicast strategy
 nfdc strategy set /ndn/svs /localhost/nfd/strategy/multicast
+```
 
+Test `SvSync` (SVS v2):
+
+```bash
 # C++: in ndn-svs directory
 LD_LIBRARY_PATH=build ./build/examples/core /cpp-${RANDOM}
 
+# in NDNts directory
+corepack pnpm literate integ/sync-interop/svsync.ts /NDNts-${RANDOM}
+```
+
+Test `SvSync` (SVS v3):
+
+```bash
 # NDNd: in $HOME directory
-~/go/bin/svs ndnd-${RANDOM}
+~/go/bin/svs /ndnd-svs3
 
 # in NDNts directory
-corepack pnpm literate integ/sync-interop/svsync.ts
+corepack pnpm literate integ/sync-interop/svsync.ts --svs3 /NDNts-svs3
 ```
 
 Test `SvPublisher`:
 
 ```bash
 # in NDNts directory
-corepack pnpm literate integ/sync-interop/svsps-publisher.ts
+corepack pnpm literate integ/sync-interop/svsps-publisher.ts /NDNts-${RANDOM}
 
 # C++: in ndn-svs directory
 LD_LIBRARY_PATH=build ./build/examples/chat-pubsub /cpp-${RANDOM}

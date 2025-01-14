@@ -20,5 +20,6 @@ Compatibility with the reference implementation is validated in [sync-interop](.
 * [ ] Reject BootstrapTime in the future.
 * [X] Embed StateVector Data in Sync Interest.
 * [X] Re-bootstrap test case.
+* [X] NDNd interop test case.
 * [ ] (SVS v2) Piggyback SVS-PS MappingData.
 * [ ] (SVS v2) Accept piggybacked SVS-PS MappingData.

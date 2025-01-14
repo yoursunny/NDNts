@@ -241,12 +241,12 @@ function toNodeEntry(entry: number | StateVector.NodeEntry, lastUpdate = Date.no
 }
 
 export class IDImpl extends Name implements StateVector.ID {
-  constructor(name: Name, public readonly bootstrapTime = -1) {
+  constructor(public readonly name: Name, public readonly bootstrapTime = -1) {
     super(name);
   }
 
-  public get name(): Name {
-    return this;
+  public override toString(): string {
+    return `${this.name}:${this.bootstrapTime}`;
   }
 }
 
