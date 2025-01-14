@@ -1,7 +1,5 @@
-import type { FileReadResult } from "node:fs/promises";
-
-import { assert, asUint8Array } from "@ndn/util";
-import { Async, type Backend, constants, Errno, ErrnoError, File, FileSystem, type FileSystemMetadata, isWriteable, Readonly, Stats } from "@zenfs/core";
+import { assert } from "@ndn/util";
+import { Async, type Backend, constants, Errno, ErrnoError, type File, FileSystem, type FileSystemMetadata, isWriteable, LazyFile, Readonly, Stats } from "@zenfs/core";
 import LRUCache from "mnemonist/lru-cache.js";
 import { collect, map, pipeline } from "streaming-iterables";
 
@@ -70,10 +68,23 @@ export class NDNFileSystem extends Async(Readonly(FileSystem)) { // eslint-disab
 
   public override async openFile(path: string, flag: string): Promise<File> {
     if (isWriteable(flag)) {
-      throw new ErrnoError(Errno.EPERM, "filesystem is readonly", path);
+      throw new ErrnoError(Errno.EROFS, "filesystem is readonly", path);
     }
+    return new LazyFile(this, path, flag, await this.stat(path));
+  }
+
+  public override async read(path: string, offset: number, length: number): Promise<Uint8Array> {
     const m = await this.getFileMetadata(path);
-    return new NDNFile(this, path, this.client, m);
+    const b = new Uint8Array(length);
+    await this.client.readFileInto(m, b, 0, length, offset);
+    return b;
+  }
+
+  public override write(path: string, buffer: Uint8Array, offset: number): Promise<void> {
+    // https://github.com/zen-fs/core/issues/169
+    void buffer;
+    void offset;
+    throw new ErrnoError(Errno.EROFS, "filesystem is readonly", path);
   }
 }
 export namespace NDNFileSystem {
@@ -81,70 +92,6 @@ export namespace NDNFileSystem {
     client: Client;
     statsCacheCapacity?: number;
   }
-}
-
-class NDNFile extends File {
-  constructor(
-      fs: NDNFileSystem,
-      path: string,
-      private readonly client: Client,
-      private readonly m: FileMetadata,
-  ) {
-    super(fs, path);
-  }
-
-  public override position = 0;
-
-  public override statSync(): Stats {
-    return statsFromFileMetadata(this.m);
-  }
-
-  public override closeSync(): void {
-    // NOP
-  }
-
-  public override syncSync(): void {
-    // NOP
-  }
-
-  public override async read<TBuffer extends NodeJS.ArrayBufferView>(
-      buffer: TBuffer,
-      offset = 0,
-      length = this.m.size ?? 0,
-      position = this.position,
-  ): Promise<FileReadResult<TBuffer>> {
-    await this.client.readFileInto(this.m, asUint8Array(buffer), offset, length, position);
-    return { bytesRead: length, buffer };
-  }
-}
-interface NDNFile extends Pick<File, typeof fileMethodsNotsup[number] | typeof fileMethodsAsync[number]> {}
-const fileMethodsNotsup = [
-  "truncateSync",
-  "writeSync",
-  "readSync",
-  "chownSync",
-  "chmodSync",
-  "utimesSync",
-] as const satisfies ReadonlyArray<keyof File>;
-const fileMethodsAsync = [
-  "stat",
-  "utimes",
-  "sync",
-  "chown",
-  "close",
-  "truncate",
-  "write",
-  "chmod",
-] as const satisfies ReadonlyArray<keyof File>;
-for (const methodName of fileMethodsNotsup) {
-  NDNFile.prototype[methodName] = () => {
-    throw new ErrnoError(Errno.ENOTSUP);
-  };
-}
-for (const methodName of fileMethodsAsync) {
-  NDNFile.prototype[methodName] = async function (this: NDNFile, ...args: any[]) {
-    return (this[`${methodName}Sync`] as any)(...args);
-  };
 }
 
 function statsFromFileMetadata(m: FileMetadata): Stats {
