@@ -135,16 +135,10 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
    */
   public get(name: NameLike): SyncNode<SvSync.ID>;
 
-  /**
-   * Retrieve or create sync node by name and bootstrap time (SVS v3).
-   * @experimental
-   */
+  /** Retrieve or create sync node by name and bootstrap time (SVS v3). */
   public get(id: { name: NameLike; boot: number }): SyncNode<SvSync.ID>;
 
-  /**
-   * Retrieve or create sync node by name and bootstrap time (SVS v3).
-   * @experimental
-   */
+  /** Retrieve or create sync node by name and bootstrap time (SVS v3). */
   public get(name: NameLike, boot: number): SyncNode<SvSync.ID>;
 
   public get(arg1: NameLike | { name: NameLike; boot: number }, boot = -1) {
@@ -183,16 +177,10 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
    */
   public add(name: NameLike): SyncNode<SvSync.ID>;
 
-  /**
-   * Same as `get(id)` (SVS v3).
-   * @experimental
-   */
+  /** Same as `get(id)` (SVS v3). */
   public add(id: { name: NameLike; boot: number }): SyncNode<SvSync.ID>;
 
-  /**
-   * Same as `get(name, boot)` (SVS v3).
-   * @experimental
-   */
+  /** Same as `get(name, boot)` (SVS v3). */
   public add(name: NameLike, boot: number): SyncNode<SvSync.ID>;
 
   public add(arg1: any, boot = SvSync.makeBootstrapTime()): SyncNode<SvSync.ID> {
@@ -465,16 +453,9 @@ export namespace SvSync {
      */
     verifier?: Verifier;
 
-    /** @deprecated This option has no effect and should be deleted. */
-    svs2interest?: boolean;
-
-    /** @deprecated This option has no effect and should be deleted. */
-    svs2suppression?: boolean;
-
     /**
-     * Enable SVS v3 experimental features.
+     * Enable SVS v3 protocol.
      * @defaultValue false
-     * @experimental
      */
     svs3?: boolean;
   }
@@ -484,7 +465,6 @@ export namespace SvSync {
    * @param c - Constant factor.
    * @param f - Decay factor.
    * @returns Function to generate suppression timeout values.
-   * @experimental
    */
   export function suppressionExpDelay(c: number, f = 10): () => number {
     const cf = c / f;
@@ -494,10 +474,7 @@ export namespace SvSync {
     };
   }
 
-  /**
-   * Make SVS v3 bootstrap time based on current timestamp.
-   * @experimental
-   */
+  /** Make SVS v3 bootstrap time based on current timestamp. */
   export function makeBootstrapTime(now = Date.now()): number {
     return Math.trunc(now / 1000);
   }

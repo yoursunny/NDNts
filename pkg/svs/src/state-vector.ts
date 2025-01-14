@@ -207,7 +207,6 @@ export namespace StateVector {
      * Node bootstrap timestamp, seconds since Unix epoch (SVS v3).
      *
      * This field shall be set to -1 for SVS v2 nodes.
-     * @experimental
      */
     boot: number;
   }
