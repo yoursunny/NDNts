@@ -111,6 +111,15 @@ export class StateVector {
     }
   }
 
+  /** Return maximum bootstrap timestamp. */
+  public get maxBoot(): number {
+    let max = -1;
+    for (const [{ boot }] of this.m) {
+      max = Math.max(max, boot);
+    }
+    return max;
+  }
+
   private *iterOlderThan(other: StateVector): Iterable<StateVector.DiffEntry> {
     for (const [id, otherSeqNum] of other) {
       const thisSeqNum = this.get(id);

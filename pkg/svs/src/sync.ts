@@ -81,20 +81,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
   private makeFace(fw: Forwarder): void {
     this.face = fw.addFace({
       rx: this.txStream,
-      tx: (iterable) => consume(tap(async (pkt) => {
-        if (!(FwPacket.isEncodable(pkt) && pkt.l3 instanceof Interest)) {
-          return;
-        }
-        const interest = pkt.l3;
-        try {
-          const [recv] = await this.parseSyncInterest(interest);
-          await this.handleRecv(recv);
-        } catch (err: unknown) {
-          this.dispatchTypedEvent("rxerror", new CustomEvent<[interest: Interest, e: unknown]>("rxerror", {
-            detail: [interest, err],
-          }));
-        }
-      }, iterable)),
+      tx: (iterable) => consume(tap(this.handleRxPacket, iterable)),
     }, {
       describe: this.describe,
       routeCapture: false,
@@ -256,6 +243,31 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
     return this.own.get(id);
   };
 
+  private readonly handleRxPacket = async (pkt: FwPacket): Promise<void> => {
+    if (!(FwPacket.isEncodable(pkt) && pkt.l3 instanceof Interest)) {
+      return;
+    }
+
+    const interest = pkt.l3;
+    let recv: StateVector;
+    try {
+      [recv] = await this.parseSyncInterest(interest);
+    } catch (err: unknown) {
+      this.dispatchTypedEvent("rxerror", new CustomEvent<[interest: Interest, e: unknown]>("rxerror", {
+        detail: [interest, err],
+      }));
+      return;
+    }
+
+    const { maxBoot } = recv;
+    if (maxBoot > SvSync.makeBootstrapTime() + 86400) {
+      this.debug("rx-future", {}, recv);
+      return;
+    }
+
+    await this.handleRecv(recv);
+  };
+
   /**
    * Parse and verify incoming sync Interest.
    * @param interest - Received Interest.
@@ -305,7 +317,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
 
     if (this.aggregated) { // in suppression state
       this.aggregated.mergeFrom(recv);
-      return undefined;
+      return;
     }
 
     // in steady state
@@ -314,7 +326,6 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
       this.aggregated = recv;
     }
     this.resetTimer();
-    return undefined;
   }
 
   private shouldEnterSuppression(ourNewer: readonly StateVector.DiffEntry[]): boolean {
@@ -495,9 +506,9 @@ export namespace SvSync {
    * Sync node ID.
    *
    * For SVS v2, this should be accessed as `Name`.
-   * Accessing the object fields would give [name, -1].
+   * Accessing the object fields would give `{ name, boot: -1 }`.
    *
-   * For SVS v3, this should be access as `{ name, boot }` object.
+   * For SVS v3, this should be accessed as `{ name, boot }` object.
    * Accessing as `Name` would return the name only.
    *
    * Note: the `Name` variant will be deleted when SVS v2 support is dropped.

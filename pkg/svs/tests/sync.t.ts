@@ -153,7 +153,7 @@ test("5.3", async () => {
   const pB0 = await SvSync.create({ ...opts, describe: "B0" });
   const nB0 = pB0.get("/B", 1636266412);
   const pC0 = await SvSync.create({ ...opts, describe: "C0" });
-  closers.push(pB0, pC0);
+  closers.push(pA0, pB0, pC0);
 
   pA0.close();
   closers.splice(closers.indexOf(pA0), 1);
@@ -184,32 +184,6 @@ test("5.3", async () => {
   expect(pA1.get({ name: "/C", boot: 1636266115 }).seqNum).toBe(25);
   expect(pB0.get("/C", 1636266115).seqNum).toBe(25);
   expect(pC0.get("/C", 1636266115).seqNum).toBe(25);
-
-  // .get(id)
-  const nA1g = pA1.get(nA1.id);
-  expect(nA1g.id.name).toEqualName("/A");
-  expect(nA1g.id.boot).toBe(1736266473);
-  expect(nA1g.seqNum).toBe(1);
-
-  // .get(name) - search for last bootstrap time of the name
-  const nA1n = pA1.get("/A");
-  expect(nA1n.id.name).toEqualName("/A");
-  expect(nA1n.id.boot).toBe(1736266473);
-  expect(nA1n.seqNum).toBe(1);
-
-  const minBootstrapTime = (Date.now() - 2000) / 1000;
-
-  // .add(name) - do not search for last bootstrap time
-  const nA1a = pA1.add("/A");
-  expect(nA1a.id.name).toEqualName("/A");
-  expect(nA1a.id.boot).toBeGreaterThan(minBootstrapTime);
-  expect(nA1a.seqNum).toBe(0);
-
-  // .get(nonexistent-name)
-  const nDg = pA1.get("/D");
-  expect(nDg.id.name).toEqualName("/D");
-  expect(nDg.id.boot).toBeGreaterThan(minBootstrapTime);
-  expect(nDg.seqNum).toBe(0);
 });
 
 test("initialize", async () => {
@@ -277,4 +251,58 @@ test("initialize", async () => {
   ++n1D.seqNum;
   await delay(200);
   expect(debugHandler.cnt.get("1:send")).toBe(1);
+});
+
+test("get add", async () => {
+  const initialStateVector = new StateVector();
+  initialStateVector.set({ name: new Name("/A"), boot: 1736890900 }, 1);
+  initialStateVector.set({ name: new Name("/A"), boot: 1736890910 }, 1);
+  initialStateVector.set({ name: new Name("/B"), boot: 1736890920 }, 1);
+
+  const p = await SvSync.create({ ...baseOpts, svs3: true, initialStateVector });
+  closers.push(p);
+
+  // .get(id)
+  const n0 = p.get({ name: "/A", boot: 1736890900 });
+  expect(n0.id.name).toEqualName("/A");
+  expect(n0.id.boot).toBe(1736890900);
+  expect(n0.seqNum).toBe(1);
+
+  // .get(name) - search for last bootstrap time of the name
+  const n1 = p.get("/A");
+  expect(n1.id.name).toEqualName("/A");
+  expect(n1.id.boot).toBe(1736890910);
+  expect(n1.seqNum).toBe(1);
+
+  const minBootstrapTime = (Date.now() - 2000) / 1000;
+
+  // .add(name) - do not search for last bootstrap time
+  const n2 = p.add("/A");
+  expect(n2.id.name).toEqualName("/A");
+  expect(n2.id.boot).toBeGreaterThan(minBootstrapTime);
+  expect(n2.seqNum).toBe(0);
+
+  // .get(nonexistent-name)
+  const n3 = p.get("/D");
+  expect(n3.id.name).toEqualName("/D");
+  expect(n3.id.boot).toBeGreaterThan(minBootstrapTime);
+  expect(n3.seqNum).toBe(0);
+});
+
+test("future bootstrap time", async () => {
+  const debugHandler = new DebugHandler();
+
+  const opts: SvSync.Options = { ...baseOpts, svs3: true };
+
+  const pA = await SvSync.create({ ...opts, describe: "A" });
+  const pB = await SvSync.create({ ...opts, describe: "B" });
+
+  debugHandler.start(pA);
+  debugHandler.start(pB);
+
+  const nB = pB.add("/B", SvSync.makeBootstrapTime() + 86499);
+  ++nB.seqNum;
+
+  await delay(100);
+  expect(debugHandler.cnt.peek("A:rx-future")).toBeGreaterThanOrEqual(1);
 });

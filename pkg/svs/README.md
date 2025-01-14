@@ -17,7 +17,7 @@ Compatibility with the reference implementation is validated in [sync-interop](.
 [SVS v3](https://github.com/named-data/StateVectorSync/pull/15) is partially implemented:
 
 * [X] Encode StateVector with BootstrapTime field.
-* [ ] Reject BootstrapTime in the future.
+* [X] Reject BootstrapTime in the future.
 * [X] Embed StateVector Data in Sync Interest.
 * [X] Re-bootstrap test case.
 * [X] NDNd interop test case.
