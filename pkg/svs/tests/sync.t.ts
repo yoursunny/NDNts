@@ -144,9 +144,9 @@ test("5.3", async () => {
   const debugHandler = new DebugHandler();
 
   const initialStateVector = new StateVector();
-  initialStateVector.set({ name: new Name("/A"), bootstrapTime: 1636266330 }, 10);
-  initialStateVector.set({ name: new Name("/B"), bootstrapTime: 1636266412 }, 15);
-  initialStateVector.set({ name: new Name("/C"), bootstrapTime: 1636266115 }, 25);
+  initialStateVector.set({ name: new Name("/A"), boot: 1636266330 }, 10);
+  initialStateVector.set({ name: new Name("/B"), boot: 1636266412 }, 15);
+  initialStateVector.set({ name: new Name("/C"), boot: 1636266115 }, 25);
 
   const opts: SvSync.Options = { ...baseOpts, svs3: true, initialStateVector };
 
@@ -182,20 +182,20 @@ test("5.3", async () => {
   expect(pA1.get("/B", 1636266412).seqNum).toBe(16);
   expect(pB0.get("/B", 1636266412).seqNum).toBe(16);
   expect(pC0.get("/B", 1636266412).seqNum).toBe(16);
-  expect(pA1.get({ name: "/C", bootstrapTime: 1636266115 }).seqNum).toBe(25);
+  expect(pA1.get({ name: "/C", boot: 1636266115 }).seqNum).toBe(25);
   expect(pB0.get("/C", 1636266115).seqNum).toBe(25);
   expect(pC0.get("/C", 1636266115).seqNum).toBe(25);
 
   // .get(id)
   const nA1g = pA1.get(nA1.id);
   expect(nA1g.id.name).toEqualName("/A");
-  expect(nA1g.id.bootstrapTime).toBe(1736266473);
+  expect(nA1g.id.boot).toBe(1736266473);
   expect(nA1g.seqNum).toBe(1);
 
   // .get(name)
   const nA1n = pA1.get("/A");
   expect(nA1n.id.name).toEqualName("/A");
-  expect(nA1n.id.bootstrapTime).toBe(1736266473);
+  expect(nA1n.id.boot).toBe(1736266473);
   expect(nA1n.seqNum).toBe(1);
 
   const minBootstrapTime = (Date.now() - 2000) / 1000;
@@ -203,13 +203,13 @@ test("5.3", async () => {
   // .add(name)
   const nA1a = pA1.add("/A");
   expect(nA1a.id.name).toEqualName("/A");
-  expect(nA1a.id.bootstrapTime).toBeGreaterThan(minBootstrapTime);
+  expect(nA1a.id.boot).toBeGreaterThan(minBootstrapTime);
   expect(nA1a.seqNum).toBe(0);
 
   // .get(nonexistent-name)
   const nDg = pA1.get("/D");
   expect(nDg.id.name).toEqualName("/D");
-  expect(nDg.id.bootstrapTime).toBeGreaterThan(minBootstrapTime);
+  expect(nDg.id.boot).toBeGreaterThan(minBootstrapTime);
   expect(nDg.seqNum).toBe(0);
 });
 

@@ -7,11 +7,11 @@ const sync = await openSvSync(false);
 
 sync.addEventListener("update", (update) => {
   const { id, loSeqNum, hiSeqNum } = update;
-  console.log(`UPDATE ${id} ${loSeqNum}..${hiSeqNum}`);
+  console.log(`UPDATE ${id.name}:${id.boot} ${loSeqNum}..${hiSeqNum}`);
 });
 
 const node = sync.add(args.me);
 exitClosers.addTimeout(setInterval(() => {
   ++node.seqNum;
-  console.log(`PUBLISH ${node.id} ${node.seqNum}`);
+  console.log(`PUBLISH ${node.id.name}:${node.id.boot} ${node.seqNum}`);
 }, 5000));

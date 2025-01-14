@@ -50,10 +50,10 @@ test("basic", () => {
 
 test("encode3", () => {
   const v0 = new StateVector();
-  v0.set({ name: new Name("/A"), bootstrapTime: 1636266330 }, 10);
-  v0.set({ name: new Name("/B"), bootstrapTime: 1636266412 }, 16);
-  v0.set({ name: new Name("/C"), bootstrapTime: 1636266115 }, 25);
-  v0.set({ name: new Name("/A"), bootstrapTime: 1736266473 }, 1);
+  v0.set({ name: new Name("/A"), boot: 1636266330 }, 10);
+  v0.set({ name: new Name("/B"), boot: 1636266412 }, 16);
+  v0.set({ name: new Name("/C"), boot: 1636266115 }, 25);
+  v0.set({ name: new Name("/A"), boot: 1736266473 }, 1);
 
   const encoder = new Encoder();
   v0.encodeTo(encoder, 3);

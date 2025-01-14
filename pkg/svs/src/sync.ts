@@ -152,15 +152,15 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
    * Retrieve or create sync node by name and bootstrap time (SVS v3).
    * @experimental
    */
-  public get(id: { name: NameLike; bootstrapTime: number }): SyncNode<SvSync.ID>;
+  public get(id: { name: NameLike; boot: number }): SyncNode<SvSync.ID>;
 
   /**
    * Retrieve or create sync node by name and bootstrap time (SVS v3).
    * @experimental
    */
-  public get(name: NameLike, bootstrapTime: number): SyncNode<SvSync.ID>;
+  public get(name: NameLike, boot: number): SyncNode<SvSync.ID>;
 
-  public get(arg1: NameLike | { name: NameLike; bootstrapTime: number }, bootstrapTime = -1) {
+  public get(arg1: NameLike | { name: NameLike; boot: number }, boot = -1) {
     let id: IDImpl;
     if (arg1 instanceof IDImpl) {
       id = arg1;
@@ -169,16 +169,16 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
       if (Name.isNameLike(arg1)) {
         name = arg1;
       } else {
-        ({ name, bootstrapTime } = arg1);
+        ({ name, boot } = arg1);
       }
       name = Name.from(name);
 
       if (!this.svs3) {
         id = new IDImpl(name);
-      } else if (bootstrapTime === -1) {
+      } else if (boot === -1) {
         id = this.findByName(name) as IDImpl | undefined ?? new IDImpl(name, SvSync.makeBootstrapTime());
       } else {
-        id = new IDImpl(name, bootstrapTime);
+        id = new IDImpl(name, boot);
       }
     }
     return new SvSyncNode(id, this.nodeOp);
@@ -200,16 +200,16 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
    * Same as `get(id)` (SVS v3).
    * @experimental
    */
-  public add(id: { name: NameLike; bootstrapTime: number }): SyncNode<SvSync.ID>;
+  public add(id: { name: NameLike; boot: number }): SyncNode<SvSync.ID>;
 
   /**
-   * Same as `get(name, bootstrapTime)` (SVS v3).
+   * Same as `get(name, boot)` (SVS v3).
    * @experimental
    */
-  public add(name: NameLike, bootstrapTime: number): SyncNode<SvSync.ID>;
+  public add(name: NameLike, boot: number): SyncNode<SvSync.ID>;
 
-  public add(arg1: any, bootstrapTime = SvSync.makeBootstrapTime()): SyncNode<SvSync.ID> {
-    return this.get(arg1, bootstrapTime);
+  public add(arg1: any, boot = SvSync.makeBootstrapTime()): SyncNode<SvSync.ID> {
+    return this.get(arg1, boot);
   }
 
   private findByName(name: Name): StateVector.ID | undefined {
@@ -218,7 +218,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
       if (!id.name.equals(name)) {
         continue;
       }
-      if (!best || id.bootstrapTime > best.bootstrapTime) {
+      if (!best || id.boot > best.boot) {
         best = id;
       }
     }
@@ -497,7 +497,7 @@ export namespace SvSync {
    * For SVS v2, this should be accessed as `Name`.
    * Accessing the object fields would give [name, -1].
    *
-   * For SVS v3, this should be access as `{ name, bootstrapTime }` object.
+   * For SVS v3, this should be access as `{ name, boot }` object.
    * Accessing as `Name` would return the name only.
    *
    * Note: the `Name` variant will be deleted when SVS v2 support is dropped.

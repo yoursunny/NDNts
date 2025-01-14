@@ -10,7 +10,7 @@ const EVD = new EvDecoder<NodeMap>("StateVector", TT.StateVector)
   .add(TT.StateVectorEntry,
     new EvDecoder<NodeMap>("StateVectorEntry")
       .add(l3TT.Name, (t, { decoder }) => {
-        evdContext.set(t, { name: decoder.decode(Name), bootstrapTime: -1 });
+        evdContext.set(t, { name: decoder.decode(Name), boot: -1 });
       }, { required: true })
       .add(TT.SeqNo, (t, { nni }) => {
         t.set(makeIDImpl(evdContext.get(t)!), { seqNum: nni, lastUpdate: 0 });
@@ -18,7 +18,7 @@ const EVD = new EvDecoder<NodeMap>("StateVector", TT.StateVector)
       .add(TT.SeqNoEntry,
         new EvDecoder<NodeMap>("SeqNoEntry")
           .add(TT.BootstrapTime, (t, { nni }) => {
-            evdContext.get(t)!.bootstrapTime = nni;
+            evdContext.get(t)!.boot = nni;
           }, { required: true })
           .add(TT.SeqNo3, (t, { nni }) => {
             t.set(makeIDImpl(evdContext.get(t)!), { seqNum: nni, lastUpdate: 0 });
@@ -59,9 +59,9 @@ export class StateVector {
       }
     } else if (from !== undefined) {
       for (const [idStr, entry] of Object.entries(from)) {
-        const [nameHex, bootstrapTimeStr = "-1"] = idStr.split(":");
+        const [nameHex, bootStr = "-1"] = idStr.split(":");
         this.m.set(
-          new IDImpl(new Name(fromHex(nameHex!)), Number.parseInt(bootstrapTimeStr, 10)),
+          new IDImpl(new Name(fromHex(nameHex!)), Number.parseInt(bootStr, 10)),
           toNodeEntry(entry, lastUpdate),
         );
       }
@@ -155,7 +155,7 @@ export class StateVector {
   /** Encode StateVector TLV. */
   public encodeTo(encoder: Encoder, version: 2 | 3 = 2): void {
     const list = Array.from(this);
-    list.sort(([a], [b]) => -(a.name.compare(b.name) || a.bootstrapTime - b.bootstrapTime));
+    list.sort(([a], [b]) => -(a.name.compare(b.name) || a.boot - b.boot));
     const sizeBefore = encoder.size;
     this[`svs${version}EncodeValue`](encoder, list);
     encoder.prependTypeLength(TT.StateVector, encoder.size - sizeBefore);
@@ -172,10 +172,10 @@ export class StateVector {
 
   private svs3EncodeValue(encoder: Encoder, list: ReadonlyArray<[id: StateVector.ID, seqNum: number]>): void {
     let seqNoEntries: EncodableTlv[] = [];
-    for (const [i, [{ name, bootstrapTime }, seqNum]] of list.entries()) {
+    for (const [i, [{ name, boot }, seqNum]] of list.entries()) {
       seqNoEntries.unshift([
         TT.SeqNoEntry,
-        [TT.BootstrapTime, NNI(bootstrapTime)],
+        [TT.BootstrapTime, NNI(boot)],
         [TT.SeqNo3, NNI(seqNum)],
       ]);
 
@@ -207,7 +207,7 @@ export namespace StateVector {
      * This field shall be set to -1 for SVS v2 nodes.
      * @experimental
      */
-    bootstrapTime: number;
+    boot: number;
   }
 
   /** Per-node entry. */
@@ -241,12 +241,12 @@ function toNodeEntry(entry: number | StateVector.NodeEntry, lastUpdate = Date.no
 }
 
 export class IDImpl extends Name implements StateVector.ID {
-  constructor(public readonly name: Name, public readonly bootstrapTime = -1) {
+  constructor(name: Name, public readonly boot = -1) {
     super(name);
   }
 
-  public override toString(): string {
-    return `${this.name}:${this.bootstrapTime}`;
+  public get name(): Name {
+    return this;
   }
 }
 
@@ -254,14 +254,14 @@ export function makeIDImpl(input: Name | StateVector.ID): IDImpl {
   if (input instanceof IDImpl) {
     return input;
   }
-  if ("bootstrapTime" in input) {
-    return new IDImpl(input.name, input.bootstrapTime);
+  if ("boot" in input) {
+    return new IDImpl(input.name, input.boot);
   }
   return new IDImpl(input);
 }
 
 function mapKeyOf(id: Name | StateVector.ID): string {
-  return "bootstrapTime" in id ? `${id.name.valueHex}:${id.bootstrapTime}` : `${id.valueHex}:-1`;
+  return "boot" in id ? `${id.name.valueHex}:${id.boot}` : `${id.valueHex}:-1`;
 }
 
 class NodeMap extends KeyMap<IDImpl, StateVector.NodeEntry, string, Parameters<typeof mapKeyOf>[0]> {
