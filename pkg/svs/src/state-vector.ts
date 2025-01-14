@@ -28,25 +28,18 @@ const EVD = new EvDecoder<NodeMap>("StateVector", TT.StateVector)
     { repeat: true })
   .setIsCritical(EvDecoder.alwaysCritical);
 
-/**
- * SVS state vector.
-
- * For the `id` argument in various methods:
- * - For SVS v2, this is the node name.
- * - For SVS v3, this is the result of {@link StateVector.joinID}.
- */
+/** SVS state vector. */
 export class StateVector {
   /**
    * Constructor.
    * @param from - Copy from state vector or its JSON value.
-   * @param lastUpdate - Initial lastUpdate value for each node entry.
    */
-  constructor(from?: StateVector | Record<string, number>, lastUpdate?: number);
+  constructor(from?: StateVector | Record<string, number>);
 
   /** @internal */
   constructor(from: NodeMap);
 
-  constructor(from?: StateVector | Record<string, number> | NodeMap, lastUpdate = 0) {
+  constructor(from?: StateVector | Record<string, number> | NodeMap) {
     if (from instanceof NodeMap) {
       this.m = from;
       return;
@@ -55,14 +48,14 @@ export class StateVector {
     this.m = new NodeMap();
     if (from instanceof StateVector) {
       for (const [id, seqNum] of from) {
-        this.m.set(id, { seqNum, lastUpdate });
+        this.m.set(id, { seqNum, lastUpdate: 0 });
       }
     } else if (from !== undefined) {
-      for (const [idStr, entry] of Object.entries(from)) {
+      for (const [idStr, seqNum] of Object.entries(from)) {
         const [nameHex, bootStr = "-1"] = idStr.split(":");
         this.m.set(
           new IDImpl(new Name(fromHex(nameHex!)), Number.parseInt(bootStr, 10)),
-          toNodeEntry(entry, lastUpdate),
+          { seqNum, lastUpdate: 0 },
         );
       }
     }
@@ -96,14 +89,14 @@ export class StateVector {
    * Set node sequence number or entry.
    * @param id - Name (SVS v2) or Name+bootstrapTime (SVS v3).
    * @param entry -
-   * If specified as number, it's interpreted as sequence number, and `Date.now()` is used as
-   * lastUpdate. Otherwise, it's used as the node entry.
+   * If specified as number, it's interpreted as sequence number, and `performance.now()` is used
+   * as lastUpdate. Otherwise, it's used as the node entry.
    *
    * @remarks
    * Setting sequence number to zero removes the node.
    */
   public set(id: Name | StateVector.ID, entry: number | StateVector.NodeEntry): void {
-    entry = toNodeEntry(entry);
+    entry = typeof entry === "number" ? { seqNum: entry, lastUpdate: performance.now() } : entry;
     if (entry.seqNum <= 0) {
       this.m.delete(id);
     } else {
@@ -137,7 +130,7 @@ export class StateVector {
   }
 
   /** Update this state vector to have newer sequence numbers between this and other. */
-  public mergeFrom(other: StateVector, lastUpdate = Date.now()): void {
+  public mergeFrom(other: StateVector, lastUpdate = performance.now()): void {
     for (const { id, hiSeqNum } of this.iterOlderThan(other)) {
       this.set(id, { seqNum: hiSeqNum, lastUpdate });
     }
@@ -215,7 +208,7 @@ export namespace StateVector {
     /** Current sequence number (positive integer). */
     seqNum: number;
 
-    /** Last update timestamp (from `Date.now()`). */
+    /** Last update timestamp (from `performance.now()`). */
     lastUpdate: number;
   }
 
@@ -230,14 +223,6 @@ export namespace StateVector {
     /** High sequence number (inclusive). */
     hiSeqNum: number;
   }
-}
-
-function toNodeEntry(entry: number | StateVector.NodeEntry, lastUpdate = Date.now()): StateVector.NodeEntry {
-  if (typeof entry === "number") {
-    entry = { seqNum: entry, lastUpdate };
-  }
-  entry.seqNum = Math.trunc(entry.seqNum);
-  return entry;
 }
 
 export class IDImpl extends Name implements StateVector.ID {

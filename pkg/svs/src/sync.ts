@@ -318,7 +318,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
   }
 
   private shouldEnterSuppression(ourNewer: readonly StateVector.DiffEntry[]): boolean {
-    const ignoreUpdatedAfter = Date.now() - this.suppressionPeriod;
+    const ignoreUpdatedAfter = performance.now() - this.suppressionPeriod;
     return ourNewer.some(({ id }) => this.own.getEntry(id).lastUpdate <= ignoreUpdatedAfter);
   }
 

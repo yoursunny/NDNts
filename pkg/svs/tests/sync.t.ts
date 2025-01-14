@@ -31,16 +31,15 @@ class UpdateHandler {
 
 class DebugHandler {
   public static printing = process.env.NDNTS_SYNC_DEBUG === "1";
-  private readonly t0 = Date.now();
+  private readonly t0 = performance.now();
   public readonly cnt = new DefaultMap<string, number>(() => 0);
 
   public start(sync: SvSync): void {
-    const id = sync.describe;
     sync.addEventListener("debug", ({ detail: { action, state, nextState, ourOlder, ourNewer } }) => {
-      const cnt = `${id}:${action}`;
+      const cnt = `${sync.describe}:${action}`;
       this.cnt.set(cnt, this.cnt.get(cnt) + 1);
       if (DebugHandler.printing) {
-        process.stderr.write(`${Date.now() - this.t0} ${id} ${action
+        process.stderr.write(`${performance.now() - this.t0} ${sync.describe} ${action
         } ${JSON.stringify({ state, nextState, ourOlder, ourNewer })}\n`);
       }
     });
@@ -192,7 +191,7 @@ test("5.3", async () => {
   expect(nA1g.id.boot).toBe(1736266473);
   expect(nA1g.seqNum).toBe(1);
 
-  // .get(name)
+  // .get(name) - search for last bootstrap time of the name
   const nA1n = pA1.get("/A");
   expect(nA1n.id.name).toEqualName("/A");
   expect(nA1n.id.boot).toBe(1736266473);
@@ -200,7 +199,7 @@ test("5.3", async () => {
 
   const minBootstrapTime = (Date.now() - 2000) / 1000;
 
-  // .add(name)
+  // .add(name) - do not search for last bootstrap time
   const nA1a = pA1.add("/A");
   expect(nA1a.id.name).toEqualName("/A");
   expect(nA1a.id.boot).toBeGreaterThan(minBootstrapTime);

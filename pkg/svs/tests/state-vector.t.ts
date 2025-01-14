@@ -28,7 +28,7 @@ test("basic", () => {
   const wire = fromHex("C918CA0A070508036F6E65CC0101CA0A0705080374776FCC0102");
   expect(Encoder.encode(v0)).toEqualUint8Array(wire);
 
-  const t0 = Date.now();
+  const t0 = performance.now();
   v0.set(name4, 44);
   expect(v0.get(name4)).toBe(44);
   expect(v0.getEntry(name4).lastUpdate).toBeGreaterThanOrEqual(t0);
