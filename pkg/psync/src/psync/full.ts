@@ -177,7 +177,7 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
     return pending.defer.promise;
   };
 
-  private handleIncreaseSeqNum = (node: PSyncNode) => {
+  private readonly handleIncreaseSeqNum = (node: PSyncNode) => {
     this.debug(`+(${node.id},${node.seqNum})`);
 
     for (const [ibltCompHex, { interest, recvIblt, expire, defer }] of this.pPendings) {

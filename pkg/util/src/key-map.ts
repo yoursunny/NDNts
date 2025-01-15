@@ -1,3 +1,5 @@
+const emptySet: ReadonlySet<any> = new Set();
+
 /**
  * Map that transforms keys.
  * @typeParam K - Input key type.
@@ -70,7 +72,7 @@ export class KeyMultiMap<K, V, I, L = K> implements Iterable<[key: K, value: V]>
 
   /** List values associated with a key. */
   public list(key: K | L): ReadonlySet<V> {
-    return this.m.get(key) ?? new Set<V>();
+    return this.m.get(key) ?? emptySet;
   }
 
   /**

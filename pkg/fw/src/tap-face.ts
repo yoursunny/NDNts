@@ -23,7 +23,7 @@ class TapRxController {
     this.detachIfIdle();
   }
 
-  private facerm = (evt: Forwarder.FaceEvent) => {
+  private readonly facerm = (evt: Forwarder.FaceEvent) => {
     const dst = this.taps.list(evt.face);
     for (const { rx } of dst) {
       rx.stop();
@@ -39,7 +39,7 @@ class TapRxController {
     }
   }
 
-  private pktrx = (evt: Forwarder.PacketEvent) => {
+  private readonly pktrx = (evt: Forwarder.PacketEvent) => {
     const dst = this.taps.list(evt.face);
     for (const { rx } of dst) {
       rx.push(evt.packet);
@@ -50,7 +50,7 @@ class TapRxController {
 const ctrls = new DefaultWeakMap<Forwarder, TapRxController>((fw) => new TapRxController(fw));
 
 /**
- * Create a secondary face by tapping on a primary face.
+ * Create a secondary face that shares the transport of a primary face.
  *
  * @remarks
  * TapFace is useful for sending in-band management commands to a specific neighbor, after being
@@ -59,9 +59,19 @@ const ctrls = new DefaultWeakMap<Forwarder, TapRxController>((fw) => new TapRxCo
  * but does not see TX packets.
  */
 export class TapFace implements FwFace.RxTx {
-  constructor(public readonly face: FwFace) {
+  /**
+   * Create a new secondary {@link Forwarder} and add a {@link TapFace}.
+   * @param face - FwFace on the existing primary forwarder.
+   * @returns FwFace on a new forwarder. The forwarder may be retrieved in `.fw` property.
+   */
+  public static create(face: FwFace): FwFace {
+    const fw = Forwarder.create();
+    return fw.addFace(new TapFace(face));
+  }
+
+  private constructor(public readonly face: FwFace) {
     this.ctrl = ctrls.get(face.fw);
-    this.ctrl.add(this.face, this);
+    this.ctrl.add(face, this);
   }
 
   public get attributes() {
@@ -80,17 +90,5 @@ export class TapFace implements FwFace.RxTx {
       (this.face as FaceImpl).send(pkt);
     }
     this.ctrl.remove(this.face, this);
-  }
-}
-
-export namespace TapFace {
-  /**
-   * Create a new {@link Forwarder} and add a {@link TapFace}.
-   * @param face - FwFace on the existing forwarder.
-   * @returns FwFace on a new forwarder. The forwarder may be retrieved in `.fw` property.
-   */
-  export function create(face: FwFace): FwFace {
-    const fw = Forwarder.create();
-    return fw.addFace(new TapFace(face));
   }
 }

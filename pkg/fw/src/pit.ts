@@ -106,7 +106,7 @@ export class PitEntry {
     }
   }
 
-  private expire = () => {
+  private readonly expire = () => {
     this.pit.eraseEntry(this);
     for (const [face, { token }] of this.dnRecords) {
       face.send(new RejectInterest("expire", this.interest, token));

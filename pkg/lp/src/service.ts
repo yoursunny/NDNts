@@ -98,7 +98,7 @@ export class LpService {
         lpp.payload = Encoder.encode(l3);
       }
     } catch (err: unknown) {
-      return yield new LpService.TxError(err as Error, pkt.l3);
+      return yield new LpService.TxError(err as Error, l3);
     }
 
     if (!lpp.hasL3Headers() && lpp.payload.length <= mtu) {

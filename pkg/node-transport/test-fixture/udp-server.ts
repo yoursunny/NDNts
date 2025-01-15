@@ -74,7 +74,7 @@ export abstract class UdpServer implements AsyncDisposable {
 
   protected abstract handleNewTransport(transport: UdpServerTransport): void;
 
-  private handleMessage = (pkt: Uint8Array, { address, port }: dgram.RemoteInfo): void => {
+  private readonly handleMessage = (pkt: Uint8Array, { address, port }: dgram.RemoteInfo): void => {
     const transport = this.ensureTransport(address, port);
     transport.recv(pkt);
   };
