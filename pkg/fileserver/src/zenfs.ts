@@ -73,18 +73,9 @@ export class NDNFileSystem extends Async(Readonly(FileSystem)) { // eslint-disab
     return new LazyFile(this, path, flag, await this.stat(path));
   }
 
-  public override async read(path: string, offset: number, length: number): Promise<Uint8Array> {
+  public override async read(path: string, buffer: Uint8Array, offset: number, end: number): Promise<void> {
     const m = await this.getFileMetadata(path);
-    const b = new Uint8Array(length);
-    await this.client.readFileInto(m, b, 0, length, offset);
-    return b;
-  }
-
-  public override write(path: string, buffer: Uint8Array, offset: number): Promise<void> {
-    // https://github.com/zen-fs/core/issues/169
-    void buffer;
-    void offset;
-    throw new ErrnoError(Errno.EROFS, "filesystem is readonly", path);
+    await this.client.readFileInto(m, buffer, 0, end - offset, offset);
   }
 }
 export namespace NDNFileSystem {
