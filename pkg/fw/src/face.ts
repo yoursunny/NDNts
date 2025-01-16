@@ -1,5 +1,5 @@
 import { Data, Interest, Nack, Name, type NameLike, NameMultiSet } from "@ndn/packet";
-import { pushable, safeIter } from "@ndn/util";
+import { assert, pushable, safeIter } from "@ndn/util";
 import { filter, pipeline, tap } from "streaming-iterables";
 import { TypedEventTarget } from "typescript-event-target";
 
@@ -105,7 +105,18 @@ export namespace FwFace {
    * - number: n-component prefix of route name.
    * - {@link Name} or string: specified name.
    */
-  export type RouteAnnouncement = boolean | number | NameLike;
+  export type RouteAnnouncement = boolean | number | NameLike | RouteAnnouncementObj;
+
+  /**
+   * Route announcement object.
+   * This would be passed to ReadvertiseDestination for its selective use.
+   *
+   * @remarks
+   * One implementation is `PrefixAnn` in \@ndn/nfdmgmt package.
+   */
+  export interface RouteAnnouncementObj {
+    readonly announced: Name;
+  }
 
   export type RxTxEventMap = Pick<EventMap, "up" | "down">;
 
@@ -164,7 +175,12 @@ function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement)
       return announcement ? name : undefined;
     }
   }
-  return Name.from(announcement);
+  if (Name.isNameLike(announcement)) {
+    return Name.from(announcement);
+  }
+  const { announced } = announcement;
+  assert(announced instanceof Name);
+  return announced;
 }
 
 export class FaceImpl extends TypedEventTarget<EventMap> implements FwFace {

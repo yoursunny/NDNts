@@ -1,4 +1,4 @@
-export * from "./an-nfd-prefixreg";
+export { RouteFlags } from "./an-nfd-prefixreg";
 
 export const TT = {
   BaseCongestionMarkingInterval: 0x87,

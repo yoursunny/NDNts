@@ -29,6 +29,7 @@
     "@ndn/endpoint": "workspace:*",
     "@ndn/fw": "workspace:*",
     "@ndn/keychain": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",

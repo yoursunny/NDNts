@@ -22,17 +22,10 @@ export class Certificate {
    */
   public static fromData(data: Data): Certificate {
     const { name, contentType, sigInfo: { validity } } = data;
-    if (!CertNaming.isCertName(name)) {
-      throw new Error(`${name} is not a certificate name`);
-    }
-    if (contentType !== ContentTypeKEY) {
-      throw new Error("ContentType must be KEY");
-    }
-    if (!validity) {
-      throw new Error("ValidityPeriod is missing");
-    }
-    const cert = new Certificate(data, validity);
-    return cert;
+    assert(CertNaming.isCertName(name), `${name} is not a certificate name`);
+    assert(contentType === ContentTypeKEY, "ContentType must be KEY");
+    assert(validity, "ValidityPeriod is missing");
+    return new Certificate(data, validity);
   }
 
   private constructor(public readonly data: Data, public readonly validity: ValidityPeriod) {}
@@ -130,7 +123,10 @@ export namespace Certificate {
     signer,
   }: BuildOptions): Promise<Certificate> {
     assert(CertNaming.isCertName(name));
-    const data = new Data(name, Data.ContentType(ContentTypeKEY), Data.FreshnessPeriod(freshness));
+    const data = new Data();
+    data.name = name;
+    data.contentType = ContentTypeKEY;
+    data.freshnessPeriod = freshness;
     data.sigInfo = new SigInfo(validity);
     data.content = publicKeySpki;
     await signer.sign(data);

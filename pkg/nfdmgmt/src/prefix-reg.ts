@@ -7,21 +7,11 @@ import { Closers, randomJitter } from "@ndn/util";
 import map from "obliterator/map.js";
 import type { Except, Promisable } from "type-fest";
 
-import { RouteFlags } from "./an-nfd-prefixreg";
+import { RouteFlags, TT } from "./an-nfd-prefixreg";
 import { getPrefix } from "./common";
 import { type ControlCommandOptions, invokeGeneric } from "./control-command-generic";
 import type { ControlParameters } from "./control-command-nfd";
 import type { ControlResponse } from "./control-response";
-
-const enum TT {
-  ControlParameters = 0x68,
-  Cost = 0x6A,
-  ExpirationPeriod = 0x6D,
-  Flags = 0x6C,
-  Origin = 0x6F,
-  // don't import an-nfd.ts to reduce browser bundle size
-  // unit tests verify consistency of those TLV-TYPE numbers
-}
 
 interface State {
   refreshTimer?: NodeJS.Timeout | number;

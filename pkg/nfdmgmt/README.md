@@ -73,3 +73,7 @@ uplinkC.close();
 uplinkP.close();
 producer.close();
 ```
+
+## Prefix Announcement
+
+[Prefix Announcement Protocol](https://redmine.named-data.net/projects/nfd/wiki/PrefixAnnouncement) is being implemented.
