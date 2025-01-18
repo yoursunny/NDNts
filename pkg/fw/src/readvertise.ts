@@ -19,7 +19,7 @@ export class Readvertise {
   public readonly announcements = new NameMultiMap<FaceImpl>();
   public readonly destinations = new Set<ReadvertiseDestination>();
 
-  public addAnnouncement(face: FaceImpl, name: Name) {
+  public addAnnouncement(face: FaceImpl, name: Name): void {
     if (this.announcements.add(name, face) > 1) {
       return;
     }
@@ -30,7 +30,7 @@ export class Readvertise {
     }
   }
 
-  public removeAnnouncement(face: FaceImpl, name: Name) {
+  public removeAnnouncement(face: FaceImpl, name: Name): void {
     if (this.announcements.remove(name, face) > 0) {
       return;
     }
@@ -135,7 +135,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
     });
   }
 
-  private async process() {
+  private async process(): Promise<void> {
     for await (const name of this.queue) {
       const record = this.table.get(name);
       if (!record) { continue; }

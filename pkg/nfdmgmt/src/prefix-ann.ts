@@ -19,7 +19,7 @@ const EVD = new EvDecoder<Fields>("PrefixAnn")
  * Prefix Announcement object.
  * @see {@link https://redmine.named-data.net/projects/nfd/wiki/PrefixAnnouncement}
  */
-export class PrefixAnn implements FwFace.RouteAnnouncementObj {
+export class PrefixAnn implements FwFace.PrefixAnnouncementObj {
   /**
    * Construct Prefix Announcement object from Data packet.
    *

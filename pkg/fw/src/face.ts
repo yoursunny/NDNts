@@ -1,5 +1,5 @@
 import { Data, Interest, Nack, Name, type NameLike, NameMultiSet } from "@ndn/packet";
-import { assert, pushable, safeIter } from "@ndn/util";
+import { pushable, safeIter } from "@ndn/util";
 import { filter, pipeline, tap } from "streaming-iterables";
 import { TypedEventTarget } from "typescript-event-target";
 
@@ -58,10 +58,10 @@ export interface FwFace extends TypedEventTarget<EventMap> {
    *
    * This function has no effect if `FwFace.Attributes.advertiseFrom` is set to `false`.
    */
-  addAnnouncement: (name: NameLike) => void;
+  addAnnouncement: (announcement: FwFace.PrefixAnnouncement) => void;
 
   /** Remove a prefix announcement associated with the face. */
-  removeAnnouncement: (name: NameLike) => void;
+  removeAnnouncement: (announcement: FwFace.PrefixAnnouncement) => void;
 }
 
 export namespace FwFace {
@@ -105,16 +105,19 @@ export namespace FwFace {
    * - number: n-component prefix of route name.
    * - {@link Name} or string: specified name.
    */
-  export type RouteAnnouncement = boolean | number | NameLike | RouteAnnouncementObj;
+  export type RouteAnnouncement = boolean | number | PrefixAnnouncement;
+
+  /** Prefix announcement passed to {@link FwFace.addAnnouncement}. */
+  export type PrefixAnnouncement = NameLike | PrefixAnnouncementObj;
 
   /**
-   * Route announcement object.
+   * Prefix announcement object.
    * This would be passed to ReadvertiseDestination for its selective use.
    *
    * @remarks
    * One implementation is `PrefixAnn` in \@ndn/nfdmgmt package.
    */
-  export interface RouteAnnouncementObj {
+  export interface PrefixAnnouncementObj {
     readonly announced: Name;
   }
 
@@ -166,7 +169,7 @@ function duplexFromRxTx(rxtx: FwFace.RxTx | FwFace.RxTxDuplex): FwFace.RxTxDuple
   };
 }
 
-function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement): Name | undefined {
+function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement): FwFace.PrefixAnnouncement | undefined {
   switch (typeof announcement) {
     case "number": {
       return name.getPrefix(announcement);
@@ -175,12 +178,7 @@ function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement)
       return announcement ? name : undefined;
     }
   }
-  if (Name.isNameLike(announcement)) {
-    return Name.from(announcement);
-  }
-  const { announced } = announcement;
-  assert(announced instanceof Name);
-  return announced;
+  return announcement;
 }
 
 export class FaceImpl extends TypedEventTarget<EventMap> implements FwFace {
@@ -276,21 +274,21 @@ export class FaceImpl extends TypedEventTarget<EventMap> implements FwFace {
     this.fw.dispatchTypedEvent("prefixrm", new Forwarder.PrefixEvent("prefixrm", this, name));
   }
 
-  public addAnnouncement(nameInput: NameLike): void {
+  public addAnnouncement(announcement: FwFace.PrefixAnnouncement): void {
     if (!this.attributes.advertiseFrom) {
       return;
     }
-    const name = Name.from(nameInput);
+    const name = Name.isNameLike(announcement) ? Name.from(announcement) : announcement.announced;
     if (this.announcements.add(name) === 1) {
       this.fw.readvertise.addAnnouncement(this, name);
     }
   }
 
-  public removeAnnouncement(nameInput: NameLike): void {
+  public removeAnnouncement(announcement: FwFace.PrefixAnnouncement): void {
     if (!this.attributes.advertiseFrom) {
       return;
     }
-    const name = Name.from(nameInput);
+    const name = Name.isNameLike(announcement) ? Name.from(announcement) : announcement.announced;
     if (this.announcements.remove(name) === 0) {
       this.fw.readvertise.removeAnnouncement(this, name);
     }
