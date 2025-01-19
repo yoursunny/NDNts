@@ -1,8 +1,8 @@
-import { type Name, NameMap, NameMultiMap } from "@ndn/packet";
-import { pushable } from "@ndn/util";
+import { Name, NameMap } from "@ndn/packet";
+import { assert, getOrInsert, pushable } from "@ndn/util";
 import * as retry from "retry";
 
-import type { FaceImpl } from "./face";
+import type { FaceImpl, FwFace } from "./face";
 import { Forwarder, type ForwarderImpl } from "./forwarder";
 
 /**
@@ -16,29 +16,113 @@ import { Forwarder, type ForwarderImpl } from "./forwarder";
 export class Readvertise {
   constructor(public readonly fw: ForwarderImpl) {}
 
-  public readonly announcements = new NameMultiMap<FaceImpl>();
   public readonly destinations = new Set<ReadvertiseDestination>();
 
-  public addAnnouncement(face: FaceImpl, name: Name): void {
-    if (this.announcements.add(name, face) > 1) {
+  /**
+   * Prefix announcements arranged by name.
+   *
+   * NameMap key is the announced name.
+   * Map key is a reference to the FwFace announcing the name.
+   * Map value is an array of announcements made by the FwFace.
+   * Array contains application supplied announcement objects or `undefined` for plain names.
+   * Neither the Map nor the Array may be empty.
+   *
+   * More than one FwFaces can announce the same name simultaneously.
+   * An FwFace can announce the same name more than once.
+   * This stack of containers is to deduplicate these announcements.
+   *
+   * A name is being announced if at least one FwFace announces the name at least once.
+   */
+  public readonly byName = new NameMap<Map<FaceImpl, Array<FwFace.PrefixAnnouncementObj | undefined>>>();
+
+  /**
+   * Prefix announcements arranged by FwFace.
+   *
+   * Outer key is the FwFace.
+   * Inner key is the announced name in hex.
+   * Inner key is the announced name.
+   *
+   * This is for deleting all announcements from a FwFace.
+   */
+  private readonly byFace = new Map<FaceImpl, Map<string, Name>>();
+
+  public addAnnouncement(face: FaceImpl, ann: FwFace.PrefixAnnouncement): void {
+    const [name, pa] = splitAnnouncement(ann);
+
+    const nameFaces = getOrInsert(this.byName, name, () => new Map());
+    const isNewName = nameFaces.size === 0; // no face was announcing this name
+    const nameFaceAnns = getOrInsert(nameFaces, face, () => []);
+    if (nameFaceAnns.length === 0) { // this face was not announcing this name
+      const faceNames = getOrInsert(this.byFace, face, () => new Map());
+      faceNames.set(name.valueHex, name);
+    }
+    nameFaceAnns.push(pa);
+
+    if (!isNewName) {
       return;
     }
-
     this.fw.dispatchTypedEvent("annadd", new Forwarder.AnnouncementEvent("annadd", name));
     for (const dest of this.destinations) {
       dest.advertise(name);
     }
   }
 
-  public removeAnnouncement(face: FaceImpl, name: Name): void {
-    if (this.announcements.remove(name, face) > 0) {
+  public removeAnnouncement(face: FaceImpl, ann: FwFace.PrefixAnnouncement): void {
+    const [name, pa] = splitAnnouncement(ann);
+    this.removeAnnouncementImpl(face, name, (nameFaceAnns) => {
+      // If ann is an announcement object, find the same object (must be same instance).
+      // If ann is a plain name (pa is undefined), find another plain name.
+      // In case of no match, delete an arbitrary item from the array.
+      const i = Math.max(nameFaceAnns.indexOf(pa), 0);
+      nameFaceAnns.splice(i, 1);
+    });
+  }
+
+  private removeAnnouncementImpl(
+      face: FaceImpl, name: Name,
+      delPa: (nameFaceAnns: Array<FwFace.PrefixAnnouncementObj | undefined>) => void,
+  ): void {
+    const nameFaces = this.byName.get(name);
+    const nameFaceAnns = nameFaces?.get(face);
+    if (!nameFaceAnns?.length) { // face was not announcing this name
       return;
     }
+
+    delPa(nameFaceAnns);
+    if (nameFaceAnns.length > 0) { // face is still announcing this name
+      return;
+    }
+    // face is no longer announcing the name
+
+    const faceNames = this.byFace.get(face)!;
+    faceNames.delete(name.valueHex);
+    if (faceNames.size === 0) { // face is no longer announcing any name
+      this.byFace.delete(face);
+    }
+
+    nameFaces!.delete(face);
+    if (nameFaces!.size > 0) { // name is still announced by another face
+      return;
+    }
+    // name is no longer announced by any face
+    this.byName.delete(name);
 
     this.fw.dispatchTypedEvent("annrm", new Forwarder.AnnouncementEvent("annrm", name));
     for (const dest of this.destinations) {
       dest.withdraw(name);
     }
+  }
+
+  public clearFace(face: FaceImpl): void {
+    const faceNames = this.byFace.get(face);
+    if (!faceNames) {
+      return;
+    }
+
+    for (const name of faceNames.values()) {
+      this.removeAnnouncementImpl(face, name, (nameFaceAnns) => nameFaceAnns.splice(0, Infinity));
+    }
+    assert(!this.byFace.has(face));
   }
 
   /**
@@ -76,7 +160,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
   public enable(fw: Forwarder): void {
     this.readvertise = (fw as ForwarderImpl).readvertise;
     this.readvertise.destinations.add(this);
-    for (const [name] of this.readvertise.announcements.associations()) {
+    for (const [name] of this.readvertise.byName) {
       this.advertise(name);
     }
     void this.process();
@@ -198,4 +282,11 @@ export namespace ReadvertiseDestination {
     retry?: retry.RetryOperation;
     state: State;
   }
+}
+
+function splitAnnouncement(ann: FwFace.PrefixAnnouncement): [Name, FwFace.PrefixAnnouncementObj | undefined] {
+  if (Name.isNameLike(ann)) {
+    return [Name.from(ann), undefined];
+  }
+  return [ann.announced, ann];
 }

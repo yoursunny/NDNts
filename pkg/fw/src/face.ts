@@ -184,7 +184,6 @@ function computeAnnouncement(name: Name, announcement: FwFace.RouteAnnouncement)
 export class FaceImpl extends TypedEventTarget<EventMap> implements FwFace {
   public readonly attributes: FwFace.Attributes;
   private readonly routes = new NameMultiSet();
-  private readonly announcements = new NameMultiSet();
   public running = true;
   private readonly txQueue = pushable<FwPacket>();
 
@@ -228,9 +227,7 @@ export class FaceImpl extends TypedEventTarget<EventMap> implements FwFace {
     for (const [name] of this.routes.multiplicities()) {
       this.fw.fib.delete(this, name.valueHex);
     }
-    for (const [name] of this.announcements.multiplicities()) {
-      this.fw.readvertise.removeAnnouncement(this, name);
-    }
+    this.fw.readvertise.clearFace(this);
 
     this.txQueue.fail(new Error("close"));
     this.dispatchTypedEvent("close", new Event("close"));
@@ -278,20 +275,14 @@ export class FaceImpl extends TypedEventTarget<EventMap> implements FwFace {
     if (!this.attributes.advertiseFrom) {
       return;
     }
-    const name = Name.isNameLike(announcement) ? Name.from(announcement) : announcement.announced;
-    if (this.announcements.add(name) === 1) {
-      this.fw.readvertise.addAnnouncement(this, name);
-    }
+    this.fw.readvertise.addAnnouncement(this, announcement);
   }
 
   public removeAnnouncement(announcement: FwFace.PrefixAnnouncement): void {
     if (!this.attributes.advertiseFrom) {
       return;
     }
-    const name = Name.isNameLike(announcement) ? Name.from(announcement) : announcement.announced;
-    if (this.announcements.remove(name) === 0) {
-      this.fw.readvertise.removeAnnouncement(this, name);
-    }
+    this.fw.readvertise.removeAnnouncement(this, announcement);
   }
 
   /** Transmit a packet on the face. */

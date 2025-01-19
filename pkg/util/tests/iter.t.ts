@@ -1,7 +1,7 @@
 import { collect } from "streaming-iterables";
 import { expect, test, vi } from "vitest";
 
-import { delay, evict, flatMapOnce, pushable, safeIter } from "..";
+import { delay, evict, flatMapOnce, getOrInsert, pushable, safeIter } from "..";
 
 test("safeIter ignore", async () => {
   const it = pushable<number>();
@@ -48,6 +48,21 @@ test("flatMapOnce", async () => {
     return [[n]];
   }, it));
   expect(a).toEqual([[1], 2, [3], 4]);
+});
+
+test("getOrInsert", () => {
+  const m = new Map<string, number>();
+  m.set("A", 1);
+  m.set("B", 2);
+
+  const fn20 = vi.fn<() => number>().mockReturnValue(20);
+  expect(getOrInsert(m, "B", fn20)).toBe(2);
+  expect(fn20).not.toHaveBeenCalled();
+
+  const fn30 = vi.fn<() => number>().mockReturnValue(30);
+  expect(getOrInsert(m, "C", fn30)).toBe(30);
+  expect(fn30).toHaveBeenCalledOnce();
+  expect(m.get("C")).toBe(30);
 });
 
 test("evict", () => {

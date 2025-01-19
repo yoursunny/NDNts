@@ -68,6 +68,30 @@ export async function* flatMapOnce<T, R>(
   }
 }
 
+/**
+ * Retrieve or insert value in a Map-like container.
+ * @param ct - Map-like container.
+ * @param key - Map key.
+ * @param make - Function to create the value if needed.
+ * @returns Existing or newly created value.
+ */
+export function getOrInsert<C extends getOrInsert.Container>(
+    ct: C, key: Parameters<C["get"]>[0] & Parameters<C["set"]>[0],
+    make: () => Parameters<C["set"]>[1],
+): Parameters<C["set"]>[1] {
+  let value = ct.get(key);
+  if (value === undefined) {
+    ct.set(key, value = make());
+  }
+  return value;
+}
+export namespace getOrInsert {
+  export interface Container {
+    get: (key: any) => any | undefined;
+    set: (key: any, value: any) => void;
+  }
+}
+
 /** Delete keys from a Set or Map until its size is below capacity. */
 export function evict<K>(capacity: number, ct: evict.Container<K>): void {
   assert(capacity >= 0);
