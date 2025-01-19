@@ -6,7 +6,7 @@ import { printESM, TrustSchema, TrustSchemaSigner } from "@ndn/trust-schema";
 import { expect, test, vi } from "vitest";
 
 import { printUserFns, toPolicy, type UserFn } from "..";
-import { pyndn0, pyndn1, pyndn2, pyndn3, pyndn4 } from "../test-fixture/lvstlv";
+import { pyndn0, pyndn1, pyndn2, pyndn3, pyndn4, pyndn5 } from "../test-fixture/lvstlv";
 
 test("pyndn0", () => {
   const model = pyndn0();
@@ -116,4 +116,32 @@ test("pyndn4", () => {
   expect(policy.canSign(new Name("/x/y/z"), new Name("/xxx/xxx/xxx"))).toBeTruthy();
   expect(policy.canSign(new Name("/x/x/x"), new Name("/xxx/yyy/zzz"))).toBeTruthy();
   expect(policy.canSign(new Name("/a/a/a"), new Name("/xxx/xxx/xxx"))).toBeTruthy();
+});
+
+test("pyndn5", () => {
+  const model = pyndn5();
+  const policy = toPolicy(model);
+
+  // https://github.com/named-data/python-ndn/blob/64938def54afd11f9766243b19bf06e6a2ccd163/tests/misc/light_versec_test.py#L400-L417
+  expect(policy.match(new Name("/ndn/KEY/1/self/1"))).toHaveLength(1);
+  expect(policy.match(new Name("/ndn/ucla/KEY/1/self/1"))).toHaveLength(1);
+  expect(policy.match(new Name("/ndn/ucla/cs/KEY/1/self/1"))).toHaveLength(1);
+  expect(policy.match(new Name("/ndn/ucla/cs/irl/KEY/1/self/1"))).toHaveLength(1);
+  expect(policy.match(new Name("/ndn/ucla/cs/irl/should-fail/KEY/1/self/1"))).toHaveLength(0);
+  expect(policy.canSign(new Name("/ndn/ucla/KEY/2/ndn/3"),
+    new Name("/ndn/KEY/1/self/1"))).toBeTruthy();
+  expect(policy.canSign(new Name("/ndn/ucla/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/ndn/ucla/KEY/2/ndn/3"))).toBeTruthy();
+  expect(policy.canSign(new Name("/ndn/ucla/cs/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/ndn/ucla/cs/KEY/2/ndn/3"))).toBeTruthy();
+  expect(policy.canSign(new Name("/ndn/ucla/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/ndn/KEY/1/self/1"))).toBeTruthy();
+  expect(policy.canSign(new Name("/ndn/ucla/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/ndn/arizona/KEY/2/ndn/3"))).toBeFalsy();
+  expect(policy.canSign(new Name("/ndn/ucla/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/yoursunny/ucla/KEY/2/ndn/3"))).toBeFalsy();
+  expect(policy.canSign(new Name("/ndn/ucla/cs/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/ndn/ucla/KEY/2/ndn/3"))).toBeTruthy();
+  expect(policy.canSign(new Name("/ndn/ucla/cs/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/ndn/ucla/ee/KEY/2/ndn/3"))).toBeFalsy();
 });
