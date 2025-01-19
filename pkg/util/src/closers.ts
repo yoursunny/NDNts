@@ -59,9 +59,9 @@ export class Closers extends Array<Closer | Disposable | AsyncDisposable> implem
 
   /** Wait for close. */
   public wait(): Promise<void> {
-    return new Promise<void>((resolve) => {
-      this.push({ close: () => resolve() });
-    });
+    const { promise, resolve } = Promise.withResolvers<void>();
+    this.push({ close: resolve });
+    return promise;
   }
 }
 

@@ -9,7 +9,7 @@ export const enum TT { // eslint-disable-line etc/no-const-enum
   ExpirationPeriod = 0x6D,
   Flags = 0x6C,
   Origin = 0x6F,
-  // copied from an-nfd.ts to reduce browser bundle size
-  // unit tests verify consistency of those TLV-TYPE numbers
-  // do not export this 'const enum' outside this package
+  // These are copied from an-nfd.ts to reduce browser bundle size.
+  // Unit tests verify consistency of these TLV-TYPE numbers.
+  // Do not export this 'const enum' outside this package.
 }

@@ -151,6 +151,12 @@ export namespace Bridge {
      */
     fwOpts?: Forwarder.Options;
 
+    /** Face attributes from forwarder A to forwarder B. */
+    attrAB?: L3Face.Attributes;
+
+    /** Face attributes from forwarder A to forwarder B. */
+    attrBA?: L3Face.Attributes;
+
     /**
      * Relay options for packets from forwarder A to forwarder B.
      * @defaultValue instant delivery
@@ -182,6 +188,8 @@ export namespace Bridge {
     fwA,
     fwB,
     fwOpts,
+    attrAB,
+    attrBA,
     relayAB = (x) => x,
     relayBA = (x) => x,
     routesAB,
@@ -201,9 +209,9 @@ export namespace Bridge {
     tA.bridgePeer = tB;
     tB.bridgePeer = tA;
 
-    const faceA = fwA.addFace(new L3Face(tA, { advertiseFrom: false }));
+    const faceA = fwA.addFace(new L3Face(tA, { advertiseFrom: false, ...attrAB }));
     L3Face.processAddRoutes(faceA, routesAB);
-    const faceB = fwB.addFace(new L3Face(tB, { advertiseFrom: false }));
+    const faceB = fwB.addFace(new L3Face(tB, { advertiseFrom: false, ...attrBA }));
     L3Face.processAddRoutes(faceB, routesBA);
     closers.push(faceA, faceB);
 
@@ -218,7 +226,7 @@ export namespace Bridge {
   }
 
   export type Renamed<A extends string, B extends string> =
-    Except<Bridge, "fwA" | "fwB" | "faceA" | "faceB"> &
+    Except<Bridge, "rename" | "fwA" | "fwB" | "faceA" | "faceB"> &
     { [k in `fw${A | B}`]: Forwarder; } &
     { [k in `face${A | B}`]: FwFace; };
 

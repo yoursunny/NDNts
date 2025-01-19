@@ -1,6 +1,6 @@
 import type { FwFace } from "@ndn/fw";
 import { Keyword, Segment, Version } from "@ndn/naming-convention2";
-import { Data, type Name, nullSigner, type Signer, TT as l3TT, ValidityPeriod } from "@ndn/packet";
+import { Data, Name, type NameLike, nullSigner, type Signer, TT as l3TT, ValidityPeriod } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder, NNI } from "@ndn/tlv";
 import { assert } from "@ndn/util";
 
@@ -51,7 +51,7 @@ export namespace PrefixAnn {
   /** {@link PrefixAnn.build} options. */
   export interface BuildOptions {
     /** Announced name. */
-    announced: Name;
+    announced: NameLike;
 
     /**
      * Prefix Announcement object version.
@@ -85,7 +85,7 @@ export namespace PrefixAnn {
     encoder.prependTlv(TT.ExpirationPeriod, NNI(expirationPeriod));
 
     const data = new Data();
-    data.name = announced.append(KeywordPA, Version.create(version), Segment0);
+    data.name = Name.from(announced).append(KeywordPA, Version.create(version), Segment0);
     data.contentType = ContentTypePrefixAnn;
     data.content = encoder.output;
     await signer.sign(data);

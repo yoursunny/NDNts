@@ -5,34 +5,23 @@ import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { NoopFace } from "@ndn/fw/test-fixture/noop-face";
 import { Certificate, generateSigningKey, KeyChain } from "@ndn/keychain";
 import { Bridge } from "@ndn/l3face";
-import { Component, Data, Interest, type Name, ParamsDigest, ValidityPeriod } from "@ndn/packet";
+import { Component, Data, Interest, ParamsDigest, ValidityPeriod } from "@ndn/packet";
 import { Decoder, Encoder, NNI } from "@ndn/tlv";
 import { Closers, delay } from "@ndn/util";
 import { TypedEventTarget } from "typescript-event-target";
 import { afterEach, expect, test } from "vitest";
 
-import { ControlParameters, ControlResponse, enableNfdPrefixReg, localhopPrefix, localhostPrefix, RouteFlags } from "..";
+import { ControlParameters, ControlResponse, enableNfdPrefixReg, localhopPrefix, localhostPrefix, PrefixAnn, RouteFlags } from "..";
+import { PrefixRegServer } from "../test-fixture/prefix-reg";
 
 const closers = new Closers();
 afterEach(closers.close);
 
-interface Row {
-  faceIsLocal?: boolean;
-  expectedPrefix: Name;
-}
-
-const TABLE: Row[] = [
-  {
-    faceIsLocal: true,
-    expectedPrefix: localhostPrefix,
-  },
-  {
-    faceIsLocal: false,
-    expectedPrefix: localhopPrefix,
-  },
-];
-
-test.each(TABLE)("reg %#", { timeout: 10000, retry: 3 }, async ({ faceIsLocal, expectedPrefix }) => {
+test.each([
+  ["localhost", true, localhostPrefix],
+  ["localhop", false, localhopPrefix],
+])("reg %s", { timeout: 10000, retry: 3 }, async (desc, faceIsLocal, expectedPrefix) => {
+  void desc;
   const fw = Forwarder.create();
   closers.push(fw);
 
@@ -110,6 +99,51 @@ test.each(TABLE)("reg %#", { timeout: 10000, retry: 3 }, async ({ faceIsLocal, e
   uplinkL3.dispatchTypedEvent("up", new Event("up"));
   await delay(200);
   expect(verbs).toHaveLength(6);
+});
+
+test("announce", async () => {
+  const bridge = Bridge.create({
+    attrAB: { local: true },
+    attrBA: { local: true },
+    routesAB: [],
+    routesBA: ["/"],
+  }).rename("R", "E");
+  closers.push(bridge);
+
+  const reg = new PrefixRegServer(bridge.faceR);
+  closers.push(reg);
+  const observer = reg.makeObserver();
+
+  enableNfdPrefixReg(bridge.faceE, {
+    PrefixAnn,
+    refreshInterval: false,
+  });
+  const appFace = bridge.fwE.addFace(new NoopFace());
+
+  const paA = await PrefixAnn.build({
+    announced: "/A",
+    expirationPeriod: 300000,
+  });
+  appFace.addAnnouncement(paA);
+  await delay(100);
+  appFace.removeAnnouncement(paA);
+  await delay(100);
+
+  expect(observer).toHaveBeenCalledTimes(2);
+
+  const call0 = observer.mock.calls[0]!;
+  expect(call0[0].name.length).toBe(5);
+  expect(call0[0].appParameters?.length).toBeGreaterThan(0);
+  expect(call0[1]).toBe("announce");
+  expect(call0[2]).toHaveName("/A");
+  expect(call0[2].origin).toBe(129);
+  expect(call0[3]?.data).toEncodeAs(Encoder.encode(paA.data));
+
+  const call1 = observer.mock.calls[1]!;
+  expect(call1[1]).toBe("unregister");
+  expect(call1[2]).toHaveName("/A");
+  expect(call1[2].origin).toBe(129);
+  expect(call1[3]).toBeUndefined();
 });
 
 test("preloadCert", async () => {

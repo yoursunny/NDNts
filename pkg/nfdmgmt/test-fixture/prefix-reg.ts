@@ -6,8 +6,9 @@ import { L3Face, StreamTransport } from "@ndn/l3face";
 import { TcpServer } from "@ndn/node-transport/test-fixture/net-server";
 import { Data, type Interest } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
+import { vi } from "vitest";
 
-import { ControlParameters, ControlResponse } from "..";
+import { ControlParameters, ControlResponse, PrefixAnn } from "..";
 
 /** React to NFD prefix registration commands on a FwFace. */
 export class PrefixRegServer {
@@ -26,19 +27,31 @@ export class PrefixRegServer {
 
   private readonly handleCommand = async (interest: Interest) => {
     const verb = interest.name.at(3).text;
-    const params = Decoder.decode(interest.name.at(4).value, ControlParameters);
+    let faceMethod = this.face.addRoute;
+    let params: ControlParameters;
+    let pa: PrefixAnn | undefined;
 
     switch (verb) {
-      case "register": {
-        this.face.addRoute(params.name!, false);
+      case "announce": {
+        pa = PrefixAnn.fromData(Decoder.decode(interest.appParameters!, Data));
+        params = new ControlParameters({ name: pa.announced, origin: 129 });
         break;
       }
       case "unregister": {
-        this.face.removeRoute(params.name!, false);
+        faceMethod = this.face.removeRoute;
+        // fallthrough
+      }
+      case "register": {
+        params = Decoder.decode(interest.name.at(4).value, ControlParameters);
         break;
+      }
+      default: {
+        return;
       }
     }
 
+    this.observer?.(interest, verb, new ControlParameters(params), pa);
+    faceMethod.call(this.face, params.name!, false);
     params.faceId ??= this.faceId;
     params.origin ??= 0;
     params.cost ??= 0;
@@ -46,6 +59,15 @@ export class PrefixRegServer {
     const cr = new ControlResponse(200, "", params);
     return new Data(interest.name, Encoder.encode(cr));
   };
+
+  private observer?: (interest: Interest, verb: string, params: ControlParameters, pa: PrefixAnn | undefined) => void;
+
+  /** Create a vi.Mock that observes incoming commands. */
+  public makeObserver() {
+    const observer = vi.fn<Exclude<typeof this.observer, undefined>>();
+    this.observer = observer;
+    return observer;
+  }
 }
 
 /** TCP server that accepts NFD prefix registration commands. */
