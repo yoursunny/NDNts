@@ -1,3 +1,5 @@
+import { getOrInsert } from "./iter";
+
 /**
  * Keep records on whether an event listener has been added.
  * @param target - EventTarget to override.
@@ -16,10 +18,7 @@ export function trackEventListener(target: EventTarget): Record<string, boolean>
       configurable: true,
       value(this: EventTarget, ...args: Parameters<EventTarget["addEventListener"]>): void {
         const [evt, fn] = args;
-        let record = m.get(evt);
-        if (!record) {
-          m.set(evt, record = [0, new WeakSet()]);
-        }
+        const record = getOrInsert(m, evt, (): [number, WeakSet<any>] => [0, new WeakSet()]);
         if (!record[1].has(fn)) {
           record[1].add(fn);
           ++record[0];

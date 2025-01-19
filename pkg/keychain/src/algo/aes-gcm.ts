@@ -1,16 +1,10 @@
-import DefaultWeakMap from "mnemonist/default-weak-map.js";
+import { getOrInsert } from "@ndn/util";
 
 import { CounterIvGen, type IvGen } from "../iv/mod";
 import type { CryptoAlgorithm } from "../key/mod";
 import { AesBlockSize, AesCommon, type AesEncryption, type AesGenParams } from "./aes-common";
 
-const ivgens = new DefaultWeakMap<CryptoAlgorithm.SecretKey<{}>, IvGen>(
-  () => new CounterIvGen({
-    ivLength: AESGCM.ivLength,
-    counterBits: 32,
-    blockSize: AesBlockSize,
-  }),
-);
+const ivgens = new WeakMap<CryptoAlgorithm.SecretKey<{}>, IvGen>();
 
 /**
  * AES-GCM encryption algorithm.
@@ -30,7 +24,11 @@ export const AESGCM: AesEncryption<{}, AESGCM.GenParams> = new class extends Aes
   public override readonly uuid = "a7e27aee-2f10-4150-bd6b-5e667c006274";
   public override readonly ivLength = 12;
   protected override getIvGen(key: CryptoAlgorithm.SecretKey<{}>) {
-    return ivgens.get(key);
+    return getOrInsert(ivgens, key, () => new CounterIvGen({
+      ivLength: AESGCM.ivLength,
+      counterBits: 32,
+      blockSize: AesBlockSize,
+    }));
   }
 
   protected override allowAdditionalData = true;

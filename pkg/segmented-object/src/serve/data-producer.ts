@@ -1,7 +1,6 @@
 import type { ProducerHandler } from "@ndn/endpoint";
 import { Data, digestSigning, type Interest, type Name, type Signer } from "@ndn/packet";
-import { assert } from "@ndn/util";
-import DefaultMap from "mnemonist/default-map.js";
+import { assert, getOrInsert } from "@ndn/util";
 import { getIterator } from "streaming-iterables";
 
 import { defaultSegmentConvention, type SegmentConvention } from "../convention";
@@ -83,7 +82,7 @@ class SequentialDataProducer extends DataProducer {
   private requested = -1;
   private final = Infinity;
   private readonly buffer = new Map<number, Data>();
-  private readonly waitlist = new DefaultMap<number, PromiseWithResolvers<void>>(() => Promise.withResolvers<void>());
+  private readonly waitlist = new Map<number, PromiseWithResolvers<void>>();
   private readonly generator: AsyncGenerator<Chunk, false>;
   private pause?: PromiseWithResolvers<void>;
 
@@ -108,7 +107,7 @@ class SequentialDataProducer extends DataProducer {
       return data;
     }
 
-    await this.waitlist.get(i).promise;
+    await getOrInsert(this.waitlist, i, () => Promise.withResolvers()).promise;
     return this.buffer.get(i);
   }
 
@@ -149,7 +148,7 @@ class SequentialDataProducer extends DataProducer {
         this.buffer.delete(i - bufferAhead - bufferBehind);
       }
 
-      const w = this.waitlist.peek(i);
+      const w = this.waitlist.get(i);
       if (w) {
         this.waitlist.delete(i);
         w.resolve();

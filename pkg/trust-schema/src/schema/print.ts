@@ -1,4 +1,4 @@
-import { DefaultMap } from "mnemonist";
+import { getOrInsert } from "@ndn/util";
 
 import { AlternatePattern, CertNamePattern, ConcatPattern, ConstPattern, OverlapPattern, type Pattern, VariablePattern } from "./pattern";
 import type { TrustSchemaPolicy } from "./policy";
@@ -57,13 +57,17 @@ function printSequence(typ: string, list: Pattern[], ctx: printESM.Context): str
 
 /** Print policy as ECMAScript module. */
 export function printESM(policy: TrustSchemaPolicy): string {
+  const imports = new Map<string, Set<string>>();
   const ctx: printESM.Context = {
     indent: "",
-    imports: new DefaultMap<string, Set<string>>(() => new Set<string>()),
+    addImport(module, ...identifiers) {
+      const s = getOrInsert(imports, module, () => new Set());
+      for (const identifier of identifiers) {
+        s.add(identifier);
+      }
+    },
   };
-  ctx.imports.get("@ndn/trust-schema")
-    .add("TrustSchemaPolicy")
-    .add("pattern as P");
+  ctx.addImport("@ndn/trust-schema", "TrustSchemaPolicy", "pattern as P");
 
   const lines: string[] = [];
   lines.push(
@@ -80,9 +84,9 @@ export function printESM(policy: TrustSchemaPolicy): string {
   }
   lines.push("");
 
-  const pkgs = Array.from(ctx.imports.keys()).toSorted((a, b) => -a.localeCompare(b));
+  const pkgs = Array.from(imports.keys()).toSorted((a, b) => -a.localeCompare(b));
   for (const pkg of pkgs) {
-    const tokens = Array.from(ctx.imports.get(pkg)).toSorted((a, b) => a.localeCompare(b));
+    const tokens = Array.from(imports.get(pkg)!).toSorted((a, b) => a.localeCompare(b));
     if (tokens.length === 1 && tokens[0]!.startsWith("* as ")) {
       lines.unshift(`import ${tokens[0]} from ${JSON.stringify(pkg)};`);
     } else {
@@ -95,7 +99,7 @@ export function printESM(policy: TrustSchemaPolicy): string {
 export namespace printESM {
   export interface Context {
     indent: string;
-    imports: DefaultMap<string, Set<string>>;
+    addImport: (module: string, ...identifier: readonly string[]) => void;
   }
 
   export interface PrintableFilter extends VariablePattern.Filter {

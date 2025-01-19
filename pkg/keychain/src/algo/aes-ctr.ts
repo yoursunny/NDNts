@@ -1,16 +1,10 @@
-import DefaultWeakMap from "mnemonist/default-weak-map.js";
+import { getOrInsert } from "@ndn/util";
 
 import { CounterIvGen, type IvGen } from "../iv/mod";
 import type { CryptoAlgorithm } from "../key/mod";
 import { AesBlockSize, AesCommon, type AesEncryption, type AesGenParams } from "./aes-common";
 
-const ivgens = new DefaultWeakMap<CryptoAlgorithm.SecretKey<AESCTR.Info>, IvGen>(
-  ({ info: { counterLength } }) => new CounterIvGen({
-    ivLength: AESCTR.ivLength,
-    counterBits: counterLength,
-    blockSize: AesBlockSize,
-  }),
-);
+const ivgens = new WeakMap<CryptoAlgorithm.SecretKey<AESCTR.Info>, IvGen>();
 
 /**
  * AES-CTR encryption algorithm.
@@ -30,7 +24,11 @@ export const AESCTR: AesEncryption<AESCTR.Info, AESCTR.GenParams> = new class ex
   public override readonly uuid = "0ec985f2-88c0-4dd9-8b69-2c41bd639809";
   public override readonly ivLength = 16;
   protected override getIvGen(key: CryptoAlgorithm.SecretKey<AESCTR.Info>) {
-    return ivgens.get(key);
+    return getOrInsert(ivgens, key, () => new CounterIvGen({
+      ivLength: AESCTR.ivLength,
+      counterBits: key.info.counterLength,
+      blockSize: AesBlockSize,
+    }));
   }
 
   protected override allowAdditionalData = false;

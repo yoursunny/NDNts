@@ -3,8 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Forwarder } from "@ndn/fw";
 import { Bridge } from "@ndn/l3face";
 import { Name, type NameLike } from "@ndn/packet";
-import { assert, Closers, delay, toHex } from "@ndn/util";
-import DefaultMap from "mnemonist/default-map.js";
+import { assert, Closers, delay, getOrInsert, toHex } from "@ndn/util";
 import { afterEach, beforeEach, describe, expect, type Mock, test, vi } from "vitest";
 
 import { FullSync, type IBLT, makePSyncCompatParam, type SyncNode, type SyncUpdate } from "..";
@@ -14,10 +13,10 @@ class DebugPrinter {
 
   private readonly t0 = Date.now();
   private ibltIndex = 0;
-  private readonly ibltMap = new DefaultMap<string, number>(() => ++this.ibltIndex);
+  private readonly ibltMap = new Map<string, number>();
 
   private reprIblt(iblt?: IBLT): string {
-    return iblt ? `${this.ibltMap.get(toHex(iblt.serialize()))}` : "_";
+    return iblt ? `${getOrInsert(this.ibltMap, toHex(iblt.serialize()), () => ++this.ibltIndex)}` : "_";
   }
 
   private reprState(state?: Array<{ prefix: Name; seqNum: number }>): string {

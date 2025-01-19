@@ -1,5 +1,4 @@
-import { assert, MultiMap, pushable } from "@ndn/util";
-import DefaultWeakMap from "mnemonist/default-weak-map.js";
+import { assert, getOrInsert, MultiMap, pushable } from "@ndn/util";
 
 import type { FaceImpl, FwFace } from "./face";
 import { Forwarder } from "./forwarder";
@@ -47,7 +46,7 @@ class TapRxController {
   };
 }
 
-const ctrls = new DefaultWeakMap<Forwarder, TapRxController>((fw) => new TapRxController(fw));
+const ctrls = new WeakMap<Forwarder, TapRxController>();
 
 /**
  * Create a secondary face that shares the transport of a primary face.
@@ -70,7 +69,7 @@ export class TapFace implements FwFace.RxTx {
   }
 
   private constructor(public readonly face: FwFace) {
-    this.ctrl = ctrls.get(face.fw);
+    this.ctrl = getOrInsert(ctrls, face.fw, () => new TapRxController(face.fw));
     this.ctrl.add(face, this);
   }
 

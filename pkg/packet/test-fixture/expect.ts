@@ -1,6 +1,6 @@
 import "@ndn/tlv/test-fixture/expect";
 
-import set from "mnemonist/set.js";
+import set_helpers from "mnemonist/set.js";
 import { expect } from "vitest";
 
 import { Component, type ComponentLike, Name, type NameLike } from "..";
@@ -57,8 +57,8 @@ expect.extend({
     for (const name of names) {
       expected.add(`${Name.from(name)}`);
     }
-    const missing = set.difference(expected, actual);
-    const excess = set.difference(actual, expected);
+    const missing = set_helpers.difference(expected, actual);
+    const excess = set_helpers.difference(actual, expected);
     if (missing.size + excess.size === 0) {
       return {
         message: () => "expected name sets to be unequal",

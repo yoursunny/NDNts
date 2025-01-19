@@ -30,7 +30,6 @@
     "@ndn/tlv": "workspace:^",
     "@ndn/trust-schema": "workspace:^",
     "@ndn/util": "workspace:*",
-    "mnemonist": "^0.39.8",
     "tslib": "^2.8.1"
   },
   "devDependencies": {

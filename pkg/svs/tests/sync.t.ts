@@ -4,8 +4,7 @@ import { Forwarder } from "@ndn/fw";
 import { Certificate, generateSigningKey } from "@ndn/keychain";
 import { Bridge } from "@ndn/l3face";
 import { Data, Interest, Name } from "@ndn/packet";
-import { Closers, delay } from "@ndn/util";
-import DefaultMap from "mnemonist/default-map.js";
+import { Closers, delay, getOrInsert } from "@ndn/util";
 import { filter } from "streaming-iterables";
 import { afterEach, expect, test, vi } from "vitest";
 
@@ -15,14 +14,14 @@ class UpdateHandler {
   constructor(sync: SvSync) {
     sync.addEventListener("update", (update) => {
       const id = update.id.toString().slice(-1);
-      expect(update.loSeqNum).toBe(this.lastSeqNum.get(id) + 1);
+      expect(update.loSeqNum).toBe(getOrInsert(this.lastSeqNum, id, () => 0) + 1);
       expect(update.loSeqNum).toBeLessThanOrEqual(update.hiSeqNum);
       this.lastSeqNum.set(id, update.hiSeqNum);
     });
   }
 
   // key is last character of node ID
-  public readonly lastSeqNum = new DefaultMap<string, number>(() => 0);
+  public readonly lastSeqNum = new Map<string, number>();
 
   public get lastSeqNumRecord(): Record<string, number> {
     return Object.fromEntries(this.lastSeqNum.entries());
@@ -32,17 +31,21 @@ class UpdateHandler {
 class DebugHandler {
   public static printing = process.env.NDNTS_SYNC_DEBUG === "1";
   private readonly t0 = performance.now();
-  public readonly cnt = new DefaultMap<string, number>(() => 0);
+  public readonly counters = new Map<string, number>();
 
   public start(sync: SvSync): void {
     sync.addEventListener("debug", ({ detail: { action, state, nextState, ourOlder, ourNewer } }) => {
-      const cnt = `${sync.describe}:${action}`;
-      this.cnt.set(cnt, this.cnt.get(cnt) + 1);
+      const counter = `${sync.describe}:${action}`;
+      this.counters.set(counter, getOrInsert(this.counters, counter, () => 0) + 1);
       if (DebugHandler.printing) {
         process.stderr.write(`${performance.now() - this.t0} ${sync.describe} ${action
         } ${JSON.stringify({ state, nextState, ourOlder, ourNewer })}\n`);
       }
     });
+  }
+
+  public count(counter: string): number {
+    return this.counters.get(counter) ?? 0;
   }
 }
 
@@ -114,10 +117,10 @@ test.each([
   expect(pA.get("/A").seqNum).toBe(11);
   expect(pB.get("/A").seqNum).toBe(11);
   expect(pC.get("/A").seqNum).toBe(10);
-  expect(debugHandler.cnt.get("A:send")).toBe(1);
-  expect(debugHandler.cnt.get("B:send")).toBe(0);
-  expect(debugHandler.cnt.get("C:send")).toBe(0);
-  debugHandler.cnt.clear();
+  expect(debugHandler.count("A:send")).toBe(1);
+  expect(debugHandler.count("B:send")).toBe(0);
+  expect(debugHandler.count("C:send")).toBe(0);
+  debugHandler.counters.clear();
 
   lossToC = false;
   await delay(800);
@@ -125,8 +128,8 @@ test.each([
   expect(pB.get("/A").seqNum).toBe(11);
   expect(pC.get("/A").seqNum).toBe(11);
 
-  expect(debugHandler.cnt.get("C:send")).toBe(1);
-  expect(debugHandler.cnt.get("A:send") + debugHandler.cnt.get("B:send")).toBeLessThanOrEqual(2);
+  expect(debugHandler.count("C:send")).toBe(1);
+  expect(debugHandler.count("A:send") + debugHandler.count("B:send")).toBeLessThanOrEqual(2);
 
   expect(uA.lastSeqNumRecord).toEqual({ B: 15, C: 25 });
   expect(uB.lastSeqNumRecord).toEqual({ C: 25, A: 11 });
@@ -204,7 +207,7 @@ test("initialize", async () => {
   n0C.seqNum = 13;
   n0C.seqNum = 3; // no effect
   await delay(200);
-  expect(debugHandler.cnt.get("0:send")).toBe(1);
+  expect(debugHandler.count("0:send")).toBe(1);
 
   p0.close();
   const v0 = p0.currentStateVector;
@@ -241,7 +244,7 @@ test("initialize", async () => {
       await delay(800); // longer than steady timer, but no sync Interest would be sent
     },
   });
-  expect(debugHandler.cnt.get("1:send")).toBe(0);
+  expect(debugHandler.count("1:send")).toBe(0);
 
   expect(p1.get("/A").seqNum).toBe(0);
   expect(p1.get("/B").seqNum).toBe(22);
@@ -250,7 +253,7 @@ test("initialize", async () => {
   expect(n1D.seqNum).toBe(4);
   ++n1D.seqNum;
   await delay(200);
-  expect(debugHandler.cnt.get("1:send")).toBe(1);
+  expect(debugHandler.count("1:send")).toBe(1);
 });
 
 test("get add", async () => {
@@ -304,5 +307,5 @@ test("future bootstrap time", async () => {
   ++nB.seqNum;
 
   await delay(100);
-  expect(debugHandler.cnt.peek("A:rx-future")).toBeGreaterThanOrEqual(1);
+  expect(debugHandler.count("A:rx-future")).toBeGreaterThanOrEqual(1);
 });

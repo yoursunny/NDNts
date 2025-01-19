@@ -1,7 +1,6 @@
 import { type Component, Name } from "@ndn/packet";
 import { pattern as P, type printESM, TrustSchemaPolicy } from "@ndn/trust-schema";
-import { assert } from "@ndn/util";
-import DefaultMap from "mnemonist/default-map.js";
+import { assert, getOrInsert } from "@ndn/util";
 
 import { type ConsOption, type Constraint, type LvsModel, type Node, type PatternEdge, type UserFnCall, ValueEdge } from "./tlv";
 
@@ -52,7 +51,7 @@ export namespace toPolicy {
   export const buildTime = Symbol("@ndn/lvs#toPolicy.buildTime");
 }
 
-export const neededFnsMap = new WeakMap<TrustSchemaPolicy, DefaultMap<string, ReadonlySet<number>>>();
+export const neededFnsMap = new WeakMap<TrustSchemaPolicy, Map<string, ReadonlySet<number>>>();
 
 class Translator {
   constructor(
@@ -71,7 +70,7 @@ class Translator {
   private readonly tagSymbols = new Map<number, string>();
   private readonly patternNames = new Map<string, number>();
   private readonly wantedNodes = new Set<number>();
-  private readonly neededFns = new DefaultMap<string, Set<number>>(() => new Set<number>());
+  private readonly neededFns = new Map<string, Set<number>>();
   private lastAutoId = 0;
 
   public translate(): void {
@@ -180,7 +179,7 @@ class Translator {
   }
 
   private trCall(call: UserFnCall): P.VariablePattern.Filter {
-    this.neededFns.get(call.fn).add(call.args.length);
+    getOrInsert(this.neededFns, call.fn, () => new Set()).add(call.args.length);
     return new LvsFilter(this.vtable, call.fn, Array.from(call.args, (a) => {
       if (a.value !== undefined) {
         return a.value;
@@ -227,8 +226,8 @@ class LvsFilter implements P.VariablePattern.Filter, printESM.PrintableFilter {
   }
 
   public printESM(ctx: printESM.Context): string {
-    const { indent, imports } = ctx;
-    imports.get("./lvsuserfns.mjs").add("* as lvsUserFns");
+    const { indent, addImport } = ctx;
+    addImport("./lvsuserfns.mjs", "* as lvsUserFns");
 
     const lines: string[] = [
       `${indent}{`,
@@ -239,7 +238,7 @@ class LvsFilter implements P.VariablePattern.Filter, printESM.PrintableFilter {
       if (typeof b === "string") {
         lines.push(`${indent}      vars.get(${JSON.stringify(b)})?.get(0),`);
       } else {
-        imports.get("@ndn/packet").add("Component");
+        addImport("@ndn/packet", "Component");
         lines.push(`${indent}      Component.from(${JSON.stringify(b.toString())}),`);
       }
     }

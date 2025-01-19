@@ -2,7 +2,7 @@ import { AESCBC, createEncrypter } from "@ndn/keychain";
 import type { Data, Encrypter, LLEncrypt, Name, Signer } from "@ndn/packet";
 import type { DataStore as S } from "@ndn/repo-api";
 import { Encoder } from "@ndn/tlv";
-import DefaultWeakMap from "mnemonist/default-weak-map.js";
+import { getOrInsert } from "@ndn/util";
 
 import { ContentKey, EncryptedContent, type KeyEncryptionKey } from "./packet/mod";
 
@@ -26,25 +26,25 @@ export class Producer {
       private readonly signer: Signer,
   ) {}
 
-  private readonly keys = new DefaultWeakMap<KeyEncryptionKey, Promise<[ContentKey, LLEncrypt.Key]>>(async (kek) => {
-    const key = await AESCBC.cryptoGenerate({}, true);
-    const ck = await ContentKey.build({
-      kek,
-      key,
-      ckPrefix: this.ckPrefix,
-      signer: this.signer,
-    });
-    await this.dataStore.insert(ck.data);
-    const llEncrypter = createEncrypter(AESCBC, key);
-    return [ck, llEncrypter];
-  });
+  private readonly keys = new WeakMap<KeyEncryptionKey, Promise<[ContentKey, LLEncrypt.Key]>>();
 
   /**
    * Create an encrypter for application data.
    * CK will be generated if necessary.
    */
   public async createEncrypter(kek: KeyEncryptionKey): Promise<Encrypter> {
-    const [ck, llEncrypter] = await this.keys.get(kek);
+    const [ck, llEncrypter] = await getOrInsert(this.keys, kek, async (): Promise<[ContentKey, LLEncrypt.Key]> => {
+      const key = await AESCBC.cryptoGenerate({}, true);
+      const ck = await ContentKey.build({
+        kek,
+        key,
+        ckPrefix: this.ckPrefix,
+        signer: this.signer,
+      });
+      await this.dataStore.insert(ck.data);
+      const llEncrypter = createEncrypter(AESCBC, key);
+      return [ck, llEncrypter];
+    });
     return {
       async encrypt(data: Data) {
         const encrypted = await llEncrypter.llEncrypt({ plaintext: data.content });

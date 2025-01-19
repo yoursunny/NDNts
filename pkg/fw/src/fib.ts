@@ -1,6 +1,5 @@
 import { lpm, type Name } from "@ndn/packet";
-import { assert } from "@ndn/util";
-import DefaultMap from "mnemonist/default-map.js";
+import { assert, getOrInsert } from "@ndn/util";
 
 import type { FaceImpl } from "./face";
 
@@ -9,16 +8,16 @@ class FibEntry {
 }
 
 export class Fib {
-  private readonly table = new DefaultMap<string, FibEntry>(() => new FibEntry());
+  private readonly table = new Map<string, FibEntry>();
 
   public insert(face: FaceImpl, nameHex: string, capture: boolean): void {
-    const entry = this.table.get(nameHex);
+    const entry = getOrInsert(this.table, nameHex, () => new FibEntry());
     assert(!entry.nexthops.has(face));
     entry.nexthops.set(face, capture);
   }
 
   public delete(face: FaceImpl, nameHex: string): void {
-    const entry = this.table.peek(nameHex)!;
+    const entry = this.table.get(nameHex)!;
     assert(!!entry);
     entry.nexthops.delete(face);
     if (entry.nexthops.size === 0) {
@@ -28,7 +27,7 @@ export class Fib {
 
   public lookup(name: Name): ReadonlySet<FaceImpl> {
     const result = new Set<FaceImpl>();
-    for (const entry of lpm(name, (prefixHex) => this.table.peek(prefixHex))) {
+    for (const entry of lpm(name, (prefixHex) => this.table.get(prefixHex))) {
       let capture = false;
       for (const [nh, c] of entry.nexthops) {
         result.add(nh);

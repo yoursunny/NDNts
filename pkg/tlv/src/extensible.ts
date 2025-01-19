@@ -1,11 +1,15 @@
-import DefaultWeakMap from "mnemonist/default-weak-map.js";
+import { getOrInsert } from "@ndn/util";
 
 import type { Encodable } from "./encoder";
 import { EvDecoder } from "./ev-decoder";
 import { encodeFields, type Field, makeField, sortFields } from "./impl-field";
 import type { StructFieldType } from "./struct-field";
 
-const RECORDS = new DefaultWeakMap<Extensible, Record<string, any>>(() => ({}));
+const RECORDS = new WeakMap<Extensible, Record<string, any>>();
+
+function getOrCreateRecord(obj: Extensible): Record<string, any> {
+  return getOrInsert(RECORDS, obj, () => ({}));
+}
 
 /** An TLV element that allows extension sub element. */
 export interface Extensible {
@@ -17,7 +21,7 @@ export namespace Extensible {
 
   /** Clone extension fields of src to dst. */
   export function cloneRecord(dst: Extensible, src: Extensible): void {
-    const record = RECORDS.peek(src);
+    const record = RECORDS.get(src);
     if (record !== undefined) {
       RECORDS.set(dst, record);
     }
@@ -50,17 +54,17 @@ export namespace Extensible {
 export namespace Extension {
   /** Retrieve value of an extension field. */
   export function get(obj: Extensible, tt: number): unknown {
-    return RECORDS.peek(obj)?.[`ext_${tt}`];
+    return RECORDS.get(obj)?.[`ext_${tt}`];
   }
 
   /** Assign value of an extension field. */
   export function set(obj: Extensible, tt: number, value: unknown): void {
-    RECORDS.get(obj)[`ext_${tt}`] = value;
+    getOrCreateRecord(obj)[`ext_${tt}`] = value;
   }
 
   /** Clear value of an extension field. */
   export function clear(obj: Extensible, tt: number): void {
-    delete RECORDS.peek(obj)?.[`ext_${tt}`];
+    delete RECORDS.get(obj)?.[`ext_${tt}`];
   }
 }
 
@@ -89,7 +93,7 @@ export class ExtensionRegistry<T extends Extensible> {
 
   /** UnknownElementCallback for EvDecoder. */
   public readonly decodeUnknown: EvDecoder.UnknownElementHandler<T> = (target, tlv) => {
-    const record = RECORDS.get(target);
+    const record = getOrCreateRecord(target);
     this.hasUnrecognized = false;
     this.evd.decodeValue(record, tlv.decoder);
     return !this.hasUnrecognized;
@@ -97,7 +101,7 @@ export class ExtensionRegistry<T extends Extensible> {
 
   /** Encode extension fields. */
   public encode(source: T): Encodable[] {
-    const record = RECORDS.peek(source);
+    const record = RECORDS.get(source);
     if (!record) {
       return [];
     }

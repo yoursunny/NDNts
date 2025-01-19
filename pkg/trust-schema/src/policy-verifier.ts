@@ -1,6 +1,6 @@
 import { type Certificate, createVerifier, type SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
 import { KeyLocator, type Name, type Verifier } from "@ndn/packet";
-import DefaultWeakMap from "mnemonist/default-weak-map.js";
+import { getOrInsert } from "@ndn/util";
 
 import { CertSources } from "./cert-source/mod";
 
@@ -82,13 +82,11 @@ export abstract class PolicyVerifier<Context = unknown> implements Verifier {
     return key.verify(packet);
   }
 
-  private readonly cryptoVerifyCache = new DefaultWeakMap<Certificate, DefaultWeakMap<Verifier.Verifiable, Promise<void>>>(
-    (cert) => new DefaultWeakMap<Verifier.Verifiable, Promise<void>>(
-      (pkt) => this.cryptoVerifyUncached(cert, pkt),
-    ));
+  private readonly cryptoVerifyCache = new WeakMap<Certificate, WeakMap<Verifier.Verifiable, Promise<void>>>();
 
   private async cryptoVerifyCached(cert: Certificate, packet: Verifier.Verifiable): Promise<void> {
-    return this.cryptoVerifyCache.get(cert).get(packet);
+    const cacheForCert = getOrInsert(this.cryptoVerifyCache, cert, () => new WeakMap());
+    return getOrInsert(cacheForCert, packet, () => this.cryptoVerifyUncached(cert, packet));
   }
 }
 

@@ -1,5 +1,5 @@
 import { type Data, Interest } from "@ndn/packet";
-import DefaultMap from "mnemonist/default-map.js";
+import { getOrInsert } from "@ndn/util";
 import { filter, flatMap, pipeline, reduce, tap } from "streaming-iterables";
 
 import type { FaceImpl } from "./face";
@@ -24,8 +24,7 @@ export class PitEntry {
   /** Outgoing numeric PIT token. */
   public token?: number;
   /** Downstream records. */
-  public dnRecords = new DefaultMap<FaceImpl, PitDn>(
-    () => ({ nRx: 0, expire: 0, nonce: 0, token: undefined }));
+  public dnRecords = new Map<FaceImpl, PitDn>();
 
   /** Last expiration time among downstream. */
   public lastExpire = 0;
@@ -42,7 +41,8 @@ export class PitEntry {
     const expire = now + interest.lifetime;
     const nonce = interest.nonce ?? Interest.generateNonce();
 
-    const dnR = this.dnRecords.get(face);
+    const dnR = getOrInsert(this.dnRecords, face,
+      () => ({ nRx: 0, expire: 0, nonce: 0, token: undefined }));
     ++dnR.nRx;
     dnR.expire = expire;
     dnR.nonce = nonce;
@@ -53,8 +53,10 @@ export class PitEntry {
 
   /** Record Interest cancellation from downstream. */
   public cancelInterest(face: FaceImpl) {
-    const dnR = this.dnRecords.peek(face);
-    if (!dnR) { return; }
+    const dnR = this.dnRecords.get(face);
+    if (!dnR) {
+      return;
+    }
 
     this.dnRecords.delete(face);
     this.updateExpire();

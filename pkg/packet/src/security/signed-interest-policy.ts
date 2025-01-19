@@ -1,5 +1,4 @@
-import { assert, evict, toHex } from "@ndn/util";
-import DefaultWeakMap from "mnemonist/default-weak-map.js";
+import { assert, evict, getOrInsert, toHex } from "@ndn/util";
 
 import { Interest } from "../interest";
 import { SigInfo } from "../sig-info";
@@ -7,7 +6,7 @@ import { LLSign, LLVerify, Signer, type Verifier } from "./signing";
 
 /** Validation policy for SigInfo fields in signed Interest. */
 export class SignedInterestPolicy {
-  private readonly owned = new DefaultWeakMap<object, KeyState>(() => ({}));
+  private readonly owned = new WeakMap<object, KeyState>();
   private readonly trackedKeys: number;
   private readonly records = new Map<string, KeyState>();
   private readonly rules: Rule[];
@@ -49,7 +48,7 @@ export class SignedInterestPolicy {
   public update(interest: Interest, key: object = this): void {
     const si = Signer.putSigInfo(interest);
     for (const rule of this.rules) {
-      rule.update(si, this.owned.get(key));
+      rule.update(si, getOrInsert(this.owned, key, () => ({})));
     }
   }
 
