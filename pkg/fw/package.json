@@ -29,6 +29,7 @@
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
     "@types/retry": "^0.12.5",
+    "obliterator": "^2.0.5",
     "retry": "^0.13.1",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.8.1",

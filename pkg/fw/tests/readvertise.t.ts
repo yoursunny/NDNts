@@ -1,10 +1,10 @@
 import "@ndn/packet/test-fixture/expect";
 
-import type { NameLike } from "@ndn/packet";
+import { Name, type NameLike } from "@ndn/packet";
 import { delay } from "@ndn/util";
 import { beforeEach, expect, type Mock, test, vi } from "vitest";
 
-import { Forwarder, ReadvertiseDestination } from "..";
+import { Forwarder, type FwFace, ReadvertiseDestination } from "..";
 import { NoopFace } from "../test-fixture/noop-face";
 
 let fw: Forwarder;
@@ -12,8 +12,20 @@ beforeEach(() => {
   fw = Forwarder.create();
 });
 
+class PAObj implements FwFace.PrefixAnnouncementObj {
+  constructor(name: NameLike) {
+    this.announced = Name.from(name);
+  }
+
+  public readonly announced: Name;
+}
+
 class SimpleDest extends ReadvertiseDestination {
-  protected override doAdvertise = vi.fn<ReadvertiseDestination["doAdvertise"]>().mockResolvedValue(undefined);
+  protected override async doAdvertise(name: Name): Promise<void> {
+    this.doAdv(name, Array.from(this.listAnnouncementObjs(name)));
+  }
+
+  public readonly doAdv = vi.fn< (name: Name, annObjs: readonly FwFace.PrefixAnnouncementObj[]) => void >();
   protected override doWithdraw = vi.fn<ReadvertiseDestination["doWithdraw"]>().mockResolvedValue(undefined);
 
   private hasEvents = false;
@@ -26,8 +38,22 @@ class SimpleDest extends ReadvertiseDestination {
     fw.addEventListener("annrm", this.annrm);
   }
 
+  public getRecord(name: NameLike): ReadvertiseDestination.Record<{}> {
+    name = Name.from(name);
+    const record = this.table.get(name);
+    expect(record).toBeDefined();
+    return record!;
+  }
+
+  public restartAdvertising(name: NameLike): void {
+    name = Name.from(name);
+    const record = this.getRecord(name);
+    record.status = ReadvertiseDestination.Status.ADVERTISING;
+    this.restart(name, record);
+  }
+
   public expectAdvertise(names: readonly NameLike[]): void {
-    SimpleDest.check(this.doAdvertise, this.hasEvents && this.annadd, names);
+    SimpleDest.check(this.doAdv, this.hasEvents && this.annadd, names);
   }
 
   public expectWithdraw(names: readonly NameLike[]): void {
@@ -125,6 +151,44 @@ test("simple", async () => {
   faceC.addRoute("/Q");
   await delay(5);
   dest.expectAdvertise([]);
+});
+
+test("PrefixAnnouncementObj", async () => {
+  const paA0 = new PAObj("/A");
+  const paA1 = new PAObj("/A");
+
+  const dest = new SimpleDest();
+  dest.enable(fw);
+
+  const faceA = fw.addFace(new NoopFace());
+  faceA.addAnnouncement(paA0);
+  faceA.addRoute("/A");
+  await delay(5); // nameFaceAnns=[paA0, undefined]
+  expect(dest.doAdv.mock.calls[0]?.[1]).toEqual([paA0]);
+  dest.expectAdvertise(["/A"]);
+
+  faceA.removeRoute("/A");
+  dest.restartAdvertising("/A");
+  await delay(5); // nameFaceAnns=[paA0]
+  expect(dest.doAdv.mock.calls[0]?.[1]).toEqual([paA0]);
+  dest.expectAdvertise(["/A"]);
+
+  faceA.addRoute("/A/a", paA1);
+  faceA.removeAnnouncement(paA0);
+  dest.restartAdvertising("/A");
+  await delay(5); // nameFaceAnns=[paA1]
+  expect(dest.doAdv.mock.calls[0]?.[1]).toEqual([paA1]);
+  dest.expectAdvertise(["/A"]);
+
+  faceA.addAnnouncement(paA1);
+  dest.restartAdvertising("/A");
+  await delay(5); // nameFaceAnns=[paA1, paA1]
+  expect(dest.doAdv.mock.calls[0]?.[1]).toEqual([paA1, paA1]);
+  dest.expectAdvertise(["/A"]);
+
+  faceA.removeAnnouncement(paA0); // no match in nameFaceAnns
+  faceA.removeRoute("/A/a", -1); // no match in nameFaceAnns
+  expect(dest.getRecord("/A").status).toBe(ReadvertiseDestination.Status.WITHDRAWING);
 });
 
 test("disable", async () => {

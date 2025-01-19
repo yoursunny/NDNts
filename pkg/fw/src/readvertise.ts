@@ -1,5 +1,6 @@
 import { Name, NameMap } from "@ndn/packet";
 import { assert, getOrInsert, pushable } from "@ndn/util";
+import filter from "obliterator/filter.js";
 import * as retry from "retry";
 
 import type { FaceImpl, FwFace } from "./face";
@@ -125,6 +126,16 @@ export class Readvertise {
     assert(!this.byFace.has(face));
   }
 
+  public *listAnnouncementObjs(name: Name): Iterable<FwFace.PrefixAnnouncementObj> {
+    const nameFaces = this.byName.get(name);
+    if (!nameFaces) {
+      return;
+    }
+    for (const nameFaceAnns of nameFaces.values()) {
+      yield* filter(nameFaceAnns, (ann) => !!ann) as Iterable<FwFace.PrefixAnnouncementObj>;
+    }
+  }
+
   /**
    * Cancel timers and other I/O resources.
    * This instance should not be used after this operation.
@@ -207,7 +218,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
     this.restart(name, record);
   }
 
-  protected restart(name: Name, record: ReadvertiseDestination.Record<State>) {
+  protected restart(name: Name, record: ReadvertiseDestination.Record<State>): void {
     record.retry?.stop();
     record.retry = retry.operation(this.retryOptions);
     record.retry.attempt(() => {
@@ -254,10 +265,25 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
     }
   }
 
-  /** Create per-prefix state. */
+  /**
+   * Create per-prefix state.
+   *
+   * @remarks
+   * Must override if State type parameter is changed from the default.
+   */
   protected makeState(name: Name): State {
     void name;
     return {} as any;
+  }
+
+  /**
+   * Retrieve application supplied prefix announcement objects.
+   *
+   * @remarks
+   * This is only available during {@link doAdvertise} execution.
+   */
+  protected listAnnouncementObjs(name: Name): Iterable<FwFace.PrefixAnnouncementObj> {
+    return this.readvertise!.listAnnouncementObjs(name);
   }
 
   /** Advertise a prefix once. */

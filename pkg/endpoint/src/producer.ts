@@ -55,7 +55,7 @@ export interface ProducerOptions extends CommonOptions {
    * *Null*), it is automatically signed with this signer.
    *
    * This option does not apply to Data packets manually inserted into `.dataBuffer`. To auto-sign
-   * those packet, specify {@link DataStoreBuffer.Options.dataSigner} in addition.
+   * those packets, specify {@link DataStoreBuffer.Options.dataSigner} in addition.
    */
   dataSigner?: Signer;
 
