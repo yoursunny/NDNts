@@ -235,9 +235,18 @@ export namespace NfdPrefixReg {
 
     /**
      * How often to refresh prefix registration (in milliseconds).
+     * Random jitter of ±10% is applied automatically.
      * Set to `false` disables refreshing.
      *
      * @defaultValue 300 seconds
+     *
+     * @remarks
+     * For rib/register command, the ExpirationPeriod is set to 4x of this refresh interval,
+     * with a minimum of 60 seconds.
+     *
+     * For rib/announce command, the application must make sure each supplied Prefix Announcement
+     * object has an ExpirationPeriod at least 2x of this refresh interval and a ValidityPeriod
+     * that extends beyond the anticipated producer runtime.
      */
     refreshInterval?: number | false;
 

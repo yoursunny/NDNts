@@ -1,6 +1,6 @@
 /**
  * Create a random jitter generator function.
- * @param r - Jitter factor around 1.
+ * @param r - Jitter factor around median.
  * @param x - Median value.
  * @returns Jitter generator function.
  *
