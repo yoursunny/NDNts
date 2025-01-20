@@ -38,7 +38,14 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
    * {@link enableNfdPrefixReg} is recommended.
    */
   constructor(private readonly face: FwFace, opts: NfdPrefixReg.Options) {
-    super(opts.retry);
+    const {
+      retry,
+      refreshInterval = 300000,
+      preloadCertName,
+      preloadFromKeyChain,
+      preloadInterestLifetime = 1500,
+    } = opts;
+    super(retry);
 
     this.commandOptions = {
       prefix: getPrefix(face.attributes.local),
@@ -59,7 +66,6 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
         cost = 0,
         flagChildInherit = false,
         flagCapture = true,
-        refreshInterval = 300000,
       } = opts;
       this.routeElements = [
         [TT.Origin, NNI(origin)],
@@ -72,13 +78,15 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
       ];
       if (refreshInterval !== false) {
         this.routeElements[3] = [TT.ExpirationPeriod, NNI(Math.max(refreshInterval * 4, 60000))];
-        this.refreshInterval = randomJitter(0.1, refreshInterval);
       }
     }
 
-    this.preloadCertName = opts.preloadCertName;
-    this.preloadFromKeyChain = opts.preloadFromKeyChain;
-    this.preloadInterestLifetime = Interest.Lifetime(opts.preloadInterestLifetime ?? 1500);
+    if (refreshInterval !== false) {
+      this.refreshInterval = randomJitter(0.1, refreshInterval);
+    }
+    this.preloadCertName = preloadCertName;
+    this.preloadFromKeyChain = preloadFromKeyChain;
+    this.preloadInterestLifetime = Interest.Lifetime(preloadInterestLifetime);
 
     face.addEventListener("up", this.handleFaceUp);
     face.addEventListener("close", () => this.disable(), { once: true });
@@ -228,6 +236,8 @@ export namespace NfdPrefixReg {
     /**
      * How often to refresh prefix registration (in milliseconds).
      * Set to `false` disables refreshing.
+     *
+     * @defaultValue 300 seconds
      */
     refreshInterval?: number | false;
 

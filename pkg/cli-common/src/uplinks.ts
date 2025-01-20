@@ -4,7 +4,7 @@ import path from "node:path";
 import { connectToNetwork, connectToRouter } from "@ndn/autoconfig";
 import { openFace as dpdkOpenFace } from "@ndn/dpdkmgmt";
 import { type FwFace, FwTracer } from "@ndn/fw";
-import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
+import { enableNfdPrefixReg, PrefixAnn } from "@ndn/nfdmgmt";
 import { UnixTransport } from "@ndn/node-transport";
 import { Closers } from "@ndn/util";
 
@@ -97,6 +97,7 @@ export async function openUplinks({ autoClose = true }: openUplinks.Options = {}
     if (nfd && env.nfdReg) {
       const [signer, klName] = await getSignerImpl(env.nfdRegKey);
       enableNfdPrefixReg(face, {
+        PrefixAnn: env.nfdRegAnn ? PrefixAnn : undefined,
         signer,
         preloadCertName: klName ?? env.nfdRegKey,
         preloadFromKeyChain: openKeyChain(),

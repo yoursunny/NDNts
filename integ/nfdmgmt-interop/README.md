@@ -12,4 +12,7 @@ corepack pnpm literate integ/nfdmgmt-interop/general.ts
 corepack pnpm literate integ/nfdmgmt-interop/face-rib.ts
 corepack pnpm literate integ/nfdmgmt-interop/strategy.ts
 corepack pnpm literate integ/nfdmgmt-interop/cs.ts
+
+env NDNTS_NFDREGANN=1 corepack pnpm literate integ/nfdmgmt-interop/prefixann.ts
+ndnping -c 20 /localhost/demo-prefixann
 ```

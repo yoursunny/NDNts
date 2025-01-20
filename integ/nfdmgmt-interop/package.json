@@ -3,6 +3,7 @@
   "private": true,
   "dependencies": {
     "@ndn/cli-common": "workspace:*",
+    "@ndn/endpoint": "workspace:*",
     "@ndn/nfdmgmt": "workspace:*",
     "@ndn/packet": "workspace:*",
     "tslib": "^2.8.1"

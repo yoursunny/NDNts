@@ -48,6 +48,8 @@ It's recommended to increase this value when using memif.
 `NDNTS_NFDREG=0` environment variable disables prefix registration on the uplink using NFD management protocol.
 The default is enabling NFD prefix registration if the uplink is possibly connected to NFD.
 
+`NDNTS_NFDREGANN=1` environment variable enables prefix registration on the uplink using NFD prefix announcement protocol.
+
 `NDNTS_NFDREGKEY` environment variable specifies the signing key for prefix registration commands.
 This accepts the same syntax as `NDNTS_KEY`.
 The default is using the same key as `NDNTS_KEY`.
