@@ -280,7 +280,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
    * Retrieve application supplied prefix announcement objects.
    *
    * @remarks
-   * This is only available during {@link doAdvertise} execution.
+   * This is only available during {@link makeState} and {@link doAdvertise}.
    */
   protected listAnnouncementObjs(name: Name): Iterable<FwFace.PrefixAnnouncementObj> {
     return this.readvertise!.listAnnouncementObjs(name);

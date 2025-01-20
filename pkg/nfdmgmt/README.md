@@ -114,4 +114,9 @@ await Promise.all(Array.from(["P", "Q"], async (prefix) => {
   console.log("received", `${data.name} ${payloadText}`);
   assert.equal(payloadText, `NDNts + NFD - ${prefix}`);
 }));
+
+// Close the producers and unregister prefixes.
+producerP.close();
+producerQ.close();
+await delay(500);
 ```

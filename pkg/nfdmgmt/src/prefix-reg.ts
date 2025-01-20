@@ -9,7 +9,7 @@ import map from "obliterator/map.js";
 import take from "obliterator/take.js";
 import type { Except, Promisable } from "type-fest";
 
-import { RouteFlags, TT } from "./an-nfd-prefixreg";
+import { RouteFlags, RouteOrigin, TT } from "./an-nfd-prefixreg";
 import { getPrefix } from "./common";
 import { ControlCommandOptions, invokeGeneric } from "./control-command-generic";
 import type { ControlParameters } from "./control-command-nfd";
@@ -18,6 +18,7 @@ import type { PrefixAnn } from "./prefix-ann";
 
 interface State {
   refreshTimer?: NodeJS.Timeout | number;
+  pa?: PrefixAnn;
 }
 
 /** Readvertise prefix announcements via NFD prefix registration protocol. */
@@ -39,6 +40,10 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
    */
   constructor(private readonly face: FwFace, opts: NfdPrefixReg.Options) {
     const {
+      origin = RouteOrigin.client,
+      cost = 0,
+      flagChildInherit = false,
+      flagCapture = true,
       retry,
       refreshInterval = 300000,
       preloadCertName,
@@ -52,38 +57,22 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
       ...opts,
     };
 
-    if ("PrefixAnn" in opts) {
-      this.PrefixAnn = opts.PrefixAnn;
-      this.routeElements = [
-        [TT.Origin, NNI(129)],
-        undefined,
-        undefined,
-        undefined,
-      ];
-    } else {
-      const {
-        origin = 65,
-        cost = 0,
-        flagChildInherit = false,
-        flagCapture = true,
-      } = opts;
-      this.routeElements = [
-        [TT.Origin, NNI(origin)],
-        [TT.Cost, NNI(cost)],
-        [TT.Flags, NNI(
-          (Number(flagChildInherit) * RouteFlags.ChildInherit) |
-          (Number(flagCapture) * RouteFlags.Capture),
-        )],
-        undefined,
-      ];
-      if (refreshInterval !== false) {
-        this.routeElements[3] = [TT.ExpirationPeriod, NNI(Math.max(refreshInterval * 4, 60000))];
-      }
-    }
+    this.PrefixAnn = opts.PrefixAnn;
 
+    this.routeElements = [
+      [TT.Origin, NNI(origin)],
+      [TT.Cost, NNI(cost)],
+      [TT.Flags, NNI(
+        (Number(flagChildInherit) * RouteFlags.ChildInherit) |
+        (Number(flagCapture) * RouteFlags.Capture),
+      )],
+      undefined,
+    ];
     if (refreshInterval !== false) {
+      this.routeElements[3] = [TT.ExpirationPeriod, NNI(Math.max(refreshInterval * 4, 60000))];
       this.refreshInterval = randomJitter(0.1, refreshInterval);
     }
+
     this.preloadCertName = preloadCertName;
     this.preloadFromKeyChain = preloadFromKeyChain;
     this.preloadInterestLifetime = Interest.Lifetime(preloadInterestLifetime);
@@ -158,27 +147,23 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
       this.scheduleRefresh(name, state, this.refreshInterval());
     }
 
-    const cr = await this.tap((opts) => this.invokeAnnounce(name, opts) ??
-       invokeGeneric("rib/register", [TT.ControlParameters, name, ...this.routeElements], opts));
-    this.checkSuccess(cr);
-  }
-
-  private invokeAnnounce(name: Name, opts: ControlCommandOptions): Promise<ControlResponse> | undefined {
-    if (!this.PrefixAnn) {
-      return;
+    if (this.PrefixAnn) {
+      const [pa] = take(filter(
+        this.listAnnouncementObjs(name), (ann) => ann instanceof this.PrefixAnn!,
+      ), 1);
+      state.pa = pa as PrefixAnn;
     }
 
-    const [pa] = take(filter(
-      this.listAnnouncementObjs(name), (ann) => ann instanceof this.PrefixAnn!,
-    ), 1);
-    if (!pa) {
-      return;
-    }
-
-    return invokeGeneric("rib/announce", (pa as PrefixAnn).data, {
-      ...opts,
-      formatCommand: ControlCommandOptions.formatCommandAppParams,
+    const cr = await this.tap((opts) => {
+      if (state.pa) {
+        return invokeGeneric("rib/announce", state.pa.data, {
+          ...opts,
+          formatCommand: ControlCommandOptions.formatCommandAppParams,
+        });
+      }
+      return invokeGeneric("rib/register", [TT.ControlParameters, name, ...this.routeElements], opts);
     });
+    this.checkSuccess(cr);
   }
 
   private scheduleRefresh(name: Name, state: State, after: number): void {
@@ -199,8 +184,12 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
     if (this.closed) {
       return;
     }
-    const cr = await this.tap((opts) => invokeGeneric(
-      "rib/unregister", [TT.ControlParameters, name, this.routeElements[0]], opts));
+
+    const cr = await this.tap((opts) => invokeGeneric("rib/unregister", [
+      TT.ControlParameters,
+      name,
+      state.pa ? [TT.Origin, NNI(RouteOrigin.prefixann)] : this.routeElements[0],
+    ], opts));
     this.checkSuccess(cr);
   }
 
@@ -213,23 +202,24 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
 export namespace NfdPrefixReg {
   /** {@link enableNfdPrefixReg} options. */
   export type Options = Except<ControlCommandOptions, "prefix"> & (
-    Pick<ControlParameters.Fields, "origin" | "cost" | `flag${keyof typeof RouteFlags}`> | {
-      /**
-       * Opt-in to Prefix Announcement Protocol.
-       * @see {@link https://redmine.named-data.net/projects/nfd/wiki/PrefixAnnouncement}
-       *
-       * To opt-in, set this field to `PrefixAnn` imported from this package.
-       * Producer must supply Prefix Announcement objects to the FwFace so that they are available
-       * for use in the readvertise destinations.
-       *
-       * Currently, the following limitations apply for the Prefix Announcement Protocol:
-       * - Not all NFD deployments can accept this protocol.
-       * - You cannot specify Origin, Cost, Flags of the route.
-       * - The announced prefix will not be further propagated, because NFD considers routes with
-       *   Origin=65 to be propagable but the route Origin cannot be specified.
-       */
-      PrefixAnn: typeof PrefixAnn;
-    }) & {
+    Pick<ControlParameters.Fields, "origin" | "cost" | `flag${keyof typeof RouteFlags}`>
+  ) & {
+    /**
+     * Opt-in to Prefix Announcement Protocol.
+     * @see {@link https://redmine.named-data.net/projects/nfd/wiki/PrefixAnnouncement}
+     *
+     * To opt-in, set this field to `PrefixAnn` imported from this package.
+     * Producer must supply Prefix Announcement objects to the FwFace so that they are available
+     * for use in the readvertise destinations.
+     *
+     * Currently, the following limitations apply for the Prefix Announcement Protocol:
+     * - Not all NFD deployments can accept this protocol.
+     * - You cannot specify Origin, Cost, Flags of the route.
+     * - The announced prefix will not be further propagated, because NFD considers routes with
+     *   Origin=65 to be propagable but the route Origin cannot be specified.
+     */
+    PrefixAnn?: typeof PrefixAnn;
+
     /** Retry options for each advertise/withdraw operation. */
     retry?: ReadvertiseDestination.RetryOptions;
 

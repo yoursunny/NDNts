@@ -125,11 +125,13 @@ test("announce", async () => {
     expirationPeriod: 300000,
   });
   appFace.addAnnouncement(paA);
-  await delay(100);
+  await delay(10);
+  appFace.addAnnouncement("/B");
+  await delay(10);
   appFace.removeAnnouncement(paA);
-  await delay(100);
+  await delay(10);
 
-  expect(observer).toHaveBeenCalledTimes(2);
+  expect(observer).toHaveBeenCalledTimes(3);
 
   const call0 = observer.mock.calls[0]!;
   expect(call0[0].name.length).toBe(5);
@@ -140,10 +142,16 @@ test("announce", async () => {
   expect(call0[3]?.data).toEncodeAs(Encoder.encode(paA.data));
 
   const call1 = observer.mock.calls[1]!;
-  expect(call1[1]).toBe("unregister");
-  expect(call1[2]).toHaveName("/A");
-  expect(call1[2].origin).toBe(129);
+  expect(call1[1]).toBe("register");
+  expect(call1[2]).toHaveName("/B");
+  expect(call1[2].origin).toBe(65);
   expect(call1[3]).toBeUndefined();
+
+  const call2 = observer.mock.calls[2]!;
+  expect(call2[1]).toBe("unregister");
+  expect(call2[2]).toHaveName("/A");
+  expect(call2[2].origin).toBe(129);
+  expect(call2[3]).toBeUndefined();
 });
 
 test("preloadCert", async () => {

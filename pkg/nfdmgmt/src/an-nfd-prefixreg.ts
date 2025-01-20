@@ -3,6 +3,8 @@ export const RouteFlags = {
   Capture: 1 << 1,
 } as const;
 
+// Do not export these const enums outside this package.
+
 export const enum TT { // eslint-disable-line etc/no-const-enum
   ControlParameters = 0x68,
   Cost = 0x6A,
@@ -11,5 +13,9 @@ export const enum TT { // eslint-disable-line etc/no-const-enum
   Origin = 0x6F,
   // These are copied from an-nfd.ts to reduce browser bundle size.
   // Unit tests verify consistency of these TLV-TYPE numbers.
-  // Do not export this 'const enum' outside this package.
+}
+
+export const enum RouteOrigin { // eslint-disable-line etc/no-const-enum
+  client = 65,
+  prefixann = 129,
 }
