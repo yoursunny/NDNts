@@ -1,6 +1,6 @@
 {
   "name": "@ndn/lvs",
-  "version": "0.0.0",
+  "version": "0.0.20250122",
   "description": "NDNts: Light VerSec",
   "keywords": [
     "NDN",

@@ -1,6 +1,6 @@
 {
   "name": "@ndn/repo-cli",
-  "version": "0.0.20240630",
+  "version": "0.0.20250122",
   "description": "NDNts: Data Repository CLI",
   "keywords": [
     "NDN",

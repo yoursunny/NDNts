@@ -1,6 +1,6 @@
 {
   "name": "@ndn/naming-convention2",
-  "version": "0.0.20240630",
+  "version": "0.0.20250122",
   "description": "NDNts: Naming Convention rev2 and rev3",
   "keywords": [
     "NDN",

@@ -1,6 +1,6 @@
 {
   "name": "@ndn/pyrepo",
-  "version": "0.0.20240630",
+  "version": "0.0.20250122",
   "description": "NDNts: ndn-python-repo client",
   "keywords": [
     "NDN",
