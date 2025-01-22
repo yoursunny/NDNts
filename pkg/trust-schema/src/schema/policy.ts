@@ -35,7 +35,7 @@ export class TrustSchemaPolicy {
   }
 
   public hasRule(packetId: string, signerId: string): boolean {
-    return this.rules.list(packetId).has(signerId) ?? false;
+    return this.rules.list(packetId).has(signerId);
   }
 
   public addRule(packetId: string, signerId: string): void {

@@ -29,10 +29,8 @@
     "@ndn/endpoint": "workspace:*",
     "@ndn/fw": "workspace:^",
     "@ndn/keychain": "workspace:*",
-    "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
-    "mnemonist": "^0.39.8",
     "obliterator": "^2.0.5",
     "tslib": "^2.8.1",
     "type-fest": "^4.33.0"

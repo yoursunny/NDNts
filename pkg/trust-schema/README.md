@@ -14,7 +14,7 @@ This package implements trust schemas.
   * [ ] automatically request certificates from remote certificate authority
 
 ```ts
-import { TrustSchema, TrustSchemaSigner, TrustSchemaVerifier, printESM, versec } from "@ndn/trust-schema";
+import { TrustSchemaPolicy, pattern as P, TrustSchema, TrustSchemaSigner, TrustSchemaVerifier } from "@ndn/trust-schema";
 
 // other imports for examples
 import { Certificate, KeyChain, generateSigningKey } from "@ndn/keychain";
@@ -44,8 +44,7 @@ The compiler implementation is found to have several limitations.
 python-ndn library authors defined **Light VerSec (LVS)**, a lightweight modification of VerSec that focuses on signing key validation.
 Its [syntax and semantics](https://python-ndn.readthedocs.io/en/latest/src/lvs/lvs.html) are similar to VerSec.
 For ease of processing, LVS introduced some restrictions on identifier names and token ordering.
-This package can import a subset of LVS models from its textual format via `versec.load()` function.
-See `@ndn/lvs` package for more complete LVS support via its binary format.
+NDNts `@ndn/lvs` package can import LVS trust schema via its binary format.
 
 ## Trust Schema Representation
 
@@ -65,7 +64,7 @@ TrustSchema
 |   |         \-OverlapPattern
 |   |
 |   \-rules = set of
-|       packet name pattern id => signer name pattern id
+|       packet name pattern id <= signer name pattern id
 |
 \-trust anchors = array of Certificate
 ```
@@ -89,62 +88,33 @@ It must be one of these sub-types:
 * `AlternatePattern` accepts any match among two or more possible patterns.
 * `OverlapPattern` accepts one or more name components that satisfy two or more overlapped patterns.
 
-## VerSec Syntax
+## Trust Schema Example
 
-This package has partial support of the VerSec syntax, including:
-
-* component constraints
-* `timestamp` function: translates to a `VariablePattern` that matches a Timestamp name component
-* `seq` function: translates to a `VariablePattern` that matches a SequenceNum name component
-* `sysid`, `host`, `uid`, `pid` function: translates to a `VariablePattern` that assigns to a variable of the same name upper-cased
-* signing constraints and signing chains
-
-Some notes and limitations:
-
-* This implementation has very limited compile-time schema validation.
-* You can have multiple trust anchors, despite that the VerSec spec allows only one trust anchor.
-* `CertNamePattern` is created by `"KEY"/_/_/_`, which should be included at the end of each certificate name.
-* Identifiers starting with `_` cannot be used in signing constraints and signing chains.
-
-**This implementation is deprecated in favor of LVS in @ndn/lvs package.**
-
-`versec.load()` function imports a policy written in VerSec syntax:
+The following code defines a trust schema policy of the blog website in [Schematizing Trust](https://named-data.net/publications/schematizing_trust_ndn/) paper figure 3:
 
 ```ts
-const policy = versec.load(`
-_site: "a"/"blog"
-root: _site/_KEY
-#article: _site/"article"/category/year/month <= author
+export const policy = new TrustSchemaPolicy();
 
-// Notice the variable name distinction between 'adminName' and 'authorName', which is necessary
-// to allow them to have different values. Also, the variables cannot be named 'admin' and 'author'
-// because that would clash with the pattern names that are implicitly declared as variables.
-admin: _site/"admin"/adminName/_KEY <= root
-author: _site/_role/authorName/_KEY & { _role: "author" } <= admin
+policy.addPattern("root", new P.ConcatPattern([
+  new P.ConstPattern("/a/blog"),
+  new P.CertNamePattern(),
+]));
+policy.addPattern("#article", new P.ConcatPattern([
+  new P.ConstPattern("/a/blog/article"),
+  new P.VariablePattern("category"), new P.VariablePattern("year"), new P.VariablePattern("month"),
+]));
+policy.addPattern("admin", new P.ConcatPattern([
+  new P.ConstPattern("/a/blog/admin"),
+  new P.VariablePattern("admin"), new P.CertNamePattern(),
+]));
+policy.addPattern("author", new P.ConcatPattern([
+  new P.ConstPattern("/a/blog/author"),
+  new P.VariablePattern("author"), new P.CertNamePattern(),
+]));
 
-_KEY: "KEY"/_/_/_
-`);
-```
-
-`versec.print()` function prints the policy in VerSec syntax.
-You may notice that the output differs from the input, because the library has flattened the patterns for faster execution.
-Occasionally, certain features may not print correctly, especially if the policy was imported from a different syntax.
-
-```ts
-console.group("VerSec policy");
-console.log(versec.print(policy));
-console.groupEnd();
-```
-
-`printESM()` function prints the policy as ECMAScript module.
-It shows how you can define the same policy in code.
-However, it cannot automatically convert certain VerSec features, and manual edits would be necessary in such cases.
-Writing the policy in code can reduce JavaScript bundle size in a web application, because the VerSec compiler is no longer needed at runtime.
-
-```ts
-console.group("VerSec policy in ESM");
-console.log(printESM(policy));
-console.groupEnd();
+policy.addRule("#article", "author");
+policy.addRule("admin", "root");
+policy.addRule("author", "admin");
 ```
 
 With the policy in place, we can generate a root key and make the trust schema object.
