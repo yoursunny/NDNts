@@ -14,7 +14,7 @@ This requires `clang-format-15` package.
 
 ```bash
 docker build -t localhost/ndnts-cxx - <<EOT
-  FROM node:20-bookworm
+  FROM node:22-bookworm
   RUN echo "deb [trusted=yes] https://nfd-nightly-apt.ndn.today/debian bookworm main" > /etc/apt/sources.list.d/nfd-nightly.list \
    && apt-get update \
    && apt-get -y -qq install --no-install-recommends clang-format-15 libndn-cxx-dev libpsync-dev ndnsec pkg-config \
@@ -22,7 +22,11 @@ docker build -t localhost/ndnts-cxx - <<EOT
 EOT
 
 docker run -it --rm \
-  --network host --mount type=bind,source=$(pwd),target=/NDNts \
-  --user $(id -u):$(id -g) --workdir /NDNts \
+  --network host \
+  --mount type=bind,source=$(pwd),target=/NDNts \
+  --user $(id -u):$(id -g) \
+  --workdir /NDNts/integ/cxx-tests \
   localhost/ndnts-cxx bash
 ```
+
+Type `corepack pnpm test` to run the tests.

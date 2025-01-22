@@ -37,8 +37,7 @@ test("pair - ws WebSocket", async () => {
   await testPair((uri) => new WsWebSocket(uri));
 });
 
-test.runIf(globalThis.WebSocket)("pair - native WebSocket", async () => {
-  // to run this test case in Node 20, set environ NODE_OPTIONS=--experimental-websocket
+test("pair - native WebSocket", async () => {
   await testPair((uri) => new WebSocket(uri));
 });
 

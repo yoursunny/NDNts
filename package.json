@@ -27,7 +27,7 @@
     "vitest": "^3.0.3"
   },
   "engines": {
-    "node": "^20.18.0 || ^22.11.0 || ^23.0.0"
+    "node": "^22.11.0 || ^23.6.0"
   },
   "pnpm": {
     "peerDependencyRules": {

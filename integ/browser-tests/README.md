@@ -13,7 +13,7 @@ In each test case,
 ## Puppeteer Docker
 
 ```bash
-docker pull satantime/puppeteer-node:20-slim
+docker pull satantime/puppeteer-node:22-slim
 
 docker run -it --rm \
   --network host \
@@ -23,7 +23,7 @@ docker run -it --rm \
   --cap-add SYS_ADMIN \
   --user $(id -u):$(id -g) \
   --workdir /NDNts/integ/browser-tests \
-  satantime/puppeteer-node:20-slim bash
+  satantime/puppeteer-node:22-slim bash
 ```
 
 Type `corepack pnpm test` to run the tests.

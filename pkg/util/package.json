@@ -29,7 +29,6 @@
   },
   "dependencies": {
     "@shigen/polyfill-symbol-dispose": "^1.0.1",
-    "@ungap/with-resolvers": "^0.1.0",
     "event-iterator": "^2.0.0",
     "streaming-iterables": "^8.0.1",
     "tiny-invariant": "^1.3.3",
@@ -44,6 +43,6 @@
     "write": "^2.0.0"
   },
   "engines": {
-    "node": "^20.18.0 || ^22.11.0 || ^23.0.0"
+    "node": "^22.11.0 || ^23.6.0"
   }
 }

@@ -3,13 +3,13 @@
 Test environment:
 
 * Ubuntu 22.04
-* ndn-cxx 0.8.1-51-g16203ea2
-* NFD 22.12-37-g4c95771b
-* Node.js 20.10.0
+* ndn-cxx 0.9.0-16-gd384a530
+* NFD 24.07-14-g2b43d675
+* Node.js 22.13.0
 
 Reference implementation:
 
-* [ndncert C++](https://github.com/named-data/ndncert) commit `a4951d3827dd` (2023-11-26)
+* [ndncert C++](https://github.com/named-data/ndncert) commit `ea5b8fc288ee` (2025-01-05)
 
 ## NDNts Client and C++ CA, PIN Challenge
 

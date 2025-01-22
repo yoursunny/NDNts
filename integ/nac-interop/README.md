@@ -3,10 +3,14 @@
 Test environment:
 
 * Ubuntu 22.04
-* ndn-cxx 0.8.1-55-gc5003938
-* [name-based-access-control C++ library](https://github.com/named-data/name-based-access-control) commit `6624987951cfa2fcc9cca11c250e98bdbf42233f` (2024-02-19)
-  * `./waf configure --with-examples`
-* Node.js 20.11.0
+* ndn-cxx 0.9.0-16-gd384a530
+* NFD 24.07-14-g2b43d675
+* Node.js 22.13.0
+
+Reference implementation:
+
+* [name-based-access-control C++ library](https://github.com/named-data/name-based-access-control) commit `3c835dcda0e5463a788dc6fd43fa00d10a88db4f` (2024-12-13)
+* `./waf configure --with-examples`
 
 ## NDNts Producer and C++ Consumer
 
