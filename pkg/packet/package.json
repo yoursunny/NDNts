@@ -30,7 +30,7 @@
     "@ndn/util": "workspace:*",
     "buffer-compare": "^1.1.1",
     "tslib": "^2.8.1",
-    "type-fest": "^4.32.0"
+    "type-fest": "^4.33.0"
   },
   "devDependencies": {
     "@types/buffer-compare": "^0.0.33",
