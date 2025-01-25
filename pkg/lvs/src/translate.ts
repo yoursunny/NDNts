@@ -4,42 +4,39 @@ import { assert, getOrInsert } from "@ndn/util";
 
 import { type ConsOption, type Constraint, type LvsModel, type Node, type PatternEdge, type UserFnCall, ValueEdge } from "./tlv";
 
+/**
+ * User function used by a LVS model.
+ * @param value - Name component supplied at runtime.
+ * @param args - Arguments defined in the LVS model.
+ * @returns Whether `value` is a match.
+ */
 export type UserFn = (value: Component, args: readonly Component[]) => boolean;
+
+/** A table of user functions. */
 export type Vtable = ReadonlyMap<string, UserFn>;
+
+/** A table of user functions. */
 export type VtableInput = Vtable | Record<string, UserFn>;
 
 /**
- * Translate LVS model to TrustSchemaPolicy at runtime.
+ * Translate LVS model to TrustSchemaPolicy.
  * @param model - LVS model.
- * @param vtable - User functions.
- * @returns Executable policy.
  *
  * @throws Error
  * Malformed LVS model.
- * Some user functions referenced in the LVS model are not in the vtable.
+ * Some user functions referenced in the LVS model are missing in the vtable.
  */
-export function toPolicy(model: LvsModel, vtable?: VtableInput): TrustSchemaPolicy;
-
-/**
- * Translate LVS model to TrustSchemaPolicy at build-time without linking user functions.
- * @param model - LVS model.
- * @param buildTime - {@link toPolicy.buildTime} symbol.
- *
- * @returns Possibly incomplete policy.
- * If the LVS model references user functions, the policy will not execute successfully.
- * The policy can be serialized with {@link printESM} and {@link printUserFns}.
- *
- * @throws Error
- * Malformed LVS model.
- */
-export function toPolicy(model: LvsModel, buildTime: typeof toPolicy.buildTime): TrustSchemaPolicy;
-
-export function toPolicy(model: LvsModel, arg2: VtableInput | typeof toPolicy.buildTime = {}): TrustSchemaPolicy {
-  const vtable: Vtable = arg2 instanceof Map ? arg2 :
-    new Map(arg2 === toPolicy.buildTime ? [] : Object.entries(arg2));
-  const translator = new Translator(model, vtable);
+export function toPolicy(model: LvsModel, {
+  vtable = {},
+  buildTime = false,
+  patternAliases = false,
+}: toPolicy.Options = {}): TrustSchemaPolicy {
+  if (!(vtable instanceof Map)) {
+    vtable = new Map(Object.entries(vtable));
+  }
+  const translator = new Translator(model, vtable, patternAliases);
   translator.translate();
-  if (arg2 !== toPolicy.buildTime) {
+  if (!buildTime) {
     const { missingFns } = translator;
     if (missingFns.length > 0) {
       throw new Error(`missing user functions: ${missingFns.join(" ")}`);
@@ -48,7 +45,37 @@ export function toPolicy(model: LvsModel, arg2: VtableInput | typeof toPolicy.bu
   return translator.policy;
 }
 export namespace toPolicy {
-  export const buildTime = Symbol("@ndn/lvs#toPolicy.buildTime");
+  /** {@link toPolicy} options. */
+  export interface Options {
+    /** Link user functions to the model. */
+    vtable?: VtableInput;
+
+    /**
+     * If set to true, perform a build-time translation where incomplete vtable would not throw
+     * an error. The returned policy may not executed successfully, but can be serialized with
+     * {@link printESM} and {@link printUserFns}.
+     *
+     * Otherwise, perform a runtime translation that checks all referenced user functions are
+     * present in the vtable.
+     *
+     * @defaultValue false
+     */
+    buildTime?: boolean;
+
+    /**
+     * LVS model allows a node to have multiple rule names and may associate the same rule name
+     * with multiple nodes. However, TrustSchemaPolicy only allows one name for each pattern.
+     *
+     * If set to true, a pattern translated from a node is duplicated so that it is associated
+     * with every rule name.
+     *
+     * Otherwise, each pattern is only reachable from one name. The rule name, if unique, will be
+     * used; otherwise, an internal name is derived from the node id.
+     *
+     * @defaultValue false
+     */
+    patternAliases?: boolean;
+  }
 }
 
 export const neededFnsMap = new WeakMap<TrustSchemaPolicy, Map<string, ReadonlySet<number>>>();
@@ -57,6 +84,7 @@ class Translator {
   constructor(
       private readonly model: LvsModel,
       private readonly vtable: Vtable,
+      private readonly patternAliases: boolean,
   ) {
     neededFnsMap.set(this.policy, this.neededFns);
   }
@@ -68,7 +96,7 @@ class Translator {
   }
 
   private readonly tagSymbols = new Map<number, string>();
-  private readonly patternNames = new Map<string, number>();
+  private readonly ruleNames = new Map<string, number[]>();
   private readonly wantedNodes = new Set<number>();
   private readonly neededFns = new Map<string, Set<number>>();
   private lastAutoId = 0;
@@ -78,6 +106,9 @@ class Translator {
     this.gatherNodes();
     this.processPatterns();
     this.processRules();
+    if (this.patternAliases) {
+      this.addAliases();
+    }
   }
 
   private gatherTagSymbols(): void {
@@ -96,11 +127,35 @@ class Translator {
     for (const node of this.model.nodes) {
       if (node.ruleNames.length > 0 || node.signConstraints.length > 0) {
         this.wantedNodes.add(node.id);
+        for (const rn of node.ruleNames) {
+          getOrInsert(this.ruleNames, rn, () => []).push(node.id);
+        }
       }
       for (const sc of node.signConstraints) {
         this.wantedNodes.add(sc);
       }
     }
+  }
+
+  private namePattern({ id, ruleNames }: Node): string[] {
+    const names: string[] = [];
+    for (const rn of ruleNames) {
+      if (this.ruleNames.get(rn)?.length === 1) {
+        names.push(rn);
+        if (!this.patternAliases) {
+          return names;
+        }
+      }
+    }
+
+    if (names.length === 0) {
+      return [this.nameNodeId(id)];
+    }
+    return names;
+  }
+
+  private nameNodeId(id: number): string {
+    return `_NODE_${id}`;
   }
 
   private processPatterns(): void {
@@ -111,24 +166,6 @@ class Translator {
         this.policy.addPattern(name, pattern);
       }
     }
-  }
-
-  private namePattern(node: Node): string[] {
-    const names: string[] = [];
-    for (const name of node.ruleNames) {
-      const used = this.patternNames.get(name);
-      if (used === undefined) {
-        this.patternNames.set(name, node.id);
-      } else if (used !== node.id) {
-        continue;
-      }
-      names.push(name);
-    }
-
-    if (names.length === 0) {
-      return [`_NODE_${node.id}`];
-    }
-    return names;
   }
 
   private trPattern(node: Node): P.Pattern {
@@ -201,6 +238,17 @@ class Translator {
           }
         }
       }
+    }
+  }
+
+  private addAliases(): void {
+    for (const [rn, ids] of this.ruleNames) {
+      if (ids.length === 1) {
+        continue;
+      }
+      this.policy.addPattern(rn, new P.AlternatePattern(
+        ids.map((id) => this.policy.getPattern(this.nameNodeId(id))),
+      ));
     }
   }
 }

@@ -2,7 +2,7 @@ import "@ndn/packet/test-fixture/expect";
 
 import { Certificate, generateSigningKey, KeyChain } from "@ndn/keychain";
 import { Component, Data, Name, ValidityPeriod } from "@ndn/packet";
-import { printESM, TrustSchema, TrustSchemaSigner } from "@ndn/trust-schema";
+import { printESM, TrustSchema, type TrustSchemaPolicy, TrustSchemaSigner } from "@ndn/trust-schema";
 import { expect, test, vi } from "vitest";
 
 import { printUserFns, toPolicy, type UserFn } from "..";
@@ -34,7 +34,9 @@ test("pyndn1", async () => {
 
   const model = pyndn1();
   const policy = toPolicy(model, {
-    $eq_type: (value, args) => value.type === args[0]?.type,
+    vtable: {
+      $eq_type: (value, args) => value.type === args[0]?.type,
+    },
   });
   const schema = new TrustSchema(policy, [laRootCert, nyRootCert]);
 
@@ -84,13 +86,15 @@ test("pyndn3", () => {
   const model = pyndn3();
   expect(() => toPolicy(model)).toThrow(/missing user functions.*\$fn/);
 
-  const policyPrintable = toPolicy(model, toPolicy.buildTime);
+  const policyPrintable = toPolicy(model, {
+    buildTime: true,
+  });
   expect(policyPrintable.match(new Name("/x/y"))).toHaveLength(0);
   expect(printESM(policyPrintable)).toContain("$fn");
   expect(printUserFns(policyPrintable)).toContain("$fn");
 
   const $fn = vi.fn<UserFn>();
-  const policy = toPolicy(model, { $fn });
+  const policy = toPolicy(model, { vtable: { $fn } });
 
   $fn.mockReturnValue(true);
   expect(policy.match(new Name("/x/y"))).toHaveLength(1);
@@ -118,15 +122,22 @@ test("pyndn4", () => {
   expect(policy.canSign(new Name("/a/a/a"), new Name("/xxx/xxx/xxx"))).toBeTruthy();
 });
 
-test("pyndn5", () => {
+test.each([false, true])("pyndn5 patternAliases=%d", (patternAliases) => {
   const model = pyndn5();
-  const policy = toPolicy(model);
+  const policy = toPolicy(model, { patternAliases });
+
+  const haveMatches = (count: number, alias: string) => (matches: readonly TrustSchemaPolicy.Match[]) => {
+    if (!patternAliases) {
+      return matches.length === 1;
+    }
+    return matches.length === count && matches.some(({ id }) => id === alias);
+  };
 
   // https://github.com/named-data/python-ndn/blob/64938def54afd11f9766243b19bf06e6a2ccd163/tests/misc/light_versec_test.py#L400-L417
-  expect(policy.match(new Name("/ndn/KEY/1/self/1"))).toHaveLength(1);
-  expect(policy.match(new Name("/ndn/ucla/KEY/1/self/1"))).toHaveLength(1);
-  expect(policy.match(new Name("/ndn/ucla/cs/KEY/1/self/1"))).toHaveLength(1);
-  expect(policy.match(new Name("/ndn/ucla/cs/irl/KEY/1/self/1"))).toHaveLength(1);
+  expect(policy.match(new Name("/ndn/KEY/1/self/1"))).toSatisfy(haveMatches(1, "#rootcert"));
+  expect(policy.match(new Name("/ndn/ucla/KEY/1/self/1"))).toSatisfy(haveMatches(2, "#sitecert"));
+  expect(policy.match(new Name("/ndn/ucla/cs/KEY/1/self/1"))).toSatisfy(haveMatches(2, "#sitecert"));
+  expect(policy.match(new Name("/ndn/ucla/cs/irl/KEY/1/self/1"))).toSatisfy(haveMatches(2, "#sitecert"));
   expect(policy.match(new Name("/ndn/ucla/cs/irl/should-fail/KEY/1/self/1"))).toHaveLength(0);
   expect(policy.canSign(new Name("/ndn/ucla/KEY/2/ndn/3"),
     new Name("/ndn/KEY/1/self/1"))).toBeTruthy();

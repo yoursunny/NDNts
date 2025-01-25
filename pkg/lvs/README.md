@@ -60,7 +60,7 @@ These ECMAScript modules are to be bundled in the compiled project, but the LVS 
 5. Import `policy` from `lvspolicy.mjs` in your application.
 
 ```ts
-const policy0 = toPolicy(model, toPolicy.buildTime);
+const policy0 = toPolicy(model, { buildTime: true });
 console.group("lvspolicy.mjs");
 console.log(printESM(policy0));
 console.groupEnd();
@@ -72,17 +72,18 @@ console.groupEnd();
 ### Runtime Translation
 
 In *runtime translation*, the LVS model is dynamically loaded at runtime (e.g. retrieved from network) and translated to `TrustSchemaPolicy`.
-If any user functions are referenced in the LVS model, they shall be provided as runtime.
+If any user functions are referenced in the LVS model, they shall be provided at runtime.
 This requires the LVS translator to be bundled in the compiled project, which would result in much larger browser bundle size.
 
 1. Use `toPolicy` with a table of user functions to perform a runtime translation.
 2. The returned `policy` can be directly used in your application.
 
 ```ts
-const policy1 = toPolicy(model, {
+const vtable = {
   $isValidID: (component) => component.length === 6,
   $isValidYear: (component) => component.length === 4,
-});
+};
+const policy1 = toPolicy(model, { vtable });
 ```
 
 ## TrustSchemaPolicy Usage
