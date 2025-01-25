@@ -1,8 +1,9 @@
+import { CertNaming } from "@ndn/keychain";
 import { type Component, Name } from "@ndn/packet";
 import { pattern as P, type printESM, TrustSchemaPolicy } from "@ndn/trust-schema";
 import { assert, getOrInsert } from "@ndn/util";
 
-import { type ConsOption, type Constraint, type LvsModel, type Node, type PatternEdge, type UserFnCall, ValueEdge } from "./tlv";
+import { type ConsOption, type Constraint, type LvsModel, type Node, PatternEdge, type UserFnCall, ValueEdge } from "./tlv";
 
 /**
  * User function used by a LVS model.
@@ -95,10 +96,11 @@ class Translator {
     return Array.from(this.neededFns.keys()).filter((fn) => !this.vtable.get(fn));
   }
 
-  private readonly tagSymbols = new Map<number, string>();
-  private readonly ruleNames = new Map<string, number[]>();
-  private readonly wantedNodes = new Set<number>();
-  private readonly neededFns = new Map<string, Set<number>>();
+  private readonly tagSymbols = new Map<number, string>(); // tag => tag symbol
+  private readonly wantedNodes = new Set<number>(); // node id
+  private readonly ruleNames = new Map<string, number[]>(); // rule name => node ids
+  private readonly tagUsage = new Map<number, { cnt: number }>(); // tag => usage count
+  private readonly neededFns = new Map<string, Set<number>>(); // fn name => arg counts
   private lastAutoId = 0;
 
   public translate(): void {
@@ -112,7 +114,6 @@ class Translator {
   }
 
   private gatherTagSymbols(): void {
-    this.tagSymbols.clear();
     for (const { tag, identifier } of this.model.tagSymbols) {
       this.tagSymbols.set(tag, identifier);
     }
@@ -123,7 +124,6 @@ class Translator {
   }
 
   private gatherNodes(): void {
-    this.wantedNodes.clear();
     for (const node of this.model.nodes) {
       if (node.ruleNames.length > 0 || node.signConstraints.length > 0) {
         this.wantedNodes.add(node.id);
@@ -134,7 +134,33 @@ class Translator {
       for (const sc of node.signConstraints) {
         this.wantedNodes.add(sc);
       }
+
+      for (const pe of node.patternEdges) {
+        this.gatherTags(pe);
+      }
     }
+  }
+
+  private gatherTags(pe: PatternEdge): void {
+    this.incrementTagUsage(pe.tag);
+    for (const cons of pe.constraints) {
+      for (const co of cons.options) {
+        for (const { tag } of co.call?.args ?? []) {
+          if (tag !== undefined) {
+            this.incrementTagUsage(tag);
+          }
+        }
+      }
+    }
+  }
+
+  private incrementTagUsage(tag: number): void {
+    const counter = getOrInsert(this.tagUsage, tag, () => ({ cnt: 0 }));
+    ++counter.cnt;
+  }
+
+  private isAnonymousTag(tag: number): boolean {
+    return !this.tagSymbols.has(tag) && this.tagUsage.get(tag)?.cnt === 1;
   }
 
   private namePattern({ id, ruleNames }: Node): string[] {
@@ -169,14 +195,29 @@ class Translator {
   }
 
   private trPattern(node: Node): P.Pattern {
-    const parts: P.Pattern[] = [];
+    const edges: Array<ValueEdge | PatternEdge> = [];
     while (node.parent !== undefined) {
       const parent = this.model.nodes[node.parent]!;
       const edge = parent.findEdgeTo(node.id)!;
-      parts.unshift(this.trEdge(edge));
+      edges.unshift(edge);
       node = parent;
     }
+
+    const parts: P.Pattern[] = [];
+    if (edges.length >= 4 && this.isCertName(edges.slice(-4))) {
+      parts.unshift(new P.CertNamePattern());
+      edges.splice(-4, 4);
+    }
+    parts.unshift(...edges.map((edge) => this.trEdge(edge)));
+
     return new P.ConcatPattern(parts);
+  }
+
+  private isCertName(edges: ReadonlyArray<ValueEdge | PatternEdge>): boolean {
+    const [e0, ...e123] = edges;
+    return e0 instanceof ValueEdge && e0.value.equals(CertNaming.KEY) &&
+      e123.every((edge) => edge instanceof PatternEdge &&
+       this.isAnonymousTag(edge.tag) && edge.constraints.length === 0);
   }
 
   private trEdge(edge: ValueEdge | PatternEdge): P.Pattern {
@@ -184,10 +225,15 @@ class Translator {
       return this.trValue(edge.value);
     }
 
-    return new P.OverlapPattern([
-      new P.VariablePattern(this.nameTag(edge.tag)),
-      ...edge.constraints.map((cons) => this.trConstraint(cons)),
-    ]);
+    const branches = edge.constraints.map((cons) => this.trConstraint(cons));
+    if (branches.length === 0 || !this.isAnonymousTag(edge.tag)) {
+      branches.unshift(new P.VariablePattern(this.nameTag(edge.tag)));
+    }
+    return new P.OverlapPattern(branches);
+  }
+
+  private trValue(value: Component): P.Pattern {
+    return new P.ConstPattern(new Name([value]));
   }
 
   private trConstraint(cons: Constraint): P.Pattern {
@@ -209,10 +255,6 @@ class Translator {
     return new P.VariablePattern(`_FN_${++this.lastAutoId}`, {
       filter: this.trCall(co.call),
     });
-  }
-
-  private trValue(value: Component): P.Pattern {
-    return new P.ConstPattern(new Name([value]));
   }
 
   private trCall(call: UserFnCall): P.VariablePattern.Filter {
@@ -291,7 +333,7 @@ class LvsFilter implements P.VariablePattern.Filter, printESM.PrintableFilter {
       }
     }
     lines.push(`${indent}    ];`);
-    if (this.binds.length > 0) {
+    if (this.binds.length === 0) {
       lines.push(`${indent}    void vars;`);
     }
     lines.push(
