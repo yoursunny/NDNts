@@ -1,6 +1,6 @@
+import { LRUMap } from "@miyauci/lru-map";
 import { assert } from "@ndn/util";
 import { Async, type Backend, constants, Errno, ErrnoError, type File, FileSystem, type FileSystemMetadata, isWriteable, LazyFile, Readonly, Stats } from "@zenfs/core";
-import { LRUCache } from "mnemonist";
 import { collect, map, pipeline } from "streaming-iterables";
 
 import { Client } from "./client";
@@ -24,7 +24,7 @@ export class NDNFileSystem extends Async(Readonly(FileSystem)) { // eslint-disab
     this.client = client;
 
     if (statsCacheCapacity > 0) {
-      this.statsCache = new LRUCache(statsCacheCapacity);
+      this.statsCache = new LRUMap(statsCacheCapacity);
     }
   }
 
@@ -41,7 +41,7 @@ export class NDNFileSystem extends Async(Readonly(FileSystem)) { // eslint-disab
   }
 
   private readonly client: Client;
-  private readonly statsCache?: LRUCache<string, FileMetadata>;
+  private readonly statsCache?: LRUMap<string, FileMetadata>;
 
   private async getFileMetadata(path: string): Promise<FileMetadata> {
     let m = this.statsCache?.get(path);
