@@ -1,6 +1,6 @@
 import { assert } from "@ndn/util";
 import { Async, type Backend, constants, Errno, ErrnoError, type File, FileSystem, type FileSystemMetadata, isWriteable, LazyFile, Readonly, Stats } from "@zenfs/core";
-import LRUCache from "mnemonist/lru-cache.js";
+import { LRUCache } from "mnemonist";
 import { collect, map, pipeline } from "streaming-iterables";
 
 import { Client } from "./client";

@@ -1,4 +1,3 @@
-import set_helpers from "mnemonist/set.js";
 import { expect } from "vitest";
 
 import { Forwarder, type FwFace } from "..";
@@ -12,13 +11,13 @@ export class SnapshotFaces {
   private readonly snapshotFaces: Set<FwFace>;
 
   /** List faces added since taking the snapshot. */
-  public listNewFaces(): FwFace[] {
-    return Array.from(set_helpers.difference(this.fw.faces as Set<FwFace>, this.snapshotFaces));
+  public listNewFaces(): ReadonlySet<FwFace> {
+    return this.fw.faces.difference(this.snapshotFaces);
   }
 
   /** List faces removed since taking the snapshot. */
-  public listClosedFaces(): FwFace[] {
-    return Array.from(set_helpers.difference(this.snapshotFaces, this.fw.faces as Set<FwFace>));
+  public listClosedFaces(): ReadonlySet<FwFace> {
+    return this.snapshotFaces.difference(this.fw.faces);
   }
 
   /** Asserts that no faces were added. */
@@ -31,11 +30,11 @@ export class SnapshotFaces {
     this.expectNoFace(this.listClosedFaces(), "closed");
   }
 
-  private expectNoFace(list: readonly FwFace[], desc: string): void {
-    if (list.length === 0) {
+  private expectNoFace(set: ReadonlySet<FwFace>, desc: string): void {
+    if (set.size === 0) {
       return;
     }
-    expect.fail(`unexpected ${desc} faces: ${Array.from(list, (face) => face.toString()).join(",")}`);
+    expect.fail(`unexpected ${desc} faces: ${Array.from(set, (face) => face.toString()).join(",")}`);
   }
 
   /** Asserts that no faces were added or removed. */

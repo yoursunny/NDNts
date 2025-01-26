@@ -33,7 +33,6 @@
     "type-fest": "^4.33.0"
   },
   "devDependencies": {
-    "@types/buffer-compare": "^0.0.33",
-    "mnemonist": "^0.39.8"
+    "@types/buffer-compare": "^0.0.33"
   }
 }

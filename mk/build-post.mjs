@@ -86,7 +86,6 @@ const CJS_IMPORTS = new Set([
   "event-iterator",
   "fast-chunk-string",
   "it-keepalive",
-  "mnemonist",
   "nodemailer",
   "obliterator",
   "progress",
