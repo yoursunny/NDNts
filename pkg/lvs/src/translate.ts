@@ -1,6 +1,6 @@
 import { CertNaming } from "@ndn/keychain";
 import { type Component, Name } from "@ndn/packet";
-import { pattern as P, type printESM, TrustSchemaPolicy } from "@ndn/trust-schema";
+import { pattern as P, type printESM, simplifyPattern, TrustSchemaPolicy } from "@ndn/trust-schema";
 import { assert, getOrInsert } from "@ndn/util";
 
 import { type ConsOption, type Constraint, type LvsModel, type Node, PatternEdge, type UserFnCall, ValueEdge } from "./tlv";
@@ -187,7 +187,7 @@ class Translator {
   private processPatterns(): void {
     for (const id of this.wantedNodes) {
       const node = this.model.nodes[id]!;
-      const pattern = this.trPattern(node).simplify();
+      const pattern = simplifyPattern(this.trPattern(node));
       for (const name of this.namePattern(node)) {
         this.policy.addPattern(name, pattern);
       }

@@ -45,7 +45,6 @@ class Context {
 
   public async testSigner({
     makeSigner,
-    signerMustLpm = true,
   }: Row, f: (signer: Signer, data: Signer.Signable) => Promise<void>) {
     const signer = makeSigner(this);
     const data = new Data(this.dataName, Uint8Array.of(0xD0, 0xD1));
@@ -56,15 +55,11 @@ class Context {
     makeVerifier,
     enableProducer = true,
   }: Row, f: (verifier: Verifier, data: Verifier.Verifiable) => Promise<void>) {
-    const certProducer = enableProducer ?
+    using certProducer = enableProducer ?
       await makeRepoProducer({ reg: PrefixRegShorter(4) }, [this.cert1.data, this.cert2.data]) :
       undefined;
     const verifier = makeVerifier(this);
-    try {
-      await f(verifier, this.data);
-    } finally {
-      certProducer?.close();
-    }
+    await f(verifier, this.data);
   }
 
   protected async makeCert0() {

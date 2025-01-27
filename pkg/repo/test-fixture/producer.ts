@@ -7,7 +7,7 @@ import { type DataStore, makeInMemoryDataStore, PrefixRegShorter, RepoProducer }
 export async function makeRepoProducer(
     opts: RepoProducer.Options = {},
     pkts: readonly Data[] = [],
-) {
+): Promise<makeRepoProducer.Result> {
   const store = await makeInMemoryDataStore();
   await store.insert(...pkts);
   const producer = RepoProducer.create(store, {
@@ -21,11 +21,12 @@ export async function makeRepoProducer(
     store,
     producer,
     close: closers.close,
+    [Symbol.dispose]: closers.close,
   };
 }
 
 export namespace makeRepoProducer {
-  export interface Result {
+  export interface Result extends Disposable {
     store: DataStore;
     producer: RepoProducer;
     close: () => void;

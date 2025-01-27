@@ -5,4 +5,5 @@ export * from "./policy";
 export * from "./print";
 export * from "./schema";
 export * from "./signer";
+export * from "./simplify";
 export * from "./verifier";

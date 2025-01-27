@@ -1,5 +1,5 @@
 import type { Name } from "@ndn/packet";
-import { MultiMap } from "@ndn/util";
+import { assert, MultiMap } from "@ndn/util";
 
 import { type Pattern, Vars, type VarsLike } from "./pattern";
 
@@ -17,16 +17,12 @@ export class TrustSchemaPolicy {
 
   public getPattern(id: string, optional = false) {
     const pattern = this.patterns.get(id);
-    if (!pattern && !optional) {
-      throw new Error(`unknown pattern ${id}`);
-    }
+    assert(optional || pattern, `unknown pattern ${id}`);
     return pattern;
   }
 
   public addPattern(id: string, pattern: Pattern) {
-    if (this.patterns.has(id)) {
-      throw new Error(`duplicate pattern ${id}`);
-    }
+    assert(!this.patterns.has(id), `duplicate pattern ${id}`);
     this.patterns.set(id, pattern);
   }
 

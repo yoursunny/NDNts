@@ -151,7 +151,7 @@ describe("CertFetcher", () => {
 });
 
 describe("CertSources", () => {
-  let keyChainGetCertFn: MockInstance<Parameters<KeyChain["getCert"]>, ReturnType<KeyChain["getCert"]>>;
+  let keyChainGetCertFn: MockInstance<KeyChain["getCert"]>;
   beforeEach(() => {
     keyChainGetCertFn = vi.spyOn(keyChain, "getCert");
     return () => {
@@ -168,10 +168,10 @@ describe("CertSources", () => {
 
     let found = await findIn(s, selfA);
     expect(found).toHaveLength(1);
-    expect(keyChainGetCertFn).toHaveBeenCalledTimes(0);
+    expect(keyChainGetCertFn).not.toHaveBeenCalled();
 
     found = await findIn(s, certB);
     expect(found).toHaveLength(1);
-    expect(keyChainGetCertFn).toHaveBeenCalledTimes(1);
+    expect(keyChainGetCertFn).toHaveBeenCalledOnce();
   });
 });

@@ -3,7 +3,7 @@ import "@ndn/packet/test-fixture/expect";
 import { Name, type NameLike } from "@ndn/packet";
 import { expect, test, vi } from "vitest";
 
-import { pattern as P } from "../..";
+import { pattern as P, simplifyPattern } from "../..";
 
 function match(p: P.Pattern, name: NameLike): P.Vars[] {
   return Array.from(p.match(Name.from(name)));
@@ -274,7 +274,7 @@ test("overlap", () => {
 });
 
 test("simplify", () => {
-  const p = new P.AlternatePattern([
+  const p = simplifyPattern(new P.AlternatePattern([
     new P.ConcatPattern([
       new P.ConstPattern("/A"),
       new P.ConcatPattern([
@@ -297,7 +297,7 @@ test("simplify", () => {
         new P.VariablePattern("x", { maxComps: 2 }),
       ]),
     ]),
-  ]).simplify();
+  ]));
 
   expect(p).toBeInstanceOf(P.AlternatePattern);
   if (p instanceof P.AlternatePattern) {

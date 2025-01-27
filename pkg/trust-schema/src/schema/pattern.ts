@@ -105,7 +105,7 @@ class BuildState {
 
 /** Structure of a name. */
 export abstract class Pattern {
-  /** Convert to a simpler pattern if possible. */
+  /** @deprecated Use {@link simplifyPattern} instead. */
   public simplify(): Pattern { // eslint-disable-line @typescript-eslint/prefer-return-this-type
     return this;
   }
@@ -219,17 +219,6 @@ export class VariablePattern extends Pattern {
   public readonly maxComps: number;
   public readonly inner?: Pattern;
   public readonly filter?: VariablePattern.Filter;
-
-  public override simplify(): Pattern {
-    const inner = this.inner?.simplify();
-    if (inner === this.inner) {
-      return this;
-    }
-    return new VariablePattern(this.id, {
-      ...this,
-      inner,
-    });
-  }
 
   private *innerMatch(value: Name, input?: Map<string, Name>): Iterable<Vars> {
     if (!this.inner) {
@@ -346,7 +335,7 @@ export namespace VariablePattern {
  * The captured variable contains the whole KeyLocator or certificate name that can
  * be further recognized by {@link CertNaming.parseKeyName} and {@link CertNaming.parseCertName}.
  *
- * Using the same {@link ConcatPattern}, the constructed name would be the subject name.
+ * Using the same {@link ConcatPattern}, the constructed name would be the subject name only.
  * It can be passed to {@link \@ndn/keychain!KeyChain.getSigner} to find a key/certificate.
  */
 /* eslint-enable tsdoc/syntax */
@@ -367,27 +356,6 @@ export class CertNamePattern extends Pattern {
 export class ConcatPattern extends Pattern {
   constructor(public readonly parts: Pattern[] = []) {
     super();
-  }
-
-  public override simplify(): Pattern {
-    // flatten ConcatPattern
-    const flattened = flatten(this, ConcatPattern, "parts");
-
-    // join adjacent ConstPattern
-    const joined: Pattern[] = [];
-    for (const part of flattened) {
-      if (part instanceof ConstPattern && joined.at(-1) instanceof ConstPattern) {
-        joined.push(new ConstPattern((joined.pop() as ConstPattern).name.append(...part.name.comps)));
-      } else {
-        joined.push(part);
-      }
-    }
-
-    // reduce to the only part
-    if (joined.length === 1) {
-      return joined[0]!;
-    }
-    return new ConcatPattern(joined);
   }
 
   protected override *matchState(state: MatchState, partIndex = 0): Iterable<MatchState> {
@@ -419,17 +387,6 @@ export class AlternatePattern extends Pattern {
     super();
   }
 
-  public override simplify(): Pattern {
-    // flatten AlternatePattern
-    const flattened = flatten(this, AlternatePattern, "choices");
-
-    // reduce to the only choice
-    if (flattened.length === 1) {
-      return flattened[0]!;
-    }
-    return new AlternatePattern(flattened);
-  }
-
   protected override *matchState(state: MatchState): Iterable<MatchState> {
     for (const choice of this.choices) {
       yield* Pattern.matchState(choice, state);
@@ -458,17 +415,6 @@ export class OverlapPattern extends Pattern {
     super();
   }
 
-  public override simplify(): Pattern {
-    // flatten OverlapPattern
-    const flattened = flatten(this, OverlapPattern, "branches");
-
-    // reduce to the only branch
-    if (flattened.length === 1) {
-      return flattened[0]!;
-    }
-    return new OverlapPattern(flattened);
-  }
-
   protected override *matchState(state: MatchState, branchIndex = 0, lastMatch?: MatchState): Iterable<MatchState> {
     if (branchIndex >= this.branches.length) {
       if (lastMatch) {
@@ -495,13 +441,4 @@ export class OverlapPattern extends Pattern {
       }
     }
   }
-}
-
-function flatten<T extends Pattern>(p: T, ctor: new() => T, field: keyof T): Pattern[] {
-  return (p[field] as unknown as Pattern[]).flatMap((c) => {
-    if (c instanceof ctor) {
-      return flatten(c, ctor, field);
-    }
-    return c.simplify();
-  });
 }
