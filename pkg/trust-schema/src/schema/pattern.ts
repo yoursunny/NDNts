@@ -306,7 +306,20 @@ export namespace VariablePattern {
      */
     inner?: Pattern;
 
-    /** Filter that the name part must satisfy. */
+    /**
+     * Filter that the name part must satisfy.
+     *
+     * @remarks
+     * If {@link inner} is specified, the filter function can have access to variables
+     * interpreted by the inner pattern.
+     */
+    /**
+     * Filter that the name part must satisfy.
+     *
+     * @remarks
+     * If {@link inner} is specified, the filter function can have access to variables
+     * interpreted by the inner pattern.
+     */
     filter?: Filter;
   }
 

@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:^",
+    "@ndn/naming-convention2": "workspace:^",
     "@ndn/repo": "workspace:*",
     "streaming-iterables": "^8.0.1"
   }

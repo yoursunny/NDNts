@@ -102,8 +102,7 @@ export class Name {
    * @returns i-th component, or `undefined` if it does not exist.
    */
   public get(i: number): Component | undefined {
-    i = i < 0 ? i + this.length : i;
-    return this.comps[i];
+    return this.comps.at(i);
   }
 
   /**
