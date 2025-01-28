@@ -45,13 +45,13 @@ export abstract class KnownSizeChunkSource implements ChunkSource {
   protected readonly final: number;
   protected readonly finalChunkSize: number;
 
-  /* c8 ignore start: not used when getChunk is present */
+  /* v8 ignore start: not used when getChunk is present */
   public async *listChunks(): AsyncIterable<Chunk> {
     for (let i = 0; i <= this.final; ++i) {
       yield this.makeChunk(i);
     }
   }
-  /* c8 ignore stop */
+  /* v8 ignore stop */
 
   public async getChunk(i: number): Promise<Chunk | undefined> {
     if (i > this.final) {

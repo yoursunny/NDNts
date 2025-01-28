@@ -85,7 +85,7 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
     if (!this.maybeHaveEventListener.debug) {
       return;
     }
-    /* c8 ignore next */
+    /* v8 ignore next */
     this.dispatchTypedEvent("debug", new CustomEvent<DebugEntry>("debug", {
       detail: {
         action,

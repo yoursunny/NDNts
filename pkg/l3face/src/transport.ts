@@ -53,7 +53,7 @@ export abstract class Transport {
   }
 
   public toString() {
-    /* c8 ignore next */
+    /* v8 ignore next */
     return this.attributes.describe ?? this.constructor.name;
   }
 }

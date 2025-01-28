@@ -47,7 +47,7 @@ function printPattern(p: Pattern, ctx: printESM.Context): string {
     JSON.stringify(`cannot translate pattern ${p.constructor.name}`)})`;
 }
 
-function printSequence(typ: string, list: Pattern[], ctx: printESM.Context): string {
+function printSequence(typ: string, list: readonly Pattern[], ctx: printESM.Context): string {
   const { indent } = ctx;
   const inner = { ...ctx, indent: `  ${indent}` };
   return `${indent}new P.${typ}([\n${

@@ -17,7 +17,7 @@
   "devDependencies": {
     "@types/node": "^22.10.10",
     "@types/wtfnode": "^0.7.3",
-    "@typescript/lib-dom": "npm:@types/web@0.0.198",
+    "@typescript/lib-dom": "npm:@types/web@0.0.199",
     "@vitest/coverage-v8": "^3.0.4",
     "@yoursunny/xo-config": "0.60.0",
     "codedown": "^3.2.1",

@@ -9,10 +9,10 @@ export function simplifyPattern(p: Pattern): Pattern {
     return simpConcat(p);
   }
   if (p instanceof AlternatePattern) {
-    return simpAlternate(p);
+    return simpSequence(p, AlternatePattern, "choices");
   }
   if (p instanceof OverlapPattern) {
-    return simpOverlap(p);
+    return simpSequence(p, OverlapPattern, "branches");
   }
   return p;
 }
@@ -29,50 +29,42 @@ function simpVariable(p: VariablePattern): Pattern {
 }
 
 function simpConcat(p: ConcatPattern): Pattern {
-  // flatten ConcatPattern
-  const flattened = flatten(p, ConcatPattern, "parts");
-
-  // join adjacent ConstPattern
-  const joined: Pattern[] = [];
-  for (const part of flattened) {
-    if (part instanceof ConstPattern && joined.at(-1) instanceof ConstPattern) {
-      joined.push(new ConstPattern((joined.pop() as ConstPattern).name.append(...part.name.comps)));
-    } else {
-      joined.push(part);
+  return simpSequence(p, ConcatPattern, "parts", (flattened) => {
+    // join adjacent ConstPattern
+    const joined: Pattern[] = [];
+    for (const part of flattened) {
+      if (part instanceof ConstPattern && joined.at(-1) instanceof ConstPattern) {
+        joined.push(new ConstPattern((joined.pop() as ConstPattern).name.append(...part.name.comps)));
+      } else {
+        joined.push(part);
+      }
     }
-  }
-
-  // reduce to the only part
-  if (joined.length === 1) {
-    return joined[0]!;
-  }
-  return new ConcatPattern(joined);
+    return joined;
+  });
 }
 
-function simpAlternate(p: AlternatePattern): Pattern {
-  // flatten AlternatePattern
-  const flattened = flatten(p, AlternatePattern, "choices");
+function simpSequence<K extends string, T extends Pattern & { [k in K]: readonly Pattern[] }>(
+    p: T, ctor: new(items: readonly Pattern[]) => T, field: K,
+    reduce?: (items: Pattern[]) => Pattern[],
+): Pattern {
+  // flatten nested PatternT
+  let flattened = flatten(p, ctor, field);
 
-  // reduce to the only choice
+  if (reduce) {
+    flattened = reduce(flattened);
+  }
+
+  // reduce to the only sub-pattern
   if (flattened.length === 1) {
     return flattened[0]!;
   }
-  return new AlternatePattern(flattened);
-}
 
-function simpOverlap(p: OverlapPattern): Pattern {
-  // flatten OverlapPattern
-  const flattened = flatten(p, OverlapPattern, "branches");
-
-  // reduce to the only branch
-  if (flattened.length === 1) {
-    return flattened[0]!;
-  }
-  return new OverlapPattern(flattened);
+  // construct new PatternT
+  return new ctor(flattened);
 }
 
 function flatten<K extends string, T extends { [k in K]: readonly Pattern[] }>(
-    p: T, ctor: new() => T, field: K,
+    p: T, ctor: new(items: readonly Pattern[]) => T, field: K,
 ): Pattern[] {
   return p[field].flatMap((c) => {
     if (c instanceof ctor) {

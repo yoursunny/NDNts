@@ -1,5 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
+import { Version } from "@ndn/naming-convention2";
 import { Name, type NameLike } from "@ndn/packet";
 import { expect, test, vi } from "vitest";
 
@@ -209,34 +210,31 @@ test("overlap", () => {
       new P.ConstPattern("/P"),
       new P.VariablePattern("a", { minComps: 1, maxComps: 2 }),
       new P.VariablePattern("a", { minComps: 1, maxComps: 2 }),
-      new P.ConstPattern("/Q"),
     ]),
     new P.ConcatPattern([
       new P.ConstPattern("/P"),
       new P.VariablePattern("b", { minComps: 1, maxComps: 3 }),
       new P.VariablePattern("c", { minComps: 1, maxComps: 2 }),
-      new P.ConstPattern("/Q"),
     ]),
     new P.ConcatPattern([
       new P.ConstPattern("/P"),
       new P.VariablePattern("d", { minComps: 1, maxComps: 6 }),
-      new P.ConstPattern("/Q"),
     ]),
   ]);
 
-  expect(match(p, "/P/Q")).toHaveLength(0);
-  expect(match(p, "/P/x/Q")).toHaveLength(0);
-  expect(match(p, "/P/x/y/Q")).toHaveLength(0);
-  expect(match(p, "/P/x/y/x/z/Q")).toHaveLength(0);
+  expect(match(p, "/P")).toHaveLength(0);
+  expect(match(p, "/P/x")).toHaveLength(0);
+  expect(match(p, "/P/x/y")).toHaveLength(0);
+  expect(match(p, "/P/x/y/x/z")).toHaveLength(0);
 
-  let m = match(p, "/P/x/x/Q");
+  let m = match(p, "/P/x/x");
   expect(m).toHaveLength(1);
   expect(m[0]!.get("a")).toEqualName("/x");
   expect(m[0]!.get("b")).toEqualName("/x");
   expect(m[0]!.get("c")).toEqualName("/x");
   expect(m[0]!.get("d")).toEqualName("/x/x");
 
-  m = match(p, "/P/x/y/x/y/Q");
+  m = match(p, "/P/x/y/x/y");
   expect(m).toHaveLength(2);
   m.sort((lhs, rhs) => lhs.get("b")!.length - rhs.get("b")!.length);
   expect(m[0]!.get("a")).toEqualName("/x/y");
@@ -254,29 +252,31 @@ test("overlap", () => {
 
   let b = build(p, { a: "/x" });
   expect(b).toHaveLength(1);
-  expect(b[0]).toEqualName("/P/x/x/Q");
+  expect(b[0]).toEqualName("/P/x/x");
 
   b = build(p, { a: "/x/y" });
   expect(b).toHaveLength(1);
-  expect(b[0]).toEqualName("/P/x/y/x/y/Q");
+  expect(b[0]).toEqualName("/P/x/y/x/y");
 
   b = build(p, { a: "/x/y", b: "/x/y/x" });
   expect(b).toHaveLength(1);
-  expect(b[0]).toEqualName("/P/x/y/x/y/Q");
+  expect(b[0]).toEqualName("/P/x/y/x/y");
 
   b = build(p, { d: "/x/x" });
   expect(b).toHaveLength(1);
-  expect(b[0]).toEqualName("/P/x/x/Q");
+  expect(b[0]).toEqualName("/P/x/x");
 
   b = build(p, { d: "/x/y/x/y" });
   expect(b).toHaveLength(1);
-  expect(b[0]).toEqualName("/P/x/y/x/y/Q");
+  expect(b[0]).toEqualName("/P/x/y/x/y");
 });
 
 test("simplify", () => {
   const p = simplifyPattern(new P.AlternatePattern([
     new P.ConcatPattern([
-      new P.ConstPattern("/A"),
+      new P.ConcatPattern([
+        new P.ConstPattern("/A"),
+      ]),
       new P.ConcatPattern([
         new P.ConstPattern("/B"),
         new P.ConstPattern("/C"),
@@ -287,14 +287,23 @@ test("simplify", () => {
       new P.OverlapPattern([
         new P.ConstPattern("/M/N"),
       ]),
-      new P.VariablePattern("x"),
+      new P.VariablePattern("x", {
+        inner: new P.VariablePattern("v"),
+        filter: new P.VariablePattern.ConventionFilter(Version),
+      }),
     ]),
     new P.OverlapPattern([
       new P.OverlapPattern([
         new P.ConstPattern("/M/N"),
       ]),
       new P.OverlapPattern([
-        new P.VariablePattern("x", { maxComps: 2 }),
+        new P.VariablePattern("x", {
+          maxComps: 3,
+          inner: new P.ConcatPattern([
+            new P.ConstPattern("/M"),
+            new P.ConstPattern("/N"),
+          ]),
+        }),
       ]),
     ]),
   ]));
@@ -323,6 +332,8 @@ test("simplify", () => {
     expect(p2).toBeInstanceOf(P.VariablePattern);
     if (p2 instanceof P.VariablePattern) {
       expect(p2.id).toBe("x");
+      expect(p2.inner).toBeInstanceOf(P.VariablePattern);
+      expect(p2.filter).toBeInstanceOf(P.VariablePattern.ConventionFilter);
     }
 
     expect(p3).toBeInstanceOf(P.OverlapPattern);
@@ -331,6 +342,9 @@ test("simplify", () => {
       const [p30, p31] = p3.branches;
       expect(p30).toBeInstanceOf(P.ConstPattern);
       expect(p31).toBeInstanceOf(P.VariablePattern);
+      if (p31 instanceof P.VariablePattern) {
+        expect(p31.inner).toBeInstanceOf(P.ConstPattern);
+      }
     }
   }
 });

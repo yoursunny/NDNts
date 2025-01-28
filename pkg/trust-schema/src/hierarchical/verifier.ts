@@ -13,7 +13,7 @@ export class HierarchicalVerifier extends PolicyVerifier {
 
   protected checkCertPolicy({ name }: Verifier.Verifiable, { name: certName }: Certificate): void {
     if (!CertNaming.toSubjectName(certName).isPrefixOf(name)) {
-      /* c8 ignore next: cannot happen after checking KeyLocator */
+      /* v8 ignore next: cannot happen after checking KeyLocator */
       throw new Error(`${certName} cannot sign ${name}`);
     }
   }

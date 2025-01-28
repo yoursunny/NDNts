@@ -53,7 +53,7 @@ export const AbstractLevelOptions: AbstractDatabaseOptions<Name, Value> = {
         name: {
           configurable: true,
           get() {
-            /* c8 ignore next */
+            /* v8 ignore next */
             return record.data.name;
           },
         },

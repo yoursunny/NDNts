@@ -76,7 +76,7 @@ export class ServerEmailChallenge extends ServerPinLikeChallenge<ServerPinLikeCh
       const info = await this.mail.sendMail(msg);
       this.dispatchTypedEvent("emailsent", new ServerEmailChallenge.SentEvent("emailsent", requestId, info));
     } catch (err: unknown) {
-      /* c8 ignore next */
+      /* v8 ignore next */
       this.dispatchTypedEvent("emailerror", new ServerEmailChallenge.ErrorEvent("emailerror", requestId, err as Error));
     }
     return state;

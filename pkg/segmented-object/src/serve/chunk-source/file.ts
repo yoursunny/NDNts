@@ -40,12 +40,12 @@ export class FileChunkSource implements ChunkSource {
 
   private readonly opening: PLazy<FileHandleChunkSource>;
 
-  /* c8 ignore start: not used when getChunk is present */
+  /* v8 ignore start: not used when getChunk is present */
   public async *listChunks(): AsyncIterable<Chunk> {
     const h = await this.opening;
     yield* h.listChunks();
   }
-  /* c8 ignore stop */
+  /* v8 ignore stop */
 
   public async getChunk(i: number): Promise<Chunk | undefined> {
     const h = await this.opening;

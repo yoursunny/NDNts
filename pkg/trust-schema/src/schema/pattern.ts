@@ -15,6 +15,7 @@ export namespace Vars {
     return true;
   }
 }
+const emptyVars: Vars = new Map();
 
 export type VarsLike = Vars | Readonly<Record<string, NameLike>>;
 export namespace VarsLike {
@@ -35,15 +36,18 @@ class MatchState {
   constructor(
       public readonly name: Name,
       public readonly pos = 0,
-      public readonly vars: Vars = new Map<string, Name>(),
+      public readonly vars: Vars = emptyVars,
   ) {}
 
   /** Length of unconsumed name. */
   public get tailLength() { return this.name.length - this.pos; }
 
-  /** Get first i components of unconsumed name. */
+  /**
+   * Get first i components of unconsumed name.
+   * @param i - Number of components, must be non-negative.
+   */
   public tail(i = Infinity) {
-    return this.name.slice(this.pos, i >= 0 ? this.pos + i : i);
+    return this.name.slice(this.pos, this.pos + i);
   }
 
   /** Whether the input name has been accepted by pattern. */
@@ -80,10 +84,12 @@ class MatchState {
     return new MatchState(this.name, this.pos + incrementPos, result);
   }
 
+  /* v8 ignore start: only used for debug */
   public toString(): string {
     return `MatchState(${this.name.getPrefix(this.pos)}; ${this.tail()}; ${
       Array.from(this.vars, ([k, v]) => `${k}=${v}`).join(", ")})`;
   }
+  /* v8 ignore stop */
 }
 
 /** Context of constructing a name. */
@@ -97,19 +103,16 @@ class BuildState {
     return new BuildState(this.name.append(...comps), this.vars);
   }
 
+  /* v8 ignore start: only used for debug */
   public toString(): string {
     return `BuildState(${this.name}; ${
       Array.from(this.vars, ([k, v]) => `${k}=${v}`).join(", ")})`;
   }
+  /* v8 ignore stop */
 }
 
 /** Structure of a name. */
 export abstract class Pattern {
-  /** @deprecated Use {@link simplifyPattern} instead. */
-  public simplify(): Pattern { // eslint-disable-line @typescript-eslint/prefer-return-this-type
-    return this;
-  }
-
   /**
    * Determine whether a name matches the structure of this pattern.
    * @param name - Input name.
@@ -174,7 +177,10 @@ export class ConstPattern extends Pattern {
   public readonly name: Name;
 
   protected override *matchState(state: MatchState): Iterable<MatchState> {
-    if (state.tail(this.name.length).equals(this.name)) {
+    if (
+      this.name.length <= state.tailLength &&
+      this.name.comps.every((comp, i) => comp.equals(state.name.get(state.pos + i)!))
+    ) {
       yield state.extend(this.name.length);
     }
   }
@@ -222,7 +228,7 @@ export class VariablePattern extends Pattern {
 
   private *innerMatch(value: Name, input?: Map<string, Name>): Iterable<Vars> {
     if (!this.inner) {
-      yield new Map<string, Name>();
+      yield emptyVars;
       return;
     }
 
@@ -367,7 +373,7 @@ export class CertNamePattern extends Pattern {
 
 /** Concatenate several patterns. */
 export class ConcatPattern extends Pattern {
-  constructor(public readonly parts: Pattern[] = []) {
+  constructor(public readonly parts: readonly Pattern[]) {
     super();
   }
 
@@ -396,7 +402,7 @@ export class ConcatPattern extends Pattern {
 
 /** Specify several alternate patterns in "OR" relation. */
 export class AlternatePattern extends Pattern {
-  constructor(public readonly choices: Pattern[] = []) {
+  constructor(public readonly choices: readonly Pattern[]) {
     super();
   }
 
@@ -424,7 +430,7 @@ export class AlternatePattern extends Pattern {
  * are present, and then the built name must match all branches.
  */
 export class OverlapPattern extends Pattern {
-  constructor(public readonly branches: Pattern[] = []) {
+  constructor(public readonly branches: readonly Pattern[]) {
     super();
   }
 

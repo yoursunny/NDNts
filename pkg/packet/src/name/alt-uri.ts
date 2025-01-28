@@ -50,8 +50,8 @@ export class AltUriConverter {
 
 class Generic implements NamingConvention<never>, NamingConvention.WithAltUri {
   public match({ type }: Component) { return type === TT.GenericNameComponent; }
-  public create(): never { /* c8 ignore next */ throw new TypeError("not supported"); }
-  public parse(): never { /* c8 ignore next */ throw new TypeError("not supported"); }
+  public create(): never { /* v8 ignore next */ throw new TypeError("not supported"); }
+  public parse(): never { /* v8 ignore next */ throw new TypeError("not supported"); }
   public toAltUri(comp: Component) { return comp.toString().slice(2); }
   public fromAltUri() { return undefined; }
 }
