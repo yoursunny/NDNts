@@ -2,13 +2,12 @@ import { ConsumerOptions, produce, type Producer, type ProducerHandler, Producer
 import { GenericNumber } from "@ndn/naming-convention2";
 import type { Component, Data, Interest, Name, Signer, Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
-import { KeyMap, toHex, trackEventListener } from "@ndn/util";
+import { KeyMap, randomJitter, toHex, trackEventListener } from "@ndn/util";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { PSyncCodec } from "./codec";
 import { PSyncCore, type PSyncNode } from "./core";
 import type { IBLT } from "./iblt";
-import { computeInterval, type IntervalFunc, type IntervalRange } from "./interval";
 import { StateFetcher } from "./state-fetcher";
 import { StateProducerBuffer } from "./state-producer-buffer";
 
@@ -41,7 +40,7 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
     signer,
     producerBufferLimit = 32,
     syncInterestLifetime = 1000,
-    syncInterestInterval,
+    syncInterestInterval = [syncInterestLifetime / 2 + 100, syncInterestLifetime / 2 + 500],
     verifier,
   }: FullSync.Options) {
     super();
@@ -68,7 +67,7 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
       describe,
       verifier,
     });
-    this.cInterval = computeInterval(syncInterestInterval, syncInterestLifetime);
+    this.cInterval = randomJitter.between(...syncInterestInterval);
     this.scheduleSyncInterest(0);
   }
 
@@ -85,7 +84,7 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
   private readonly pPendings = new KeyMap<Component, PendingInterest, string>((c) => toHex(c.value));
 
   private readonly cFetcher: StateFetcher;
-  private readonly cInterval: IntervalFunc;
+  private readonly cInterval: () => number;
   private cTimer!: NodeJS.Timeout | number;
   private cAbort?: AbortController;
   private cCurrentInterestName?: Name;
@@ -94,7 +93,7 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
     if (!this.maybeHaveEventListener.debug) {
       return;
     }
-    /* v8 ignore next */
+    /* v8 ignore start */
     this.dispatchTypedEvent("debug", new CustomEvent<DebugEntry>("debug", {
       detail: {
         action,
@@ -103,6 +102,7 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
         state,
       },
     }));
+    /* v8 ignore stop */
   }
 
   /** Stop the protocol operation. */
@@ -322,7 +322,7 @@ export namespace FullSync {
      * Interval between sync Interests, randomized within the range, in milliseconds.
      * @defaultValue `[syncInterestLifetime/2+100,syncInterestLifetime/2+500]`
      */
-    syncInterestInterval?: IntervalRange;
+    syncInterestInterval?: [min: number, max: number];
 
     /**
      * Verifier of sync reply Data packets.

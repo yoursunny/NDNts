@@ -92,13 +92,23 @@ export namespace getOrInsert {
   }
 }
 
-/** Delete keys from a Set or Map until its size is below capacity. */
-export function evict<K>(capacity: number, ct: evict.Container<K>): void {
+/**
+ * Delete keys from a Set or Map until its size is below capacity.
+ * @param capacity - Maximum size after eviction.
+ * @param ct - Container.
+ * @param deleteCallback - Callback before item is deleted.
+ */
+export function evict<K>(
+    capacity: number,
+    ct: evict.Container<K>,
+    deleteCallback?: (key: K) => void,
+): void {
   assert(capacity >= 0);
   for (const key of ct.keys()) {
     if (ct.size <= capacity) {
       break;
     }
+    deleteCallback?.(key);
     ct.delete(key);
   }
 }

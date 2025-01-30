@@ -1,7 +1,7 @@
 import type { ProducerOptions } from "@ndn/endpoint";
 import type { Name } from "@ndn/packet";
 import { BufferChunkSource, type Server, serveVersioned } from "@ndn/segmented-object";
-import { assert } from "@ndn/util";
+import { assert, evict } from "@ndn/util";
 
 import type { PSyncCodec } from "./codec";
 import type { PSyncCore } from "./core";
@@ -22,10 +22,12 @@ export class StateProducerBuffer {
   }
 
   private readonly pOpts: ProducerOptions;
-  private readonly servers: Server[] = [];
+  private readonly servers = new Set<Server>();
 
   public close(): void {
-    this.evict(0);
+    for (const server of this.servers) {
+      server.close();
+    }
   }
 
   public add(name: Name, state: PSyncCore.State, freshnessPeriod: number): Server {
@@ -34,15 +36,8 @@ export class StateProducerBuffer {
       freshnessPeriod,
       pOpts: this.pOpts,
     });
-    this.servers.push(server);
-    this.evict();
+    this.servers.add(server);
+    evict(this.limit, this.servers, (server) => server.close());
     return server;
-  }
-
-  private evict(n = this.limit): void {
-    while (this.servers.length > n) {
-      const server = this.servers.shift();
-      server!.close();
-    }
   }
 }

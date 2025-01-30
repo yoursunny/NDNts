@@ -76,3 +76,24 @@ test("evict", () => {
   evict(2, m);
   expect(m).toEqual(new Map([[15, 30], [19, 38]]));
 });
+
+test("evict callback", () => {
+  const s = new Set<string>();
+  s.add("A");
+  s.add("B");
+  s.add("C");
+  s.add("D");
+
+  const deleteCallback = vi.fn<(key: string) => void>((key) => {
+    expect(s.has(key));
+  });
+
+  evict(4, s, deleteCallback);
+  expect(s.size).toBe(4);
+  expect(deleteCallback).not.toHaveBeenCalled();
+
+  evict(3, s, deleteCallback);
+  expect(s.size).toBe(3);
+  expect(deleteCallback).toHaveBeenCalledExactlyOnceWith("A");
+  expect(s).toEqual(new Set(["B", "C", "D"]));
+});

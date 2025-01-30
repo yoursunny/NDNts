@@ -1,13 +1,13 @@
 import type { ConsumerOptions } from "@ndn/endpoint";
 import type { Component, Name, Verifier } from "@ndn/packet";
 import { type Subscriber, type Subscription, SubscriptionTable, SyncUpdate } from "@ndn/sync-api";
+import { randomJitter } from "@ndn/util";
 import { BloomFilter, type Parameters as BloomParameters } from "@yoursunny/psync-bloom";
 import { TypedEventTarget } from "typescript-event-target";
 
 import { PSyncCodec } from "./codec";
 import type { PSyncCore } from "./core";
 import { IBLT } from "./iblt";
-import { computeInterval, type IntervalFunc } from "./interval";
 import { StateFetcher } from "./state-fetcher";
 
 type Sub = Subscription<Name, SyncUpdate<Name>>;
@@ -32,7 +32,7 @@ export class PartialSubscriber extends TypedEventTarget<EventMap>
     describe = `PartialSubscriber(${syncPrefix})`,
     cOpts,
     syncInterestLifetime = 1000,
-    syncInterestInterval,
+    syncInterestInterval = [syncInterestLifetime / 2 + 100, syncInterestLifetime / 2 + 500],
     verifier,
   }: PartialSubscriber.Options) {
     super();
@@ -48,7 +48,7 @@ export class PartialSubscriber extends TypedEventTarget<EventMap>
       ...cOpts,
       verifier,
     });
-    this.cInterval = computeInterval(syncInterestInterval, syncInterestLifetime);
+    this.cInterval = randomJitter.between(...syncInterestInterval);
 
     void (async () => {
       this.bloom = await BloomFilter.create(p.bloom);
@@ -69,7 +69,7 @@ export class PartialSubscriber extends TypedEventTarget<EventMap>
   private ibltComp?: Component;
 
   private readonly cFetcher: StateFetcher;
-  private readonly cInterval: IntervalFunc;
+  private readonly cInterval: () => number;
   private cTimer!: NodeJS.Timeout | number;
   private cAbort?: AbortController;
 
