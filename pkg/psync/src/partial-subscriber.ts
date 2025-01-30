@@ -4,10 +4,10 @@ import { type Subscriber, type Subscription, SubscriptionTable, SyncUpdate } fro
 import { BloomFilter, type Parameters as BloomParameters } from "@yoursunny/psync-bloom";
 import { TypedEventTarget } from "typescript-event-target";
 
-import { computeInterval, type IntervalFunc } from "../detail/interval";
-import { IBLT } from "../iblt";
 import { PSyncCodec } from "./codec";
 import type { PSyncCore } from "./core";
+import { IBLT } from "./iblt";
+import { computeInterval, type IntervalFunc } from "./interval";
 import { StateFetcher } from "./state-fetcher";
 
 type Sub = Subscription<Name, SyncUpdate<Name>>;

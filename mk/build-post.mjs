@@ -80,7 +80,6 @@ async function transformDeclaration(filename) {
  */
 const CJS_IMPORTS = new Set([
   "@yoursunny/asn1",
-  "applymixins",
   "buffer-compare",
   "env-var",
   "event-iterator",

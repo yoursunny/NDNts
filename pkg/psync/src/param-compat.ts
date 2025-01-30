@@ -3,10 +3,10 @@ import { Component, Name, TT } from "@ndn/packet";
 import { Decoder, type EncodableTlv, Encoder, EvDecoder } from "@ndn/tlv";
 import murmurHash3 from "murmurhash3js-revisited";
 
-import type { IBLT } from "../iblt";
 import type { PSyncCodec } from "./codec";
 import type { PSyncCore } from "./core";
 import type { FullSync } from "./full";
+import type { IBLT } from "./iblt";
 import type { PartialPublisher } from "./partial-publisher";
 import type { PartialSubscriber } from "./partial-subscriber";
 

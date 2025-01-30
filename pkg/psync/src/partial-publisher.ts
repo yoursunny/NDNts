@@ -6,9 +6,9 @@ import { trackEventListener } from "@ndn/util";
 import { BloomFilter } from "@yoursunny/psync-bloom";
 import { TypedEventTarget } from "typescript-event-target";
 
-import type { IBLT } from "../iblt";
 import { PSyncCodec } from "./codec";
 import { PSyncCore, type PSyncNode } from "./core";
+import type { IBLT } from "./iblt";
 import { StateProducerBuffer } from "./state-producer-buffer";
 
 interface PendingInterest {

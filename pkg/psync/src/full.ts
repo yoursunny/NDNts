@@ -5,10 +5,10 @@ import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { KeyMap, toHex, trackEventListener } from "@ndn/util";
 import { TypedEventTarget } from "typescript-event-target";
 
-import { computeInterval, type IntervalFunc, type IntervalRange } from "../detail/interval";
-import type { IBLT } from "../iblt";
 import { PSyncCodec } from "./codec";
 import { PSyncCore, type PSyncNode } from "./core";
+import type { IBLT } from "./iblt";
+import { computeInterval, type IntervalFunc, type IntervalRange } from "./interval";
 import { StateFetcher } from "./state-fetcher";
 import { StateProducerBuffer } from "./state-producer-buffer";
 

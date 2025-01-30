@@ -34,7 +34,6 @@
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "@yoursunny/psync-bloom": "github:yoursunny/PSyncBloom-wasm#build",
-    "applymixins": "^1.1.0",
     "murmurhash3js-revisited": "^3.0.0",
     "pako": "^2.1.0",
     "tslib": "^2.8.1",
