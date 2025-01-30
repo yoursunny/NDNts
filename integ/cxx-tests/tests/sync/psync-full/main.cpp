@@ -18,10 +18,11 @@ main(int argc, char* argv[]) {
     }
   };
   opts.ibfCount = 30;
-  opts.ibfCompression = psync::CompressionScheme::NONE;
+  opts.ibfCompression =
+    argv[4][0] == '1' ? psync::CompressionScheme::ZLIB : psync::CompressionScheme::NONE;
   opts.syncInterestLifetime = 100_ms;
   opts.syncDataFreshness = 500_ms;
-  opts.contentCompression = psync::CompressionScheme::NONE;
+  opts.contentCompression = opts.ibfCompression;
 
   psync::FullProducer sync(face, keyChain, argv[2], opts);
 

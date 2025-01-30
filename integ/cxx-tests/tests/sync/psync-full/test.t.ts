@@ -1,6 +1,6 @@
 import { FakeNfd } from "@ndn/nfdmgmt/test-fixture/prefix-reg";
 import { Name } from "@ndn/packet";
-import { FullSync, makePSyncCompatParam, type SyncUpdate } from "@ndn/psync";
+import { FullSync, makePSyncCompatParam, PSyncZlib, type SyncUpdate } from "@ndn/psync";
 import { Closers, delay } from "@ndn/util";
 import { afterEach, expect, test, vi } from "vitest";
 
@@ -14,17 +14,19 @@ const userC = new Name("/userC");
 const closers = new Closers();
 afterEach(closers.close);
 
-test("simple", async () => {
+test.each([0, 1])("sync compressed=%d", async (compressed) => {
   const exe = await cxx.compile(import.meta.dirname);
 
   await using nfd = await new FakeNfd().open();
 
-  const p = exe.run([`${nfd.port}`, `${syncPrefix}`, `${userA}`], {});
+  const p = exe.run([`${nfd.port}`, `${syncPrefix}`, `${userA}`, `${compressed}`], {});
   await nfd.waitNFaces(1);
 
   const sync = new FullSync({
     p: makePSyncCompatParam({
       expectedEntries: 30,
+      ibltCompression: compressed ? PSyncZlib : undefined,
+      contentCompression: compressed ? PSyncZlib : undefined,
     }),
     syncPrefix,
     cpOpts: { fw: nfd.fw },
