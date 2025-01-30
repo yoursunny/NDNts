@@ -137,12 +137,12 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
     }
 
     const ibltComp = interest.name.at(-1);
-    const recvIblt = this.codec.comp2iblt(ibltComp);
+    const recvIblt = await this.codec.comp2iblt(ibltComp);
 
     const { success, positive, total } = this.c.iblt.diff(recvIblt);
     if (!success) {
       // TODO publish ContentType=Nack via StateProducerBuffer
-      const ibltComp = this.codec.iblt2comp(this.c.iblt);
+      const ibltComp = await this.codec.iblt2comp(this.c.iblt);
       const name = interest.name.append(ibltComp, Segment.create(0));
       return new Data(name, Data.ContentType(0x03), Data.FreshnessPeriod(this.sFreshness), Data.FinalBlock);
     }
@@ -205,12 +205,14 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
     }
   };
 
-  private sendStateData(interest: Interest, state: PSyncCore.State, action: string, freshness: number): Promise<Data | undefined> {
-    const ibltComp = this.codec.iblt2comp(this.c.iblt);
+  private async sendStateData(
+      interest: Interest, state: PSyncCore.State, action: string, freshness: number,
+  ): Promise<Data | undefined> {
+    const ibltComp = await this.codec.iblt2comp(this.c.iblt);
     const name = interest.name.append(ibltComp);
 
     this.debug(action, interest);
-    const server = this.pBuffer.add(name, state, freshness);
+    const server = await this.pBuffer.add(name, state, freshness);
     return server.processInterest(interest);
   }
 }

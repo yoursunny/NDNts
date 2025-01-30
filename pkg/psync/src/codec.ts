@@ -1,5 +1,6 @@
 import { Component, type Name, TT } from "@ndn/packet";
 import type { BloomFilter } from "@yoursunny/psync-bloom";
+import type { Promisable } from "type-fest";
 
 import type { PSyncCore } from "./core";
 import { IBLT } from "./iblt";
@@ -9,30 +10,30 @@ export class PSyncCodec {
     Object.assign(this, p);
   }
 
-  public iblt2comp(iblt: IBLT): Component {
-    return new Component(TT.GenericNameComponent, this.ibltCompression.compress(iblt.serialize()));
+  public async iblt2comp(iblt: IBLT): Promise<Component> {
+    return new Component(TT.GenericNameComponent, await this.ibltCompression.compress(iblt.serialize()));
   }
 
-  public comp2iblt(comp: Component): IBLT {
+  public async comp2iblt(comp: Component): Promise<IBLT> {
     const iblt = new IBLT(this.ibltParams);
-    iblt.deserialize(this.ibltCompression.decompress(comp.value));
+    iblt.deserialize(await this.ibltCompression.decompress(comp.value));
     return iblt;
   }
 
-  public state2buffer(state: PSyncCore.State): Uint8Array {
+  public async state2buffer(state: PSyncCore.State): Promise<Uint8Array> {
     return this.contentCompression.compress(this.encodeState(state));
   }
 
-  public buffer2state(buffer: Uint8Array): PSyncCore.State {
-    return this.decodeState(this.contentCompression.decompress(buffer));
+  public async buffer2state(buffer: Uint8Array): Promise<PSyncCore.State> {
+    return this.decodeState(await this.contentCompression.decompress(buffer));
   }
 }
 export interface PSyncCodec extends Readonly<PSyncCodec.Parameters> {}
 
 export namespace PSyncCodec {
   export interface Compression {
-    compress: (input: Uint8Array) => Uint8Array;
-    decompress: (compressed: Uint8Array) => Uint8Array;
+    compress: (input: Uint8Array) => Promisable<Uint8Array>;
+    decompress: (compressed: Uint8Array) => Promisable<Uint8Array>;
   }
 
   export interface Parameters {

@@ -48,7 +48,7 @@ export class StateFetcher {
       describe: `${this.describe}[${describeSuffix}f]`,
       signal,
     });
-    const state = this.codec.buffer2state(payload);
+    const state = await this.codec.buffer2state(payload);
     return { versioned, state };
   }
 }

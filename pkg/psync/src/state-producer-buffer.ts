@@ -30,8 +30,8 @@ export class StateProducerBuffer {
     }
   }
 
-  public add(name: Name, state: PSyncCore.State, freshnessPeriod: number): Server {
-    const source = new BufferChunkSource(this.codec.state2buffer(state));
+  public async add(name: Name, state: PSyncCore.State, freshnessPeriod: number): Promise<Server> {
+    const source = new BufferChunkSource(await this.codec.state2buffer(state));
     const server = serveVersioned(name, source, {
       freshnessPeriod,
       pOpts: this.pOpts,

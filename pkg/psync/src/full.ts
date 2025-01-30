@@ -143,7 +143,7 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
       return undefined;
     }
 
-    const recvIblt = this.codec.comp2iblt(ibltComp);
+    const recvIblt = await this.codec.comp2iblt(ibltComp);
     const { success, positive, negative, total } = this.c.iblt.diff(recvIblt);
     if (!success && (total >= this.c.threshold || total === 0)) {
       const state = this.c.list(({ seqNum }) => seqNum > 0);
@@ -195,13 +195,15 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
     }
   };
 
-  private async sendSyncData(interest: Interest, state: PSyncCore.State, action: string, recvIblt: IBLT): Promise<Data | undefined> {
+  private async sendSyncData(
+      interest: Interest, state: PSyncCore.State, action: string, recvIblt: IBLT,
+  ): Promise<Data | undefined> {
     this.debug(action, recvIblt, state);
     if (this.cCurrentInterestName?.equals(interest.name)) {
       this.scheduleSyncInterest(0);
     }
 
-    const server = this.pBuffer.add(interest.name, state, this.pFreshness);
+    const server = await this.pBuffer.add(interest.name, state, this.pFreshness);
     return server.processInterest(interest);
   }
 
@@ -220,7 +222,7 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
 
     const abort = new AbortController();
     this.cAbort = abort;
-    const ibltComp = this.codec.iblt2comp(this.c.iblt);
+    const ibltComp = await this.codec.iblt2comp(this.c.iblt);
     const name = this.syncPrefix.append(ibltComp, GenericNumber.create(this.c.sumSeqNum));
     this.cCurrentInterestName = name;
     this.debug("c-request");
