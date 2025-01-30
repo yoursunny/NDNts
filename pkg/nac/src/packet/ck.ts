@@ -2,7 +2,6 @@ import { AESCBC, type CryptoAlgorithm } from "@ndn/keychain";
 import { Timestamp } from "@ndn/naming-convention2";
 import { type Component, Data, type LLDecrypt, type Name, type Signer } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
-import { crypto } from "@ndn/util";
 
 import { DefaultFreshness, Keyword, TT } from "./an";
 import { type KeyEncryptionKey, makeNameInternal as makeKekName, parseNameInternal as parseKekName } from "./kek";

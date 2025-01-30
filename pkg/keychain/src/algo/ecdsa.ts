@@ -1,5 +1,5 @@
 import { SigType, Verifier } from "@ndn/packet";
-import { crypto, fromHex, toHex } from "@ndn/util";
+import { fromHex, toHex } from "@ndn/util";
 import * as asn1 from "@yoursunny/asn1";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";

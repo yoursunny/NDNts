@@ -1,5 +1,5 @@
 import { type Decoder, type EncodableObj, Encoder, EvDecoder, Extensible, ExtensionRegistry, NNI } from "@ndn/tlv";
-import { assert, crypto } from "@ndn/util";
+import { assert } from "@ndn/util";
 
 import { SigType, TT } from "./an";
 import { KeyLocator } from "./key-locator";

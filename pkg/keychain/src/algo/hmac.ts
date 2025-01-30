@@ -1,5 +1,4 @@
 import { SigType, Verifier } from "@ndn/packet";
-import { crypto } from "@ndn/util";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
 

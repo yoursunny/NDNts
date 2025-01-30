@@ -2,7 +2,7 @@ import { Certificate, CertNaming, createEncrypter, type CryptoAlgorithm, type Na
 import { SafeBag } from "@ndn/ndnsec";
 import { Component, Data, type LLDecrypt, type Name, type Signer, ValidityPeriod } from "@ndn/packet";
 import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
-import { crypto, toHex, toUtf8 } from "@ndn/util";
+import { toHex, toUtf8 } from "@ndn/util";
 
 import { DefaultFreshness, Keyword, TT } from "./an";
 import { type KeyEncryptionKey, makeNameInternal as makeKekName, parseNameInternal as parseKekName } from "./kek";

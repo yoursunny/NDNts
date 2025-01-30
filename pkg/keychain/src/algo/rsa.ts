@@ -1,5 +1,4 @@
 import { type LLSign, type LLVerify, SigType, Verifier } from "@ndn/packet";
-import { crypto } from "@ndn/util";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
 import { RsaCommon, type RsaModulusLength } from "./rsa-common";

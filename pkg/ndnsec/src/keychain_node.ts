@@ -1,7 +1,6 @@
 import { Certificate, CertNaming, type CryptoAlgorithm, ECDSA, KeyChain, KeyChainSerialized, KeyStore, RSA, RSAOAEP } from "@ndn/keychain";
 import { Component, Data, Name, NameMap, ValidityPeriod } from "@ndn/packet";
 import { type Decodable, Decoder, Encoder } from "@ndn/tlv";
-import { crypto } from "@ndn/util";
 import { execa, execaSync } from "execa";
 
 import { SafeBag } from "./safe-bag";

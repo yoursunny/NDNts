@@ -1,5 +1,4 @@
 import { Name, type NameLike } from "@ndn/packet";
-import { crypto } from "@ndn/util";
 
 import * as CertNaming from "../naming";
 import type { KeyChain, KeyStore } from "../store/mod";

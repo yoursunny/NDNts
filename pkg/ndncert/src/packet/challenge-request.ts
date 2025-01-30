@@ -4,7 +4,7 @@ import { Decoder, Encoder, EvDecoder } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
 import type { Promisable } from "type-fest";
 
-import * as crypto from "../crypto-common";
+import * as ndncert_crypto from "../crypto-common";
 import { C, TT } from "./an";
 import type { CaProfile } from "./ca-profile";
 import * as decode_common from "./decode-common";
@@ -12,7 +12,7 @@ import * as encrypted_payload from "./encrypted";
 import * as parameter_kv from "./parameter-kv";
 
 interface RequestInfo {
-  sessionKey: Pick<crypto.SessionKey, "sessionDecrypter">;
+  sessionKey: Pick<ndncert_crypto.SessionKey, "sessionDecrypter">;
   certRequestPub: NamedVerifier.PublicKey;
 }
 
@@ -32,7 +32,7 @@ export class ChallengeRequest {
     await interest.validateParamsDigest(true);
 
     const requestId = interest.name.get(-2)!.value;
-    crypto.checkRequestId(requestId);
+    ndncert_crypto.checkRequestId(requestId);
     const context = await lookupRequest(requestId);
     if (!context) {
       throw new Error("unknown requestId");
@@ -90,13 +90,13 @@ export namespace ChallengeRequest {
 
     /**
      * Request session encrypter.
-     * @see {@link crypto.makeSessionKey}
+     * @see {@link ndncert_crypto.makeSessionKey}
      */
     sessionEncrypter: LLEncrypt.Key;
 
     /**
      * Request session local decrypter.
-     * @see {@link crypto.makeSessionKey}
+     * @see {@link ndncert_crypto.makeSessionKey}
      */
     sessionLocalDecrypter: LLDecrypt.Key;
 

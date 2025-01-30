@@ -1,5 +1,3 @@
-import { crypto } from "@ndn/util";
-
 import { IvGen } from "./gen";
 
 /** IV generator using all random bits. */

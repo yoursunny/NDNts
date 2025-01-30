@@ -3,7 +3,7 @@ import { type EncodableTlv, Encoder, EvDecoder } from "@ndn/tlv";
 import { toUtf8 } from "@ndn/util";
 import type { Except } from "type-fest";
 
-import * as crypto from "../crypto-common";
+import * as ndncert_crypto from "../crypto-common";
 import { TT } from "./an";
 import type { CaProfile } from "./ca-profile";
 import * as decode_common from "./decode-common";
@@ -22,9 +22,9 @@ export class NewResponse {
   public static async fromData(data: Data, profile: CaProfile): Promise<NewResponse> {
     await profile.publicKey.verify(data);
     return decode_common.fromData(data, EVD, async (f) => {
-      crypto.checkSalt(f.salt);
-      crypto.checkRequestId(f.requestId);
-      const ecdhPub = await crypto.importEcdhPub(f.ecdhPubRaw);
+      ndncert_crypto.checkSalt(f.salt);
+      ndncert_crypto.checkRequestId(f.requestId);
+      const ecdhPub = await ndncert_crypto.importEcdhPub(f.ecdhPubRaw);
       return new NewResponse(data, ecdhPub);
     });
   }
@@ -78,7 +78,7 @@ export namespace NewResponse {
     signer,
   }: Options): Promise<NewResponse> {
     const payload = Encoder.encode([
-      [TT.EcdhPub, await crypto.exportEcdhPub(ecdhPub)],
+      [TT.EcdhPub, await ndncert_crypto.exportEcdhPub(ecdhPub)],
       [TT.Salt, salt],
       [TT.RequestId, requestId],
       ...challenges.map((challenge): EncodableTlv => [TT.Challenge, toUtf8(challenge)]),

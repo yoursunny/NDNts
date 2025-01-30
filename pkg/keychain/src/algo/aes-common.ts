@@ -1,5 +1,4 @@
 import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
-import { crypto } from "@ndn/util";
 
 import type { IvGen } from "../iv/mod";
 import type { CryptoAlgorithm, EncryptionAlgorithm } from "../key/mod";

@@ -4,7 +4,7 @@ import { Forwarder } from "@ndn/fw";
 import { generateSigningKey } from "@ndn/keychain";
 import { Name, type NameLike } from "@ndn/packet";
 import { DataArray } from "@ndn/repo-api";
-import { Closers, console, crypto, delay } from "@ndn/util";
+import { Closers, console, delay } from "@ndn/util";
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
 
 import { type MappingEntry, type Subscription, SvPublisher, SvSubscriber, SvSync, TimedMappingEntry } from "..";

@@ -29,7 +29,6 @@
     "@ndn/packet": "workspace:*",
     "@ndn/repo": "workspace:*",
     "@ndn/repo-api": "workspace:*",
-    "@ndn/util": "workspace:*",
     "progress": "^2.0.3",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.8.1",

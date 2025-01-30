@@ -1,6 +1,5 @@
 import { AesBlockSize, AESGCM, CounterIvChecker, createDecrypter, createEncrypter } from "@ndn/keychain";
 import { type LLDecrypt, type LLEncrypt, SignedInterestPolicy } from "@ndn/packet";
-import { crypto } from "@ndn/util";
 
 const ECDH_PARAMS: EcKeyGenParams & EcKeyImportParams = {
   name: "ECDH",

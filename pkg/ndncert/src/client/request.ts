@@ -2,7 +2,7 @@ import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { Certificate, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
 import { Interest, type ValidityPeriod } from "@ndn/packet";
 
-import * as crypto from "../crypto-common";
+import * as ndncert_crypto from "../crypto-common";
 import { type CaProfile, ChallengeRequest, ChallengeResponse, ErrorMsg, NewRequest, NewResponse, Status } from "../packet/mod";
 import type { ClientChallenge } from "./challenge";
 
@@ -53,9 +53,9 @@ export async function requestCertificate({
     ...cOpts,
     verifier: profile.publicKey,
   };
-  const signedInterestPolicy = crypto.makeSignedInterestPolicy();
+  const signedInterestPolicy = ndncert_crypto.makeSignedInterestPolicy();
 
-  const [ecdhPvt, ecdhPub] = await crypto.generateEcdhKey();
+  const [ecdhPvt, ecdhPub] = await ndncert_crypto.generateEcdhKey();
   const newRequest = await NewRequest.build({
     profile,
     signedInterestPolicy,
@@ -70,7 +70,7 @@ export async function requestCertificate({
   const newResponse = await NewResponse.fromData(newData, profile);
   const { ecdhPub: caEcdhPub, salt, requestId, challenges: serverChallenges } = newResponse;
 
-  const sessionKey = await crypto.makeSessionKey(ecdhPvt, caEcdhPub, salt, requestId);
+  const sessionKey = await ndncert_crypto.makeSessionKey(ecdhPvt, caEcdhPub, salt, requestId);
   let challenge: ClientChallenge | undefined;
   for (const availChallenge of challenges) {
     if (serverChallenges.includes(availChallenge.challengeId)) {

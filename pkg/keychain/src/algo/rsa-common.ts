@@ -1,4 +1,3 @@
-import { crypto } from "@ndn/util";
 import type * as asn1 from "@yoursunny/asn1";
 
 import type { CryptoAlgorithm } from "../key/mod";

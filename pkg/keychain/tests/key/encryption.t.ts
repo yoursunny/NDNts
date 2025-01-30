@@ -1,7 +1,6 @@
 import "@ndn/packet/test-fixture/expect";
 
 import { Component, Name, ValidityPeriod } from "@ndn/packet";
-import { crypto } from "@ndn/util";
 import { expect, test } from "vitest";
 
 import { AesBlockSize, AESCBC, AESCTR, AESGCM, Certificate, CounterIvChecker, createEncrypter, type EncryptionAlgorithm, EncryptionAlgorithmListFull, generateEncryptionKey, generateSigningKey, KeyChain, type NamedDecrypter, type NamedEncrypter, RSAOAEP } from "../..";

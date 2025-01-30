@@ -1,5 +1,4 @@
 import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
-import { crypto } from "@ndn/util";
 
 import type { CryptoAlgorithm, EncryptionAlgorithm } from "../key/mod";
 import type { RSA } from "./rsa";

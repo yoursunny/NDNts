@@ -4,7 +4,7 @@ import { Component, type ComponentLike, type Data, type FwHint, type Signer, typ
 import { Metadata, serveMetadata } from "@ndn/rdr";
 import { KeyMap, toHex } from "@ndn/util";
 
-import * as crypto from "../crypto-common";
+import * as ndncert_crypto from "../crypto-common";
 import { C, type CaProfile, ChallengeRequest, ChallengeResponse, ErrorCode, ErrorMsg, NewRequest, NewResponse, type ParameterKV, ProbeRequest, ProbeResponse, Status } from "../packet/mod";
 import type { ServerChallenge, ServerChallengeContext } from "./challenge";
 
@@ -77,7 +77,7 @@ export class Server {
   private readonly state = new KeyMap<Uint8Array, Context, string>(toHex);
   private cleanupTimer: NodeJS.Timeout | number;
   private readonly producers: Producer[];
-  private readonly signedInterestPolicy = crypto.makeSignedInterestPolicy();
+  private readonly signedInterestPolicy = ndncert_crypto.makeSignedInterestPolicy();
 
   private constructor(
       pOpts: ProducerOptions,
@@ -154,12 +154,12 @@ export class Server {
 
     let requestId: Uint8Array;
     do {
-      requestId = crypto.makeRequestId();
+      requestId = ndncert_crypto.makeRequestId();
     } while (this.state.has(requestId));
 
-    const salt = crypto.makeSalt();
-    const [ecdhPvt, ecdhPub] = await crypto.generateEcdhKey();
-    const sessionKey = await crypto.makeSessionKey(ecdhPvt, request.ecdhPub, salt, requestId);
+    const salt = ndncert_crypto.makeSalt();
+    const [ecdhPvt, ecdhPub] = await ndncert_crypto.generateEcdhKey();
+    const sessionKey = await ndncert_crypto.makeSessionKey(ecdhPvt, request.ecdhPub, salt, requestId);
 
     this.state.set(requestId, new Context(request, sessionKey, this.profile));
 
@@ -300,7 +300,7 @@ const BEFORE_CHALLENGE_EXPIRY = 60000;
 class Context implements ServerChallengeContext {
   constructor(
       request: NewRequest,
-      public readonly sessionKey: crypto.SessionKey,
+      public readonly sessionKey: ndncert_crypto.SessionKey,
       public readonly profile: CaProfile,
   ) {
     this.certRequestPub = request.publicKey;

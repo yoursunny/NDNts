@@ -5,7 +5,7 @@ import { Name, ValidityPeriod } from "@ndn/packet";
 import { fromHex, toUtf8 } from "@ndn/util";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { CaProfile, ChallengeRequest, ChallengeResponse, crypto, matchProbe, NewRequest, NewResponse, ProbeRequest, ProbeResponse, Status } from "..";
+import { CaProfile, ChallengeRequest, ChallengeResponse, matchProbe, ndncert_crypto, NewRequest, NewResponse, ProbeRequest, ProbeResponse, Status } from "..";
 
 let rootPvt: NamedSigner.PrivateKey;
 let rootPub: NamedVerifier.PublicKey;
@@ -16,17 +16,17 @@ beforeAll(async () => {
 });
 
 test("crypto", async () => {
-  const [ecdhPvtA, ecdhPubA] = await crypto.generateEcdhKey();
-  const [ecdhPvtB, ecdhPubB] = await crypto.generateEcdhKey();
+  const [ecdhPvtA, ecdhPubA] = await ndncert_crypto.generateEcdhKey();
+  const [ecdhPvtB, ecdhPubB] = await ndncert_crypto.generateEcdhKey();
 
-  const salt = crypto.makeSalt();
-  expect(() => crypto.checkSalt(salt)).not.toThrow();
-  const requestId = crypto.makeRequestId();
-  expect(() => crypto.checkRequestId(requestId)).not.toThrow();
+  const salt = ndncert_crypto.makeSalt();
+  expect(() => ndncert_crypto.checkSalt(salt)).not.toThrow();
+  const requestId = ndncert_crypto.makeRequestId();
+  expect(() => ndncert_crypto.checkRequestId(requestId)).not.toThrow();
 
-  const { sessionEncrypter } = await crypto.makeSessionKey(
+  const { sessionEncrypter } = await ndncert_crypto.makeSessionKey(
     ecdhPvtA, ecdhPubB, salt, requestId);
-  const { sessionDecrypter } = await crypto.makeSessionKey(
+  const { sessionDecrypter } = await ndncert_crypto.makeSessionKey(
     ecdhPvtB, ecdhPubA, salt, requestId);
 
   const plaintext = Uint8Array.of(0xA0, 0xA1, 0xA2, 0xA3);
@@ -36,7 +36,7 @@ test("crypto", async () => {
 });
 
 test("packets", async () => {
-  const caSIP = crypto.makeSignedInterestPolicy();
+  const caSIP = ndncert_crypto.makeSignedInterestPolicy();
   const profile = await CaProfile.build({
     prefix: new Name("/root"),
     info: "root CA",
@@ -120,9 +120,9 @@ test("packets", async () => {
   expect(matchProbe(probeResponse, new Name("/also-allocated/1/2/3"))).toBeTruthy();
   expect(matchProbe(probeResponse, new Name("/not-allocated"))).toBeFalsy();
 
-  const reqSIP = crypto.makeSignedInterestPolicy();
+  const reqSIP = ndncert_crypto.makeSignedInterestPolicy();
   const [reqPvt, reqPub] = await generateSigningKey("/requester", ECDSA);
-  const [reqEcdhPvt, reqEcdhPub] = await crypto.generateEcdhKey();
+  const [reqEcdhPvt, reqEcdhPub] = await ndncert_crypto.generateEcdhKey();
   const newRequest = await NewRequest.build({
     profile,
     signedInterestPolicy: reqSIP,
@@ -136,10 +136,10 @@ test("packets", async () => {
   expect(newInterest.sigInfo).toBeDefined();
   expect(CertNaming.toSubjectName(newRequest.certRequest.name)).toEqualName("/requester");
 
-  const [caEcdhPvt, caEcdhPub] = await crypto.generateEcdhKey();
-  const salt = crypto.makeSalt();
-  const requestId = crypto.makeRequestId();
-  const caSessionKey = await crypto.makeSessionKey(
+  const [caEcdhPvt, caEcdhPub] = await ndncert_crypto.generateEcdhKey();
+  const salt = ndncert_crypto.makeSalt();
+  const requestId = ndncert_crypto.makeRequestId();
+  const caSessionKey = await ndncert_crypto.makeSessionKey(
     caEcdhPvt, newRequest.ecdhPub, salt, requestId);
   const newResponse = await NewResponse.build({
     profile,
@@ -156,7 +156,7 @@ test("packets", async () => {
   expect(newResponse.requestId).toEqualUint8Array(requestId);
   expect(newResponse.challenges).toEqual(["pin"]);
 
-  const reqSessionKey = await crypto.makeSessionKey(
+  const reqSessionKey = await ndncert_crypto.makeSessionKey(
     reqEcdhPvt, newResponse.ecdhPub, salt, requestId);
   const { interest: challengeInterest } = await ChallengeRequest.build({
     profile,
@@ -228,9 +228,9 @@ describe("ValidityPeriod", () => {
   });
 
   async function buildNewRequest(validity?: ValidityPeriod): Promise<NewRequest> {
-    const reqSIP = crypto.makeSignedInterestPolicy();
+    const reqSIP = ndncert_crypto.makeSignedInterestPolicy();
     const [reqPvt, reqPub] = await generateSigningKey("/requester");
-    const [, reqEcdhPub] = await crypto.generateEcdhKey();
+    const [, reqEcdhPub] = await ndncert_crypto.generateEcdhKey();
     return NewRequest.build({
       profile,
       signedInterestPolicy: reqSIP,

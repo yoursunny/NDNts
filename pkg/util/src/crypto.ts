@@ -1,4 +1,4 @@
-import { crypto, timingSafeEqual as platformTimingSafeEqual } from "./platform_node";
+import { timingSafeEqual as platformTimingSafeEqual } from "./platform_node";
 
 /** Timing-safe equality comparison. */
 export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {

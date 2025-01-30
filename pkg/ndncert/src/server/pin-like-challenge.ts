@@ -1,4 +1,4 @@
-import { crypto, fromUtf8, timingSafeEqual } from "@ndn/util";
+import { fromUtf8, timingSafeEqual } from "@ndn/util";
 import { TypedEventTarget } from "typescript-event-target";
 
 import type { ChallengeRequest } from "../packet/mod";

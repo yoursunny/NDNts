@@ -1,5 +1,5 @@
 import type { Name } from "@ndn/packet";
-import { assert, crypto } from "@ndn/util";
+import { assert } from "@ndn/util";
 
 import { createDecrypter, createEncrypter, createSigner, createVerifier, CryptoAlgorithm, KeyKind, type NamedDecrypter, type NamedEncrypter, type NamedSigner, type NamedVerifier, type PublicKey } from "../key/mod";
 import { StoreBase, type StoreProvider } from "./store-base";

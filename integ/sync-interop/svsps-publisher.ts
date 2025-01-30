@@ -3,7 +3,7 @@ import { Timestamp } from "@ndn/naming-convention2";
 import { digestSigning, Name } from "@ndn/packet";
 import { makeInMemoryDataStore } from "@ndn/repo";
 import { SvPublisher } from "@ndn/svs";
-import { console, crypto, toHex, toUtf8 } from "@ndn/util";
+import { console, toHex, toUtf8 } from "@ndn/util";
 
 import { args, openSvSync } from "./svs-common";
 

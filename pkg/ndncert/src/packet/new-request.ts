@@ -2,7 +2,7 @@ import { Certificate, createVerifier, type NamedSigner, type NamedVerifier, type
 import { Data, Interest, type SignedInterestPolicy, ValidityPeriod } from "@ndn/packet";
 import { Encoder, EvDecoder } from "@ndn/tlv";
 
-import * as crypto from "../crypto-common";
+import * as ndncert_crypto from "../crypto-common";
 import { C, TT } from "./an";
 import type { CaProfile } from "./ca-profile";
 import * as decode_common from "./decode-common";
@@ -30,7 +30,7 @@ export class NewRequest {
         throw new Error("bad ValidityPeriod");
       }
 
-      const ecdhPub = await crypto.importEcdhPub(f.ecdhPubRaw);
+      const ecdhPub = await ndncert_crypto.importEcdhPub(f.ecdhPubRaw);
       const publicKey = await createVerifier(f.certRequest, { algoList });
       await signedInterestPolicy.makeVerifier(publicKey).verify(interest);
       return new NewRequest(interest, ecdhPub, publicKey);
@@ -125,7 +125,7 @@ export namespace NewRequest {
     });
 
     const payload = Encoder.encode([
-      [TT.EcdhPub, await crypto.exportEcdhPub(ecdhPub)],
+      [TT.EcdhPub, await ndncert_crypto.exportEcdhPub(ecdhPub)],
       [TT.CertRequest, certRequest.data],
     ]);
 

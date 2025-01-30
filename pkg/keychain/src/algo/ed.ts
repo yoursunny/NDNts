@@ -1,5 +1,4 @@
 import { type LLSign, type LLVerify, SigType, Verifier } from "@ndn/packet";
-import { crypto } from "@ndn/util";
 import type * as asn1 from "@yoursunny/asn1";
 import { Ed25519Algorithm, ponyfillEd25519 } from "@yoursunny/webcrypto-ed25519";
 

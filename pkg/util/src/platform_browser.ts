@@ -14,18 +14,6 @@ export function concatBuffers(list: readonly Uint8Array[], totalLength?: number)
 
 export const console = globalThis.console;
 
-export const crypto = globalThis.crypto;
-if (!crypto.subtle && !globalThis.isSecureContext) {
-  Object.defineProperty(crypto, "subtle", {
-    configurable: true,
-    get() {
-      console.error("NDNts depends on Web Crypto but it is unavailable because this webpage is not delivered securely, " +
-                    "see https://mdn.io/SecureContext");
-      return undefined;
-    },
-  });
-}
-
 export function delay<T = void>(after: number, value?: T): Promise<T> {
   return new Promise<T>((resolve) => setTimeout(resolve, after, value));
 }

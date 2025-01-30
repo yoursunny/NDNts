@@ -3,7 +3,6 @@ import { SequenceNum } from "@ndn/naming-convention2";
 import { TcpTransport } from "@ndn/node-transport";
 import { Data, Name } from "@ndn/packet";
 import { BulkInsertInitiator, type DataStore as S } from "@ndn/repo-api";
-import { crypto } from "@ndn/util";
 import ProgressBar from "progress";
 import { batch, consume, pipeline, tap, transform } from "streaming-iterables";
 import type { CommandModule, InferredOptionTypes, Options } from "yargs";

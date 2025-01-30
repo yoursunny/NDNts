@@ -1,6 +1,6 @@
 import "@ndn/tlv/test-fixture/expect";
 
-import crypto from "node:crypto";
+import { createHmac } from "node:crypto";
 
 import { type Decodable, Decoder, type Encodable, Encoder } from "@ndn/tlv";
 import { delay } from "@ndn/util";
@@ -34,7 +34,7 @@ class TestAlgo {
 
   private computeSignature(input: Uint8Array): Uint8Array {
     // warning: this is insecure hashing algorithm, for test case only
-    const hash = crypto.createHmac("sha256", this.key);
+    const hash = createHmac("sha256", this.key);
     hash.update(input);
     return hash.digest();
   }

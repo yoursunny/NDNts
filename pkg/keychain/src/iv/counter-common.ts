@@ -1,4 +1,4 @@
-import { assert, crypto, toHex } from "@ndn/util";
+import { assert, toHex } from "@ndn/util";
 
 /**
  * Options for Initialization Vectors using fixed+random+counter structure.

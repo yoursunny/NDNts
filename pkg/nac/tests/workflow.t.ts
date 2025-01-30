@@ -6,7 +6,7 @@ import { Bridge } from "@ndn/l3face";
 import { Component, Data, Name, ValidityPeriod, type Verifier } from "@ndn/packet";
 import { PrefixRegStatic } from "@ndn/repo";
 import { makeRepoProducer } from "@ndn/repo/test-fixture/producer";
-import { Closers, crypto } from "@ndn/util";
+import { Closers } from "@ndn/util";
 import { expect, test } from "vitest";
 
 import { AccessManager, Consumer, Producer } from "..";
