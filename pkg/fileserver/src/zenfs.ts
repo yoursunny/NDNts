@@ -1,6 +1,6 @@
 import { LRUMap } from "@miyauci/lru-map";
 import { assert } from "@ndn/util";
-import { Async, type Backend, constants, Errno, ErrnoError, type File, FileSystem, type FileSystemMetadata, isWriteable, LazyFile, Readonly, Stats } from "@zenfs/core";
+import { Async, type Backend, constants, Errno, ErrnoError, type File, FileSystem, isWriteable, LazyFile, Readonly, Stats } from "@zenfs/core";
 import { collect, map, pipeline } from "streaming-iterables";
 
 import { Client } from "./client";
@@ -14,7 +14,9 @@ import type { FileMetadata } from "./metadata";
  */
 export class NDNFileSystem extends Async(Readonly(FileSystem)) { // eslint-disable-line etc/no-internal
   constructor(opts: NDNFileSystem.Options) {
-    super();
+    super(0x006E646E, "ndn");
+    this.attributes.set("no_async");
+
     const {
       client,
       statsCacheCapacity = 16,
@@ -26,18 +28,6 @@ export class NDNFileSystem extends Async(Readonly(FileSystem)) { // eslint-disab
     if (statsCacheCapacity > 0) {
       this.statsCache = new LRUMap(statsCacheCapacity);
     }
-  }
-
-  public override ready(): Promise<void> {
-    this._disableSync = true; // eslint-disable-line etc/no-internal
-    return super.ready();
-  }
-
-  public override metadata(): FileSystemMetadata {
-    return {
-      ...super.metadata(),
-      noAsyncCache: true,
-    };
   }
 
   private readonly client: Client;
