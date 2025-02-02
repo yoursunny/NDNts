@@ -31,7 +31,7 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@zenfs/core": "^1.8.8",
+    "@zenfs/core": "~1.8.8",
     "it-keepalive": "^1.2.0",
     "obliterator": "^2.0.5",
     "p-lazy": "^5.0.0",

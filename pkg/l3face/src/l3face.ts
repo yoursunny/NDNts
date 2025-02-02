@@ -263,10 +263,10 @@ export namespace L3Face {
      * @defaultValue `false`.
      * This default is set in {@link CreateFaceFunc} but could be different elsewhere.
      * @remarks
-     * This attribute passed to {@link \@ndn/fw!FwFace.Attributes.advertiseFrom}. With the default
-     * `false` value, routes "announced" by an L3Face would not be readvertised to
-     * {@link \@ndn/fw!ReadvertiseDestination}s, so that remote forwarders would not depend on the
-     * local logical forwarder to forward Interests between L3Faces.
+     * This attribute is passed to {@link \@ndn/fw!FwFace.Attributes.advertiseFrom}. With the
+     * default `false` value, routes "announced" by an L3Face would not be readvertised to
+     * {@link \@ndn/fw!ReadvertiseDestination}s, so that the local logical forwarder would not
+     * forward Interests between L3Faces connected to different remote forwarders.
      */
     /* eslint-enable tsdoc/syntax */
     advertiseFrom?: boolean;
