@@ -27,6 +27,7 @@ test("const variable concat", () => {
       },
     }),
   ]);
+  expect(p.matchLengthRange).toEqual([5, 7]);
 
   expect(match(p, "/")).toHaveLength(0);
   expect(match(p, "/Z/Z/Z/Z/Z")).toHaveLength(0);
@@ -75,6 +76,7 @@ test("variable.inner+filter", () => {
     ]),
     filter: { accept },
   });
+  expect(p.matchLengthRange).toEqual([0, Infinity]);
 
   const checkedAccept = (name: Name, vars: P.Vars) => {
     expect(name).toEqualName("/prefix/suffix");
@@ -143,9 +145,10 @@ test("variable.inner+filter", () => {
 
 test("certname", () => {
   const p = new P.ConcatPattern([
-    new P.VariablePattern("subject", { maxComps: Infinity }),
+    new P.VariablePattern("subject", { maxComps: 20 }),
     new P.CertNamePattern(),
   ]);
+  expect(p.matchLengthRange).toEqual([3, 24]);
 
   expect(match(p, "/identity")).toHaveLength(0);
   expect(match(p, "/identity/KEY")).toHaveLength(0);
@@ -177,6 +180,7 @@ test("alternate", () => {
       new P.ConstPattern("/B"),
     ]),
   ]);
+  expect(p.matchLengthRange).toEqual([3, 3]);
 
   expect(match(p, "/P/c/C")).toHaveLength(0);
 
@@ -221,6 +225,7 @@ test("overlap", () => {
       new P.VariablePattern("d", { minComps: 1, maxComps: 6 }),
     ]),
   ]);
+  expect(p.matchLengthRange).toEqual([3, 5]);
 
   expect(match(p, "/P")).toHaveLength(0);
   expect(match(p, "/P/x")).toHaveLength(0);

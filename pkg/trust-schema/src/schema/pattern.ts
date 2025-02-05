@@ -119,6 +119,11 @@ export abstract class Pattern {
    * @returns - Iterable of extracted fields in possible interpretations.
    */
   public *match(name: Name): Iterable<Vars> {
+    const [min, max] = this.matchLengthRange;
+    if (!(name.length >= min && name.length <= max)) {
+      return;
+    }
+
     const initial = new MatchState(name);
     for (const final of this.matchState(initial)) {
       if (final.accepted) {
@@ -136,6 +141,21 @@ export abstract class Pattern {
    * @returns Iterable of potential matches.
    */
   protected abstract matchState(state: MatchState): Iterable<MatchState>;
+
+  /**
+   * Determine minimum and maximum match length.
+   *
+   * @remarks
+   * This optimization is used in {@link match} for early rejection of input names that are
+   * either too short or too long.
+   */
+  public get matchLengthRange(): [min: number, max: number] {
+    return (this.matchLengthRange_ ??= this.computeMatchLengthRange());
+  }
+
+  private matchLengthRange_?: [min: number, max: number];
+
+  protected abstract computeMatchLengthRange(): [min: number, max: number];
 
   /**
    * Build names following the structure of this pattern.
@@ -183,6 +203,10 @@ export class ConstPattern extends Pattern {
     ) {
       yield state.extend(this.name.length);
     }
+  }
+
+  protected override computeMatchLengthRange(): [min: number, max: number] {
+    return [this.name.length, this.name.length];
   }
 
   protected override *buildState(state: BuildState): Iterable<BuildState> {
@@ -253,6 +277,10 @@ export class VariablePattern extends Pattern {
         }
       }
     }
+  }
+
+  protected override computeMatchLengthRange(): [min: number, max: number] {
+    return [this.minComps, this.maxComps];
   }
 
   protected override *buildState(state: BuildState): Iterable<BuildState> {
@@ -366,6 +394,10 @@ export class CertNamePattern extends Pattern {
     }
   }
 
+  protected override computeMatchLengthRange(): [min: number, max: number] {
+    return [2, 4];
+  }
+
   protected override *buildState(state: BuildState): Iterable<BuildState> {
     yield state;
   }
@@ -386,6 +418,16 @@ export class ConcatPattern extends Pattern {
     for (const partial of Pattern.matchState(part, state)) {
       yield* this.matchState(partial, partIndex + 1);
     }
+  }
+
+  protected override computeMatchLengthRange(): [min: number, max: number] {
+    return this.parts.reduce(
+      ([minSum, maxSum], p) => {
+        const [min, max] = p.matchLengthRange;
+        return [minSum + min, maxSum + max];
+      },
+      [0, 0],
+    );
   }
 
   protected override *buildState(state: BuildState, partIndex = 0): Iterable<BuildState> {
@@ -410,6 +452,16 @@ export class AlternatePattern extends Pattern {
     for (const choice of this.choices) {
       yield* Pattern.matchState(choice, state);
     }
+  }
+
+  protected override computeMatchLengthRange(): [min: number, max: number] {
+    return this.choices.reduce(
+      ([minMin, maxMax], p) => {
+        const [min, max] = p.matchLengthRange;
+        return [Math.min(minMin, min), Math.max(maxMax, max)];
+      },
+      [Infinity, 0],
+    );
   }
 
   protected override *buildState(state: BuildState): Iterable<BuildState> {
@@ -448,6 +500,16 @@ export class OverlapPattern extends Pattern {
       }
       yield* this.matchState(submatch.extend(state.pos - submatch.pos), branchIndex + 1, submatch);
     }
+  }
+
+  protected override computeMatchLengthRange(): [min: number, max: number] {
+    return this.branches.reduce(
+      ([minMax, maxMin], p) => {
+        const [min, max] = p.matchLengthRange;
+        return [Math.max(minMax, min), Math.min(maxMin, max)];
+      },
+      [0, Infinity],
+    );
   }
 
   protected override *buildState(state: BuildState): Iterable<BuildState> {
