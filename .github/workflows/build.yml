@@ -3,6 +3,8 @@ on:
   push:
   pull_request:
 permissions: {}
+env:
+  COREPACK_INTEGRITY_KEYS: 0
 jobs:
   build:
     strategy:
