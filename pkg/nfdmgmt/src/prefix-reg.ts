@@ -9,7 +9,7 @@ import map from "obliterator/map.js";
 import take from "obliterator/take.js";
 import type { Except, Promisable } from "type-fest";
 
-import { RouteFlags, RouteOrigin, TT } from "./an-nfd-prefixreg";
+import { RouteFlags, RouteOriginClient, RouteOriginPrefixAnn, TT } from "./an-nfd-prefixreg";
 import { getPrefix } from "./common";
 import { ControlCommandOptions, invokeGeneric } from "./control-command-generic";
 import type { ControlParameters } from "./control-command-nfd";
@@ -40,7 +40,7 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
    */
   constructor(private readonly face: FwFace, opts: NfdPrefixReg.Options) {
     const {
-      origin = RouteOrigin.client,
+      origin = RouteOriginClient,
       cost = 0,
       flagChildInherit = false,
       flagCapture = true,
@@ -188,7 +188,7 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
     const cr = await this.tap((opts) => invokeGeneric("rib/unregister", [
       TT.ControlParameters,
       name,
-      state.pa ? [TT.Origin, NNI(RouteOrigin.prefixann)] : this.routeElements[0],
+      state.pa ? [TT.Origin, NNI(RouteOriginPrefixAnn)] : this.routeElements[0],
     ], opts));
     this.checkSuccess(cr);
   }

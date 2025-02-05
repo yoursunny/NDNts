@@ -4,10 +4,10 @@ import { EvDecoder, StructBuilder, StructFieldBytes } from "@ndn/tlv";
 export const MsgSuffix = Component.from("msg");
 export const NotifySuffix = Component.from("notify");
 
-const enum TT {
-  NotifyNonce = 0x80,
-  PublisherFwHint = 0xD3,
-}
+const TT = {
+  NotifyNonce: 0x80,
+  PublisherFwHint: 0xD3,
+} as const;
 
 const buildNotifyAppParam = new StructBuilder("NotifyAppParam")
   .add(l3TT.Name, "publisher", StructFieldName, { required: true })

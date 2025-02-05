@@ -16,19 +16,19 @@ export const DeleteVerb = {
   check: new Component(l3TT.GenericNameComponent, "delete check"),
 };
 
-const enum TT {
-  StartBlockId = 0xCC,
-  EndBlockId = 0xCD,
-  RequestNo = 0xCE,
-  StatusCode = 0xD0,
-  InsertNum = 0xD1,
-  DeleteNum = 0xD2,
-  ForwardingHint = 0xD3,
-  RegisterPrefix = 0xD4,
-  CheckPrefix = 0xD5,
-  ObjectParam = 0x12D,
-  ObjectResult = 0x12E,
-}
+const TT = {
+  StartBlockId: 0xCC,
+  EndBlockId: 0xCD,
+  RequestNo: 0xCE,
+  StatusCode: 0xD0,
+  InsertNum: 0xD1,
+  DeleteNum: 0xD2,
+  ForwardingHint: 0xD3,
+  RegisterPrefix: 0xD4,
+  CheckPrefix: 0xD5,
+  ObjectParam: 0x12D,
+  ObjectResult: 0x12E,
+} as const;
 
 const buildObjectParam = new StructBuilder("ObjectParam", TT.ObjectParam)
   .add(l3TT.Name, "name", StructFieldName, { required: true })
