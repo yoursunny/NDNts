@@ -1,0 +1,37 @@
+{
+  "name": "@ndn/ndndsec",
+  "version": "0.0.0",
+  "description": "NDNts: interaction with ndnd KeyChain",
+  "keywords": [
+    "NDN",
+    "Named Data Networking"
+  ],
+  "author": "Junxiao Shi <npm@mail1.yoursunny.com>",
+  "license": "ISC",
+  "files": [
+    "lib"
+  ],
+  "type": "module",
+  "main": "src/mod.ts",
+  "module": "lib/mod_browser.js",
+  "homepage": "https://yoursunny.com/p/NDNts/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yoursunny/NDNts.git",
+    "directory": "pkg/ndndsec"
+  },
+  "publishConfig": {
+    "main": "lib/mod_node.js",
+    "types": "lib/mod.d.ts"
+  },
+  "dependencies": {
+    "@ndn/keychain": "workspace:*",
+    "@ndn/packet": "workspace:*",
+    "@ndn/tlv": "workspace:*",
+    "@ndn/util": "workspace:*",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@ndn/naming-convention2": "workspace:*"
+  }
+}
