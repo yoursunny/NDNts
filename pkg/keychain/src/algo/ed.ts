@@ -11,7 +11,7 @@ class EdAlgo implements SigningAlgorithm<{}, true, {}> {
   constructor(
       public readonly uuid: string,
       public readonly sigType: number,
-      private readonly algo: KeyAlgorithm,
+      private readonly algo: Algorithm,
       private readonly oid: string,
   ) {}
 
