@@ -5,7 +5,7 @@ import { Ed25519Algorithm, ponyfillEd25519 } from "@yoursunny/webcrypto-ed25519"
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
 import { assertSpkiAlgorithm } from "./impl-spki";
 
-const subtle = ponyfillEd25519(crypto.subtle);
+const subtle = ponyfillEd25519();
 
 class EdAlgo implements SigningAlgorithm<{}, true, {}> {
   constructor(

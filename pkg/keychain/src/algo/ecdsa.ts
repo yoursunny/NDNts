@@ -1,5 +1,5 @@
 import { SigType, Verifier } from "@ndn/packet";
-import { fromHex, toHex } from "@ndn/util";
+import { assert, fromHex, toHex } from "@ndn/util";
 import * as asn1 from "@yoursunny/asn1";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
@@ -27,6 +27,18 @@ export type EcCurve = keyof typeof PointSizes;
 export namespace EcCurve {
   export const Default: EcCurve = "P-256";
   export const Choices = Object.keys(PointSizes) as readonly EcCurve[];
+
+  /** Detect EcCurve from SubjectPublicKeyInfo. */
+  export function detectFromSpki(der: asn1.ElementBuffer): EcCurve {
+    assertSpkiAlgorithm(der, "ECDSA", "2A8648CE3D0201"); // 1.2.840.10045.2.1
+
+    // SubjectPublicKeyInfo.algorithm.parameter
+    const ecp = der.children?.[0]?.children?.[1];
+    const curve = ecp?.type === 0x06 && ecp.value && NamedCurveOids[toHex(ecp.value)];
+
+    assert(curve, "invalid EC namedCurve");
+    return curve;
+  }
 }
 
 function toUintHex(array: Uint8Array): string {
@@ -48,17 +60,21 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
     public: ["verify"],
   },
 
-  async cryptoGenerate({ curve = EcCurve.Default, importPkcs8 }: ECDSA.GenParams, extractable: boolean) {
-    const params = makeGenParams(curve);
+  async cryptoGenerate({ curve, importPkcs8 }: ECDSA.GenParams, extractable: boolean) {
+    let params: ReturnType<typeof makeGenParams>;
     let privateKey: CryptoKey;
     let publicKey: CryptoKey;
     if (importPkcs8) {
       const [pkcs8, spki] = importPkcs8;
+      curve ??= EcCurve.detectFromSpki(asn1.parseVerbose(spki));
+      params = makeGenParams(curve);
       [privateKey, publicKey] = await Promise.all([
         crypto.subtle.importKey("pkcs8", pkcs8, params, extractable, this.keyUsages.private),
         crypto.subtle.importKey("spki", spki, params, true, this.keyUsages.public),
       ]);
     } else {
+      curve ??= EcCurve.Default;
+      params = makeGenParams(curve);
       ({ privateKey, publicKey } = await crypto.subtle.generateKey(params, extractable,
         [...this.keyUsages.private, ...this.keyUsages.public]));
     }
@@ -74,15 +90,7 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
   },
 
   async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
-    assertSpkiAlgorithm(der, "ECDSA", "2A8648CE3D0201"); // 1.2.840.10045.2.1
-
-    // SubjectPublicKeyInfo.algorithm.parameter
-    const ecp = der.children?.[0]?.children?.[1];
-    const curve = ecp?.type === 0x06 && ecp.value && NamedCurveOids[toHex(ecp.value)];
-    if (!curve) {
-      throw new Error("invalid EC namedCurve");
-    }
-
+    const curve = EcCurve.detectFromSpki(der);
     const params = makeGenParams(curve);
     const publicKey = await crypto.subtle.importKey("spki", spki, params, true, this.keyUsages.public);
     return {
@@ -129,11 +137,18 @@ export namespace ECDSA {
   export interface GenParams {
     /**
      * EC curve.
-     * @defaultValue P-256
+     *
+     * @defaultValue
+     * During key generation when {@link importPkcs8} is absent, the default is "P-256".
+     * During key import when {@link importPkcs8} is specified, this is auto-detected from SPKI.
      */
     curve?: EcCurve;
 
-    /** Import PKCS#8 private key and SPKI public key instead of generating. */
+    /**
+     * Import PKCS#8 private key and SPKI public key instead of generating.
+     *
+     * If {@link curve} is also specified, it must match the SPKI public key.
+     */
     importPkcs8?: [pkcs8: Uint8Array, spki: Uint8Array];
   }
 

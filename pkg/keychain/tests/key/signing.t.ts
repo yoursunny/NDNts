@@ -47,6 +47,22 @@ describe.each(EcCurve.Choices)("ECDSA %s", (curve) => {
   });
 });
 
+test("ECDSA importPkcs8", async () => {
+  const { privateKey, publicKey } = await crypto.subtle.generateKey(
+    { name: "ECDSA", namedCurve: "P-384" }, true, ["sign", "verify"]);
+  const importPkcs8: ECDSA.GenParams["importPkcs8"] = [
+    new Uint8Array(await crypto.subtle.exportKey("pkcs8", privateKey)),
+    new Uint8Array(await crypto.subtle.exportKey("spki", publicKey)),
+  ];
+
+  await expect(generateSigningKey("/B", ECDSA, { // wrong curve specified
+    curve: "P-256", importPkcs8 })).rejects.toThrow();
+  await expect(generateSigningKey("/B", ECDSA, { // correct curve specified
+    curve: "P-384", importPkcs8 })).resolves.toBeDefined();
+  await expect(generateSigningKey("/B", ECDSA, { // curve omitted, auto-detect
+    importPkcs8 })).resolves.toBeDefined();
+});
+
 describe.each(RsaModulusLength.Choices)("RSA %d", (modulusLength) => {
   describe.each(TestSignVerify.PacketTable)("sign-verify $PacketType", ({ Packet }) => {
     test("", { timeout: 15000 }, async () => {

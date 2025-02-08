@@ -57,7 +57,7 @@ export class SafeBag {
    * @param keyChain - Destination KeyChain.
    */
   public async saveKeyPair(
-      passphrase: string,
+      passphrase: string | Uint8Array,
       keyChain: KeyChain,
       { preferRSAOAEP = false }: SafeBag.ImportOptions = {},
   ): Promise<void> {
