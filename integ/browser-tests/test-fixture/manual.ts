@@ -19,11 +19,17 @@ export function addManualTest(title: string, f: () => Promise<string | string[]>
     })();
   };
 
-  window.addEventListener("load", () => {
+  const render = () => {
     const btn = document.createElement("button");
     btn.textContent = title;
     btn.addEventListener("click", handler);
     document.body.append(btn);
     document.body.append(document.createElement("br"));
-  });
+  };
+
+  if (document.readyState === "complete") {
+    render();
+  } else {
+    window.addEventListener("load", render);
+  }
 }

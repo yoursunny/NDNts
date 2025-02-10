@@ -90,6 +90,5 @@ Private keys are saved as non-extractable `CryptoKey` objects.
 
 ## Known Issues
 
-* In Firefox, persistent keychain is unusable in a Private Browsing window, due to [Mozilla Bug 781982](https://bugzilla.mozilla.org/show_bug.cgi?id=1639542).
 * In Chrome, AES 192-bit key is not supported.
 * Ed25519 in browser is implemented in JavaScript, which is less secure than native Web Crypto implementation.
