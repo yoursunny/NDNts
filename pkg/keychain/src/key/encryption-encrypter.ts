@@ -12,14 +12,13 @@ class PlainCryptoEncrypter<I> {
       algo: EncryptionAlgorithm<I>,
       key: CryptoAlgorithm.PublicSecretKey<I>,
   ) {
-    const pubkey = key as CryptoAlgorithm.PublicKey<I>;
-    if (pubkey.publicKey) {
+    if ("publicKey" in key) {
       this[KeyKind] = "public";
-      this.llEncrypt = (algo as EncryptionAlgorithm<I, true>).makeLLEncrypt(pubkey);
-      this.spki = pubkey.spki;
+      this.llEncrypt = (algo as EncryptionAlgorithm<I, true>).makeLLEncrypt(key);
+      this.spki = key.spki;
     } else {
       this[KeyKind] = "secret";
-      this.llEncrypt = (algo as EncryptionAlgorithm<I, false>).makeLLEncrypt(key as CryptoAlgorithm.SecretKey<I>);
+      this.llEncrypt = (algo as EncryptionAlgorithm<I, false>).makeLLEncrypt(key);
     }
   }
 

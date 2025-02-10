@@ -12,14 +12,13 @@ class PlainCryptoVerifier<I> implements Verifier {
       algo: SigningAlgorithm<I>,
       key: CryptoAlgorithm.PublicSecretKey<I>,
   ) {
-    const pubkey = key as CryptoAlgorithm.PublicKey<I>;
-    if (pubkey.publicKey) {
+    if ("publicKey" in key) {
       this[KeyKind] = "public";
-      this.llVerify = (algo as SigningAlgorithm<I, true>).makeLLVerify(pubkey);
-      this.spki = pubkey.spki;
+      this.llVerify = (algo as SigningAlgorithm<I, true>).makeLLVerify(key);
+      this.spki = key.spki;
     } else {
       this[KeyKind] = "secret";
-      this.llVerify = (algo as SigningAlgorithm<I, false>).makeLLVerify(key as CryptoAlgorithm.SecretKey<I>);
+      this.llVerify = (algo as SigningAlgorithm<I, false>).makeLLVerify(key);
     }
     this.sigType = algo.sigType;
   }

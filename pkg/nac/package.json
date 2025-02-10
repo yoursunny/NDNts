@@ -36,7 +36,7 @@
     "@ndn/util": "workspace:*",
     "@yoursunny/asn1": "0.0.20200718",
     "tslib": "^2.8.1",
-    "type-fest": "^4.33.0"
+    "type-fest": "^4.34.1"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:^",

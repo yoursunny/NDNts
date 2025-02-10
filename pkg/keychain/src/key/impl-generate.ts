@@ -28,10 +28,10 @@ export async function generateKeyInternal<Algo extends CryptoAlgorithm>(
       algo: algo.uuid,
       info: gen.info,
     };
-    if ((gen as CryptoAlgorithm.GeneratedKeyPair<unknown>).privateKey) {
-      await saveAsymmetric(algo, stored, useJwk, gen as CryptoAlgorithm.GeneratedKeyPair<unknown>);
+    if ("privateKey" in gen) {
+      await saveAsymmetric(algo, stored, useJwk, gen);
     } else {
-      await saveSymmetric(algo, stored, useJwk, gen as CryptoAlgorithm.GeneratedSecretKey<unknown>);
+      await saveSymmetric(algo, stored, useJwk, gen);
     }
     await keyChain.insertKey(keyName, stored);
   }

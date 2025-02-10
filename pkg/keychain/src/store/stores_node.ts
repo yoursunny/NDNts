@@ -1,5 +1,5 @@
-import fs from "node:fs";
-import { dirname } from "node:path";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 import { console } from "@ndn/util";
 
@@ -8,24 +8,23 @@ import { CertStore } from "./cert-store";
 import { KeyStore } from "./key-store";
 import { MemoryStoreProvider, type StoreProvider } from "./store-base";
 
-class FileStoreProvider<T> extends MemoryStoreProvider<T> implements StoreProvider<T> {
-  public override readonly canSClone: boolean = false;
+class FileStoreProvider<T> implements StoreProvider<T> {
+  public readonly canSClone: boolean = false;
+  private ms = new MemoryStoreProvider<T>();
   private loaded = false;
   private saveDebounce?: NodeJS.Timeout;
 
-  constructor(private readonly path: string) {
-    super();
-  }
+  constructor(private readonly filename: string) {}
 
-  private load() {
+  private async load() {
     if (this.loaded) {
       return;
     }
     try {
-      this.record = JSON.parse(fs.readFileSync(this.path, "utf8"));
+      this.ms.record = JSON.parse(await fs.readFile(this.filename, "utf8"));
     } catch (err: unknown) {
       if ((err as { code?: string }).code === "ENOENT" || (err as SyntaxError).name === "SyntaxError") {
-        this.record = {};
+        this.ms.record = {};
       } else {
         throw err;
       }
@@ -41,36 +40,35 @@ class FileStoreProvider<T> extends MemoryStoreProvider<T> implements StoreProvid
     }
   }
 
-  private readonly doSave = () => {
+  private readonly doSave = async () => {
+    this.saveDebounce = undefined;
     try {
-      fs.mkdirSync(dirname(this.path), { recursive: true });
-      fs.writeFileSync(this.path, JSON.stringify(this.record));
+      await fs.mkdir(path.dirname(this.filename), { recursive: true });
+      await fs.writeFile(this.filename, JSON.stringify(this.ms.record));
     } catch (err: unknown) {
-      console.error(`FileStoreProvider(${this.path}) write error ${err}`);
-    } finally {
-      this.saveDebounce = undefined;
+      console.error(`FileStoreProvider(${this.filename}) write error ${err}`);
     }
   };
 
-  public override list(): string[] {
-    this.load();
-    return super.list();
+  public async list(): Promise<string[]> {
+    await this.load();
+    return this.ms.list();
   }
 
-  public override get(key: string): T {
-    this.load();
-    return super.get(key);
+  public async get(key: string): Promise<T> {
+    await this.load();
+    return this.ms.get(key);
   }
 
-  public override insert(key: string, value: T): void {
-    this.load();
-    super.insert(key, value);
+  public async insert(key: string, value: T): Promise<void> {
+    await this.load();
+    this.ms.insert(key, value);
     this.save();
   }
 
-  public override erase(key: string): void {
-    this.load();
-    super.erase(key);
+  public async erase(key: string): Promise<void> {
+    await this.load();
+    this.ms.erase(key);
     this.save();
   }
 }

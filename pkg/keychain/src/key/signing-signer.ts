@@ -9,13 +9,12 @@ class PlainCryptoSigner<I> implements Signer {
       algo: SigningAlgorithm<I>,
       key: CryptoAlgorithm.PrivateSecretKey<I>,
   ) {
-    const pvtkey = key as CryptoAlgorithm.PrivateKey<I>;
-    if (pvtkey.privateKey) {
+    if ("privateKey" in key) {
       this[KeyKind] = "private";
-      this.llSign = (algo as SigningAlgorithm<I, true>).makeLLSign(pvtkey);
+      this.llSign = (algo as SigningAlgorithm<I, true>).makeLLSign(key);
     } else {
       this[KeyKind] = "secret";
-      this.llSign = (algo as SigningAlgorithm<I, false>).makeLLSign(key as CryptoAlgorithm.SecretKey<I>);
+      this.llSign = (algo as SigningAlgorithm<I, false>).makeLLSign(key);
     }
     this.sigType = algo.sigType;
   }

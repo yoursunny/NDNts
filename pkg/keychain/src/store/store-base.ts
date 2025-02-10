@@ -31,7 +31,7 @@ export interface StoreProvider<T> {
 /** Memory based KV store provider. */
 export class MemoryStoreProvider<T> implements StoreProvider<T> {
   public readonly canSClone: boolean = true;
-  protected record: Record<string, T> = {};
+  public record: Record<string, T> = {};
 
   public list(): string[] {
     return Object.keys(this.record);

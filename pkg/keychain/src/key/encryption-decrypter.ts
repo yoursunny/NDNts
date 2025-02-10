@@ -9,13 +9,12 @@ class PlainCryptoDecrypter<I> {
       algo: EncryptionAlgorithm<I>,
       key: CryptoAlgorithm.PrivateSecretKey<I>,
   ) {
-    const pvtkey = key as CryptoAlgorithm.PrivateKey<I>;
-    if (pvtkey.privateKey) {
+    if ("privateKey" in key) {
       this[KeyKind] = "private";
-      this.llDecrypt = (algo as EncryptionAlgorithm<I, true>).makeLLDecrypt(pvtkey);
+      this.llDecrypt = (algo as EncryptionAlgorithm<I, true>).makeLLDecrypt(key);
     } else {
       this[KeyKind] = "secret";
-      this.llDecrypt = (algo as EncryptionAlgorithm<I, false>).makeLLDecrypt(key as CryptoAlgorithm.SecretKey<I>);
+      this.llDecrypt = (algo as EncryptionAlgorithm<I, false>).makeLLDecrypt(key);
     }
   }
 
