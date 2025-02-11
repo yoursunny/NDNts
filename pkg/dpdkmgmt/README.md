@@ -10,6 +10,12 @@ Currently, there are several limitations when using this package:
 * Prefix registration replaces a FIB entry, and does not preserve other prefix registrations on the same prefix.
 * If the application crashes, the face will not be closed on NDN-DPDK side.
 
+To start a minimal NDN-DPDK forwarder for this demo, run this script:
+
+```bash
+bash ./pkg/dpdkmgmt/fw.sh
+```
+
 ```ts
 import { openFace } from "@ndn/dpdkmgmt";
 

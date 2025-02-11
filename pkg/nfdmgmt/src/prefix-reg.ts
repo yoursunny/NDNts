@@ -151,7 +151,7 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
       const [pa] = take(filter(
         this.listAnnouncementObjs(name), (ann) => ann instanceof this.PrefixAnn!,
       ), 1);
-      state.pa = pa as PrefixAnn;
+      state.pa = pa as PrefixAnn | undefined;
     }
 
     const cr = await this.tap((opts) => {
