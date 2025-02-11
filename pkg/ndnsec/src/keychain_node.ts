@@ -1,6 +1,7 @@
-import { Certificate, CertNaming, type CryptoAlgorithm, ECDSA, KeyChain, KeyChainSerialized, KeyStore, RSA, RSAOAEP } from "@ndn/keychain";
+import { Certificate, CertNaming, ECDSA, type KeyChain, KeyChainExternal, type KeyStore, RSA, RSAOAEP } from "@ndn/keychain";
 import { Component, Data, Name, NameMap, ValidityPeriod } from "@ndn/packet";
 import { type Decodable, Decoder, Encoder } from "@ndn/tlv";
+import { assert } from "@ndn/util";
 import { execa, execaSync } from "execa";
 
 import { SafeBag } from "./safe-bag";
@@ -12,7 +13,7 @@ const ALGO_LIST = [ECDSA, RSA, RSAOAEP];
 let ndnsecInstalled: boolean | undefined;
 
 /** Access ndn-cxx KeyChain. */
-export class NdnsecKeyChain extends KeyChainSerialized {
+export class NdnsecKeyChain extends KeyChainExternal {
   /**
    * Whether current environment supports ndn-cxx KeyChain.
    *
@@ -29,7 +30,7 @@ export class NdnsecKeyChain extends KeyChainSerialized {
     home,
     importOptions,
   }: NdnsecKeyChain.Options = {}) {
-    super();
+    super(ALGO_LIST);
     if (pibLocator && tpmLocator) {
       this.env.NDN_CLIENT_PIB = pibLocator;
       this.env.NDN_CLIENT_TPM = tpmLocator;
@@ -39,11 +40,8 @@ export class NdnsecKeyChain extends KeyChainSerialized {
     this.importOptions = importOptions;
   }
 
-  public override readonly needJwk = true;
   private readonly env: NodeJS.ProcessEnv = { NDN_NAME_ALT_URI: "0" };
   private readonly importOptions?: SafeBag.ImportOptions;
-  private cached?: KeyChain;
-  private readonly insertKeyLoader = new KeyStore.Loader(true, ALGO_LIST);
 
   private async invokeNdnsec(argv: readonly string[], input?: Uint8Array): Promise<{
     readonly lines: string[];
@@ -64,7 +62,7 @@ export class NdnsecKeyChain extends KeyChainSerialized {
   }
 
   /** Copy keys and certificates to another keychain. */
-  public async copyTo(dest: KeyChain): Promise<KeyChain> {
+  public override async copyTo(dest: KeyChain): Promise<KeyChain> {
     const { lines } = await this.invokeNdnsec(["list", "-c"]);
     const keyCerts = new NameMap<Name[]>();
     for (const line of lines) {
@@ -97,60 +95,30 @@ export class NdnsecKeyChain extends KeyChainSerialized {
     return dest;
   }
 
-  private async load() {
-    return (this.cached ??= await this.copyTo(KeyChain.createTemp(ALGO_LIST)));
-  }
-
-  protected override async sListKeys(prefix: Name): Promise<Name[]> {
-    const keyChain = await this.load();
-    return keyChain.listKeys(prefix);
-  }
-
-  protected override async sGetKeyPair(name: Name): Promise<KeyChain.KeyPair> {
-    const keyChain = await this.load();
-    return keyChain.getKeyPair(name);
-  }
-
-  protected override async sInsertKey(name: Name, stored: KeyStore.StoredKey): Promise<void> {
-    const keyPair = await this.insertKeyLoader.loadKey(name, stored);
-
+  protected override async eInsertKey({ publicKey, signer, pvt }: KeyStore.KeyPair): Promise<void> {
     const selfSigned = await Certificate.issue({
-      publicKey: keyPair.publicKey,
+      publicKey,
       validity: ValidityPeriod.MAX,
-      issuerPrivateKey: keyPair.signer,
+      issuerPrivateKey: signer,
       issuerId: IMPORTING_ISSUER,
     });
-    const pkcs8 = new Uint8Array(await crypto.subtle.exportKey(
-      "pkcs8", (keyPair.pvt as CryptoAlgorithm.PrivateKey).privateKey));
+    assert("privateKey" in pvt);
+    const pkcs8 = new Uint8Array(await crypto.subtle.exportKey("pkcs8", pvt.privateKey));
 
     const safeBag = await SafeBag.create(selfSigned, pkcs8, PASSPHRASE);
     await this.invokeNdnsec(["import", "-P", PASSPHRASE, "-i-"], Encoder.encode(safeBag));
-    delete this.cached;
   }
 
-  protected override async sDeleteKey(name: Name): Promise<void> {
+  protected override async eDeleteKey(name: Name): Promise<void> {
     await this.invokeNdnsec(["delete", "-k", name.toString()]);
-    delete this.cached;
   }
 
-  protected override async sListCerts(prefix: Name): Promise<Name[]> {
-    const keyChain = await this.load();
-    return keyChain.listCerts(prefix);
-  }
-
-  protected override async sGetCert(name: Name): Promise<Certificate> {
-    const keyChain = await this.load();
-    return keyChain.getCert(name);
-  }
-
-  protected override async sInsertCert(cert: Certificate): Promise<void> {
+  protected override async eInsertCert(cert: Certificate): Promise<void> {
     await this.invokeNdnsec(["cert-install", "-K", "-f-"], Encoder.encode(cert.data));
-    delete this.cached;
   }
 
-  protected override async sDeleteCert(name: Name): Promise<void> {
+  protected override async eDeleteCert(name: Name): Promise<void> {
     await this.invokeNdnsec(["delete", "-c", name.toString()]);
-    delete this.cached;
   }
 }
 
@@ -162,7 +130,7 @@ export namespace NdnsecKeyChain {
      *
      * @remarks
      * This must be specified together with `.tpmLocator`.
-     * @see {@link https://docs.named-data.net/ndn-cxx/0.8.1/manpages/ndn-client.conf.html#key-management}
+     * @see {@link https://docs.named-data.net/ndn-cxx/0.9.0/manpages/ndn-client.conf.html#key-management}
      */
     pibLocator?: string;
 
@@ -171,7 +139,7 @@ export namespace NdnsecKeyChain {
      *
      * @remarks
      * This must be specified together with `.pibLocator`.
-     * @see {@link https://docs.named-data.net/ndn-cxx/0.8.1/manpages/ndn-client.conf.html#key-management}
+     * @see {@link https://docs.named-data.net/ndn-cxx/0.9.0/manpages/ndn-client.conf.html#key-management}
      */
     tpmLocator?: string;
 
