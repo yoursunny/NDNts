@@ -46,6 +46,11 @@ test("UnencryptedPrivateKey", async () => {
 
   const key256 = parseKey(ec256.keyPem);
   expect(key256.cert).toBeUndefined();
+  key256.cert = undefined;
+  expect(key256.cert).toBeUndefined();
+
+  const keyChain = KeyChain.createTemp();
+  await expect(key256.saveKeyPair(keyChain)).rejects.toThrow(/cert needed/);
 
   const cert384 = parseCert(ec384.certPem);
   expect(() => key256.cert = cert384).toThrow(/mismatch/);

@@ -39,10 +39,12 @@ export class UnencryptedPrivateKey {
    * Assign associated certificate.
    * @throws Error - Certificate does not match the key.
    */
-  public set cert(v) {
-    assert(!v || CertNaming.toKeyName(v.name).equals(this.keyName),
-      `cert ${v!.name} and key ${this.keyName} mismatch`);
-    this.cert_ = v;
+  public set cert(value) {
+    if (value) {
+      assert(CertNaming.toKeyName(value.name).equals(this.keyName),
+        `cert ${value.name} and key ${this.keyName} mismatch`);
+    }
+    this.cert_ = value;
   }
 
   /**
