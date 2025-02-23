@@ -33,7 +33,7 @@
     "@ndn/util": "workspace:*",
     "obliterator": "^2.0.5",
     "tslib": "^2.8.1",
-    "type-fest": "^4.34.1"
+    "type-fest": "^4.35.0"
   },
   "devDependencies": {
     "@ndn/l3face": "workspace:^",

@@ -31,7 +31,7 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@zenfs/core": "~1.9.5",
+    "@zenfs/core": "~1.11.2",
     "it-keepalive": "^1.2.0",
     "obliterator": "^2.0.5",
     "p-lazy": "^5.0.0",
@@ -43,6 +43,6 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/repo-api": "workspace:*",
     "stream-mock": "^2.0.5",
-    "type-fest": "^4.34.1"
+    "type-fest": "^4.35.0"
   }
 }

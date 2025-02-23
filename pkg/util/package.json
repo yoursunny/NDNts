@@ -33,7 +33,7 @@
     "streaming-iterables": "^8.0.1",
     "tiny-invariant": "^1.3.3",
     "tslib": "^2.8.1",
-    "type-fest": "^4.34.1",
+    "type-fest": "^4.35.0",
     "wait-your-turn": "^1.0.1"
   },
   "devDependencies": {
