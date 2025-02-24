@@ -37,6 +37,9 @@
       "memif",
       "puppeteer"
     ],
+    "overrides": {
+      "@typescript-eslint/parser": "8.24.1"
+    },
     "peerDependencyRules": {
       "ignoreMissing": [
         "eslint*",

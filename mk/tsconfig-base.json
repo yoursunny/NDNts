@@ -6,9 +6,7 @@
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
-    // https://github.com/xojs/xo/issues/772 workaround, was:
-    // "lib": ["DOM", "ES2023", "ESNext.Decorators", "ESNext.Promise"],
-    "lib": ["DOM", "ESNext"],
+    "lib": ["DOM", "ES2024", "ESNext.Collection", "ESNext.Decorators"],
     "module": "ES2022",
     "moduleResolution": "bundler",
     "noEmitOnError": true,
