@@ -11,7 +11,7 @@ export async function create(privateKey: Uint8Array, passphrase: string | Uint8A
     type: "pkcs8",
     format: "der",
     cipher: "aes-256-cbc",
-    passphrase: Buffer.from(passphrase),
+    passphrase: Buffer.from(passphrase as Uint8Array),
   });
 }
 
@@ -21,7 +21,7 @@ export async function decrypt(encryptedKey: Uint8Array, passphrase: string | Uin
     key: Buffer.from(encryptedKey),
     type: "pkcs8",
     format: "der",
-    passphrase: Buffer.from(passphrase),
+    passphrase: Buffer.from(passphrase as Uint8Array),
   });
   return key.export({
     type: "pkcs8",
