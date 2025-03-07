@@ -1,6 +1,6 @@
 {
   "name": "@ndn/ndndsec",
-  "version": "0.0.0",
+  "version": "0.0.20250307",
   "description": "NDNts: interaction with ndnd KeyChain",
   "keywords": [
     "NDN",

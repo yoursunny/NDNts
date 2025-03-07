@@ -1,6 +1,6 @@
 {
   "name": "@ndn/lp",
-  "version": "0.0.20250122",
+  "version": "0.0.20250307",
   "description": "NDNts: NDN Link Protocol",
   "keywords": [
     "NDN",

@@ -1,6 +1,6 @@
 {
   "name": "@ndn/ws-transport",
-  "version": "0.0.20250122",
+  "version": "0.0.20250307",
   "description": "NDNts: WebSocket Transport",
   "keywords": [
     "NDN",
