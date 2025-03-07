@@ -1,7 +1,7 @@
 {
   "name": "@ndn/lp",
   "version": "0.0.20250122",
-  "description": "NDNts: NDNLP",
+  "description": "NDNts: NDN Link Protocol",
   "keywords": [
     "NDN",
     "Named Data Networking"

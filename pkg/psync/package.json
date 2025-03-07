@@ -1,7 +1,7 @@
 {
   "name": "@ndn/psync",
   "version": "0.0.20250122",
-  "description": "NDNts: Dataset Synchronization and PubSub Protocols",
+  "description": "NDNts: PSync Dataset Synchronization Protocols",
   "keywords": [
     "NDN",
     "Named Data Networking"

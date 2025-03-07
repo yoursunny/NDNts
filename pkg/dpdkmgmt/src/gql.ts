@@ -15,6 +15,27 @@ export namespace Delete {
   }
 }
 
+export const CreateFace = gql`
+  mutation createFace($locator: JSON!) {
+    createFace(locator: $locator) {
+      id
+      locator
+    }
+  }
+`;
+export namespace CreateFace {
+  export interface Vars extends Variables {
+    locator: unknown;
+  }
+
+  export interface Resp {
+    createFace: {
+      id: string;
+      locator: unknown;
+    };
+  }
+}
+
 export const InsertFibEntry = gql`
   mutation insertFibEntry($name: Name!, $nexthops: [ID!]!, $strategy: ID) {
     insertFibEntry(name: $name, nexthops: $nexthops, strategy: $strategy) {

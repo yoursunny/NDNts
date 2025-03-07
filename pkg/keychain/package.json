@@ -1,7 +1,7 @@
 {
   "name": "@ndn/keychain",
   "version": "0.0.20250122",
-  "description": "NDNts: Key Chain",
+  "description": "NDNts: Crypto Algorithms and Storage",
   "keywords": [
     "NDN",
     "Named Data Networking"

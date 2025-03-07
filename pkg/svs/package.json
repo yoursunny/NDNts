@@ -1,7 +1,7 @@
 {
   "name": "@ndn/svs",
   "version": "0.0.20250122",
-  "description": "NDNts: Dataset Synchronization and PubSub Protocols",
+  "description": "NDNts: State Vector Sync",
   "keywords": [
     "NDN",
     "Named Data Networking"
