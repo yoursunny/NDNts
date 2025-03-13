@@ -35,7 +35,7 @@ export interface ClientOptions {
   validity?: ValidityPeriod;
 
   /** Challenges in preferred order. */
-  challenges: ClientChallenge[];
+  challenges: readonly ClientChallenge[];
 }
 
 /** Request a certificate for the given key. */

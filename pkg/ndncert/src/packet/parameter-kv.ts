@@ -1,5 +1,5 @@
 import type { Encodable, EvDecoder } from "@ndn/tlv";
-import { toUtf8 } from "@ndn/util";
+import { assert, toUtf8 } from "@ndn/util";
 
 import { TT } from "./an";
 
@@ -15,18 +15,14 @@ function parseKey(kv: ParameterKV, key: string) {
 
 function parseValue(kv: ParameterKV, value: Uint8Array) {
   const key = seenKey.get(kv);
-  if (key === undefined) {
-    throw new Error("missing ParameterKey");
-  }
+  assert(key !== undefined, "missing ParameterKey");
   seenKey.delete(kv);
   kv[key] = value;
 }
 
 function finish(kv: ParameterKV) {
   const oldKey = seenKey.get(kv);
-  if (oldKey !== undefined) {
-    throw new Error(`missing ParameterValue for ${oldKey}`);
-  }
+  assert(oldKey === undefined, `missing ParameterValue for ${oldKey}`);
 }
 
 /**

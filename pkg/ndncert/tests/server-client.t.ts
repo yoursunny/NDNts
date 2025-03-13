@@ -5,20 +5,21 @@ import { Forwarder } from "@ndn/fw";
 import { Certificate, CertNaming, generateSigningKey, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
 import { Component, FwHint, Name, type Signer, ValidityPeriod } from "@ndn/packet";
 import { type DataStore, makeInMemoryDataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
-import { Closers, delay, toHex, toUtf8 } from "@ndn/util";
-import { createTransport as createMT } from "nodemailer";
+import { Closers, console, delay, toHex, toUtf8 } from "@ndn/util";
+import { createTestAccount as createEmailAccount, createTransport as createMT } from "nodemailer";
+import type { Promisable } from "type-fest";
 import { beforeAll, beforeEach, expect, test, vi } from "vitest";
 
-import { CaProfile, type ClientChallenge, type ClientChallengeContext, ClientEmailChallenge, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, exportClientConf, importClientConf, type ParameterKV, requestCertificate, requestProbe, retrieveCaProfile, Server, type ServerChallenge, ServerEmailChallenge, ServerNopChallenge, type ServerOptions, ServerPinChallenge, ServerPossessionChallenge } from "..";
+import { CaProfile, type ClientChallenge, type ClientChallengeContext, ClientEmailChallenge, ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, exportClientConf, importClientConf, type ParameterKV, requestCertificate, requestProbe, retrieveCaProfile, Server, type ServerChallenge, ServerEmailChallenge, ServerNopChallenge, type ServerOptions, ServerPinChallenge, ServerPossessionChallenge } from "..";
 
 interface Row {
   summary: string;
-  makeChallengeLists: () => Promise<[ServerChallenge[], ClientChallenge[]]>;
+  makeChallengeLists: () => Promisable<[readonly ServerChallenge[], readonly ClientChallenge[]]>;
   clientShouldFail?: boolean;
 }
 
 function makePinChallengeWithWrongInputs(nWrongInputs = 0): Row["makeChallengeLists"] {
-  return async () => {
+  return () => {
     let lastPin = "";
     const server = new ServerPinChallenge();
     server.addEventListener("newpin", ({ pin }) => { lastPin = pin; });
@@ -66,7 +67,7 @@ const emailTemplate: ServerEmailChallenge.Template = {
 const TABLE: Row[] = [
   {
     summary: "nop",
-    async makeChallengeLists() {
+    makeChallengeLists() {
       return [
         [new ServerNopChallenge()],
         [new ClientNopChallenge()],
@@ -88,7 +89,7 @@ const TABLE: Row[] = [
   },
   {
     summary: "email, success",
-    async makeChallengeLists() {
+    makeChallengeLists() {
       const emailsent = vi.fn<(evt: ServerEmailChallenge.SentEvent) => void>();
       const emailerror = vi.fn<(evt: ServerEmailChallenge.ErrorEvent) => void>();
       const server = new ServerEmailChallenge({
@@ -124,13 +125,12 @@ const TABLE: Row[] = [
   },
   {
     summary: "email, wrong code",
-    async makeChallengeLists() {
-      const server = new ServerEmailChallenge({
-        mail: createMT({ jsonTransport: true }),
-        template: emailTemplate,
-      });
+    makeChallengeLists() {
       return [
-        [server],
+        [new ServerEmailChallenge({
+          mail: createMT({ jsonTransport: true }),
+          template: emailTemplate,
+        })],
         [new ClientEmailChallenge("", async () => "0000")],
       ];
     },
@@ -138,18 +138,50 @@ const TABLE: Row[] = [
   },
   {
     summary: "email, reject in assignment policy",
-    async makeChallengeLists() {
-      const server = new ServerEmailChallenge({
-        mail: createMT({ jsonTransport: true }),
-        template: emailTemplate,
-        assignmentPolicy: async () => { throw new Error("no-assignment"); },
-      });
+    makeChallengeLists() {
       return [
-        [server],
+        [new ServerEmailChallenge({
+          mail: createMT({ jsonTransport: true }),
+          template: emailTemplate,
+          assignmentPolicy: async () => { throw new Error("no-assignment"); },
+        })],
         [new ClientEmailChallenge("user@example.com", async () => "0000")],
       ];
     },
     clientShouldFail: true,
+  },
+  {
+    summary: "email, with IMAP",
+    async makeChallengeLists() {
+      const debugEnabled = process.env.NDNCERT_IMAP_DEBUG === "1";
+      const { user, pass, smtp, imap, web } = await createEmailAccount();
+      if (debugEnabled) {
+        console.log("nodemail test account:", web, user, pass);
+      }
+      const server = new ServerEmailChallenge({
+        mail: createMT({
+          ...smtp,
+          auth: { user, pass },
+        }),
+        template: emailTemplate,
+      });
+      if (debugEnabled) {
+        server.addEventListener("emailsent", (evt) => console.log("emailsent", evt.sent));
+        server.addEventListener("emailerror", (evt) => console.log("emailerror", evt.error));
+      }
+      const inbox = new ClientEmailInboxImap(user, {
+        user,
+        password: pass,
+        host: imap.host,
+        port: imap.port,
+        tls: imap.secure,
+      });
+      closers.push(inbox);
+      return [
+        [server],
+        [new ClientEmailChallenge(user, inbox.promptCallback)],
+      ];
+    },
   },
   {
     summary: "possession, success without assignment policy",
@@ -236,7 +268,7 @@ const TABLE: Row[] = [
   },
   {
     summary: "server challenge not acceptable on client",
-    async makeChallengeLists() {
+    makeChallengeLists() {
       return [
         [new ServerPinChallenge()],
         [new ClientNopChallenge()],
@@ -427,14 +459,14 @@ test.each(TABLE)("challenge $summary", async ({
   makeChallengeLists,
   clientShouldFail = false,
 }) => {
-  const [serverChallenges, reqChallenges] = await makeChallengeLists();
+  const [serverChallenges, clientChallenges] = await makeChallengeLists();
   startServer({ challenges: serverChallenges });
 
   const reqPromise = requestCertificate({
     profile: caProfile,
     privateKey: reqPvt,
     publicKey: reqPub,
-    challenges: reqChallenges,
+    challenges: clientChallenges,
   });
   if (clientShouldFail) {
     await expect(reqPromise).rejects.toThrow();

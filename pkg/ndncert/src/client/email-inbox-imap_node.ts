@@ -1,9 +1,8 @@
 import type { Config as ImapConfig } from "imap";
-import { ImapEmails, type ImapEmailsProps } from "imap-emails";
+import { ImapEmails } from "imap-emails";
 import type { AddressObject, ParsedMail } from "mailparser";
 import pTimeout from "p-timeout";
 
-import type { ClientChallengeContext } from "./challenge";
 import type { ClientPinLikeChallenge } from "./pin-like-challenge";
 
 const emailAddressComparer = new Intl.Collator("en", { sensitivity: "base" });
@@ -11,10 +10,7 @@ const emailAddressComparer = new Intl.Collator("en", { sensitivity: "base" });
 /** Receive email via IMAP for automatically solving email challenge. */
 export class ClientEmailInboxImap {
   constructor(public readonly address: string, imap: ImapConfig, private readonly extract: ClientEmailInboxImap.ExtractOptions = {}) {
-    const { user, password } = imap;
-    const imapConfig: ImapEmailsProps["imapConfig"] = { ...imap };
-    delete (imapConfig as Partial<ImapConfig>).user;
-    delete (imapConfig as Partial<ImapConfig>).password;
+    const { user, password, ...imapConfig } = imap;
     this.client = new ImapEmails({
       username: user,
       password,
@@ -36,7 +32,7 @@ export class ClientEmailInboxImap {
   }
 
   /** ClientEmailChallenge prompt callback. */
-  public readonly promptCallback: ClientPinLikeChallenge.Prompt = async (context: ClientChallengeContext): Promise<string> => {
+  public readonly promptCallback: ClientPinLikeChallenge.Prompt = async (): Promise<string> => {
     for (let i = 0; i < 10; ++i) {
       const found = await this.checkEmails();
       if (found) {
