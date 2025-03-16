@@ -46,7 +46,6 @@ export interface FwFace extends TypedEventTarget<EventMap> {
 
   /**
    * Add a prefix announcement associated with the face.
-   * @param name - Prefix announcement name.
    *
    * @remarks
    * The announcement is passed to {@link ReadvertiseDestination}s (e.g. NFD prefix registration
@@ -92,8 +91,6 @@ export namespace FwFace {
      */
     /* eslint-enable tsdoc/syntax */
     routeCapture?: boolean;
-
-    [k: string]: unknown;
   }
 
   /**
