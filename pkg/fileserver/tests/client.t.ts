@@ -152,7 +152,7 @@ test.each(readFileIntoCases)("readFileInto [%d,%d)", async (...tc) => {
 test("zenfs rejects", async () => {
   expect(() => zenfs.statSync("/N/A")).toThrow(/async/);
   expect(() => zenfs.readdirSync("/N/A")).toThrow(/async/);
-  await expect(zenfs.promises.open("/N/A/B.bin", "w")).rejects.toThrow(/readonly/);
+  await expect(zenfs.promises.appendFile("/N/A/B.bin", "tail")).rejects.toThrow(/read-only/);
   expect(() => zenfs.readFileSync("/N/A/B.bin")).toThrow(/async/);
   expect(() => zenfs.openSync("/N/A/B.bin", "r")).toThrow(/async/);
 });
