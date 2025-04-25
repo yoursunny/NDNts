@@ -19,7 +19,7 @@ import assert from "node:assert/strict";
 
 ## DataStore
 
-**DataStore** is a Data packet storage, based on an [abstract-level](https://www.npmjs.com/package/abstract-level) 2.x compatible key-value database.
+**DataStore** is a Data packet storage, based on an [abstract-level](https://www.npmjs.com/package/abstract-level) 3.x compatible key-value database.
 It implements most of `DataStore` interfaces defined in `@ndn/repo-api` package, offering APIs to insert and delete Data packets.
 
 `DataStore.create()` function creates a **DataStore** instance, but it's more convenient to use a helper function:

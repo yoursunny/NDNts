@@ -37,7 +37,7 @@
     "@ndn/util": "workspace:*",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.8.1",
-    "type-fest": "^4.39.1",
+    "type-fest": "^4.40.0",
     "typescript-event-target": "^1.1.1",
     "wait-your-turn": "^1.0.1"
   },

@@ -219,13 +219,13 @@ export class Transaction {
 
   private async commitWithDiff() {
     const requests = Array.from(this.diffs!);
-    const oldRecords = await this.db.getMany(requests.map(([name]) => name));
+    const oldRecords = await this.db.hasMany(requests.map(([name]) => name));
     assert(requests.length === oldRecords.length);
 
     await this.batch.write();
 
     for (const [i, [name, act]] of requests.entries()) {
-      if (act === (oldRecords[i] === undefined ? "insert" : "delete")) {
+      if (act === (oldRecords[i] ? "delete" : "insert")) {
         this.store.dispatchTypedEvent(act, new DataStore.RecordEvent(act, name));
       }
     }
