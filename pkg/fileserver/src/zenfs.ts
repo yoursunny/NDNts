@@ -15,7 +15,7 @@ import type { FileMetadata } from "./metadata";
 export class NDNFileSystem extends Async(Readonly(FileSystem)) { // eslint-disable-line etc/no-internal
   constructor(opts: NDNFileSystem.Options) {
     super(0x006E646E, "ndn");
-    this.attributes.set("no_async");
+    this.attributes.set("no_async_preload");
 
     const {
       client,

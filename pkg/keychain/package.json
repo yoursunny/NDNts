@@ -32,9 +32,9 @@
     "@ndn/util": "workspace:*",
     "@yoursunny/asn1": "0.0.20200718",
     "@yoursunny/webcrypto-ed25519": "0.0.20250208",
-    "idb-keyval": "^6.2.1",
+    "idb-keyval": "^6.2.2",
     "tslib": "^2.8.1",
-    "type-fest": "^4.40.0",
+    "type-fest": "^4.41.0",
     "wait-your-turn": "^1.0.1"
   },
   "devDependencies": {
