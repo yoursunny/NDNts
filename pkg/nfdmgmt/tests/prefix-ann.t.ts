@@ -12,11 +12,13 @@ test("encode decode", async () => {
     announced: "/A",
     expirationPeriod: 3600000,
     validityPeriod: vp,
+    cost: 1,
   });
 
   expect(pa.announced).toEqualName("/A");
   expect(pa.expirationPeriod).toBe(3600000);
   expect(pa.validityPeriod).toBeDefined();
+  expect(pa.cost).toBe(1);
 
   expect(pa.data.content).toMatchTlv(
     ({ type, nni }) => {
@@ -25,6 +27,10 @@ test("encode decode", async () => {
     },
     ({ tlv }) => {
       expect(tlv).toEqualUint8Array(Encoder.encode(vp));
+    },
+    ({ type, nni }) => {
+      expect(type).toBe(TT.Cost);
+      expect(nni).toBe(1);
     },
   );
 });

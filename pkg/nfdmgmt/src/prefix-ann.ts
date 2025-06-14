@@ -10,14 +10,16 @@ const ContentTypePrefixAnn = 0x05;
 const KeywordPA = Keyword.create("PA");
 const Segment0 = Segment.create(0);
 
-type Fields = [ep: number, vp?: ValidityPeriod];
+type Fields = [ep: number, vp: ValidityPeriod | undefined, cost: number];
 const EVD = new EvDecoder<Fields>("PrefixAnn")
   .add(TT.ExpirationPeriod, (t, { nni }) => t[0] = nni, { order: 1, required: true })
-  .add(l3TT.ValidityPeriod, (t, { decoder }) => t[1] = decoder.decode(ValidityPeriod), { order: 1 });
+  .add(l3TT.ValidityPeriod, (t, { decoder }) => t[1] = decoder.decode(ValidityPeriod), { order: 1 })
+  .add(TT.Cost, (t, { nni }) => t[2] = nni, { order: 1 });
 
 /**
  * Prefix Announcement object.
  * @see {@link https://redmine.named-data.net/projects/nfd/wiki/PrefixAnnouncement}
+ * @see {@link https://gist.github.com/jaczhi/5408716346761de953bec18444b9daf4}
  */
 export class PrefixAnn implements FwFace.PrefixAnnouncementObj {
   /**
@@ -31,14 +33,15 @@ export class PrefixAnn implements FwFace.PrefixAnnouncementObj {
     assert(name.get(-3)?.equals(KeywordPA) && name.get(-2)!.is(Version) && name.get(-1)!.equals(Segment0),
       `${name} is not a Prefix Announcement name`);
     assert(contentType === ContentTypePrefixAnn, "ContentType must be PrefixAnnouncement");
-    const fields = EVD.decodeValue([0] as Fields, new Decoder(content));
+    const fields = EVD.decodeValue([0, undefined, 0], new Decoder(content));
     return new PrefixAnn(data, ...fields);
   }
 
   private constructor(
       public readonly data: Data,
       public readonly expirationPeriod: number,
-      public readonly validityPeriod?: ValidityPeriod,
+      public readonly validityPeriod: ValidityPeriod | undefined,
+      public readonly cost: number,
   ) {}
 
   /** The announced prefix. */
@@ -66,6 +69,12 @@ export namespace PrefixAnn {
     validityPeriod?: ValidityPeriod;
 
     /**
+     * Route cost.
+     * @defaultValue 0
+     */
+    cost?: number;
+
+    /**
      * Data signer.
      * @defaultValue nullSigner
      */
@@ -78,16 +87,19 @@ export namespace PrefixAnn {
     version = Date.now(),
     expirationPeriod,
     validityPeriod,
+    cost = 0,
     signer = nullSigner,
   }: BuildOptions): Promise<PrefixAnn> {
-    const encoder = new Encoder();
-    validityPeriod?.encodeTo(encoder);
-    encoder.prependTlv(TT.ExpirationPeriod, NNI(expirationPeriod));
+    const content = Encoder.encode([
+      [TT.ExpirationPeriod, NNI(expirationPeriod)],
+      validityPeriod,
+      cost > 0 && [TT.Cost, NNI(cost)],
+    ]);
 
     const data = new Data();
     data.name = Name.from(announced).append(KeywordPA, Version.create(version), Segment0);
     data.contentType = ContentTypePrefixAnn;
-    data.content = encoder.output;
+    data.content = content;
     await signer.sign(data);
     return PrefixAnn.fromData(data);
   }

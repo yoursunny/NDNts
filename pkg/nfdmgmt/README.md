@@ -13,6 +13,7 @@ It includes both a generic variant and a NFD-specific variant with additional ty
   * [X] NFD: `FaceDataset`, `FaceQuery`, `CsInfo`, `StrategyChoice`, `RibEntry`
 * [ ] NotificationStream
 * [X] Prefix Announcement object
+* [ ] Prefix Injection protocol
 
 This implementation is validated against NFD using [nfdmgmt-interop](../../integ/nfdmgmt-interop).
 
@@ -33,7 +34,7 @@ using closers = new Closers();
 
 ## Prefix Announcement Object
 
-`PrefixAnn` type represents a Prefix Announcement object as defined in [Prefix Announcement Protocol](https://redmine.named-data.net/projects/nfd/wiki/PrefixAnnouncement).
+`PrefixAnn` type represents a [Prefix Announcement object](https://redmine.named-data.net/projects/nfd/wiki/PrefixAnnouncement), with the additions in [Prefix Insertion protocol](https://gist.github.com/jaczhi/5408716346761de953bec18444b9daf4).
 
 ```ts
 // Generate a signing key pair and certificate.
@@ -45,6 +46,7 @@ const signer = privateKey.withKeyLocator(cert.name);
 const pa = await PrefixAnn.build({
   announced: "/Q",
   expirationPeriod: 1200_000,
+  cost: 1,
   signer,
 });
 
