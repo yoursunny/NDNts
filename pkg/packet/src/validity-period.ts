@@ -46,7 +46,8 @@ export class ValidityPeriod {
   public notAfter: number;
 
   public encodeTo(encoder: Encoder) {
-    return encoder.prependTlv(TT.ValidityPeriod,
+    return encoder.prependTlv(
+      TT.ValidityPeriod,
       [TT.NotBefore, toUtf8(encodeTimestamp(this.notBefore))],
       [TT.NotAfter, toUtf8(encodeTimestamp(this.notAfter))],
     );

@@ -7,8 +7,7 @@ import type { PlatformFchDefaults } from "./fch";
 import type { ConnectRouterOptions } from "./router";
 
 function hasAddressFamily(want: os.NetworkInterfaceInfo["family"]): boolean {
-  return Object.values(os.networkInterfaces()).some(
-    (addrs) => addrs?.some((addr) => addr.family === want && !addr.internal));
+  return Object.values(os.networkInterfaces()).some((addrs) => addrs?.some((addr) => addr.family === want && !addr.internal));
 }
 
 export const FCH_DEFAULTS: PlatformFchDefaults = {

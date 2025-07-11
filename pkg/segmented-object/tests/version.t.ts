@@ -18,7 +18,7 @@ afterEach(() => {
 
 describe("serve", () => {
   let source: ChunkSource;
-  beforeEach(() => {source = new BufferChunkSource(new Uint8Array());});
+  beforeEach(() => { source = new BufferChunkSource(new Uint8Array()); });
 
   test("version from number", async () => {
     const server = serveVersioned("/A", source, { version: 65 });
@@ -45,17 +45,23 @@ describe("serve", () => {
   });
 
   test("custom version component", async () => {
-    const server = serveVersioned("/A", source,
-      { version: Version2.create(77), segmentNumConvention: Segment2 });
+    const server = serveVersioned(
+      "/A", source,
+      { version: Version2.create(77), segmentNumConvention: Segment2 },
+    );
     closers.push(server);
 
-    const versioned = await discoverVersion(new Name("/A"),
-      { versionConvention: Version2, segmentNumConvention: Segment2 });
+    const versioned = await discoverVersion(
+      new Name("/A"),
+      { versionConvention: Version2, segmentNumConvention: Segment2 },
+    );
     expect(versioned).toHaveLength(2);
     expect(versioned.at(-1)).toEqualComponent(Version2.create(77));
 
-    const versioned1 = await discoverVersion(new Name("/A"),
-      { conventions: [[Version3, Segment3], [Version2, Segment3], [Version2, Segment2]] });
+    const versioned1 = await discoverVersion(
+      new Name("/A"),
+      { conventions: [[Version3, Segment3], [Version2, Segment3], [Version2, Segment2]] },
+    );
     expect(versioned1).toEqualName(versioned);
     expect(versioned1.versionConvention).toBe(Version2);
     expect(versioned1.segmentNumConvention).toBe(Segment2);
@@ -72,14 +78,16 @@ describe("serve", () => {
 });
 
 test("discover simple", async () => {
-  const producer = produce("/A",
+  const producer = produce(
+    "/A",
     async (interest) => {
       expect(interest.name).toEqualName("/A");
       expect(interest.canBePrefix).toBeTruthy();
       expect(interest.mustBeFresh).toBeTruthy();
       const name = interest.name.append(Version3, 2).append(Segment3, 4);
       return new Data(name, Data.FreshnessPeriod(1000));
-    });
+    },
+  );
   closers.push(producer);
 
   await expect(discoverVersion(new Name("/A")))
@@ -96,7 +104,8 @@ test.each<[discoverVersion.Options["expectedSuffixLen"], string, boolean]>([
   [discoverVersion.ANY_SUFFIX_LEN, "/S/S", true],
 ])("discover expectedSuffixLen %#", async (expectedSuffixLen, nameMid, ok) => {
   const versioned = new Name(`/A${nameMid}`).append(Version3, 2);
-  const producer = produce("/A",
+  const producer = produce(
+    "/A",
     async () => new Data(versioned.append(Segment3, 4), Data.FreshnessPeriod(1000)),
   );
   closers.push(producer);
@@ -117,8 +126,10 @@ const wrongNames = [
 ];
 
 test.each(wrongNames)("discover wrong name %#", async (dataName) => {
-  const producer = produce("/A",
-    async () => new Data(dataName, Data.FreshnessPeriod(1000)));
+  const producer = produce(
+    "/A",
+    async () => new Data(dataName, Data.FreshnessPeriod(1000)),
+  );
   closers.push(producer);
 
   await expect(discoverVersion(new Name("/A"))).rejects.toThrow(/cannot extract version/);

@@ -36,7 +36,8 @@ export class SafeBag {
   }
 
   public encodeTo(encoder: Encoder): void {
-    encoder.prependTlv(TT.SafeBag,
+    encoder.prependTlv(
+      TT.SafeBag,
       this.certificate.data,
       [TT.EncryptedKey, this.encryptedKey],
     );

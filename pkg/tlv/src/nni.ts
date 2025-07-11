@@ -113,7 +113,7 @@ export function NNI(n: number | bigint, {
     case n < 0x100000000: {
       return new Nni4(n);
     }
-    case n <= (unsafe ? 0xFFFFFFFFFFFFFFFF : Number.MAX_SAFE_INTEGER): { // eslint-disable-line @typescript-eslint/no-loss-of-precision
+    case n <= (unsafe ? 0xFFFFFFFFFFFFFFFF : Number.MAX_SAFE_INTEGER): { // eslint-disable-line no-loss-of-precision
       return new Nni8Number(n);
     }
     default: {

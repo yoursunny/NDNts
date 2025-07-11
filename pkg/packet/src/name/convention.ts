@@ -32,8 +32,8 @@ export namespace NamingConvention {
   /** Determine whether an object implements `NamingConvention` interface. */
   export function isConvention(obj: any): obj is NamingConvention<any> {
     return typeof obj === "object" &&
-           typeof obj.match === "function" &&
-           typeof obj.create === "function" &&
-           typeof obj.parse === "function";
+      typeof obj.match === "function" &&
+      typeof obj.create === "function" &&
+      typeof obj.parse === "function";
   }
 }

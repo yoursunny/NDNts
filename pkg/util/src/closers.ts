@@ -44,7 +44,7 @@ export class Closers extends Array<Closer | Disposable | AsyncDisposable> implem
     for (let i = this.length - 1; i >= 0; --i) {
       void Closer.close(this[i]);
     }
-    this.splice(0, Infinity);
+    this.splice(0);
   };
 
   public [Symbol.dispose](): void {

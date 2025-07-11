@@ -48,8 +48,7 @@ describe.each(EcCurve.Choices)("ECDSA %s", (curve) => {
 });
 
 test("ECDSA importPkcs8", async () => {
-  const { privateKey, publicKey } = await crypto.subtle.generateKey(
-    { name: "ECDSA", namedCurve: "P-384" }, true, ["sign", "verify"]);
+  const { privateKey, publicKey } = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-384" }, true, ["sign", "verify"]);
   const importPkcs8: ECDSA.GenParams["importPkcs8"] = [
     new Uint8Array(await crypto.subtle.exportKey("pkcs8", privateKey)),
     new Uint8Array(await crypto.subtle.exportKey("spki", publicKey)),

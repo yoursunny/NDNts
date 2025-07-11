@@ -92,7 +92,8 @@ async function openFaceUdp(opts: openFace.Options): Promise<FwFace> {
   const sock = await udp_helper.openSocket(sockOpts);
 
   try {
-    return await openFaceImpl(opts,
+    return await openFaceImpl(
+      opts,
       {
         scheme: "udp",
         remote: joinHostPort(localHost, sock.address().port),
@@ -105,7 +106,8 @@ async function openFaceUdp(opts: openFace.Options): Promise<FwFace> {
         }
         await udp_helper.connect(sock, { host, port });
         return [await UdpTransport.connect(sock), mtu];
-      });
+      },
+    );
   } catch (err: unknown) {
     sock.close();
     throw err;
@@ -125,7 +127,8 @@ async function openFaceMemif(opts: openFace.Options): Promise<FwFace> {
   const socketName = path.join(socketPath, `NDNts-memif-${process.pid}-${Date.now()}.sock`);
   const socketOwner = (process.getuid && process.getgid) ? [process.getuid(), process.getgid()] : undefined;
 
-  return openFaceImpl(opts,
+  return openFaceImpl(
+    opts,
     {
       scheme: "memif",
       role: "server",

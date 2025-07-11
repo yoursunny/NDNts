@@ -41,8 +41,10 @@ export class UnencryptedPrivateKey {
    */
   public set cert(value) {
     if (value) {
-      assert(CertNaming.toKeyName(value.name).equals(this.keyName),
-        `cert ${value.name} and key ${this.keyName} mismatch`);
+      assert(
+        CertNaming.toKeyName(value.name).equals(this.keyName),
+        `cert ${value.name} and key ${this.keyName} mismatch`,
+      );
     }
     this.cert_ = value;
   }

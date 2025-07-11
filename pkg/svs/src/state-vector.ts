@@ -7,7 +7,8 @@ import { TT } from "./an";
 const evdContext = new WeakMap<NodeMap, StateVector.ID>();
 
 const EVD = new EvDecoder<NodeMap>("StateVector", TT.StateVector)
-  .add(TT.StateVectorEntry,
+  .add(
+    TT.StateVectorEntry,
     new EvDecoder<NodeMap>("StateVectorEntry")
       .add(l3TT.Name, (t, { decoder }) => {
         evdContext.set(t, { name: decoder.decode(Name), boot: -1 });
@@ -15,7 +16,8 @@ const EVD = new EvDecoder<NodeMap>("StateVector", TT.StateVector)
       .add(TT.SeqNo, (t, { nni }) => {
         t.set(makeIDImpl(evdContext.get(t)!), { seqNum: nni, lastUpdate: 0 });
       })
-      .add(TT.SeqNoEntry,
+      .add(
+        TT.SeqNoEntry,
         new EvDecoder<NodeMap>("SeqNoEntry")
           .add(TT.BootstrapTime, (t, { nni }) => {
             evdContext.get(t)!.boot = nni;
@@ -23,9 +25,11 @@ const EVD = new EvDecoder<NodeMap>("StateVector", TT.StateVector)
           .add(TT.SeqNo3, (t, { nni }) => {
             t.set(makeIDImpl(evdContext.get(t)!), { seqNum: nni, lastUpdate: 0 });
           }, { required: true }),
-        { repeat: true })
+        { repeat: true },
+      )
       .setIsCritical(EvDecoder.alwaysCritical),
-    { repeat: true })
+    { repeat: true },
+  )
   .setIsCritical(EvDecoder.alwaysCritical);
 
 /** SVS state vector. */
@@ -165,7 +169,8 @@ export class StateVector {
 
   private svs2EncodeValue(encoder: Encoder, list: ReadonlyArray<[id: Name, seqNum: number]>): void {
     for (const [id, seqNum] of list) {
-      encoder.prependTlv(TT.StateVectorEntry,
+      encoder.prependTlv(
+        TT.StateVectorEntry,
         id,
         [TT.SeqNo, NNI(seqNum)],
       );
@@ -193,7 +198,7 @@ export class StateVector {
 
   /** Decode StateVector TLV. */
   public static decodeFrom(decoder: Decoder): StateVector {
-    return new StateVector(EVD.decode(new NodeMap(), decoder)); // eslint-disable-line etc/no-internal
+    return new StateVector(EVD.decode(new NodeMap(), decoder));
   }
 }
 

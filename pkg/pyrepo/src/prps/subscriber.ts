@@ -32,9 +32,11 @@ export class PrpsSubscriber implements Subscriber<Name, PrpsSubscriber.Update> {
   private readonly subSigner: Signer;
 
   public subscribe(topic: Name): Subscription<Name, PrpsSubscriber.Update> {
-    return new Sub(topic, this.cpOpts,
+    return new Sub(
+      topic, this.cpOpts,
       this.msgInterestLifetime, this.msgRetx, this.pubVerifier,
-      this.subAnnouncement, this.subSigner);
+      this.subAnnouncement, this.subSigner,
+    );
   }
 }
 

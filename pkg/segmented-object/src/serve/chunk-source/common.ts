@@ -61,8 +61,10 @@ export abstract class KnownSizeChunkSource implements ChunkSource {
   }
 
   private async makeChunk(i: number): Promise<Chunk> {
-    const payload = await this.getPayload(i, i * this.chunkSize,
-      i === this.final ? this.finalChunkSize : this.chunkSize);
+    const payload = await this.getPayload(
+      i, i * this.chunkSize,
+      i === this.final ? this.finalChunkSize : this.chunkSize,
+    );
     return {
       i,
       final: this.final,

@@ -146,7 +146,7 @@ export class Name {
   public append(...args: unknown[]) {
     let suffix: readonly ComponentLike[];
     if (args.length === 2 &&
-        typeof (args[0] as NamingConvention<unknown>).create === "function") {
+      typeof (args[0] as NamingConvention<unknown>).create === "function") {
       suffix = [(args[0] as NamingConvention<unknown>).create(args[1])];
     } else {
       suffix = args as readonly ComponentLike[];

@@ -139,20 +139,36 @@ test.each([false, true])("pyndn5 patternAliases=%d", (patternAliases) => {
   expect(policy.match(new Name("/ndn/ucla/cs/KEY/1/self/1"))).toSatisfy(haveMatches(2, "#sitecert"));
   expect(policy.match(new Name("/ndn/ucla/cs/irl/KEY/1/self/1"))).toSatisfy(haveMatches(2, "#sitecert"));
   expect(policy.match(new Name("/ndn/ucla/cs/irl/should-fail/KEY/1/self/1"))).toHaveLength(0);
-  expect(policy.canSign(new Name("/ndn/ucla/KEY/2/ndn/3"),
-    new Name("/ndn/KEY/1/self/1"))).toBeTruthy();
-  expect(policy.canSign(new Name("/ndn/ucla/%C1.Operator/13/KEY/2/ndn/3"),
-    new Name("/ndn/ucla/KEY/2/ndn/3"))).toBeTruthy();
-  expect(policy.canSign(new Name("/ndn/ucla/cs/%C1.Operator/13/KEY/2/ndn/3"),
-    new Name("/ndn/ucla/cs/KEY/2/ndn/3"))).toBeTruthy();
-  expect(policy.canSign(new Name("/ndn/ucla/%C1.Operator/13/KEY/2/ndn/3"),
-    new Name("/ndn/KEY/1/self/1"))).toBeTruthy();
-  expect(policy.canSign(new Name("/ndn/ucla/%C1.Operator/13/KEY/2/ndn/3"),
-    new Name("/ndn/arizona/KEY/2/ndn/3"))).toBeFalsy();
-  expect(policy.canSign(new Name("/ndn/ucla/%C1.Operator/13/KEY/2/ndn/3"),
-    new Name("/yoursunny/ucla/KEY/2/ndn/3"))).toBeFalsy();
-  expect(policy.canSign(new Name("/ndn/ucla/cs/%C1.Operator/13/KEY/2/ndn/3"),
-    new Name("/ndn/ucla/KEY/2/ndn/3"))).toBeTruthy();
-  expect(policy.canSign(new Name("/ndn/ucla/cs/%C1.Operator/13/KEY/2/ndn/3"),
-    new Name("/ndn/ucla/ee/KEY/2/ndn/3"))).toBeFalsy();
+  expect(policy.canSign(
+    new Name("/ndn/ucla/KEY/2/ndn/3"),
+    new Name("/ndn/KEY/1/self/1"),
+  )).toBeTruthy();
+  expect(policy.canSign(
+    new Name("/ndn/ucla/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/ndn/ucla/KEY/2/ndn/3"),
+  )).toBeTruthy();
+  expect(policy.canSign(
+    new Name("/ndn/ucla/cs/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/ndn/ucla/cs/KEY/2/ndn/3"),
+  )).toBeTruthy();
+  expect(policy.canSign(
+    new Name("/ndn/ucla/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/ndn/KEY/1/self/1"),
+  )).toBeTruthy();
+  expect(policy.canSign(
+    new Name("/ndn/ucla/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/ndn/arizona/KEY/2/ndn/3"),
+  )).toBeFalsy();
+  expect(policy.canSign(
+    new Name("/ndn/ucla/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/yoursunny/ucla/KEY/2/ndn/3"),
+  )).toBeFalsy();
+  expect(policy.canSign(
+    new Name("/ndn/ucla/cs/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/ndn/ucla/KEY/2/ndn/3"),
+  )).toBeTruthy();
+  expect(policy.canSign(
+    new Name("/ndn/ucla/cs/%C1.Operator/13/KEY/2/ndn/3"),
+    new Name("/ndn/ucla/ee/KEY/2/ndn/3"),
+  )).toBeFalsy();
 });

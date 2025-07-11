@@ -48,8 +48,7 @@ test("bufferBehind bufferAhead", async () => {
     bufferAhead: 2,
   });
 
-  const retrieveSegment = (segmentNum: number) => consume(
-    new Interest(prefix.append(Segment, segmentNum), Interest.Lifetime(500)));
+  const retrieveSegment = (segmentNum: number) => consume(new Interest(prefix.append(Segment, segmentNum), Interest.Lifetime(500)));
 
   await expect(retrieveSegment(19)).resolves.toBeInstanceOf(Data);
   await delay(200);

@@ -4,7 +4,7 @@ import { LpPacket } from "./packet";
 
 class SeqNumGen {
   private current = (BigInt(Math.trunc(Math.random() * 0x100000000)) << 32n) |
-                    BigInt(Math.trunc(Math.random() * 0x100000000));
+    BigInt(Math.trunc(Math.random() * 0x100000000));
 
   public next(): bigint {
     this.current = BigInt.asUintN(64, this.current + 1n);
@@ -13,12 +13,12 @@ class SeqNumGen {
 }
 
 const OVERHEAD = 0 +
-    1 + 3 + // LpPacket TL
-    1 + 1 + 8 + // LpSeqNum
-    1 + 1 + 2 + // FragIndex
-    1 + 1 + 2 + // FragCount
-    1 + 3 + // LpPayload TL
-    0;
+  1 + 3 + // LpPacket TL
+  1 + 1 + 8 + // LpSeqNum
+  1 + 1 + 2 + // FragIndex
+  1 + 1 + 2 + // FragCount
+  1 + 3 + // LpPayload TL
+  0;
 
 /** NDNLPv2 fragmenter. */
 export class Fragmenter {

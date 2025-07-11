@@ -2,7 +2,7 @@ import { pipeline, Transform } from "node:stream";
 
 /** Break packet-sized buffers into random-sized buffers, for testing TCP/Unix transports. */
 export class BufferBreaker extends Transform {
-  private buf?: Buffer;
+  private buf?: Buffer; // eslint-disable-line @typescript-eslint/no-restricted-types
   private timer: NodeJS.Timeout;
 
   constructor() {
@@ -10,6 +10,7 @@ export class BufferBreaker extends Transform {
     this.timer = setInterval(this.flushBuf, 50);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-restricted-types
   public override _transform(chunk: Buffer, enc: unknown, callback: (err?: Error) => void) {
     void enc;
     const buf = this.buf ? Buffer.concat([this.buf, chunk]) : chunk;
@@ -24,7 +25,7 @@ export class BufferBreaker extends Transform {
     callback();
   }
 
-  public override _destroy(err: Error, callback: (err: Error | null) => void) {
+  public override _destroy(err: Error, callback: (err: Error | undefined) => void) {
     clearInterval(this.timer);
     callback(err);
   }

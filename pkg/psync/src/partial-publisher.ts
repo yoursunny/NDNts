@@ -150,7 +150,7 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
     const bloomComps = interest.name.slice(-1 - this.codec.encodeBloomLength, -1).comps;
     const bloom = await this.codec.decodeBloom(BloomFilter, bloomComps);
     const state = this.c.list(({ id: prefix, key }) => positive.has(key) &&
-             bloom.contains(this.codec.toBloomKey(prefix)));
+      bloom.contains(this.codec.toBloomKey(prefix)));
     if (total >= this.c.threshold || state.length > 0) {
       return this.sendStateData(interest, state, "s-reply", this.sFreshness);
     }
@@ -205,9 +205,7 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
     }
   };
 
-  private async sendStateData(
-      interest: Interest, state: PSyncCore.State, action: string, freshness: number,
-  ): Promise<Data | undefined> {
+  private async sendStateData(interest: Interest, state: PSyncCore.State, action: string, freshness: number): Promise<Data | undefined> {
     const ibltComp = await this.codec.iblt2comp(this.c.iblt);
     const name = interest.name.append(ibltComp);
 

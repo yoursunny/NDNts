@@ -41,8 +41,10 @@ export class PitEntry {
     const expire = now + interest.lifetime;
     const nonce = interest.nonce ?? Interest.generateNonce();
 
-    const dnR = getOrInsert(this.dnRecords, face,
-      () => ({ nRx: 0, expire: 0, nonce: 0, token: undefined }));
+    const dnR = getOrInsert(
+      this.dnRecords, face,
+      () => ({ nRx: 0, expire: 0, nonce: 0, token: undefined }),
+    );
     ++dnR.nRx;
     dnR.expire = expire;
     dnR.nonce = nonce;

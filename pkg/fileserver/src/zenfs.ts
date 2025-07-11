@@ -12,7 +12,7 @@ import type { FileMetadata } from "./metadata";
  * @remarks
  * This backend only supports async operations.
  */
-export class NDNFileSystem extends Async(Readonly(FileSystem)) { // eslint-disable-line etc/no-internal
+export class NDNFileSystem extends Async(Readonly(FileSystem)) {
   constructor(opts: NDNFileSystem.Options) {
     super(0x006E646E, "ndn");
     this.attributes.set("no_async_preload");
@@ -42,7 +42,7 @@ export class NDNFileSystem extends Async(Readonly(FileSystem)) { // eslint-disab
     return m;
   }
 
-  public override async stat(path: string): Promise<InodeLike> { // eslint-disable-line etc/no-internal
+  public override async stat(path: string): Promise<InodeLike> {
     const m = await this.getFileMetadata(path);
     return new Stats({
       atimeMs: m.atime?.getTime(),

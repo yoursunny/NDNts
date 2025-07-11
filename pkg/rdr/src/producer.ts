@@ -62,7 +62,8 @@ export function serveMetadata(m: Metadata | (() => Metadata), opts: serveMetadat
   const makeMetadata = typeof m === "function" ? m : () => m;
   const prefix = makeName(makeMetadata(), prefixInput).getPrefix(-2);
 
-  return produce(prefix,
+  return produce(
+    prefix,
     async (interest) => {
       if (isDiscoveryInterest(interest) && interest.name.length === prefix.length) {
         return makeMetadataPacket(makeMetadata(), {
@@ -75,7 +76,8 @@ export function serveMetadata(m: Metadata | (() => Metadata), opts: serveMetadat
     {
       describe: `RDR-s(${prefix})`,
       ...pOpts,
-    });
+    },
+  );
 }
 export namespace serveMetadata {
   export interface Options extends makeMetadataPacket.Options {

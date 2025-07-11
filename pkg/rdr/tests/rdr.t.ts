@@ -53,13 +53,19 @@ describe("producer", () => {
 
     const [data] = await Promise.all([
       consume(new Interest("/D/32=metadata", Interest.CanBePrefix, Interest.MustBeFresh)),
-      expect(consume(new Interest("/D/32=metadata", Interest.CanBePrefix,
-        Interest.Lifetime(100)))).rejects.toThrow(),
-      expect(consume(new Interest("/D/32=metadata", Interest.MustBeFresh,
-        Interest.Lifetime(100)))).rejects.toThrow(),
-      expect(consume(new Interest(new Name("/D/32=metadata").append(Version, 4),
+      expect(consume(new Interest(
+        "/D/32=metadata", Interest.CanBePrefix,
+        Interest.Lifetime(100),
+      ))).rejects.toThrow(),
+      expect(consume(new Interest(
+        "/D/32=metadata", Interest.MustBeFresh,
+        Interest.Lifetime(100),
+      ))).rejects.toThrow(),
+      expect(consume(new Interest(
+        new Name("/D/32=metadata").append(Version, 4),
         Interest.CanBePrefix, Interest.MustBeFresh,
-        Interest.Lifetime(100)))).rejects.toThrow(),
+        Interest.Lifetime(100),
+      ))).rejects.toThrow(),
     ]);
 
     expect(data.name).toHaveLength(4);

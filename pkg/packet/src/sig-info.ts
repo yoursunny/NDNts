@@ -76,7 +76,8 @@ export class SigInfo {
   }
 
   private encodeTo(encoder: Encoder, tt: number) {
-    encoder.prependTlv(tt,
+    encoder.prependTlv(
+      tt,
       [TT.SigType, NNI(this.type)],
       this.keyLocator,
       [TT.SigNonce, Encoder.OmitEmpty, this.nonce],

@@ -64,6 +64,7 @@ export class PartialSubscriber extends TypedEventTarget<EventMap>
   private closed = false;
 
   private readonly subs = new SubscriptionTable<Update>();
+  // eslint-disable-next-line @typescript-eslint/no-restricted-types
   private readonly prevSeqNums = new WeakMap<object, number>();
   private bloom!: BloomFilter;
   private ibltComp?: Component;
@@ -100,6 +101,7 @@ export class PartialSubscriber extends TypedEventTarget<EventMap>
     return sub;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-restricted-types
   private readonly handleRemoveTopic = (topic: Name, objKey: object): void => {
     void topic;
     if (!this.prevSeqNums.delete(objKey)) {

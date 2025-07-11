@@ -28,9 +28,11 @@ test("encode", () => {
   ]);
   expect(interest.nonce).toBeUndefined();
 
-  interest = new Interest("/B", Interest.CanBePrefix, Interest.MustBeFresh,
+  interest = new Interest(
+    "/B", Interest.CanBePrefix, Interest.MustBeFresh,
     new FwHint(["/FH1", "/FH2"]),
-    Interest.Nonce(0x85AC8579), Interest.Lifetime(8198), Interest.HopLimit(5));
+    Interest.Nonce(0x85AC8579), Interest.Lifetime(8198), Interest.HopLimit(5),
+  );
   expect(interest.name).toEqualName("/B");
   expect(interest.canBePrefix).toBeTruthy();
   expect(interest.mustBeFresh).toBeTruthy();

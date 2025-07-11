@@ -3,7 +3,7 @@ export const FIELDS = Symbol("@ndn/packet#FIELDS");
 export function definePublicFields<
   Target extends PublicFields & { [FIELDS]: Fields },
   Fields extends PublicFields,
-  PublicFields extends {},
+  PublicFields extends Record<string, any>,
 >(
     typ: new() => Target,
     fieldDefs: Record<keyof PublicFields, ReadonlyArray<keyof Fields>>,

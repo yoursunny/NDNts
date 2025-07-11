@@ -60,7 +60,8 @@ describe("retx limit", () => {
         retx: {
           limit: 2,
         },
-      });
+      },
+    );
     await expect(consumer).rejects.toThrow();
     expect(producer).toHaveBeenCalledTimes(1);
     expect(consumer.nRetx).toBe(0);

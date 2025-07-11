@@ -39,7 +39,8 @@ export interface Insert<Options extends {} = {}> {
 }
 export namespace Insert {
   type Tail = ReadonlyArray<Data | AnyIterable<Data>>;
-  export type Args<O extends {}> = [...(object extends O ? [O] | [] : []), ...Tail];
+  // eslint-disable-next-line @typescript-eslint/no-restricted-types
+  export type Args<O extends {}> = [...(Record<string, unknown> extends O ? [O] | [] : []), ...Tail];
 
   export interface ParsedArgs<O> {
     readonly opts?: O;
@@ -52,7 +53,7 @@ export namespace Insert {
   export function parseArgs<O extends {}>(args: Args<O>): ParsedArgs<O> {
     let opts: O | undefined;
     if (args.length > 0 && !(args[0] instanceof Data || (args[0] as Iterable<Data>)[Symbol.iterator] ||
-        (args[0] as AsyncIterable<Data>)[Symbol.asyncIterator])) {
+      (args[0] as AsyncIterable<Data>)[Symbol.asyncIterator])) {
       opts = args.shift() as O;
     }
     return {

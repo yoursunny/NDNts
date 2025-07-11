@@ -120,16 +120,14 @@ test("print", () => {
 });
 
 test("classify", () => {
-  expect(hello.name).toEqualName(
-    new Name("/ndn/arizona/hobo/nlsr/INFO/Router/suns").append(Version, 1));
+  expect(hello.name).toEqualName(new Name("/ndn/arizona/hobo/nlsr/INFO/Router/suns").append(Version, 1));
   let m = policy.match(hello.name);
   expect(new Set(m.map(({ id }) => id))).toEqual(new Set(["hello", "packet"]));
   for (const [k, v] of P.VarsLike.toIterable(hello.vars)) {
     expect(m[0]!.vars.get(k)).toEqualName(v);
   }
 
-  expect(lsa.name).toEqualName(
-    new Name("/localhop/ndn/nlsr/LSA/edu/ucla/Router/suns/name").append(SequenceNum, 1));
+  expect(lsa.name).toEqualName(new Name("/localhop/ndn/nlsr/LSA/edu/ucla/Router/suns/name").append(SequenceNum, 1));
   m = policy.match(lsa.name);
   expect(new Set(m.map(({ id }) => id))).toEqual(new Set(["lsa", "packet"]));
   for (const [k, v] of P.VarsLike.toIterable(lsa.vars)) {

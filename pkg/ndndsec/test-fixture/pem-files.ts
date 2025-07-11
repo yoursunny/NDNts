@@ -18,23 +18,35 @@ export interface PemTestVector {
   certPem: string;
 }
 
-export const Ed25519 = makeLoader(SigType.Ed25519,
-  "/demo/ndnd-key/Ed25519/KEY/%FE%C2ecO%18Z%1C/NA/v=1738987269556");
+export const Ed25519 = makeLoader(
+  SigType.Ed25519,
+  "/demo/ndnd-key/Ed25519/KEY/%FE%C2ecO%18Z%1C/NA/v=1738987269556",
+);
 
-export const RSA_2048 = makeLoader(SigType.Sha256WithRsa,
-  "/demo/ndnd-key/RSA-2048/KEY/%3F%2B%A9%B2%FFiW%3C/NA/v=1738987269818");
+export const RSA_2048 = makeLoader(
+  SigType.Sha256WithRsa,
+  "/demo/ndnd-key/RSA-2048/KEY/%3F%2B%A9%B2%FFiW%3C/NA/v=1738987269818",
+);
 
-export const RSA_4096 = makeLoader(SigType.Sha256WithRsa,
-  "/demo/ndnd-key/RSA-4096/KEY/%60%5EWb%95%93%D8%E9/NA/v=1738987270477");
+export const RSA_4096 = makeLoader(
+  SigType.Sha256WithRsa,
+  "/demo/ndnd-key/RSA-4096/KEY/%60%5EWb%95%93%D8%E9/NA/v=1738987270477",
+);
 
-export const EC_P256 = makeLoader(SigType.Sha256WithEcdsa,
-  "/demo/ndnd-key/EC-P256/KEY/%9B%7F%28q8%99%89%C5/NA/v=1738987270493");
+export const EC_P256 = makeLoader(
+  SigType.Sha256WithEcdsa,
+  "/demo/ndnd-key/EC-P256/KEY/%9B%7F%28q8%99%89%C5/NA/v=1738987270493",
+);
 
-export const EC_P384 = makeLoader(SigType.Sha256WithEcdsa,
-  "/demo/ndnd-key/EC-P384/KEY/E%E5%CF%F5%1D%80%BE%A4/NA/v=1738987270506");
+export const EC_P384 = makeLoader(
+  SigType.Sha256WithEcdsa,
+  "/demo/ndnd-key/EC-P384/KEY/E%E5%CF%F5%1D%80%BE%A4/NA/v=1738987270506",
+);
 
-export const EC_P521 = makeLoader(SigType.Sha256WithEcdsa,
-  "/demo/ndnd-key/EC-P521/KEY/%A9%5D%06%94%2Cg%E2%A4/NA/v=1739023923655");
+export const EC_P521 = makeLoader(
+  SigType.Sha256WithEcdsa,
+  "/demo/ndnd-key/EC-P521/KEY/%A9%5D%06%94%2Cg%E2%A4/NA/v=1739023923655",
+);
 
 function makeLoader(sigType: number, certNameUri: string): () => Promise<PemTestVector> {
   const certName = AltUri.parseName(certNameUri);

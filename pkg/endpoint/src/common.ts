@@ -30,7 +30,5 @@ const commonKeys: readonly string[] = [
 ] satisfies ReadonlyArray<keyof CommonOptions>;
 
 export function exactOptions<O extends CommonOptions>(opts: O, keys: ReadonlyArray<keyof O>): O {
-  return Object.fromEntries(Object.entries(opts).filter(
-    ([key]) => commonKeys.includes(key) || (keys as readonly string[]).includes(key)),
-  ) as O;
+  return Object.fromEntries(Object.entries(opts).filter(([key]) => commonKeys.includes(key) || (keys as readonly string[]).includes(key))) as O;
 }

@@ -227,8 +227,8 @@ export namespace Bridge {
 
   export type Renamed<A extends string, B extends string> =
     Except<Bridge, "rename" | "fwA" | "fwB" | "faceA" | "faceB"> &
-    { [k in `fw${A | B}`]: Forwarder; } &
-    { [k in `face${A | B}`]: FwFace; };
+    Record<`fw${A | B}`, Forwarder> &
+    Record<`face${A | B}`, FwFace>;
 
   /** {@link star} options, where each edge/leaf can have different options. */
   export type StarEdgeOptions = Except<CreateOptions, "fwA">;

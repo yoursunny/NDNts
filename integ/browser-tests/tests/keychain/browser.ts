@@ -21,8 +21,10 @@ globalThis.testCertStore = () => {
   return testCertStore(keyChain);
 };
 
-async function testSigningKey(pvtA: Signer, pubA: Verifier,
-    pvtB: Signer, pubB: Verifier): Promise<Serialize.Value<SignVerifyTestResult>> {
+async function testSigningKey(
+    pvtA: Signer, pubA: Verifier,
+    pvtB: Signer, pubB: Verifier,
+): Promise<Serialize.Value<SignVerifyTestResult>> {
   return Serialize.stringify(await Promise.all([
     testSignVerify(Interest, pvtA, pubA, pvtB, pubB),
     testSignVerify(Data, pvtA, pubA, pvtB, pubB),
@@ -71,8 +73,7 @@ globalThis.testSafeBagEncode = async (passphrase: string) => {
   const keyPair = await ECDSA.cryptoGenerate({}, true);
   const pkcs8 = new Uint8Array(await crypto.subtle.exportKey("pkcs8", keyPair.privateKey));
 
-  const [privateKey, publicKey] = await generateSigningKey(
-    "/S", ECDSA, { importPkcs8: [pkcs8, keyPair.spki] });
+  const [privateKey, publicKey] = await generateSigningKey("/S", ECDSA, { importPkcs8: [pkcs8, keyPair.spki] });
   const cert = await Certificate.selfSign({ privateKey, publicKey });
   const safeBag = await SafeBag.create(cert, pkcs8, passphrase);
   return Serialize.stringify(Encoder.encode(safeBag));

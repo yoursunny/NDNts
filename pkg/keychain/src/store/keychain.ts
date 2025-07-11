@@ -116,8 +116,10 @@ export abstract class KeyChain {
       return changeKeyLocator(signer, certName);
     }
 
-    const certName = await this.findSignerCertName(name,
-      ({ subjectName }) => prefixMatch || name.equals(subjectName));
+    const certName = await this.findSignerCertName(
+      name,
+      ({ subjectName }) => prefixMatch || name.equals(subjectName),
+    );
     if (certName) {
       const signer = await this.getKey(CertNaming.toKeyName(certName), "signer");
       return changeKeyLocator(signer, certName);

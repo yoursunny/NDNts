@@ -51,7 +51,8 @@ function truncateValidity(
       maxValidityPeriod,
       cert: { validity: caValidity },
     }: CaProfile,
-    enableNotBeforeGracePeriod: boolean): ValidityPeriod {
+    enableNotBeforeGracePeriod: boolean,
+): ValidityPeriod {
   const now = Date.now();
   return validity.intersect(
     caValidity,

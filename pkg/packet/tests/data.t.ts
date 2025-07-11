@@ -29,8 +29,10 @@ test("encode", () => {
     );
   });
 
-  data = new Data(Data.ContentType(3), Data.FreshnessPeriod(2500),
-    Data.FinalBlock, "/B", Uint8Array.of(0xC0, 0xC1));
+  data = new Data(
+    Data.ContentType(3), Data.FreshnessPeriod(2500),
+    Data.FinalBlock, "/B", Uint8Array.of(0xC0, 0xC1),
+  );
   expect(data.name).toEqualName("/B");
   expect(data.contentType).toBe(3);
   expect(data.freshnessPeriod).toBe(2500);

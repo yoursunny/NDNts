@@ -96,42 +96,52 @@ The *Checker* functionality in python-ndn is equivalent to `policy.canSign` meth
 // Admin's certificate can be signed by the root certificate
 assert.equal(policy1.canSign(
   new Name("/ndn/blog/admin/000001/KEY/1/root/1"),
-  new Name("/ndn/blog/KEY/1/self/1")), true);
+  new Name("/ndn/blog/KEY/1/self/1"),
+), true);
 // The component "key" does not match (should be upper-case)
 assert.equal(policy1.canSign(
   new Name("/ndn/blog/admin/000001/key/1/root/1"),
-  new Name("/ndn/blog/KEY/1/self/1")), false);
+  new Name("/ndn/blog/KEY/1/self/1"),
+), false);
 // One admin's certificate cannot be signed by another admin.
 assert.equal(policy1.canSign(
   new Name("/ndn/blog/admin/000002/KEY/1/root/1"),
-  new Name("/ndn/blog/admin/000001/KEY/1/root/1")), false);
+  new Name("/ndn/blog/admin/000001/KEY/1/root/1"),
+), false);
 // One author's certificate can be signed by an admin (with valid ID).
 assert.equal(policy1.canSign(
   new Name("/ndn/blog/author/100001/KEY/1/000001/1"),
-  new Name("/ndn/blog/admin/000001/KEY/1/root/1")), true);
+  new Name("/ndn/blog/admin/000001/KEY/1/root/1"),
+), true);
 // The author's ID is invalid.
 assert.equal(policy1.canSign(
   new Name("/ndn/blog/author/1000/KEY/1/000001/1"),
-  new Name("/ndn/blog/admin/000001/KEY/1/root/1")), false);
+  new Name("/ndn/blog/admin/000001/KEY/1/root/1"),
+), false);
 // One reader's certificate can be signed by an admin (with valid ID).
 assert.equal(policy1.canSign(
   new Name("/ndn/blog/reader/200001/KEY/1/000001/1"),
-  new Name("/ndn/blog/admin/000001/KEY/1/root/1")), true);
+  new Name("/ndn/blog/admin/000001/KEY/1/root/1"),
+), true);
 // One article can be signed by an author.
 assert.equal(policy1.canSign(
   new Name("/ndn/blog/100001/post/2022/1"),
-  new Name("/ndn/blog/author/100001/KEY/1/000001/1")), true);
+  new Name("/ndn/blog/author/100001/KEY/1/000001/1"),
+), true);
 // The author is wrong. The IDs in both article name and certificate name should be the same,
 // as they use the same pattern "ID".
 assert.equal(policy1.canSign(
   new Name("/ndn/blog/100001/post/2022/1"),
-  new Name("/ndn/blog/author/100002/KEY/1/000001/1")), false);
+  new Name("/ndn/blog/author/100002/KEY/1/000001/1"),
+), false);
 // The year is invalid.
 assert.equal(policy1.canSign(
   new Name("/ndn/blog/100001/post/202/1"),
-  new Name("/ndn/blog/author/100001/KEY/1/000001/1")), false);
+  new Name("/ndn/blog/author/100001/KEY/1/000001/1"),
+), false);
 // The article cannot be signed by a reader.
 assert.equal(policy1.canSign(
   new Name("/ndn/blog/200001/post/2022/1"),
-  new Name("/ndn/blog/reader/200001/KEY/1/000001/1")), false);
+  new Name("/ndn/blog/reader/200001/KEY/1/000001/1"),
+), false);
 ```

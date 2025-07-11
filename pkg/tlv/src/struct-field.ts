@@ -72,7 +72,7 @@ export namespace StructFieldType {
    * `Inner` type must encode itself as a TLV, and its TLV-TYPE must equal field TLV-TYPE.
    */
   export function wrap<T extends NonNullable<Encodable>>(
-      F: Constructor<T, []> & Decodable<T>,
+      F: Constructor<T, []> & Decodable<T>, // eslint-disable-line @typescript-eslint/no-restricted-types
       overrides: Partial<StructFieldType<T>> = {},
   ): StructFieldType<T> {
     return {
@@ -108,7 +108,7 @@ export namespace StructFieldType {
    * the TLV-VALUE of the "middle" field TLV.
    */
   export function nest<T extends NonNullable<Encodable>>(
-      F: Constructor<T, []> & Decodable<T>,
+      F: Constructor<T, []> & Decodable<T>, // eslint-disable-line @typescript-eslint/no-restricted-types
       overrides: Partial<StructFieldType<T>> = {},
   ): StructFieldType<T> {
     return {

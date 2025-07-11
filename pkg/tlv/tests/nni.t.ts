@@ -20,11 +20,11 @@ test.each([
 
 test("encode big", () => {
   expect(() => Encoder.encode(NNI(Number.MAX_SAFE_INTEGER))).not.toThrow();
-  // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+  // eslint-disable-next-line no-loss-of-precision
   expect(() => Encoder.encode(NNI(0xFFFFFFFFFFFFFFFF))).toThrow(/large/);
-  // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+  // eslint-disable-next-line no-loss-of-precision
   expect(() => Encoder.encode(NNI(0xFFFFFFFFFFFFFFFF, { unsafe: true }))).not.toThrow();
-  // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+  // eslint-disable-next-line no-loss-of-precision
   expect(() => Encoder.encode(NNI(0x1FFFFFFFFFFFFFFFF, { unsafe: true }))).toThrow(/large/);
 
   expect(NNI(0xFFFFFFFFFFFFFFFFn)).toEncodeAs([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);

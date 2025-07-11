@@ -39,8 +39,10 @@ export abstract class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenPara
         ...this.genParams,
         modulusLength,
       };
-      ({ privateKey, publicKey } = await crypto.subtle.generateKey(genParams, extractable,
-        [...this.keyUsages.private, ...this.keyUsages.public]));
+      ({ privateKey, publicKey } = await crypto.subtle.generateKey(
+        genParams, extractable,
+        [...this.keyUsages.private, ...this.keyUsages.public],
+      ));
     }
 
     const spki = new Uint8Array(await crypto.subtle.exportKey("spki", publicKey));
@@ -55,8 +57,7 @@ export abstract class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenPara
 
   public async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
     assertSpkiAlgorithm(der, "RSA", "2A864886F70D010101"); // 1.2.840.113549.1.1.1
-    const key = await crypto.subtle.importKey(
-      "spki", spki, this.importParams, true, this.keyUsages.public);
+    const key = await crypto.subtle.importKey("spki", spki, this.importParams, true, this.keyUsages.public);
     return {
       publicKey: key,
       spki,

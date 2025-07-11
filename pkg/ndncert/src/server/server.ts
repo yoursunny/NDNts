@@ -94,14 +94,22 @@ export class Server {
 
     this.producers = [
       serveMetadata(new Metadata(infoVersion), { pOpts, signer }),
-      produce(infoVersion, this.handleInfoInterest,
-        { describe: `NDNCERT-CA(${prefix}, INFO)`, ...pOpts }),
-      produce(prefix.append(C.CA, C.PROBE), this.handleProbeInterest,
-        { describe: `NDNCERT-CA(${prefix}, PROBE)`, ...pOpts }),
-      produce(prefix.append(C.CA, C.NEW), this.handleNewInterest,
-        { describe: `NDNCERT-CA(${prefix}, NEW)`, ...pOpts }),
-      produce(prefix.append(C.CA, C.CHALLENGE), this.handleChallengeInterest,
-        { describe: `NDNCERT-CA(${prefix}, CHALLENGE)`, ...pOpts }),
+      produce(
+        infoVersion, this.handleInfoInterest,
+        { describe: `NDNCERT-CA(${prefix}, INFO)`, ...pOpts },
+      ),
+      produce(
+        prefix.append(C.CA, C.PROBE), this.handleProbeInterest,
+        { describe: `NDNCERT-CA(${prefix}, PROBE)`, ...pOpts },
+      ),
+      produce(
+        prefix.append(C.CA, C.NEW), this.handleNewInterest,
+        { describe: `NDNCERT-CA(${prefix}, NEW)`, ...pOpts },
+      ),
+      produce(
+        prefix.append(C.CA, C.CHALLENGE), this.handleChallengeInterest,
+        { describe: `NDNCERT-CA(${prefix}, CHALLENGE)`, ...pOpts },
+      ),
     ];
 
     this.cleanupTimer = setInterval(this.cleanupContext, 60000);

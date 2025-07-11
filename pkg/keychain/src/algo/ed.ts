@@ -30,8 +30,10 @@ class EdAlgo implements SigningAlgorithm<{}, true, {}> {
         subtle.importKey("spki", spki, this.algo, true, this.keyUsages.public),
       ]);
     } else {
-      ({ privateKey, publicKey } = await subtle.generateKey(this.algo, extractable,
-        [...this.keyUsages.private, ...this.keyUsages.public]) as CryptoKeyPair);
+      ({ privateKey, publicKey } = await subtle.generateKey(
+        this.algo, extractable,
+        [...this.keyUsages.private, ...this.keyUsages.public],
+      ) as CryptoKeyPair);
     }
 
     const spki = new Uint8Array(await subtle.exportKey("spki", publicKey));
@@ -46,8 +48,7 @@ class EdAlgo implements SigningAlgorithm<{}, true, {}> {
 
   public async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
     assertSpkiAlgorithm(der, this.algo.name, this.oid);
-    const key = await subtle.importKey(
-      "spki", spki, this.algo, true, this.keyUsages.public);
+    const key = await subtle.importKey("spki", spki, this.algo, true, this.keyUsages.public);
     return {
       publicKey: key,
       spki,

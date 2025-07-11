@@ -51,7 +51,7 @@ export interface ConnectRouterOptions {
    * - function: execute the custom tester function.
    */
   testConnection?: false | TestConnectionPacket | TestConnectionPacket[] |
-  ((face: FwFace) => Promise<unknown>);
+    ((face: FwFace) => Promise<unknown>);
 
   /**
    * InterestLifetime of connection test Interest packets.

@@ -57,12 +57,12 @@ class FetchResult implements fetch.Result {
 
   // eslint-disable-next-line unicorn/no-thenable
   public then<R, J>(
-      onfulfilled?: ((value: Uint8Array) => Promisable<R>) | null,
-      onrejected?: ((reason: any) => Promisable<J>) | null,
+      onfulfilled?: ((value: Uint8Array) => Promisable<R>) | null, // eslint-disable-line @typescript-eslint/no-restricted-types
+      onrejected?: ((reason: any) => Promisable<J>) | null, // eslint-disable-line @typescript-eslint/no-restricted-types
   ) {
     this.promise ??= this.startPromise();
     // eslint-disable-next-line promise/prefer-await-to-then
-    return this.promise.then(onfulfilled, onrejected);
+    return this.promise.then(onfulfilled).catch(onrejected);
   }
 
   public [Symbol.asyncIterator]() {

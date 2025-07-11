@@ -31,22 +31,29 @@ export async function create(privateKey: Uint8Array, passphrase: string | Uint8A
   const aesKey = await crypto.subtle.importKey("raw", dk, "AES-CBC", false, ["encrypt"]);
   const encrypted = new Uint8Array(await crypto.subtle.encrypt(aes, aesKey, privateKey));
 
-  return fromHex(asn1.Any("30",
-    asn1.Any("30",
+  return fromHex(asn1.Any(
+    "30",
+    asn1.Any(
+      "30",
       asn1.Any("06", OID.pkcs5PBES2),
-      asn1.Any("30",
-        asn1.Any("30",
+      asn1.Any(
+        "30",
+        asn1.Any(
+          "30",
           asn1.Any("06", OID.pkcs5PBKDF2),
-          asn1.Any("30",
+          asn1.Any(
+            "30",
             asn1.Any("04", toHex(pbkdf2.salt as Uint8Array)),
             asn1.UInt(iterationsHex),
-            asn1.Any("30",
+            asn1.Any(
+              "30",
               asn1.Any("06", OID.hmacWithSHA256),
               asn1.Any("05"),
             ),
           ),
         ),
-        asn1.Any("30",
+        asn1.Any(
+          "30",
           asn1.Any("06", OID.aes256CBC),
           asn1.Any("04", toHex(aes.iv as Uint8Array)),
         ),

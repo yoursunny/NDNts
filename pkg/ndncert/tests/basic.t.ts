@@ -24,10 +24,8 @@ test("crypto", async () => {
   const requestId = ndncert_crypto.makeRequestId();
   expect(() => ndncert_crypto.checkRequestId(requestId)).not.toThrow();
 
-  const { sessionEncrypter } = await ndncert_crypto.makeSessionKey(
-    ecdhPvtA, ecdhPubB, salt, requestId);
-  const { sessionDecrypter } = await ndncert_crypto.makeSessionKey(
-    ecdhPvtB, ecdhPubA, salt, requestId);
+  const { sessionEncrypter } = await ndncert_crypto.makeSessionKey(ecdhPvtA, ecdhPubB, salt, requestId);
+  const { sessionDecrypter } = await ndncert_crypto.makeSessionKey(ecdhPvtB, ecdhPubA, salt, requestId);
 
   const plaintext = Uint8Array.of(0xA0, 0xA1, 0xA2, 0xA3);
   const encrypted = await sessionEncrypter.llEncrypt({ plaintext, additionalData: requestId });
@@ -139,8 +137,7 @@ test("packets", async () => {
   const [caEcdhPvt, caEcdhPub] = await ndncert_crypto.generateEcdhKey();
   const salt = ndncert_crypto.makeSalt();
   const requestId = ndncert_crypto.makeRequestId();
-  const caSessionKey = await ndncert_crypto.makeSessionKey(
-    caEcdhPvt, newRequest.ecdhPub, salt, requestId);
+  const caSessionKey = await ndncert_crypto.makeSessionKey(caEcdhPvt, newRequest.ecdhPub, salt, requestId);
   const newResponse = await NewResponse.build({
     profile,
     request: newRequest,
@@ -156,8 +153,7 @@ test("packets", async () => {
   expect(newResponse.requestId).toEqualUint8Array(requestId);
   expect(newResponse.challenges).toEqual(["pin"]);
 
-  const reqSessionKey = await ndncert_crypto.makeSessionKey(
-    reqEcdhPvt, newResponse.ecdhPub, salt, requestId);
+  const reqSessionKey = await ndncert_crypto.makeSessionKey(reqEcdhPvt, newResponse.ecdhPub, salt, requestId);
   const { interest: challengeInterest } = await ChallengeRequest.build({
     profile,
     signedInterestPolicy: reqSIP,
@@ -249,8 +245,6 @@ describe("ValidityPeriod", () => {
 
   test("expired requester certificate", async () => {
     const now = Date.now();
-    await expect(buildNewRequest(
-      new ValidityPeriod(now - 3600_000, now - 1800_000),
-    )).rejects.toThrow(/ValidityPeriod/);
+    await expect(buildNewRequest(new ValidityPeriod(now - 3600_000, now - 1800_000))).rejects.toThrow(/ValidityPeriod/);
   });
 });

@@ -9,9 +9,7 @@ import type { CryptoAlgorithm } from "./types";
  * @param defaultAlgo - Default algorithm, required if algorithm may be omitted in `a`.
  * @param a - Tuple of [keyChain?: KeyChain, keyName: NameLike, algo?: Algorithm, genParams?: I].
  */
-export async function generateKeyInternal<Algo extends CryptoAlgorithm>(
-    defaultAlgo: Algo, a: unknown[],
-): Promise<[Name, Algo, CryptoAlgorithm.GeneratedKeyPair | CryptoAlgorithm.GeneratedSecretKey]> {
+export async function generateKeyInternal<Algo extends CryptoAlgorithm>(defaultAlgo: Algo, a: unknown[]): Promise<[Name, Algo, CryptoAlgorithm.GeneratedKeyPair | CryptoAlgorithm.GeneratedSecretKey]> {
   let keyChain: KeyChain | undefined;
   if (typeof (a[0] as KeyChain).listKeys === "function") {
     keyChain = a.shift() as KeyChain;
@@ -52,8 +50,7 @@ async function saveAsymmetric(
     ]);
     stored.jwkImportParams = gen.jwkImportParams;
 
-    gen.privateKey = await crypto.subtle.importKey(
-      "jwk", stored.privateKey, gen.jwkImportParams, false, algo.keyUsages.private);
+    gen.privateKey = await crypto.subtle.importKey("jwk", stored.privateKey, gen.jwkImportParams, false, algo.keyUsages.private);
   } else {
     stored.privateKey = gen.privateKey;
     stored.publicKey = gen.publicKey;
@@ -71,8 +68,7 @@ async function saveSymmetric(
     stored.secretKey = await crypto.subtle.exportKey("jwk", gen.secretKey);
     stored.jwkImportParams = gen.jwkImportParams;
 
-    gen.secretKey = await crypto.subtle.importKey(
-      "jwk", stored.secretKey, gen.jwkImportParams, false, algo.keyUsages.secret);
+    gen.secretKey = await crypto.subtle.importKey("jwk", stored.secretKey, gen.jwkImportParams, false, algo.keyUsages.secret);
   } else {
     stored.secretKey = gen.secretKey;
   }

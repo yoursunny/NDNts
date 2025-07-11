@@ -66,7 +66,7 @@ export class Reassembler {
       return fragment;
     }
     if (fragment.fragSeqNum === undefined ||
-        fragment.fragIndex >= fragment.fragCount) { // bad fragment
+      fragment.fragIndex >= fragment.fragCount) { // bad fragment
       return undefined;
     }
 

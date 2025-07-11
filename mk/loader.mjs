@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import { promisify } from "node:util";
 
 import * as K from "@k-foss/ts-esnode";
-import codedown from "codedown";
+import codedown from "codedown"; // eslint-disable-line import-x/no-extraneous-dependencies
 import readlink from "readlink";
 
 const readlinkPromise = promisify(readlink);

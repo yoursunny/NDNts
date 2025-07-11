@@ -71,9 +71,7 @@ export class Certificate {
    * Import SPKI as public key.
    * @param algoList - Algorithm list, such as {@link SigningAlgorithmListSlim}.
    */
-  public async importPublicKey<I, A extends CryptoAlgorithm<I>>(
-      algoList: readonly A[],
-  ): Promise<[A, CryptoAlgorithm.PublicKey<I>]> {
+  public async importPublicKey<I, A extends CryptoAlgorithm<I>>(algoList: readonly A[]): Promise<[A, CryptoAlgorithm.PublicKey<I>]> {
     const der = asn1.parseVerbose(this.publicKeySpki);
     const errs: Record<string, unknown> = {};
     for (const algo of algoList) {
@@ -87,8 +85,10 @@ export class Certificate {
       }
     }
     const errorMsgs = Object.entries(errs).map(([uuid, err]) => `  ${uuid} ${err}`);
-    throw new AggregateError(Object.values(errs),
-      `cannot import key\n${errorMsgs.join("\n")}\n(you may need to specify an algoList with more algorithms)`);
+    throw new AggregateError(
+      Object.values(errs),
+      `cannot import key\n${errorMsgs.join("\n")}\n(you may need to specify an algoList with more algorithms)`,
+    );
   }
 }
 

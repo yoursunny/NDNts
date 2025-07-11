@@ -39,16 +39,16 @@ test("SigInfo encode", () => {
   si.type = SigType.Sha256;
   expect(si.encodeAs(TT.ISigInfo)).toEncodeAs(({ type, value }) => {
     expect(type).toBe(TT.ISigInfo);
-    expect(value).toMatchTlv(
-      ({ type, value }) => {
-        expect(type).toBe(TT.SigType);
-        expect(value).toEqualUint8Array([SigType.Sha256]);
-      },
-    );
+    expect(value).toMatchTlv(({ type, value }) => {
+      expect(type).toBe(TT.SigType);
+      expect(value).toEqualUint8Array([SigType.Sha256]);
+    });
   });
 
-  si = new SigInfo(SigType.Sha256WithRsa, "/KL", SigInfo.Nonce(),
-    SigInfo.Time(1157512424208), SigInfo.SeqNum(0xF598C7n));
+  si = new SigInfo(
+    SigType.Sha256WithRsa, "/KL", SigInfo.Nonce(),
+    SigInfo.Time(1157512424208), SigInfo.SeqNum(0xF598C7n),
+  );
   expect(si.encodeAs(TT.ISigInfo)).toEncodeAs(({ type, value }) => {
     expect(type).toBe(TT.ISigInfo);
     expect(value).toMatchTlv(
@@ -58,9 +58,7 @@ test("SigInfo encode", () => {
       },
       ({ type, value }) => {
         expect(type).toBe(TT.KeyLocator);
-        expect(value).toMatchTlv(
-          ({ decoder }) => { expect(decoder.decode(Name)).toEqualName("/KL"); },
-        );
+        expect(value).toMatchTlv(({ decoder }) => { expect(decoder.decode(Name)).toEqualName("/KL"); });
       },
       ({ type, length }) => {
         expect(type).toBe(TT.SigNonce);
@@ -92,12 +90,10 @@ test("SigInfo encode", () => {
       },
       ({ type, value }) => {
         expect(type).toBe(TT.KeyLocator);
-        expect(value).toMatchTlv(
-          ({ type, length }) => {
-            expect(type).toBe(TT.KeyDigest);
-            expect(length).toBe(32);
-          },
-        );
+        expect(value).toMatchTlv(({ type, length }) => {
+          expect(type).toBe(TT.KeyDigest);
+          expect(length).toBe(32);
+        });
       },
     );
   });
@@ -145,8 +141,7 @@ describe("SignedInterestPolicy", () => {
   let policyS: SignedInterestPolicy;
 
   beforeEach(() => {
-    policyNTS = new SignedInterestPolicy(
-      SignedInterestPolicy.Nonce(), SignedInterestPolicy.Time(), SignedInterestPolicy.SeqNum());
+    policyNTS = new SignedInterestPolicy(SignedInterestPolicy.Nonce(), SignedInterestPolicy.Time(), SignedInterestPolicy.SeqNum());
     policyN = new SignedInterestPolicy({}, SignedInterestPolicy.Nonce());
     policyN16 = new SignedInterestPolicy(SignedInterestPolicy.Nonce({ minNonceLength: 16 }));
     policyT = new SignedInterestPolicy(SignedInterestPolicy.Time());

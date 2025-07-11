@@ -25,7 +25,7 @@ class SimpleDest extends ReadvertiseDestination {
     this.doAdv(name, Array.from(this.listAnnouncementObjs(name)));
   }
 
-  public readonly doAdv = vi.fn< (name: Name, annObjs: readonly FwFace.PrefixAnnouncementObj[]) => void >();
+  public readonly doAdv = vi.fn<(name: Name, annObjs: readonly FwFace.PrefixAnnouncementObj[]) => void>();
   protected override doWithdraw = vi.fn<ReadvertiseDestination["doWithdraw"]>().mockResolvedValue(undefined);
 
   private hasEvents = false;

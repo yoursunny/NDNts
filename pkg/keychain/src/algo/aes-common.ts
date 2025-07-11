@@ -54,16 +54,19 @@ export abstract class AesCommon<I extends {}, G extends AesGenParams> implements
   public async cryptoGenerate(genParams: G, extractable: boolean): Promise<CryptoAlgorithm.GeneratedSecretKey<I>> {
     let secretKey: CryptoKey;
     if (genParams.importRaw) {
-      secretKey = await crypto.subtle.importKey("raw", genParams.importRaw,
-        this.name, extractable, this.keyUsages.secret);
+      secretKey = await crypto.subtle.importKey(
+        "raw", genParams.importRaw,
+        this.name, extractable, this.keyUsages.secret,
+      );
     } else {
-      secretKey = await crypto.subtle.generateKey(this.makeAesKeyGenParams(genParams),
-        extractable, this.keyUsages.secret);
+      secretKey = await crypto.subtle.generateKey(
+        this.makeAesKeyGenParams(genParams),
+        extractable, this.keyUsages.secret,
+      );
     }
 
-    const info: any = Object.fromEntries(
-      Object.entries(this.defaultInfo)
-        .map(([key, dflt]) => [key, (genParams as any)[key] ?? dflt]));
+    const info: any = Object.fromEntries(Object.entries(this.defaultInfo)
+      .map(([key, dflt]) => [key, (genParams as any)[key] ?? dflt]));
 
     return {
       secretKey,

@@ -44,12 +44,16 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
       }
     }
     case "tcp:": {
-      return [(await connectToRouter(env.uplink.host,
-        { preferTcp: true, testConnection: false })).face, true];
+      return [(await connectToRouter(
+        env.uplink.host,
+        { preferTcp: true, testConnection: false },
+      )).face, true];
     }
     case "udp:": {
-      return [(await connectToRouter(env.uplink.host,
-        { preferTcp: false, mtu: env.mtu, testConnection: false })).face, true];
+      return [(await connectToRouter(
+        env.uplink.host,
+        { preferTcp: false, mtu: env.mtu, testConnection: false },
+      )).face, true];
     }
     case "unix:": {
       let { pathname } = env.uplink;

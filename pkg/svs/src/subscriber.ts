@@ -137,10 +137,10 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
       transform(Infinity, async (range) => {
         const loSeqNum = range[0]!;
         const hiSeqNum = range.at(-1)!;
-        const interest = new Interest(
-          update.id.append(...this.syncPrefix.comps, MappingKeyword,
-            GenericNumber.create(loSeqNum), GenericNumber.create(hiSeqNum)),
-        );
+        const interest = new Interest(update.id.append(
+          ...this.syncPrefix.comps, MappingKeyword,
+          GenericNumber.create(loSeqNum), GenericNumber.create(hiSeqNum),
+        ));
         try {
           const data = await consume(interest, this.mappingConsumerOpts);
           this.mappingEVD.decode(m, new Decoder(data.content));

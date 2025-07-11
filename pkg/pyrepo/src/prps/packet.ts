@@ -19,8 +19,7 @@ export class NotifyAppParam extends buildNotifyAppParam.baseClass<NotifyAppParam
   /** Create a message Interest from enclosed publisher information. */
   public makeMsgInterest(topic: Name): Interest {
     const interest = new Interest();
-    interest.name = this.publisher.append(
-      MsgSuffix, ...topic.comps, new Component(l3TT.GenericNameComponent, this.nonce));
+    interest.name = this.publisher.append(MsgSuffix, ...topic.comps, new Component(l3TT.GenericNameComponent, this.nonce));
     interest.fwHint = this.publisherFwHint && new FwHint(this.publisherFwHint);
     return interest;
   }

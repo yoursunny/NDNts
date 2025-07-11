@@ -60,7 +60,8 @@ export class LpPacket {
    * - `.fragSeqNum` is unset but `.fragCount > 1`
    */
   public encodeTo(encoder: Encoder): void {
-    encoder.prependTlv(TT.LpPacket,
+    encoder.prependTlv(
+      TT.LpPacket,
       ...this.encodeFragHeaders(),
       ...this.encodeL3Headers(),
       [TT.LpPayload, Encoder.OmitEmpty, this.payload],

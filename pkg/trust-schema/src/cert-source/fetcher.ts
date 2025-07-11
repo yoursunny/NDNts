@@ -68,7 +68,7 @@ class Cache {
   }
 }
 
-const cacheMap = new WeakMap<object, Cache>();
+const cacheMap = new WeakMap<object, Cache>(); // eslint-disable-line @typescript-eslint/no-restricted-types
 
 /** Fetch certificates from network. */
 export class CertFetcher implements CertSource {
@@ -173,7 +173,7 @@ export namespace CertFetcher {
      * {@link CertFetcher}s with the same `.owner` share the same cache instance.
      * Cache options are determined when it's first created.
      */
-    owner?: object;
+    owner?: object; // eslint-disable-line @typescript-eslint/no-restricted-types
 
     /**
      * Consumer options.

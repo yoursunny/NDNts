@@ -54,10 +54,8 @@ export async function execute(keyChain: KeyChain, enabled: Enable = {}): Promise
   const keys2 = (await Promise.all(keyNames2.map((n) => keyChain.getKey(n, "signer"))))
     .map((pvt) => pvt.name.toString());
 
-  await Promise.all(
-    keys2.filter((u, i) => i % 4 === 0)
-      .map((u) => keyChain.deleteKey(new Name(u))),
-  );
+  await Promise.all(keys2.filter((u, i) => i % 4 === 0)
+    .map((u) => keyChain.deleteKey(new Name(u))));
   const keyNames3 = await keyChain.listKeys();
   keyNames3.sort(Name.compare);
   const keys3 = (await Promise.all(keyNames3.map((n) => keyChain.getKey(n, "verifier"))))

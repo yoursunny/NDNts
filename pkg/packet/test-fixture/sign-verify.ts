@@ -59,8 +59,10 @@ async function verify(pkt: Packet, pub: Verifier): Promise<VerifyRecord> {
   return { verified };
 }
 
-export async function execute(cls: PacketCtor, pvtA: Signer, pubA: Verifier,
-    pvtB: Signer, pubB: Verifier): Promise<TestRecord> {
+export async function execute(
+    cls: PacketCtor, pvtA: Signer, pubA: Verifier,
+    pvtB: Signer, pubB: Verifier,
+): Promise<TestRecord> {
   const [pktA, sA0] = await sign(cls, pvtA);
   const [pktB, sB0] = await sign(cls, pvtB);
 

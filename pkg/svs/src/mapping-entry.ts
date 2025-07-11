@@ -22,7 +22,8 @@ export class MappingEntry implements EncodableObj {
   }
 
   public encodeTo(encoder: Encoder): void {
-    encoder.prependTlv(TT.MappingEntry,
+    encoder.prependTlv(
+      TT.MappingEntry,
       [TT.SeqNo, GenericNumber.create(this.seqNum).value],
       this.name,
       ...this.encodeValueExt(),

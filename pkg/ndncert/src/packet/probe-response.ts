@@ -12,20 +12,26 @@ const EntryEVD = new EvDecoder<ProbeResponse.Entry>("ProbeResponse.Entry", TT.Pr
   .add(TT.MaxSuffixLength, (t, { nni }) => t.maxSuffixLength = nni);
 
 const RedirectEVD = new EvDecoder<ProbeResponse.Redirect>("ProbeResponse.Redirect", TT.ProbeRedirect)
-  .add(l3TT.Name,
+  .add(
+    l3TT.Name,
     (t, { decoder }) => {
       t.caCertFullName = decoder.decode(Name);
       ProbeResponse.checkCaCertFullName(t.caCertFullName);
     },
-    { required: true });
+    { required: true },
+  );
 
 const EVD = new EvDecoder<ProbeResponse.Fields>("ProbeResponse")
-  .add(TT.ProbeResponse,
+  .add(
+    TT.ProbeResponse,
     (t, { decoder }) => t.entries.push(EntryEVD.decode({} as ProbeResponse.Entry, decoder)),
-    { repeat: true })
-  .add(TT.ProbeRedirect,
+    { repeat: true },
+  )
+  .add(
+    TT.ProbeRedirect,
     (t, { decoder }) => t.redirects.push(RedirectEVD.decode({} as ProbeResponse.Redirect, decoder)),
-    { repeat: true });
+    { repeat: true },
+  );
 EVD.beforeObservers.push((t) => {
   t.entries = [];
   t.redirects = [];

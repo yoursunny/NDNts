@@ -14,9 +14,7 @@ export const PSyncZlib: PSyncCodec.Compression = {
 };
 
 async function doTransform(input: Uint8Array, tr: TransformStream<Uint8Array, Uint8Array>): Promise<Uint8Array> {
-  const chunks = await collect(
-    new Blob([input]).stream()
-      .pipeThrough(tr) as unknown as AsyncIterable<Uint8Array>,
-  );
+  const chunks = await collect(new Blob([input]).stream()
+    .pipeThrough(tr) as unknown as AsyncIterable<Uint8Array>);
   return concatBuffers(chunks);
 }

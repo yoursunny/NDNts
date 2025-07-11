@@ -232,7 +232,7 @@ function combineRange(objs: readonly PyRepoClient.ObjectParam[]): PyRepoClient.O
 
     const last = res.at(-1);
     if (last && !last.registerPrefix && isRange(last) && isRange(obj) &&
-        (last.end ?? Infinity) + 1 === obj.start && last.name.equals(obj.name)) {
+      (last.end ?? Infinity) + 1 === obj.start && last.name.equals(obj.name)) {
       last.end = obj.end;
       continue;
     }

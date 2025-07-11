@@ -16,13 +16,15 @@ export abstract class DataProducer {
   private readonly freshnessPeriod: ReturnType<typeof Data["FreshnessPeriod"]>;
   private readonly signer: Signer;
 
-  protected constructor(protected readonly source: ChunkSource, protected readonly prefix: Name,
+  protected constructor(
+      protected readonly source: ChunkSource, protected readonly prefix: Name,
       {
         segmentNumConvention = defaultSegmentConvention,
         contentType = 0,
         freshnessPeriod = 60000,
         signer = digestSigning,
-      }: DataProducer.Options) {
+      }: DataProducer.Options,
+  ) {
     this.segmentNumConvention = segmentNumConvention;
     this.contentType = Data.ContentType(contentType);
     this.freshnessPeriod = Data.FreshnessPeriod(freshnessPeriod);

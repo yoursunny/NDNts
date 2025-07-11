@@ -23,7 +23,7 @@ let client: Client;
 const versionRoot = Date.now();
 const versionA = versionRoot - 1000;
 const versionB = versionRoot - 2000;
-let bodyB: Buffer;
+let bodyB: Buffer; // eslint-disable-line @typescript-eslint/no-restricted-types
 const segNumsB = new Set<number>();
 beforeAll(async () => {
   const versionedNameRoot = prefix.append(lsKeyword, Version.create(versionRoot));

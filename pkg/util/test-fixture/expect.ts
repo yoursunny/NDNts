@@ -12,7 +12,7 @@ export function toEqualUint8Array(received: Uint8Array, expected: Uint8ArrayExpe
     expectedHex = toHex(expected);
   } else {
     pass = received.length === expected.length &&
-           received.every((ch, i) => expected[i] === undefined || ch === expected[i]);
+      received.every((ch, i) => expected[i] === undefined || ch === expected[i]);
     expectedHex = expected.map((v) => v === undefined ? "??" : v.toString(16).padStart(2, "0")).join("");
   }
 

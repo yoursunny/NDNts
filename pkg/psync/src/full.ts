@@ -155,8 +155,8 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
     }
 
     const state = this.c.list(({ id: prefix, seqNum, key }) => seqNum > 0 &&
-             positive.has(key) &&
-             !negative.has(this.c.joinPrefixSeqNum({ prefix, seqNum: seqNum + 1 }).hash));
+      positive.has(key) &&
+      !negative.has(this.c.joinPrefixSeqNum({ prefix, seqNum: seqNum + 1 }).hash));
     if (state.length > 0) {
       return this.sendSyncData(interest, state, "p-diff", recvIblt);
     }
@@ -195,9 +195,7 @@ export class FullSync extends TypedEventTarget<EventMap> implements SyncProtocol
     }
   };
 
-  private async sendSyncData(
-      interest: Interest, state: PSyncCore.State, action: string, recvIblt: IBLT,
-  ): Promise<Data | undefined> {
+  private async sendSyncData(interest: Interest, state: PSyncCore.State, action: string, recvIblt: IBLT): Promise<Data | undefined> {
     this.debug(action, recvIblt, state);
     if (this.cCurrentInterestName?.equals(interest.name)) {
       this.scheduleSyncInterest(0);

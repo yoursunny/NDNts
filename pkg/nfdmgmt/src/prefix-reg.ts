@@ -62,10 +62,8 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
     this.routeElements = [
       [TT.Origin, NNI(origin)],
       [TT.Cost, NNI(cost)],
-      [TT.Flags, NNI(
-        (Number(flagChildInherit) * RouteFlags.ChildInherit) |
-        (Number(flagCapture) * RouteFlags.Capture),
-      )],
+      [TT.Flags, NNI((Number(flagChildInherit) * RouteFlags.ChildInherit) |
+        (Number(flagCapture) * RouteFlags.Capture))],
       undefined,
     ];
     if (refreshInterval !== false) {
@@ -148,9 +146,7 @@ export class NfdPrefixReg extends ReadvertiseDestination<State> {
     }
 
     if (this.PrefixAnn) {
-      const [pa] = take(filter(
-        this.listAnnouncementObjs(name), (ann) => ann instanceof this.PrefixAnn!,
-      ), 1);
+      const [pa] = take(filter(this.listAnnouncementObjs(name), (ann) => ann instanceof this.PrefixAnn!), 1);
       state.pa = pa as PrefixAnn | undefined;
     }
 

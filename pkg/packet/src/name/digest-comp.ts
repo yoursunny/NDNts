@@ -72,7 +72,7 @@ class ParamsDigestComp extends DigestComp {
   /** Find ParamsDigest or placeholder in name. */
   public findIn(name: Name, matchPlaceholder = true): number {
     return name.comps.findIndex((comp) => this.match(comp) ||
-                                (matchPlaceholder && this.isPlaceholder(comp)));
+      (matchPlaceholder && this.isPlaceholder(comp)));
   }
 }
 

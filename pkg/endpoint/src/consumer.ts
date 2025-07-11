@@ -106,35 +106,37 @@ function makeConsumer(
     };
     signal?.addEventListener("abort", onAbort);
 
-    fw.addFace({
-      rx,
-      async tx(iterable) {
-        for await (const pkt of iterable) {
-          if (pkt.l3 instanceof Data) {
-            rtt = performance.now() - txTime;
-            try {
-              await verifier?.verify(pkt.l3);
-            } catch (err: unknown) {
-              reject(new Error(`Data verify failed: ${err} @${describe}`));
+    fw.addFace(
+      {
+        rx,
+        async tx(iterable) {
+          for await (const pkt of iterable) {
+            if (pkt.l3 instanceof Data) {
+              rtt = performance.now() - txTime;
+              try {
+                await verifier?.verify(pkt.l3);
+              } catch (err: unknown) {
+                reject(new Error(`Data verify failed: ${err} @${describe}`));
+                break;
+              }
+              resolve(pkt.l3);
               break;
             }
-            resolve(pkt.l3);
-            break;
+            if (pkt.reject && !timer) {
+              reject(new Error(`Interest rejected: ${pkt.reject} @${describe}`));
+              break;
+            }
           }
-          if (pkt.reject && !timer) {
-            reject(new Error(`Interest rejected: ${pkt.reject} @${describe}`));
-            break;
-          }
-        }
-        cancelRetx();
-        signal?.removeEventListener("abort", onAbort);
-        rx.stop();
+          cancelRetx();
+          signal?.removeEventListener("abort", onAbort);
+          rx.stop();
+        },
       },
-    },
-    {
-      describe,
-      local: true,
-    });
+      {
+        describe,
+        local: true,
+      },
+    );
 
     sendInterest();
   });

@@ -56,12 +56,12 @@ type ValidateOptions<T, Repeat extends boolean, FlagBit extends string, R> =
   IfNever<FlagBit, R, Repeat extends true ? ErrFlags : T extends number ? R : ErrFlags>;
 
 type AddField<K extends string, T, Required extends boolean, Repeat extends boolean> =
-  Repeat extends true ? { [key in K]: T[]; } :
-  Required extends true ? { [key in K]: T; } :
-  { [key in K]?: T; };
+  Repeat extends true ? Record<K, T[]> :
+  Required extends true ? Record<K, T> :
+  Partial<Record<K, T>>;
 
 type AddFlags<FlagPrefix extends string, FlagBit extends string> =
-  { [key in `${FlagPrefix}${Capitalize<FlagBit>}`]: boolean; };
+  Record<`${FlagPrefix}${Capitalize<FlagBit>}`, boolean>;
 
 /**
  * Helper to build a base class that represents a TLV structure.
@@ -93,7 +93,7 @@ export class StructBuilder<U extends {}> {
    * Subclass constructor.
    * This must be assigned, otherwise decoding function will not work.
    */
-  public subclass?: Constructor<U, []> & Decodable<U>;
+  public subclass?: Constructor<U, []> & Decodable<U>; // eslint-disable-line @typescript-eslint/no-restricted-types
   private readonly fields: Array<Field<any>> = [];
   private readonly flagBits: FlagBitDesc[] = [];
   private readonly EVD: EvDecoder<any>;

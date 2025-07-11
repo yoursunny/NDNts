@@ -226,12 +226,10 @@ test("wrap-nest", () => {
     },
     ({ type, value }) => {
       expect(type).toBe(0x42);
-      expect(value).toMatchTlv(
-        ({ type, length }) => {
-          expect(type).toBe(0x4F);
-          expect(length).toBe(0xAA42);
-        },
-      );
+      expect(value).toMatchTlv(({ type, length }) => {
+        expect(type).toBe(0x4F);
+        expect(length).toBe(0xAA42);
+      });
     },
   );
 

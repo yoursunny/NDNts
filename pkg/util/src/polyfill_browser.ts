@@ -5,7 +5,7 @@ if (!crypto.subtle && !globalThis.isSecureContext) {
     configurable: true,
     get() {
       console.error("NDNts depends on Web Crypto but it is unavailable because this webpage is not delivered securely, " +
-                    "see https://mdn.io/SecureContext");
+        "see https://mdn.io/SecureContext");
       return undefined;
     },
   });

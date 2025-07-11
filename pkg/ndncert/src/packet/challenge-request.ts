@@ -127,8 +127,7 @@ export namespace ChallengeRequest {
     const interest = new Interest();
     interest.name = profile.prefix.append(C.CA, C.CHALLENGE, new Component(l3TT.GenericNameComponent, requestId));
     interest.mustBeFresh = true;
-    interest.appParameters = encrypted_payload.encode(
-      await sessionEncrypter.llEncrypt({ plaintext: payload, additionalData: requestId }));
+    interest.appParameters = encrypted_payload.encode(await sessionEncrypter.llEncrypt({ plaintext: payload, additionalData: requestId }));
     await signedInterestPolicy.makeSigner(privateKey).sign(interest);
     return ChallengeRequest.fromInterest(interest, {
       profile,

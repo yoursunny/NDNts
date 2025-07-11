@@ -43,7 +43,7 @@ function simpConcat(p: ConcatPattern): Pattern {
   });
 }
 
-function simpSequence<K extends string, T extends Pattern & { [k in K]: readonly Pattern[] }>(
+function simpSequence<K extends string, T extends Pattern & Record<K, readonly Pattern[]>>(
     p: T, ctor: new(items: readonly Pattern[]) => T, field: K,
     reduce?: (items: Pattern[]) => Pattern[],
 ): Pattern {
@@ -63,9 +63,7 @@ function simpSequence<K extends string, T extends Pattern & { [k in K]: readonly
   return new ctor(flattened);
 }
 
-function flatten<K extends string, T extends { [k in K]: readonly Pattern[] }>(
-    p: T, ctor: new(items: readonly Pattern[]) => T, field: K,
-): Pattern[] {
+function flatten<K extends string, T extends Record<K, readonly Pattern[]>>(p: T, ctor: new(items: readonly Pattern[]) => T, field: K): Pattern[] {
   return p[field].flatMap((c) => {
     if (c instanceof ctor) {
       return flatten(c, ctor, field);

@@ -14,7 +14,7 @@ export interface EncodableObj {
  * Subsequent items are `Encodable`s for TLV-VALUE.
  */
 export type EncodableTlv = [type: number, ...Encodable[]] |
-[type: number, omitEmpty: typeof Encoder.OmitEmpty, ...Encodable[]];
+  [type: number, omitEmpty: typeof Encoder.OmitEmpty, ...Encodable[]];
 
 /**
  * An object acceptable to {@link Encoder.encode}.
@@ -122,9 +122,7 @@ export class Encoder {
    */
   public prependTlv(tlvType: number, omitEmpty: typeof Encoder.OmitEmpty, ...tlvValue: Encodable[]): void;
 
-  public prependTlv(
-      tlvType: number, arg2?: typeof Encoder.OmitEmpty | Encodable, ...tlvValue: Encodable[]
-  ) {
+  public prependTlv(tlvType: number, arg2?: typeof Encoder.OmitEmpty | Encodable, ...tlvValue: Encodable[]) {
     const hasOmitEmpty = arg2 === Encoder.OmitEmpty;
     if (!hasOmitEmpty) {
       tlvValue.unshift(arg2);

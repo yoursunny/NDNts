@@ -12,8 +12,8 @@ class Markered implements NumberConvention {
 
   public match(comp: Component): boolean {
     return comp.type === TT.GenericNameComponent &&
-           [2, 3, 5, 9].includes(comp.length) &&
-           comp.value[0] === this.marker[0];
+      [2, 3, 5, 9].includes(comp.length) &&
+      comp.value[0] === this.marker[0];
   }
 
   public create(v: number | bigint): Component {

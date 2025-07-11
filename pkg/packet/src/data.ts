@@ -45,7 +45,7 @@ class Fields {
   /** Determine whether FinalBlockId equals the last name component. */
   public get isFinalBlock(): boolean {
     return !!this.finalBlockId && this.name.length > 0 &&
-           this.finalBlockId.equals(this.name.get(-1)!);
+      this.finalBlockId.equals(this.name.get(-1)!);
   }
 
   /**
@@ -78,7 +78,8 @@ interface PublicFields extends Except<Fields, "signedPortion" | "topTlv" | "topT
 
 const EVD = new EvDecoder<Fields>("Data", TT.Data)
   .add(TT.Name, (t, { decoder }) => t.name = decoder.decode(Name), { required: true })
-  .add(TT.MetaInfo,
+  .add(
+    TT.MetaInfo,
     new EvDecoder<Fields>("MetaInfo")
       .add(TT.ContentType, (t, { nni }) => t.contentType = nni)
       .add(TT.FreshnessPeriod, (t, { nni }) => t.freshnessPeriod = nni)

@@ -141,7 +141,7 @@ export class MultiMap<K, V> extends KeyMultiMap<K, V, K> {
  * @typeParam I - Indexable key type.
  * @typeParam L - Lookup key type.
  */
-export class KeyMultiSet<K, I, L=K> {
+export class KeyMultiSet<K, I, L = K> {
   /**
    * Constructor.
    * @param keyOf - Function to transform input key to indexable key.

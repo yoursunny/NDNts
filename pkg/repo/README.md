@@ -63,7 +63,7 @@ const rA1 = await store.find(new Interest("/A/1"));
 assert.equal(`${rA1?.name}`, "/8=A/8=1");
 // Prefix name is supported too.
 const rA = await store.find(new Interest("/A", Interest.CanBePrefix));
-assert(["/8=A/8=1", "/8=A/8=2"].includes(`${rA?.name}`));
+assert.ok(["/8=A/8=1", "/8=A/8=2"].includes(`${rA?.name}`));
 // /A/3 has disappeared because it is expired.
 const rA3 = await store.find(new Interest("/A/3"));
 assert.equal(rA3, undefined);

@@ -62,8 +62,8 @@ assert.equal(AltUri.ofName(name), "/A/32=metadata/v=3/seg=0");
 assert.equal(AltUri.ofComponent(name.at(2)), "v=3");
 
 // Use AltUri.parseName() and AltUri.parseComponent() to parse from alternate URI syntax.
-assert(AltUri.parseName("/A/32=metadata/v=3/seg=0").equals(name));
-assert(AltUri.parseComponent("v=3").equals(name.at(2)));
+assert.ok(AltUri.parseName("/A/32=metadata/v=3/seg=0").equals(name));
+assert.ok(AltUri.parseComponent("v=3").equals(name.at(2)));
 ```
 
 ## Timestamp Convention

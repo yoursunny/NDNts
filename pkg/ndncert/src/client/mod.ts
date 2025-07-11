@@ -1,4 +1,4 @@
-export * from "./challenge";
+export type * from "./challenge";
 export * from "./clientconf";
 export * from "./email-challenge";
 export * from "./email-inbox-imap_node";

@@ -28,8 +28,7 @@ export async function navigateToPage(importMeta: ImportMeta, delayDuration = 500
 }
 
 /** Invoke JavaScript function (in global scope) on page. */
-export function pageInvoke<F extends (...args: any[]) => any>(
-    funcName: string, ...args: Parameters<F>): ReturnType<F> {
+export function pageInvoke<F extends (...args: any[]) => any>(funcName: string, ...args: Parameters<F>): ReturnType<F> {
   const argJ = JSON.stringify(args);
   return page.evaluate(`${funcName}.apply(undefined,(${argJ}))`) as ReturnType<F>;
 }

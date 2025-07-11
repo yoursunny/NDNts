@@ -69,7 +69,7 @@ export class Component {
     if (!hasNonPeriods && length >= 3) {
       length -= 3;
     }
-    return new Component(type, encoder, length); // eslint-disable-line etc/no-internal
+    return new Component(type, encoder, length);
   }
 
   /** Construct GenericNameComponent with TLV-LENGTH zero. */

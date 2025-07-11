@@ -21,8 +21,9 @@ function makeDataTapeReadStream(mode: DataTape.StreamMode): NodeJS.ReadableStrea
   })()).pipe(new BufferBreaker());
 }
 
+// eslint-disable-next-line @typescript-eslint/no-restricted-types
 function makeDataTapeAppendStream(): [open: DataTape.OpenStream, retrieve: () => Buffer] {
-  const all: Buffer[] = [];
+  const all: Buffer[] = []; // eslint-disable-line @typescript-eslint/no-restricted-types
   return [
     (mode: DataTape.StreamMode) => {
       expect(mode).toBe("append");
@@ -78,7 +79,7 @@ test("DataTape file copy", async () => {
 
 async function testBulkInsertTarget(
     stream: NodeJS.WritableStream | DataTape.OpenStream,
-    retrieve: () => Buffer,
+    retrieve: () => Buffer, // eslint-disable-line @typescript-eslint/no-restricted-types
 ) {
   const tape = new DataTape(stream);
   const storeInsert = vi.spyOn(tape, "insert");

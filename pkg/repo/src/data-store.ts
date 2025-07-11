@@ -42,7 +42,7 @@ export class DataStore extends TypedEventTarget<EventMap>
 
   public static async create<A extends unknown[], O extends {}>(
       fn: DbOpener | DbCtor<A, O>,
-      ...args: [...A, O] | []
+      ...args: [...A, O] | [] // eslint-disable-line @typescript-eslint/no-restricted-types
   ) {
     let db: Db;
     if (args.length === 0) {

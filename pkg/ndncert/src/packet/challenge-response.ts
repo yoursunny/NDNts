@@ -9,8 +9,10 @@ import * as encrypted_payload from "./encrypted";
 import * as parameter_kv from "./parameter-kv";
 
 const EVD = new EvDecoder<ChallengeResponse.Fields>("ChallengeResponse")
-  .add(TT.Status, (t, { nni }) => t.status = constrain(nni, "Status", Status.MIN, Status.MAX),
-    { order: 1, required: true })
+  .add(
+    TT.Status, (t, { nni }) => t.status = constrain(nni, "Status", Status.MIN, Status.MAX),
+    { order: 1, required: true },
+  )
   .add(TT.ChallengeStatus, (t, { text }) => t.challengeStatus = text, { order: 2 })
   .add(TT.RemainingTries, (t, { nni }) => t.remainingTries = nni, { order: 3 })
   .add(TT.RemainingTime, (t, { nni }) => t.remainingTime = nni * 1000, { order: 4 })
@@ -21,8 +23,10 @@ parameter_kv.parseEvDecoder(EVD, 5);
 /** CHALLENGE response packet. */
 export class ChallengeResponse {
   /** Decode CHALLENGE response from Data packet. */
-  public static async fromData(data: Data, profile: CaProfile, requestId: Uint8Array,
-      sessionDecrypter: LLDecrypt.Key): Promise<ChallengeResponse> {
+  public static async fromData(
+      data: Data, profile: CaProfile, requestId: Uint8Array,
+      sessionDecrypter: LLDecrypt.Key,
+  ): Promise<ChallengeResponse> {
     await profile.publicKey.verify(data);
 
     const { plaintext } = await sessionDecrypter.llDecrypt({
@@ -146,8 +150,7 @@ export namespace ChallengeResponse {
     const data = new Data();
     data.name = name;
     data.freshnessPeriod = 4000;
-    data.content = encrypted_payload.encode(
-      await sessionEncrypter.llEncrypt({ plaintext: payload, additionalData: requestId }));
+    data.content = encrypted_payload.encode(await sessionEncrypter.llEncrypt({ plaintext: payload, additionalData: requestId }));
     await signer.sign(data);
     return ChallengeResponse.fromData(data, profile, requestId, sessionLocalDecrypter);
   }

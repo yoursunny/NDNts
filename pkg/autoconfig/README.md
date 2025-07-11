@@ -28,19 +28,19 @@ assert.equal(res.routers.length, 1);
 // Ask for multiple routers:
 res = await fchQuery({ count: 4 });
 showFchResponse("multiple routers", res);
-assert(res.routers.length > 1);
+assert.ok(res.routers.length > 1);
 
 // Ask for multiple transports:
 res = await fchQuery({ transports: { udp: 4, wss: 2 } });
 showFchResponse("multiple transports", res);
-assert(res.routers.length > 1);
+assert.ok(res.routers.length > 1);
 
 // Limit to particular network:
 //   "ndn" = global NDN testbed
 //   "yoursunny" = yoursunny ndn6 network
 res = await fchQuery({ transport: "wss", count: 3, network: "yoursunny" });
 showFchResponse("yoursunny ndn6 network", res);
-assert(res.routers.length > 1);
+assert.ok(res.routers.length > 1);
 
 // Ask for router at specific location:
 res = await fchQuery({ position: [121.40335, 31.00799] });

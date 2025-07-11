@@ -75,8 +75,10 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
     } else {
       curve ??= EcCurve.Default;
       params = makeGenParams(curve);
-      ({ privateKey, publicKey } = await crypto.subtle.generateKey(params, extractable,
-        [...this.keyUsages.private, ...this.keyUsages.public]));
+      ({ privateKey, publicKey } = await crypto.subtle.generateKey(
+        params, extractable,
+        [...this.keyUsages.private, ...this.keyUsages.public],
+      ));
     }
 
     const spki = new Uint8Array(await crypto.subtle.exportKey("spki", publicKey));
@@ -104,7 +106,8 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
     return async (input) => {
       const raw = await crypto.subtle.sign(SignVerifyParams, privateKey, input);
       const pointSize = PointSizes[curve];
-      return fromHex(asn1.Any("30",
+      return fromHex(asn1.Any(
+        "30",
         asn1.UInt(toUintHex(new Uint8Array(raw, 0, pointSize))),
         asn1.UInt(toUintHex(new Uint8Array(raw, pointSize))),
       ));

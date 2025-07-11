@@ -20,9 +20,7 @@ export interface TestRecord {
  * @param transportB - Second transport. Packets sent should be received on `transportA`.
  * @returns A test record to be analyzed by {@link check}.
  */
-export async function execute<T extends Transport>(
-    transportA: T, transportB: T,
-): Promise<TestRecord> {
+export async function execute<T extends Transport>(transportA: T, transportB: T): Promise<TestRecord> {
   const faceA = new L3Face(transportA, { describe: "A" });
   const faceB = new L3Face(transportB, { describe: "B" });
 
@@ -44,8 +42,10 @@ export async function execute<T extends Transport>(
     faceB.tx({ async *[Symbol.asyncIterator]() {
       const it = faceB.rx[Symbol.asyncIterator]();
       it.return = undefined;
-      for await (const { l3 } of abortableSource({ [Symbol.asyncIterator]() { return it; } },
-        abortFaceB.signal, { returnOnAbort: true })) {
+      for await (const { l3 } of abortableSource(
+        { [Symbol.asyncIterator]() { return it; } },
+        abortFaceB.signal, { returnOnAbort: true },
+      )) {
         if (l3 instanceof Interest) {
           const name = l3.name.toString();
           record.namesB.push(name);

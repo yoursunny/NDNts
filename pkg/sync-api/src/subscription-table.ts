@@ -22,7 +22,10 @@ class Sub<Update extends Event> extends TypedEventTarget<Subscription.EventMap<a
  */
 export class SubscriptionTable<Update extends Event> extends NameMultiMap<Subscription<Name, Update>> {
   /** Callback when the last subscriber of a topic is removed. */
-  public handleRemoveTopic?: (topic: Name, objKey: object) => void;
+  public handleRemoveTopic?: (
+    topic: Name,
+    objKey: object, // eslint-disable-line @typescript-eslint/no-restricted-types
+  ) => void;
 
   /**
    * Subscribe to a topic.
@@ -32,9 +35,12 @@ export class SubscriptionTable<Update extends Event> extends NameMultiMap<Subscr
    * - `objKey`: WeakMap-compatible key associated with the topic, only provided in the first
    *   subscription.
    */
-  public subscribe(topic: Name): { sub: Subscription<Name, Update>; objKey?: object } {
+  public subscribe(topic: Name): {
+    sub: Subscription<Name, Update>;
+    objKey?: object; // eslint-disable-line @typescript-eslint/no-restricted-types
+  } {
     const sub: Sub<Update> = new Sub<Update>(topic, () => this.unsubscribe(topic, sub));
-    let objKey: object | undefined;
+    let objKey: object | undefined;// eslint-disable-line @typescript-eslint/no-restricted-types
     if (this.add(topic, sub) === 1) {
       objKey = this.list(topic);
     }

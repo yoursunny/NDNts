@@ -51,8 +51,10 @@ export async function inputCaProfile(filename: string, strict = false): Promise<
     try {
       return await inputCaProfileFromClientConf(content);
     } catch (errC: unknown) {
-      throw new AggregateError([err, errC],
-        `cannot parse as Data (${err}); cannot import from client.conf (${errC})`);
+      throw new AggregateError(
+        [err, errC],
+        `cannot parse as Data (${err}); cannot import from client.conf (${errC})`,
+      );
     }
   }
 }

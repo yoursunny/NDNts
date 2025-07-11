@@ -30,8 +30,10 @@ export class PrefixAnn implements FwFace.PrefixAnnouncementObj {
    */
   public static fromData(data: Data): PrefixAnn {
     const { name, contentType, content } = data;
-    assert(name.get(-3)?.equals(KeywordPA) && name.get(-2)!.is(Version) && name.get(-1)!.equals(Segment0),
-      `${name} is not a Prefix Announcement name`);
+    assert(
+      name.get(-3)?.equals(KeywordPA) && name.get(-2)!.is(Version) && name.get(-1)!.equals(Segment0),
+      `${name} is not a Prefix Announcement name`,
+    );
     assert(contentType === ContentTypePrefixAnn, "ContentType must be PrefixAnnouncement");
     const fields = EVD.decodeValue([0, undefined, 0], new Decoder(content));
     return new PrefixAnn(data, ...fields);

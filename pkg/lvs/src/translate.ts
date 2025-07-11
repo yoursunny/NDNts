@@ -217,7 +217,7 @@ class Translator {
     const [e0, ...e123] = edges;
     return e0 instanceof ValueEdge && e0.value.equals(CertNaming.KEY) &&
       e123.every((edge) => edge instanceof PatternEdge &&
-       this.isAnonymousTag(edge.tag) && edge.constraints.length === 0);
+        this.isAnonymousTag(edge.tag) && edge.constraints.length === 0);
   }
 
   private trEdge(edge: ValueEdge | PatternEdge): P.Pattern {
@@ -237,9 +237,7 @@ class Translator {
   }
 
   private trConstraint(cons: Constraint): P.Pattern {
-    return new P.AlternatePattern(
-      Array.from(cons.options, (co) => this.trConsOption(co)),
-    );
+    return new P.AlternatePattern(Array.from(cons.options, (co) => this.trConsOption(co)));
   }
 
   private trConsOption(co: ConsOption): P.Pattern {
@@ -288,9 +286,7 @@ class Translator {
       if (ids.length === 1) {
         continue;
       }
-      this.policy.addPattern(rn, new P.AlternatePattern(
-        ids.map((id) => this.policy.getPattern(this.nameNodeId(id))),
-      ));
+      this.policy.addPattern(rn, new P.AlternatePattern(ids.map((id) => this.policy.getPattern(this.nameNodeId(id)))));
     }
   }
 }
@@ -309,10 +305,12 @@ class LvsFilter implements P.VariablePattern.Filter, printESM.PrintableFilter {
   public accept(name: Name, vars: P.Vars): boolean {
     let args: Array<Component | undefined>;
     return !!this.func &&
-    (args = Array.from(this.binds,
-      (b) => typeof b === "string" ? vars.get(b)?.get(0) : b)
-    ).every((a) => !!a) &&
-    this.func(name.at(0), args);
+      (args = Array.from(
+        this.binds,
+        (b) => typeof b === "string" ? vars.get(b)?.get(0) : b,
+      )
+      ).every((a) => !!a) &&
+      this.func(name.at(0), args);
   }
 
   public printESM(ctx: printESM.Context): string {

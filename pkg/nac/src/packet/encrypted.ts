@@ -39,7 +39,8 @@ export class EncryptedContent implements LLDecrypt.Params {
   public name!: Name;
 
   public encodeTo(encoder: Encoder): void {
-    encoder.prependTlv(TT.EncryptedContent,
+    encoder.prependTlv(
+      TT.EncryptedContent,
       [TT.EncryptedPayload, this.ciphertext],
       [TT.InitializationVector, this.iv],
       this.name,

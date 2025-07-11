@@ -87,12 +87,14 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
 
   if (connected.length === 0) {
     const errorMsgs = Object.entries(errs).map(([router, err]) => `  ${router} ${err}`);
-    throw new AggregateError(Object.values(errs),
-      `connect to network failed\n${errorMsgs.join("\n")}`);
+    throw new AggregateError(
+      Object.values(errs),
+      `connect to network failed\n${errorMsgs.join("\n")}`,
+    );
   }
 
   connected.sort((a, b) => a.testConnectionDuration - b.testConnectionDuration);
-  for (const { face } of connected.splice(fastest, Infinity)) {
+  for (const { face } of connected.splice(fastest)) {
     face.close();
   }
   return connected.map(({ face }) => face);

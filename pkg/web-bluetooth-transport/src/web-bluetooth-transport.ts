@@ -41,25 +41,23 @@ export class WebBluetoothTransport extends Transport {
       describe: `WebBluetoothTransport(${server.device.id})`,
     });
 
-    this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(
-      ({ push, stop }) => {
-        const handleCharacteristicChanged = (evt: Event) => {
-          const value = (evt.target as BluetoothRemoteGATTCharacteristic).value;
-          if (!value) {
-            return;
-          }
-          push(asUint8Array(value));
-        };
+    this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(({ push, stop }) => {
+      const handleCharacteristicChanged = (evt: Event) => {
+        const value = (evt.target as BluetoothRemoteGATTCharacteristic).value;
+        if (!value) {
+          return;
+        }
+        push(asUint8Array(value));
+      };
 
-        sc.addEventListener("characteristicvaluechanged", handleCharacteristicChanged);
-        server.device.addEventListener("gattserverdisconnected", stop);
+      sc.addEventListener("characteristicvaluechanged", handleCharacteristicChanged);
+      server.device.addEventListener("gattserverdisconnected", stop);
 
-        return () => {
-          sc.removeEventListener("characteristicvaluechanged", handleCharacteristicChanged);
-          server.device.removeEventListener("gattserverdisconnected", stop);
-        };
-      },
-    ));
+      return () => {
+        sc.removeEventListener("characteristicvaluechanged", handleCharacteristicChanged);
+        server.device.removeEventListener("gattserverdisconnected", stop);
+      };
+    }));
   }
 
   public override readonly rx: Transport.RxIterable;

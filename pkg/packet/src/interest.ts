@@ -90,8 +90,10 @@ const EVD = new EvDecoder<Fields>("Interest", TT.Interest)
     // t.name.value should be readily available during decoding;
     // t.name.getPrefix(-1).value would require re-encoding from components
     const signedPart0 = t.name.value.subarray(0, -t.name.get(-1)!.tlv.byteLength);
-    const signedPart1 = new Uint8Array(tlv.buffer, t.paramsPortion.byteOffset,
-      tlv.byteOffset - t.paramsPortion.byteOffset);
+    const signedPart1 = new Uint8Array(
+      tlv.buffer, t.paramsPortion.byteOffset,
+      tlv.byteOffset - t.paramsPortion.byteOffset,
+    );
     t.signedPortion = new Uint8Array(signedPart0.byteLength + signedPart1.byteLength);
     t.signedPortion.set(signedPart0, 0);
     t.signedPortion.set(signedPart1, signedPart0.byteLength);
@@ -134,7 +136,8 @@ export class Interest implements LLSign.Signable, LLVerify.Verifiable, Signer.Si
       throw new Error("ParamsDigest missing");
     }
 
-    encoder.prependTlv(TT.Interest,
+    encoder.prependTlv(
+      TT.Interest,
       name,
       canBePrefix && [TT.CanBePrefix],
       mustBeFresh && [TT.MustBeFresh],

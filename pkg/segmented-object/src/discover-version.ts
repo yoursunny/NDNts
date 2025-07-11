@@ -28,7 +28,7 @@ export async function discoverVersion(name: Name, {
   const sComp = data.name.get(-1);
   let index: number;
   if (!checkSuffixLength(expectedSuffixLen, data.name.length - name.length) ||
-      (index = conventions.findIndex(([v, s]) => v.match(vComp!) && s.match(sComp!))) < 0) {
+    (index = conventions.findIndex(([v, s]) => v.match(vComp!) && s.match(sComp!))) < 0) {
     throw new Error(`cannot extract version from ${data.name}`);
   }
   return Object.defineProperties(data.name.getPrefix(-1), {

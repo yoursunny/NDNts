@@ -27,36 +27,31 @@ test("CertStore", async () => {
 });
 
 test("SHA256", async () => {
-  const [rI, rD] = Serialize.parse(
-    await pageInvoke<typeof globalThis.testDigestSigning>("testDigestSigning"));
+  const [rI, rD] = Serialize.parse(await pageInvoke<typeof globalThis.testDigestSigning>("testDigestSigning"));
   TestSignVerify.check(rI, { deterministic: true, sameAB: true });
   TestSignVerify.check(rD, { deterministic: true, sameAB: true });
 });
 
 test.each(EcCurve.Choices)("ECDSA %s", async (curve) => {
-  const [rI, rD] = Serialize.parse(
-    await pageInvoke<typeof globalThis.testECDSA>("testECDSA", curve));
+  const [rI, rD] = Serialize.parse(await pageInvoke<typeof globalThis.testECDSA>("testECDSA", curve));
   TestSignVerify.check(rI);
   TestSignVerify.check(rD);
 });
 
 test.each(RsaModulusLength.Choices)("RSA %d", async (modulusLength) => {
-  const [rI, rD] = Serialize.parse(
-    await pageInvoke<typeof globalThis.testRSA>("testRSA", modulusLength));
+  const [rI, rD] = Serialize.parse(await pageInvoke<typeof globalThis.testRSA>("testRSA", modulusLength));
   TestSignVerify.check(rI, { deterministic: true });
   TestSignVerify.check(rD, { deterministic: true });
 });
 
 test("HMAC", async () => {
-  const [rI, rD] = Serialize.parse(
-    await pageInvoke<typeof globalThis.testHMAC>("testHMAC"));
+  const [rI, rD] = Serialize.parse(await pageInvoke<typeof globalThis.testHMAC>("testHMAC"));
   TestSignVerify.check(rI, { deterministic: true });
   TestSignVerify.check(rD, { deterministic: true });
 });
 
 test("Ed25519", async () => {
-  const [rI, rD] = Serialize.parse(
-    await pageInvoke<typeof globalThis.testEd25519>("testEd25519"));
+  const [rI, rD] = Serialize.parse(await pageInvoke<typeof globalThis.testEd25519>("testEd25519"));
   TestSignVerify.check(rI, { deterministic: true });
   TestSignVerify.check(rD, { deterministic: true });
 });
@@ -72,8 +67,7 @@ test.each([
 
 test("SafeBagEncode", async () => {
   const passphrase = "9c570742-82ed-41a8-a370-8e0c8806e5e4";
-  const wire = Serialize.parse(
-    await pageInvoke<typeof globalThis.testSafeBagEncode>("testSafeBagEncode", passphrase));
+  const wire = Serialize.parse(await pageInvoke<typeof globalThis.testSafeBagEncode>("testSafeBagEncode", passphrase));
 
   const safeBag = Decoder.decode(wire, SafeBag);
   const { certificate: cert } = safeBag;

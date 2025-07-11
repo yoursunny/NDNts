@@ -63,19 +63,17 @@ export class UdpTransport extends Transport {
       this.raddr = this.txSock.remoteAddress();
     }
 
-    this.rx = rxFromPacketIterable(
-      new EventIterator<Uint8Array>(({ push, stop, fail }) => {
-        const handleMessage = (msg: Uint8Array) => push(msg);
-        this.rxSock.on("message", handleMessage);
-        this.rxSock.on("close", stop);
-        this.rxSock.on("error", fail);
-        return () => {
-          this.rxSock.off("message", handleMessage);
-          this.rxSock.off("close", stop);
-          this.rxSock.off("error", fail);
-        };
-      }),
-    );
+    this.rx = rxFromPacketIterable(new EventIterator<Uint8Array>(({ push, stop, fail }) => {
+      const handleMessage = (msg: Uint8Array) => push(msg);
+      this.rxSock.on("message", handleMessage);
+      this.rxSock.on("close", stop);
+      this.rxSock.on("error", fail);
+      return () => {
+        this.rxSock.off("message", handleMessage);
+        this.rxSock.off("close", stop);
+        this.rxSock.off("error", fail);
+      };
+    }));
   }
 
   /** Local endpoint address. */
@@ -90,7 +88,7 @@ export class UdpTransport extends Transport {
    * @see {@link https://superuser.com/a/1697822}
    */
   // https://github.com/typescript-eslint/typescript-eslint/issues/3602
-  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+
   public override get mtu() { return 65487; }
 
   public override readonly rx: Transport.RxIterable;

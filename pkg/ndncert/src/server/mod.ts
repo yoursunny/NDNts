@@ -1,4 +1,4 @@
-export * from "./challenge";
+export type * from "./challenge";
 export * from "./email-challenge_node";
 export * from "./nop-challenge";
 export * from "./pin-challenge";

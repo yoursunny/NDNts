@@ -176,6 +176,7 @@ class ProducerImpl implements Producer {
       return;
     }
 
+    // eslint-disable-next-line promise/prefer-await-to-then
     const data = await this.processInterest(interest).catch(() => undefined);
     if (data) {
       yield FwPacket.create(data, token);

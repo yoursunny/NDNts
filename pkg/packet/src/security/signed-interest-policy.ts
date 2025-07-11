@@ -6,6 +6,7 @@ import { LLSign, LLVerify, Signer, type Verifier } from "./signing";
 
 /** Validation policy for SigInfo fields in signed Interest. */
 export class SignedInterestPolicy {
+  // eslint-disable-next-line @typescript-eslint/no-restricted-types
   private readonly owned = new WeakMap<object, KeyState>();
   private readonly trackedKeys: number;
   private readonly records = new Map<string, KeyState>();
@@ -45,7 +46,10 @@ export class SignedInterestPolicy {
    * Assign SigInfo fields on an Interest before signing.
    * @param key - Signing key object to associate state with; if omitted, use global state.
    */
-  public update(interest: Interest, key: object = this): void {
+  public update(
+      interest: Interest,
+      key: object = this, // eslint-disable-line @typescript-eslint/no-restricted-types
+  ): void {
     const si = Signer.putSigInfo(interest);
     for (const rule of this.rules) {
       rule.update(si, getOrInsert(this.owned, key, () => ({})));
@@ -274,7 +278,6 @@ class SeqNumRule extends SequencedRuleBase<bigint> implements Rule {
   constructor({
     initialSeqNum = 0n,
   }: SignedInterestPolicy.SeqNumOptions) {
-    // eslint-disable-next-line unicorn/prefer-math-min-max
     super("seqNum", "SigSeqNum", (value, prev = 0n) => value > prev ? value : prev);
     this.beforeInitialSeqNum = initialSeqNum - 1n;
   }

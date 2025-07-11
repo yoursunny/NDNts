@@ -55,7 +55,8 @@ export class AccessManager {
       await this.dataStore.get(KeyEncryptionKey.makeName({ prefix: this.prefix, subset, keyId })) :
       await this.dataStore.find(new Interest(
         KeyEncryptionKey.makeSubjectName({ prefix: this.prefix, subset }).append(Keyword.KEK),
-        Interest.CanBePrefix));
+        Interest.CanBePrefix,
+      ));
     assert(!!kekData, "KEK not found");
     const kek = await KeyEncryptionKey.fromData(kekData);
 
@@ -84,7 +85,8 @@ export class AccessManager {
       assert(!!this.keys.memberVerifier, "cannot retrieve member certificate without memberVerifier");
       const data = await consume(
         new Interest(member, Interest.CanBePrefix, Interest.MustBeFresh),
-        { ...this.cOpts, verifier: this.keys.memberVerifier });
+        { ...this.cOpts, verifier: this.keys.memberVerifier },
+      );
       member = Certificate.fromData(data);
     }
     if (member instanceof Certificate) {

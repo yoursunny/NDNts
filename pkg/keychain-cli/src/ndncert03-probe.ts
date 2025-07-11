@@ -35,8 +35,10 @@ export const Ndncert03ProbeCommand: CommandModule<{}, Args> = {
       profile,
       parameters,
     });
-    const j = JSON.stringify({ entries, redirects },
-      (key, value) => value instanceof Name ? `${value}` : value, 2);
+    const j = JSON.stringify(
+      { entries, redirects },
+      (key, value) => value instanceof Name ? `${value}` : value, 2,
+    );
     stdout.write(`${j}\n`);
   },
 };

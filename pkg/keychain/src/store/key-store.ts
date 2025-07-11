@@ -119,10 +119,14 @@ export namespace KeyStore {
 
       if (jwkImportParams) {
         [privateKey, publicKey] = await Promise.all([
-          crypto.subtle.importKey("jwk", privateKey as JsonWebKey, jwkImportParams,
-            this.extractable, algo.keyUsages.private),
-          crypto.subtle.importKey("jwk", publicKey as JsonWebKey, jwkImportParams,
-            this.extractable, algo.keyUsages.public),
+          crypto.subtle.importKey(
+            "jwk", privateKey as JsonWebKey, jwkImportParams,
+            this.extractable, algo.keyUsages.private,
+          ),
+          crypto.subtle.importKey(
+            "jwk", publicKey as JsonWebKey, jwkImportParams,
+            this.extractable, algo.keyUsages.public,
+          ),
         ]);
       }
 
@@ -144,8 +148,10 @@ export namespace KeyStore {
       }
 
       if (jwkImportParams) {
-        secretKey = await crypto.subtle.importKey("jwk", secretKey as JsonWebKey,
-          jwkImportParams, this.extractable, algo.keyUsages.secret);
+        secretKey = await crypto.subtle.importKey(
+          "jwk", secretKey as JsonWebKey,
+          jwkImportParams, this.extractable, algo.keyUsages.secret,
+        );
       }
 
       const key = { info, secretKey: secretKey as CryptoKey };

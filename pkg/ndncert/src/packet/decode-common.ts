@@ -20,12 +20,12 @@ export function checkName(
     ...comps: Array<Component | NamingConvention<any> | undefined>
 ): void {
   if (name.length !== caPrefix.length + 1 + comps.length ||
-      !name.getPrefix(caPrefix.length).equals(caPrefix) ||
-      !name.get(caPrefix.length)!.equals(C.CA) ||
-      !comps.every((comp, i) => {
-        const c = name.get(caPrefix.length + 1 + i)!;
-        return comp === undefined || (comp instanceof Component ? c.equals(comp) : c.is(comp));
-      })) {
+    !name.getPrefix(caPrefix.length).equals(caPrefix) ||
+    !name.get(caPrefix.length)!.equals(C.CA) ||
+    !comps.every((comp, i) => {
+      const c = name.get(caPrefix.length + 1 + i)!;
+      return comp === undefined || (comp instanceof Component ? c.equals(comp) : c.is(comp));
+    })) {
     throw new Error("bad Name");
   }
 }

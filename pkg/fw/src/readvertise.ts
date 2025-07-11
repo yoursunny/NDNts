@@ -121,7 +121,7 @@ export class Readvertise {
     }
 
     for (const name of faceNames.values()) {
-      this.removeAnnouncementImpl(face, name, (nameFaceAnns) => nameFaceAnns.splice(0, Infinity));
+      this.removeAnnouncementImpl(face, name, (nameFaceAnns) => nameFaceAnns.splice(0));
     }
     assert(!this.byFace.has(face));
   }

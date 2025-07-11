@@ -137,8 +137,8 @@ export class SvPublisher {
     const loSeqNumComp = name.get(-2)!;
     const hiSeqNumComp = name.get(-1)!;
     if (name.length !== this.nodeSyncPrefix.length + 3 ||
-        !loSeqNumComp.is(GenericNumber) ||
-        !hiSeqNumComp.is(GenericNumber)) {
+      !loSeqNumComp.is(GenericNumber) ||
+      !hiSeqNumComp.is(GenericNumber)) {
       return undefined;
     }
     const loSeqNum = loSeqNumComp.as(GenericNumber);

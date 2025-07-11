@@ -389,7 +389,7 @@ export namespace VariablePattern {
 export class CertNamePattern extends Pattern {
   protected override *matchState(state: MatchState): Iterable<MatchState> {
     if ([2, 4].includes(state.tailLength) &&
-        state.name.get(state.pos)!.equals(CertNaming.KEY)) {
+      state.name.get(state.pos)!.equals(CertNaming.KEY)) {
       yield state.extend(state.tailLength);
     }
   }

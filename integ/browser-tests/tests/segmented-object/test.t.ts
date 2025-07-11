@@ -7,7 +7,7 @@ import { beforeAll, beforeEach, expect, test } from "vitest";
 
 import { navigateToPage, page, pageInvoke } from "../../test-fixture/pptr";
 
-let objectBody: Buffer;
+let objectBody: Uint8Array;
 let objectBodyDigest: string;
 let filename: string;
 beforeAll(async () => {

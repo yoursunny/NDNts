@@ -15,6 +15,7 @@ export function changeBinaryType(sock: WebSocket): void {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-restricted-types
 export function extractMessage(evt: MessageEvent<Buffer | ArrayBuffer>): Uint8Array {
   return asUint8Array(evt.data);
 }

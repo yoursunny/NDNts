@@ -18,11 +18,12 @@ export const HMAC: SigningAlgorithm<{}, false, HMAC.GenParams> = {
   async cryptoGenerate({ importRaw }: HMAC.GenParams, extractable: boolean) {
     let secretKey: CryptoKey;
     if (importRaw) {
-      secretKey = await crypto.subtle.importKey("raw", importRaw,
-        GenParams, extractable, this.keyUsages.secret);
+      secretKey = await crypto.subtle.importKey(
+        "raw", importRaw,
+        GenParams, extractable, this.keyUsages.secret,
+      );
     } else {
-      secretKey = await crypto.subtle.generateKey(
-        GenParams, extractable, this.keyUsages.secret);
+      secretKey = await crypto.subtle.generateKey(GenParams, extractable, this.keyUsages.secret);
     }
     return {
       secretKey,

@@ -54,6 +54,5 @@ export async function requestProbe({
  */
 export function matchProbe(probeResponse: ProbeResponse.Fields, name: Name): boolean {
   name = CertNaming.toSubjectName(name);
-  return probeResponse.entries.some(
-    ({ prefix, maxSuffixLength = Infinity }) => prefix.isPrefixOf(name) && name.length - prefix.length <= maxSuffixLength);
+  return probeResponse.entries.some(({ prefix, maxSuffixLength = Infinity }) => prefix.isPrefixOf(name) && name.length - prefix.length <= maxSuffixLength);
 }

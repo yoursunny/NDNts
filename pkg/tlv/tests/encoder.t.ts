@@ -39,7 +39,8 @@ test("prependRoom", () => {
 
 test("prependTlv", () => {
   const encoder = new Encoder(5);
-  encoder.prependTlv(0x10000,
+  encoder.prependTlv(
+    0x10000,
     [0x0100, Uint8Array.of(0xB0, 0xB1)],
     [0x01, Buffer.from([0xA0, 0xA1])],
     [0x02, Encoder.OmitEmpty, new Uint8Array(), undefined],

@@ -29,7 +29,8 @@ const EVD = new EvDecoder<EvdTestTarget>("A0", 0xA0)
   .add(0xA4, (t) => { ++t.a4; })
   .add(0xA6, (t) => { ++t.a6; }, { repeat: true })
   .add(0xA9, (t) => { ++t.a9; })
-  .add(0xC0,
+  .add(
+    0xC0,
     new EvDecoder<EvdTestTarget>("C0")
       .add(0xC1, (t, { nni }) => { t.c1 = nni; }),
   );

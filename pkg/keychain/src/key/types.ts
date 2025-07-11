@@ -93,9 +93,9 @@ export interface CryptoAlgorithm<I = any, Asym extends boolean = any, G = any> {
    * These are specified separately for private/public/secret keys.
    */
   readonly keyUsages: If<Asym,
-  Record<"private" | "public", readonly KeyUsage[]>,
-  Record<"secret", readonly KeyUsage[]>,
-  {}>;
+    Record<"private" | "public", readonly KeyUsage[]>,
+    Record<"secret", readonly KeyUsage[]>,
+    {}>;
 
   /**
    * Generate key pair (for asymmetric algorithm) or secret key (for symmetric algorithm).
@@ -109,7 +109,7 @@ export interface CryptoAlgorithm<I = any, Asym extends boolean = any, G = any> {
    * and then importing instead of generating in this method.
    */
   cryptoGenerate: (params: G, extractable: boolean) => Promise<
-  If<Asym, CryptoAlgorithm.GeneratedKeyPair<I>, CryptoAlgorithm.GeneratedSecretKey<I>, never>>;
+    If<Asym, CryptoAlgorithm.GeneratedKeyPair<I>, CryptoAlgorithm.GeneratedSecretKey<I>, never>>;
 
   /**
    * Import public key from SubjectPublicKeyInfo.
@@ -134,22 +134,18 @@ export namespace CryptoAlgorithm {
   }
 
   /** Determine whether `algo` is a signing algorithm. */
-  export function isSigning<I, Asym extends boolean = any, G = any>(
-      algo: CryptoAlgorithm<I, Asym, G>,
-  ): algo is SigningAlgorithm<I, Asym, G> {
+  export function isSigning<I, Asym extends boolean = any, G = any>(algo: CryptoAlgorithm<I, Asym, G>): algo is SigningAlgorithm<I, Asym, G> {
     const t = algo as SigningAlgorithm<I, Asym, G>;
     return typeof t.sigType === "number" &&
-           typeof t.makeLLSign === "function" &&
-           typeof t.makeLLVerify === "function";
+      typeof t.makeLLSign === "function" &&
+      typeof t.makeLLVerify === "function";
   }
 
   /** Determine whether `algo` is an encryption algorithm. */
-  export function isEncryption<I, Asym extends boolean = any, G = any>(
-      algo: CryptoAlgorithm<I, Asym, G>,
-  ): algo is EncryptionAlgorithm<I, Asym, G> {
+  export function isEncryption<I, Asym extends boolean = any, G = any>(algo: CryptoAlgorithm<I, Asym, G>): algo is EncryptionAlgorithm<I, Asym, G> {
     const t = algo as EncryptionAlgorithm<I, Asym, G>;
     return typeof t.makeLLEncrypt === "function" &&
-           typeof t.makeLLDecrypt === "function";
+      typeof t.makeLLDecrypt === "function";
   }
 
   /** Private key used by an asymmetric algorithm. */
@@ -203,18 +199,18 @@ export interface SigningAlgorithm<I = any, Asym extends boolean = any, G = any> 
    * secret key (in symmetric algorithm).
    */
   makeLLSign: If<Asym,
-  (key: CryptoAlgorithm.PrivateKey<I>) => LLSign,
-  (key: CryptoAlgorithm.SecretKey<I>) => LLSign,
-  unknown>;
+    (key: CryptoAlgorithm.PrivateKey<I>) => LLSign,
+    (key: CryptoAlgorithm.SecretKey<I>) => LLSign,
+    unknown>;
 
   /**
    * Create a low level verification function from public key (in asymmetric algorithm) or
    * secret key (in symmetric algorithm).
    */
   makeLLVerify: If<Asym,
-  (key: CryptoAlgorithm.PublicKey<I>) => LLVerify,
-  (key: CryptoAlgorithm.SecretKey<I>) => LLVerify,
-  unknown>;
+    (key: CryptoAlgorithm.PublicKey<I>) => LLVerify,
+    (key: CryptoAlgorithm.SecretKey<I>) => LLVerify,
+    unknown>;
 }
 
 /**
@@ -229,16 +225,16 @@ export interface EncryptionAlgorithm<I = any, Asym extends boolean = any, G = an
    * secret key (in symmetric algorithm).
    */
   makeLLEncrypt: If<Asym,
-  (key: CryptoAlgorithm.PublicKey<I>) => LLEncrypt,
-  (key: CryptoAlgorithm.SecretKey<I>) => LLEncrypt,
-  unknown>;
+    (key: CryptoAlgorithm.PublicKey<I>) => LLEncrypt,
+    (key: CryptoAlgorithm.SecretKey<I>) => LLEncrypt,
+    unknown>;
 
   /**
    * Create a low level decryption function from private key (in asymmetric algorithm) or
    * secret key (in symmetric algorithm).
    */
   makeLLDecrypt: If<Asym,
-  (key: CryptoAlgorithm.PrivateKey<I>) => LLDecrypt,
-  (key: CryptoAlgorithm.SecretKey<I>) => LLDecrypt,
-  unknown>;
+    (key: CryptoAlgorithm.PrivateKey<I>) => LLDecrypt,
+    (key: CryptoAlgorithm.SecretKey<I>) => LLDecrypt,
+    unknown>;
 }

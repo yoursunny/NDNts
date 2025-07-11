@@ -31,9 +31,11 @@ export class KeyLocator {
   public digest?: Uint8Array;
 
   public encodeTo(encoder: Encoder) {
-    encoder.prependTlv(TT.KeyLocator, Encoder.OmitEmpty,
+    encoder.prependTlv(
+      TT.KeyLocator, Encoder.OmitEmpty,
       this.name,
-      [TT.KeyDigest, Encoder.OmitEmpty, this.digest]);
+      [TT.KeyDigest, Encoder.OmitEmpty, this.digest],
+    );
   }
 }
 

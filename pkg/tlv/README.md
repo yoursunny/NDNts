@@ -38,8 +38,7 @@ assert.deepEqual(encoder.output, Uint8Array.of(0x00, 0x20, 0x01, 0x10, 0xB0, 0x0
 // Put multiple encodable items in TLV-VALUE:
 encoder = new Encoder();
 encoder.encode([0xB0, Uint8Array.of(0xC0, 0xC1), new Name("/A")]);
-assert.deepEqual(encoder.output,
-  Uint8Array.of(0xB0, 0x07, 0xC0, 0xC1, 0x07, 0x03, 0x08, 0x01, 0x41));
+assert.deepEqual(encoder.output, Uint8Array.of(0xB0, 0x07, 0xC0, 0xC1, 0x07, 0x03, 0x08, 0x01, 0x41));
 
 // `Encoder.encode()` is a shortcut for encoding one item and obtaining the output:
 const wireB = Encoder.encode(new Name("/B"));
@@ -65,14 +64,14 @@ assert.throws(() => decoder.read());
 // Decode into TLV object:
 decoder = new Decoder(Uint8Array.of(0x07, 0x03, 0x08, 0x01, 0x41));
 const nameA = decoder.decode(Name);
-assert(nameA instanceof Name);
+assert.ok(nameA instanceof Name);
 assert.equal(nameA.toString(), "/8=A");
 // We have fully consumed the buffer.
 assert.equal(decoder.eof, true);
 
 // `Decoder.decode()` is a shortcut for decoding one item and checking for EOF.
 const nameB = Decoder.decode(wireB, Name);
-assert(nameB instanceof Name);
+assert.ok(nameB instanceof Name);
 assert.equal(nameB.toString(), "/8=B");
 // It throws if there's junk after the TLV.
 assert.throws(() => Decoder.decode(Uint8Array.of(...wireB, 0xFF), Name));

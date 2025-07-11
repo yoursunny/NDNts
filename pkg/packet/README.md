@@ -120,12 +120,12 @@ assert.equal(nameABC.compare(nameAB), Name.CompareResult.RPREFIX);
 // LPREFIX means the first name is a strict prefix of the second name.
 // It implies the first name is less than the second name.
 // If you only care about the order, check if the result is less than zero.
-assert(nameABC.compare(nameABCD) < 0);
+assert.ok(nameABC.compare(nameABCD) < 0);
 
 // RPREFIX means the second name is a strict prefix of the first name.
 // It implies the first name is greater than the second name.
 // If you only care about the order, check if the result is greater than zero.
-assert(nameABC.compare(nameAB) > 0);
+assert.ok(nameABC.compare(nameAB) > 0);
 
 // If you want to know whether a name is a prefix of another, it's EQUAL or LPREFIX.
 // But we got a faster way:
@@ -135,8 +135,8 @@ assert.equal(nameABC.isPrefixOf(nameAB), false);
 
 // I said names are immutable, but you can surely modify them to get a new Name.
 const name1modified = name1.getPrefix(-1).append("is", "awesome");
-assert(name1modified.toString(), "/8=localhost/2020=NDNts/8=rocks/8=is/8=awesome");
-assert(name1.toString(), "/8=localhost/2020=NDNts/8=rocks"); // unchanged
+assert.ok(name1modified.toString(), "/8=localhost/2020=NDNts/8=rocks/8=is/8=awesome");
+assert.ok(name1.toString(), "/8=localhost/2020=NDNts/8=rocks"); // unchanged
 ```
 
 ## Layer-3 Packet Types: Interest and Data
@@ -196,14 +196,14 @@ assert.equal(digest.length, 32);
 // Full names are available, too.
 const fullName = await data2.computeFullName();
 assert.equal(fullName.length - 1, data2.name.length);
-assert(fullName.at(-1).is(ImplicitDigest));
+assert.ok(fullName.at(-1).is(ImplicitDigest));
 
 // After computation, implicit digest is cached on the Data instance,
 // so we can get them without await:
 const digest2 = data.getImplicitDigest();
 const fullName2 = data.getFullName();
 assert.equal(digest2, digest);
-assert(fullName2 !== undefined);
+assert.ok(fullName2 !== undefined);
 assert.equal(fullName2.toString(), fullName.toString());
 
 // Note that you cannot modify the Data after encoding or decoding,

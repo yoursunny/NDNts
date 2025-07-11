@@ -76,9 +76,7 @@ export class FakeNfd extends TcpServer {
    * Constructor.
    * @param fw - Logical forwarder to attach accepted client faces.
    */
-  constructor(
-      public readonly fw = Forwarder.create(),
-  ) {
+  constructor(public readonly fw = Forwarder.create()) {
     super();
   }
 
