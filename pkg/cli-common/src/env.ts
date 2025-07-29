@@ -1,6 +1,5 @@
-import "dotenv/config";
-
 import { Name } from "@ndn/packet";
+import { config } from "dotenv";
 import { from } from "env-var";
 
 function determineDefaultUplink(): URL {
@@ -22,6 +21,7 @@ function determineDefaultUplink(): URL {
   }
 }
 
+config({ quiet: true });
 const env = from(process.env, {
   asName(value) {
     return new Name(value);

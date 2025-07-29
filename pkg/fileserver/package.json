@@ -33,7 +33,7 @@
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@zenfs/core": "~2.2.3",
+    "@zenfs/core": "~2.3.5",
     "obliterator": "^2.0.5",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.8.1"
