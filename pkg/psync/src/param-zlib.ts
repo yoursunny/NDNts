@@ -1,4 +1,4 @@
-import { concatBuffers } from "@ndn/util";
+import { asBufferSource, concatBuffers } from "@ndn/util";
 import { collect } from "streaming-iterables";
 
 import type { PSyncCodec } from "./codec";
@@ -13,8 +13,8 @@ export const PSyncZlib: PSyncCodec.Compression = {
   },
 };
 
-async function doTransform(input: Uint8Array, tr: TransformStream<Uint8Array, Uint8Array>): Promise<Uint8Array> {
-  const chunks = await collect(new Blob([input]).stream()
+async function doTransform(input: Uint8Array, tr: TransformStream<Uint8Array<ArrayBuffer>, Uint8Array<ArrayBuffer>>): Promise<Uint8Array> {
+  const chunks = await collect(new Blob([asBufferSource(input)]).stream()
     .pipeThrough(tr) as unknown as AsyncIterable<Uint8Array>);
   return concatBuffers(chunks);
 }

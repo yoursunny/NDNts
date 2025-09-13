@@ -20,3 +20,11 @@ export function asUint8Array(a: ArrayBufferLike | ArrayBufferView): Uint8Array {
 export function asDataView(a: ArrayBufferLike | ArrayBufferView): DataView {
   return asArrayBufferView(DataView, a);
 }
+
+/** Convert Uint8Array&lt;(Shared)ArrayBuffer&gt; to Uint8Array<ArrayBuffer>. */
+export function asBufferSource(a: Uint8Array): BufferSource {
+  if (a.buffer instanceof ArrayBuffer) {
+    return a as Uint8Array<ArrayBuffer>;
+  }
+  return new Uint8Array(a);
+}

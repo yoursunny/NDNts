@@ -1,5 +1,5 @@
 import { SigType, Verifier } from "@ndn/packet";
-import { assert, fromHex, toHex } from "@ndn/util";
+import { asBufferSource, assert, fromHex, toHex } from "@ndn/util";
 import * as asn1 from "@yoursunny/asn1";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
@@ -69,8 +69,8 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
       curve ??= EcCurve.detectFromSpki(asn1.parseVerbose(spki));
       params = makeGenParams(curve);
       [privateKey, publicKey] = await Promise.all([
-        crypto.subtle.importKey("pkcs8", pkcs8, params, extractable, this.keyUsages.private),
-        crypto.subtle.importKey("spki", spki, params, true, this.keyUsages.public),
+        crypto.subtle.importKey("pkcs8", asBufferSource(pkcs8), params, extractable, this.keyUsages.private),
+        crypto.subtle.importKey("spki", asBufferSource(spki), params, true, this.keyUsages.public),
       ]);
     } else {
       curve ??= EcCurve.Default;
@@ -94,7 +94,7 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
   async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
     const curve = EcCurve.detectFromSpki(der);
     const params = makeGenParams(curve);
-    const publicKey = await crypto.subtle.importKey("spki", spki, params, true, this.keyUsages.public);
+    const publicKey = await crypto.subtle.importKey("spki", asBufferSource(spki), params, true, this.keyUsages.public);
     return {
       publicKey,
       spki,
@@ -104,7 +104,7 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
 
   makeLLSign({ privateKey, info: { curve } }: CryptoAlgorithm.PrivateKey<ECDSA.Info>) {
     return async (input) => {
-      const raw = await crypto.subtle.sign(SignVerifyParams, privateKey, input);
+      const raw = await crypto.subtle.sign(SignVerifyParams, privateKey, asBufferSource(input));
       const pointSize = PointSizes[curve];
       return fromHex(asn1.Any(
         "30",
@@ -129,7 +129,7 @@ export const ECDSA: SigningAlgorithm<ECDSA.Info, true, ECDSA.GenParams> = {
       raw.set(r, pointSize - r.byteLength);
       raw.set(s, 2 * pointSize - s.byteLength);
 
-      const ok = await crypto.subtle.verify(SignVerifyParams, publicKey, raw, input);
+      const ok = await crypto.subtle.verify(SignVerifyParams, publicKey, raw, asBufferSource(input));
       Verifier.throwOnBadSig(ok);
     };
   },

@@ -1,4 +1,5 @@
 import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
+import { asBufferSource } from "@ndn/util";
 
 import type { CryptoAlgorithm, EncryptionAlgorithm } from "../key/mod";
 import type { RSA } from "./rsa";
@@ -20,8 +21,8 @@ export const RSAOAEP: EncryptionAlgorithm<{}, true, RSA.GenParams> = new class e
     }) => {
       const ciphertext = new Uint8Array(await crypto.subtle.encrypt({
         name: this.name,
-        label: additionalData,
-      }, publicKey, plaintext));
+        label: additionalData && asBufferSource(additionalData),
+      }, publicKey, asBufferSource(plaintext)));
       return { ciphertext };
     };
   }
@@ -33,8 +34,8 @@ export const RSAOAEP: EncryptionAlgorithm<{}, true, RSA.GenParams> = new class e
     }) => {
       const plaintext = new Uint8Array(await crypto.subtle.decrypt({
         name: this.name,
-        label: additionalData,
-      }, privateKey, ciphertext));
+        label: additionalData && asBufferSource(additionalData),
+      }, privateKey, asBufferSource(ciphertext)));
       return { plaintext };
     };
   }

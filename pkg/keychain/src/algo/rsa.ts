@@ -1,4 +1,5 @@
 import { type LLSign, type LLVerify, SigType, Verifier } from "@ndn/packet";
+import { asBufferSource } from "@ndn/util";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
 import { RsaCommon, type RsaModulusLength } from "./rsa-common";
@@ -15,14 +16,14 @@ export const RSA: SigningAlgorithm<{}, true, RSA.GenParams> = new class extends 
 
   public makeLLSign({ privateKey }: CryptoAlgorithm.PrivateKey<{}>): LLSign {
     return async (input) => {
-      const raw = await crypto.subtle.sign(this.name, privateKey, input);
+      const raw = await crypto.subtle.sign(this.name, privateKey, asBufferSource(input));
       return new Uint8Array(raw);
     };
   }
 
   public makeLLVerify({ publicKey }: CryptoAlgorithm.PublicKey<{}>): LLVerify {
     return async (input, sig) => {
-      const ok = await crypto.subtle.verify(this.name, publicKey, sig, input);
+      const ok = await crypto.subtle.verify(this.name, publicKey, asBufferSource(sig), asBufferSource(input));
       Verifier.throwOnBadSig(ok);
     };
   }

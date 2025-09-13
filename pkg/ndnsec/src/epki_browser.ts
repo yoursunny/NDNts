@@ -1,4 +1,4 @@
-import { fromHex, toHex, toUtf8 } from "@ndn/util";
+import { asBufferSource, fromHex, toHex, toUtf8 } from "@ndn/util";
 import * as asn1 from "@yoursunny/asn1";
 
 const OID = {
@@ -8,8 +8,14 @@ const OID = {
   aes256CBC: "60864801650304012A", // 2.16.840.1.101.3.4.1.42
 };
 
-function toUint8Array(input: string | Uint8Array): Uint8Array {
-  return typeof input === "string" ? toUtf8(input) : input;
+function convertPassphrase(input: string | Uint8Array): Uint8Array<ArrayBuffer> {
+  if (typeof input === "string") {
+    return toUtf8(input);
+  }
+  if (input.buffer instanceof ArrayBuffer) {
+    return input as Uint8Array<ArrayBuffer>;
+  }
+  return new Uint8Array(input);
 }
 
 /** Create EncryptedPrivateKeyInfo. */
@@ -26,10 +32,10 @@ export async function create(privateKey: Uint8Array, passphrase: string | Uint8A
     iv: crypto.getRandomValues(new Uint8Array(16)),
   };
 
-  const pbkdf2Key = await crypto.subtle.importKey("raw", toUint8Array(passphrase), "PBKDF2", false, ["deriveBits"]);
+  const pbkdf2Key = await crypto.subtle.importKey("raw", convertPassphrase(passphrase), "PBKDF2", false, ["deriveBits"]);
   const dk = await crypto.subtle.deriveBits(pbkdf2, pbkdf2Key, 256);
   const aesKey = await crypto.subtle.importKey("raw", dk, "AES-CBC", false, ["encrypt"]);
-  const encrypted = new Uint8Array(await crypto.subtle.encrypt(aes, aesKey, privateKey));
+  const encrypted = new Uint8Array(await crypto.subtle.encrypt(aes, aesKey, asBufferSource(privateKey)));
 
   return fromHex(asn1.Any(
     "30",
@@ -66,7 +72,7 @@ export async function create(privateKey: Uint8Array, passphrase: string | Uint8A
 /** Decrypt EncryptedPrivateKeyInfo. */
 export async function decrypt(encryptedKey: Uint8Array, passphrase: string | Uint8Array): Promise<Uint8Array> {
   const parser = new EncryptedPrivateKeyInfoParser(encryptedKey);
-  return parser.decrypt(toUint8Array(passphrase));
+  return parser.decrypt(convertPassphrase(passphrase));
 }
 
 class EncryptedPrivateKeyInfoParser {
@@ -133,7 +139,7 @@ class EncryptedPrivateKeyInfoParser {
     if (salt!.type !== 0x04 || iterationCount!.type !== 0x02) {
       throw new Error("bad PBKDF2-params");
     }
-    this.pbkdf2.salt = salt!.value!;
+    this.pbkdf2.salt = asBufferSource(salt!.value!);
     this.pbkdf2.iterations = Number.parseInt(toHex(iterationCount!.value!), 16);
 
     if (children.length > 2) {
@@ -153,7 +159,7 @@ class EncryptedPrivateKeyInfoParser {
     if (params.type !== 0x04 || params.length !== 16) {
       throw new Error("bad aes256-CBC-PAD initialization vector");
     }
-    this.aes.iv = params.value!;
+    this.aes.iv = asBufferSource(params.value!);
   }
 
   private parseEncryptedData(der: asn1.ElementBuffer): void {
@@ -164,9 +170,9 @@ class EncryptedPrivateKeyInfoParser {
   }
 
   public async decrypt(passphrase: Uint8Array): Promise<Uint8Array> {
-    const pbkdf2Key = await crypto.subtle.importKey("raw", passphrase, "PBKDF2", false, ["deriveBits"]);
+    const pbkdf2Key = await crypto.subtle.importKey("raw", asBufferSource(passphrase), "PBKDF2", false, ["deriveBits"]);
     const dk = await crypto.subtle.deriveBits(this.pbkdf2, pbkdf2Key, 256);
     const aesKey = await crypto.subtle.importKey("raw", dk, "AES-CBC", false, ["decrypt"]);
-    return new Uint8Array(await crypto.subtle.decrypt(this.aes, aesKey, this.data));
+    return new Uint8Array(await crypto.subtle.decrypt(this.aes, aesKey, asBufferSource(this.data)));
   }
 }

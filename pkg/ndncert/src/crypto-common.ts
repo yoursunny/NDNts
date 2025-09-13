@@ -1,5 +1,6 @@
 import { AesBlockSize, AESGCM, CounterIvChecker, createDecrypter, createEncrypter } from "@ndn/keychain";
 import { type LLDecrypt, type LLEncrypt, SignedInterestPolicy } from "@ndn/packet";
+import { asBufferSource } from "@ndn/util";
 
 const ECDH_PARAMS: EcKeyGenParams & EcKeyImportParams = {
   name: "ECDH",
@@ -12,7 +13,7 @@ export async function generateEcdhKey(): Promise<[pvt: CryptoKey, pub: CryptoKey
 }
 
 export async function importEcdhPub(raw: Uint8Array): Promise<CryptoKey> {
-  return crypto.subtle.importKey("raw", raw, ECDH_PARAMS, true, []);
+  return crypto.subtle.importKey("raw", asBufferSource(raw), ECDH_PARAMS, true, []);
 }
 
 export async function exportEcdhPub(key: CryptoKey): Promise<Uint8Array> {
@@ -61,8 +62,8 @@ export async function makeSessionKey(
   const secretKey = await crypto.subtle.deriveKey(
     {
       name: "HKDF",
-      salt,
-      info: requestId,
+      salt: asBufferSource(salt),
+      info: asBufferSource(requestId),
       hash: "SHA-256",
     },
     hkdfKey,

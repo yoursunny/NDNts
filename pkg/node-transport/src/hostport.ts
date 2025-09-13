@@ -10,7 +10,7 @@ export function joinHostPort(hostname: string, port: number): string {
 export function splitHostPort(hostport: string): { host: string; port?: number } {
   const { hostname, port } = urlParse(hostport);
   return {
-    host: hostname ?? "",
+    host: hostname ? hostname.replaceAll(/^\[|]$/g, "") : "",
     port: port ? Number(port) : undefined,
   };
 }

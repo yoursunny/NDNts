@@ -1,4 +1,5 @@
 import { SigType, Verifier } from "@ndn/packet";
+import { asBufferSource } from "@ndn/util";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
 
@@ -19,7 +20,7 @@ export const HMAC: SigningAlgorithm<{}, false, HMAC.GenParams> = {
     let secretKey: CryptoKey;
     if (importRaw) {
       secretKey = await crypto.subtle.importKey(
-        "raw", importRaw,
+        "raw", asBufferSource(importRaw),
         GenParams, extractable, this.keyUsages.secret,
       );
     } else {
@@ -34,14 +35,14 @@ export const HMAC: SigningAlgorithm<{}, false, HMAC.GenParams> = {
 
   makeLLSign({ secretKey }: CryptoAlgorithm.SecretKey<{}>) {
     return async (input) => {
-      const h = await crypto.subtle.sign(GenParams.name, secretKey, input);
+      const h = await crypto.subtle.sign(GenParams.name, secretKey, asBufferSource(input));
       return new Uint8Array(h);
     };
   },
 
   makeLLVerify({ secretKey }: CryptoAlgorithm.SecretKey<{}>) {
     return async (input, sig) => {
-      const ok = await crypto.subtle.verify(GenParams.name, secretKey, sig, input);
+      const ok = await crypto.subtle.verify(GenParams.name, secretKey, asBufferSource(sig), asBufferSource(input));
       Verifier.throwOnBadSig(ok);
     };
   },

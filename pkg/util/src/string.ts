@@ -49,7 +49,7 @@ const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
 /** Convert string to UTF-8 byte array. */
-export function toUtf8(s: string): Uint8Array {
+export function toUtf8(s: string): Uint8Array<ArrayBuffer> {
   return textEncoder.encode(s);
 }
 

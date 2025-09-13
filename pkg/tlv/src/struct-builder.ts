@@ -1,5 +1,5 @@
 import { assert } from "@ndn/util";
-import type { Constructor, Except, IfNever, Simplify } from "type-fest";
+import type { Constructor, Except, If, IsNever, Simplify } from "type-fest";
 
 import { type Decodable, type Decoder } from "./decoder";
 import { type EncodableObj, type Encoder } from "./encoder";
@@ -53,7 +53,7 @@ interface FlagBitDesc {
 type ErrFlags = "ERROR: can only define flags on a non-repeatable number field";
 
 type ValidateOptions<T, Repeat extends boolean, FlagBit extends string, R> =
-  IfNever<FlagBit, R, Repeat extends true ? ErrFlags : T extends number ? R : ErrFlags>;
+  If<IsNever<FlagBit>, R, Repeat extends true ? ErrFlags : T extends number ? R : ErrFlags>;
 
 type AddField<K extends string, T, Required extends boolean, Repeat extends boolean> =
   Repeat extends true ? Record<K, T[]> :

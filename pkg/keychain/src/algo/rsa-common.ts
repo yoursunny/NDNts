@@ -1,3 +1,4 @@
+import { asBufferSource } from "@ndn/util";
 import type * as asn1 from "@yoursunny/asn1";
 
 import type { CryptoAlgorithm } from "../key/mod";
@@ -31,8 +32,8 @@ export abstract class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenPara
     if (importPkcs8) {
       const [pkcs8, spki] = importPkcs8;
       [privateKey, publicKey] = await Promise.all([
-        crypto.subtle.importKey("pkcs8", pkcs8, this.importParams, extractable, this.keyUsages.private),
-        crypto.subtle.importKey("spki", spki, this.importParams, true, this.keyUsages.public),
+        crypto.subtle.importKey("pkcs8", asBufferSource(pkcs8), this.importParams, extractable, this.keyUsages.private),
+        crypto.subtle.importKey("spki", asBufferSource(spki), this.importParams, true, this.keyUsages.public),
       ]);
     } else {
       const genParams: RsaHashedKeyGenParams = {
@@ -57,7 +58,7 @@ export abstract class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenPara
 
   public async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
     assertSpkiAlgorithm(der, "RSA", "2A864886F70D010101"); // 1.2.840.113549.1.1.1
-    const key = await crypto.subtle.importKey("spki", spki, this.importParams, true, this.keyUsages.public);
+    const key = await crypto.subtle.importKey("spki", asBufferSource(spki), this.importParams, true, this.keyUsages.public);
     return {
       publicKey: key,
       spki,

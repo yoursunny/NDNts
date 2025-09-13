@@ -318,7 +318,7 @@ export namespace Interest {
     const patch: Schema<ModifyFields, unknown> = {};
     for (const key of modifyFields) {
       if (input[key] !== undefined) {
-        patch[key] = input[key];
+        patch[key] = input[key] as any;
       }
     }
     return (interest) => {

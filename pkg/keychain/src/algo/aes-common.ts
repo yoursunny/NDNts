@@ -1,4 +1,5 @@
 import type { LLDecrypt, LLEncrypt } from "@ndn/packet";
+import { asBufferSource } from "@ndn/util";
 
 import type { IvGen } from "../iv/mod";
 import type { CryptoAlgorithm, EncryptionAlgorithm } from "../key/mod";
@@ -55,7 +56,7 @@ export abstract class AesCommon<I extends {}, G extends AesGenParams> implements
     let secretKey: CryptoKey;
     if (genParams.importRaw) {
       secretKey = await crypto.subtle.importKey(
-        "raw", genParams.importRaw,
+        "raw", asBufferSource(genParams.importRaw),
         this.name, extractable, this.keyUsages.secret,
       );
     } else {
@@ -100,7 +101,7 @@ export abstract class AesCommon<I extends {}, G extends AesGenParams> implements
       };
       this.modifyParams(params, info);
 
-      const encrypted = await crypto.subtle.encrypt(params, secretKey, plaintext);
+      const encrypted = await crypto.subtle.encrypt(params, secretKey, asBufferSource(plaintext));
       return {
         ciphertext: new Uint8Array(encrypted, 0, encrypted.byteLength - this.tagSize),
         iv,
@@ -134,7 +135,7 @@ export abstract class AesCommon<I extends {}, G extends AesGenParams> implements
         additionalData,
       };
       this.modifyParams(params, info);
-      const plaintext = new Uint8Array(await crypto.subtle.decrypt(params, secretKey, encrypted));
+      const plaintext = new Uint8Array(await crypto.subtle.decrypt(params, secretKey, asBufferSource(encrypted)));
       return { plaintext };
     };
   }

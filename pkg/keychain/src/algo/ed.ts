@@ -1,4 +1,5 @@
 import { type LLSign, type LLVerify, SigType, Verifier } from "@ndn/packet";
+import { asBufferSource } from "@ndn/util";
 import type * as asn1 from "@yoursunny/asn1";
 import { Ed25519Algorithm, ponyfillEd25519 } from "@yoursunny/webcrypto-ed25519";
 
@@ -26,8 +27,8 @@ class EdAlgo implements SigningAlgorithm<{}, true, {}> {
     if (importPkcs8) {
       const [pkcs8, spki] = importPkcs8;
       [privateKey, publicKey] = await Promise.all([
-        subtle.importKey("pkcs8", pkcs8, this.algo, extractable, this.keyUsages.private),
-        subtle.importKey("spki", spki, this.algo, true, this.keyUsages.public),
+        subtle.importKey("pkcs8", asBufferSource(pkcs8), this.algo, extractable, this.keyUsages.private),
+        subtle.importKey("spki", asBufferSource(spki), this.algo, true, this.keyUsages.public),
       ]);
     } else {
       ({ privateKey, publicKey } = await subtle.generateKey(
@@ -48,7 +49,7 @@ class EdAlgo implements SigningAlgorithm<{}, true, {}> {
 
   public async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
     assertSpkiAlgorithm(der, this.algo.name, this.oid);
-    const key = await subtle.importKey("spki", spki, this.algo, true, this.keyUsages.public);
+    const key = await subtle.importKey("spki", asBufferSource(spki), this.algo, true, this.keyUsages.public);
     return {
       publicKey: key,
       spki,
@@ -58,14 +59,14 @@ class EdAlgo implements SigningAlgorithm<{}, true, {}> {
 
   public makeLLSign({ privateKey }: CryptoAlgorithm.PrivateKey<{}>): LLSign {
     return async (input) => {
-      const raw = await subtle.sign(this.algo, privateKey, input);
+      const raw = await subtle.sign(this.algo, privateKey, asBufferSource(input));
       return new Uint8Array(raw);
     };
   }
 
   public makeLLVerify({ publicKey }: CryptoAlgorithm.PublicKey<{}>): LLVerify {
     return async (input, sig) => {
-      const ok = await subtle.verify(this.algo, publicKey, sig, input);
+      const ok = await subtle.verify(this.algo, publicKey, asBufferSource(sig), asBufferSource(input));
       Verifier.throwOnBadSig(ok);
     };
   }
