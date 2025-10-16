@@ -25,5 +25,14 @@ export default defineConfig({
     ],
     teardownTimeout: 30000,
     watch: false,
+    typecheck: {
+      ignoreSourceErrors: true,
+      include: [
+        "pkg/**/tests/**/*.t.ts",
+      ],
+      exclude: [
+        "pkg/util/tests/iter.t.ts",
+      ],
+    },
   },
 });

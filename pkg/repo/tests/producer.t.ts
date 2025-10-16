@@ -38,7 +38,7 @@ test("simple", async () => {
   await insertData("/A/1", "/A/2", "/A/3", "/B/4");
 
   {
-    using producer = RepoProducer.create(store, {
+    using _producer = RepoProducer.create(store, {
       reg: PrefixRegStatic(new Name("/A"), new Name("/B")),
     });
     await delay(50);
@@ -59,7 +59,7 @@ test("prefixreg shorter", async () => {
   await insertData("/A/B/1", "/A/B/2", "/C/D/3");
 
   {
-    using producer = RepoProducer.create(store, {
+    using _producer = RepoProducer.create(store, {
       reg: PrefixRegShorter(1),
     });
     await delay(50);
@@ -86,7 +86,7 @@ test("prefixreg strip non-generic", async () => {
   );
 
   {
-    using producer = RepoProducer.create(store);
+    using _producer = RepoProducer.create(store);
     await delay(50);
     expect(listAnnounced()).toEqualNames(["/A", "/B", "/J/K"]);
   }
@@ -103,7 +103,7 @@ test("prefixreg strip custom", async () => {
   );
 
   {
-    using producer = RepoProducer.create(store, {
+    using _producer = RepoProducer.create(store, {
       reg: PrefixRegStrip(Segment, "K", Component.from("L")),
     });
     await delay(50);
@@ -127,7 +127,7 @@ test("respondRdr", async () => {
     new Name("/A").append(Version, 4),
   );
 
-  using producer = RepoProducer.create(store, {
+  using _producer = RepoProducer.create(store, {
     reg: PrefixRegStatic(new Name("/A")),
     fallback: respondRdr(),
   });

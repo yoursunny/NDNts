@@ -225,7 +225,7 @@ describe("SignedInterestPolicy", () => {
     await updateSign(policyS, interest0);
     await updateSign(policyS, interest1);
     await updateSign(policyS, interest2);
-    interest2.sigValue[0] ^= 0xFF;
+    interest2.sigValue[0]! ^= 0xFF;
 
     const verifier = policyS.makeVerifier(digestSigning);
     await verifier.verify(interest0);

@@ -136,6 +136,9 @@ test.each(wrongNames)("discover wrong name %#", async (dataName) => {
 });
 
 test("discover cancel", async () => {
-  const p = discoverVersion(new Name("/A"), { signal: AbortSignal.timeout(100) });
+  const p = discoverVersion(
+    new Name("/A"),
+    { cOpts: { signal: AbortSignal.timeout(100) } },
+  );
   await expect(p).rejects.toThrow();
 });

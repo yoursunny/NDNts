@@ -5,7 +5,7 @@ import { Forwarder } from "@ndn/fw";
 import { generateSigningKey } from "@ndn/keychain";
 import { Version } from "@ndn/naming-convention2";
 import { Interest, Name, type Signer, type Verifier } from "@ndn/packet";
-import { Decoder, Extensible, Extension, ExtensionRegistry, NNI, StructFieldNNI, StructFieldText } from "@ndn/tlv";
+import { Decoder, Extensible, Extension, ExtensionRegistry, StructFieldNNI, StructFieldText } from "@ndn/tlv";
 import { Closers } from "@ndn/util";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 

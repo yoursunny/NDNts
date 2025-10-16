@@ -2,7 +2,7 @@ import "../test-fixture/expect";
 
 import { expect, test } from "vitest";
 
-import { Decoder, type Encodable, type Encoder, EvDecoder, Extensible, Extension, ExtensionRegistry, NNI, StructFieldBool, StructFieldNNI, StructFieldText } from "..";
+import { Decoder, type Encoder, EvDecoder, Extensible, ExtensionRegistry, StructFieldBool, StructFieldNNI, StructFieldText } from "..";
 
 const EXTENSIONS: ExtensionRegistry<ExtTestTarget> = new ExtensionRegistry<ExtTestTarget>();
 EXTENSIONS.register(0xA1, StructFieldNNI, { order: 0xA9 });

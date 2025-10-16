@@ -55,7 +55,7 @@ class Context {
     makeVerifier,
     enableProducer = true,
   }: Row, f: (verifier: Verifier, data: Verifier.Verifiable) => Promise<void>) {
-    using certProducer = enableProducer ?
+    using _certProducer = enableProducer ?
       await makeRepoProducer({ reg: PrefixRegShorter(4) }, [this.cert1.data, this.cert2.data]) :
       undefined;
     const verifier = makeVerifier(this);

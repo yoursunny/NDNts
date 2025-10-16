@@ -81,7 +81,7 @@ test("asAsyncDisposable", async () => {
     close: vi.fn<() => void>(),
   };
   {
-    await using d0 = Closer.asAsyncDisposable(c0);
+    await using _d0 = Closer.asAsyncDisposable(c0);
   }
   expect(c0.close).toHaveBeenCalledOnce();
 
@@ -89,7 +89,7 @@ test("asAsyncDisposable", async () => {
     [Symbol.dispose]: vi.fn<() => void>(),
   };
   {
-    await using d1 = Closer.asAsyncDisposable(c1);
+    await using _d1 = Closer.asAsyncDisposable(c1);
   }
   expect(c1[Symbol.dispose]).toHaveBeenCalledOnce();
 
@@ -108,7 +108,7 @@ test("lock", async () => {
   await expect(Promise.allSettled(Array.from({ length: 20 }, async (v, i) => {
     void v;
     await delay(100 * Math.random());
-    using locked = await lock(mutex);
+    using _locked = await lock(mutex);
     await delay(100 * Math.random());
 
     if (i % 4 === 0) {

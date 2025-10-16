@@ -272,7 +272,7 @@ test("decode signed", async () => {
   const verify = vi.fn<LLVerify>().mockResolvedValue(undefined);
   await interest[LLVerify.OP](verify);
   expect(verify).toHaveBeenCalledTimes(1);
-  expect(verify.mock.calls[0][0]).toEqualUint8Array(Buffer.concat([name.value, signedParamsWire]));
+  expect(verify.mock.calls[0]![0]).toEqualUint8Array(Buffer.concat([name.value, signedParamsWire]));
   interest.sigInfo = new SigInfo(interest.sigInfo!); // modifying
   await expect(interest[LLVerify.OP](verify)).rejects.toThrow(); // ParamsDigest is now wrong
   expect(verify).toHaveBeenCalledTimes(1);
