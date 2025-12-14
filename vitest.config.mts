@@ -5,12 +5,10 @@ const coverage: CoverageOptions<"v8"> = {
   provider: "v8",
   reporter: process.env.CI ? ["lcovonly"] : ["html", "text-summary"],
   include: ["pkg/**/src/**/*.ts"],
-  all: false,
 };
 
 if (process.env.COVERPKG) {
   coverage.include = [`${process.env.COVERPKG}/src/**/*.ts`];
-  coverage.all = true;
 }
 
 export default defineConfig({

@@ -9,12 +9,12 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v5
         with:
           path: ~/.local/share/pnpm/store
           key: build-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       - run: corepack pnpm install
@@ -30,15 +30,15 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v5
         with:
           path: ~/.local/share/pnpm/store
           key: unittest-${{ matrix.node }}-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install dependencies
@@ -66,14 +66,14 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.local/share/pnpm/store
             ~/.cache/puppeteer
           key: integ-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       - name: Install dependencies
@@ -103,12 +103,12 @@ jobs:
     if: ${{ github.repository == 'yoursunny/NDNts' && github.event_name == 'push' }}
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v5
         with:
           path: ~/.local/share/pnpm/store
           key: publish-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       - run: corepack pnpm install
