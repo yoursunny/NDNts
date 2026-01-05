@@ -41,6 +41,6 @@
     "@ndn/l3face": "workspace:*",
     "@ndn/node-transport": "workspace:*",
     "type-fest": "^5.3.1",
-    "typescript-event-target": "^1.1.1"
+    "typescript-event-target": "^1.1.2"
   }
 }
