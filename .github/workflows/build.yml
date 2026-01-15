@@ -47,7 +47,7 @@ jobs:
             | sudo tee /etc/apt/sources.list.d/nfd-nightly.list
           sudo apt-get update
           sudo apt-get install --no-install-recommends ndnsec
-          pip install git+https://github.com/UCLA-IRL/ndn-python-repo@2dcd229a4cb81927a52e8a8f1d963c55ee939ffa
+          pip install git+https://github.com/UCLA-IRL/ndn-python-repo@991ed9de02add3c1aea9994da573da9ae3ce7c67
       - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
