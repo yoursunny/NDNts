@@ -1,5 +1,5 @@
 import { BlobChunkSource, fetch, FileChunkSource, serve, type Server } from "@ndn/segmented-object";
-import { Closers, fromHex, toHex } from "@ndn/util";
+import { asBufferSource, Closers, fromHex, toHex } from "@ndn/util";
 import { configure as zenfsConfigure } from "@zenfs/core";
 import { WebAccess } from "@zenfs/dom";
 
@@ -19,7 +19,7 @@ async function fetchAndReport(server: Server): Promise<FetchedInfo> {
   closers.push(server);
 
   const fetched = await fetch(server.prefix);
-  const digest = await crypto.subtle.digest("SHA-256", fetched);
+  const digest = await crypto.subtle.digest("SHA-256", asBufferSource(fetched));
   return {
     size: fetched.byteLength,
     digest: toHex(new Uint8Array(digest)),

@@ -32,7 +32,7 @@ export namespace toHex {
  * The input is expected to be valid hexadecimal string.
  * If the input is invalid, the output would be wrong, but no error would be thrown.
  */
-export function fromHex(s: string): Uint8Array {
+export function fromHex(s: string): Uint8Array<ArrayBuffer> {
   const b = new Uint8Array(s.length / 2);
   for (let i = 0; i < b.length; ++i) {
     b[i] = (HEX2INT[s[i * 2]!]! << 4) | HEX2INT[s[i * 2 + 1]!]!;
