@@ -2,6 +2,9 @@ name: build
 on:
   push:
   pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions: {}
 jobs:
   build:
@@ -9,36 +12,46 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/cache@v5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ~/.local/share/pnpm/store
           key: build-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
-          node-version: 22
+          node-version: 24
       - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - run: corepack pnpm build
       - run: corepack pnpm lint
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: build-lib
+          path: pkg/*/lib/
+          retention-days: 1
     timeout-minutes: 30
   unittest:
     strategy:
       matrix:
-        node: [22, 24]
+        include:
+          - node: 25
+            test: test
+          - node: 24
+            test: cover
       fail-fast: false
+    name: unittest (${{ matrix.node }})
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/cache@v5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ~/.local/share/pnpm/store
           key: unittest-${{ matrix.node }}-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: '3.12'
       - name: Install dependencies
@@ -51,14 +64,11 @@ jobs:
       - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
-      - run: corepack pnpm test
-        if: ${{ matrix.node != 22 }}
-      - run: corepack pnpm cover
-        if: ${{ matrix.node == 22 }}
-      - uses: coverallsapp/github-action@v2
+      - run: corepack pnpm ${{ matrix.test }}
+      - uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-        if: ${{ matrix.node == 22 }}
+        if: ${{ matrix.test == 'cover' }}
         continue-on-error: true
     timeout-minutes: 30
   integ:
@@ -66,16 +76,16 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/cache@v5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: |
             ~/.local/share/pnpm/store
             ~/.cache/puppeteer
           key: integ-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
-          node-version: 22
+          node-version: 24
       - name: Install dependencies
         run: |
           echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu jammy main" \
@@ -103,18 +113,21 @@ jobs:
     if: ${{ github.repository == 'yoursunny/NDNts' && github.event_name == 'push' }}
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/cache@v5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ~/.local/share/pnpm/store
           key: publish-${{ hashFiles('**/package.json') }}
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
-          node-version: 22
+          node-version: 24
       - run: corepack pnpm install
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
-      - run: corepack pnpm build
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+        with:
+          name: build-lib
+          path: pkg/
       - run: bash mk/publish-nightly.sh
         env:
           GTAGID: G-YSW3MP43Z4
@@ -123,7 +136,7 @@ jobs:
           [[ -f docs/typedoc/modules/_ndn_packet.html ]]
         env:
           GTAGID: G-YSW3MP43Z4
-      - uses: crazy-max/ghaction-github-pages@v4
+      - uses: crazy-max/ghaction-github-pages@1d6ee9b181a81033a16bd707a1401afa978daab4 # v5.0.0
         with:
           repo: yoursunny/NDNts-nightly
           build_dir: ./mk/nightly-output/
@@ -131,7 +144,7 @@ jobs:
           fqdn: ndnts-nightly.ndn.today
         env:
           GH_PAT: ${{ secrets.NIGHTLY_ACCESS_TOKEN }}
-      - uses: nwtgck/actions-netlify@v3
+      - uses: nwtgck/actions-netlify@4cbaf4c08f1a7bfa537d6113472ef4424e4eb654 # v3.0.0
         with:
           publish-dir: ./docs/
           production-deploy: true
@@ -145,3 +158,4 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: 8987d2bb-7638-4d6b-adff-806fe3b7309a
     timeout-minutes: 30
+# to update actions: corepack pnpx actions-up

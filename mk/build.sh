@@ -1,45 +1,45 @@
 #!/bin/bash
 set -euo pipefail
+INPWD="$PWD"
 cd "$(dirname "${BASH_SOURCE[0]}")"/..
 ACT=${1:-}
 shift || true
 
 if [[ $ACT == lint ]]; then
-  XOFLAG=--fix
-  if [[ ${CI:-false} == true ]]; then
-    XOFLAG=
+  RECURSE=(corepack pnpm -r --workspace-concurrency=1 --stream)
+  LINTPWD=(bash "$PWD/mk/build.sh" lint pwd)
+  XO=(env NODE_OPTIONS='--max-old-space-size=8192' xo-yoursunny --config "$PWD/xo.config.mjs")
+  [[ ${CI:-} != true ]] && XO+=(--fix)
+
+  if [[ ${1:-} == pwd ]]; then
+    echo -e "\n\e[93mLINTING $INPWD\e[39m"
+    exec "${XO[@]}" "$INPWD"
   fi
 
-  LINTDIFF=
+  # corepack pnpm lint all
+  if [[ ${1:-} == all ]]; then
+    echo -e "\n\e[96mLINTING ENTIRE CODEBASE\e[39m"
+    exec "${XO[@]}"
+  fi
+
+  # corepack pnpm lint PACKAGE [PACKAGE]
+  if [[ -n ${1:-} && $1 != diff ]]; then
+    echo -e "\n\e[96mLINTING PACKAGES $*\e[39m"
+    exec "${XO[@]}" "$@"
+  fi
+
+  # corepack pnpm lint diff [COMMIT]
   if [[ ${1:-} == diff ]]; then
-    LINTDIFF=HEAD
-    shift
-    if [[ -n ${1:-} ]]; then
-      LINTDIFF=$1
-      shift
-    fi
+    SINCE=${2:-HEAD}
+    echo -e "\n\e[96mLINTING CHANGES SINCE $SINCE\e[39m"
+    exec "${RECURSE[@]}" --filter="...[$SINCE]" exec "${LINTPWD[@]}"
   fi
 
-  if [[ -n ${1:-} ]]; then
-    if [[ $1 == all ]]; then
-      shift
-    fi
-    exec env NODE_OPTIONS='--max-old-space-size=8192' xo-yoursunny $XOFLAG "$@"
-  fi
-
-  ROOTDIR=$(pwd)
-  for DIR in $(corepack pnpm -s -r --reporter-hide-prefix exec pwd); do
-    if [[ $DIR == $ROOTDIR ]]; then
-      continue
-    fi
-    if [[ -n $LINTDIFF ]] && git diff --quiet $LINTDIFF $DIR; then
-      continue
-    fi
-    echo -e '\n\e[96m'LINTING $DIR'\e[39m'
-    bash mk/build.sh lint $DIR
-  done
-  echo -e '\n\e[96m'LINTING CODEBASE ROOT'\e[39m'
-  exec bash mk/build.sh lint all
+  # corepack pnpm lint
+  echo -e "\n\e[96mLINTING PACKAGES\e[39m"
+  "${RECURSE[@]}" exec "${LINTPWD[@]}"
+  echo -e "\n\e[96mLINTING CODEBASE ROOT\e[39m"
+  exec "${XO[@]}" --no-recursive .
 fi
 
 if [[ $ACT == cover ]]; then
