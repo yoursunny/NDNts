@@ -5,6 +5,6 @@ export * from "./challenge-response";
 export * from "./error-msg";
 export * from "./new-request";
 export * from "./new-response";
-export type { ParameterKV } from "./parameter-kv";
+export { ParameterKV } from "./parameter-kv";
 export * from "./probe-request";
 export * from "./probe-response";

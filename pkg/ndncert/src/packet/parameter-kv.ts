@@ -1,10 +1,24 @@
 import type { Encodable, EvDecoder } from "@ndn/tlv";
-import { assert, toUtf8 } from "@ndn/util";
+import { assert, fromUtf8, toUtf8 } from "@ndn/util";
 
 import { TT } from "./an";
 
 /** Parameter key-value pair. */
 export type ParameterKV = Record<string, Uint8Array>;
+
+export namespace ParameterKV {
+  export function from(input: Record<string, Uint8Array | string>): ParameterKV {
+    return Object.fromEntries(Object.entries(input).map(([k, v]) => [k, typeof v === "string" ? toUtf8(v) : v]));
+  }
+
+  /** Retrieve parameter as UTF-8 string. */
+  export function getString(kv: ParameterKV, key: string): string {
+    if (!(key in kv)) {
+      throw new Error(`missing parameter ${key}`);
+    }
+    return fromUtf8(kv[key]!);
+  }
+}
 
 const seenKey = new WeakMap<ParameterKV, string>();
 

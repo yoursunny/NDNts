@@ -1,6 +1,5 @@
-import { toUtf8 } from "@ndn/util";
 
-import type { ParameterKV } from "../packet/mod";
+import { ParameterKV } from "../packet/mod";
 import { ClientPinLikeChallenge } from "./pin-like-challenge";
 
 /** The "email" challenge where client receives a pin code via email. */
@@ -15,6 +14,6 @@ export class ClientEmailChallenge extends ClientPinLikeChallenge {
   }
 
   public override async start(): Promise<ParameterKV> {
-    return { email: toUtf8(this.email) };
+    return ParameterKV.from({ email: this.email });
   }
 }

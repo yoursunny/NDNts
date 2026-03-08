@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import { openUplinks } from "@ndn/cli-common";
 import { CertNaming, generateSigningKey, type KeyChain, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
 import { AltUri } from "@ndn/naming-convention2";
-import { type CaProfile, type ClientChallenge, type ClientChallengeContext, ClientEmailChallenge, type ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, type ClientPinLikeChallenge, ClientPossessionChallenge, matchProbe, requestCertificate, requestProbe } from "@ndn/ndncert";
+import { type CaProfile, type ClientChallenge, type ClientChallengeContext, ClientDnsChallenge, ClientEmailChallenge, type ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, type ClientPinLikeChallenge, ClientPossessionChallenge, matchProbe, requestCertificate, requestProbe } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
 import { console, toHex } from "@ndn/util";
@@ -22,6 +22,7 @@ interface Args {
   "pin-named-pipe"?: string;
   email?: string;
   "possession-cert"?: Name;
+  "dns-domain"?: string;
 }
 
 export const Ndncert03ClientCommand: CommandModule<{}, Args> = {
@@ -50,7 +51,7 @@ export const Ndncert03ClientCommand: CommandModule<{}, Args> = {
       .option("challenge", {
         demandOption: true,
         array: true,
-        choices: ["nop", "pin", "email", "possession"],
+        choices: ["nop", "pin", "email", "possession", "dns"],
         desc: "supported challenges",
         type: "string",
       })
@@ -67,6 +68,10 @@ export const Ndncert03ClientCommand: CommandModule<{}, Args> = {
         coerce: Name.from,
         desc: "possession challenge - existing certificate name",
         defaultDescription: "same as --key when it is a certificate name",
+        type: "string",
+      })
+      .option("dns-domain", {
+        desc: "dns challenge - domain name",
         type: "string",
       })
       .check(({ key }) => {
@@ -87,6 +92,12 @@ export const Ndncert03ClientCommand: CommandModule<{}, Args> = {
         }
         if (!(cert ??= key) || !CertNaming.isCertName(cert)) {
           throw new Error("possession challenge enabled but neither --key nor --possession-cert is a certificate name");
+        }
+        return true;
+      })
+      .check(({ challenge, "dns-domain": domain }) => {
+        if (challenge.includes("dns") && !domain?.includes(".")) {
+          throw new Error("dns challenge enabled but --dns-domain is absent");
         }
         return true;
       });
@@ -187,6 +198,10 @@ class InteractiveClient {
           challenges.push(new ClientPossessionChallenge(cert, pvt));
           break;
         }
+        case "dns": {
+          challenges.push(new ClientDnsChallenge(this.args["dns-domain"]!, this.promptDns()));
+          break;
+        }
       }
     }
     return challenges;
@@ -211,6 +226,23 @@ class InteractiveClient {
       });
       prompts.override({});
       return String(response.code).trim();
+    };
+  }
+
+  private promptDns(): ClientDnsChallenge.Prompt {
+    return async (_context, recordName, expectedValue) => {
+      console.log(`\nDNS record for certificate request\n${recordName}\tIN\tTXT\n${expectedValue}\n`);
+      while (true) {
+        const response = await prompts({
+          type: "confirm",
+          name: "ready",
+          message: "Confirm when DNS record is ready:",
+          initial: true,
+        });
+        if (response.ready) {
+          return;
+        }
+      }
     };
   }
 }

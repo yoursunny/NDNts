@@ -189,11 +189,13 @@ See `@ndn/ndnsec` package for more information.
 * `--challenge nop` enables "nop" challenge.
 * `--challenge pin` enables "pin" challenge.
 * `--challenge email` enables "email" challenge.
+* `--challenge dns` enables "dns" challenge.
 * `--email` specifies email address to use in the email challenge.
 * `--challenge possession` enables "possession" challenge.
 * `--possession-cert` specifies existing certificate name to fulfill possession challenge.
   If `--key` is a certificate name, this may be omitted if using the same certificate.
   The specified certificate and its corresponding private key must exist in the keychain.
+* `--dns-domain` specifies domain name to use in the DNS challenge.
 * You may specify multiple challenges, and the first one allowed by the server will be used.
 
 ### NDNCERT examples
@@ -322,4 +324,22 @@ PROBE_CACERT=$( \
 # CA profile is retrieved and verified according to provided CA certificate full name
 ndnts-keychain ndncert03-client --profile $PROBE_CACERT --pp email $PROBE_EMAIL \
   --challenge email --email ethereal
+```
+
+DNS challenge, for global NDN testbed:
+
+```bash
+export NDNTS_UPLINK=autoconfig:
+export NDNTS_KEYCHAIN=/tmp/req-keychain
+
+# download root CA profile
+http --json --follow --output /tmp/ndn-root-ca.client.conf \
+  GET https://github.com/named-data/ndncert/raw/master/client.conf.sample
+
+# generate a random institutional email address for running PROBE command
+PROBE_EMAIL=$(openssl rand -hex 8)@ucla.edu
+
+# request certificate from the root CA
+ndnts-keychain ndncert03-client --profile /tmp/ndn-root-ca.client.conf --pp email $PROBE_EMAIL \
+  --challenge dns --dns-domain d.yoursunny.dev
 ```
