@@ -36,7 +36,7 @@
     "@ndn/util": "workspace:*",
     "streaming-iterables": "^8.0.1",
     "tslib": "^2.8.1",
-    "type-fest": "^5.4.4",
+    "type-fest": "^5.6.0",
     "typescript-event-target": "^1.1.2"
   },
   "devDependencies": {
@@ -46,6 +46,6 @@
     "@ndn/nfdmgmt": "workspace:^",
     "@types/netmask": "^2.0.6",
     "execa": "^9.6.1",
-    "netmask": "^2.0.2"
+    "netmask": "^2.1.1"
   }
 }

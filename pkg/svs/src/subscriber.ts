@@ -104,7 +104,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
     if (topic instanceof Name) {
       return this.nameSubs.subscribe(topic).sub;
     }
-    topic = topic as SvSubscriber.SubscribePrefixFilter<ME>;
+    topic = topic as SvSubscriber.SubscribePrefixFilter<ME>; // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
     const { sub } = this.nameSubs.subscribe(topic.prefix);
     this.nameFilters.set(sub, topic.filter);
     return sub;

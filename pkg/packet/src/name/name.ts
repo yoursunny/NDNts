@@ -234,7 +234,7 @@ function comparePrefix(lhs: Name, rhs: Name, n: number): Name.CompareResult {
   for (let i = 0; i < n; ++i) {
     const cmp = lhs.comps[i]!.compare(rhs.comps[i]!);
     if (cmp !== Component.CompareResult.EQUAL) {
-      return cmp as unknown as Name.CompareResult;
+      return cmp;
     }
   }
   return Name.CompareResult.EQUAL;

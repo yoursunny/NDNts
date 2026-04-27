@@ -74,7 +74,7 @@ test("encode Encodable[] and extract", () => {
       extractCb,
     ),
   ])).toEqualUint8Array([0xF0, 0x02, 0x03, 0x20, 0x21, 0x22]);
-  expect(extractCb).toBeCalledTimes(1);
+  expect(extractCb).toHaveBeenCalledTimes(1);
   expect(extractCb.mock.calls[0]![0]).toEqualUint8Array([0x02, 0x03, 0x20, 0x21, 0x22]);
 });
 

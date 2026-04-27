@@ -78,7 +78,7 @@ export function encodeFields(fields: ReadonlyArray<Field<any>>, obj: Record<stri
   const elements: Encodable[] = [];
   for (const { tt, key, encode } of fields) {
     for (const value of encode(obj[key])) {
-      elements.push([tt, value as Encodable]);
+      elements.push([tt, value as Encodable]); // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
     }
   }
   return elements;

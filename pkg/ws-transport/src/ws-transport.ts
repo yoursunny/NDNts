@@ -1,4 +1,5 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
+import { asBufferSource } from "@ndn/util";
 import EventIterator from "event-iterator";
 import { pEvent } from "p-event";
 import type { WebSocket as WsWebSocket } from "ws";
@@ -66,7 +67,7 @@ export class WsTransport extends Transport {
         if (this.sock.readyState !== this.sock.OPEN) {
           throw new Error(`unexpected WebSocket.readyState ${this.sock.readyState}`);
         }
-        this.sock.send(pkt);
+        this.sock.send(asBufferSource(pkt));
 
         if (this.sock.bufferedAmount > this.highWaterMark) {
           await this.waitForTxBuffer();

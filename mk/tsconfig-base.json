@@ -10,12 +10,10 @@
       "DOM",
       "DOM.Iterable",
       "DOM.AsyncIterable",
-      "ES2024",
-      "ESNext.Collection",
-      "ESNext.Decorators",
+      "ES2025",
     ],
     "libReplacement": false,
-    "module": "ES2022",
+    "module": "es2022",
     "moduleResolution": "bundler",
     "noEmitOnError": true,
     "noImplicitOverride": true,
@@ -24,7 +22,7 @@
     "noUncheckedSideEffectImports": true,
     "noUnusedLocals": true,
     "strict": true,
-    "target": "ES2024",
+    "target": "es2025",
     "types": [
       "node"
     ],

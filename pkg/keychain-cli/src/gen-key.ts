@@ -1,4 +1,4 @@
-import { Certificate, EcCurve, ECDSA, generateSigningKey, type NamedSigner, type NamedVerifier, type PrivateKey, type PublicKey, RSA, RsaModulusLength } from "@ndn/keychain";
+import { Certificate, EcCurve, ECDSA, generateSigningKey, type NamedSigner, type PrivateKey, type PublicKey, RSA, RsaModulusLength } from "@ndn/keychain";
 import { Name } from "@ndn/packet";
 import stdout from "stdout-stream";
 import type { CommandModule } from "yargs";
@@ -73,7 +73,7 @@ export const GenKeyCommand: CommandModule<{}, Args> = {
     if (canSelfSign) {
       const cert = await Certificate.selfSign({
         privateKey: pvt as NamedSigner.PrivateKey,
-        publicKey: pub as NamedVerifier.PublicKey,
+        publicKey: pub,
       });
       await keyChain.insertCert(cert);
       stdout.write(`${cert.name}\n`);
