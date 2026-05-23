@@ -1,6 +1,6 @@
 {
   "name": "@ndn/util",
-  "version": "0.0.20250307",
+  "version": "0.0.20260427",
   "description": "NDNts: general utilities",
   "keywords": [
     "NDN",
