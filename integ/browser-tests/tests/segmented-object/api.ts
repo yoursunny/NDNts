@@ -5,5 +5,4 @@ export interface FetchedInfo {
 
 declare global {
   function testBlobChunkSource(): Promise<FetchedInfo>;
-  function testZenFS(payloadHex: string): Promise<FetchedInfo>;
 }

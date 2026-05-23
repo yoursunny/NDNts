@@ -26,20 +26,18 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@miyauci/lru-map": "1.0.0-beta.1",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
-    "@zenfs/core": "~2.5.6",
     "obliterator": "^2.0.5",
-    "streaming-iterables": "^8.0.1",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
     "@ndn/endpoint": "workspace:*",
-    "@ndn/fw": "workspace:^"
+    "@ndn/fw": "workspace:^",
+    "streaming-iterables": "^8.0.1"
   }
 }

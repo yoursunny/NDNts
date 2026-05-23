@@ -59,15 +59,5 @@ export class FileChunkSource implements ChunkSource {
 }
 export namespace FileChunkSource {
   /** {@link FileChunkSource} options. */
-  export type Options = ChunkOptions & {
-    /**
-     * Whether to use ZenFS.
-     *
-     * @remarks
-     * - Set `true` to use ZenFS, which is a cross-platform virtual filesystem independent from
-     *   the underlying operating system. This is the only choice in browser environment.
-     * - Set `false` to use Node.js native filesystem. This is the default in Node.js.
-     */
-    zenfs?: boolean;
-  };
+  export type Options = ChunkOptions;
 }

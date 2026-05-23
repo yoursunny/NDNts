@@ -1,7 +1,5 @@
-import { BlobChunkSource, fetch, FileChunkSource, serve, type Server } from "@ndn/segmented-object";
-import { asBufferSource, Closers, fromHex, toHex } from "@ndn/util";
-import { configure as zenfsConfigure } from "@zenfs/core";
-import { WebAccess } from "@zenfs/dom";
+import { BlobChunkSource, fetch, serve, type Server } from "@ndn/segmented-object";
+import { asBufferSource, Closers, toHex } from "@ndn/util";
 
 import type { FetchedInfo } from "./api";
 
@@ -29,24 +27,5 @@ async function fetchAndReport(server: Server): Promise<FetchedInfo> {
 globalThis.testBlobChunkSource = (): Promise<FetchedInfo> => {
   const file = upload.files![0]!;
   const server = serve("/R", new BlobChunkSource(file));
-  return fetchAndReport(server);
-};
-
-globalThis.testZenFS = async (payloadHex): Promise<FetchedInfo> => {
-  const root = await navigator.storage.getDirectory();
-  const file = await root.getFileHandle("R.bin", { create: true });
-  const writable = await file.createWritable();
-  await writable.write(fromHex(payloadHex));
-  await writable.close();
-
-  await zenfsConfigure({
-    mounts: {
-      "/W": {
-        backend: WebAccess,
-        handle: root,
-      },
-    },
-  });
-  const server = serve("/R", new FileChunkSource("/W/R.bin"));
   return fetchAndReport(server);
 };

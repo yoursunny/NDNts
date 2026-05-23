@@ -33,9 +33,3 @@ test("blob to buffer", async () => {
   expect(size).toBe(objectBody.byteLength);
   expect(digest).toBe(objectBodyDigest);
 });
-
-test("file to buffer", async () => {
-  const { size, digest } = await pageInvoke<typeof globalThis.testZenFS>("testZenFS", toHex(objectBody));
-  expect(size).toBe(objectBody.byteLength);
-  expect(digest).toBe(objectBodyDigest);
-});

@@ -7,11 +7,10 @@ import { Data, Name } from "@ndn/packet";
 import { makeMetadataPacket, MetadataKeyword } from "@ndn/rdr";
 import { BufferChunkSource, DataProducer } from "@ndn/segmented-object";
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
-import { configure as zenfsConfigure, fs as zenfs } from "@zenfs/core";
 import { collect } from "streaming-iterables";
-import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { afterAll, beforeAll, expect, test } from "vitest";
 
-import { buildDirectoryListing, Client, FileMetadata, lsKeyword, ModeDir, ModeFile, NDNZenFS } from "..";
+import { buildDirectoryListing, Client, FileMetadata, lsKeyword, ModeDir, ModeFile } from "..";
 
 // Directory hierarchy:
 //   /
@@ -83,15 +82,6 @@ beforeAll(async () => {
   );
 
   client = new Client(prefix);
-
-  await zenfsConfigure({
-    mounts: {
-      "/N": {
-        backend: NDNZenFS,
-        client,
-      },
-    },
-  });
 });
 afterAll(Forwarder.deleteDefault);
 
@@ -147,53 +137,4 @@ test.each(readFileIntoCases)("readFileInto [%d,%d)", async (...tc) => {
     const statB = await client.stat("A/B.bin");
     await client.readFileInto(statB, ...args);
   }, ...tc);
-});
-
-test("zenfs rejects", async () => {
-  expect(() => zenfs.statSync("/N/A")).toThrow(/async/);
-  expect(() => zenfs.readdirSync("/N/A")).toThrow(/async/);
-  await expect(zenfs.promises.appendFile("/N/A/B.bin", "tail")).rejects.toThrow(/read-only/);
-  expect(() => zenfs.readFileSync("/N/A/B.bin")).toThrow(/async/);
-  expect(() => zenfs.openSync("/N/A/B.bin", "r")).toThrow(/async/);
-});
-
-test("zenfs stat", async () => {
-  const statRoot = await zenfs.promises.stat("/N");
-  expect(statRoot.isDirectory()).toBeTruthy();
-
-  const statA = await zenfs.promises.stat("/N/A");
-  expect(statA.isDirectory()).toBeTruthy();
-
-  const statB = await zenfs.promises.stat("/N/A/B.bin");
-  expect(statB.isFile()).toBeTruthy();
-  expect(statB.size).toBe(bodyB.length);
-});
-
-describe("zenfs open", () => {
-  let fh: zenfs.promises.FileHandle;
-  beforeAll(async () => {
-    fh = await zenfs.promises.open("/N/A/B.bin", "r");
-  });
-  afterAll(async () => {
-    await fh.close();
-  });
-
-  test("stat", async () => {
-    expect((await fh.stat()).size).toBe(bodyB.length);
-  });
-
-  test.each(readFileIntoCases)("read [%d,%d)", async (...tc) => {
-    await testReadFileInto(async (...args) => {
-      await fh.read(...args);
-    }, ...tc);
-  });
-});
-
-test("zenfs readdir", async () => {
-  await expect(zenfs.promises.readdir("/N")).resolves.toEqual(["A"]);
-  await expect(zenfs.promises.readdir("/N/A")).resolves.toEqual(["B.bin"]);
-});
-
-test("zenfs readFile", async () => {
-  await expect(zenfs.promises.readFile("/N/A/B.bin")).resolves.toEqualUint8Array(bodyB);
 });

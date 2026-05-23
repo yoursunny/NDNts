@@ -1,7 +1,6 @@
 import "@ndn/util/test-fixture/expect";
 
 import { Blob } from "node:buffer";
-import path from "node:path";
 
 import { consume } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
@@ -9,9 +8,8 @@ import { SnapshotFaces } from "@ndn/fw/test-fixture/snapshot-faces";
 import { Bridge } from "@ndn/l3face";
 import { Segment2, Segment3 } from "@ndn/naming-convention2";
 import { FwHint, Name, type Verifier } from "@ndn/packet";
-import { Closers, delay } from "@ndn/util";
+import { asBufferSource, Closers, delay } from "@ndn/util";
 import { makeTmpDir } from "@ndn/util/test-fixture/tmp";
-import { promises as zenfs } from "@zenfs/core";
 import { BufferReadableMock, BufferWritableMock } from "stream-mock";
 import { collect, consume as consumeIterable } from "streaming-iterables";
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
@@ -23,11 +21,6 @@ const fwOpts: Forwarder.Options = { dataNoTokenMatch: false };
 let sFaces: SnapshotFaces;
 const closers = new Closers();
 const objectBody = makeObjectBody();
-const zenfsFilename = "/serve-fetch-test/1.bin";
-beforeAll(async () => {
-  await zenfs.mkdir(path.dirname(zenfsFilename));
-  await zenfs.writeFile(zenfsFilename, objectBody);
-});
 beforeEach(() => {
   Forwarder.replaceDefault(Forwarder.create(fwOpts));
   sFaces = new SnapshotFaces();
@@ -60,7 +53,7 @@ test("buffer to buffer", async () => {
 });
 
 test("blob to chunks", async () => {
-  const chunkSource = new BlobChunkSource(new Blob([objectBody]));
+  const chunkSource = new BlobChunkSource(new Blob([asBufferSource(objectBody) as Uint8Array<ArrayBuffer>]));
   expect(chunkSource).toBeInstanceOf(BlobChunkSource);
   const server = serve("/R", chunkSource);
   closers.push(server);
@@ -100,14 +93,6 @@ describe("file source", () => {
     const fetched = fetch("/R");
     await expect(fetched).resolves.toEqualUint8Array(objectBody);
   });
-});
-
-test("zenfs to buffer", async () => {
-  const server = serve("/R", new FileChunkSource(zenfsFilename, { zenfs: true }));
-  closers.push(server);
-
-  const fetched = fetch("/R");
-  await expect(fetched).resolves.toEqualUint8Array(objectBody);
 });
 
 test("iterable to unordered", async () => {
