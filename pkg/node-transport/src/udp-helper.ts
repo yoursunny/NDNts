@@ -107,10 +107,10 @@ export interface MulticastOptions extends SocketBufferOptions {
    * @defaultValue 224.0.23.170
    *
    * @remarks
-   * Due to dgram.Socket API limitation, if multiple multicast UDP transports are using the same
-   * port number but different group addresses, incoming traffic may be received on all sockets
-   * regardless of the group address. This also affects multicast UDP transports in other programs
-   * such as YaNFD. To isolate the traffic, the port number must be changed.
+   * On non-Linux platforms, if multiple multicast UDP transports are using the same port number
+   * but different group addresses, incoming traffic may be received on all sockets regardless of
+   * the group address. This also affects multicast UDP transports in other programs such as YaNFD.
+   * To isolate the traffic, the port number must be changed.
    */
   group?: string;
 
@@ -145,15 +145,16 @@ export async function openMulticastRx(opts: MulticastOptions): Promise<dgram.Soc
     intf,
     group = DEFAULT_MULTICAST_GROUP,
     port = DEFAULT_MULTICAST_PORT,
-    multicastLoopback = false,
   } = opts;
   const sock = await openSocket({
     ...opts,
-    bind: { port },
+    bind: {
+      address: os.platform() === "linux" ? group : undefined,
+      port,
+    },
   });
   try {
     sock.setBroadcast(true);
-    sock.setMulticastLoopback(multicastLoopback);
     sock.addMembership(group, intf);
   } catch (err: unknown) {
     sock.close();
@@ -169,6 +170,7 @@ export async function openMulticastTx(opts: MulticastOptions): Promise<dgram.Soc
     group = DEFAULT_MULTICAST_GROUP,
     port = DEFAULT_MULTICAST_PORT,
     multicastTtl = 1,
+    multicastLoopback = false,
   } = opts;
   const sock = await openSocket({
     ...opts,
@@ -176,6 +178,7 @@ export async function openMulticastTx(opts: MulticastOptions): Promise<dgram.Soc
   });
   try {
     sock.setMulticastTTL(multicastTtl);
+    sock.setMulticastLoopback(multicastLoopback);
     sock.setMulticastInterface(intf);
     sock.connect(port, group);
     await once(sock, "connect");

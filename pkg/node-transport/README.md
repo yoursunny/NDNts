@@ -74,6 +74,7 @@ try {
 
 To use UDP multicast, each network interface needs to have a separate transport.
 It's easiest to let NDNts automatically create transports on every network interface.
+Firewall exception may be required to receive multicast traffic.
 
 ```ts
 // UdpTransport.multicasts() attempts to create UDP multicast transports on every
