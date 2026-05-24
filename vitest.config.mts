@@ -1,7 +1,7 @@
 import { defineConfig } from "vitest/config";
 import type { CoverageOptions } from "vitest/node";
 
-const coverage: CoverageOptions<"v8"> = {
+const coverage: CoverageOptions = {
   provider: "v8",
   reporter: process.env.CI ? ["lcovonly"] : ["html", "text-summary"],
   include: ["pkg/**/src/**/*.ts"],
@@ -12,7 +12,6 @@ if (process.env.COVERPKG) {
 }
 
 export default defineConfig({
-  esbuild: { target: "es2022" },
   test: {
     coverage,
     deps: {
