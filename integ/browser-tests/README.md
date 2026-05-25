@@ -12,18 +12,18 @@ In each test case,
 
 ## Puppeteer Docker
 
-```bash
-docker pull satantime/puppeteer-node:22-slim
+Start container with this command at the codebase root:
 
+```bash
 docker run -it --rm \
   --network host \
-  --mount type=bind,source=$(pwd),target=/NDNts \
+  --mount type=bind,source=$(pwd),target=$(pwd) \
   --mount type=bind,source=$HOME/.cache/puppeteer,target=/pptr-cache,readonly=true \
   -e PUPPETEER_CACHE_DIR=/pptr-cache \
   --cap-add SYS_ADMIN \
   --user $(id -u):$(id -g) \
-  --workdir /NDNts/integ/browser-tests \
-  satantime/puppeteer-node:22-slim bash
+  --workdir $(pwd)/integ/browser-tests \
+  satantime/puppeteer-node:24-slim bash
 ```
 
 Type `corepack pnpm test` to run the tests.
