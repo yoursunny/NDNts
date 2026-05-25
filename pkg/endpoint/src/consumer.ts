@@ -81,6 +81,8 @@ function makeConsumer(
   const retxGen = makeRetxGenerator(retx)(interest.lifetime)[Symbol.iterator]();
 
   const promise = new Promise<Data>((resolve, reject) => {
+    signal?.throwIfAborted();
+
     const rx = pushable<FwPacket>();
 
     let timer: NodeJS.Timeout | number | undefined;

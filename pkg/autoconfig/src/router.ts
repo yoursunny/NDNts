@@ -2,6 +2,9 @@ import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { type Forwarder, type FwFace, TapFace } from "@ndn/fw";
 import { Interest, Name, type NameLike } from "@ndn/packet";
 import type { H3Transport } from "@ndn/quic-transport";
+import { assert } from "@ndn/util";
+import { pEvent } from "p-event";
+import type { Arrayable } from "type-fest";
 
 import { createFace } from "./platform_node";
 
@@ -50,7 +53,7 @@ export interface ConnectRouterOptions {
    *   If string ends with "/*", it's replaced with a random component.
    * - function: execute the custom tester function.
    */
-  testConnection?: false | TestConnectionPacket | TestConnectionPacket[] |
+  testConnection?: false | Arrayable<TestConnectionPacket> |
     ((face: FwFace) => Promise<unknown>);
 
   /**
@@ -66,7 +69,10 @@ export interface ConnectRouterOptions {
    * Routes to be added on the created face.
    * @defaultValue `["/"]`
    */
-  addRoutes?: NameLike[];
+  addRoutes?: readonly NameLike[];
+
+  /** AbortSignal that allows canceling the attempt via AbortController. */
+  signal?: AbortSignal;
 }
 
 /** {@link connectToRouter} result. */
@@ -83,7 +89,26 @@ export interface ConnectRouterResult {
 
 /** Connect to a router and test the connection. */
 export async function connectToRouter(router: string, opts: ConnectRouterOptions = {}): Promise<ConnectRouterResult> {
-  const face = await createFace(router, opts);
+  const { signal } = opts;
+  let face: FwFace | undefined;
+  const promises: Array<Promise<void>> = [
+    (async () => {
+      // createFace does not take AbortSignal, but clear it to protect against future changes
+      face = await createFace(router, { ...opts, signal: undefined });
+    })(),
+  ];
+  if (signal) {
+    promises.push((async () => {
+      if (!signal.aborted) {
+        await pEvent(signal, "abort");
+      }
+    })());
+  }
+  await Promise.race(promises);
+  if (!face) {
+    assert(signal?.aborted);
+    throw signal.reason; // eslint-disable-line @typescript-eslint/only-throw-error
+  }
 
   const testConnectionStart = performance.now();
   let testConnectionDuration: number;
@@ -91,6 +116,7 @@ export async function connectToRouter(router: string, opts: ConnectRouterOptions
   try {
     testConnectionResult = await testConnection(face, opts);
     testConnectionDuration = performance.now() - testConnectionStart;
+    signal?.throwIfAborted();
   } catch (err: unknown) {
     face.close();
     throw err;
@@ -103,8 +129,11 @@ async function testConnection(
     {
       testConnection: tc = new Name("/localhop/nfd/rib/list"),
       testConnectionTimeout = 2000,
+      signal: parentSignal,
     }: ConnectRouterOptions,
 ): Promise<unknown> {
+  parentSignal?.throwIfAborted();
+
   if (tc === false) {
     return undefined;
   }
@@ -117,20 +146,23 @@ async function testConnection(
 
   const tapFace = TapFace.create(face);
   tapFace.addRoute("/");
-  const abort = new AbortController();
-  const cOpts: ConsumerOptions = { fw: tapFace.fw, signal: abort.signal };
+  const raceAbort = new AbortController();
+  const cOpts: ConsumerOptions = {
+    fw: tapFace.fw,
+    signal: parentSignal ? AbortSignal.any([parentSignal, raceAbort.signal]) : raceAbort.signal,
+  };
   try {
-    await Promise.any(tc.map((pkt) => {
+    return await Promise.any(tc.map(async (pkt, i) => {
       if (typeof pkt === "string" && pkt.endsWith("/*")) {
         pkt = new Name(pkt.slice(0, -2)).append(Math.trunc(Math.random() * 1e8).toString().padStart(8, "0"));
       }
       const interest = pkt instanceof Interest ? pkt :
         new Interest(pkt, Interest.CanBePrefix, Interest.Lifetime(testConnectionTimeout));
-      return consume(interest, cOpts);
+      const data = await consume(interest, cOpts);
+      return { i, interest, data };
     }));
   } finally {
-    abort.abort();
+    raceAbort.abort();
     tapFace.close();
   }
-  return undefined;
 }

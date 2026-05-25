@@ -39,6 +39,13 @@ export interface ConnectNetworkOptions extends ConnectRouterOptions {
    * @defaultValue 1
    */
   fastest?: number;
+
+  /***
+   * After `fastest` faces have been created and finished testConnection,
+   * how much longer to wait for other faces, in milliseconds.
+   * @defaultValue 1000
+   */
+  waitAfterFastest?: number;
 }
 
 /** Connect to an NDN network. */
@@ -49,7 +56,16 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
     tryDefaultGateway = true,
     fallback = [],
     fastest = 1,
+    waitAfterFastest = 1000,
+    signal: parentSignal,
   } = opts;
+  parentSignal?.throwIfAborted();
+
+  const fastestAbort = new AbortController();
+  const routerOpts: ConnectRouterOptions = {
+    ...opts,
+    signal: parentSignal ? AbortSignal.any([parentSignal, fastestAbort.signal]) : fastestAbort.signal,
+  };
 
   const connected: ConnectRouterResult[] = [];
   const errs: Record<string, unknown> = {};
@@ -75,7 +91,13 @@ export async function connectToNetwork(opts: ConnectNetworkOptions = {}): Promis
   ) {
     await Promise.all(routers.map(async (router) => {
       try {
-        connected.push(await connectToRouter(router, opts));
+        connected.push(await connectToRouter(router, routerOpts));
+        if (connected.length === fastest) {
+          setTimeout(
+            () => fastestAbort.abort(new Error("sufficient number of faces have been established")),
+            waitAfterFastest,
+          );
+        }
       } catch (err: unknown) {
         errs[router] = err;
       }

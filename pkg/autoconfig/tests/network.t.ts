@@ -44,13 +44,18 @@ test("connectToNetwork", async () => {
     ...await addClosedServers(),
   ];
 
+  const t0 = Date.now();
   const faces = await connectToNetwork({
     fch: false,
     tryDefaultGateway: false,
     fallback: servers,
+    connectTimeout: 5000,
     testConnection: "/localhop/test-connection/*",
-    testConnectionTimeout: 1500,
+    testConnectionTimeout: 5000,
+    waitAfterFastest: 100,
   });
+  const t1 = Date.now();
+  expect(t1 - t0).toBeLessThanOrEqual(2000);
   closers.push(...faces);
   expect(faces).toHaveLength(1);
   expect(faces[0]!.toString()).toContain(servers[1]);
@@ -62,6 +67,7 @@ test("connectToNetwork", async () => {
     tryDefaultGateway: false,
     fallback: servers,
     fastest: 2,
+    connectTimeout: 1500,
     testConnection: ["/localhop/test-connection/*", new Name("/unreachable")],
     testConnectionTimeout: 1500,
   });
