@@ -12,16 +12,13 @@
       "DOM.AsyncIterable",
       "ES2025",
     ],
-    "libReplacement": false,
     "module": "es2022",
     "moduleResolution": "bundler",
     "noEmitOnError": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUncheckedIndexedAccess": true,
-    "noUncheckedSideEffectImports": true,
     "noUnusedLocals": true,
-    "strict": true,
     "target": "es2025",
     "types": [
       "node"

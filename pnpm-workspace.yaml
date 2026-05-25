@@ -1,10 +1,11 @@
-onlyBuiltDependencies:
-  - bufferutil
-  - classic-level
-  - esbuild
-  - memif
-  - puppeteer
-  - unrs-resolver
+allowBuilds:
+  bufferutil: true
+  classic-level: true
+  memif: true
+  puppeteer: true
+  unrs-resolver: true
+
+blockExoticSubdeps: false
 
 packages:
   - integ/*
