@@ -1,10 +1,12 @@
 import { L3Face, rxFromPacketIterable, Transport } from "@ndn/l3face";
 import { delay } from "@ndn/util";
 
+import { makeWebTransport, supported } from "./wt_node";
+
 /** HTTP/3 transport. */
 export class H3Transport extends Transport {
-  /** Whether current browser supports WebTransport. */
-  public static readonly supported: boolean = !!globalThis.WebTransport;
+  /** Whether current environment supports WebTransport. */
+  public static readonly supported: boolean = supported;
 
   /**
    * Create a transport and connect to remote endpoint.
@@ -13,7 +15,7 @@ export class H3Transport extends Transport {
    */
   public static async connect(uri: string, opts: H3Transport.Options = {}): Promise<H3Transport> {
     const { connectTimeout = 10000, ...wtOpts } = opts;
-    const tr = new WebTransport(uri, wtOpts);
+    const tr = makeWebTransport(uri, wtOpts);
     void tr.closed.catch(() => undefined); // eslint-disable-line promise/prefer-await-to-then
     const isTimeout = await Promise.race([
       tr.ready,
