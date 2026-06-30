@@ -99,7 +99,7 @@ jobs:
           echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu noble main" \
             | sudo tee /etc/apt/sources.list.d/nfd-nightly.list
           sudo apt-get update
-          sudo apt-get install --no-install-recommends clang-format-20 libndn-cxx-dev libpsync-dev nfd
+          sudo apt-get install --no-install-recommends clang-format-19 libndn-cxx-dev libpsync-dev nfd
           sudo cp /etc/ndn/nfd.conf.sample /etc/ndn/nfd.conf
           sudo systemctl restart nfd
       - run: |

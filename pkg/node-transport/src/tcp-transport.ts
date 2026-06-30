@@ -22,7 +22,6 @@ export class TcpTransport extends StreamTransport<Socket> {
   ): Promise<TcpTransport> {
     const combined: TcpSocketConnectOpts & TcpTransport.Options = {
       port,
-      noDelay: true,
       ...(typeof host === "string" ? { host } : host),
       ...opts,
     };
@@ -31,6 +30,7 @@ export class TcpTransport extends StreamTransport<Socket> {
   }
 
   private constructor(sock: Socket, private readonly connectOpts: TcpSocketConnectOpts) {
+    sock.setNoDelay();
     super(sock, {
       describe: `TCP(${joinHostPort(sock.remoteAddress!, sock.remotePort!)})`,
       local: sock.localAddress === sock.remoteAddress,
