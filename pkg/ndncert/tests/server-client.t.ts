@@ -1,21 +1,25 @@
 import "@ndn/packet/test-fixture/expect";
 
+import type { AddressInfo } from "node:net";
+
 import { consume } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Certificate, CertNaming, generateSigningKey, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
 import { Component, FwHint, Name, type Signer, ValidityPeriod } from "@ndn/packet";
 import { type DataStore, makeInMemoryDataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
 import { Closers, console, delay, toHex, toUtf8 } from "@ndn/util";
+import { DNSRecordType, type DOHResponse, DOHStatus } from "cf-doh";
+import Koa from "koa";
 import { createTestAccount as createEmailAccount, createTransport as createMT } from "nodemailer";
 import type { Promisable } from "type-fest";
 import { beforeAll, beforeEach, expect, test, vi } from "vitest";
 
-import { CaProfile, type ClientChallenge, type ClientChallengeContext, ClientEmailChallenge, ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, exportClientConf, importClientConf, type ParameterKV, requestCertificate, requestProbe, retrieveCaProfile, Server, type ServerChallenge, ServerEmailChallenge, ServerNopChallenge, type ServerOptions, ServerPinChallenge, ServerPossessionChallenge } from "..";
+import { CaProfile, type ClientChallenge, type ClientChallengeContext, ClientDnsChallenge, ClientEmailChallenge, ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, exportClientConf, importClientConf, type ParameterKV, requestCertificate, requestProbe, retrieveCaProfile, Server, type ServerChallenge, ServerDnsChallenge, ServerEmailChallenge, ServerNopChallenge, type ServerOptions, ServerPinChallenge, ServerPossessionChallenge } from "..";
 
 interface Row {
   summary: string;
   makeChallengeLists: () => Promisable<[readonly ServerChallenge[], readonly ClientChallenge[]]>;
-  clientShouldFail?: boolean;
+  clientError?: unknown;
 }
 
 function makePinChallengeWithWrongInputs(nWrongInputs = 0): Row["makeChallengeLists"] {
@@ -64,6 +68,48 @@ const emailTemplate: ServerEmailChallenge.Template = {
   text: "$subjectName$\n$keyName$\n$pin$\n$pin$",
 };
 
+async function makeDohServer() {
+  const dohRecords: Record<string, string> = {};
+  const dnsJsonType = "application/dns-json";
+
+  const app = new Koa();
+  app.use((ctx) => {
+    const name = ctx.URL.searchParams.get("name");
+    let data: string | undefined;
+    if (
+      ctx.URL.pathname !== "/dns-query" ||
+      !ctx.accepts(dnsJsonType) ||
+      !name ||
+      !(data = dohRecords[name]) ||
+      ctx.URL.searchParams.get("type") !== "TXT"
+    ) {
+      ctx.status = 404;
+      return;
+    }
+
+    ctx.type = dnsJsonType;
+    const body: DOHResponse = {
+      Status: DOHStatus.NoError,
+      TC: false,
+      RD: true,
+      RA: true,
+      AD: true,
+      CD: false,
+      Question: [{ name, type: DNSRecordType.TXT }],
+      Answer: [{ name, type: DNSRecordType.TXT, TTL: 300, data }],
+    };
+    ctx.body = body;
+  });
+
+  const server = app.listen();
+  closers.push(server);
+
+  return {
+    dohRecords,
+    dohServer: `http://127.0.0.1:${(server.address() as AddressInfo).port}/dns-query`,
+  };
+}
+
 const TABLE: Row[] = [
   {
     summary: "nop",
@@ -85,7 +131,7 @@ const TABLE: Row[] = [
   {
     summary: "pin, exceed retry limit after 3 wrong inputs",
     makeChallengeLists: makePinChallengeWithWrongInputs(3),
-    clientShouldFail: true,
+    clientError: "7: OutOfTries",
   },
   {
     summary: "email, success",
@@ -134,7 +180,7 @@ const TABLE: Row[] = [
         [new ClientEmailChallenge("", async () => "0000")],
       ];
     },
-    clientShouldFail: true,
+    clientError: "7: OutOfTries",
   },
   {
     summary: "email, reject in assignment policy",
@@ -148,7 +194,7 @@ const TABLE: Row[] = [
         [new ClientEmailChallenge("user@example.com", async () => "0000")],
       ];
     },
-    clientShouldFail: true,
+    clientError: "7: OutOfTries",
   },
   {
     summary: "email, with IMAP",
@@ -215,7 +261,7 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
-    clientShouldFail: true,
+    clientError: "7: OutOfTries",
   },
   {
     summary: "possession, bad signature",
@@ -226,7 +272,7 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, async () => Uint8Array.of(0xBB))],
       ];
     },
-    clientShouldFail: true,
+    clientError: "7: OutOfTries",
   },
   {
     summary: "possession, bad certificate encoding",
@@ -239,7 +285,7 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
-    clientShouldFail: true,
+    clientError: "7: OutOfTries",
   },
   {
     summary: "possession, expired certificate",
@@ -252,7 +298,7 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
-    clientShouldFail: true,
+    clientError: "7: OutOfTries",
   },
   {
     summary: "possession, client certificate not trusted",
@@ -264,7 +310,44 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientSelfCert, clientPvt)],
       ];
     },
-    clientShouldFail: true,
+    clientError: "7: OutOfTries",
+  },
+  {
+    summary: "dns, success",
+    async makeChallengeLists() {
+      const { dohServer, dohRecords } = await makeDohServer();
+      return [
+        [new ServerDnsChallenge({ dohServer })],
+        [new ClientDnsChallenge("ndncert-dns.invalid", async (context, recordName, expectedValue) => {
+          void context;
+          dohRecords[recordName] = expectedValue;
+        })],
+      ];
+    },
+  },
+  {
+    summary: "dns, invalid domain",
+    async makeChallengeLists() {
+      return [
+        [new ServerDnsChallenge()],
+        [new ClientDnsChallenge("-.invalid", () => Promise.resolve())],
+      ];
+    },
+    clientError: "4: InvalidParameters",
+  },
+  {
+    summary: "dns, wrong record",
+    async makeChallengeLists() {
+      const { dohServer, dohRecords } = await makeDohServer();
+      return [
+        [new ServerDnsChallenge({ dohServer })],
+        [new ClientDnsChallenge("ndncert-dns.invalid", async (context, recordName, expectedValue) => {
+          void context;
+          dohRecords[recordName] = expectedValue.slice(1);
+        })],
+      ];
+    },
+    clientError: "wrong-record",
   },
   {
     summary: "server challenge not acceptable on client",
@@ -274,7 +357,7 @@ const TABLE: Row[] = [
         [new ClientNopChallenge()],
       ];
     },
-    clientShouldFail: true,
+    clientError: "no acceptable challenge",
   },
 ];
 
@@ -457,7 +540,7 @@ test("probe entries and redirects", async () => {
 
 test.each(TABLE)("challenge $summary", { timeout: 15000 }, async ({
   makeChallengeLists,
-  clientShouldFail = false,
+  clientError = false,
 }) => {
   const [serverChallenges, clientChallenges] = await makeChallengeLists();
   startServer({ challenges: serverChallenges });
@@ -468,9 +551,9 @@ test.each(TABLE)("challenge $summary", { timeout: 15000 }, async ({
     publicKey: reqPub,
     challenges: clientChallenges,
   });
-  if (clientShouldFail) {
-    await expect(reqPromise).rejects.toThrow();
-  } else {
+  if (clientError === false) {
     await expect(reqPromise).resolves.toBeInstanceOf(Certificate);
+  } else {
+    await expect(reqPromise).rejects.toThrow(clientError);
   }
 });

@@ -1,4 +1,5 @@
 export type * from "./challenge";
+export * from "./dns-challenge";
 export * from "./email-challenge_node";
 export * from "./nop-challenge";
 export * from "./pin-challenge";

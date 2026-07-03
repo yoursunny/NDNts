@@ -232,8 +232,9 @@ export class Server {
 
   private async continueChallenge(now: number, request: ChallengeRequest, context: Context) {
     const challenge = this.challenges.get(context.challengeId!)!;
-    const {
+    let {
       success = false,
+      fail,
       decrementRetry = false,
       challengeStatus = "error",
       parameters,
@@ -241,8 +242,22 @@ export class Server {
     if (success) {
       return this.finishChallenge(now, request, context);
     }
+
     if (decrementRetry) {
       context.challengeRemainingTries! -= 1;
+      if (context.challengeRemainingTries! <= 0) {
+        fail ??= ErrorCode.OutOfTries;
+      }
+    }
+
+    const remainingTime = context.expiry - now;
+    if (remainingTime <= 0) {
+      fail ??= ErrorCode.OutOfTime;
+    }
+
+    if (fail) {
+      this.deleteContext(request);
+      return ErrorMsg.makeData(fail, request.interest, this.signer);
     }
 
     const response = await ChallengeResponse.build({
@@ -251,7 +266,7 @@ export class Server {
       challengeStatus,
       parameters,
       remainingTries: context.challengeRemainingTries!,
-      remainingTime: context.expiry - now,
+      remainingTime,
     });
     return response.data;
   }

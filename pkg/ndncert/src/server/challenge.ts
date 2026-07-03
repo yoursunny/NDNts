@@ -1,6 +1,6 @@
 import type { Name } from "@ndn/packet";
 
-import type { CaProfile, ChallengeRequest, ParameterKV } from "../packet/mod";
+import type { CaProfile, ChallengeRequest, ErrorCode, ParameterKV } from "../packet/mod";
 
 /** Server side of a challenge. */
 export interface ServerChallenge<State = any> {
@@ -46,6 +46,9 @@ export interface ServerChallengeResponse {
    * @defaultValue false
    */
   success?: boolean;
+
+  /** If specified, challenge has failed permanently and server will return error. */
+  fail?: ErrorCode;
 
   /**
    * If true, this request counts as one failed try and decrements remaining tries.
