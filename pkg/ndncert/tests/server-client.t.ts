@@ -5,6 +5,7 @@ import type { AddressInfo } from "node:net";
 import { consume } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
 import { Certificate, CertNaming, generateSigningKey, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
+import { Bridge } from "@ndn/l3face";
 import { Component, FwHint, Name, type Signer, ValidityPeriod } from "@ndn/packet";
 import { type DataStore, makeInMemoryDataStore, PrefixRegStatic, RepoProducer } from "@ndn/repo";
 import { Closers, console, delay, toHex, toUtf8 } from "@ndn/util";
@@ -19,6 +20,8 @@ import { CaProfile, type ClientChallenge, type ClientChallengeContext, ClientDns
 interface Row {
   summary: string;
   makeChallengeLists: () => Promisable<[readonly ServerChallenge[], readonly ClientChallenge[]]>;
+  nChallengeInterest: number;
+  lostChallengeData?: readonly number[];
   clientError?: unknown;
 }
 
@@ -119,18 +122,32 @@ const TABLE: Row[] = [
         [new ClientNopChallenge()],
       ];
     },
+    nChallengeInterest: 1,
   },
   {
     summary: "pin, success",
     makeChallengeLists: makePinChallengeWithWrongInputs(0),
+    nChallengeInterest: 2,
+  },
+  {
+    summary: "pin, success with 1 Data loss",
+    makeChallengeLists: makePinChallengeWithWrongInputs(0),
+    nChallengeInterest: 3,
+    lostChallengeData: [1],
+    clientError: "3: BadSignature",
+    // XXX This test case should have succeeded but is presently an "expected failure", caused by:
+    // During the CHALLENGE step, I2's SigNonce is saved by server but D2 is lost in network.
+    // When client retransmits I2, the server would detect a duplicate SigNonce and reject the Interest.
   },
   {
     summary: "pin, success after 2 wrong inputs",
     makeChallengeLists: makePinChallengeWithWrongInputs(2),
+    nChallengeInterest: 4,
   },
   {
     summary: "pin, exceed retry limit after 3 wrong inputs",
     makeChallengeLists: makePinChallengeWithWrongInputs(3),
+    nChallengeInterest: 4,
     clientError: "7: OutOfTries",
   },
   {
@@ -168,6 +185,7 @@ const TABLE: Row[] = [
         })],
       ];
     },
+    nChallengeInterest: 2,
   },
   {
     summary: "email, wrong code",
@@ -181,6 +199,7 @@ const TABLE: Row[] = [
       ];
     },
     clientError: "7: OutOfTries",
+    nChallengeInterest: 4,
   },
   {
     summary: "email, reject in assignment policy",
@@ -194,7 +213,8 @@ const TABLE: Row[] = [
         [new ClientEmailChallenge("user@example.com", async () => "0000")],
       ];
     },
-    clientError: "7: OutOfTries",
+    nChallengeInterest: 1,
+    clientError: "5: NameNotAllowed",
   },
   {
     summary: "email, with IMAP",
@@ -228,6 +248,7 @@ const TABLE: Row[] = [
         [new ClientEmailChallenge(user, inbox.promptCallback)],
       ];
     },
+    nChallengeInterest: 2,
   },
   {
     summary: "possession, success without assignment policy",
@@ -238,6 +259,7 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
+    nChallengeInterest: 2,
   },
   {
     summary: "possession, accept in assignment policy",
@@ -251,6 +273,7 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
+    nChallengeInterest: 2,
   },
   {
     summary: "possession, reject in assignment policy",
@@ -261,7 +284,8 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
-    clientError: "7: OutOfTries",
+    nChallengeInterest: 2,
+    clientError: "4: InvalidParameters",
   },
   {
     summary: "possession, bad signature",
@@ -272,7 +296,8 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, async () => Uint8Array.of(0xBB))],
       ];
     },
-    clientError: "7: OutOfTries",
+    nChallengeInterest: 2,
+    clientError: "4: InvalidParameters",
   },
   {
     summary: "possession, bad certificate encoding",
@@ -285,7 +310,8 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
-    clientError: "7: OutOfTries",
+    nChallengeInterest: 2,
+    clientError: "4: InvalidParameters",
   },
   {
     summary: "possession, expired certificate",
@@ -298,7 +324,8 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
-    clientError: "7: OutOfTries",
+    nChallengeInterest: 2,
+    clientError: "4: InvalidParameters",
   },
   {
     summary: "possession, client certificate not trusted",
@@ -310,7 +337,8 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientSelfCert, clientPvt)],
       ];
     },
-    clientError: "7: OutOfTries",
+    nChallengeInterest: 2,
+    clientError: "4: InvalidParameters",
   },
   {
     summary: "dns, success",
@@ -324,6 +352,7 @@ const TABLE: Row[] = [
         })],
       ];
     },
+    nChallengeInterest: 2,
   },
   {
     summary: "dns, invalid domain",
@@ -333,6 +362,7 @@ const TABLE: Row[] = [
         [new ClientDnsChallenge("-.invalid", () => Promise.resolve())],
       ];
     },
+    nChallengeInterest: 1,
     clientError: "4: InvalidParameters",
   },
   {
@@ -347,6 +377,7 @@ const TABLE: Row[] = [
         })],
       ];
     },
+    nChallengeInterest: 2,
     clientError: "wrong-record",
   },
   {
@@ -357,6 +388,7 @@ const TABLE: Row[] = [
         [new ClientNopChallenge()],
       ];
     },
+    nChallengeInterest: 0,
     clientError: "no acceptable challenge",
   },
 ];
@@ -422,17 +454,23 @@ beforeEach(async () => {
   };
 });
 
-function startServer(opts: Partial<ServerOptions> = {}): Server {
+function startServer(serverOpts: Partial<ServerOptions> = {}, bridgeOpts: Bridge.CreateOptions & { bridge?: Bridge } = {}) {
+  const bridge = bridgeOpts.bridge ?? Bridge.create({
+    fwA: Forwarder.getDefault(),
+    routesAB: ["/fh", "/authority/CA", "/sub/CA"],
+    ...bridgeOpts,
+  });
   const server = Server.create({
+    pOpts: { fw: bridge.fwB },
     profile: caProfile,
     repo,
     repoFwHint,
     signer: caSigner,
     challenges: [new ServerNopChallenge()],
-    ...opts,
+    ...serverOpts,
   });
   closers.push(server);
-  return server;
+  return { bridge, server };
 }
 
 function checkCaProfile(retrieved: CaProfile, expected: CaProfile, stringContains = "\n  authority\n  CA\n") {
@@ -493,7 +531,7 @@ test("probe mismatch", async () => {
 
 test("probe entries and redirects", async () => {
   const subCertFullName = await subCert.data.computeFullName();
-  startServer({
+  const { bridge } = startServer({
     async probe(parameters: ParameterKV) {
       expect(parameters.uid).toEqualUint8Array(toUtf8("my-uid"));
       return {
@@ -530,7 +568,7 @@ test("probe entries and redirects", async () => {
   startServer({
     profile: subProfile,
     signer: subSigner,
-  });
+  }, { bridge });
 
   const retrieved = await retrieveCaProfile({
     caCertFullName: redirects[0]!.caCertFullName,
@@ -540,12 +578,37 @@ test("probe entries and redirects", async () => {
 
 test.each(TABLE)("challenge $summary", { timeout: 15000 }, async ({
   makeChallengeLists,
+  nChallengeInterest,
+  lostChallengeData,
   clientError = false,
 }) => {
   const [serverChallenges, clientChallenges] = await makeChallengeLists();
-  startServer({ challenges: serverChallenges });
+  const challengePrefix = new Name("/authority/CA/CHALLENGE");
+  let nSentChallengeInterests = 0;
+  startServer({ challenges: serverChallenges }, {
+    async *relayAB(it) {
+      for await (const wire of it) {
+        const { interest } = Bridge.RelayFunc.extract(wire);
+        if (interest && challengePrefix.isPrefixOf(interest.name)) {
+          ++nSentChallengeInterests;
+        }
+        yield wire;
+      }
+    },
+    async *relayBA(it) {
+      let i = 0;
+      for await (const wire of it) {
+        const { data } = Bridge.RelayFunc.extract(wire);
+        if (data && challengePrefix.isPrefixOf(data.name) && lostChallengeData?.includes(i++)) {
+          continue;
+        }
+        yield wire;
+      }
+    },
+  });
 
   const reqPromise = requestCertificate({
+    cOpts: { modifyInterest: lostChallengeData ? { lifetime: 100 } : { lifetime: 10000 } },
     profile: caProfile,
     privateKey: reqPvt,
     publicKey: reqPub,
@@ -556,4 +619,5 @@ test.each(TABLE)("challenge $summary", { timeout: 15000 }, async ({
   } else {
     await expect(reqPromise).rejects.toThrow(clientError);
   }
+  expect(nSentChallengeInterests).toBe(nChallengeInterest);
 });

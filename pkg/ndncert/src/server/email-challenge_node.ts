@@ -4,16 +4,11 @@ import { fromUtf8, toHex } from "@ndn/util";
 import type { SendMailOptions, SentMessageInfo, Transporter } from "nodemailer";
 import type { OverrideProperties, Promisable } from "type-fest";
 
-import type { ChallengeRequest } from "../packet/mod";
+import { type ChallengeRequest, ErrorCode } from "../packet/mod";
 import type { ServerChallengeContext, ServerChallengeResponse } from "./challenge";
 import { ServerPinLikeChallenge } from "./pin-like-challenge";
 
 type State = ServerPinLikeChallenge.State;
-
-const invalidResponse: ServerChallengeResponse = {
-  decrementRetry: true,
-  challengeStatus: "invalid-email",
-};
 
 interface MailSub {
   caPrefix: string;
@@ -58,10 +53,14 @@ export class ServerEmailChallenge extends ServerPinLikeChallenge<ServerPinLikeCh
       { profile, subjectName, keyName }: ServerChallengeContext<State>,
   ): Promise<State | ServerChallengeResponse> {
     if (!email) {
-      return invalidResponse;
+      return { fail: ErrorCode.InvalidParameters };
     }
     const to = fromUtf8(email);
-    try { await this.assignmentPolicy?.(subjectName, to); } catch { return invalidResponse; }
+    try {
+      await this.assignmentPolicy?.(subjectName, to);
+    } catch {
+      return { fail: ErrorCode.NameNotAllowed };
+    }
 
     const state = new ServerPinLikeChallenge.State();
     const msg = this.prepareMail(to, {

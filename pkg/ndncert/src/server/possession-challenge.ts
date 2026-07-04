@@ -2,13 +2,8 @@ import { Certificate, type SigningAlgorithm, SigningAlgorithmListSlim } from "@n
 import { Data, type Name, SigInfo, type Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
-import type { ChallengeRequest } from "../packet/mod";
+import { type ChallengeRequest, ErrorCode } from "../packet/mod";
 import type { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";
-
-const invalidResponse: ServerChallengeResponse = {
-  decrementRetry: true,
-  challengeStatus: "invalid-credential",
-};
 
 interface State {
   cert: Uint8Array;
@@ -47,7 +42,7 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
       "issued-cert": cert,
     } = request.parameters;
     if (!cert) {
-      return invalidResponse;
+      return { fail: ErrorCode.InvalidParameters };
     }
 
     const nonce = SigInfo.generateNonce(16);
@@ -65,13 +60,13 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
     const { cert: certWire, nonce } = challengeState!;
     const { proof } = request.parameters;
     if (!proof) {
-      return invalidResponse;
+      return { fail: ErrorCode.InvalidParameters };
     }
 
     try {
       const cert = Certificate.fromData(Decoder.decode(certWire, Data));
       if (!cert.validity.includes(Date.now())) {
-        return invalidResponse;
+        return { fail: ErrorCode.InvalidParameters };
       }
       await this.verifier.verify(cert.data);
       await this.assignmentPolicy?.(subjectName, cert);
@@ -80,7 +75,7 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
       const llVerify = (algo as SigningAlgorithm<any, true>).makeLLVerify(key);
       await llVerify(nonce, proof);
     } catch {
-      return invalidResponse;
+      return { fail: ErrorCode.InvalidParameters };
     }
 
     return { success: true };

@@ -1,5 +1,6 @@
 import { Forwarder, type FwFace } from "@ndn/fw";
-import type { NameLike } from "@ndn/packet";
+import { LpPacket } from "@ndn/lp";
+import { Data, Interest, type NameLike, TT } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 import { assert, Closers, delay, pushable, randomJitter } from "@ndn/util";
 import { filter, map, pipeline, transform } from "streaming-iterables";
@@ -96,6 +97,32 @@ export namespace Bridge {
    * @returns stream of packet buffers injected into our side.
    */
   export type RelayFunc = (it: AsyncIterable<Uint8Array>) => AsyncIterable<Uint8Array>;
+
+  export namespace RelayFunc {
+    export interface Extracted {
+      lpp?: LpPacket; interest?: Interest; data?: Data;
+    }
+
+    /** Extract LpPacket and Interest/Data from a packet seen by RelayFunc. */
+    export function extract(wire: Uint8Array): Extracted {
+      const extracted: Extracted = {};
+      try {
+        extracted.lpp = Decoder.decode(wire, LpPacket);
+        switch (extracted.lpp.payload?.[0]) {
+          case TT.Interest: {
+            extracted.interest = Decoder.decode(extracted.lpp.payload, Interest);
+            break;
+          }
+          case TT.Data: {
+            extracted.data = Decoder.decode(extracted.lpp.payload, Data);
+            break;
+          }
+        }
+      } catch {}
+      return extracted;
+    }
+
+  }
 
   /** Options to relay packets with loss, delay, and jitter. */
   export interface RelayOptions {

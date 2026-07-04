@@ -34,8 +34,11 @@ export class ServerDnsChallenge implements ServerChallenge<State> {
 
   private async process0(request: ChallengeRequest, context: ServerChallengeContext<State>): Promise<ServerChallengeResponse> {
     const { domain: domainWire } = request.parameters;
-    let domain: string;
-    if (!domainWire || !isValidHostname(domain = fromUtf8(domainWire))) {
+    if (!domainWire) {
+      return { fail: ErrorCode.BadParameterFormat };
+    }
+    const domain = fromUtf8(domainWire);
+    if (!isValidHostname(domain)) {
       return { fail: ErrorCode.InvalidParameters };
     }
 
@@ -77,14 +80,11 @@ export class ServerDnsChallenge implements ServerChallenge<State> {
     url.searchParams.set("name", record);
     url.searchParams.set("type", "TXT");
 
-    console.log("sdccr", url);
     const res = await fetch(url, { headers: { Accept: "application/dns-json" } });
-    console.log("sdccr", res);
     if (res.status !== 200) {
       return false;
     }
     const j: DOHResponse = await res.json();
-    console.log("sdccr", j);
 
     if (Number(j.Status) !== 0) {
       return false;

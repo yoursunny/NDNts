@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@ndn/fw": "workspace:^",
+    "@ndn/l3face": "workspace:^",
     "@ndn/repo": "workspace:*",
     "@types/b64-lite": "^1.4.2",
     "@types/koa": "^3.0.3",
