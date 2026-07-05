@@ -1,7 +1,8 @@
-import { produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
+import { DataStoreBuffer, produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
 import { Certificate, CertNaming, type NamedVerifier } from "@ndn/keychain";
 import { Component, type ComponentLike, type Data, type FwHint, type Signer, type ValidityPeriod } from "@ndn/packet";
 import { Metadata, serveMetadata } from "@ndn/rdr";
+import { makeInMemoryDataStore } from "@ndn/repo";
 import { KeyMap, toHex } from "@ndn/util";
 
 import * as ndncert_crypto from "../crypto-common";
@@ -14,6 +15,8 @@ export interface ServerOptions {
    *
    * @remarks
    * - `.describe` defaults to "NDNCERT-CA" + CA prefix.
+   * - `.dataBuffer` defaults to an internal `DataStoreBuffer` (required for proper operations).
+   * - `.autoBuffer` is overridden to true (required for proper operations).
    * - `.announcement` is overridden as CA prefix + "/CA".
    */
   pOpts?: ProducerOptions;
@@ -49,7 +52,7 @@ interface RepoDataStore {
 
 /** NDNCERT server. */
 export class Server {
-  public static create({
+  public static async create({
     pOpts,
     repo,
     repoFwHint,
@@ -58,10 +61,12 @@ export class Server {
     probe,
     challenges,
     issuerId = "NDNts-NDNCERT",
-  }: ServerOptions): Server {
+  }: ServerOptions): Promise<Server> {
     return new Server(
       {
+        dataBuffer: new DataStoreBuffer(await makeInMemoryDataStore()),
         ...pOpts,
+        autoBuffer: true,
         announcement: profile.prefix.append(C.CA),
       },
       repo,

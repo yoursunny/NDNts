@@ -5,6 +5,8 @@ import type { ClientChallenge, ClientChallengeContext } from "./challenge";
 /** The "dns" challenge where client creates a DNS TXT record. */
 export class ClientDnsChallenge implements ClientChallenge {
   public readonly challengeId = "dns";
+  private record = "";
+  private token = "";
 
   constructor(
       private readonly domain: string,
@@ -16,15 +18,12 @@ export class ClientDnsChallenge implements ClientChallenge {
   }
 
   public async next(context: ClientChallengeContext): Promise<ParameterKV> {
-    if (context.challengeStatus !== "need-record") {
-      throw new Error(`bad challenge-status ${context.challengeStatus}`);
+    if (context.challengeStatus === "need-record") {
+      this.record = ParameterKV.getString(context.parameters, "record-name");
+      this.token = ParameterKV.getString(context.parameters, "expected-value");
     }
 
-    await this.prompt(
-      context,
-      ParameterKV.getString(context.parameters, "record-name"),
-      ParameterKV.getString(context.parameters, "expected-value"),
-    );
+    await this.prompt(context, this.record, this.token);
     return ParameterKV.from({ confirmation: "ready" });
   }
 }

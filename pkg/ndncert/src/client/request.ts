@@ -49,7 +49,7 @@ export async function requestCertificate({
 }: ClientOptions): Promise<Certificate> {
   cOpts = {
     describe: `NDNCERT-client(${profile.prefix}, REQUEST, ${privateKey.name})`,
-    retx: 4, // XXX retransmission may cause server rejection for duplicate SigNonce
+    retx: 4,
     ...cOpts,
     verifier: profile.publicKey,
   };

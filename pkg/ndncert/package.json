@@ -31,6 +31,7 @@
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/rdr": "workspace:*",
+    "@ndn/repo": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "@types/imap": "^0.8.43",
@@ -48,7 +49,6 @@
   "devDependencies": {
     "@ndn/fw": "workspace:^",
     "@ndn/l3face": "workspace:^",
-    "@ndn/repo": "workspace:*",
     "@types/b64-lite": "^1.4.2",
     "@types/koa": "^3.0.3",
     "@types/mailparser": "^3.4.6",

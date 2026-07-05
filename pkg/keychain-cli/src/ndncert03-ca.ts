@@ -121,7 +121,7 @@ Otherwise, please disregard this message.`,
       }
     }
 
-    const server = Server.create({
+    const server = await Server.create({
       repo,
       profile,
       signer,

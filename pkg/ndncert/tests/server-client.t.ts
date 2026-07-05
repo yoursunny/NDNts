@@ -23,6 +23,7 @@ interface Row {
   nChallengeInterest: number;
   lostChallengeData?: readonly number[];
   clientError?: unknown;
+  serverCleared?: boolean;
 }
 
 function makePinChallengeWithWrongInputs(nWrongInputs = 0): Row["makeChallengeLists"] {
@@ -130,14 +131,16 @@ const TABLE: Row[] = [
     nChallengeInterest: 2,
   },
   {
-    summary: "pin, success with 1 Data loss",
+    summary: "pin, success after 1 Data loss",
     makeChallengeLists: makePinChallengeWithWrongInputs(0),
     nChallengeInterest: 3,
     lostChallengeData: [1],
-    clientError: "3: BadSignature",
-    // XXX This test case should have succeeded but is presently an "expected failure", caused by:
-    // During the CHALLENGE step, I2's SigNonce is saved by server but D2 is lost in network.
-    // When client retransmits I2, the server would detect a duplicate SigNonce and reject the Interest.
+  },
+  {
+    summary: "pin, success after 1 wrong input and 1 Data loss",
+    makeChallengeLists: makePinChallengeWithWrongInputs(1),
+    nChallengeInterest: 4,
+    lostChallengeData: [2],
   },
   {
     summary: "pin, success after 2 wrong inputs",
@@ -219,7 +222,10 @@ const TABLE: Row[] = [
   {
     summary: "email, with IMAP",
     async makeChallengeLists() {
-      const debugEnabled = process.env.NDNCERT_IMAP_DEBUG === "1";
+      if (process.env.NDNTS_IMAP_DEBUG === "2") {
+        throw new Error("IMAP test skipped via environ");
+      }
+      const debugEnabled = process.env.NDNTS_IMAP_DEBUG === "1";
       const { user, pass, smtp, imap, web } = await createEmailAccount();
       if (debugEnabled) {
         console.log("nodemail test account:", web, user, pass);
@@ -377,8 +383,8 @@ const TABLE: Row[] = [
         })],
       ];
     },
-    nChallengeInterest: 2,
-    clientError: "wrong-record",
+    nChallengeInterest: 4,
+    clientError: "7: OutOfTries",
   },
   {
     summary: "server challenge not acceptable on client",
@@ -390,6 +396,7 @@ const TABLE: Row[] = [
     },
     nChallengeInterest: 0,
     clientError: "no acceptable challenge",
+    serverCleared: false,
   },
 ];
 
@@ -454,13 +461,13 @@ beforeEach(async () => {
   };
 });
 
-function startServer(serverOpts: Partial<ServerOptions> = {}, bridgeOpts: Bridge.CreateOptions & { bridge?: Bridge } = {}) {
+async function startServer(serverOpts: Partial<ServerOptions> = {}, bridgeOpts: Bridge.CreateOptions & { bridge?: Bridge } = {}) {
   const bridge = bridgeOpts.bridge ?? Bridge.create({
     fwA: Forwarder.getDefault(),
     routesAB: ["/fh", "/authority/CA", "/sub/CA"],
     ...bridgeOpts,
   });
-  const server = Server.create({
+  const server = await Server.create({
     pOpts: { fw: bridge.fwB },
     profile: caProfile,
     repo,
@@ -480,7 +487,7 @@ function checkCaProfile(retrieved: CaProfile, expected: CaProfile, stringContain
 }
 
 test("INFO command", async () => {
-  startServer();
+  await startServer();
 
   const retrieved = await retrieveCaProfile({
     caPrefix: new Name("/authority"),
@@ -497,7 +504,7 @@ test("INFO command", async () => {
 });
 
 test("unsupported or malformed commands", async () => {
-  startServer();
+  await startServer();
 
   const [probeErr, newErr, challengeErr] = await Promise.all([
     consume("/authority/CA/PROBE"),
@@ -510,7 +517,7 @@ test("unsupported or malformed commands", async () => {
 });
 
 test("probe no result", async () => {
-  startServer({ async probe() { return {}; } });
+  await startServer({ async probe() { return {}; } });
 
   await expect(requestProbe({
     profile: caProfile,
@@ -519,7 +526,7 @@ test("probe no result", async () => {
 });
 
 test("probe mismatch", async () => {
-  startServer({
+  await startServer({
     async probe() { expect.fail("unexpected server probe"); },
   });
 
@@ -531,7 +538,7 @@ test("probe mismatch", async () => {
 
 test("probe entries and redirects", async () => {
   const subCertFullName = await subCert.data.computeFullName();
-  const { bridge } = startServer({
+  const { bridge } = await startServer({
     async probe(parameters: ParameterKV) {
       expect(parameters.uid).toEqualUint8Array(toUtf8("my-uid"));
       return {
@@ -565,7 +572,7 @@ test("probe entries and redirects", async () => {
     },
     caCertFullName: redirects[0]!.caCertFullName,
   })).rejects.toThrow();
-  startServer({
+  await startServer({
     profile: subProfile,
     signer: subSigner,
   }, { bridge });
@@ -581,11 +588,12 @@ test.each(TABLE)("challenge $summary", { timeout: 15000 }, async ({
   nChallengeInterest,
   lostChallengeData,
   clientError = false,
+  serverCleared = true,
 }) => {
   const [serverChallenges, clientChallenges] = await makeChallengeLists();
   const challengePrefix = new Name("/authority/CA/CHALLENGE");
   let nSentChallengeInterests = 0;
-  startServer({ challenges: serverChallenges }, {
+  const { server } = await startServer({ challenges: serverChallenges }, {
     async *relayAB(it) {
       for await (const wire of it) {
         const { interest } = Bridge.RelayFunc.extract(wire);
@@ -620,4 +628,8 @@ test.each(TABLE)("challenge $summary", { timeout: 15000 }, async ({
     await expect(reqPromise).rejects.toThrow(clientError);
   }
   expect(nSentChallengeInterests).toBe(nChallengeInterest);
+
+  if (serverCleared) {
+    expect((server as any).state.size).toBe(0);
+  }
 });
