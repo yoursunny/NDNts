@@ -126,7 +126,7 @@ export class SvPublisher {
     return seqNum;
   }
 
-  private readonly handleOuter: ProducerHandler = async (interest) => {
+  private readonly handleOuter: ProducerHandler = (interest) => {
     if (!interest.name.get(this.nodeSyncPrefix.length)?.is(GenericNumber)) {
       return undefined;
     }

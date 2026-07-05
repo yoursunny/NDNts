@@ -115,7 +115,7 @@ export class PartialPublisher extends TypedEventTarget<EventMap> implements Sync
     return this.c.add(prefix);
   }
 
-  private readonly handleHelloInterest: ProducerHandler = async (interest) => {
+  private readonly handleHelloInterest: ProducerHandler = (interest) => {
     if (interest.name.length !== this.syncPrefix.length + 1) {
       // segment Interest should be satisfied by StateProducerBuffer
       return undefined;

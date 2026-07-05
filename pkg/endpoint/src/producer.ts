@@ -1,6 +1,7 @@
 import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { Data, Interest, Name, type NameLike, Signer } from "@ndn/packet";
 import { flatTransform } from "streaming-iterables";
+import type { Promisable } from "type-fest";
 
 import { type CommonOptions, exactOptions } from "./common";
 import type { DataBuffer } from "./data-buffer";
@@ -19,7 +20,7 @@ import type { DataBuffer } from "./data-buffer";
  *   - {@link ProducerOptions.dataBuffer} is unset: cause a timeout.
  *   - {@link ProducerOptions.dataBuffer} is provided: query the DataBuffer.
  */
-export type ProducerHandler = (interest: Interest, producer: Producer) => Promise<Data | undefined>;
+export type ProducerHandler = (interest: Interest, producer: Producer) => Promisable<Data | undefined>;
 
 /** {@link produce} options. */
 export interface ProducerOptions extends CommonOptions {
@@ -29,7 +30,7 @@ export interface ProducerOptions extends CommonOptions {
    * @defaultValue `true`
    *
    * @remarks
-   * If all nexthops of a FIB entry are set to non-capture, FIB lookup may continue onto nexthops
+   * If all next-hops of a FIB entry are set to non-capture, FIB lookup may continue onto next-hops
    * on FIB entries with shorter prefixes. One use case is in dataset synchronization protocols,
    * where both local and remote sync participants want to receive each other's Interests.
    */

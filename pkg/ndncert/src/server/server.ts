@@ -122,7 +122,7 @@ export class Server {
     }
   }
 
-  private readonly handleInfoInterest: ProducerHandler = async () => this.profile.data;
+  private readonly handleInfoInterest: ProducerHandler = () => this.profile.data;
 
   private readonly handleProbeInterest: ProducerHandler = async (interest) => {
     let request: ProbeRequest;
