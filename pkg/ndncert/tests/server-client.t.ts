@@ -211,7 +211,7 @@ const TABLE: Row[] = [
         [new ServerEmailChallenge({
           mail: createMT({ jsonTransport: true }),
           template: emailTemplate,
-          assignmentPolicy: async () => { throw new Error("no-assignment"); },
+          assignmentPolicy: () => false,
         })],
         [new ClientEmailChallenge("user@example.com", async () => "0000")],
       ];
@@ -290,8 +290,8 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
-    nChallengeInterest: 2,
-    clientError: "4: InvalidParameters",
+    nChallengeInterest: 1,
+    clientError: "5: NameNotAllowed",
   },
   {
     summary: "possession, bad signature",
@@ -316,7 +316,7 @@ const TABLE: Row[] = [
         [new ClientPossessionChallenge(clientCert, clientPvt)],
       ];
     },
-    nChallengeInterest: 2,
+    nChallengeInterest: 1,
     clientError: "4: InvalidParameters",
   },
   {
@@ -359,6 +359,17 @@ const TABLE: Row[] = [
       ];
     },
     nChallengeInterest: 2,
+  },
+  {
+    summary: "dns, reject in assignment policy",
+    async makeChallengeLists() {
+      return [
+        [new ServerDnsChallenge({ assignmentPolicy: () => false })],
+        [new ClientDnsChallenge("ndncert-dns.invalid", () => Promise.resolve())],
+      ];
+    },
+    nChallengeInterest: 1,
+    clientError: "5: NameNotAllowed",
   },
   {
     summary: "dns, invalid domain",

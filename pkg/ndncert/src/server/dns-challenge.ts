@@ -4,7 +4,7 @@ import type { DOHResponse } from "cf-doh";
 import isValidHostname from "is-valid-hostname";
 
 import { type ChallengeRequest, ErrorCode } from "../packet/mod";
-import type { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";
+import { ServerChallenge, type ServerChallengeContext, type ServerChallengeResponse } from "./challenge";
 
 interface State {
   record: string;
@@ -17,11 +17,14 @@ export class ServerDnsChallenge implements ServerChallenge<State> {
   public readonly timeLimit = 300000;
   public readonly retryLimit = 3;
 
+  private readonly assignmentPolicy?: ServerDnsChallenge.AssignmentPolicy;
   private readonly dohServer: string;
 
   constructor({
+    assignmentPolicy,
     dohServer = "https://cloudflare-dns.com/dns-query",
   }: ServerDnsChallenge.Options = {}) {
+    this.assignmentPolicy = assignmentPolicy;
     this.dohServer = dohServer;
   }
 
@@ -40,6 +43,9 @@ export class ServerDnsChallenge implements ServerChallenge<State> {
     const domain = fromUtf8(domainWire);
     if (!isValidHostname(domain)) {
       return { fail: ErrorCode.InvalidParameters };
+    }
+    if (!await ServerChallenge.callAssignmentPolicy(this.assignmentPolicy, context.subjectName, domain)) {
+      return { fail: ErrorCode.NameNotAllowed };
     }
 
     const record = `_ndncert-challenge.${domain}`;
@@ -103,7 +109,19 @@ export class ServerDnsChallenge implements ServerChallenge<State> {
 }
 
 export namespace ServerDnsChallenge {
+  /**
+   * Callback to determine whether the owner of a DNS domain is allowed to obtain
+   * a certificate of `newSubjectName`. It should throw or return false to disallow assignment.
+   */
+  export type AssignmentPolicy = ServerChallenge.AssignmentPolicy<[string]>;
+
   export interface Options {
+    /**
+     * Name assignment policy.
+     * If omitted, any domain can obtain any certificate.
+     */
+    assignmentPolicy?: AssignmentPolicy;
+
     /**
      * DNS-over-HTTPS server with application/dns-json capability.
      * Common choices includes:

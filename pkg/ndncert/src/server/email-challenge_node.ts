@@ -1,11 +1,10 @@
 import { AltUri } from "@ndn/naming-convention2";
-import type { Name } from "@ndn/packet";
 import { fromUtf8, toHex } from "@ndn/util";
 import type { SendMailOptions, SentMessageInfo, Transporter } from "nodemailer";
-import type { OverrideProperties, Promisable } from "type-fest";
+import type { OverrideProperties } from "type-fest";
 
 import { type ChallengeRequest, ErrorCode } from "../packet/mod";
-import type { ServerChallengeContext, ServerChallengeResponse } from "./challenge";
+import { ServerChallenge, type ServerChallengeContext, type ServerChallengeResponse } from "./challenge";
 import { ServerPinLikeChallenge } from "./pin-like-challenge";
 
 type State = ServerPinLikeChallenge.State;
@@ -56,9 +55,7 @@ export class ServerEmailChallenge extends ServerPinLikeChallenge<ServerPinLikeCh
       return { fail: ErrorCode.InvalidParameters };
     }
     const to = fromUtf8(email);
-    try {
-      await this.assignmentPolicy?.(subjectName, to);
-    } catch {
+    if (!await ServerChallenge.callAssignmentPolicy(this.assignmentPolicy, subjectName, to)) {
       return { fail: ErrorCode.NameNotAllowed };
     }
 
@@ -96,10 +93,10 @@ export class ServerEmailChallenge extends ServerPinLikeChallenge<ServerPinLikeCh
 
 export namespace ServerEmailChallenge {
   /**
-   * Callback to determine whether the owner of `email` is allowed to obtain a certificate
-   * of `newSubjectName`. It should throw to disallow assignment.
+   * Callback to determine whether the owner of an email address is allowed to obtain
+   * a certificate of `newSubjectName`. It should throw or return false to disallow assignment.
    */
-  export type AssignmentPolicy = (newSubjectName: Name, email: string) => Promisable<void>;
+  export type AssignmentPolicy = ServerChallenge.AssignmentPolicy<[string]>;
 
   /**
    * Email template.
@@ -123,6 +120,10 @@ export namespace ServerEmailChallenge {
   }>;
 
   export interface Options {
+    /**
+     * Name assignment policy.
+     * If omitted, any email can obtain any certificate.
+     */
     assignmentPolicy?: AssignmentPolicy;
     mail: Transporter;
     template: Template;

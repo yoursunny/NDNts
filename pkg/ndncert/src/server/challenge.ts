@@ -1,4 +1,5 @@
 import type { Name } from "@ndn/packet";
+import type { Promisable } from "type-fest";
 
 import type { CaProfile, ChallengeRequest, ErrorCode, ParameterKV } from "../packet/mod";
 
@@ -15,6 +16,29 @@ export interface ServerChallenge<State = any> {
 
   /** Process selection or continuation of the challenge. */
   process: (request: ChallengeRequest, context: ServerChallengeContext<State>) => Promise<ServerChallengeResponse>;
+}
+
+export namespace ServerChallenge {
+  /**
+   * Callback to determine whether the owner of an authenticable resource is allowed to obtain
+   * a certificate of `newSubjectName`. It should throw or return false to disallow assignment.
+   */
+  export type AssignmentPolicy<T extends unknown[]> = (newSubjectName: Name, ...a: T) => Promisable<void | boolean>;
+
+  export async function callAssignmentPolicy<T extends unknown[]>(policy: AssignmentPolicy<T> | undefined, newSubjectName: Name, ...a: T): Promise<boolean> {
+    if (policy === undefined) {
+      return true;
+    }
+    try {
+      const res = await policy(newSubjectName, ...a);
+      if (res === false) {
+        return false;
+      }
+    } catch {
+      return false;
+    }
+    return true;
+  }
 }
 
 /** Contextual information for challenge processing. */

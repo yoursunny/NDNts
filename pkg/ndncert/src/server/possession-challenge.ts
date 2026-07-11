@@ -1,12 +1,12 @@
 import { Certificate, type SigningAlgorithm, SigningAlgorithmListSlim } from "@ndn/keychain";
-import { Data, type Name, SigInfo, type Verifier } from "@ndn/packet";
+import { Data, SigInfo, type Verifier } from "@ndn/packet";
 import { Decoder } from "@ndn/tlv";
 
 import { type ChallengeRequest, ErrorCode } from "../packet/mod";
-import type { ServerChallenge, ServerChallengeContext, ServerChallengeResponse } from "./challenge";
+import { ServerChallenge, type ServerChallengeContext, type ServerChallengeResponse } from "./challenge";
 
 interface State {
-  cert: Uint8Array;
+  cert: Certificate;
   nonce: Uint8Array;
 }
 
@@ -39,10 +39,20 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
 
   private async process0(request: ChallengeRequest, context: ServerChallengeContext<State>): Promise<ServerChallengeResponse> {
     const {
-      "issued-cert": cert,
+      "issued-cert": certWire,
     } = request.parameters;
-    if (!cert) {
+    if (!certWire) {
       return { fail: ErrorCode.InvalidParameters };
+    }
+
+    let cert: Certificate;
+    try {
+      cert = Certificate.fromData(Decoder.decode(certWire, Data));
+    } catch {
+      return { fail: ErrorCode.InvalidParameters };
+    }
+    if (!await ServerChallenge.callAssignmentPolicy(this.assignmentPolicy, context.subjectName, cert)) {
+      return { fail: ErrorCode.NameNotAllowed };
     }
 
     const nonce = SigInfo.generateNonce(16);
@@ -55,21 +65,20 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
 
   private async process1(
       request: ChallengeRequest,
-      { subjectName, challengeState }: ServerChallengeContext<State>,
+      { challengeState }: ServerChallengeContext<State>,
   ): Promise<ServerChallengeResponse> {
-    const { cert: certWire, nonce } = challengeState!;
+    const { cert, nonce } = challengeState!;
+    if (!cert.validity.includes(Date.now())) {
+      return { fail: ErrorCode.InvalidParameters };
+    }
+
     const { proof } = request.parameters;
     if (!proof) {
       return { fail: ErrorCode.InvalidParameters };
     }
 
     try {
-      const cert = Certificate.fromData(Decoder.decode(certWire, Data));
-      if (!cert.validity.includes(Date.now())) {
-        return { fail: ErrorCode.InvalidParameters };
-      }
       await this.verifier.verify(cert.data);
-      await this.assignmentPolicy?.(subjectName, cert);
 
       const [algo, key] = await cert.importPublicKey(this.algoList);
       const llVerify = (algo as SigningAlgorithm<any, true>).makeLLVerify(key);
@@ -84,8 +93,8 @@ export class ServerPossessionChallenge implements ServerChallenge<State> {
 
 export namespace ServerPossessionChallenge {
   /**
-   * Callback to determine whether the owner of `oldCert` is allowed to obtain a certificate
-   * of `newSubjectName`. It should throw to disallow assignment.
+   * Callback to determine whether the owner of an old certificate is allowed to obtain
+   * a certificate of `newSubjectName`. It should throw or return false to disallow assignment.
    */
-  export type AssignmentPolicy = (newSubjectName: Name, oldCert: Certificate) => Promise<void>;
+  export type AssignmentPolicy = ServerChallenge.AssignmentPolicy<[Certificate]>;
 }
