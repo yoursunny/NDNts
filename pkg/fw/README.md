@@ -38,3 +38,52 @@ The main differences from a full forwarder include:
   * Forwarding hint is not stripped even if it matches a configured node name.
 
 These are subject to change.
+
+## Prefix Registration / Readvertisement
+
+Unlike many other NDN libraries, NDNts does not hard-wire prefix registration toward a particular forwarder.
+Instead, the prefix registration functionality is structured more like a router:
+
+* `FwFace` can *announce* a prefix into the NDNts logical forwarder.
+* The logical forwarder can then *readvertise* the prefix into a *destination* such as a remote forwarder.
+
+NDNts includes several `ReadvertiseDestination` implementation compatible with other forwarders:
+
+* `@ndn/nfdmgmt` implements the NFD Management protocol, compatible with NFD and NDNd.
+* `@ndn/dpdkmgmt` implements the NDN-DPDK GraphQL protocol, compatible with NDN-DPDK.
+
+After loading either package and attaching to the logical forwarder, prefix registration commands would be transmitted toward the connected forwarder.
+In contrast, if no `ReadvertiseDestination` is attached to a logical forwarder, the producer prefixes from a `FwFace` are visible within the logical forwarder and no prefix registration commands would be sent.
+
+A `FwFace` may prevent its prefixes from being readvertised by setting `advertiseFrom: false` attribute.
+If this attribute is set, the prefixes announced by this `FwFace` are only visible within the logical forwarder but ignored by `Readvertise` module.
+This attribute is normally set on a `FwFace` that represents an uplink to a remote forwarder, so that its prefixes (often the default route `/`) do not leak to another uplink that you may be connecting.
+In contrast, having `advertiseFrom: true` attribute (the default) does not magically enable prefix registration commands if you do not have a `ReadvertiseDestination` attached.
+
+### Readvertise Module Architecture
+
+The readvertise module consists of:
+
+* One `Readvertise` class instance integrated with the logical forwarder.
+* One or more `ReadvertiseDestination` subclass instances attached to the `Readvertise` instance.
+
+The `Readvertise` class is responsible for:
+
+* When a prefix is announced by the first `FwFace`, send an advertise (register) command to each destination.
+* When a prefix is unannounced by the last `FwFace`, send a withdraw (unregister) command to each destination.
+* If the same prefix is announced by multiple `FwFace`s or by the same `FwFace` more than once, it is deduplicated automatically and would not cause duplicate advertise commands or premature withdraw commands.
+
+The `ReadvertiseDestination` base class is responsible for:
+
+* Maintain a queue of pending advertise and withdraw commands to be processed by the subclass.
+* Maintain a state of each prefix, with one of four statuses: ADVERTISING, ADVERTISED, WITHDRAWING, WITHDRAWN.
+* If an advertise or withdraw command fails, automatically retry the command.
+* If the prefix is withdrawn while an advertise command is being executed, immediately send a withdraw command afterward, to ensure state consistency.
+
+Each `ReadvertiseDestination` subclass is responsible for:
+
+* Implement the prefix registration protocol understood by the connected forwarder.
+* Actually transmit the advertise and withdraw commands, and inform the base class of the success/failure outcome.
+  * If the commands require NDN signatures, manage the signing and certificate publishing.
+* Refresh the advertised prefixes (i.e. schedule resending advertise commands) in case of connectivity change.
+  * For example, if `TcpTransport` reconnects to NFD, it would be seen by NFD as a new face, so that every prefix must be registered again to maintain connectivity.

@@ -41,7 +41,7 @@ export class Readvertise {
    *
    * Outer key is the FwFace.
    * Inner key is the announced name in hex.
-   * Inner key is the announced name.
+   * Inner value is the announced name.
    *
    * This is for deleting all announcements from a FwFace.
    */

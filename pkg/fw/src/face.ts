@@ -101,6 +101,8 @@ export namespace FwFace {
    * - `true`: same as route name.
    * - number: n-component prefix of route name.
    * - {@link Name} or string: specified name.
+   * - {@link PrefixAnnouncementObj}: enclosed name, using the pre-encoded Prefix Announcement
+   *   object if it's supported by the readvertise destination.
    */
   export type RouteAnnouncement = boolean | number | PrefixAnnouncement;
 
