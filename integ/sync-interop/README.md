@@ -4,14 +4,14 @@
 
 Test environment:
 
-* Ubuntu 22.04
-* ndn-cxx 0.9.0-16-gd384a530
-* NFD 24.07-11-ga745025b
-* Node.js v22.13.0
+* Ubuntu 26.04
+* ndn-cxx 0.9.0-39-g093f5006
+* NFD 24.07-34-g146968d3
+* Node.js 26.5.0
 
 Reference implementation:
 
-* PSync 0.5.0-1-gf4571e8d
+* PSync 0.5.0-10-gcfe73af7
 
 Build reference program:
 
@@ -64,16 +64,16 @@ corepack pnpm literate integ/sync-interop/psync-partial-subscriber.ts
 
 Test environment:
 
-* Ubuntu 22.04
-* ndn-cxx 0.9.0-16-gd384a530
-* NFD 24.07-11-ga745025b
-* Node.js v22.13.0
-* Go 1.23.4
+* Ubuntu 26.04
+* ndn-cxx 0.9.0-39-g093f5006
+* NFD 24.07-34-g146968d3
+* Node.js 26.5.0
+* Go 1.26.4
 
 Reference implementation:
 
-* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `7fa0af007772c2e320bdc3996fd3bb57fbb21347` (2025-01-05)
-* [NDNd](https://github.com/named-data/ndnd) commit `814d19d06446eeb84cecbe24ee4469ea7fca3a4c` (2025-01-14)
+* [StateVectorSync C++ library](https://github.com/named-data/ndn-svs) commit `a93724758aca71a4ea327574ef7af46770a81a40` (2026-06-01)
+* [NDNd](https://github.com/named-data/ndnd) commit `c45174db7d18dc5b9b5d632d1439e8a5c945fca2` (2026-07-11)
 
 Build reference program:
 
@@ -81,9 +81,6 @@ Build reference program:
 # in ndn-svs directory
 ./waf configure --with-examples
 ./waf
-
-# in $HOME directory
-go install -v github.com/named-data/ndnd/std/examples/low-level/svs@v1.4.3-0.20250113180516-814d19d06446
 ```
 
 The sync group prefix shall use multicast strategy:
@@ -109,8 +106,8 @@ corepack pnpm literate integ/sync-interop/svsync.ts /NDNts-${RANDOM}
 Test `SvSync` (SVS v3):
 
 ```bash
-# NDNd: in $HOME directory
-~/go/bin/svs /ndnd-svs3
+# NDNd: in ndnd directory
+go run ./std/examples/svs/pure-sync /ndnd-svs3
 
 # in NDNts directory
 corepack pnpm literate integ/sync-interop/svsync.ts --svs3 /NDNts-svs3
