@@ -35,5 +35,12 @@ export namespace RSA {
 
     /** Import PKCS#8 private key and SPKI public key instead of generating. */
     importPkcs8?: [pkcs8: Uint8Array, spki: Uint8Array];
+
+    /**
+     * Import PKCS#1 private key and SPKI public key instead of generating.
+     *
+     * If {@link importPkcs8} is also specified, this field is ignored.
+     */
+    importPkcs1?: [pkcs1: Uint8Array, spki: Uint8Array];
   }
 }

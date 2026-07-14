@@ -1,9 +1,11 @@
 import { asBufferSource } from "@ndn/util";
-import type * as asn1 from "@yoursunny/asn1";
+import * as asn1 from "@yoursunny/asn1";
 
 import type { CryptoAlgorithm } from "../key/mod";
-import { assertSpkiAlgorithm } from "./impl-spki";
+import { assertSpkiAlgorithm, toPkcs8 } from "./impl-asn1";
 import type { RSA } from "./rsa";
+
+const RsaOid = "2A864886F70D010101"; // 1.2.840.113549.1.1.1
 
 export type RsaModulusLength = (typeof RsaModulusLength.Choices)[number];
 export namespace RsaModulusLength {
@@ -26,15 +28,21 @@ export abstract class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenPara
   protected readonly importParams: RsaHashedImportParams;
   protected readonly genParams: RsaHashedKeyGenParams;
 
-  async cryptoGenerate({ modulusLength = RsaModulusLength.Default, importPkcs8 }: RSA.GenParams, extractable: boolean) {
+  async cryptoGenerate({ modulusLength = RsaModulusLength.Default, importPkcs8, importPkcs1 }: RSA.GenParams, extractable: boolean) {
     let privateKey: CryptoKey;
     let publicKey: CryptoKey;
     if (importPkcs8) {
-      const [pkcs8, spki] = importPkcs8;
-      [privateKey, publicKey] = await Promise.all([
-        crypto.subtle.importKey("pkcs8", asBufferSource(pkcs8), this.importParams, extractable, this.keyUsages.private),
-        crypto.subtle.importKey("spki", asBufferSource(spki), this.importParams, true, this.keyUsages.public),
-      ]);
+      [privateKey, publicKey] = await this.importPkcs8(...importPkcs8, extractable);
+    } else if (importPkcs1) {
+      const [pkcs1, spki] = importPkcs1;
+      const pkcs8 = toPkcs8(
+        [
+          asn1.Any("06", RsaOid), // OID
+          asn1.Any("05"), // Parameters NULL
+        ],
+        pkcs1,
+      );
+      [privateKey, publicKey] = await this.importPkcs8(pkcs8, spki, extractable);
     } else {
       const genParams: RsaHashedKeyGenParams = {
         ...this.genParams,
@@ -56,8 +64,15 @@ export abstract class RsaCommon implements CryptoAlgorithm<{}, true, RSA.GenPara
     };
   }
 
+  private importPkcs8(pkcs8: Uint8Array, spki: Uint8Array, extractable: boolean) {
+    return Promise.all([
+      crypto.subtle.importKey("pkcs8", asBufferSource(pkcs8), this.importParams, extractable, this.keyUsages.private),
+      crypto.subtle.importKey("spki", asBufferSource(spki), this.importParams, true, this.keyUsages.public),
+    ]);
+  }
+
   public async importSpki(spki: Uint8Array, der: asn1.ElementBuffer) {
-    assertSpkiAlgorithm(der, "RSA", "2A864886F70D010101"); // 1.2.840.113549.1.1.1
+    assertSpkiAlgorithm(der, "RSA", RsaOid);
     const key = await crypto.subtle.importKey("spki", asBufferSource(spki), this.importParams, true, this.keyUsages.public);
     return {
       publicKey: key,

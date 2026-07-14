@@ -14,7 +14,7 @@ export abstract class KeyChainExternal extends KeyChainSerialized {
   private cached?: KeyChain;
 
   protected constructor(
-      protected readonly algoList: readonly CryptoAlgorithm[],
+      public readonly algoList: readonly CryptoAlgorithm[],
       public override readonly needJwk = true,
   ) {
     super();

@@ -6,7 +6,7 @@ import { StoreBase, type StoreProvider } from "./store-base";
 
 /** KV store of named key pairs. */
 export class KeyStore extends StoreBase<KeyStore.StoredKey> {
-  constructor(provider: StoreProvider<KeyStore.StoredKey>, algoList: readonly CryptoAlgorithm[]) {
+  constructor(provider: StoreProvider<KeyStore.StoredKey>, public readonly algoList: readonly CryptoAlgorithm[]) {
     super(provider);
     this.loader = new KeyStore.Loader(false, algoList);
   }

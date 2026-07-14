@@ -4,7 +4,7 @@ import type * as asn1 from "@yoursunny/asn1";
 import { Ed25519Algorithm, ponyfillEd25519 } from "@yoursunny/webcrypto-ed25519";
 
 import type { CryptoAlgorithm, SigningAlgorithm } from "../key/mod";
-import { assertSpkiAlgorithm } from "./impl-spki";
+import { assertSpkiAlgorithm } from "./impl-asn1";
 
 const subtle = ponyfillEd25519();
 

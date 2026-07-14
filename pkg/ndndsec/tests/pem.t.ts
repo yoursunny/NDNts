@@ -8,7 +8,7 @@ import { parseCert, parseKey } from "..";
 import * as pem_files from "../test-fixture/pem-files";
 
 test.each<[string, () => Promise<pem_files.PemTestVector>]>([
-  ["Ed", pem_files.Ed25519],
+  ["Ed25519", pem_files.Ed25519],
   ["RSA 2048", pem_files.RSA_2048],
   ["RSA 4096", pem_files.RSA_4096],
   ["EC P256", pem_files.EC_P256],

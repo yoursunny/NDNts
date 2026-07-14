@@ -1,8 +1,6 @@
-import { type Certificate, CertNaming, CryptoAlgorithm, generateSigningKey, type KeyChain } from "@ndn/keychain";
-import type { Data, Name } from "@ndn/packet";
+import { type Certificate, CertNaming, CryptoAlgorithm, type ECDSA, type Ed25519, generateSigningKey, type KeyChain, type RSA } from "@ndn/keychain";
+import { type Data, type Name, SigType } from "@ndn/packet";
 import { assert } from "@ndn/util";
-
-import { toImportParams } from "./import_node";
 
 export const ContentTypeUnencryptedPrivateKey = 0x09;
 
@@ -55,10 +53,24 @@ export class UnencryptedPrivateKey {
    */
   public async saveKeyPair(keyChain: KeyChain): Promise<void> {
     assert(this.cert_, ".cert needed");
-    const [algo, genParams] = await toImportParams(this.sigType, this.secret, this.cert_.publicKeySpki);
-    assert(CryptoAlgorithm.isAsym(algo));
-    assert(CryptoAlgorithm.isSigning(algo));
-    await generateSigningKey(keyChain, this.keyName, algo, genParams);
-    await keyChain.insertCert(this.cert_);
+    for (const algo of keyChain.algoList) {
+      if (!(CryptoAlgorithm.isAsym(algo) &&
+        CryptoAlgorithm.isSigning(algo) &&
+        algo.sigType === this.sigType &&
+        algo.sigType in importParamKey)) {
+        continue;
+      }
+      const genParams = { [importParamKey[algo.sigType as keyof typeof importParamKey]]: [this.secret, this.cert_.publicKeySpki] };
+      await generateSigningKey(keyChain, this.keyName, algo, genParams);
+      await keyChain.insertCert(this.cert_);
+      return;
+    }
+    throw new Error(`SigType ${this.sigType} not supported or not in algoList`);
   }
 }
+
+const importParamKey = {
+  [SigType.Ed25519]: "importPkcs8" satisfies keyof Ed25519.GenParams,
+  [SigType.Sha256WithRsa]: "importPkcs1" satisfies keyof RSA.GenParams,
+  [SigType.Sha256WithEcdsa]: "importSec1" satisfies keyof ECDSA.GenParams,
+} as const;

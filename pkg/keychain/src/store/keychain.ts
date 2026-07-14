@@ -13,6 +13,9 @@ import { openStores } from "./stores_node";
 
 /** Storage of own private keys and certificates. */
 export abstract class KeyChain {
+  /** Retrieve the algorithm list used to construct this KeyChain. */
+  public abstract readonly algoList: readonly CryptoAlgorithm[];
+
   /** Return whether `.insertKey()` method expects JsonWebKey instead of CryptoKey. */
   public abstract readonly needJwk: boolean;
 
@@ -282,6 +285,8 @@ class KeyChainImpl extends KeyChainSerialized {
   constructor(private readonly keys: KeyStore, private readonly certs: CertStore) {
     super();
   }
+
+  public override get algoList() { return this.keys.algoList; }
 
   public override get needJwk() { return !this.keys.canSClone; }
 
