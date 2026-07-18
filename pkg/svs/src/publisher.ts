@@ -26,7 +26,7 @@ export class SvPublisher {
     mappingSigner = nullSigner,
   }: SvPublisher.Options) {
     this.node = sync.add(id);
-    this.nodeSyncPrefix = id.append(...sync.syncPrefix.comps);
+    this.nodeSyncPrefix = id.append(...sync.groupPrefix.comps);
     this.store = store;
     this.chunkOptions = { chunkSize };
     this.innerSigner = innerSigner;

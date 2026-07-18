@@ -50,7 +50,7 @@ class DebugHandler {
 }
 
 const baseOpts: SvSync.Options = {
-  syncPrefix: new Name("/svs-test"),
+  groupPrefix: new Name("/svs-test"),
   syncInterestLifetime: 200,
   periodicTimeout: [600, 0.05],
   suppressionPeriod: 50,

@@ -19,14 +19,14 @@ export const args = yargs(hideBin(process.argv))
   })
   .parseSync();
 
-export const syncPrefix = new Name("/ndn/svs");
-export const myDataPrefix = args.me.append(...syncPrefix.comps);
+export const groupPrefix = new Name("/ndn/svs");
+export const myDataPrefix = args.me.append(...groupPrefix.comps);
 
 export async function openSvSync(wantHMAC: boolean): Promise<SvSync> {
   await openUplinks();
 
   const opts: SvSync.Options = {
-    syncPrefix,
+    groupPrefix,
     svs3: args.svs3,
   };
 

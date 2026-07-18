@@ -19,7 +19,7 @@ beforeAll(async () => {
   const [signerO, verifierO] = await generateSigningKey("/kO");
   const [signerM, verifierM] = await generateSigningKey("/kM");
   syncOpts = {
-    syncPrefix: new Name("/svs-test"),
+    groupPrefix: new Name("/svs-test"),
     syncInterestLifetime: 200,
     periodicTimeout: [400, 0.05],
     suppressionPeriod: 50,

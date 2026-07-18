@@ -28,9 +28,9 @@ type EventMap = SyncProtocol.EventMap<SvSync.ID> & {
 /** StateVectorSync participant. */
 export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<SvSync.ID> {
   public static async create({
-    syncPrefix,
+    groupPrefix,
     fw = Forwarder.getDefault(),
-    describe = `SvSync(${syncPrefix})`,
+    describe = `SvSync(${groupPrefix})`,
     initialStateVector = new StateVector(),
     initialize,
     syncInterestLifetime = 1000,
@@ -47,7 +47,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
 
     const sync = new SvSync(
       svs3,
-      syncPrefix,
+      groupPrefix,
       describe,
       initialStateVector,
       syncInterestLifetime,
@@ -64,7 +64,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
 
   private constructor(
       private readonly svs3: boolean,
-      public readonly syncPrefix: Name,
+      public readonly groupPrefix: Name,
       public readonly describe: string,
       private readonly own: StateVector,
       private readonly syncInterestLifetime: number,
@@ -75,7 +75,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
       private readonly verifier: Verifier,
   ) {
     super();
-    this.syncInterestName = syncPrefix.append(svs3 ? Version3 : Version2);
+    this.syncInterestName = groupPrefix.append(svs3 ? Version3 : Version2);
   }
 
   private makeFace(fw: Forwarder): void {
@@ -86,7 +86,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
       describe: this.describe,
       routeCapture: false,
     });
-    this.face.addRoute(this.syncInterestName, this.syncPrefix);
+    this.face.addRoute(this.syncInterestName, this.groupPrefix);
   }
 
   private readonly maybeHaveEventListener = trackEventListener(this);
@@ -379,7 +379,7 @@ export namespace SvSync {
   /** {@link SvSync.create} options. */
   export interface Options {
     /** Sync group prefix. */
-    syncPrefix: Name;
+    groupPrefix: Name;
 
     /**
      * Use the specified logical forwarder.

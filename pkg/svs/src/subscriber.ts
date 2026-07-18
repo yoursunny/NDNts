@@ -37,14 +37,14 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
     mappingVerifier = noopSigning,
   }: SvSubscriber.Options) {
     super();
-    this.syncPrefix = sync.syncPrefix;
+    this.groupPrefix = sync.groupPrefix;
     this.mappingBatch = mappingBatch;
     this.mappingEVD = makeMappingEVD<ME>(mappingEntryType as MappingEntry.Constructor<ME>);
     this.mustFilterByMapping = mustFilterByMapping;
     this.innerVerifier = innerVerifier;
     this.outerFetchOpts = {
       cOpts,
-      describe: `SVS-PS(${sync.syncPrefix})[retrieve]`,
+      describe: `SVS-PS(${sync.groupPrefix})[retrieve]`,
       signal: this.abort.signal,
       retxLimit,
       acceptContentType: [0, ContentTypeEncap],
@@ -53,14 +53,14 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
     this.outerConsumerOpts = {
       retx: retxLimit,
       ...cOpts,
-      describe: `SVS-PS(${sync.syncPrefix})[retrieve]`,
+      describe: `SVS-PS(${sync.groupPrefix})[retrieve]`,
       signal: this.abort.signal,
       verifier: outerVerifier,
     };
     this.mappingConsumerOpts = {
       retx: retxLimit,
       ...cOpts,
-      describe: `SVS-PS(${sync.syncPrefix})[mapping]`,
+      describe: `SVS-PS(${sync.groupPrefix})[mapping]`,
       signal: this.abort.signal,
       verifier: mappingVerifier,
     };
@@ -68,7 +68,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
   }
 
   private readonly abort = new AbortController();
-  private readonly syncPrefix: Name;
+  private readonly groupPrefix: Name;
   private readonly nameSubs = new SubscriptionTable<SvSubscriber.Update>();
   private readonly nameFilters = new WeakMap<Subscription<Name, SvSubscriber.Update>, (entry: ME) => boolean>();
   private readonly publisherSubs = new SubscriptionTable<SvSubscriber.Update>();
@@ -138,7 +138,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
         const loSeqNum = range[0]!;
         const hiSeqNum = range.at(-1)!;
         const interest = new Interest(update.id.append(
-          ...this.syncPrefix.comps, MappingKeyword,
+          ...this.groupPrefix.comps, MappingKeyword,
           GenericNumber.create(loSeqNum), GenericNumber.create(hiSeqNum),
         ));
         try {
@@ -173,7 +173,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
       return inner;
     };
 
-    const outerPrefix = publisher.append(...this.syncPrefix.comps, GenericNumber.create(seqNum));
+    const outerPrefix = publisher.append(...this.groupPrefix.comps, GenericNumber.create(seqNum));
     let payload: Uint8Array;
     const outer = await consume(
       new Interest(outerPrefix, Interest.CanBePrefix),
