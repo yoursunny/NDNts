@@ -150,7 +150,7 @@ test("5.3", async () => {
   initialStateVector.set({ name: new Name("/B"), boot: 1636266412 }, 15);
   initialStateVector.set({ name: new Name("/C"), boot: 1636266115 }, 25);
 
-  const opts: SvSync.Options = { ...baseOpts, svs3: true, initialStateVector };
+  const opts: SvSync.Options = { ...baseOpts, initialStateVector };
 
   const pA0 = await SvSync.create({ ...opts, describe: "A0" });
   const pB0 = await SvSync.create({ ...opts, describe: "B0" });
@@ -198,22 +198,26 @@ test("initialize", async () => {
   closers.push(p0);
   debugHandler.start(p0);
 
-  const n0A = p0.get("/A");
+  const n0A = p0.get("/A", 10);
   n0A.seqNum = 11;
   n0A.remove(); // no effect
-  const n0B = p0.get("/B");
+  const n0B = p0.get("/N", 22);
   n0B.seqNum = 12;
-  const n0C = p0.get("/C");
+  const n0C = p0.get("/N", 23);
   n0C.seqNum = 13;
   n0C.seqNum = 3; // no effect
   await delay(200);
   expect(debugHandler.count("0:send")).toBe(1);
 
+  const idA = n0A.id;
+  const idB = n0B.id;
+  const idC = n0C.id;
+
   p0.close();
   const v0 = p0.currentStateVector;
-  expect(v0.get(new Name("/A"))).toBe(11);
-  expect(v0.get(new Name("/B"))).toBe(12);
-  expect(v0.get(new Name("/C"))).toBe(13);
+  expect(v0.get(idA)).toBe(11);
+  expect(v0.get(idB)).toBe(12);
+  expect(v0.get(idC)).toBe(13);
   expect(v0.get(new Name("/D"))).toBe(0);
 
   // eslint-disable-next-line unicorn/prefer-structured-clone
@@ -227,8 +231,8 @@ test("initialize", async () => {
       debugHandler.start(sync);
 
       const n1A = sync.get("/A");
-      const n1B = sync.get("/B");
-      const n1C = sync.get("/C");
+      const n1B = sync.get("/N", 22);
+      const n1C = sync.get("/N", 23);
       const n1D = sync.get("/D");
 
       expect(n1A.seqNum).toBe(11);
@@ -247,8 +251,8 @@ test("initialize", async () => {
   expect(debugHandler.count("1:send")).toBe(0);
 
   expect(p1.get("/A").seqNum).toBe(0);
-  expect(p1.get("/B").seqNum).toBe(22);
-  expect(p1.get("/C").seqNum).toBe(3);
+  expect(p1.get(idB).seqNum).toBe(22);
+  expect(p1.get(idC).seqNum).toBe(3);
   const n1D = p1.get("/D");
   expect(n1D.seqNum).toBe(4);
   ++n1D.seqNum;
@@ -262,7 +266,7 @@ test("get add", async () => {
   initialStateVector.set({ name: new Name("/A"), boot: 1736890910 }, 1);
   initialStateVector.set({ name: new Name("/B"), boot: 1736890920 }, 1);
 
-  const p = await SvSync.create({ ...baseOpts, svs3: true, initialStateVector });
+  const p = await SvSync.create({ ...baseOpts, initialStateVector });
   closers.push(p);
 
   // .get(id)
@@ -295,10 +299,8 @@ test("get add", async () => {
 test("future bootstrap time", async () => {
   const debugHandler = new DebugHandler();
 
-  const opts: SvSync.Options = { ...baseOpts, svs3: true };
-
-  const pA = await SvSync.create({ ...opts, describe: "A" });
-  const pB = await SvSync.create({ ...opts, describe: "B" });
+  const pA = await SvSync.create({ ...baseOpts, describe: "A" });
+  const pB = await SvSync.create({ ...baseOpts, describe: "B" });
 
   debugHandler.start(pA);
   debugHandler.start(pB);

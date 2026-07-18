@@ -36,11 +36,11 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
     initialize,
     syncInterestLifetime = 1000,
     periodicTimeout = [30000, 0.1],
-    suppressionPeriod = 2200,
+    suppressionPeriod = 200,
     suppressionTimeout = SvSync.suppressionExpDelay(suppressionPeriod),
     signer = nullSigner,
     verifier = noopSigning,
-    svs3 = false,
+    svs3 = true, // eslint-disable-line @typescript-eslint/no-deprecated
   }: SvSync.Options): Promise<SvSync> {
     if (typeof periodicTimeout === "number") {
       periodicTimeout = [periodicTimeout, 0.1];
@@ -76,7 +76,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
       private readonly verifier: Verifier,
   ) {
     super();
-    this.syncInterestName = groupPrefix.append(svs3 ? Version3 : Version2);
+    this.syncDataName = groupPrefix.append(svs3 ? Version3 : Version2);
   }
 
   private makeFace(fw: Forwarder): void {
@@ -87,12 +87,12 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
       describe: this.describe,
       routeCapture: false,
     });
-    this.face.addRoute(this.syncInterestName, this.groupPrefix);
+    this.face.addRoute(this.syncDataName, this.groupPrefix);
   }
 
   private readonly maybeHaveEventListener = trackEventListener(this);
   private face?: FwFace;
-  private readonly syncInterestName: Name;
+  private readonly syncDataName: Name;
   private txStream = pushable<FwPacket>();
 
   /**
@@ -289,7 +289,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
       }
       case l3TT.Data: { // SVS v3
         const data = d1.decode(Data);
-        assert(data.name.equals(this.syncInterestName));
+        assert(data.name.equals(this.syncDataName));
         await this.verifier.verify(data);
         recv = Decoder.decode(data.content, StateVector);
         break;
@@ -365,7 +365,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
   /** Transmit a sync Interest. */
   private async sendSyncInterest(): Promise<void> {
     const interest = new Interest();
-    interest.name = this.syncInterestName;
+    interest.name = this.syncDataName;
     interest.canBePrefix = true;
     interest.mustBeFresh = true;
     interest.lifetime = this.syncInterestLifetime;
@@ -375,7 +375,7 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
       this.own.encodeTo(encoder, 3);
 
       const data = new Data();
-      data.name = this.syncInterestName;
+      data.name = this.syncDataName;
       data.content = encoder.output;
       await this.signer.sign(data);
 
@@ -442,8 +442,8 @@ export namespace SvSync {
     periodicTimeout?: number | [median: number, jitter: number];
 
     /**
-     * Sync Interest timer in suppression state, maximum value.
-     * @defaultValue `200ms`
+     * Sync Interest timer in suppression state, maximum value in milliseconds.
+     * @defaultValue 200
      */
     suppressionPeriod?: number;
 
@@ -470,15 +470,17 @@ export namespace SvSync {
     verifier?: Verifier;
 
     /**
-     * Enable SVS v3 protocol.
-     * @defaultValue false
+     * Enable SVS v3 protocol instead of SVS v2.
+     * @defaultValue true
+     *
+     * @deprecated SVS v2 is deprecated.
      */
     svs3?: boolean;
   }
 
   /**
-   * SVS v2 suppression timeout exponential decay function.
-   * @param c - Constant factor.
+   * SVS v3 suppression timeout exponential decay function.
+   * @param c - Constant factor, aka SuppressionPeriod.
    * @param f - Decay factor.
    * @returns Function to generate suppression timeout values.
    */

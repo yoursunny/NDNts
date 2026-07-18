@@ -25,6 +25,7 @@ beforeAll(async () => {
     suppressionPeriod: 50,
     signer: signerS,
     verifier: verifierS,
+    svs3: false,
   };
   pubOpts = {
     innerSigner: signerI,
