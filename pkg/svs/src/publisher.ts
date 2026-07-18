@@ -3,7 +3,6 @@ import { GenericNumber } from "@ndn/naming-convention2";
 import { Data, Name, type NameLike, nullSigner, type Signer } from "@ndn/packet";
 import type { DataStore as S } from "@ndn/repo-api";
 import { BufferChunkSource, type ChunkOptions, DataProducer } from "@ndn/segmented-object";
-import type { SyncNode } from "@ndn/sync-api";
 import { Encoder } from "@ndn/tlv";
 import { Closer } from "@ndn/util";
 import { collect, parallelMap } from "streaming-iterables";
@@ -26,7 +25,7 @@ export class SvPublisher {
     mappingSigner = nullSigner,
   }: SvPublisher.Options) {
     this.node = sync.add(id);
-    this.nodeSyncPrefix = id.append(...sync.groupPrefix.comps);
+    this.nodeSyncPrefix = this.node.dataInterestPrefix;
     this.store = store;
     this.chunkOptions = { chunkSize };
     this.innerSigner = innerSigner;
@@ -52,7 +51,7 @@ export class SvPublisher {
     );
   }
 
-  private readonly node: SyncNode<Name>;
+  private readonly node: SvSync.Node;
   private readonly nodeMutex = new Mutex();
   private readonly nodeSyncPrefix: Name;
   private readonly store: SvPublisher.DataStore;

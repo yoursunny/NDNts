@@ -37,7 +37,6 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
     mappingVerifier = noopSigning,
   }: SvSubscriber.Options) {
     super();
-    this.groupPrefix = sync.groupPrefix;
     this.mappingBatch = mappingBatch;
     this.mappingEVD = makeMappingEVD<ME>(mappingEntryType as MappingEntry.Constructor<ME>);
     this.mustFilterByMapping = mustFilterByMapping;
@@ -68,7 +67,6 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
   }
 
   private readonly abort = new AbortController();
-  private readonly groupPrefix: Name;
   private readonly nameSubs = new SubscriptionTable<SvSubscriber.Update>();
   private readonly nameFilters = new WeakMap<Subscription<Name, SvSubscriber.Update>, (entry: ME) => boolean>();
   private readonly publisherSubs = new SubscriptionTable<SvSubscriber.Update>();
@@ -120,7 +118,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
       () => update.seqNums(),
       transform(Infinity, async (seqNum) => {
         try {
-          await this.dispatchUpdate(update.id, publisherSubs, seqNum, mapping);
+          await this.dispatchUpdate(update.node as SvSync.Node, publisherSubs, seqNum, mapping);
         } catch (err: unknown) {
           this.emitError(`dispatchUpdate(${update.id}, ${seqNum}): ${err}`);
         }
@@ -137,10 +135,9 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
       transform(Infinity, async (range) => {
         const loSeqNum = range[0]!;
         const hiSeqNum = range.at(-1)!;
-        const interest = new Interest(update.id.append(
-          ...this.groupPrefix.comps, MappingKeyword,
-          GenericNumber.create(loSeqNum), GenericNumber.create(hiSeqNum),
-        ));
+        const node = update.node as SvSync.Node;
+        const interest = new Interest();
+        interest.name = node.dataInterestPrefix.append(MappingKeyword, GenericNumber.create(loSeqNum), GenericNumber.create(hiSeqNum));
         try {
           const data = await consume(interest, this.mappingConsumerOpts);
           this.mappingEVD.decode(m, new Decoder(data.content));
@@ -153,7 +150,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
     return m;
   }
 
-  private async dispatchUpdate(publisher: Name, publisherSubs: SubSet, seqNum: number, mapping?: Mapping<ME>): Promise<void> {
+  private async dispatchUpdate(publisher: SvSync.Node, publisherSubs: SubSet, seqNum: number, mapping?: Mapping<ME>): Promise<void> {
     let name: Name | undefined;
     let nameSubs: Sub[] | undefined;
     if (publisherSubs.size === 0 && mapping) {
@@ -173,7 +170,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
       return inner;
     };
 
-    const outerPrefix = publisher.append(...this.groupPrefix.comps, GenericNumber.create(seqNum));
+    const outerPrefix = publisher.buildDataInterestName(seqNum);
     let payload: Uint8Array;
     const outer = await consume(
       new Interest(outerPrefix, Interest.CanBePrefix),
@@ -189,7 +186,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
       payload = await this.retrieveSegmented(outerPrefix, decap);
     }
 
-    const update = new SvSubscriber.Update(publisher, seqNum, name!, payload);
+    const update = new SvSubscriber.Update(publisher.id, seqNum, name!, payload);
     this.publisherSubs.update(publisherSubs, update);
     this.nameSubs.update(nameSubs!, update);
   }
@@ -325,7 +322,7 @@ export namespace SvSubscriber {
   /** Received update. */
   export class Update extends Event {
     constructor(
-        public readonly publisher: Name,
+        public readonly publisher: SvSync.ID,
         public readonly seqNum: number,
         public readonly name: Name,
         public readonly payload: Uint8Array,

@@ -1,4 +1,5 @@
 import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
+import { GenericNumber, SequenceNum, Timestamp } from "@ndn/naming-convention2";
 import { Data, Interest, Name, type NameLike, noopSigning, nullSigner, type Signer, TT as l3TT, type Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { Decoder, Encoder } from "@ndn/tlv";
@@ -133,13 +134,13 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
    * For SVS v3, retrieve sync node with specified name and most recent bootstrap time.
    * If no sync node with this name exists, create sync node with current time as bootstrap time.
    */
-  public get(name: NameLike): SyncNode<SvSync.ID>;
+  public get(name: NameLike): SvSync.Node;
 
   /** Retrieve or create sync node by name and bootstrap time (SVS v3). */
-  public get(id: { name: NameLike; boot: number }): SyncNode<SvSync.ID>;
+  public get(id: { name: NameLike; boot: number }): SvSync.Node;
 
   /** Retrieve or create sync node by name and bootstrap time (SVS v3). */
-  public get(name: NameLike, boot: number): SyncNode<SvSync.ID>;
+  public get(name: NameLike, boot: number): SvSync.Node;
 
   public get(arg1: NameLike | { name: NameLike; boot: number }, boot = -1) {
     let id: IDImpl;
@@ -175,15 +176,15 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
    * - `get(name)` searches for existing sync nodes with specified name first.
    * - `add(name)` almost always creates a new sync node.
    */
-  public add(name: NameLike): SyncNode<SvSync.ID>;
+  public add(name: NameLike): SvSync.Node;
 
   /** Same as `get(id)` (SVS v3). */
-  public add(id: { name: NameLike; boot: number }): SyncNode<SvSync.ID>;
+  public add(id: { name: NameLike; boot: number }): SvSync.Node;
 
   /** Same as `get(name, boot)` (SVS v3). */
-  public add(name: NameLike, boot: number): SyncNode<SvSync.ID>;
+  public add(name: NameLike, boot: number): SvSync.Node;
 
-  public add(arg1: any, boot = SvSync.makeBootstrapTime()): SyncNode<SvSync.ID> {
+  public add(arg1: any, boot = SvSync.makeBootstrapTime()) {
     return this.get(arg1, boot);
   }
 
@@ -214,21 +215,36 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
    * Multi-purpose callback passed to {@link SvSyncNode} constructor.
    *
    * @remarks
-   * - `nodeOp(id)`: get seqNum
-   * - `nodeOp(id, n)`: set seqNum, return new seqNum
+   * - `nodeOp(id, "G") => number`: getSeqNum
+   * - `nodeOp(id, positive)`: setSeqNum
    * - `nodeOp(id, 0)`: delete node during initialization
+   * - `nodeOp(id, "P") => number`: dataInterestPrefix
+   * - `nodeOp(id, negative) => Name`: buildDataInterestName
    */
-  private readonly nodeOp = (id: Name, n: number | undefined): number => {
-    if (n !== undefined) { // setSeqNum requested
-      if (!this.face) { // decrement/remove permitted during initialization
-        this.own.set(id, n);
-      } else if (n > this.own.get(id)) { // increment only after initialization
-        this.own.set(id, n);
-        this.debug("publish");
-        this.resetTimer(true);
+  private readonly nodeOp: NodeOp = (id, n): any => {
+    switch (n) {
+      case "G": { // getSeqNum
+        return this.own.get(id);
+      }
+      case "P": { // dataInterestPrefix
+        if (this.svs3) {
+          return id.name.append(...this.groupPrefix.comps, Timestamp.create(id.boot));
+        }
+        return id.append(...this.groupPrefix.comps);
       }
     }
-    return this.own.get(id);
+    if (n < 0) { // buildDataInterestName
+      if (this.svs3) {
+        return id.name.append(...this.groupPrefix.comps, Timestamp.create(id.boot), SequenceNum.create(-n));
+      }
+      return id.append(...this.groupPrefix.comps, GenericNumber.create(-n));
+    } if (!this.face) { // setSeqNum: decrement/remove permitted during initialization
+      this.own.set(id, n);
+    } else if (n > this.own.get(id)) { // setSeqNum: increment only after initialization
+      this.own.set(id, n);
+      this.debug("publish");
+      this.resetTimer(true);
+    }
   };
 
   private readonly handleRxPacket = async (pkt: FwPacket): Promise<void> => {
@@ -491,23 +507,53 @@ export namespace SvSync {
    * Note: the `Name` variant will be deleted when SVS v2 support is dropped.
    */
   export type ID = Name & StateVector.ID;
+
+  export interface Node extends SyncNode<ID> {
+    /**
+     * Return the prefix for Data Interest Names.
+     * See `buildDataInterestName` for the conventions.
+     */
+    readonly dataInterestPrefix: Name;
+
+    /**
+     * Build Data Interest Name for the given sequence number.
+     * @param seqNum - Sequence number; omit to obtain the prefix without sequence number.
+     *
+     * This follows the recommended syntax:
+     * - `/<node-prefix>/<group-prefix>/<seq-num>` (SVS v2)
+     * - `/<node-prefix>/<group-prefix>/t=<bootstrap-time>/seq=<seq>` (SVS v3)
+     */
+    buildDataInterestName: (seqNum: number) => Name;
+  }
 }
 
-class SvSyncNode implements SyncNode<SvSync.ID> {
+type NodeOp = (id: SvSync.ID, n: number | "G" | "P") => any;
+
+class SvSyncNode implements SvSync.Node {
   constructor(
       public readonly id: SvSync.ID,
-      private readonly op: (id: Name, n: number | undefined) => number,
+      private readonly op: NodeOp,
   ) {}
 
   public get seqNum(): number {
-    return this.op(this.id, undefined);
+    return this.op(this.id, "G");
   }
 
   public set seqNum(n: number) {
+    assert(n > 0);
     this.op(this.id, n);
   }
 
   public remove(): void {
     this.op(this.id, 0);
+  }
+
+  public get dataInterestPrefix(): Name {
+    return this.op(this.id, "P");
+  }
+
+  public buildDataInterestName(seqNum: number): Name {
+    assert(seqNum > 0);
+    return this.op(this.id, -seqNum);
   }
 }
