@@ -8,10 +8,11 @@ This package contains **StateVectorSync** and related protocols, including:
   * deprecated, enable with `svs3: false` option
   * partial unit test
   * core synchronization logic only, does not deal with Data fetching
-* [StateVectorSync v3](https://named-data.github.io/StateVectorSync/Specification.html), revision 2025-01-14
+* [StateVectorSync v3](https://named-data.github.io/StateVectorSync/Specification.html), revision 2026-07-17
   * complete unit test
   * core synchronization logic only, does not deal with Data fetching
 * [SVS-PS](https://named-data.github.io/StateVectorSync/PubSubSpec.html), revision 2025-01-04
+  * only validated with SVS v2 (`svs3: false` option)
   * simple unit test
   * piggyback MappingData feature is not supported
 

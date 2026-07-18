@@ -87,7 +87,12 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
       describe: this.describe,
       routeCapture: false,
     });
-    this.face.addRoute(this.syncDataName, this.groupPrefix);
+
+    if (this.svs3) {
+      this.face.addRoute(this.syncDataName);
+    } else {
+      this.face.addRoute(this.syncDataName, this.groupPrefix);
+    }
   }
 
   private readonly maybeHaveEventListener = trackEventListener(this);
