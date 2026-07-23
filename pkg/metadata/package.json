@@ -1,7 +1,7 @@
 {
-  "name": "@ndn/ndncert",
+  "name": "@ndn/metadata",
   "version": "0.0.20260427",
-  "description": "NDNts: NDN Certificate Management Protocol",
+  "description": "NDNts: Metadata Retrieval Protocol",
   "keywords": [
     "NDN",
     "Named Data Networking"
@@ -19,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yoursunny/NDNts.git",
-    "directory": "pkg/ndncert"
+    "directory": "pkg/metadata"
   },
   "publishConfig": {
     "main": "lib/mod_node.js",
@@ -27,32 +27,14 @@
   },
   "dependencies": {
     "@ndn/endpoint": "workspace:*",
-    "@ndn/keychain": "workspace:*",
-    "@ndn/metadata": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "@ndn/repo": "workspace:*",
     "@ndn/tlv": "workspace:*",
-    "@ndn/util": "workspace:*",
-    "@types/imap": "^0.8.43",
-    "@types/nodemailer": "^8.0.1",
-    "ajv": "^8.20.0",
-    "b64-lite": "^1.4.0",
-    "imap-emails": "^1.0.4",
-    "is-valid-hostname": "^1.0.2",
-    "nodemailer": "^9.0.3",
-    "p-timeout": "^7.0.1",
-    "tslib": "^2.8.1",
-    "type-fest": "^5.8.0",
-    "typescript-event-target": "^1.1.2"
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
     "@ndn/fw": "workspace:^",
-    "@ndn/l3face": "workspace:^",
-    "@types/b64-lite": "^1.4.2",
-    "@types/koa": "^3.0.3",
-    "@types/mailparser": "^3.4.6",
-    "cf-doh": "^1.1.1",
-    "koa": "^3.2.1"
+    "@ndn/keychain": "workspace:*",
+    "@ndn/util": "workspace:*"
   }
 }

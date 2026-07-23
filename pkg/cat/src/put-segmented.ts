@@ -1,6 +1,6 @@
 import { exitClosers } from "@ndn/cli-common";
+import { Metadata, serveMetadata } from "@ndn/metadata";
 import { Name } from "@ndn/packet";
-import { Metadata, serveMetadata } from "@ndn/rdr";
 import { FileChunkSource, serve, serveVersioned, StreamChunkSource } from "@ndn/segmented-object";
 import type { CommandModule } from "yargs";
 

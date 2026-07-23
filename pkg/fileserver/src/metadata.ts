@@ -1,6 +1,6 @@
+import { Metadata } from "@ndn/metadata";
 import { Segment } from "@ndn/naming-convention2";
 import { type Component, StructFieldComponentNested, TT as l3TT } from "@ndn/packet";
-import { Metadata } from "@ndn/rdr";
 import { Extensible, Extension, ExtensionRegistry, StructFieldNNI, StructFieldNNIBig } from "@ndn/tlv";
 
 import { ModeDir, ModeFile, TT } from "./an";

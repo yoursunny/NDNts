@@ -25,10 +25,10 @@
   "dependencies": {
     "@ndn/cli-common": "workspace:*",
     "@ndn/fileserver": "workspace:*",
+    "@ndn/metadata": "workspace:*",
     "@ndn/naming-convention1": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "@ndn/rdr": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
     "@ndn/util": "workspace:*",
     "stdout-stream": "^2.0.0",

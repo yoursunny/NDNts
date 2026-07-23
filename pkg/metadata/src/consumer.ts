@@ -18,24 +18,24 @@ export function makeDiscoveryInterest(prefix: NameLike): Interest {
 }
 
 /**
- * Retrieve metadata packet of base type.
+ * Retrieve metadata content of base type.
  * @param prefix - Metadata packet prefix.
  * @param cOpts - Consumer options.
  * - Commonly specified: `.retx` and `.verifier`.
- * - `.describe` defaults to "RDR-c" + prefix.
- * @returns Metadata packet.
+ * - `.describe` defaults to "metadata-c" + prefix.
+ * @returns Metadata content.
  */
 export async function retrieveMetadata(prefix: NameLike, cOpts?: ConsumerOptions): Promise<Metadata>;
 
 /**
- * Retrieve metadata packet of subclass type.
+ * Retrieve metadata content of subclass type.
  * @typeParam C - Metadata subclass type.
  * @param prefix - Metadata packet prefix.
  * @param ctor - Metadata subclass constructor.
  * @param cOpts - Consumer options.
  * - Commonly specified: `.retx` and `.verifier`.
- * - `.describe` defaults to "RDR-c" + prefix.
- * @returns Metadata packet of type C.
+ * - `.describe` defaults to "metadata-c" + prefix.
+ * @returns Metadata content of type C.
  */
 export async function retrieveMetadata<C extends Metadata.Constructor>(
   prefix: NameLike, ctor: C, cOpts?: ConsumerOptions
@@ -51,7 +51,7 @@ export async function retrieveMetadata(prefix: NameLike, arg2: any, cOpts?: Cons
 
   const interest = makeDiscoveryInterest(prefix);
   const data = await consume(interest, {
-    describe: `RDR-c(${prefix})`,
+    describe: `metadata-c(${prefix})`,
     ...cOpts,
   });
   return Decoder.decode(data.content, ctor);

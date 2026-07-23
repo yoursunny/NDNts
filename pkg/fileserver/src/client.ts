@@ -1,6 +1,6 @@
 import type { ConsumerOptions } from "@ndn/endpoint";
+import { retrieveMetadata } from "@ndn/metadata";
 import { Component, type Name, TT } from "@ndn/packet";
-import { retrieveMetadata } from "@ndn/rdr";
 import { fetch } from "@ndn/segmented-object";
 import { assert } from "@ndn/util";
 import map from "obliterator/map.js";

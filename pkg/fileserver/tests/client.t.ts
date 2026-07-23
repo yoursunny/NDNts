@@ -2,9 +2,9 @@ import "@ndn/util/test-fixture/expect";
 
 import { produce } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
+import { makeMetadataPacket, MetadataKeyword } from "@ndn/metadata";
 import { Segment, Version } from "@ndn/naming-convention2";
 import { Data, Name } from "@ndn/packet";
-import { makeMetadataPacket, MetadataKeyword } from "@ndn/rdr";
 import { BufferChunkSource, DataProducer } from "@ndn/segmented-object";
 import { makeObjectBody } from "@ndn/segmented-object/test-fixture/object-body";
 import { collect } from "streaming-iterables";

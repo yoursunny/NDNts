@@ -10,7 +10,10 @@ function makeName({ name }: Metadata, prefix?: NameLike): Name {
   return prefix.append(MetadataKeyword, Version.create(Date.now()), Segment.create(0));
 }
 
-/** Make metadata packet. */
+/**
+ * Make metadata packet.
+ * @param m - Content of metadata packet.
+ */
 export async function makeMetadataPacket(m: Metadata, {
   prefix,
   freshnessPeriod = 1,
@@ -53,7 +56,11 @@ export function isDiscoveryInterest({ name, canBePrefix, mustBeFresh }: Interest
   return !!name.get(-1)?.equals(MetadataKeyword) && canBePrefix && mustBeFresh;
 }
 
-/** Serve metadata packet in a producer. */
+/**
+ * Serve metadata packet in a producer.
+ * @param m - Content of metadata packet, or a function that returns the content.
+ * @returns Producer instance.
+ */
 export function serveMetadata(m: Metadata | (() => Metadata), opts: serveMetadata.Options = {}): Producer {
   const {
     prefix: prefixInput,
@@ -74,7 +81,7 @@ export function serveMetadata(m: Metadata | (() => Metadata), opts: serveMetadat
       return undefined;
     },
     {
-      describe: `RDR-s(${prefix})`,
+      describe: `metadata-s(${prefix})`,
       ...pOpts,
     },
   );
@@ -85,7 +92,7 @@ export namespace serveMetadata {
      * Producer options.
      *
      * @remarks
-     * - `.describe` defaults to "RDR-s" + prefix.
+     * - `.describe` defaults to "metadata-s" + prefix.
      * - `.announcement` defaults to {@link makeMetadataPacket.Options.prefix}.
      * - {@link makeMetadataPacket.Options.signer} defaults to `.dataSigner`.
      */

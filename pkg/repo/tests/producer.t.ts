@@ -2,9 +2,9 @@ import "@ndn/packet/test-fixture/expect";
 
 import { consume } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
+import { retrieveMetadata } from "@ndn/metadata";
 import { Segment, SequenceNum, Version } from "@ndn/naming-convention2";
 import { Component, Data, Interest, Name, type NameLike, NameMultiSet } from "@ndn/packet";
-import { retrieveMetadata } from "@ndn/rdr";
 import { delay } from "@ndn/util";
 import { beforeEach, expect, test } from "vitest";
 

@@ -43,7 +43,7 @@
   "devDependencies": {
     "@ndn/fw": "workspace:*",
     "@ndn/keychain": "workspace:*",
-    "@ndn/naming-convention2": "workspace:*",
-    "@ndn/rdr": "workspace:*"
+    "@ndn/metadata": "workspace:*",
+    "@ndn/naming-convention2": "workspace:*"
   }
 }

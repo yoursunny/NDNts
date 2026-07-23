@@ -1,5 +1,5 @@
+import { retrieveMetadata } from "@ndn/metadata";
 import { Name } from "@ndn/packet";
-import { retrieveMetadata } from "@ndn/rdr";
 import { discoverVersion, fetch } from "@ndn/segmented-object";
 import stdout from "stdout-stream";
 import type { CommandModule } from "yargs";

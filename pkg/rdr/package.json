@@ -26,15 +26,7 @@
     "types": "lib/mod.d.ts"
   },
   "dependencies": {
-    "@ndn/endpoint": "workspace:*",
-    "@ndn/naming-convention2": "workspace:*",
-    "@ndn/packet": "workspace:*",
-    "@ndn/tlv": "workspace:*",
+    "@ndn/metadata": "workspace:*",
     "tslib": "^2.8.1"
-  },
-  "devDependencies": {
-    "@ndn/fw": "workspace:^",
-    "@ndn/keychain": "workspace:*",
-    "@ndn/util": "workspace:*"
   }
 }

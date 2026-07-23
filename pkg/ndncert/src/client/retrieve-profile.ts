@@ -1,8 +1,8 @@
 import { consume, type ConsumerOptions } from "@ndn/endpoint";
 import { CertNaming } from "@ndn/keychain";
+import { retrieveMetadata } from "@ndn/metadata";
 import { Segment } from "@ndn/naming-convention2";
 import type { Name } from "@ndn/packet";
-import { retrieveMetadata } from "@ndn/rdr";
 
 import { C, CaProfile, ProbeResponse } from "../packet/mod";
 

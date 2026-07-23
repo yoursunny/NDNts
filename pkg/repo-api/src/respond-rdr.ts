@@ -1,6 +1,6 @@
+import { isDiscoveryInterest, makeMetadataPacket, Metadata } from "@ndn/metadata";
 import { Version } from "@ndn/naming-convention2";
 import { type Data, digestSigning, type Interest, type Name, type NamingConvention, type Signer } from "@ndn/packet";
-import { isDiscoveryInterest, makeMetadataPacket, Metadata } from "@ndn/rdr";
 
 import type * as S from "./data-store";
 

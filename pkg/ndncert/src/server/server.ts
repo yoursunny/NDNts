@@ -1,7 +1,7 @@
 import { DataStoreBuffer, produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
 import { Certificate, CertNaming, type NamedVerifier } from "@ndn/keychain";
+import { Metadata, serveMetadata } from "@ndn/metadata";
 import { Component, type ComponentLike, type Data, type FwHint, type Signer, type ValidityPeriod } from "@ndn/packet";
-import { Metadata, serveMetadata } from "@ndn/rdr";
 import { makeInMemoryDataStore } from "@ndn/repo";
 import { KeyMap, toHex } from "@ndn/util";
 

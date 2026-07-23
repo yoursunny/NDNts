@@ -1,3 +1,1 @@
-export * from "./metadata";
-export * from "./consumer";
-export * from "./producer";
+export * from "@ndn/metadata";

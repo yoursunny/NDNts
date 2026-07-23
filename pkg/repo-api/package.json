@@ -28,9 +28,9 @@
   "dependencies": {
     "@ndn/endpoint": "workspace:*",
     "@ndn/l3face": "workspace:*",
+    "@ndn/metadata": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
-    "@ndn/rdr": "workspace:*",
     "@ndn/tlv": "workspace:*",
     "@ndn/util": "workspace:*",
     "is-stream": "^4.0.1",

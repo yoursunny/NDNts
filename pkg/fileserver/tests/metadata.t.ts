@@ -3,9 +3,9 @@ import "@ndn/packet/test-fixture/expect";
 
 import { constants as fsConstants } from "node:fs";
 
+import { makeMetadataPacket } from "@ndn/metadata";
 import { Segment, Version } from "@ndn/naming-convention2";
 import { Name, TT as l3TT } from "@ndn/packet";
-import { makeMetadataPacket } from "@ndn/rdr";
 import { Decoder } from "@ndn/tlv";
 import { expect, test } from "vitest";
 

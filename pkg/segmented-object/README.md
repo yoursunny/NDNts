@@ -8,7 +8,7 @@ This package implements functions to publish and retrieve segmented objects.
 The consumer functionality:
 
 * [X] supports version discovery via CanBePrefix.
-* [X] supports version discovery by requesting metadata (in `@ndn/rdr` package).
+* [X] supports version discovery by requesting metadata (in `@ndn/metadata` package).
 * [ ] supports manifest.
 * [X] allows specifying segment range.
 * [X] supports segment numbers.
@@ -28,7 +28,7 @@ The producer functionality:
 * [X] generates segments of fixed size.
 * [ ] generates segments of available data as Interest arrives, to minimize delivery latency.
 * [X] responds to version discovery Interests with CanBePrefix.
-* [X] responds to metadata requests (in `@ndn/rdr` package).
+* [X] responds to metadata requests (in `@ndn/metadata` package).
 * [ ] generates manifest.
 * [X] supports segment numbers.
 * [ ] supports byte offsets.
