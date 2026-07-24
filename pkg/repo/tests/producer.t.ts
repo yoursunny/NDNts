@@ -8,7 +8,7 @@ import { Component, Data, Interest, Name, type NameLike, NameMultiSet } from "@n
 import { delay } from "@ndn/util";
 import { beforeEach, expect, test } from "vitest";
 
-import { type DataStore, makeInMemoryDataStore, PrefixRegShorter, PrefixRegStatic, PrefixRegStrip, RepoProducer, respondRdr } from "..";
+import { type DataStore, makeInMemoryDataStore, metadataFallback, PrefixRegShorter, PrefixRegStatic, PrefixRegStrip, RepoProducer } from "..";
 
 let store: DataStore;
 let announced: NameMultiSet; // could be NameSet
@@ -118,7 +118,7 @@ test("prefixreg strip custom", async () => {
   expect(listAnnounced()).toEqualNames([]);
 });
 
-test("respondRdr", async () => {
+test("metadataFallback", async () => {
   await insertData(
     "/A/9",
     new Name("/A").append(Version, 6),
@@ -129,7 +129,7 @@ test("respondRdr", async () => {
 
   using _producer = RepoProducer.create(store, {
     reg: PrefixRegStatic(new Name("/A")),
-    fallback: respondRdr(),
+    fallback: metadataFallback(),
   });
 
   const metadata = await retrieveMetadata("/A");

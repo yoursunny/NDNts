@@ -3,4 +3,11 @@ export { makeInMemoryDataStore } from "./data-store-memory";
 export { makePersistentDataStore } from "./data-store-persistent";
 export * from "./prefix-reg/mod";
 export { RepoProducer } from "./producer";
-export { respondRdr } from "./respond-rdr";
+
+import { metadataFallback } from "./metadata-fallback";
+
+export {
+  metadataFallback,
+  /** @deprecated Use `metadataFallback` instead. */
+  metadataFallback as respondRdr,
+};

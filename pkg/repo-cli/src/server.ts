@@ -2,14 +2,14 @@ import { createServer } from "node:net";
 
 import { exitClosers, getSigner, openUplinks } from "@ndn/cli-common";
 import { joinHostPort } from "@ndn/node-transport";
-import { type DataStore, RepoProducer, respondRdr } from "@ndn/repo";
+import { type DataStore, metadataFallback, RepoProducer } from "@ndn/repo";
 import { BulkInsertTarget } from "@ndn/repo-api";
 import type { CommandModule } from "yargs";
 
 import { openStore, type StoreArgs, storeOptions } from "./util";
 
 interface Args extends StoreArgs {
-  rdr: boolean;
+  metadata: boolean;
   bi: boolean;
   "bi-host": string;
   "bi-port": number;
@@ -44,9 +44,9 @@ export const ServerCommand: CommandModule<{}, Args> = {
   builder(argv) {
     return argv
       .options(storeOptions)
-      .option("rdr", {
+      .option("metadata", {
         default: false,
-        desc: "respond to RDR discovery Interests",
+        desc: "reply to metadata discovery Interests",
         type: "boolean",
       })
       .option("bi", {
@@ -80,7 +80,7 @@ export const ServerCommand: CommandModule<{}, Args> = {
     await openUplinks();
     const store = await openStore(args);
     const producer = RepoProducer.create(store, {
-      fallback: args.rdr ? respondRdr({ signer: await getSigner() }) : undefined,
+      fallback: args.metadata ? metadataFallback({ signer: await getSigner() }) : undefined,
     });
     exitClosers.push(producer);
 

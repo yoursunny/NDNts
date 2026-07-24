@@ -5,13 +5,13 @@ import { type Data, digestSigning, type Interest, type Name, type NamingConventi
 import type * as S from "./data-store";
 
 /**
- * Respond to RDR discovery Interest with RDR metadata describing the latest version
+ * Respond to metadata discovery Interest with metadata packet describing the latest version
  * among stored Data.
  */
-export async function respondRdr(interest: Interest, store: S.ListNames, {
+export async function replyMetadata(interest: Interest, store: S.ListNames, {
   versionConvention = Version,
   signer = digestSigning,
-}: respondRdr.Options = {}): Promise<Data | undefined> {
+}: replyMetadata.Options = {}): Promise<Data | undefined> {
   if (!isDiscoveryInterest(interest)) {
     return undefined;
   }
@@ -37,7 +37,7 @@ export async function respondRdr(interest: Interest, store: S.ListNames, {
   return makeMetadataPacket(new Metadata(bestName), { signer });
 }
 
-export namespace respondRdr {
+export namespace replyMetadata {
   export interface Options {
     /**
      * Version naming convention.

@@ -4,7 +4,6 @@ export * from "./copy";
 export * from "./data-array";
 export * from "./data-tape";
 export * from "./read-from-network";
-export * from "./respond-rdr";
 
 /**
  * Namespace consists of interfaces that form the DataStore API.
@@ -17,3 +16,11 @@ export * from "./respond-rdr";
  * if it should be explicitly closed.
  */
 export * as DataStore from "./data-store";
+
+import { replyMetadata } from "./reply-metadata";
+
+export {
+  replyMetadata,
+  /** @deprecated Use `replyMetadata` instead. */
+  replyMetadata as respondRdr,
+};

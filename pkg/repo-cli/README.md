@@ -8,7 +8,7 @@ This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Netw
 
 ```bash
 # with NFD running, start the repo server
-ndnts-repo server --store=/tmp/repo --rdr=true
+ndnts-repo server --store=/tmp/repo --metadata=true
 ```
 
 ## `ndnts-repo fillbi`: Fill Repo with Demo Data
