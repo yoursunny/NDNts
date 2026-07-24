@@ -7,7 +7,7 @@ import { assert, console, pushable } from "@ndn/util";
 import { consume, parallelMap } from "streaming-iterables";
 import type { CommandModule } from "yargs";
 
-import { type CommonArgs, Segment } from "./util";
+import { type CommonArgs } from "./util";
 
 interface Args extends CommonArgs {
   remote: Name;
@@ -69,7 +69,6 @@ class Downloader {
 
   public async run() {
     this.client = new Client(this.remote, {
-      segmentNumConvention: Segment,
       retx: this.retx,
       retxLimit: this.retx,
     });

@@ -12,12 +12,6 @@ export const COMMAND = "ndncat";
 try {
   await yargs(hideBin(process.argv))
     .scriptName(COMMAND)
-    .option("convention", {
-      choices: [1, 2, 3],
-      default: 3,
-      desc: "Naming Convention revision",
-      type: "number",
-    })
     .middleware(applyCommonArgs)
     .command(GetSegmentedCommand)
     .command(PutSegmentedCommand)

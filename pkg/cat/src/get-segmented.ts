@@ -1,10 +1,11 @@
 import { retrieveMetadata } from "@ndn/metadata";
+import { Segment, Version } from "@ndn/naming-convention2";
 import { Name } from "@ndn/packet";
 import { discoverVersion, fetch } from "@ndn/segmented-object";
 import stdout from "stdout-stream";
 import type { CommandModule } from "yargs";
 
-import { checkVersionArg, type CommonArgs, Segment, Version } from "./util";
+import { checkVersionArg, type CommonArgs } from "./util";
 
 interface Args extends CommonArgs {
   name: Name;
@@ -25,14 +26,14 @@ export const GetSegmentedCommand: CommandModule<CommonArgs, Args> = {
         type: "string",
       })
       .option("ver", {
-        default: "rdr",
+        default: "metadata",
         desc: ["version number or discovery method",
           "none: no version component",
           "cbp: send Interest with CanBePrefix",
-          "rdr: use RDR protocol"].join("\n"),
+          "metadata: use Metadata Discover Protocol"].join("\n"),
         type: "string",
       })
-      .check(checkVersionArg(["none", "cbp", "rdr"]));
+      .check(checkVersionArg(["none", "cbp", "metadata"]));
   },
 
   async handler({ name, ver }) {
@@ -47,7 +48,7 @@ export const GetSegmentedCommand: CommandModule<CommonArgs, Args> = {
         });
         break;
       }
-      case "rdr": {
+      case "metadata": {
         name = (await retrieveMetadata(name)).name;
         break;
       }

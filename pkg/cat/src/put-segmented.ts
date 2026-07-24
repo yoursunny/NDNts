@@ -1,14 +1,15 @@
 import { exitClosers } from "@ndn/cli-common";
 import { Metadata, serveMetadata } from "@ndn/metadata";
+import { Segment, Version } from "@ndn/naming-convention2";
 import { Name } from "@ndn/packet";
 import { FileChunkSource, serve, serveVersioned, StreamChunkSource } from "@ndn/segmented-object";
 import type { CommandModule } from "yargs";
 
-import { checkVersionArg, type CommonArgs, Segment, signer, Version } from "./util";
+import { checkVersionArg, type CommonArgs, signer } from "./util";
 
 interface Args extends CommonArgs {
   name: Name;
-  rdr: boolean;
+  metadata: boolean;
   ver: string;
   file?: string;
   "chunk-size": number;
@@ -27,9 +28,9 @@ export const PutSegmentedCommand: CommandModule<CommonArgs, Args> = {
         desc: "name prefix",
         type: "string",
       })
-      .option("rdr", {
+      .option("metadata", {
         default: true,
-        desc: "publish RDR metadata packet",
+        desc: "publish metadata packet for version discovery",
         type: "boolean",
       })
       .option("ver", {
@@ -49,7 +50,7 @@ export const PutSegmentedCommand: CommandModule<CommonArgs, Args> = {
       .check(checkVersionArg(["none", "now"]));
   },
 
-  async handler({ name, rdr, ver, file, chunkSize }) {
+  async handler({ name, metadata, ver, file, chunkSize }) {
     const serveFunc = ver === "none" ? serve : serveVersioned;
     const source = file ?
       new FileChunkSource(file, { chunkSize }) :
@@ -61,7 +62,7 @@ export const PutSegmentedCommand: CommandModule<CommonArgs, Args> = {
       versionConvention: Version,
     });
     exitClosers.push(server);
-    if (ver !== "none" && rdr) {
+    if (ver !== "none" && metadata) {
       const metadataServer = serveMetadata(new Metadata(server.prefix), {
         signer,
         pOpts: { announcement: false },

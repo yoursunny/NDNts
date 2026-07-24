@@ -26,7 +26,6 @@
     "@ndn/cli-common": "workspace:*",
     "@ndn/fileserver": "workspace:*",
     "@ndn/metadata": "workspace:*",
-    "@ndn/naming-convention1": "workspace:*",
     "@ndn/naming-convention2": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/segmented-object": "workspace:*",
