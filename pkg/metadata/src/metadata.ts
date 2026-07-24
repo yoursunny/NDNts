@@ -1,6 +1,6 @@
 import { Keyword } from "@ndn/naming-convention2";
 import { type Component, Name, TT } from "@ndn/packet";
-import { type Decodable, type Decoder, type EncodableObj, type Encoder, EvDecoder, Extensible } from "@ndn/tlv";
+import { type Decodable, type Decoder, type Encodable, type EncodableObj, type Encoder, EvDecoder, Extensible } from "@ndn/tlv";
 
 /** `32=metadata` component. */
 export const MetadataKeyword: Component = Keyword.create("metadata");
@@ -26,7 +26,14 @@ export class Metadata implements EncodableObj {
   }
 
   public encodeTo(encoder: Encoder): void {
-    encoder.prependValue(this.name);
+    encoder.prependValue(
+      this.name,
+      ...this.encodeValueExt(),
+    );
+  }
+
+  protected encodeValueExt(): Encodable[] {
+    return [];
   }
 }
 
@@ -40,7 +47,7 @@ export namespace Metadata {
       ctor: new() => M,
       ctx?: ClassDecoratorContext,
   ): void {
-    void ctx; // cannot use due to https://github.com/vitest-dev/vitest/issues/3140
+    void ctx; // cannot use due to https://github.com/vitest-dev/vitest/issues/9876
     const registry = new ctor()[Extensible.TAG];
     const evd = makeEvd<M>(ctor.name).setUnknown(registry.decodeUnknown);
     Object.defineProperty(ctor, "decodeFrom", {
@@ -48,9 +55,9 @@ export namespace Metadata {
         return evd.decodeValue(new ctor(), decoder);
       },
     });
-    Object.defineProperty(ctor.prototype, "encodeTo", {
-      value(this: M, encoder: Encoder): void {
-        encoder.prependValue(this.name, ...registry.encode(this));
+    Object.defineProperty(ctor.prototype, "encodeValueExt", {
+      value(this: M): Encodable[] {
+        return registry.encode(this);
       },
     });
   }

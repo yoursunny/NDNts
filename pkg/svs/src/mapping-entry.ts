@@ -45,7 +45,7 @@ export namespace MappingEntry {
       ctor: new() => M,
       ctx?: ClassDecoratorContext,
   ): void {
-    void ctx; // cannot use due to https://github.com/vitest-dev/vitest/issues/3140
+    void ctx; // cannot use due to https://github.com/vitest-dev/vitest/issues/9876
     const registry = new ctor()[Extensible.TAG];
     const evd = makeEvd<M>(ctor.name).setUnknown(registry.decodeUnknown);
     Object.defineProperty(ctor, "decodeFrom", {
