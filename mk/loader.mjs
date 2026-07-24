@@ -33,7 +33,15 @@ export async function resolve(specifier, context, nextResolve) {
     }
   } catch {}
 
-  const r = await K.resolve(specifier, context, nextResolve);
+  let r;
+  try {
+    r = await K.resolve(specifier, context, nextResolve);
+  } catch (err_) {
+    const err = new Error(`${err_} when resolving ${specifier} in ${context.parentURL}`);
+    err.cause = err_;
+    throw err;
+  }
+
   try {
     const u = new URL(r.url);
     if (u.protocol === "file:") {
