@@ -26,12 +26,12 @@
     "@nodelib/fs.walk": "^3.0.1",
     "@types/webpack": "^5.28.5",
     "fork-ts-checker-webpack-plugin": "^9.1.0",
-    "html-webpack-plugin": "^5.6.7",
+    "html-webpack-plugin": "^5.6.8",
     "puppeteer": "^25.3.0",
     "ts-loader": "^9.6.2",
     "tslib": "^2.8.1",
     "type-fest": "^5.8.0",
-    "webpack": "^5.108.4",
+    "webpack": "^5.109.0",
     "webpack-cli": "^7.2.1",
     "webpack-dev-server": "^6.0.0"
   }
