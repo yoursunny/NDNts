@@ -1,6 +1,5 @@
 import { produce, type Producer, type ProducerHandler, type ProducerOptions } from "@ndn/endpoint";
-import { GenericNumber } from "@ndn/naming-convention2";
-import { Data, Name, type NameLike, nullSigner, type Signer } from "@ndn/packet";
+import { Data, Name, type NameLike, type NamingConvention, nullSigner, type Signer } from "@ndn/packet";
 import type { DataStore as S } from "@ndn/repo-api";
 import { BufferChunkSource, type ChunkOptions, DataProducer } from "@ndn/segmented-object";
 import { Encoder } from "@ndn/tlv";
@@ -10,7 +9,7 @@ import { Mutex } from "wait-your-turn";
 
 import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
 import { MappingEntry } from "./mapping-entry";
-import type { SvSync } from "./sync";
+import { conventionSeqNum, type SvSync } from "./sync";
 
 /** SVS-PS publisher. */
 export class SvPublisher {
@@ -24,6 +23,7 @@ export class SvPublisher {
     outerSigner = nullSigner,
     mappingSigner = nullSigner,
   }: SvPublisher.Options) {
+    this.conventionSeqNum = sync[conventionSeqNum];
     this.node = sync.add(id);
     this.nodeSyncPrefix = this.node.dataInterestPrefix;
     this.store = store;
@@ -51,6 +51,7 @@ export class SvPublisher {
     );
   }
 
+  private readonly conventionSeqNum: NamingConvention<number>;
   private readonly node: SvSync.Node;
   private readonly nodeMutex = new Mutex();
   private readonly nodeSyncPrefix: Name;
@@ -97,7 +98,7 @@ export class SvPublisher {
 
   private async publishInner(name: Name, inner: readonly Data[], entry: MappingEntry): Promise<number> {
     const seqNum = this.node.seqNum + 1;
-    const seqNumComp = GenericNumber.create(seqNum);
+    const seqNumComp = this.conventionSeqNum.create(seqNum);
 
     entry.seqNum = seqNum;
     entry.name = name;
@@ -126,7 +127,7 @@ export class SvPublisher {
   }
 
   private readonly handleOuter: ProducerHandler = (interest) => {
-    if (!interest.name.get(this.nodeSyncPrefix.length)?.is(GenericNumber)) {
+    if (!interest.name.get(this.nodeSyncPrefix.length)?.is(this.conventionSeqNum)) {
       return undefined;
     }
     return this.store.find(interest);
@@ -136,16 +137,16 @@ export class SvPublisher {
     const loSeqNumComp = name.get(-2)!;
     const hiSeqNumComp = name.get(-1)!;
     if (name.length !== this.nodeSyncPrefix.length + 3 ||
-      !loSeqNumComp.is(GenericNumber) ||
-      !hiSeqNumComp.is(GenericNumber)) {
+      !loSeqNumComp.is(this.conventionSeqNum) ||
+      !hiSeqNumComp.is(this.conventionSeqNum)) {
       return undefined;
     }
-    const loSeqNum = loSeqNumComp.as(GenericNumber);
-    const hiSeqNum = hiSeqNumComp.as(GenericNumber);
+    const loSeqNum = loSeqNumComp.as(this.conventionSeqNum);
+    const hiSeqNum = hiSeqNumComp.as(this.conventionSeqNum);
 
     const recordNames: Name[] = [];
     for (let i = loSeqNum; i <= hiSeqNum; ++i) {
-      recordNames.push(this.nodeSyncPrefix.append(MappingKeyword, GenericNumber.create(i)));
+      recordNames.push(this.nodeSyncPrefix.append(MappingKeyword, this.conventionSeqNum.create(i)));
     }
     const entries = await Promise.all(recordNames.map(async (recordName) => {
       const record = await this.store.get(recordName);

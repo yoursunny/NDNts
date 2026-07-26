@@ -1,6 +1,6 @@
 import { consume, type ConsumerOptions } from "@ndn/endpoint";
-import { GenericNumber, Segment } from "@ndn/naming-convention2";
-import { Data, Interest, lpm, Name, noopSigning, TT as l3TT, type Verifier } from "@ndn/packet";
+import { Segment } from "@ndn/naming-convention2";
+import { Data, Interest, lpm, Name, type NamingConvention, noopSigning, TT as l3TT, type Verifier } from "@ndn/packet";
 import { fetch } from "@ndn/segmented-object";
 import { type Subscriber, type Subscription, SubscriptionTable, type SyncUpdate } from "@ndn/sync-api";
 import { Decoder, EvDecoder } from "@ndn/tlv";
@@ -10,7 +10,7 @@ import { TypedEventTarget } from "typescript-event-target";
 
 import { ContentTypeEncap, MappingKeyword, TT, Version0 } from "./an";
 import { MappingEntry } from "./mapping-entry";
-import type { SvSync } from "./sync";
+import { conventionSeqNum, type SvSync } from "./sync";
 
 type EventMap = {
   error: CustomEvent<Error>;
@@ -37,6 +37,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
     mappingVerifier = noopSigning,
   }: SvSubscriber.Options) {
     super();
+    this.conventionSeqNum = sync[conventionSeqNum];
     this.mappingBatch = mappingBatch;
     this.mappingEVD = makeMappingEVD<ME>(mappingEntryType as MappingEntry.Constructor<ME>);
     this.mustFilterByMapping = mustFilterByMapping;
@@ -66,6 +67,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
     sync.addEventListener("update", this.handleSyncUpdate);
   }
 
+  private readonly conventionSeqNum: NamingConvention<number>;
   private readonly abort = new AbortController();
   private readonly nameSubs = new SubscriptionTable<SvSubscriber.Update>();
   private readonly nameFilters = new WeakMap<Subscription<Name, SvSubscriber.Update>, (entry: ME) => boolean>();
@@ -137,7 +139,7 @@ export class SvSubscriber<ME extends MappingEntry = MappingEntry>
         const hiSeqNum = range.at(-1)!;
         const node = update.node as SvSync.Node;
         const interest = new Interest();
-        interest.name = node.dataInterestPrefix.append(MappingKeyword, GenericNumber.create(loSeqNum), GenericNumber.create(hiSeqNum));
+        interest.name = node.dataInterestPrefix.append(MappingKeyword, this.conventionSeqNum.create(loSeqNum), this.conventionSeqNum.create(hiSeqNum));
         try {
           const data = await consume(interest, this.mappingConsumerOpts);
           this.mappingEVD.decode(m, new Decoder(data.content));

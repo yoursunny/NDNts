@@ -1,6 +1,6 @@
 import { Forwarder, type FwFace, FwPacket } from "@ndn/fw";
 import { GenericNumber, SequenceNum, Timestamp } from "@ndn/naming-convention2";
-import { Data, Interest, Name, type NameLike, noopSigning, nullSigner, type Signer, TT as l3TT, type Verifier } from "@ndn/packet";
+import { Data, Interest, Name, type NameLike, type NamingConvention, noopSigning, nullSigner, type Signer, TT as l3TT, type Verifier } from "@ndn/packet";
 import { type SyncNode, type SyncProtocol, SyncUpdate } from "@ndn/sync-api";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { assert, pushable, randomJitter, trackEventListener } from "@ndn/util";
@@ -25,6 +25,8 @@ type EventMap = SyncProtocol.EventMap<SvSync.ID> & {
   debug: CustomEvent<DebugEntry>;
   rxerror: CustomEvent<[interest: Interest, e: unknown]>;
 };
+
+export const conventionSeqNum = Symbol("@ndn/svs#conventionSeqNum");
 
 /** StateVectorSync participant. */
 export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<SvSync.ID> {
@@ -227,23 +229,19 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
    * - `nodeOp(id, negative) => Name`: buildDataInterestName
    */
   private readonly nodeOp: NodeOp = (id, n): any => {
-    switch (n) {
-      case "G": { // getSeqNum
-        return this.own.get(id);
-      }
-      case "P": { // dataInterestPrefix
-        if (this.svs3) {
-          return id.name.append(...this.groupPrefix.comps, Timestamp.create(id.boot));
-        }
-        return id.append(...this.groupPrefix.comps);
-      }
+    if (n === "G") { // getSeqNum
+      return this.own.get(id);
     }
-    if (n < 0) { // buildDataInterestName
-      if (this.svs3) {
-        return id.name.append(...this.groupPrefix.comps, Timestamp.create(id.boot), SequenceNum.create(-n));
+
+    if (n === "P" || n < 0) { // dataInterestPrefix or buildDataInterestName
+      const comps = this.svs3 ? [...this.groupPrefix.comps, Timestamp.create(id.boot)] : this.groupPrefix.comps;
+      if (n === "P") {
+        return id.name.append(...comps);
       }
-      return id.append(...this.groupPrefix.comps, GenericNumber.create(-n));
-    } if (!this.face) { // setSeqNum: decrement/remove permitted during initialization
+      return id.name.append(...comps, this[conventionSeqNum].create(-n));
+    }
+
+    if (!this.face) { // setSeqNum: decrement/remove permitted during initialization
       this.own.set(id, n);
     } else if (n > this.own.get(id)) { // setSeqNum: increment only after initialization
       this.own.set(id, n);
@@ -251,6 +249,10 @@ export class SvSync extends TypedEventTarget<EventMap> implements SyncProtocol<S
       this.resetTimer(true);
     }
   };
+
+  public get [conventionSeqNum](): NamingConvention<number> {
+    return this.svs3 ? SequenceNum : GenericNumber;
+  }
 
   private readonly handleRxPacket = async (pkt: FwPacket): Promise<void> => {
     if (!(FwPacket.isEncodable(pkt) && pkt.l3 instanceof Interest)) {
