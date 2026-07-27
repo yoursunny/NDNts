@@ -1,3 +1,4 @@
+import type { Certificate } from "@ndn/keychain";
 import type { Name } from "@ndn/packet";
 
 import type { ParameterKV } from "../packet/mod";
@@ -23,29 +24,35 @@ export interface ClientChallenge {
 /** Contextual information for challenge selection. */
 export interface ClientChallengeStartContext {
   /** Request session ID. */
-  requestId: Uint8Array;
+  readonly requestId: Uint8Array;
+
+  /** Self-signed certificate request. */
+  readonly certRequest: Certificate;
 
   /** Certificate name of the self-signed certificate. */
-  certRequestName: Name;
+  readonly certRequestName: Name;
 }
 
 /** Contextual information for challenge continuation. */
 export interface ClientChallengeContext {
   /** Request session ID. */
-  requestId: Uint8Array;
+  readonly requestId: Uint8Array;
+
+  /** Self-signed certificate request. */
+  readonly certRequest: Certificate;
 
   /** Certificate name of the self-signed certificate. */
-  certRequestName: Name;
+  readonly certRequestName: Name;
 
   /** Challenge specific status string. */
-  challengeStatus: string;
+  readonly challengeStatus: string;
 
   /** Number of remaining tries to complete challenge. */
-  remainingTries: number;
+  readonly remainingTries: number;
 
   /** Remaining time to complete challenge, in milliseconds. */
-  remainingTime: number;
+  readonly remainingTime: number;
 
   /** Challenge parameter key-value pairs, from CHALLENGE response packet. */
-  parameters: ParameterKV;
+  readonly parameters: ParameterKV;
 }

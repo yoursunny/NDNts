@@ -38,6 +38,7 @@
     "@types/nodemailer": "^8.0.1",
     "ajv": "^8.20.0",
     "b64-lite": "^1.4.0",
+    "b64u-lite": "^1.1.0",
     "imap-emails": "^1.0.4",
     "is-valid-hostname": "^1.0.2",
     "nodemailer": "^9.0.3",

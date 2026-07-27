@@ -64,7 +64,7 @@ export async function requestCertificate({
     privateKey,
     validity,
   });
-  const certRequestName = newRequest.certRequest.name;
+  const { certRequest } = newRequest;
   const newData = await consume(newRequest.interest, cOpts);
   ErrorMsg.throwOnError(newData);
   const newResponse = await NewResponse.fromData(newData, profile);
@@ -82,7 +82,8 @@ export async function requestCertificate({
     throw new Error(`no acceptable challenge in [${serverChallenges.join(",")}]`);
   }
 
-  let challengeParameters = await challenge.start({ requestId, certRequestName });
+  const challengeContext = { requestId, certRequest, certRequestName: certRequest.name };
+  let challengeParameters = await challenge.start(challengeContext);
   const issuedCertInterest = new Interest();
   while (true) {
     const challengeRequest = await ChallengeRequest.build({
@@ -107,8 +108,7 @@ export async function requestCertificate({
     }
 
     challengeParameters = await challenge.next({
-      requestId,
-      certRequestName,
+      ...challengeContext,
       challengeStatus: challengeResponse.challengeStatus!,
       remainingTries: challengeResponse.remainingTries!,
       remainingTime: challengeResponse.remainingTime!,

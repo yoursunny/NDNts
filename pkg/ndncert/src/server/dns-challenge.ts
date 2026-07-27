@@ -2,21 +2,18 @@ import { SigInfo } from "@ndn/packet";
 import { fromUtf8, toHex, toUtf8 } from "@ndn/util";
 import type { DOHResponse } from "cf-doh";
 import isValidHostname from "is-valid-hostname";
+import type { Promisable } from "type-fest";
 
-import { type ChallengeRequest, ErrorCode } from "../packet/mod";
+import * as ndncert_dns01 from "../dns01-common";
+import { type ChallengeRequest, ErrorCode, type ParameterKV } from "../packet/mod";
 import { ServerChallenge, type ServerChallengeContext, type ServerChallengeResponse } from "./challenge";
 
 interface State {
-  record: string;
-  token: string;
+  recordName: string;
+  recordValue: string;
 }
 
-/** The "dns" challenge where client creates a DNS TXT record. */
-export class ServerDnsChallenge implements ServerChallenge<State> {
-  public readonly challengeId = "dns";
-  public readonly timeLimit = 300000;
-  public readonly retryLimit = 3;
-
+abstract class ServerDnsChallengeBase {
   private readonly assignmentPolicy?: ServerDnsChallenge.AssignmentPolicy;
   private readonly dohServer: string;
 
@@ -48,17 +45,21 @@ export class ServerDnsChallenge implements ServerChallenge<State> {
       return { fail: ErrorCode.NameNotAllowed };
     }
 
-    const record = `_ndncert-challenge.${domain}`;
+    const recordName = ndncert_dns01.toRecordName(domain);
     const token = toHex(SigInfo.generateNonce(16));
-    context.challengeState = { record, token };
+    const [parameters, recordValue] = await this.makeNeedRecord(context, recordName, token);
+    context.challengeState = { recordName, recordValue };
     return {
       challengeStatus: "need-record",
-      parameters: {
-        "record-name": toUtf8(record),
-        "expected-value": toUtf8(token),
-      },
+      parameters,
     };
   }
+
+  protected abstract makeNeedRecord(
+    context: ServerChallengeContext<State>,
+    recordName: string,
+    token: string,
+  ): Promisable<[parameters: ParameterKV, recordValue: string]>;
 
   private async process1(
       request: ChallengeRequest,
@@ -81,9 +82,9 @@ export class ServerDnsChallenge implements ServerChallenge<State> {
     };
   }
 
-  private async checkRecord({ record, token }: State): Promise<boolean> {
+  private async checkRecord({ recordName, recordValue }: State): Promise<boolean> {
     const url = new URL(this.dohServer);
-    url.searchParams.set("name", record);
+    url.searchParams.set("name", recordName);
     url.searchParams.set("type", "TXT");
 
     const res = await fetch(url, { headers: { Accept: "application/dns-json" } });
@@ -97,14 +98,36 @@ export class ServerDnsChallenge implements ServerChallenge<State> {
     }
     for (const answer of j.Answer ?? []) {
       if (
-        [record, `${record}.`].includes(answer.name) &&
+        [recordName, `${recordName}.`].includes(answer.name) &&
         Number(answer.type) === 16 &&
-        [token, `"${token}"`].includes(answer.data)
+        [recordValue, `"${recordValue}"`].includes(answer.data)
       ) {
         return true;
       }
     }
     return false;
+  }
+}
+
+/** The "dns" challenge where client creates a DNS TXT record containing a challenge token. */
+export class ServerDnsChallenge extends ServerDnsChallengeBase implements ServerChallenge<State> {
+  public readonly challengeId = "dns";
+  public readonly timeLimit = 300000;
+  public readonly retryLimit = 3;
+
+  protected override makeNeedRecord(
+      context: ServerChallengeContext<State>,
+      recordName: string,
+      token: string,
+  ): [parameters: ParameterKV, expected: string] {
+    void context;
+    return [
+      {
+        "record-name": toUtf8(recordName),
+        "expected-value": toUtf8(token),
+      },
+      token,
+    ];
   }
 }
 
@@ -129,5 +152,26 @@ export namespace ServerDnsChallenge {
      * - https://dns.google/resolve
      */
     dohServer?: string;
+  }
+}
+
+/** The "dns-01" challenge where client creates a DNS TXT record containing a key authorization value. */
+export class ServerDns01Challenge extends ServerDnsChallengeBase implements ServerChallenge<State> {
+  public readonly challengeId = "dns-01";
+  public readonly timeLimit = 3600000;
+  public readonly retryLimit = 5;
+
+  protected override async makeNeedRecord(
+      context: ServerChallengeContext<State>,
+      record: string,
+      token: string,
+  ): Promise<[parameters: ParameterKV, recordValue: string]> {
+    void record;
+    return [
+      {
+        token: toUtf8(token),
+      },
+      await ndncert_dns01.computeRecordValue(token, context.certRequest.publicKeySpki),
+    ];
   }
 }

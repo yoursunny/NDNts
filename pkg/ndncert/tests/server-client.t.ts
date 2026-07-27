@@ -15,7 +15,7 @@ import { createTestAccount as createEmailAccount, createTransport as createMT } 
 import type { Promisable } from "type-fest";
 import { beforeAll, beforeEach, expect, test, vi } from "vitest";
 
-import { CaProfile, type ClientChallenge, type ClientChallengeContext, ClientDnsChallenge, ClientEmailChallenge, ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, exportClientConf, importClientConf, type ParameterKV, requestCertificate, requestProbe, retrieveCaProfile, Server, type ServerChallenge, ServerDnsChallenge, ServerEmailChallenge, ServerNopChallenge, type ServerOptions, ServerPinChallenge, ServerPossessionChallenge } from "..";
+import { CaProfile, type ClientChallenge, type ClientChallengeContext, ClientDns01Challenge, ClientDnsChallenge, ClientEmailChallenge, ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, ClientPossessionChallenge, ErrorMsg, exportClientConf, importClientConf, type ParameterKV, requestCertificate, requestProbe, retrieveCaProfile, Server, type ServerChallenge, ServerDns01Challenge, ServerDnsChallenge, ServerEmailChallenge, ServerNopChallenge, type ServerOptions, ServerPinChallenge, ServerPossessionChallenge } from "..";
 
 interface Row {
   summary: string;
@@ -352,9 +352,23 @@ const TABLE: Row[] = [
       const { dohServer, dohRecords } = await makeDohServer();
       return [
         [new ServerDnsChallenge({ dohServer })],
-        [new ClientDnsChallenge("ndncert-dns.invalid", async (context, recordName, expectedValue) => {
+        [new ClientDnsChallenge("ndncert-dns.invalid", async (context, recordName, recordValue) => {
           void context;
-          dohRecords[recordName] = expectedValue;
+          dohRecords[recordName] = recordValue;
+        })],
+      ];
+    },
+    nChallengeInterest: 2,
+  },
+  {
+    summary: "dns-01, success",
+    async makeChallengeLists() {
+      const { dohServer, dohRecords } = await makeDohServer();
+      return [
+        [new ServerDns01Challenge({ dohServer })],
+        [new ClientDns01Challenge("ndncert-dns.invalid", async (context, recordName, recordValue) => {
+          void context;
+          dohRecords[recordName] = recordValue;
         })],
       ];
     },
@@ -388,9 +402,9 @@ const TABLE: Row[] = [
       const { dohServer, dohRecords } = await makeDohServer();
       return [
         [new ServerDnsChallenge({ dohServer })],
-        [new ClientDnsChallenge("ndncert-dns.invalid", async (context, recordName, expectedValue) => {
+        [new ClientDnsChallenge("ndncert-dns.invalid", async (context, recordName, recordValue) => {
           void context;
-          dohRecords[recordName] = expectedValue.slice(1);
+          dohRecords[recordName] = recordValue.slice(1);
         })],
       ];
     },

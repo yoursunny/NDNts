@@ -331,6 +331,7 @@ class Context implements ServerChallengeContext {
       public readonly sessionKey: ndncert_crypto.SessionKey,
       public readonly profile: CaProfile,
   ) {
+    this.certRequest = request.certRequest;
     this.certRequestPub = request.publicKey;
     this.validityPeriod = request.certRequest.validity;
   }
@@ -344,6 +345,7 @@ class Context implements ServerChallengeContext {
   }
 
   public expiry = Date.now() + BEFORE_CHALLENGE_EXPIRY;
+  public readonly certRequest: Certificate;
   public readonly certRequestPub: NamedVerifier.PublicKey;
   public readonly validityPeriod: ValidityPeriod;
   public status = Status.BEFORE_CHALLENGE;

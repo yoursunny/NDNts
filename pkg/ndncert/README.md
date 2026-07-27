@@ -2,7 +2,7 @@
 
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
-This package partially implements [NDN Certificate Management protocol v0.3](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3/841f2a2e66cc3256d113cfe61242420b9cdab6c1) and [challenges](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3-Challenges/06ba3d415479b6a58ecb132ba54dbee7617668d5).
+This package partially implements [NDN Certificate Management protocol v0.3](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3/841f2a2e66cc3256d113cfe61242420b9cdab6c1) and [challenges](https://github.com/named-data/ndncert/wiki/NDNCERT-Protocol-0.3-Challenges/39bde7f94301e251def53b6a9958ae321acb108f).
 This implementation is validated against the reference implementation using [ndncert-interop](../../integ/ndncert-interop).
 
 Features:
@@ -21,7 +21,7 @@ Challenges:
 * [X] PIN
 * [X] email, with name assignment policy
 * [X] proof of possession, with name assignment policy
-* [X] DNS, with name assignment policy
+* [X] DNS and DNS-01, with name assignment policy
 * [X] "nop" (not in NDNCERT spec)
 
 `@ndn/keychain-cli` package offers `ndnts-keychain ndncert03-make-profile`, `ndnts-keychain ndncert03-show-profile`, `ndnts-keychain ndncert03-ca`, `ndnts-keychain ndncert03-probe`, and `ndnts-keychain ndncert03-client` commands that use this implementation.

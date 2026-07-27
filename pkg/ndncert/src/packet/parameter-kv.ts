@@ -12,7 +12,7 @@ export namespace ParameterKV {
   }
 
   /** Retrieve parameter as UTF-8 string. */
-  export function getString(kv: ParameterKV, key: string): string {
+  export function getString(kv: Readonly<ParameterKV>, key: string): string {
     if (!(key in kv)) {
       throw new Error(`missing parameter ${key}`);
     }
@@ -53,7 +53,7 @@ export function parseEvDecoder<R extends { parameters?: ParameterKV }>(evd: EvDe
 }
 
 /** Encode pairs of ParameterKey and ParameterValue TLVs. */
-export function encode(kv: ParameterKV = {}): Encodable[] {
+export function encode(kv: Readonly<ParameterKV> = {}): Encodable[] {
   return Object.entries(kv).flatMap(([key, value]) => [
     [TT.ParameterKey, toUtf8(key)],
     [TT.ParameterValue, value],

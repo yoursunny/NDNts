@@ -1,16 +1,16 @@
+import type { Promisable } from "type-fest";
 
+import * as ndncert_dns01 from "../dns01-common";
 import { ParameterKV } from "../packet/mod";
 import type { ClientChallenge, ClientChallengeContext } from "./challenge";
 
-/** The "dns" challenge where client creates a DNS TXT record. */
-export class ClientDnsChallenge implements ClientChallenge {
-  public readonly challengeId = "dns";
-  private record = "";
-  private token = "";
+abstract class ClientDnsChallengeBase {
+  private recordName = "";
+  private recordValue = "";
 
   constructor(
-      private readonly domain: string,
-      private readonly prompt: ClientDnsChallenge.Prompt,
+      protected readonly domain: string,
+      protected readonly prompt: ClientDnsChallenge.Prompt,
   ) {}
 
   public async start(): Promise<ParameterKV> {
@@ -19,16 +19,40 @@ export class ClientDnsChallenge implements ClientChallenge {
 
   public async next(context: ClientChallengeContext): Promise<ParameterKV> {
     if (context.challengeStatus === "need-record") {
-      this.record = ParameterKV.getString(context.parameters, "record-name");
-      this.token = ParameterKV.getString(context.parameters, "expected-value");
+      [this.recordName, this.recordValue] = await this.handleNeedRecord(context);
     }
 
-    await this.prompt(context, this.record, this.token);
+    await this.prompt(context, this.recordName, this.recordValue);
     return ParameterKV.from({ confirmation: "ready" });
+  }
+
+  protected abstract handleNeedRecord(context: ClientChallengeContext): Promisable<[recordName: string, recordValue: string]>;
+}
+
+/** The "dns" challenge where client creates a DNS TXT record containing a challenge token. */
+export class ClientDnsChallenge extends ClientDnsChallengeBase implements ClientChallenge {
+  public readonly challengeId = "dns";
+
+  protected override handleNeedRecord({ parameters }: ClientChallengeContext): [record: string, expected: string] {
+    return [ParameterKV.getString(parameters, "record-name"),
+      ParameterKV.getString(parameters, "expected-value")];
   }
 }
 
 export namespace ClientDnsChallenge {
   /** Callback to prompt the user to insert a DNS TXT record. */
-  export type Prompt = (context: ClientChallengeContext, recordName: string, expectedValue: string) => Promise<void>;
+  export type Prompt = (context: ClientChallengeContext, recordName: string, recordValue: string) => Promise<void>;
+}
+
+/** The "dns-01" challenge where client creates a DNS TXT record containing a key authorization value. */
+export class ClientDns01Challenge extends ClientDnsChallengeBase implements ClientChallenge {
+  public readonly challengeId = "dns-01";
+
+  protected override async handleNeedRecord({ certRequest, parameters }: ClientChallengeContext): Promise<[recordName: string, recordValue: string]> {
+    const token = ParameterKV.getString(parameters, "token");
+    return [
+      ndncert_dns01.toRecordName(this.domain),
+      await ndncert_dns01.computeRecordValue(token, certRequest.publicKeySpki),
+    ];
+  }
 }

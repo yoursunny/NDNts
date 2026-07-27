@@ -1,3 +1,4 @@
+import type { Certificate } from "@ndn/keychain";
 import type { Name } from "@ndn/packet";
 import type { Promisable } from "type-fest";
 
@@ -45,6 +46,9 @@ export namespace ServerChallenge {
 export interface ServerChallengeContext<State = unknown> {
   /** CA profile packet. */
   readonly profile: CaProfile;
+
+  /** Self-signed certificate request. */
+  readonly certRequest: Certificate;
 
   /** Subject name of the requested certificate. */
   readonly subjectName: Name;
