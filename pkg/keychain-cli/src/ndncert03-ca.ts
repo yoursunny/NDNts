@@ -1,6 +1,6 @@
 import { exitClosers, openUplinks } from "@ndn/cli-common";
 import { createVerifier, SigningAlgorithmListFull } from "@ndn/keychain";
-import { Server, type ServerChallenge, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "@ndn/ndncert";
+import { Server, type ServerChallenge, ServerDns01Challenge, ServerDnsChallenge, ServerEmailChallenge, ServerNopChallenge, ServerPinChallenge, ServerPossessionChallenge } from "@ndn/ndncert";
 import type { Verifier } from "@ndn/packet";
 import { makePersistentDataStore, PrefixRegShorter, RepoProducer } from "@ndn/repo";
 import { toHex } from "@ndn/util";
@@ -15,7 +15,8 @@ interface Args {
   profile: string;
   store: string;
   challenge: readonly string[];
-  possessionIssuer?: string;
+  "possession-issuer"?: string;
+  "doh-server": string;
 }
 
 export const Ndncert03CaCommand: CommandModule<{}, Args> = {
@@ -36,7 +37,7 @@ export const Ndncert03CaCommand: CommandModule<{}, Args> = {
       })
       .option("challenge", {
         array: true,
-        choices: ["nop", "pin", "email", "possession"],
+        choices: ["nop", "pin", "email", "possession", "dns", "dns-01"],
         demandOption: true,
         desc: "supported challenges",
         type: "string",
@@ -45,10 +46,15 @@ export const Ndncert03CaCommand: CommandModule<{}, Args> = {
         defaultDescription: "CA certificate",
         desc: "possession challenge - existing issuer certificate file",
         type: "string",
+      })
+      .option("doh-server", {
+        desc: "dns/dns-01 challenge - DNS over HTTPS server",
+        default: "https://cloudflare-dns.com/dns-query",
+        type: "string",
       });
   },
 
-  async handler({ profile: profileFile, store, challenge: challengeIds, possessionIssuer }) {
+  async handler({ profile: profileFile, store, challenge: challengeIds, "possession-issuer": possessionIssuer, "doh-server": dohServer }) {
     await openUplinks();
 
     const profile = await inputCaProfile(profileFile, true);
@@ -116,6 +122,14 @@ Otherwise, please disregard this message.`,
             verifier = profile.publicKey;
           }
           challenges.push(new ServerPossessionChallenge(verifier));
+          break;
+        }
+        case "dns": {
+          challenges.push(new ServerDnsChallenge({ dohServer }));
+          break;
+        }
+        case "dns-01": {
+          challenges.push(new ServerDns01Challenge({ dohServer }));
           break;
         }
       }

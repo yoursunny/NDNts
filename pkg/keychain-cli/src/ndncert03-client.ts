@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import { openUplinks } from "@ndn/cli-common";
 import { CertNaming, generateSigningKey, type KeyChain, type NamedSigner, type NamedVerifier } from "@ndn/keychain";
 import { AltUri } from "@ndn/naming-convention2";
-import { type CaProfile, type ClientChallenge, type ClientChallengeContext, ClientDnsChallenge, ClientEmailChallenge, type ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, type ClientPinLikeChallenge, ClientPossessionChallenge, matchProbe, requestCertificate, requestProbe } from "@ndn/ndncert";
+import { type CaProfile, type ClientChallenge, type ClientChallengeContext, ClientDns01Challenge, ClientDnsChallenge, ClientEmailChallenge, type ClientEmailInboxImap, ClientNopChallenge, ClientPinChallenge, type ClientPinLikeChallenge, ClientPossessionChallenge, matchProbe, requestCertificate, requestProbe } from "@ndn/ndncert";
 import { NdnsecKeyChain } from "@ndn/ndnsec";
 import { Name } from "@ndn/packet";
 import { console, toHex } from "@ndn/util";
@@ -51,7 +51,7 @@ export const Ndncert03ClientCommand: CommandModule<{}, Args> = {
       .option("challenge", {
         demandOption: true,
         array: true,
-        choices: ["nop", "pin", "email", "possession", "dns"],
+        choices: ["nop", "pin", "email", "possession", "dns", "dns-01"],
         desc: "supported challenges",
         type: "string",
       })
@@ -71,7 +71,7 @@ export const Ndncert03ClientCommand: CommandModule<{}, Args> = {
         type: "string",
       })
       .option("dns-domain", {
-        desc: "dns challenge - domain name",
+        desc: "dns/dns-01 challenge - domain name",
         type: "string",
       })
       .check(({ key }) => {
@@ -96,8 +96,8 @@ export const Ndncert03ClientCommand: CommandModule<{}, Args> = {
         return true;
       })
       .check(({ challenge, "dns-domain": domain }) => {
-        if (challenge.includes("dns") && !domain?.includes(".")) {
-          throw new Error("dns challenge enabled but --dns-domain is absent");
+        if ((challenge.includes("dns") || challenge.includes("dns-01")) && !domain?.includes(".")) {
+          throw new Error("dns/dns-01 challenge enabled but --dns-domain is absent");
         }
         return true;
       });
@@ -202,6 +202,10 @@ class InteractiveClient {
           challenges.push(new ClientDnsChallenge(this.args["dns-domain"]!, this.promptDns()));
           break;
         }
+        case "dns-01": {
+          challenges.push(new ClientDns01Challenge(this.args["dns-domain"]!, this.promptDns()));
+          break;
+        }
       }
     }
     return challenges;
@@ -232,17 +236,13 @@ class InteractiveClient {
   private promptDns(): ClientDnsChallenge.Prompt {
     return async (_context, recordName, expectedValue) => {
       console.log(`\nDNS record for certificate request\n${recordName}\tIN\tTXT\n${expectedValue}\n`);
-      while (true) {
-        const response = await prompts({
-          type: "confirm",
-          name: "ready",
-          message: "Confirm when DNS record is ready:",
-          initial: true,
-        });
-        if (response.ready) {
-          return;
-        }
-      }
+      await prompts({
+        type: "invisible",
+        name: "ready",
+        message: "Press ENTER when DNS record is ready:",
+      }, {
+        onCancel: () => { throw new Error("challenge aborted"); },
+      });
     };
   }
 }

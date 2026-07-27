@@ -198,9 +198,9 @@ See `@ndn/ndnsec` package for more information.
 * `--dns-domain` specifies domain name to use in the DNS challenge.
 * You may specify multiple challenges, and the first one allowed by the server will be used.
 
-### NDNCERT examples
+### NDNCERT examples using NDNts CA
 
-CA setup with PIN challenge:
+CA setup with PIN & DNS & DNS-01 challenges:
 
 ```bash
 # generate CA key
@@ -212,9 +212,9 @@ NDNTS_KEYCHAIN=/tmp/ca-keychain ndnts-keychain ndncert03-make-profile --out /tmp
 # display CA profile
 ndnts-keychain ndncert03-show-profile --profile /tmp/ca.data
 
-# start CA with PIN challenge
+# start CA with three challenges
 nfd-start
-NDNTS_KEYCHAIN=/tmp/ca-keychain ndnts-keychain ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge pin
+NDNTS_KEYCHAIN=/tmp/ca-keychain ndnts-keychain ndncert03-ca --profile /tmp/ca.data --store /tmp/ca-repo --challenge pin --challenge dns --challenge dns-01
 ```
 
 Client using PIN challenge, with NDNts keychain:
@@ -243,6 +243,20 @@ ndnts-keychain ndncert03-client --profile /tmp/ca.data --ndnsec --key $REQKEY --
 
 # view certificates
 ndnsec list -c
+```
+
+Client using DNS or DNS-01 challenge, with NDNts keychain:
+
+```bash
+# generate key pair
+REQCERT=$(NDNTS_KEYCHAIN=/tmp/req-keychain ndnts-keychain gen-key /B)
+REQKEY=$(echo $REQCERT | gawk 'BEGIN { FS=OFS="/" } { NF-=2; print }')
+
+# request certificate with DNS or DNS-01 challenge
+NDNTS_KEYCHAIN=/tmp/req-keychain ndnts-keychain ndncert03-client --profile /tmp/ca.data --key $REQKEY --challenge dns-01 --challenge dns --dns-domain example.net
+
+# view certificates
+NDNTS_KEYCHAIN=/tmp/req-keychain ndnts-keychain list-certs
 ```
 
 Email challenge, NDNts keychain on client side:
@@ -302,6 +316,8 @@ ndnsec list -c
 ndnsec cert-dump -p -i /E
 ```
 
+### NDNCERT examples for global NDN testbed
+
 Email challenge with Ethereal Email, for global NDN testbed:
 
 ```bash
@@ -341,5 +357,5 @@ PROBE_EMAIL=$(openssl rand -hex 8)@ucla.edu
 
 # request certificate from the root CA
 ndnts-keychain ndncert03-client --profile /tmp/ndn-root-ca.client.conf --pp email $PROBE_EMAIL \
-  --challenge dns --dns-domain d.yoursunny.dev
+  --challenge dns --dns-domain example.net
 ```
