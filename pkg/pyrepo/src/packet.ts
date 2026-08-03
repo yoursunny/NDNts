@@ -16,6 +16,8 @@ export const DeleteVerb = {
   check: new Component(l3TT.GenericNameComponent, "delete check"),
 };
 
+export const IngestVerb = new Component(l3TT.GenericNameComponent, "ingest");
+
 const TT = {
   StartBlockId: 0xCC,
   EndBlockId: 0xCD,

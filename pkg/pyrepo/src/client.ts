@@ -5,7 +5,7 @@ import { Decoder, Encoder } from "@ndn/tlv";
 import { assert, delay, randomJitter, sha256, toHex } from "@ndn/util";
 import type { Arrayable } from "type-fest";
 
-import { CommandParam, CommandRes, DeleteVerb, InsertVerb, ObjectParam, StatQuery, type Verb } from "./packet";
+import { CommandParam, CommandRes, DeleteVerb, IngestVerb, InsertVerb, ObjectParam, StatQuery, type Verb } from "./packet";
 import { PrpsPublisher } from "./prps/mod";
 
 const checkSIP = new SignedInterestPolicy(SignedInterestPolicy.Nonce());
@@ -56,25 +56,50 @@ export class PyRepoClient implements Disposable {
 
   /** Insert packet(s). */
   public insert(objs: Name | Arrayable<PyRepoClient.ObjectParam>): Promise<void> {
-    return this.submit(InsertVerb, objs);
+    return this.submit(InsertVerb, this.toObjParams(objs));
+  }
+
+  /**
+   * Insert packet(s) via direct ingest protocol.
+   * @see {@link https://github.com/UCLA-IRL/ndn-python-repo/pull/119}
+   */
+  public async ingest(objs: Name | Arrayable<PyRepoClient.ObjectParam>): Promise<void> {
+    const objParams = this.toObjParams(objs);
+    await Promise.all(Array.from(objParams, async (objParam) => {
+      // objParam encodes as TLV but we only want TLV-VALUE
+      const objParamTlv = new Decoder(Encoder.encode(objParam)).read();
+
+      const ingestInterest = new Interest();
+      ingestInterest.name = this.repoPrefix.append(IngestVerb);
+      ingestInterest.appParameters = objParamTlv.value;
+      await ingestInterest.updateParamsDigest();
+
+      await consume(ingestInterest, {
+        ...ConsumerOptions.exact(this.cpOpts),
+        describe: `pyrepo-ingest(${this.repoPrefix})`,
+      });
+    }));
   }
 
   /** Delete packet(s). */
   public delete(objs: Name | Arrayable<PyRepoClient.ObjectParam>): Promise<void> {
-    return this.submit(DeleteVerb, objs);
+    return this.submit(DeleteVerb, this.toObjParams(objs));
   }
 
-  private async submit(verb: Verb, objs: Name | Arrayable<PyRepoClient.ObjectParam>): Promise<void> {
+  private toObjParams(objs: Name | Arrayable<PyRepoClient.ObjectParam>): ObjectParam[] {
     objs = Array.isArray(objs) ? objs : [objs instanceof Name ? { name: objs } : objs];
     if (objs.length === 0) {
-      return;
+      return [];
     }
 
     if (this.combineRange) {
       objs = combineRange(objs);
     }
 
-    const objParams = objs.map((obj) => makeObjectParam(obj, this.fwHint));
+    return objs.map((obj) => makeObjectParam(obj, this.fwHint));
+  }
+
+  private async submit(verb: Verb, objParams: readonly ObjectParam[]): Promise<void> {
     const sizes = objParams.map((p) => Encoder.encode(p).length);
     const { commandLengthLimit } = this;
     await Promise.all(Array.from((function*() {

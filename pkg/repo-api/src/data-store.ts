@@ -42,10 +42,15 @@ export namespace Insert {
   // eslint-disable-next-line @typescript-eslint/no-restricted-types
   export type Args<O extends {}> = [...(Record<string, unknown> extends O ? [O] | [] : []), ...Tail];
 
+  /** Normalize {@link Insert.insert} arguments. */
   export interface ParsedArgs<O> {
+    /** Options object. */
     readonly opts?: O;
+    /** All Data packets, including `singles` and expanded `batches`. */
     readonly pkts: AsyncIterable<Data>;
+    /** Singular Data packets only. */
     readonly singles: Data[];
+    /** Batches only. */
     readonly batches: Array<AnyIterable<Data>>;
   }
 

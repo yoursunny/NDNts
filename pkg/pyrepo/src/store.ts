@@ -42,6 +42,7 @@ export class PyRepoStore implements Disposable, S.Insert, S.Delete {
       opts = arg1;
     }
 
+    this.useIngest = opts.useIngest ?? false;
     this.insertPOpts = ProducerOptions.exact(this.client.cpOpts);
     this.preCommandDelay = opts.preCommandDelay ?? 100;
     this.incomingInterestTimeout = opts.incomingInterestTimeout ?? 5000;
@@ -50,6 +51,7 @@ export class PyRepoStore implements Disposable, S.Insert, S.Delete {
 
   public readonly client: PyRepoClient;
   private readonly ownsClient: boolean;
+  private readonly useIngest: boolean;
   private readonly insertPOpts: ProducerOptions;
   private readonly preCommandDelay: number;
   private readonly incomingInterestTimeout: number;
@@ -86,7 +88,7 @@ export class PyRepoStore implements Disposable, S.Insert, S.Delete {
     closers.push(...producers);
 
     await delay(this.preCommandDelay);
-    await this.client.insert(pkts.map(({ name }) => ({ name })));
+    await this.client[this.useIngest ? "ingest" : "insert"](pkts.map(({ name }) => ({ name })));
     await answered.promise;
     await delay(this.postRetrievalDelay);
   }
@@ -99,6 +101,12 @@ export class PyRepoStore implements Disposable, S.Insert, S.Delete {
 
 export namespace PyRepoStore {
   export interface StoreOptions {
+    /**
+     * Use direct ingest protocol for insertion.
+     * @defaultValue false
+     */
+    useIngest?: boolean;
+
     /**
      * How long to allow for prefix announcement before sending command, in milliseconds.
      * @defaultValue 100
