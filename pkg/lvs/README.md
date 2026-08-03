@@ -13,14 +13,14 @@ To compile LVS textual format to binary format, you need to use python-ndn:
 
 ```bash
 # create Python virtual environment
-python3.11 -m venv ~/lvs.venv
+python3.12 -m venv ~/lvs.venv
 source ~/lvs.venv/bin/activate
 
 # install python-ndn
-pip install 'python-ndn[dev] @ git+https://github.com/named-data/python-ndn@64938def54afd11f9766243b19bf06e6a2ccd163'
+pip install 'python-ndn[dev] @ git+https://github.com/named-data/python-ndn@317029329ce82e96de2460129e59a704264144aa'
 
 # run the compiler
-python ./pkg/lvs/compile.py <~/lvs-model.txt >~/lvs-model.tlv
+pyndntools Compile-Lvs -o ~/lvs-model.tlv ~/lvs-model.txt
 ```
 
 To import the LVS binary format, decode the TLV into **LvsModel** structure.

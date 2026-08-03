@@ -3,5 +3,5 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 for F in *.rs; do
-  python ../compile.py <$F >${F%.rs}.tlv
+  pyndntools Compile-Lvs -o "${F%.rs}.tlv" "$F"
 done
