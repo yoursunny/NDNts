@@ -81,6 +81,12 @@ export namespace H3Transport {
      * @defaultValue 10000
      */
     connectTimeout?: number;
+
+    /**
+     * Skip TLS certificate verification (Node.js only).
+     * @defaultValue false
+     */
+    insecureSkipVerify?: boolean;
   }
 
   /** Create a transport and add to forwarder. */
