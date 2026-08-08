@@ -8,7 +8,7 @@ using namespace ndn::time_literals;
 
 int
 main(int argc, char* argv[]) {
-  ndn::Face face("127.0.0.1", argv[1]);
+  ndn::Face face;
   ndn::KeyChain keyChain;
 
   psync::FullProducer::Options opts;
@@ -19,14 +19,14 @@ main(int argc, char* argv[]) {
   };
   opts.ibfCount = 30;
   opts.ibfCompression =
-    argv[4][0] == '1' ? psync::CompressionScheme::ZLIB : psync::CompressionScheme::NONE;
+    argv[3][0] == '1' ? psync::CompressionScheme::ZLIB : psync::CompressionScheme::NONE;
   opts.syncInterestLifetime = 100_ms;
   opts.syncDataFreshness = 500_ms;
   opts.contentCompression = opts.ibfCompression;
 
-  psync::FullProducer sync(face, keyChain, argv[2], opts);
+  psync::FullProducer sync(face, keyChain, argv[1], opts);
 
-  ndn::Name userNode(argv[3]);
+  ndn::Name userNode(argv[2]);
   sync.addUserNode(userNode);
 
   boost::asio::signal_set signalSet(face.getIoContext(), SIGINT, SIGUSR1);

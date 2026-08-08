@@ -17,9 +17,13 @@ afterEach(closers.close);
 test.each([0, 1])("sync compressed=%d", async (compressed) => {
   const exe = await cxx.compile(import.meta.dirname);
 
-  await using nfd = await new FakeNfd().open();
+  await using nfd = await FakeNfd.create();
 
-  const p = exe.run([`${nfd.port}`, `${syncPrefix}`, `${userA}`, `${compressed}`], {});
+  const p = exe.run([`${syncPrefix}`, `${userA}`, `${compressed}`], {
+    env: {
+      NDN_CLIENT_TRANSPORT: `tcp://${nfd.tcp.hostport}`,
+    },
+  });
   await nfd.waitNFaces(1);
 
   const sync = new FullSync({

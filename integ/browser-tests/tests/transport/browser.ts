@@ -1,12 +1,25 @@
+import "./api";
+
 import { consume } from "@ndn/endpoint";
 import { FwTracer } from "@ndn/fw";
+import { execute as testTransport } from "@ndn/l3face/test-fixture/transport";
 import { H3Transport } from "@ndn/quic-transport";
 import { delay, fromHex } from "@ndn/util";
 import { WebBluetoothTransport } from "@ndn/web-bluetooth-transport";
+import { WsTransport } from "@ndn/ws-transport";
 
 import { addManualTest } from "../../test-fixture/manual";
 
-FwTracer.enable();
+let wsPair: [WsTransport, WsTransport];
+
+globalThis.connectWsTransportPair = async (uri) => {
+  wsPair = await Promise.all([
+    WsTransport.connect(uri),
+    WsTransport.connect(uri),
+  ]);
+};
+
+globalThis.testWsTransportPair = async () => testTransport(...wsPair);
 
 async function facePing(pingPrefix: string) {
   const names: string[] = [];
@@ -29,11 +42,13 @@ async function facePing(pingPrefix: string) {
 }
 
 async function testWebBluetooth() {
+  FwTracer.enable();
   await WebBluetoothTransport.createFace({});
   return facePing("/example/esp8266/ble/ping");
 }
 
 async function testH3() {
+  FwTracer.enable();
   document.body.innerHTML = `
     <form>
     HTTP3 router:

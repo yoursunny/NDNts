@@ -10,7 +10,7 @@ import { IpcServer } from "../test-fixture/net-server";
 const closers = new Closers();
 let server: IpcServer;
 beforeEach(async () => {
-  server = await new IpcServer().open();
+  server = await IpcServer.create();
   closers.push(server);
   return closers.close;
 });

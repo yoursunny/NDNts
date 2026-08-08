@@ -13,7 +13,7 @@ import { navigateToPage, pageInvoke } from "../../test-fixture/pptr";
 const closers = new Closers();
 let server: WsServer;
 beforeEach(async () => {
-  server = await new WsServer().open();
+  server = await WsServer.create();
   closers.push(server);
   await navigateToPage(import.meta);
 

@@ -36,8 +36,10 @@
     "@ndn/fw": "workspace:*",
     "@ndn/packet": "workspace:*",
     "@ndn/util": "workspace:*",
+    "@types/netmask": "^2.0.6",
     "@types/url-format-lax": "^2.0.3",
     "@types/url-parse-lax": "^5.0.2",
+    "netmask": "^2.1.1",
     "streaming-iterables": "^8.0.1"
   }
 }

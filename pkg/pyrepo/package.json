@@ -44,8 +44,6 @@
     "@ndn/l3face": "workspace:^",
     "@ndn/ndnsec": "workspace:^",
     "@ndn/nfdmgmt": "workspace:^",
-    "@types/netmask": "^2.0.6",
-    "execa": "^10.0.1",
-    "netmask": "^2.1.1"
+    "execa": "^10.0.1"
   }
 }

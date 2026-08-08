@@ -2,46 +2,46 @@ import { once } from "node:events";
 import http from "node:http";
 import type * as net from "node:net";
 
-import { NetServerBase } from "@ndn/node-transport/test-fixture/net-server";
+import { TestServer } from "@ndn/node-transport/test-fixture/net-server";
 import { type MessageEvent, WebSocket, WebSocketServer } from "ws";
 
 /** WebSocket test server. */
-export class WsServer extends NetServerBase<WebSocketServer, WebSocket> {
-  public override get clients() { return this.server.clients; }
-
-  /** WebSocket server URI. */
-  public get uri() {
-    return this.uri_;
+export class WsServer extends TestServer<WebSocketServer, WebSocket> {
+  public static async create(): Promise<WsServer> {
+    const httpServer = http.createServer();
+    httpServer.listen(0, "127.0.0.1");
+    await once(httpServer, "listening");
+    return new WsServer(httpServer);
   }
 
-  private uri_!: string;
-  private readonly http: http.Server;
-
-  constructor() {
-    const server = http.createServer();
-    super(new WebSocketServer({ server, clientTracking: true }));
-    this.http = server;
-
+  private constructor(private readonly httpServer: http.Server) {
+    super(new WebSocketServer({ server: httpServer }));
+    const { port } = httpServer.address() as net.AddressInfo;
+    this.uri = `ws://127.0.0.1:${port}/`;
     this.server.on("connection", (sock) => {
+      this.mClients.add(sock);
       sock.on("error", () => undefined);
+      sock.on("close", () => this.mClients.delete(sock));
     });
   }
 
-  public override async open(): Promise<this> {
-    this.http.listen(0, "127.0.0.1");
-    await once(this.http, "listening");
-    const { port } = this.http.address() as net.AddressInfo;
-    this.uri_ = `ws://127.0.0.1:${port}/`;
-    return this;
-  }
+  /** WebSocket server URI. */
+  public readonly uri: string;
 
   public override async [Symbol.asyncDispose](): Promise<void> {
-    for (const client of this.server.clients) {
+    this.server.close();
+
+    for (const client of this.clients) {
       client.close();
     }
-    this.server.close();
-    this.http.close();
-    await once(this.http, "close");
+    this.mClients.clear();
+
+    this.httpServer.close();
+    await once(this.httpServer, "close", { signal: AbortSignal.timeout(1000) });
+  }
+
+  protected override waitNClientsImpl(n: number, timeout: number) {
+    return TestServer.waitNClientsConnectionEvent(this, n, timeout);
   }
 }
 

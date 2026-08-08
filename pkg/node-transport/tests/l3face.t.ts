@@ -19,7 +19,7 @@ let sock: net.Socket;
 let face: L3Face;
 
 beforeEach(async () => {
-  server = await new IpcServer().open();
+  server = await IpcServer.create();
   closers.push(server);
   const [transport, socks] = await Promise.all([
     UnixTransport.connect(server.path),

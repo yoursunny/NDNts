@@ -11,7 +11,7 @@ import { bridgeWebSockets, WsServer } from "../test-fixture/ws-server";
 const closers = new Closers();
 let server: WsServer;
 beforeEach(async () => {
-  server = await new WsServer().open();
+  server = await WsServer.create();
   closers.push(server);
   return closers.close;
 });

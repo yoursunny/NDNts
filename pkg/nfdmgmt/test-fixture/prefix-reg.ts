@@ -71,23 +71,26 @@ export class PrefixRegServer {
 }
 
 /** TCP server that accepts NFD prefix registration commands. */
-export class FakeNfd extends TcpServer {
+export class FakeNfd {
+  public static async create(fw = Forwarder.create()): Promise<FakeNfd> {
+    const tcp = await TcpServer.create();
+    return new FakeNfd(tcp, fw);
+  }
+
   /**
    * Constructor.
    * @param fw - Logical forwarder to attach accepted client faces.
    */
-  constructor(public readonly fw = Forwarder.create()) {
-    super();
-  }
+  private constructor(public readonly tcp: TcpServer, public readonly fw: Forwarder) {}
 
-  public override [Symbol.asyncDispose]() {
+  public [Symbol.asyncDispose]() {
     this.fw.close();
-    return super[Symbol.asyncDispose]();
+    return this.tcp[Symbol.asyncDispose]();
   }
 
   /** Wait until at least n clients are connected, and enable PrefixRegServer on them. */
   public async waitNFaces(n: number, firstFaceId = 7000): Promise<FakeNfd.Face[]> {
-    const socks = await this.waitNClients(n);
+    const socks = await this.tcp.waitNClients(n);
     return socks.map((sock, i) => {
       const tr = new StreamTransport(sock);
       const face = this.fw.addFace(new L3Face(tr));

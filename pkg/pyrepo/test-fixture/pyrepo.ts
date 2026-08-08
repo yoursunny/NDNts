@@ -8,7 +8,6 @@ import { FakeNfd } from "@ndn/nfdmgmt/test-fixture/prefix-reg";
 import { Name, type NameLike } from "@ndn/packet";
 import { assert, Closers } from "@ndn/util";
 import { execa, execaSync, type ResultPromise } from "execa";
-import { long2ip } from "netmask";
 
 let pyrepoInstalled: boolean | undefined;
 
@@ -28,10 +27,9 @@ export class PyRepo implements AsyncDisposable {
     name = Name.from(name);
     const dbFile = path.join(dir, "sqlite3.db");
     const confFile = path.join(dir, "repo.conf.json");
-    const ip = long2ip(0x7F790000 | Math.trunc(0xFFFF * Math.random())); // 127.121.x.x
 
     using closers = new Closers();
-    const nfd = await new FakeNfd(fw).open();
+    const nfd = await FakeNfd.create(fw);
     closers.push(nfd);
 
     const cfg = {
@@ -40,7 +38,7 @@ export class PyRepo implements AsyncDisposable {
         db_type: "sqlite3",
         sqlite3: { path: dbFile },
       },
-      tcp_bulk_insert: { addr: ip, port: 7376, register_prefix: false },
+      tcp_bulk_insert: { addr: nfd.tcp.host, port: 7376, register_prefix: false },
       logging_config: { level: "INFO" },
     };
     await fs.writeFile(confFile, JSON.stringify(cfg, undefined, 2));
@@ -52,7 +50,7 @@ export class PyRepo implements AsyncDisposable {
       stdout: "inherit",
       stderr: "inherit",
       env: {
-        NDN_CLIENT_TRANSPORT: `tcp://${ip}:${nfd.port}`,
+        NDN_CLIENT_TRANSPORT: `tcp://${nfd.tcp.hostport}`,
         HOME: dir,
       },
     });

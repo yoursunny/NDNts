@@ -22,9 +22,9 @@ let signerName: Name;
 process.env.NDNTS_KEYCHAIN = keyChainDir;
 process.env.NDNTS_KEY = "/key-signer";
 
-const nfd = await new FakeNfd().open();
+const nfd = await FakeNfd.create();
 closers.push(nfd);
-process.env.NDNTS_UPLINK = `tcp://127.0.0.1:${nfd.port}`;
+process.env.NDNTS_UPLINK = `tcp://${nfd.tcp.hostport}`;
 
 await delay(250); // allow time for writing keychain to disk
 const { openUplinks, getSigner } = await import("..");
@@ -39,6 +39,6 @@ test("openKeyChain", async () => {
 test("openUplinks", async () => {
   const uplinks = await openUplinks();
   expect(uplinks).toHaveLength(1);
-  expect(nfd.clients.size).toBe(1);
-  expect(uplinks[0]?.toString()).toContain(`127.0.0.1:${nfd.port}`);
+  expect(nfd.tcp.clients.size).toBe(1);
+  expect(uplinks[0]?.toString()).toContain(`:${nfd.tcp.port}`);
 });

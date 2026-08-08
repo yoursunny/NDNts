@@ -30,5 +30,8 @@
     "@ndn/util": "workspace:*",
     "@webtransport-bun/webtransport": "0.3.0",
     "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@ndn/node-transport": "workspace:*"
   }
 }
