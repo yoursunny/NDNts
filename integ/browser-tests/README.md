@@ -23,7 +23,7 @@ docker run -it --rm \
   --cap-add SYS_ADMIN \
   --user $(id -u):$(id -g) \
   --workdir $(pwd)/integ/browser-tests \
-  satantime/puppeteer-node:24-slim bash
+  satantime/puppeteer-node:24-trixie-slim bash
 ```
 
 Type `corepack pnpm test` to run the tests.

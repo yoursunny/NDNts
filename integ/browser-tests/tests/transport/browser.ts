@@ -21,6 +21,18 @@ globalThis.connectWsTransportPair = async (uri) => {
 
 globalThis.testWsTransportPair = async () => testTransport(...wsPair);
 
+let h3Pair: [H3Transport, H3Transport];
+
+globalThis.connectH3TransportPair = async (uri, certHash) => {
+  const serverCertificateHashes = [{ algorithm: "sha-256", value: fromHex(certHash) }];
+  h3Pair = await Promise.all([
+    H3Transport.connect(uri, { serverCertificateHashes }),
+    H3Transport.connect(uri, { serverCertificateHashes }),
+  ]);
+};
+
+globalThis.testH3TransportPair = async () => testTransport(...h3Pair);
+
 async function facePing(pingPrefix: string) {
   const names: string[] = [];
   const rtts: number[] = [];

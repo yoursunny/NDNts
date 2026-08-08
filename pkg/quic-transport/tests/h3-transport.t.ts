@@ -15,13 +15,14 @@ beforeEach(async () => {
 });
 
 test("pair", async () => {
+  const { uri } = server;
   const [tA, tB, sockets] = await Promise.all([
-    H3Transport.connect(server.uri, { insecureSkipVerify: true }),
-    H3Transport.connect(server.uri, { insecureSkipVerify: true }),
+    H3Transport.connect(uri, { insecureSkipVerify: true }),
+    H3Transport.connect(uri, { insecureSkipVerify: true }),
     server.waitNClients(2),
   ]);
 
-  expect(tA.toString()).toBe(`H3(${server.uri})`);
+  expect(tA.toString()).toBe(`H3(${uri})`);
 
   bridgeSessions(sockets);
   TestTransport.check(await TestTransport.execute(tA, tB));
@@ -34,7 +35,8 @@ test("connect error", async () => {
 });
 
 test("reopen", async () => {
-  const transport = await H3Transport.connect(server.uri, { insecureSkipVerify: true });
+  const { uri } = server;
+  const transport = await H3Transport.connect(uri, { insecureSkipVerify: true });
   await TestReopen.run(
     transport,
     server.waitNClients,
