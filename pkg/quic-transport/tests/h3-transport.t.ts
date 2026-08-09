@@ -17,8 +17,8 @@ beforeEach(async () => {
 test("pair", async () => {
   const { uri } = server;
   const [tA, tB, sockets] = await Promise.all([
-    H3Transport.connect(uri, { insecureSkipVerify: true }),
-    H3Transport.connect(uri, { insecureSkipVerify: true }),
+    H3Transport.connect(uri, { connectTimeout: 500, insecureSkipVerify: true }),
+    H3Transport.connect(uri, { connectTimeout: 500, insecureSkipVerify: true }),
     server.waitNClients(2),
   ]);
 
@@ -28,15 +28,20 @@ test("pair", async () => {
   TestTransport.check(await TestTransport.execute(tA, tB));
 });
 
-test("connect error", async () => {
+test("connect error - timeout", async () => {
   const { uri } = server;
   await server[Symbol.asyncDispose]();
-  await expect(H3Transport.connect(uri, { connectTimeout: 500 })).rejects.toThrow();
+  await expect(H3Transport.connect(uri, { connectTimeout: 500, insecureSkipVerify: true })).rejects.toThrow(/timeout/);
+});
+
+test("connect error - untrusted", async () => {
+  const { uri } = server;
+  await expect(H3Transport.connect(uri, { connectTimeout: 500 })).rejects.toThrow(/UnknownIssuer/);
 });
 
 test("reopen", async () => {
   const { uri } = server;
-  const transport = await H3Transport.connect(uri, { insecureSkipVerify: true });
+  const transport = await H3Transport.connect(uri, { connectTimeout: 500, insecureSkipVerify: true });
   await TestReopen.run(
     transport,
     server.waitNClients,

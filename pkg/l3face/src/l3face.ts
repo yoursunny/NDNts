@@ -172,9 +172,6 @@ export class L3Face extends TypedEventTarget<EventMap> implements FwFace.RxTx {
     const txSourceIterable: AsyncIterable<Uint8Array> = {
       [Symbol.asyncIterator]: () => ({
         next: () => txSourceIterator.next(),
-        async [Symbol.asyncDispose]() {
-          // https://github.com/zen-fs/core/issues/158
-        },
       }),
     };
 

@@ -25,12 +25,12 @@ export class H3Transport extends Transport {
       tr.close();
       throw new Error("timeout");
     }
-    return new H3Transport(uri, wtOpts, tr);
+    return new H3Transport(uri, opts, tr);
   }
 
   private constructor(
       private readonly uri: string,
-      private readonly opts: WebTransportOptions,
+      private readonly opts: H3Transport.Options,
       private readonly tr: WebTransport,
   ) {
     super({
@@ -38,12 +38,16 @@ export class H3Transport extends Transport {
     });
     this.rx = rxFromPacketIterable((async function*() {
       const reader = tr.datagrams.readable.getReader();
-      while (true) {
-        const result = await reader.read();
-        if (result.done) {
-          break;
+      try {
+        while (true) {
+          const result = await reader.read();
+          if (result.done) {
+            break;
+          }
+          yield result.value;
         }
-        yield result.value;
+      } finally {
+        reader.releaseLock();
       }
     })());
   }
@@ -85,6 +89,10 @@ export namespace H3Transport {
     /**
      * Skip TLS certificate verification (Node.js only).
      * @defaultValue false
+     *
+     * @remarks
+     * `serverCertificateHashes` does not work in Node.js due to @webtransport-bun/webtransport
+     * v0.3.0 bugs but would be supported when they release v1.0.
      */
     insecureSkipVerify?: boolean;
   }
