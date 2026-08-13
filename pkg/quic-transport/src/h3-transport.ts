@@ -91,7 +91,7 @@ export namespace H3Transport {
      * @defaultValue false
      *
      * @remarks
-     * `serverCertificateHashes` does not work in Node.js due to @webtransport-bun/webtransport
+     * `serverCertificateHashes` does not work in Node.js due to \@webtransport-bun/webtransport
      * v0.3.0 bugs but would be supported when they release v1.0.
      */
     insecureSkipVerify?: boolean;
