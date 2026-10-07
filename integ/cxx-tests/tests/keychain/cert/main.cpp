@@ -6,16 +6,13 @@
 
 int
 main() {
-  auto cert = ndn::io::load<ndn::security::Certificate>(std::cin, ndn::io::NO_ENCODING);
-  if (cert == nullptr) {
-    return 1;
-  }
-  std::cout << cert->getName() << std::endl;
-  std::cout << cert->getIdentity() << std::endl;
-  std::cout << cert->getKeyId() << std::endl;
-  std::cout << cert->getIssuerId() << std::endl;
+  auto cert = ndn::io::loadTlv<ndn::security::Certificate>(std::cin, ndn::io::NO_ENCODING);
+  std::cout << cert.getName() << std::endl;
+  std::cout << cert.getIdentity() << std::endl;
+  std::cout << cert.getKeyId() << std::endl;
+  std::cout << cert.getIssuerId() << std::endl;
 
-  auto validity = cert->getValidityPeriod().getPeriod();
+  auto validity = cert.getValidityPeriod().getPeriod();
   {
     using namespace ndn::time;
     std::cout << duration_cast<milliseconds>(validity.first.time_since_epoch()).count()
