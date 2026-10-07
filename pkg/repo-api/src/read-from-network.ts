@@ -27,8 +27,7 @@ export class ReadFromNetwork implements S.Get, S.Find {
   public mix<T extends {}>(inner: T): T & S.Get & S.Find {
     const self = this; // eslint-disable-line unicorn/no-this-assignment, @typescript-eslint/no-this-alias
     return new Proxy<any>(inner, {
-      get(target, prop) {
-        void target;
+      get(_target, prop) {
         switch (prop) {
           case "get":
           case "find": {

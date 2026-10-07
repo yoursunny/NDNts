@@ -271,8 +271,7 @@ export abstract class ReadvertiseDestination<State extends {} = {}> {
    * @remarks
    * Must override if State type parameter is changed from the default.
    */
-  protected makeState(name: Name): State {
-    void name;
+  protected makeState(_name: Name): State {
     return {} as any;
   }
 

@@ -25,8 +25,7 @@ export class NdndpdkPrefixReg extends ReadvertiseDestination<State> {
     state.fibEntryID = resp.insertFibEntry.id;
   }
 
-  protected override async doWithdraw(name: Name, state: State) {
-    void name;
+  protected override async doWithdraw(_name: Name, state: State) {
     if (!state.fibEntryID) {
       return;
     }

@@ -352,8 +352,7 @@ const TABLE: Row[] = [
       const { dohServer, dohRecords } = await makeDohServer();
       return [
         [new ServerDnsChallenge({ dohServer })],
-        [new ClientDnsChallenge("ndncert-dns.invalid", async (context, recordName, recordValue) => {
-          void context;
+        [new ClientDnsChallenge("ndncert-dns.invalid", async (_context, recordName, recordValue) => {
           dohRecords[recordName] = recordValue;
         })],
       ];
@@ -366,8 +365,7 @@ const TABLE: Row[] = [
       const { dohServer, dohRecords } = await makeDohServer();
       return [
         [new ServerDns01Challenge({ dohServer })],
-        [new ClientDns01Challenge("ndncert-dns.invalid", async (context, recordName, recordValue) => {
-          void context;
+        [new ClientDns01Challenge("ndncert-dns.invalid", async (_context, recordName, recordValue) => {
           dohRecords[recordName] = recordValue;
         })],
       ];
@@ -402,8 +400,7 @@ const TABLE: Row[] = [
       const { dohServer, dohRecords } = await makeDohServer();
       return [
         [new ServerDnsChallenge({ dohServer })],
-        [new ClientDnsChallenge("ndncert-dns.invalid", async (context, recordName, recordValue) => {
-          void context;
+        [new ClientDnsChallenge("ndncert-dns.invalid", async (_context, recordName, recordValue) => {
           dohRecords[recordName] = recordValue.slice(1);
         })],
       ];

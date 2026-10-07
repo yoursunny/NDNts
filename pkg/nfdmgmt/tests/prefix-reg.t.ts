@@ -20,8 +20,7 @@ afterEach(closers.close);
 test.each([
   ["localhost", true, localhostPrefix],
   ["localhop", false, localhopPrefix],
-])("reg %s", { timeout: 10000, retry: 3 }, async (desc, faceIsLocal, expectedPrefix) => {
-  void desc;
+])("reg %s", { timeout: 10000, retry: 3 }, async (_desc, faceIsLocal, expectedPrefix) => {
   const fw = Forwarder.create();
   closers.push(fw);
 

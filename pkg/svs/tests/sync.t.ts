@@ -61,10 +61,10 @@ afterEach(closers.close);
 
 // specification section 5.2 "example with packet loss"
 test.each([
-  [2, false, Interest],
-  [3, true, Data],
-] as const)("5.2 svs%d", async (ver, svs3, typeSignVerify) => {
-  void ver;
+  [2, Interest],
+  [3, Data],
+] as const)("5.2 svs%d", async (ver, typeSignVerify) => {
+  const svs3 = ver === 3;
   const debugHandler = new DebugHandler();
   let lossToC = false;
   using bridge = Bridge.create({

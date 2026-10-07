@@ -9,8 +9,5 @@ import type { RepoProducer } from "./producer";
  * The returned function should be passed as {@link RepoProducer.Options.fallback}.
  */
 export function metadataFallback(opts: replyMetadata.Options = {}): RepoProducer.FallbackHandler {
-  return (interest, producer, store) => {
-    void producer;
-    return replyMetadata(interest, store, opts);
-  };
+  return (interest, _producer, store) => replyMetadata(interest, store, opts);
 }

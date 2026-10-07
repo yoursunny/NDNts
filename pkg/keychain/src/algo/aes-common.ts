@@ -40,9 +40,8 @@ export abstract class AesCommon<I extends {}, G extends AesGenParams> implements
   protected abstract tagSize: number;
   protected abstract defaultInfo: I;
 
-  protected modifyParams(params: any, info: I): void {
-    void params;
-    void info;
+  protected modifyParams(_params: any, _info: I): void {
+    //
   }
 
   public makeAesKeyGenParams({ length = AesKeyLength.Default }: G): AesKeyGenParams {

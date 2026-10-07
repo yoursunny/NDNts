@@ -10,8 +10,7 @@ class FileHandleChunkSource extends KnownSizeChunkSource {
     super(chunkSize, totalSize);
   }
 
-  protected async getPayload(i: number, offset: number, chunkSize: number): Promise<Uint8Array> {
-    void i;
+  protected async getPayload(_i: number, offset: number, chunkSize: number): Promise<Uint8Array> {
     const payload = new Uint8Array(chunkSize);
     await this.fh.read(payload, 0, chunkSize, offset);
     return payload;

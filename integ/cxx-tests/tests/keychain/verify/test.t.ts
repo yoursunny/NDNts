@@ -17,10 +17,9 @@ const TABLE = ([] as Array<Row<any>>).concat(
   RsaModulusLength.Choices.map((modulusLength) => [`RSA ${modulusLength}`, RSA, { modulusLength }]),
 );
 
-test.each(TABLE)("%s", async (desc, algo, genParam) => {
+test.each(TABLE)("%s", async (_desc, algo, genParam) => {
   const exe = await cxx.compile(import.meta.dirname);
 
-  void desc;
   const [privateKey, publicKey] = await generateSigningKey("/A", algo, genParam);
   const cert = await Certificate.selfSign({ privateKey, publicKey });
 

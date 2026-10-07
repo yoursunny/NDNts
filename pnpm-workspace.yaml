@@ -7,6 +7,8 @@ allowBuilds:
 
 blockExoticSubdeps: false
 
+ignoreWorkspaceCycles: true
+
 packages:
   - integ/*
   - mk

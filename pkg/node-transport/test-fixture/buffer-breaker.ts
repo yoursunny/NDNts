@@ -11,8 +11,7 @@ export class BufferBreaker extends Transform {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-restricted-types
-  public override _transform(chunk: Buffer, enc: unknown, callback: (err?: Error) => void) {
-    void enc;
+  public override _transform(chunk: Buffer, _enc: unknown, callback: (err?: Error) => void) {
     const buf = this.buf ? Buffer.concat([this.buf, chunk]) : chunk;
     const count = Math.min(buf.length, Math.ceil(Math.random() * 1.5 * buf.length));
     this.push(buf.subarray(0, count));

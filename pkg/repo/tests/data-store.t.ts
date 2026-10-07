@@ -21,20 +21,17 @@ const TABLE: ReadonlyArray<[string, () => Promise<DataStore>]> = [
   }],
 ];
 
-test.each(TABLE)("basic %s", async (desc, openDataStore) => {
-  void desc;
+test.each(TABLE)("basic %s", async (_desc, openDataStore) => {
   await using store = await openDataStore();
   await testDataStoreBasic(store);
 });
 
-test.each(TABLE)("segmented object %s", async (desc, openDataStore) => {
-  void desc;
+test.each(TABLE)("segmented object %s", async (_desc, openDataStore) => {
   await using store = await openDataStore();
   await testDataStoreSegmentedObject(store);
 });
 
-test.each(TABLE)("list find expire %s", async (desc, openDataStore) => {
-  void desc;
+test.each(TABLE)("list find expire %s", async (_desc, openDataStore) => {
   await using store = await openDataStore();
 
   const expireTime = Date.now() + 600;
@@ -67,8 +64,7 @@ test.each(TABLE)("list find expire %s", async (desc, openDataStore) => {
   await store.clearExpired();
 });
 
-test.each(TABLE)("events %s", async (desc, openDataStore) => {
-  void desc;
+test.each(TABLE)("events %s", async (_desc, openDataStore) => {
   await using store = await openDataStore();
 
   const onInsert = vi.fn<(evt: DataStore.RecordEvent) => void>();

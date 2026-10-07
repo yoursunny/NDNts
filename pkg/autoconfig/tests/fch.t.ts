@@ -104,8 +104,7 @@ test.each([
   [200, ""],
   [500, "127.0.0.1:7001"],
 ])("server error %d", async (status, body) => {
-  await using fchServer = await FchServer.create((params, ctx) => {
-    void params;
+  await using fchServer = await FchServer.create((_params, ctx) => {
     ctx.status = status;
     return body;
   });

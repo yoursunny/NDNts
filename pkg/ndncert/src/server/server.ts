@@ -276,8 +276,7 @@ export class Server {
     return response.data;
   }
 
-  private async finishChallenge(now: number, request: ChallengeRequest, context: Context) {
-    void now;
+  private async finishChallenge(_now: number, request: ChallengeRequest, context: Context) {
     this.deleteContext(request);
 
     const issuedCert = await Certificate.issue({

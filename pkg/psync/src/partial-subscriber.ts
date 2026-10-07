@@ -102,8 +102,7 @@ export class PartialSubscriber extends TypedEventTarget<EventMap>
   }
 
   // eslint-disable-next-line @typescript-eslint/no-restricted-types
-  private readonly handleRemoveTopic = (topic: Name, objKey: object): void => {
-    void topic;
+  private readonly handleRemoveTopic = (_topic: Name, objKey: object): void => {
     if (!this.prevSeqNums.delete(objKey)) {
       return;
     }

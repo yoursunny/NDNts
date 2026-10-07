@@ -56,8 +56,7 @@ test("prefill buffer", async () => {
 
 test.each([false, true])("autoBuffer %o", async (autoBuffer) => {
   const pOpts = await makeBufferedProducer(undefined, { autoBuffer });
-  const handler = vi.fn(async (interest: Interest, { dataBuffer }: Producer) => {
-    void interest;
+  const handler = vi.fn(async (_interest: Interest, { dataBuffer }: Producer) => {
     await dataBuffer!.insert(new Data("/A/1"));
     return new Data("/A/0");
   });

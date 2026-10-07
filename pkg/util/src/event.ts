@@ -48,8 +48,7 @@ export function trackEventListener(target: EventTarget): Record<string, boolean>
   });
 
   return new Proxy({}, {
-    get(target, prop) {
-      void target;
+    get(_target, prop) {
       return m.has(prop as string);
     },
   });

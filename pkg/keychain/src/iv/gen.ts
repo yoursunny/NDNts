@@ -54,8 +54,7 @@ export abstract class IvGen {
   protected abstract generate(): Uint8Array;
 
   /** Update internal state after a message is encrypted.. */
-  protected update(plaintextLength: number, ciphertextLength: number): void {
-    void plaintextLength;
-    void ciphertextLength;
+  protected update(_plaintextLength: number, _ciphertextLength: number): void {
+    //
   }
 }

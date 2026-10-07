@@ -43,8 +43,7 @@ test.runIf(PyRepo.supported)("basic", { timeout: 30000, retry: 2 }, async () => 
 });
 
 test.runIf(PyRepo.supported)("workflow", { timeout: 30000, retry: 1 }, async () => {
-  const names = Array.from({ length: 200 }, (item, i) => {
-    void item;
+  const names = Array.from({ length: 200 }, (_item, i) => {
     if (i < 100) {
       return new Name("/A").append(Segment, i);
     }

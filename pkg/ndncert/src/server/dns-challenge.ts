@@ -116,11 +116,10 @@ export class ServerDnsChallenge extends ServerDnsChallengeBase implements Server
   public readonly retryLimit = 3;
 
   protected override makeNeedRecord(
-      context: ServerChallengeContext<State>,
+      _context: ServerChallengeContext<State>,
       recordName: string,
       token: string,
   ): [parameters: ParameterKV, expected: string] {
-    void context;
     return [
       {
         "record-name": toUtf8(recordName),
@@ -163,10 +162,9 @@ export class ServerDns01Challenge extends ServerDnsChallengeBase implements Serv
 
   protected override async makeNeedRecord(
       context: ServerChallengeContext<State>,
-      record: string,
+      _record: string,
       token: string,
   ): Promise<[parameters: ParameterKV, recordValue: string]> {
-    void record;
     return [
       {
         token: toUtf8(token),

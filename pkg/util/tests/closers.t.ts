@@ -105,8 +105,7 @@ test("asAsyncDisposable", async () => {
 
 test("lock", async () => {
   const mutex = new Mutex();
-  await expect(Promise.allSettled(Array.from({ length: 20 }, async (v, i) => {
-    void v;
+  await expect(Promise.allSettled(Array.from({ length: 20 }, async (_v, i) => {
     await delay(100 * Math.random());
     using _locked = await lock(mutex);
     await delay(100 * Math.random());

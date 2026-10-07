@@ -14,8 +14,7 @@ test.each<[string, () => Promise<pem_files.PemTestVector>]>([
   ["EC P256", pem_files.EC_P256],
   ["EC P384", pem_files.EC_P384],
   ["EC P521", pem_files.EC_P521],
-])("parse %s", async (desc, loader) => {
-  void desc;
+])("parse %s", async (_desc, loader) => {
   const { sigType, keyName, certName, validity, keyPem, certPem } = await loader();
 
   const key = parseKey(keyPem);

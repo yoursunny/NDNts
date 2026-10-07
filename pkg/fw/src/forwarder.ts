@@ -158,10 +158,8 @@ export class ForwarderImpl extends TypedEventTarget<EventMap> implements Forward
   }
 
   /** Process incoming Nack. */
-  public processNack(face: FaceImpl, nack: FwPacket<Nack>) {
+  public processNack(_face: FaceImpl, _nack: FwPacket<Nack>) {
     // ignore Nack
-    void face;
-    void nack;
   }
 
   public close(): void {

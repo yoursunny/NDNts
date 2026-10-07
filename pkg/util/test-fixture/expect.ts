@@ -26,10 +26,8 @@ expect.extend({
   toEqualUint8Array,
 });
 
-declare global {
-  namespace jest {
-    interface Matchers<R, T> {
-      toEqualUint8Array: (expected: Uint8ArrayExpect) => R;
-    }
+declare module "vitest" {
+  interface Matchers<R, T> {
+    toEqualUint8Array: (expected: Uint8ArrayExpect) => R;
   }
 }

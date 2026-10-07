@@ -11,8 +11,7 @@ import { SafeBagEC, SafeBagRSA, type SafeBagTestVector } from "../test-fixture/s
 test.each<[string, SafeBagTestVector]>([
   ["EC", SafeBagEC],
   ["RSA", SafeBagRSA],
-])("import %s", async (desc, { sigType, canRSAOAEP, certName, wire, passphrase }) => {
-  void desc;
+])("import %s", async (_desc, { sigType, canRSAOAEP, certName, wire, passphrase }) => {
   const safeBag = Decoder.decode(wire, SafeBag);
   const { certificate: cert } = safeBag;
   expect(cert.name).toEqualName(certName);

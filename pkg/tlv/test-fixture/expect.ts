@@ -41,11 +41,9 @@ expect.extend({
   toMatchTlv,
 });
 
-declare global {
-  namespace jest {
-    interface Matchers<R, T> {
-      toMatchTlv: (...checks: TlvMatcher[]) => R;
-      toEncodeAs: ((expected: Uint8ArrayExpect) => R) & ((...checks: TlvMatcher[]) => R);
-    }
+declare module "vitest" {
+  interface Matchers<R, T> {
+    toMatchTlv: (...checks: TlvMatcher[]) => R;
+    toEncodeAs: ((expected: Uint8ArrayExpect) => R) & ((...checks: TlvMatcher[]) => R);
   }
 }

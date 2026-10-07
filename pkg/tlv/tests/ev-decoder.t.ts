@@ -193,8 +193,7 @@ test("setIsCritical", () => {
 });
 
 test("setUnknown", () => {
-  const cb = vi.fn<EvDecoder.UnknownElementHandler<EvdTestTarget>>((t, { type }, order) => {
-    void order;
+  const cb = vi.fn<EvDecoder.UnknownElementHandler<EvdTestTarget>>((t, { type }) => {
     if (type === 0xA1) {
       ++t.a1;
       return true;

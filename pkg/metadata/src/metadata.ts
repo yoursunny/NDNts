@@ -45,9 +45,8 @@ export namespace Metadata {
   /** Class decorator on an extensible {@link Metadata} subclass. */
   export function extend<M extends Metadata & Extensible>(
       ctor: new() => M,
-      ctx?: ClassDecoratorContext,
+      _ctx?: ClassDecoratorContext, // cannot use due to https://github.com/vitest-dev/vitest/issues/9876
   ): void {
-    void ctx; // cannot use due to https://github.com/vitest-dev/vitest/issues/9876
     const registry = new ctor()[Extensible.TAG];
     const evd = makeEvd<M>(ctor.name).setUnknown(registry.decodeUnknown);
     Object.defineProperty(ctor, "decodeFrom", {
