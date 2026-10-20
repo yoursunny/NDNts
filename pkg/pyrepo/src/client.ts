@@ -1,6 +1,6 @@
 import { consume, ConsumerOptions } from "@ndn/endpoint";
 import { Segment } from "@ndn/naming-convention2";
-import { type Data, digestSigning, Interest, Name, SignedInterestPolicy } from "@ndn/packet";
+import { type Data, digestSigning, Interest, Name, SignedInterestPolicy, type Signer } from "@ndn/packet";
 import { Decoder, Encoder } from "@ndn/tlv";
 import { assert, delay, randomJitter, sha256, toHex } from "@ndn/util";
 import type { Arrayable } from "type-fest";
@@ -29,6 +29,10 @@ export class PyRepoClient implements Disposable {
       fw,
       retx: 0,
     };
+    if (opts.ingestSigner) {
+      const sip = new SignedInterestPolicy(SignedInterestPolicy.Time(), SignedInterestPolicy.Nonce());
+      this.ingestSigner = sip.makeSigner(opts.ingestSigner);
+    }
   }
 
   public readonly repoPrefix: Name;
@@ -39,6 +43,7 @@ export class PyRepoClient implements Disposable {
   private readonly commandTimeout: number;
   private readonly checkInterval: () => number;
   private readonly checkOpts: ConsumerOptions;
+  private readonly ingestSigner?: Signer;
 
   public get cpOpts() {
     return this.publisher.cpOpts;
@@ -64,6 +69,10 @@ export class PyRepoClient implements Disposable {
    * @see {@link https://github.com/UCLA-IRL/ndn-python-repo/pull/119}
    */
   public async ingest(objs: Name | Arrayable<PyRepoClient.ObjectParam>): Promise<void> {
+    if (!this.ingestSigner) {
+      throw new Error("ingestSigner is unspecified");
+    }
+
     const objParams = this.toObjParams(objs);
     await Promise.all(Array.from(objParams, async (objParam) => {
       // objParam encodes as TLV but we only want TLV-VALUE
@@ -72,7 +81,7 @@ export class PyRepoClient implements Disposable {
       const ingestInterest = new Interest();
       ingestInterest.name = this.repoPrefix.append(IngestVerb);
       ingestInterest.appParameters = objParamTlv.value;
-      await ingestInterest.updateParamsDigest();
+      await this.ingestSigner!.sign(ingestInterest);
 
       await consume(ingestInterest, {
         ...ConsumerOptions.exact(this.cpOpts),
@@ -197,6 +206,11 @@ export namespace PyRepoClient {
      * @defaultValue 1 second
      */
     checkInterval?: number;
+
+    /**
+     * Signer for direct ingest protocol commands.
+     */
+    ingestSigner?: Signer;
   }
 
   /** Single packet parameters. */
