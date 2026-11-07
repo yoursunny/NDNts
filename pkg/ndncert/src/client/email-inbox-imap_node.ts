@@ -1,9 +1,11 @@
 import type { Config as ImapConfig } from "imap";
 import { ImapEmails } from "imap-emails";
-import type { AddressObject, ParsedMail } from "mailparser";
 import pTimeout from "p-timeout";
 
 import type { ClientPinLikeChallenge } from "./pin-like-challenge";
+
+type ParsedMail = Awaited<ReturnType<ImapEmails["getEmails"]>>[0];
+type AddressObject = NonNullable<ParsedMail["replyTo"]>;
 
 const emailAddressComparer = new Intl.Collator("en", { sensitivity: "base" });
 

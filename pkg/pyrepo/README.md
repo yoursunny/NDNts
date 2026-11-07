@@ -3,7 +3,7 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package allows inserting and deleting Data in [ndn-python-repo](https://github.com/UCLA-IRL/ndn-python-repo).
-This implementation is compatible with ndn-python-repo `751663e6` (2026-08-01).
+This implementation is compatible with ndn-python-repo `24247a74` (2026-10-23).
 It may also work with other versions of ndn-python-repo if the protocol remains compatible.
 
 To install and start ndn-python-repo, run:
@@ -14,7 +14,7 @@ python3.13 -m venv ~/pyrepo.venv
 source ~/pyrepo.venv/bin/activate
 
 # install ndn-python-repo
-pip install git+https://github.com/UCLA-IRL/ndn-python-repo@751663e6b111e53591575f79bfe1fe2db9a5d0ac
+pip install git+https://github.com/UCLA-IRL/ndn-python-repo@24247a74c7b09efc7ee49d8c5c47d2341d59c7bd
 
 # run ndn-python-repo
 ndn-python-repo
@@ -22,14 +22,6 @@ ndn-python-repo
 
 `PyRepoClient` type is a client for [ndn-python-repo protocol](https://github.com/UCLA-IRL/ndn-python-repo/tree/751663e6b111e53591575f79bfe1fe2db9a5d0ac/docs/src/specification).
 `PyRepoStore` type implements a write-only subset of `DataStore` interfaces as defined in `@ndn/repo-api` package.
-
-This package also includes experimental implementation of [direct ingest protocol](https://github.com/UCLA-IRL/ndn-python-repo/pull/119), available as `PyRepoClient.ingest()` method.
-To test this feature, install an alternate version of ndn-python-repo as below:
-
-```bash
-# install ndn-python-repo#119
-pip install git+https://github.com/UCLA-IRL/ndn-python-repo@refs/pull/119/merge
-```
 
 ```ts
 import { PyRepoStore } from "@ndn/pyrepo";

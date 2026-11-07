@@ -27,7 +27,7 @@ export async function openSvSync(wantHMAC: boolean): Promise<SvSync> {
 
   const opts: SvSync.Options = {
     groupPrefix,
-    svs3: args.svs3,
+    svs3: args.svs3, // eslint-disable-line @typescript-eslint/no-deprecated
   };
 
   if (wantHMAC) {

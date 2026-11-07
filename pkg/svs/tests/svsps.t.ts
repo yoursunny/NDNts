@@ -25,7 +25,7 @@ beforeAll(async () => {
     suppressionPeriod: 50,
     signer: signerS,
     verifier: verifierS,
-    svs3: false,
+    svs3: false, // eslint-disable-line @typescript-eslint/no-deprecated
   };
   pubOpts = {
     innerSigner: signerI,

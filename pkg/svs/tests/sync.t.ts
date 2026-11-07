@@ -76,6 +76,7 @@ test.each([
   const signer = pvt.withKeyLocator(cert.name);
   const spySign = vi.spyOn(signer, "sign");
   const spyVerify = vi.spyOn(pub, "verify");
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const opts: SvSync.Options = { ...baseOpts, svs3, fw: bridge.fwAB, signer, verifier: pub };
 
   const pA = await SvSync.create({ ...opts, describe: "A" });
