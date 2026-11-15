@@ -41,7 +41,7 @@
     "b64u-lite": "^1.1.0",
     "imap-emails": "^1.0.4",
     "is-valid-hostname": "^1.0.2",
-    "nodemailer": "^10.3.1",
+    "nodemailer": "^10.5.0",
     "p-timeout": "^8.1.0",
     "tslib": "^2.9.1",
     "type-fest": "^5.10.0",

@@ -6,7 +6,7 @@ import path from "node:path";
 
 import * as fsWalk from "@nodelib/fs.walk/promises";
 import { satisfies } from "compare-versions";
-import { load as loadYAML } from "js-yaml";
+import { loadAll } from "js-yaml";
 
 function* listImports(filename) {
   const lines = readFileSync(filename, "utf8").split("\n");
@@ -23,8 +23,8 @@ const ignoredMissing = new Set();
 const ignoredUnused = new Set(["@types/web-bluetooth", "graphql", "tslib"]);
 const ignoredTypes = new Set(["yargs"]);
 
-/** @type {import("@pnpm/lockfile-types").Lockfile} */
-const doc = loadYAML(readFileSync("pnpm-lock.yaml", "utf8"));
+/** @type {import("@pnpm/lockfile-types").LockfileV9} */
+const doc = loadAll(readFileSync("pnpm-lock.yaml", "utf8")).at(-1);
 if (!satisfies(doc.lockfileVersion, "^9.0.0")) {
   throw new Error("lockfileVersion not supported");
 }

@@ -15,6 +15,9 @@ packages:
   - pkg/*
 
 peerDependencyRules:
+  allowedVersions:
+    graphql: 17
+    typescript: 6
   ignoreMissing:
     - eslint*
     - typescript
