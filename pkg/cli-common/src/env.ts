@@ -38,4 +38,3 @@ export const nfdRegAnn = env.get("NDNTS_NFDREGANN").asBool() ?? false;
 export const nfdRegKey = env.get("NDNTS_NFDREGKEY").asName() ?? key;
 export const dpdkGql = env.get("NDNTS_NDNDPDK_GQLSERVER").asUrlString();
 export const dpdkLocal = env.get("NDNTS_NDNDPDK_LOCAL").asString();
-export const dpdkMemifSocketPath = env.get("NDNTS_NDNDPDK_MEMIF_SOCKETPATH").asString();

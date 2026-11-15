@@ -1,6 +1,5 @@
 import { once } from "node:events";
 import net from "node:net";
-import path from "node:path";
 
 import { Forwarder, type FwFace } from "@ndn/fw";
 import { L3Face, type Transport } from "@ndn/l3face";
@@ -9,7 +8,6 @@ import type { NameLike } from "@ndn/packet";
 import { GraphQLClient } from "graphql-request";
 
 import { CreateFace, Delete } from "./gql";
-import { MemifTransport } from "./memif-transport";
 import { NdndpdkPrefixReg } from "./prefix-reg";
 
 const DefaultGqlServer = "http://127.0.0.1:3030";
@@ -114,46 +112,8 @@ async function openFaceUdp(opts: openFace.Options): Promise<FwFace> {
   }
 }
 
-async function openFaceMemif(opts: openFace.Options): Promise<FwFace> {
-  const {
-    mtu = 2048,
-    memif: {
-      socketPath = "/run/ndn",
-      dataroom = mtu,
-      ringCapacity = 1024,
-    } = {},
-  } = opts;
-
-  const socketName = path.join(socketPath, `NDNts-memif-${process.pid}-${Date.now()}.sock`);
-  const socketOwner = (process.getuid && process.getgid) ? [process.getuid(), process.getgid()] : undefined;
-
-  return openFaceImpl(
-    opts,
-    {
-      scheme: "memif",
-      role: "server",
-      socketName,
-      socketOwner,
-      id: 0,
-      dataroom,
-      ringCapacity,
-    },
-    async () => {
-      const transport = await MemifTransport.connect({
-        role: "client",
-        socketName,
-        id: 0,
-        dataroom,
-        ringCapacity,
-      });
-      return [transport, dataroom];
-    },
-  );
-}
-
 const openFaceScheme = {
   udp: openFaceUdp,
-  memif: openFaceMemif,
 } satisfies Record<string, (opts: openFace.Options) => Promise<FwFace>>;
 
 /** Open a face on NDN-DPDK. */
@@ -204,26 +164,11 @@ export namespace openFace {
 
     /**
      * Face MTU.
-     * @defaultValue
-     * - For UDP, 1400.
-     * - For memif, `.memif.dataroom` or 2048.
+     * @defaultValue 1400
      */
     mtu?: number;
 
     /** UDP socket options. */
     udp?: udp_helper.OpenSocketOptions;
-
-    /** memif options. */
-    memif?: MemifOptions;
-  }
-
-  /** memif options. */
-  export interface MemifOptions extends Pick<MemifTransport.Options, "dataroom" | "ringCapacity"> {
-    /**
-     * Directory in which to place control socket.
-     * If NDN-DPDK and NDNts are in containers, the same directory must be mounted in both containers.
-     * @defaultValue /run/ndn
-     */
-    socketPath?: string;
   }
 }

@@ -31,8 +31,6 @@ It supports:
 * connect to NFD via UDP unicast, e.g. `udp://192.0.2.1:6363`
 * connect to NDN-DPDK via UDP: `ndndpdk:` or `ndndpdk-udp:`
   * See `NDNTS_NDNDPDK_*` environment variables described below.
-* connect to NDN-DPDK via memif: `ndndpdk-memif:`
-  * See `NDNTS_NDNDPDK_*` environment variables described below.
 * perform NDN-FCH query and connect to global NDN network: `autoconfig:` (prefer UDP) or `autoconfig-tcp:` (prefer TCP)
 
 The default is platform-dependent:
@@ -41,9 +39,8 @@ The default is platform-dependent:
 * Windows: `tcp://127.0.0.1:6363`
 * other platforms: `unix:///var/run/nfd/nfd.sock` with fallback `/var/run/nfd.sock`
 
-`NDNTS_MTU` environment variable sets the MTU for fragmentation of outgoing packets, applicable to UDP and memif.
+`NDNTS_MTU` environment variable sets the MTU for fragmentation of outgoing packets, applicable to UDP only.
 It must be a positive integer, and the default value is 1400.
-It's recommended to increase this value when using memif.
 
 `NDNTS_NFDREG=0` environment variable disables prefix registration on the uplink using NFD management protocol.
 The default is enabling NFD prefix registration if the uplink is possibly connected to NFD.
@@ -60,10 +57,6 @@ This is only used when `NDNTS_UPLINK` specifies an uplink in NDN-DPDK.
 
 `NDNTS_NDNDPDK_LOCAL` environment variable specifies a local IP address that is reachable from NDN-DPDK.
 The default is auto-detected from GraphQL HTTP client.
-
-`NDNTS_NDNDPDK_MEMIF_SOCKETPATH` environment variable specifies a directory for memif control socket.
-The default is `/run/ndn`.
-If NDN-DPDK is running in a container, this directory must be mounted into the NDN-DPDK container.
 
 ## API
 

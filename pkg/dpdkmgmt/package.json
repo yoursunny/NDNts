@@ -31,8 +31,5 @@
     "graphql": "^17.1.0",
     "graphql-request": "^7.4.0",
     "tslib": "^2.9.1"
-  },
-  "optionalDependencies": {
-    "memif": "0.0.20250210"
   }
 }

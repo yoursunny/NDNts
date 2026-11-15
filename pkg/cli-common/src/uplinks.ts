@@ -26,7 +26,6 @@ async function checkUnixSocket(pathname: string): Promise<boolean> {
 
 async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
   let autoconfigPreferTcp = false;
-  let dpdkScheme: dpdkOpenFace.Options["scheme"] = "udp";
   switch (env.uplink.protocol) {
     case "autoconfig-tcp:": {
       autoconfigPreferTcp = true;
@@ -69,20 +68,12 @@ async function makeFace(): Promise<[face: FwFace, nfd: boolean]> {
       const face = await UnixTransport.createFace({}, pathname);
       return [face, true];
     }
-    case "ndndpdk-memif:": {
-      dpdkScheme = "memif";
-    }
-    // fallthrough
     case "ndndpdk-udp:":
     case "ndndpdk:": {
       const face = await dpdkOpenFace({
         gqlServer: env.dpdkGql,
         localHost: env.dpdkLocal,
-        scheme: dpdkScheme,
         mtu: env.mtu,
-        memif: {
-          socketPath: env.dpdkMemifSocketPath,
-        },
       });
       return [face, false];
     }

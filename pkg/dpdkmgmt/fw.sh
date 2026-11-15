@@ -50,7 +50,6 @@ echo
 echo 'Export these environment variables for @ndn/dpdkmgmt demo:'
 echo
 echo '  'export DEMO_DPDKMGMT_GQLSERVER=$GQLSERVER
-echo '  'export DEMO_DPDKMGMT_MEMIF=1 \# optional
 echo
 echo 'To shutdown NDN-DPDK:'
 echo

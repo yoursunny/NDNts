@@ -3,7 +3,7 @@
 This package is part of [NDNts](https://yoursunny.com/p/NDNts/), Named Data Networking libraries for the modern web.
 
 This package enables interaction with the [NDN-DPDK high-speed forwarder](https://github.com/usnistgov/ndn-dpdk).
-It can create faces (either UDP or memif) for the NDNts application and perform prefix registrations.
+It can create UDP faces for the NDNts application and perform prefix registrations.
 
 Currently, there are several limitations when using this package:
 
@@ -28,13 +28,11 @@ import assert from "node:assert/strict";
 
 const gqlServer = process.env.DEMO_DPDKMGMT_GQLSERVER;
 const localHost = process.env.DEMO_DPDKMGMT_LOCAL;
-const scheme = process.env.DEMO_DPDKMGMT_MEMIF === "1" ? "memif" : "udp";
 if (!gqlServer) {
   console.log(`
 To run @ndn/dpdkmgmt demo, set the following environment variables:
 DEMO_DPDKMGMT_GQLSERVER= NDN-DPDK forwarder management endpoint (required)
 DEMO_DPDKMGMT_LOCAL= IP address to reach local host from NDN-DPDK (optional)
-DEMO_DPDKMGMT_MEMIF=1 use memif instead of UDP (optional)
 `);
   process.exit(0);
 }
@@ -56,15 +54,13 @@ const uplinkC = await openFace({
   fw: fwC,
   gqlServer,
   localHost,
-  scheme,
 });
 const uplinkP = await openFace({
   fw: fwP,
   gqlServer,
   localHost,
-  scheme,
 });
-console.log(`uplinkC=${uplinkC}`, `uplinkP=${uplinkP}`, `transport=${scheme}`);
+console.log(`uplinkC=${uplinkC}`, `uplinkP=${uplinkP}`);
 
 // Start a producer.
 let t0 = 0;

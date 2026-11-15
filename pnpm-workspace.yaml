@@ -1,7 +1,6 @@
 allowBuilds:
   bufferutil: true
   classic-level: true
-  memif: true
   puppeteer: true
   unrs-resolver: true
 

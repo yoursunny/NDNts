@@ -19,7 +19,7 @@ function* listImports(filename) {
   }
 }
 
-const ignoredMissing = new Set(["memif"]);
+const ignoredMissing = new Set();
 const ignoredUnused = new Set(["@types/web-bluetooth", "graphql", "tslib"]);
 const ignoredTypes = new Set(["yargs"]);
 
