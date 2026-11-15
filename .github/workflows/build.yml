@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       fail-fast: false
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -19,7 +19,7 @@ jobs:
           key: build-${{ hashFiles('**/package.json') }}
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 24
+          node-version: 26
       - run: |
           npm install -g corepack
           corepack pnpm install
@@ -38,12 +38,12 @@ jobs:
       matrix:
         include:
           - node: 26
-            test: test
-          - node: 24
             test: cover
+          - node: 24
+            test: test
       fail-fast: false
     name: unittest (${{ matrix.node }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -78,7 +78,7 @@ jobs:
   integ:
     strategy:
       fail-fast: false
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Disable Ubuntu AppArmor Namespace Restrictions
         run: |
@@ -87,16 +87,18 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: |
-            ~/.local/share/pnpm/store
-            ~/.cache/puppeteer
+          path: ~/.local/share/pnpm/store
           key: integ-${{ hashFiles('**/package.json') }}
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/puppeteer
+          key: puppeteer-${{ hashFiles('integ/browser-tests/package.json') }}
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 24
+          node-version: 26
       - name: Install dependencies
         run: |
-          echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu noble main" \
+          echo "deb [arch=amd64 trusted=yes] https://nfd-nightly-apt.ndn.today/ubuntu resolute main" \
             | sudo tee /etc/apt/sources.list.d/nfd-nightly.list
           sudo apt-get update
           sudo apt-get install --no-install-recommends clang-format-19 libndn-cxx-dev libpsync-dev nfd
@@ -121,7 +123,7 @@ jobs:
   publish:
     needs: [build, unittest, integ]
     if: ${{ github.repository == 'yoursunny/NDNts' && github.event_name == 'push' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
