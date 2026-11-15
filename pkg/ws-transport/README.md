@@ -13,7 +13,7 @@ import { WsTransport } from "@ndn/ws-transport";
 
 // other imports for examples
 import { consume } from "@ndn/endpoint";
-import { Data, Interest, Name } from "@ndn/packet";
+import { Interest } from "@ndn/packet";
 
 if (process.env.CI) { process.exit(0); }
 

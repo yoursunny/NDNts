@@ -5,9 +5,10 @@ allowBuilds:
   puppeteer: true
   unrs-resolver: true
 
-blockExoticSubdeps: false
-
 ignoreWorkspaceCycles: true
+
+minimumReleaseAgeExclude:
+  - "@yoursunny/*"
 
 packages:
   - integ/*

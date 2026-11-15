@@ -19,7 +19,7 @@ import { consume, produce } from "@ndn/endpoint";
 
 // other imports for examples
 import { generateSigningKey } from "@ndn/keychain";
-import { Data, digestSigning } from "@ndn/packet";
+import { Data } from "@ndn/packet";
 import { fromUtf8, toUtf8 } from "@ndn/util";
 
 // Generate a key pair for the demo.

@@ -26,8 +26,6 @@ ndn-python-repo
 ```ts
 import { PyRepoStore } from "@ndn/pyrepo";
 
-import { Forwarder } from "@ndn/fw";
-import { L3Face } from "@ndn/l3face";
 import { enableNfdPrefixReg } from "@ndn/nfdmgmt";
 import { UnixTransport } from "@ndn/node-transport";
 import { Data, digestSigning, Name } from "@ndn/packet";

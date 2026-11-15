@@ -22,7 +22,7 @@ import { openFace } from "@ndn/dpdkmgmt";
 // other imports for examples
 import { consume, produce } from "@ndn/endpoint";
 import { Forwarder } from "@ndn/fw";
-import { Name, Interest, Data } from "@ndn/packet";
+import { Interest, Data } from "@ndn/packet";
 import { delay, fromUtf8, toUtf8 } from "@ndn/util";
 import assert from "node:assert/strict";
 
